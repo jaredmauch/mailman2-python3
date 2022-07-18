@@ -18,7 +18,6 @@
 
 import re
 from io import StringIO
-from types import ListType
 
 scre = re.compile(r'transcript of session follows', re.IGNORECASE)
 

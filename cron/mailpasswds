@@ -42,7 +42,6 @@ import sys
 import os
 import errno
 import getopt
-from types import UnicodeType
 
 import paths
 # mm_cfg must be imported before the other modules, due to the side-effect of

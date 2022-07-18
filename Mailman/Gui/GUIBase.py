@@ -18,7 +18,6 @@
 """Base class for all web GUI components."""
 
 import re
-from types import TupleType, ListType
 
 from Mailman import mm_cfg
 from Mailman import Utils

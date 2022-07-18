@@ -21,7 +21,6 @@ import sys
 import os
 import signal
 import cgi
-from types import ListType
 
 from Mailman import mm_cfg
 from Mailman import MailList

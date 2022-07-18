@@ -35,7 +35,6 @@ import pickle
 from io import StringIO
 from collections import UserDict
 from urllib.parse import urlparse
-from types import *
 
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr
@@ -253,7 +252,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         url = self.GetScriptURL('options', absolute)
         if obscure:
             user = Utils.ObscureEmail(user)
-        return '%s/%s' % (url, urllib.quote(user.lower()))
+        return '%s/%s' % (url, urllib.parse.quote(user.lower()))
 
     def GetDescription(self, cset=None, errors='xmlcharrefreplace'):
         # Get list's description in charset specified by cset.
@@ -597,7 +596,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.__lock.refresh()
         # copy all public attributes to serializable dictionary
         dict = {}
-        for key, value in self.__dict__.items():
+        for key, value in list(self.__dict__.items()):
             if key[0] == '_' or type(value) is MethodType:
                 continue
             dict[key] = value
@@ -836,7 +835,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Save and reload the db to evict expired pendings.
         self._Pending__save(pends)
         pends = self._Pending__load()
-        for k, v in pends.items():
+        for k, v in list(pends.items()):
             if k in ('evictions', 'version'):
                 continue
             op, data = v[:2]
@@ -1697,7 +1696,7 @@ bad regexp in bounce_matching_header line: %s
         plainaddrs = [x.strip() for x in pattern_list if x.strip() and not
                          (x.startswith('^') or x.startswith('@'))]
         addrdict = Utils.List2Dict(plainaddrs, foldcase=1)
-        if addrdict.has_key(email.lower()):
+        if email.lower() in addrdict:
             return email
         for pattern in pattern_list:
             if pattern.startswith('^'):

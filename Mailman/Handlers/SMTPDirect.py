@@ -31,7 +31,6 @@ import time
 import socket
 import smtplib
 from base64 import b64encode
-from types import UnicodeType
 
 from Mailman import mm_cfg
 from Mailman import Utils

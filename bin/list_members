@@ -73,7 +73,6 @@ followed by digest members, but no indication is given as to address status.
 """
 
 import sys
-from types import UnicodeType
 
 import paths
 from Mailman import mm_cfg

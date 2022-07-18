@@ -26,7 +26,6 @@ import re
 import cgi
 import urllib
 import signal
-from types import *
 
 from email.Utils import unquote, parseaddr, formataddr
 

@@ -32,7 +32,6 @@ import email
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
 import email.Utils
-from types import ClassType
 
 from Mailman import mm_cfg
 from Mailman import Utils

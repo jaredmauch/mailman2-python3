@@ -24,7 +24,6 @@ import errno
 import signal
 import email
 import time
-from types import ListType
 from urllib import quote_plus, unquote_plus
 
 from Mailman import mm_cfg

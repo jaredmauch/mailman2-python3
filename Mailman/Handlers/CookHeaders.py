@@ -22,7 +22,6 @@ list configuration.
 
 from __future__ import nested_scopes
 import re
-from types import UnicodeType
 
 from email.Charset import Charset
 from email.Header import Header, decode_header, make_header

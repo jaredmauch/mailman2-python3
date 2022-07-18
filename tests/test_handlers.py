@@ -24,7 +24,6 @@ import email
 import errno
 import pickle
 import unittest
-from types import ListType
 from email.Generator import Generator
 try:
     from Mailman import __init__

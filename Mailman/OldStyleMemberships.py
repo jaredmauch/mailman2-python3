@@ -25,7 +25,6 @@ This is the adaptor used by default in Mailman 2.1.
 """
 
 import time
-from types import StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils

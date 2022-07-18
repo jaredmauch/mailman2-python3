@@ -19,8 +19,6 @@
 
 import re
 
-from types import IntType
-
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors

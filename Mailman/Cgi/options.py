@@ -23,7 +23,6 @@ import os
 import cgi
 import signal
 import urllib
-from types import ListType
 
 from Mailman import mm_cfg
 from Mailman import Utils

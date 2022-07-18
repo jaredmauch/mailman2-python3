@@ -50,7 +50,6 @@ import getopt
 import pprint
 import pickle
 import marshal
-from types import StringType
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked

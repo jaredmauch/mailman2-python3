@@ -35,7 +35,6 @@ run again until another version change is detected.
 
 import email
 
-from types import ListType, StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils

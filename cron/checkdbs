@@ -30,7 +30,6 @@ Options:
 import sys
 import time
 import getopt
-from types import UnicodeType
 
 import paths
 

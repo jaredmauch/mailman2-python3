@@ -29,7 +29,6 @@ from __future__ import nested_scopes
 
 import re
 import sys
-from types import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman import Utils
