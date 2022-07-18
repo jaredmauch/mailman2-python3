@@ -17,8 +17,6 @@
 """User description class/structure, for ApprovedAddMember and friends."""
 
 
-from types import UnicodeType
-
 
 
 class UserDesc:

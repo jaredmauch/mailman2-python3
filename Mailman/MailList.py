@@ -29,17 +29,17 @@ import errno
 import re
 import shutil
 import socket
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import pickle
 
 from io import StringIO
-from UserDict import UserDict
-from urlparse import urlparse
+from collections import UserDict
+from urllib.parse import urlparse
 from types import *
 
-import email.Iterators
-from email.Utils import getaddresses, formataddr, parseaddr
-from email.Header import Header
+import email.iterators
+from email.utils import getaddresses, formataddr, parseaddr
+from email.header import Header
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -268,7 +268,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 ccset = i18n.get_translation().charset() or 'us-ascii'
         else:
             ccset = cset
-        if isinstance(self.description, unicode):
+        if isinstance(self.description, str):
             return self.description.encode(ccset, errors)
         if mcset == ccset:
             return self.description

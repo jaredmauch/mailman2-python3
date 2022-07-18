@@ -16,8 +16,7 @@
 
 """A `safe' dictionary for string interpolation."""
 
-from types import StringType
-from UserDict import UserDict
+from collections import UserDict
 
 COMMASPACE = ', '
 

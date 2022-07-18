@@ -36,10 +36,9 @@ import base64
 import random
 import urllib.request, urllib.parse, urllib.error
 import html.entities
-import email.Header
-import email.Iterators
-from email.Errors import HeaderParseError
-from types import UnicodeType
+import email.header
+import email.iterators
+from email.errors import HeaderParseError
 from string import whitespace, digits
 try:
     # Python 2.2
@@ -676,7 +675,7 @@ ADMINDATA = {
 def is_administrivia(msg):
     linecnt = 0
     lines = []
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         # Strip out any signatures
         if line == '-- ':
             break
@@ -963,7 +962,7 @@ def uquote(s):
 def oneline(s, cset):
     # Decode header string in one line and convert into specified charset
     try:
-        h = email.Header.make_header(email.Header.decode_header(s))
+        h = email.header.make_header(email.header.decode_header(s))
         ustr = h.__unicode__()
         line = UEMPTYSTRING.join(ustr.splitlines())
         return line.encode(cset, 'replace')

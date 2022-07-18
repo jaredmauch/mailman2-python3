@@ -19,7 +19,6 @@
 
 import sys
 import time
-from types import StringType
 
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage

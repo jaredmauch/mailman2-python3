@@ -20,7 +20,6 @@
 import sys
 import os
 import codecs
-from types import StringType
 
 from Mailman import mm_cfg
 from Mailman.Logging.Utils import _logexc

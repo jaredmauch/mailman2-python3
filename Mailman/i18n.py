@@ -19,7 +19,6 @@ import sys
 import time
 import locale
 import gettext
-from types import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman.SafeDict import SafeDict
