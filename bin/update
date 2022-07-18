@@ -330,7 +330,7 @@ script.
         #
         # chmod the html archives
         #
-        os.chmod(html_dir, 02775)
+        os.chmod(html_dir, 0o02775)
     # BAW: Is this still necessary?!
     mlist.Save()
     #

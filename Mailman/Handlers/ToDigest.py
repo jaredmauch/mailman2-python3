@@ -294,7 +294,7 @@ def send_i18n_digests(mlist, mboxfp):
             for field in keeper[keep]:
                 msg[keep] = field
         # And a bit of extra stuff
-        msg['Message'] = `msgcount`
+        msg['Message'] = repr(msgcount)
         # Get the next message in the digest mailbox
         msg = mbox.next()
     # Now we're finished with all the messages in the digest.  First do some
