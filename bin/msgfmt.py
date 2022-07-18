@@ -109,7 +109,7 @@ def make(filename, outfile):
         outfile = os.path.splitext(infile)[0] + '.mo'
 
     try:
-        lines = open(infile).readlines()
+        lines = open(infile, encoding='latin-1').readlines()
     except IOError as msg:
         print >> sys.stderr, msg
         sys.exit(1)

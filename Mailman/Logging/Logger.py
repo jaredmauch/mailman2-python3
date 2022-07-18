@@ -53,7 +53,7 @@ class Logger:
         self.close()
 
     def __repr__(self):
-        return '<%s to %s>' % (self.__class__.__name__, `self.__filename`)
+        return '<%s to %s>' % (self.__class__.__name__, repr(self.__filename))
 
     def __get_f(self):
         if self.__fp:

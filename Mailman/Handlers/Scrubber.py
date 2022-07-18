@@ -412,7 +412,7 @@ URL: %(url)s
 def makedirs(dir):
     # Create all the directories to store this attachment in
     try:
-        os.makedirs(dir, 02775)
+        os.makedirs(dir, 0o02775)
         # Unfortunately, FreeBSD seems to be broken in that it doesn't honor
         # the mode arg of mkdir().
         def twiddle(arg, dirname, names):

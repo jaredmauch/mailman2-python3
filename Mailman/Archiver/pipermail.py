@@ -696,7 +696,7 @@ class T:
         return parentID
 
     def write_article(self, index, article, path):
-        omask = os.umask(002)
+        omask = os.umask(0o002)
         try:
             f = open(path, 'w')
         finally:

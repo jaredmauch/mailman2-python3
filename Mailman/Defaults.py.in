@@ -32,12 +32,6 @@ def hours(h): return h * 60 * 60
 def days(d): return d * 60 * 60 * 24
 
 # Some convenient constants
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 Yes = yes = On = on = True
 No = no = Off = off = False
 

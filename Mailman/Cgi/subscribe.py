@@ -280,7 +280,7 @@ Confirmation from your email address is required, to prevent anyone from
 subscribing you without permission.  Instructions are being sent to you at
 %(email)s.  Please note your subscription will not start until you confirm
 your subscription.""")
-    except Errors.MMNeedApproval, x:
+    except Errors.MMNeedApproval as x:
         # Results string depends on whether we have private rosters or not
         if privacy_results:
             results = privacy_results

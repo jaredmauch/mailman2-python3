@@ -162,7 +162,7 @@ class Archiver:
             mbox = self.__archive_file(afn)
             mbox.AppendMessage(post)
             mbox.fp.close()
-        except IOError, msg:
+        except IOError as msg:
             syslog('error', 'Archive file access failure:\n\t%s %s', afn, msg)
             raise
 

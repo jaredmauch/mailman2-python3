@@ -221,7 +221,7 @@ class Switchboard:
                     msg = cPickle.load(fp)
                     data_pos = fp.tell()
                     data = cPickle.load(fp)
-                except Exception, s:
+                except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
                     syslog('error', 'Unpickling .bak exception: %s\n'
