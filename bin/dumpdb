@@ -65,9 +65,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__) % globals()
+    print(C_(__doc__) % globals(), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -76,7 +76,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'mphn',
                                    ['marshal', 'pickle', 'help', 'noprint'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     # Options.

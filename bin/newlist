@@ -135,7 +135,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], 'hqal:u:e:',
                                    ['help', 'quiet', 'automate', 'language=',
                                     'urlhost=', 'emailhost='])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
@@ -213,9 +213,9 @@ def main():
                              emailhost=host_name, urlhost=urlhost)
             finally:
                 os.umask(oldmask)
-        except Errors.BadListNameError, s:
+        except Errors.BadListNameError as s:
             usage(1, C_('Illegal list name: %(s)s'))
-        except Errors.EmailAddressError, s:
+        except Errors.EmailAddressError as s:
             usage(1, C_('Bad owner email address: %(s)s') +
                      C_(' - owner addresses need to be fully-qualified names'
                         ' like "owner@example.com", not just "owner".'))

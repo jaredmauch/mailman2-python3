@@ -289,7 +289,7 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
         f = open(originalFile)
     except IOError:
         if not quiet:
-            print " - Can'open original file " + originalFile
+            print(" - Can'open original file " + originalFile)
         return 1
 
     while 1:
@@ -303,7 +303,7 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
         f = open(translatedFile)
     except IOError:
         if not quiet:
-            print " - Can'open translated file " + translatedFile
+            print(" - Can'open translated file " + translatedFile)
         return 1
 
     while 1:
@@ -318,7 +318,7 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
     for desc in c.computeErrors():
         n +=1
         if not quiet:
-            print " - %(desc)s" % { 'desc': desc }
+            print(" - %(desc)s" % { 'desc': desc })
     return n
 
 
@@ -336,11 +336,11 @@ def check_po(file, quiet=0):
             for desc in c.computeErrors():
                 n += 1
                 if not quiet:
-                    print " - near line %(line)d %(file)s: %(desc)s" % {
+                    print(" - near line %(line)d %(file)s: %(desc)s" % {
                         'line': p.line,
                         'file': p.files,
                         'desc': desc
-                    }
+                    })
     p.close()
     return n
 
@@ -348,7 +348,7 @@ def check_po(file, quiet=0):
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'qh', ['quiet', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     quiet = 0
@@ -371,21 +371,21 @@ def main():
     try:
         files = os.listdir("templates/" + lang + "/")
     except:
-        print "can't open templates/%s/" % lang
+        print("can't open templates/%s/" % lang)
     for file in files:
         fileEN = "templates/en/" + file
         fileIT = "templates/" + lang + "/" + file
         errlist = []
         if isHtml.search(file):
             if not quiet:
-                print "HTML checking " + fileIT + "... "
+                print("HTML checking " + fileIT + "... ")
             n = check_file(fileIT, fileEN, html=1, quiet=quiet)
             if n:
                 numerrors += n
                 numfiles += 1
         elif isTxt.search(file):
             if not quiet:
-                print "TXT  checking " + fileIT + "... "
+                print("TXT  checking " + fileIT + "... ")
             n = check_file(fileIT, fileEN, html=0, quiet=quiet)
             if n:
                 numerrors += n
@@ -396,17 +396,17 @@ def main():
 
     file = "messages/" + lang + "/LC_MESSAGES/mailman.po"
     if not quiet:
-        print "PO   checking " + file + "... "
+        print("PO   checking " + file + "... ")
     n = check_po(file, quiet=quiet)
     if n:
         numerrors += n
         numfiles += 1
 
     if quiet:
-        print "%(errs)u warnings in %(files)u files" % {
+        print("%(errs)u warnings in %(files)u files" % {
             'errs':  numerrors,
             'files': numfiles
-        }
+        })
 
 
 if __name__ == '__main__':
