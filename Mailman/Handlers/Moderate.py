@@ -139,14 +139,13 @@ def process(mlist, msg, msgdata):
 def do_reject(mlist):
     listowner = mlist.GetOwnerEmail()
     if mlist.nonmember_rejection_notice:
-        raise Errors.RejectMessage, \
-              Utils.wrap(_(mlist.nonmember_rejection_notice))
+        raise Errors.RejectMessage(Utils.wrap(_(mlist.nonmember_rejection_notice)))
     else:
-        raise Errors.RejectMessage, Utils.wrap(_("""\
+        raise Errors.RejectMessage(Utils.wrap(_("""\
 Your message has been rejected, probably because you are not subscribed to the
 mailing list and the list's policy is to prohibit non-members from posting to
 it.  If you think that your messages are being rejected in error, contact the
-mailing list owner at %(listowner)s."""))
+mailing list owner at %(listowner)s.""")))
 
 
 

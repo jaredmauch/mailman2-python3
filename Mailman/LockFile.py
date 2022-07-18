@@ -500,7 +500,7 @@ def _dochild():
     # than this.
     workinterval = 5 * random.random()
     hitwait = 20 * random.random()
-    print prefix, 'workinterval:', workinterval
+    print(prefix, 'workinterval:', workinterval)
     islocked = False
     t0 = 0
     t1 = 0
@@ -508,26 +508,26 @@ def _dochild():
     try:
         try:
             t0 = time.time()
-            print prefix, 'acquiring...'
+            print(prefix, 'acquiring...')
             lockfile.lock()
-            print prefix, 'acquired...'
+            print( prefix, 'acquired...')
             islocked = True
         except TimeOutError:
-            print prefix, 'timed out'
+            print(prefix, 'timed out')
         else:
             t1 = time.time()
-            print prefix, 'acquisition time:', t1-t0, 'seconds'
+            print(prefix, 'acquisition time:', t1-t0, 'seconds')
             time.sleep(workinterval)
     finally:
         if islocked:
             try:
                 lockfile.unlock()
                 t2 = time.time()
-                print prefix, 'lock hold time:', t2-t1, 'seconds'
+                print(prefix, 'lock hold time:', t2-t1, 'seconds')
             except NotLockedError:
-                print prefix, 'lock was broken'
+                print(prefix, 'lock was broken')
     # wait for next web hit
-    print prefix, 'webhit sleep:', hitwait
+    print(prefix, 'webhit sleep:', hitwait)
     time.sleep(hitwait)
 
 
@@ -547,7 +547,7 @@ def _seed():
 def _onetest():
     loopcount = random.randint(1, 100)
     for i in range(loopcount):
-        print 'Loop %d of %d' % (i+1, loopcount)
+        print('Loop %d of %d' % (i+1, loopcount))
         pid = os.fork()
         if pid:
             # parent, wait for child to exit

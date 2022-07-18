@@ -54,13 +54,6 @@ BR = '<br>\n'
 SPACE = ' '
 
 try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
-try:
     from mimetypes import guess_all_extensions
 except ImportError:
     import mimetypes
