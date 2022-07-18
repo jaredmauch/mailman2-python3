@@ -42,22 +42,15 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -101,7 +94,7 @@ def main():
         mlists.setdefault(mlist.host_name, []).append(mlist)
     # Make sure the files are created rw-rw-xxx; it should be okay to be world
     # readable.
-    omask = os.umask(002)
+    omask = os.umask(0o002)
     try:
         MTA.clear()
         if not mlists:

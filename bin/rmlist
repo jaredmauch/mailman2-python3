@@ -54,24 +54,24 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
 
 def remove_it(listname, filename, msg):
     if os.path.islink(filename):
-        print C_('Removing %(msg)s')
+        print(C_('Removing %(msg)s'))
         os.unlink(filename)
     elif os.path.isdir(filename):
-        print C_('Removing %(msg)s')
+        print(C_('Removing %(msg)s'))
         shutil.rmtree(filename)
     elif os.path.isfile(filename):
         os.unlink(filename)
     else:
-        print C_('%(listname)s %(msg)s not found as %(filename)s')
+        print(C_('%(listname)s %(msg)s not found as %(filename)s'))
 
 
 
@@ -98,11 +98,11 @@ def main():
             usage(1, C_(
                      'No such list (or list already deleted): %(listname)s'))
         else:
-            print C_(
-                'No such list: %(listname)s.  Removing its residual archives.')
+            print(C_(
+                'No such list: %(listname)s.  Removing its residual archives.'))
 
     if not removeArchives:
-        print C_('Not removing archives.  Reinvoke with -a to remove them.')
+        print(C_('Not removing archives.  Reinvoke with -a to remove them.'))
 
 
     REMOVABLES = []
