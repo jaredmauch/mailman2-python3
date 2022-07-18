@@ -71,16 +71,16 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__) % globals()
+    print(_(__doc__) % globals(), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
 
 def compress(txtfile):
     if VERBOSE:
-        print "gzip'ing:", txtfile
+        print("gzip'ing:", txtfile)
     infp = open(txtfile)
     outfp = gzip.open(txtfile+'.gz', 'wb', 6)
     outfp.write(infp.read())
@@ -93,7 +93,7 @@ def main():
     global VERBOSE
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'vh', ['verbose', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     # defaults
@@ -121,10 +121,10 @@ def main():
             # has the list received any messages?  if not, last_post_time will
             # be zero, so it's not really a bogus archive dir.
             if mlist.last_post_time > 0:
-                print 'List', name, 'has a bogus archive_directory:', dir
+                print('List', name, 'has a bogus archive_directory:', dir)
             continue
         if VERBOSE:
-            print 'Processing list:', name
+            print('Processing list:', name)
         files = []
         for f in allfiles:
             if f[-4:] <> '.txt':
@@ -153,7 +153,7 @@ if __name__ == '__main__' and \
     # the mbox, and the gzip file is not created on demand (i.e. for every
     # individual post).  This is the normal mode of operation.  Also, be sure
     # we can actually import the gzip module!
-    omask = os.umask(002)
+    omask = os.umask(0o002)
     try:
         main()
     finally:

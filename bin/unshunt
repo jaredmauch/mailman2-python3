@@ -79,7 +79,7 @@ def main():
             whichq = msgdata.get('whichq', mm_cfg.INQUEUE_DIR)
             tosb = get_switchboard(whichq)
             tosb.enqueue(msg, msgdata)
-        except Exception, e:
+        except Exception as e:
             # If there are any unshunting errors, log them and continue trying
             # other shunted messages.
             print(C_(

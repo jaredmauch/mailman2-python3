@@ -97,9 +97,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -135,7 +135,7 @@ def main():
         elif opt in ('-n', '--no-change'):
             dryrun = 1
             i += 1
-            print C_('Dry run mode')
+            print(C_('Dry run mode'))
         elif opt in ('-d', '--digest'):
             digest = 1
             i += 1
@@ -187,7 +187,7 @@ def main():
     else:
         try:
             fp = open(filename)
-        except IOError, (code, msg):
+        except IOError as msg:
             usage(1, C_('Cannot read address file: %(filename)s: %(msg)s'))
         try:
             filemembers = fp.readlines()
@@ -200,7 +200,7 @@ def main():
         addr = filemembers[i].strip()
         if addr == '' or addr[:1] == '#':
             del filemembers[i]
-            print C_('Ignore  :  %(addr)30s')
+            print(C_('Ignore  :  %(addr)30s'))
 
     # first filter out any invalid addresses
     filemembers = email.Utils.getaddresses(filemembers)
@@ -209,17 +209,17 @@ def main():
         try:
             Utils.ValidateEmail(addr)
         except Errors.EmailAddressError:
-            print C_('Invalid :  %(addr)30s')
+            print(C_('Invalid :  %(addr)30s'))
             invalid = 1
     if invalid:
-        print C_('You must fix the preceding invalid addresses first.')
+        print(C_('You must fix the preceding invalid addresses first.'))
         sys.exit(1)
 
     # get the locked list object
     try:
         mlist = MailList.MailList(listname)
-    except Errors.MMListError, e:
-        print C_('No such list: %(listname)s')
+    except Errors.MMListError as e:
+        print(C_('No such list: %(listname)s'))
         sys.exit(1)
 
     try:
@@ -241,7 +241,7 @@ def main():
                 needsadding[laddr] = (name, addr)
 
         if not needsadding and not addrs:
-            print C_('Nothing to do.')
+            print(C_('Nothing to do.'))
             sys.exit(0)
 
         enc = sys.getdefaultencoding()
@@ -261,12 +261,12 @@ def main():
                     name = unicode(name, errors='replace')
                 name = name.encode(enc, 'replace')
                 s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-                print C_('Added  : %(s)s')
+                print(C_('Added  : %(s)s'))
             except Errors.MMAlreadyAMember:
                 pass
-            except Errors.MembershipIsBanned, pattern:
-                print ('%s:' % addr), C_(
-                                      'Banned address (matched %(pattern)s)')
+            except Errors.MembershipIsBanned as pattern:
+                print(('%s:' % addr), C_(
+                                      'Banned address (matched %(pattern)s)'))
 
         for laddr, addr in addrs.items():
             # Should be a member, otherwise our test above is broken
@@ -286,7 +286,7 @@ def main():
                 name = unicode(name, errors='replace')
             name = name.encode(enc, 'replace')
             s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-            print C_('Removed: %(s)s')
+            print(C_('Removed: %(s)s'))
 
         mlist.Save()
     finally:

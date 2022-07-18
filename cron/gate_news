@@ -73,9 +73,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__)
+    print(_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -94,7 +94,7 @@ def open_newsgroup(mlist):
                                 readermode=True,
                                 user=mm_cfg.NNTP_USERNAME,
                                 password=mm_cfg.NNTP_PASSWORD)
-        except (socket.error, nntplib.NNTPError, IOError, EOFError), e:
+        except (socket.error, nntplib.NNTPError, IOError, EOFError) as e:
             syslog('fromusenet',
                    'error opening connection to nntp_host: %s\n%s',
                    mlist.nntp_host, e)
@@ -123,7 +123,7 @@ def poll_newsgroup(mlist, conn, first, last, glock):
     for num in range(first, last):
         glock.refresh()
         try:
-            headers = conn.head(`num`)[3]
+            headers = conn.head(repr(num))[3]
             # I don't know how this happens, but skip an empty message.
             if not headers:
                 raise _ContinueLoop
@@ -134,13 +134,13 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                 value = header[:i].lower()
                 if i > 0 and value == 'to':
                     found_to = 1
-                if value <> 'x-beenthere':
+                if value != 'x-beenthere':
                     continue
                 if header[i:] == ': %s' % mlist.GetListEmail():
                     beenthere = 1
                     break
             if not beenthere:
-                body = conn.body(`num`)[3]
+                body = conn.body(repr(num))[3]
                 # Usenet originated messages will not have a Unix envelope
                 # (i.e. "From " header).  This breaks Pipermail archiving, so
                 # we will synthesize one.  Be sure to use the format searched
@@ -157,7 +157,7 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                 p = Parser(Message.Message)
                 try:
                     msg = p.parsestr(NL.join(lines))
-                except email.Errors.MessageError, e:
+                except email.Errors.MessageError as e:
                     syslog('fromusenet',
                            'email package exception for %s:%d\n%s',
                            mlist.linked_newsgroup, num, e)
@@ -174,7 +174,7 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                             fromusenet = 1)
                 syslog('fromusenet',
                        'posted to list %s: %7d' % (listname, num))
-        except nntplib.NNTPError, e:
+        except nntplib.NNTPError as e:
             syslog('fromusenet',
                    'NNTP error for list %s: %7d' % (listname, num))
             syslog('fromusenet', str(e))
@@ -205,7 +205,7 @@ def process_lists(glock):
         # Open the newsgroup, but let most exceptions percolate up.
         try:
             conn, first, last = open_newsgroup(mlist)
-        except (socket.error, nntplib.NNTPError, IOError, EOFError), e:
+        except (socket.error, nntplib.NNTPError, IOError, EOFError) as e:
             syslog('fromusenet',
                    "%s: couldn't open newsgroup %s: skipping\n%s",
                    listname, mlist.linked_newsgroup, e)
@@ -273,7 +273,7 @@ def main():
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     if args:

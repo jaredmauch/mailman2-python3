@@ -74,7 +74,7 @@ def main():
     try:
         opts, args = getopt.getopt(
             sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     if args:

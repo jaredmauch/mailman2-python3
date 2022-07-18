@@ -72,9 +72,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__)
+    print(_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -90,7 +90,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'l:h',
                                    ['listname=', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     if args:
@@ -116,7 +116,7 @@ def main():
     except Errors.MMUnknownListError:
         # Do it this way for I18n's _()
         sitelistname = mm_cfg.MAILMAN_SITE_LIST
-        print >> sys.stderr, _('Site list is missing: %(sitelistname)s')
+        print(_('Site list is missing: %(sitelistname)s'), file=sys.stderr)
         syslog('error', 'Site list is missing: %s', mm_cfg.MAILMAN_SITE_LIST)
         sys.exit(1)
 
