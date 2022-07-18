@@ -57,6 +57,7 @@ displayed.
 """
 from __future__ import print_function
 
+from builtins import object
 import sys
 import re
 import getopt
@@ -121,7 +122,7 @@ def scanlists(options):
 
 
 
-class Options:
+class Options(object):
     listnames = Utils.list_names()
     owners = None
 
@@ -166,11 +167,11 @@ def main():
         return
 
     matches = scanlists(options)
-    addrs = matches.keys()
+    addrs = list(matches.keys())
     addrs.sort()
     for k in addrs:
         hits = matches[k]
-        lists = hits.keys()
+        lists = list(hits.keys())
         print((k, C_('found in:')))
         for name in lists:
             aswhat = hits[name]

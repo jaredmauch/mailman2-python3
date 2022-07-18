@@ -73,6 +73,7 @@ followed by digest members, but no indication is given as to address status.
 """
 from __future__ import print_function
 
+from builtins import str
 import sys
 
 import paths
@@ -114,7 +115,7 @@ def safe(s):
         return ''
     if isinstance(s, UnicodeType):
         return s.encode(ENC, 'replace')
-    return unicode(s, ENC, 'replace').encode(ENC, 'replace')
+    return str(s, ENC, 'replace').encode(ENC, 'replace')
 
 
 def isinvalid(addr):
@@ -180,14 +181,14 @@ def main():
                 usage(1)
         elif opt == '-n':
             nomail = True
-            if args and args[0] in WHYCHOICES.keys():
+            if args and args[0] in list(WHYCHOICES.keys()):
                 why = args.pop(0)
         elif opt.startswith('--nomail'):
             nomail = True
             i = opt.find('=')
             if i >= 0:
                 why = opt[i+1:]
-                if why not in WHYCHOICES.keys():
+                if why not in list(WHYCHOICES.keys()):
                     usage(1, C_('Bad --nomail option: %(why)s'))
         elif opt == '-d':
             digest = True
