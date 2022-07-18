@@ -19,8 +19,7 @@
 
 import re
 
-from types import ListType
-from email.MIMEText import MIMEText
+from email.mime.text import MIMEText
 
 from Mailman import mm_cfg
 from Mailman import Utils

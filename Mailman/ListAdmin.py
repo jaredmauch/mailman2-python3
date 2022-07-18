@@ -31,9 +31,9 @@ import marshal
 from io import StringIO
 
 import email
-from email.MIMEMessage import MIMEMessage
-from email.Generator import Generator
-from email.Utils import getaddresses
+from email.mime.message import MIMEMessage
+from email.generator import Generator
+from email.utils import getaddresses
 
 from Mailman import mm_cfg
 from Mailman import Utils

@@ -26,12 +26,11 @@ import errno
 import binascii
 import tempfile
 from io import StringIO
-from types import IntType, StringType
 
-from email.Utils import parsedate
-from email.Parser import HeaderParser
-from email.Generator import Generator
-from email.Charset import Charset
+from email.utils import parsedate
+from email.parser import HeaderParser
+from email.generator import Generator
+from email.charset import Charset
 
 from Mailman import mm_cfg
 from Mailman import Utils

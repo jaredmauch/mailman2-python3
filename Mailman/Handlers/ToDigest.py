@@ -32,14 +32,14 @@ import time
 import traceback
 from io import StringIO
 
-from email.Parser import Parser
-from email.Generator import Generator
+from email.parser import Parser
+from email.generator import Generator
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
-from email.Utils import getaddresses, formatdate
-from email.Header import decode_header, make_header, Header
-from email.Charset import Charset
+from email.utils import getaddresses, formatdate
+from email.header import decode_header, make_header, Header
+from email.charset import Charset
 
 from Mailman import mm_cfg
 from Mailman import Utils
