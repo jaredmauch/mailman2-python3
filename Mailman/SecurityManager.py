@@ -50,12 +50,11 @@
 import os
 import re
 import time
-import Cookie
+import http.cookies
 import marshal
 import binascii
-import urllib
-from types import StringType, TupleType
-from urlparse import urlparse
+import urllib.request, urllib.parse, urllib.error
+from urllib.parse import urlparse
 
 try:
     import crypt
@@ -69,7 +68,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import md5_new, sha_new
 
 
-class SecurityManager:
+class SecurityManager(object):
     def InitVars(self):
         # We used to set self.password here, from a crypted_password argument,
         # but that's been removed when we generalized the mixin architecture.
@@ -97,9 +96,9 @@ class SecurityManager:
             if user is None:
                 # A bad system error
                 raise Exception(TypeError, 'No user supplied for AuthUser context')
-            user = Utils.UnobscureEmail(urllib.unquote(user))
+            user = Utils.UnobscureEmail(urllib.parse.unquote(user))
             secret = self.getMemberPassword(user)
-            userdata = urllib.quote(Utils.ObscureEmail(user), safe='')
+            userdata = urllib.parse.quote(Utils.ObscureEmail(user), safe='')
             key += 'user+%s' % userdata
         elif authcontext == mm_cfg.AuthListPoster:
             secret = self.post_password
@@ -244,7 +243,7 @@ class SecurityManager:
         # Get a digest of the secret, plus other information.
         mac = sha_new(secret + repr(issued)).hexdigest()
         # Create the cookie object.
-        c = Cookie.SimpleCookie()
+        c = http.cookies.SimpleCookie()
         c[key] = binascii.hexlify(marshal.dumps((issued, mac)))
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
@@ -266,7 +265,7 @@ class SecurityManager:
         # Logout of the session by zapping the cookie.  For safety both set
         # max-age=0 (as per RFC2109) and set the cookie data to the empty
         # string.
-        c = Cookie.SimpleCookie()
+        c = http.cookies.SimpleCookie()
         c[key] = ''
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
@@ -304,12 +303,12 @@ class SecurityManager:
             else:
                 usernames = []
                 prefix = self.internal_name() + '+user+'
-                for k in c.keys():
+                for k in list(c.keys()):
                     if k.startswith(prefix):
                         usernames.append(k[len(prefix):])
             # If any check out, we're golden.  Note: `@'s are no longer legal
             # values in cookie keys.
-            for user in [Utils.UnobscureEmail(urllib.unquote(u))
+            for user in [Utils.UnobscureEmail(urllib.parse.unquote(u))
                          for u in usernames]:
                 ok = self.__checkone(c, authcontext, user)
                 if ok:
@@ -325,7 +324,7 @@ class SecurityManager:
             key, secret = self.AuthContextInfo(authcontext, user)
         except Errors.NotAMemberError:
             return False
-        if not c.has_key(key) or not isinstance(secret, StringType):
+        if key not in c or not isinstance(secret, StringType):
             return False
         # Undo the encoding we performed in MakeCookie() above.  BAW: I
         # believe this is safe from exploit because marshal can't be forced to
