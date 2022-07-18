@@ -932,9 +932,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Validate the e-mail address to some degree.
         Utils.ValidateEmail(email)
         if self.isMember(email):
-            raise Errors.MMAlreadyAMember, email
+            raise Errors.MMAlreadyAMember(email)
         if self.CheckPending(email):
-            raise Errors.MMAlreadyPending, email
+            raise Errors.MMAlreadyPending(email)
         if email.lower() == self.GetListEmail().lower():
             # Trying to subscribe the list to itself!
             raise Errors.MMBadEmailError
@@ -948,20 +948,20 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 whence = ''
             syslog('vette', '%s banned subscription: %s%s (matched: %s)',
                    realname, email, whence, pattern)
-            raise Errors.MembershipIsBanned, pattern
+            raise Errors.MembershipIsBanned(pattern)
         # See if this is from a spamhaus listed IP.
         if remote and mm_cfg.BLOCK_SPAMHAUS_LISTED_IP_SUBSCRIBE:
             if Utils.banned_ip(remote):
                 whence = ' from %s' % remote
                 syslog('vette', '%s banned subscription: %s%s (Spamhaus IP)',
                        realname, email, whence)
-                raise Errors.MembershipIsBanned, 'Spamhaus IP'
+                raise Errors.MembershipIsBanned('Spamhaus IP')
         # See if this is from a spamhaus listed domain.
         if email and mm_cfg.BLOCK_SPAMHAUS_LISTED_DBL_SUBSCRIBE:
             if Utils.banned_domain(email):
                 syslog('vette', '%s banned subscription: %s (Spamhaus DBL)',
                        realname, email)
-                raise Errors.MembershipIsBanned, 'Spamhaus DBL'
+                raise Errors.MembershipIsBanned('Spamhaus DBL')
         # Sanity check the digest flag
         if digest and not self.digestable:
             raise Errors.MMCantDigestError
