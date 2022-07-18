@@ -71,6 +71,7 @@ Where:
 Note that if neither -r or -d is supplied, regular members are printed first,
 followed by digest members, but no indication is given as to address status.
 """
+from __future__ import print_function
 
 import sys
 
@@ -101,9 +102,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -232,16 +233,16 @@ def main():
         try:
             fp = open(outfile, 'w')
         except IOError:
-            print >> sys.stderr, C_(
-                                 'Could not open file for writing:'), outfile
+            print(C_(
+                                 'Could not open file for writing:'), outfile, file=sys.stderr)
             sys.exit(1)
     else:
         fp = sys.stdout
 
     try:
         mlist = MailList.MailList(listname, lock=False)
-    except Errors.MMListError, e:
-        print >> sys.stderr, C_('No such list: %(listname)s')
+    except Errors.MMListError as e:
+        print(C_('No such list: %(listname)s'), file=sys.stderr)
         sys.exit(1)
 
     # Get the lowercased member addresses
@@ -269,7 +270,7 @@ def main():
                                                              mm_cfg.Moderate):
                 showit = True
             if showit:
-                print >> fp, formataddr((safe(name), addr))
+                print(formataddr((safe(name), addr)), file=fp)
         return
     if regular:
         rmembers.sort()
@@ -278,7 +279,7 @@ def main():
             # Filter out nomails
             if nomail and not whymatches(mlist, addr, why):
                 continue
-            print >> fp, formataddr((safe(name), addr))
+            print(formataddr((safe(name), addr)), file=fp)
     if digest:
         dmembers.sort()
         for addr in dmembers:
@@ -295,7 +296,7 @@ def main():
                 # They're getting MIME digests
                 if kind == 'plain':
                     continue
-            print >> fp, formataddr((safe(name), addr))
+            print(formataddr((safe(name), addr)), file=fp)
 
 
 

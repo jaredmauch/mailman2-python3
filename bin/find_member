@@ -55,6 +55,7 @@ Address matches are case-insensitive, but case-preserved addresses are
 displayed.
 
 """
+from __future__ import print_function
 
 import sys
 import re
@@ -76,9 +77,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -170,13 +171,13 @@ def main():
     for k in addrs:
         hits = matches[k]
         lists = hits.keys()
-        print(k, C_('found in:'))
+        print((k, C_('found in:')))
         for name in lists:
             aswhat = hits[name]
             if aswhat & AS_MEMBER:
-                print('    ', name)
+                print(('    ', name))
             if aswhat & AS_OWNER:
-                print('    ', name, C_('(as owner)'))
+                print(('    ', name, C_('(as owner)')))
 
 
 

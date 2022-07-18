@@ -38,6 +38,7 @@ Where:
 `listname' is the name of the mailing list to print the owners of.  You can
 have more than one named list on the command line.
 """
+from __future__ import print_function
 
 import sys
 import getopt
@@ -58,9 +59,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -86,15 +87,15 @@ def main():
     for listname in listnames:
        try:
            mlist = MailList.MailList(listname, lock=0)
-       except Errors.MMListError, e:
-           print C_('No such list: %(listname)s')
+       except Errors.MMListError as e:
+           print(C_('No such list: %(listname)s'))
            continue
 
        if vhost and vhost != mlist.host_name:
            continue
 
        owners = COMMASPACE.join(mlist.owner)
-       print C_('List: %(listname)s, \tOwners: %(owners)s')
+       print(C_('List: %(listname)s, \tOwners: %(owners)s'))
 
 
 

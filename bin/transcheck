@@ -29,6 +29,7 @@ cd $MAILMAN_DIR
 Where <lang> is your country code (e.g. 'it' for Italy) and -q is
 to ask for a brief summary.
 """
+from __future__ import print_function
 
 import sys
 import re
@@ -47,9 +48,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -69,7 +70,7 @@ class TransChecker:
         for key in self.regexp.findall(string):
             if self.escaped and self.escaped.match(key):
                 continue
-            if self.dict.has_key(key):
+            if key in self.dict:
                 self.dict[key] += 1
             else:
                 self.dict[key] = 1
@@ -79,7 +80,7 @@ class TransChecker:
         for key in self.regexp.findall(string):
             if self.escaped and self.escaped.match(key):
                 continue
-            if self.dict.has_key(key):
+            if key in self.dict:
                 self.dict[key] -= 1
             else:
                 self.errs.append(
@@ -224,7 +225,7 @@ class POParser:
                         if c == "\\":
                             # a quoted char...
                             c = self.f.read(1)
-                            if self.esc.has_key(c):
+                            if c in self.esc:
                                 self.msgid += self.esc[c]
                             else:
                                 self.msgid += c
@@ -262,7 +263,7 @@ class POParser:
                         if c == "\\":
                             # a quoted char...
                             c = self.f.read(1)
-                            if self.esc.has_key(c):
+                            if c in self.esc:
                                 self.msgstr += self.esc[c]
                             else:
                                 self.msgstr += c

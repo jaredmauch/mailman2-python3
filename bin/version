@@ -18,9 +18,10 @@
 
 """Print the Mailman version.
 """
+from __future__ import print_function
 
 import paths
 import Mailman.mm_cfg
 from Mailman.i18n import C_
 
-print(C_('Using Mailman version:'), Mailman.mm_cfg.VERSION)
+print((C_('Using Mailman version:'), Mailman.mm_cfg.VERSION))
