@@ -92,12 +92,13 @@ def _(s, frame=1):
     # into encoded 8-bit strings.  BAW: Returning a Unicode here broke too
     # much other stuff and _() has many tentacles.  Eventually I think we want
     # to use Unicode everywhere.
+    # XXX python3 str does not require encode/decode
     tns = _translation.gettext(s)
     charset = _translation.charset()
     if not charset:
         charset = 'us-ascii'
     for k, v in list(dict.items()):
-        if isinstance(v, UnicodeType):
+        if isinstance(v, str):
             dict[k] = v.encode(charset, 'replace')
     try:
         return tns % dict
@@ -109,7 +110,7 @@ def _(s, frame=1):
 
 def tolocale(s):
     global _ctype_charset
-    if isinstance(s, UnicodeType) or _ctype_charset is None:
+    if isinstance(s, str) or _ctype_charset is None:
         return s
     source = _translation.charset ()
     if not source:
