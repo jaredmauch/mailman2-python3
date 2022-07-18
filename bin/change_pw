@@ -88,9 +88,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -103,7 +103,7 @@ def openlist(listname):
     if mlist is missing:
         try:
             mlist = MailList.MailList(listname, lock=0)
-        except Errors.MMListError, e:
+        except Errors.MMListError as e:
             usage(1, C_('No such list "%(listname)s"\n%(e)s'))
         _listcache[listname] = mlist
     return mlist
@@ -156,7 +156,7 @@ def main():
                 listnames[name] = 1
 
     if not listnames:
-        print >> sys.stderr, C_('Nothing to do.')
+        print(C_('Nothing to do.'), file=sys.stderr)
         sys.exit(0)
 
     # Set the password on the lists

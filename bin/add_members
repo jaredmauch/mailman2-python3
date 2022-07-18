@@ -84,7 +84,7 @@ from io import StringIO
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import i18n
 from Mailman import Utils
