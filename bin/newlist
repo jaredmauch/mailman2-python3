@@ -202,7 +202,7 @@ def main():
         # Guarantee that all newly created files have the proper permission.
         # proper group ownership should be assured by the autoconf script
         # enforcing that all directories have the group sticky bit set
-        oldmask = os.umask(002)
+        oldmask = os.umask(0o002)
         try:
             try:
                 if lang == mm_cfg.DEFAULT_SERVER_LANGUAGE:

@@ -104,7 +104,7 @@ def make_varabs(relpath):
 
 def move_language_templates(mlist):
     listname = mlist.internal_name()
-    print C_('Fixing language templates: %(listname)s')
+    print(C_('Fixing language templates: %(listname)s'))
     # Mailman 2.1 has a new cascading search for its templates, defined and
     # described in Utils.py:maketext().  Putting templates in the top level
     # templates/ subdir or the lists/<listname> subdir is deprecated and no
@@ -126,7 +126,7 @@ def move_language_templates(mlist):
         # handle_opts.html
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
-        except IOError, e:
+        except IOError as e:
             if e.errno not in (errno.ENOENT, errno.EISDIR): raise
             # No global template or maybe a VCS directory
             continue
@@ -136,7 +136,7 @@ def move_language_templates(mlist):
         # Match against the lists/<list>/* template
         try:
             fp = open(os.path.join(mlist.fullpath(), gtemplate))
-        except IOError, e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()

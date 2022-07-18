@@ -94,7 +94,7 @@ def scanlists(options):
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError:
-            print C_('No such list: %(listname)s')
+            print( C_('No such list: %(listname)s'))
             continue
         if options.owners:
             owners = mlist.owner
