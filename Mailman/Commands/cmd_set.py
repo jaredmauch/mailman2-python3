@@ -245,7 +245,7 @@ class SetCommands:
 
     def set_ack(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -255,7 +255,7 @@ class SetCommands:
 
     def set_digest(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         if not self.__authok:
             res.results.append(_('Not authenticated'))
@@ -287,7 +287,7 @@ class SetCommands:
 
     def set_delivery(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -305,7 +305,7 @@ class SetCommands:
 
     def set_myposts(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -317,7 +317,7 @@ class SetCommands:
 
     def set_hide(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -328,7 +328,7 @@ class SetCommands:
 
     def set_duplicates(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -340,7 +340,7 @@ class SetCommands:
 
     def set_reminders(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:

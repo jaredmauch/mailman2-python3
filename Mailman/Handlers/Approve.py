@@ -30,13 +30,6 @@ from email.Iterators import typed_subpart_iterator
 from Mailman import mm_cfg
 from Mailman import Errors
 
-# True/False
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 NL = '\n'
 
 def _(s):

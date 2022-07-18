@@ -71,13 +71,6 @@ DEFAULT_LOCK_LIFETIME  = 15
 # Allowable a bit of clock skew
 CLOCK_SLOP = 10
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 # Figure out what logfile to use.  This is different depending on whether
 # we're running in a Mailman context or not.
@@ -260,7 +253,7 @@ class LockFile:
                 self.__writelog('got the lock')
                 self.__touch()
                 break
-            except OSError, e:
+            except OSError as e:
                 # The link failed for some reason, possibly because someone
                 # else already has the lock (i.e. we got an EEXIST), or for
                 # some other bizarre reason.
@@ -273,14 +266,14 @@ class LockFile:
                     # happens, but for now we just say we didn't acquire the
                     # lock, and try again next time.
                     pass
-                elif e.errno <> errno.EEXIST:
+                elif e.errno != errno.EEXIST:
                     # Something very bizarre happened.  Clean up our state and
                     # pass the error on up.
                     self.__writelog('unexpected link error: %s' % e,
                                     important=True)
                     os.unlink(self.__tmpfname)
                     raise
-                elif self.__linkcount() <> 2:
+                elif self.__linkcount() != 2:
                     # Somebody's messin' with us!  Log this, and try again
                     # later.  TBD: should we raise an exception?
                     self.__writelog('unexpected linkcount: %d' %
@@ -325,13 +318,13 @@ class LockFile:
         if islocked:
             try:
                 os.unlink(self.__lockfile)
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
         # Remove our tempfile
         try:
             os.unlink(self.__tmpfname)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         self.__writelog('unlocked')
 
     def locked(self):
@@ -343,7 +336,7 @@ class LockFile:
         # Discourage breaking the lock for a while.
         try:
             self.__touch()
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.EPERM:
                 # We can't touch the file because we're not the owner.  I
                 # don't see how we can own the lock if we're not the owner.
@@ -351,7 +344,7 @@ class LockFile:
             else:
                 raise
         # TBD: can the link count ever be > 2?
-        if self.__linkcount() <> 2:
+        if self.__linkcount() != 2:
             return False
         return self.__read() == self.__tmpfname
 
@@ -398,7 +391,7 @@ class LockFile:
             self.__lockfile, socket.gethostname(), os.getpid())
         # Wait until the linkcount is 2, indicating the parent has completed
         # the transfer.
-        while self.__linkcount() <> 2 or self.__read() <> tmpfname:
+        while self.__linkcount() != 2 or self.__read() != tmpfname:
             time.sleep(0.25)
         self.__writelog('took possession of the lock')
 
@@ -417,7 +410,7 @@ class LockFile:
 
     def __write(self):
         # Make sure it's group writable
-        oldmask = os.umask(002)
+        oldmask = os.umask(0o002)
         try:
             fp = open(self.__tmpfname, 'w')
             fp.write(self.__tmpfname)
@@ -431,8 +424,8 @@ class LockFile:
             filename = fp.read()
             fp.close()
             return filename
-        except EnvironmentError, e:
-            if e.errno <> errno.ENOENT: raise
+        except EnvironmentError as e:
+            if e.errno != errno.ENOENT: raise
             return None
 
     def __touch(self, filename=None):
@@ -440,21 +433,21 @@ class LockFile:
         try:
             # TBD: We probably don't need to modify atime, but this is easier.
             os.utime(filename or self.__tmpfname, (t, t))
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
 
     def __releasetime(self):
         try:
             return os.stat(self.__lockfile)[ST_MTIME]
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
             return -1
 
     def __linkcount(self):
         try:
             return os.stat(self.__lockfile)[ST_NLINK]
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
             return -1
 
     def __break(self):
@@ -472,15 +465,15 @@ class LockFile:
         # think it's that big a problem.
         try:
             self.__touch(self.__lockfile)
-        except OSError, e:
-            if e.errno <> errno.EPERM: raise
+        except OSError as e:
+            if e.errno != errno.EPERM: raise
         # Get the name of the old winner's temp file.
         winner = self.__read()
         # Remove the global lockfile, which actually breaks the lock.
         try:
             os.unlink(self.__lockfile)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         # Try to remove the old winner's temp file, since we're assuming the
         # winner process has hung or died.  Don't worry too much if we can't
         # unlink their temp file -- this doesn't wreck the locking algorithm,
@@ -488,8 +481,8 @@ class LockFile:
         try:
             if winner:
                 os.unlink(winner)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
 
     def __sleep(self):
         interval = random.random() * 2.0 + 0.01
@@ -543,8 +536,8 @@ def _seed():
         fp = open('/dev/random')
         d = fp.read(40)
         fp.close()
-    except EnvironmentError, e:
-        if e.errno <> errno.ENOENT:
+    except EnvironmentError as e:
+        if e.errno != errno.ENOENT:
             raise
         from Mailman.Utils import sha_new
         d = sha_new(`os.getpid()`+`time.time()`).hexdigest()
@@ -573,7 +566,7 @@ def _reap(kids):
     if not kids:
         return
     pid, status = os.waitpid(-1, os.WNOHANG)
-    if pid <> 0:
+    if pid != 0:
         del kids[pid]
 
 

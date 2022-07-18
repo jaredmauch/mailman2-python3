@@ -67,12 +67,6 @@ except ImportError:
     sha_new = sha.new
 
 try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
@@ -256,20 +250,20 @@ def ValidateEmail(s):
             s = s[-1]
     # Pretty minimal, cheesy check.  We could do better...
     if not s or s.count(' ') > 0:
-        raise Errors.MMBadEmailError
+        raise Exception(Errors.MMBadEmailError)
     if _badchars.search(s):
-        raise Errors.MMHostileAddress, s
+        raise Exception(Errors.MMHostileAddress, s)
     user, domain_parts = ParseEmail(s)
     # This means local, unqualified addresses, are not allowed
     if not domain_parts:
-        raise Errors.MMBadEmailError, s
+        raise Exception(Errors.MMBadEmailError, s)
     if len(domain_parts) < 2:
-        raise Errors.MMBadEmailError, s
+        raise Exception(Errors.MMBadEmailError, s)
     # domain parts may only contain ascii letters, digits and hyphen
     # and must not begin with hyphen.
     for p in domain_parts:
         if len(p) == 0 or p[0] == '-' or len(_valid_domain.sub('', p)) > 0:
-            raise Errors.MMHostileAddress, s
+            raise Exception(Errors.MMHostileAddress, s)
 
 
 
@@ -323,7 +317,7 @@ def ScriptURL(target, web_page_url=None, absolute=False):
     """
     if web_page_url is None:
         web_page_url = mm_cfg.DEFAULT_URL_PATTERN % get_domain()
-        if web_page_url[-1] <> '/':
+        if web_page_url[-1] != '/':
             web_page_url = web_page_url + '/'
     fullpath = os.environ.get('REQUEST_URI')
     if fullpath is None:
@@ -409,8 +403,8 @@ def Secure_MakeRandomPassword(length):
                 if fd is None:
                     try:
                         fd = os.open('/dev/urandom', os.O_RDONLY)
-                    except OSError, e:
-                        if e.errno <> errno.ENOENT:
+                    except OSError as e:
+                        if e.errno != errno.ENOENT:
                             raise
                         # We have no available source of cryptographically
                         # secure random characters.  Log an error and fallback
@@ -455,7 +449,7 @@ def set_global_password(pw, siteadmin=True):
     else:
         filename = mm_cfg.LISTCREATOR_PW_FILE
     # rw-r-----
-    omask = os.umask(026)
+    omask = os.umask(0o026)
     try:
         fp = open(filename, 'w')
         fp.write(sha_new(pw).hexdigest() + '\n')
@@ -473,8 +467,8 @@ def get_global_password(siteadmin=True):
         fp = open(filename)
         challenge = fp.read()[:-1]                # strip off trailing nl
         fp.close()
-    except IOError, e:
-        if e.errno <> errno.ENOENT: raise
+    except IOError as e:
+        if e.errno != errno.ENOENT: raise
         # It's okay not to have a site admin password, just return false
         return None
     return challenge
@@ -620,8 +614,8 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
                 try:
                     fp = open(filename)
                     raise OuterExit
-                except IOError, e:
-                    if e.errno <> errno.ENOENT: raise
+                except IOError as e:
+                    if e.errno != errno.ENOENT: raise
                     # Okay, it doesn't exist, keep looping
                     fp = None
     except OuterExit:
@@ -632,10 +626,10 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         try:
             filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
             fp = open(filename)
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
-            raise IOError(errno.ENOENT, 'No template file found', templatefile)
+            raise Exception(IOError(errno.ENOENT, 'No template file found', templatefile))
     template = fp.read()
     fp.close()
     text = template
@@ -648,7 +642,7 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
                 # Try again after coercing the template to unicode
                 utemplate = unicode(template, GetCharSet(lang), 'replace')
                 text = sdict.interpolate(utemplate)
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
             # The template is really screwed up
             syslog('error', 'broken template: %s\n%s', filename, e)
             pass
@@ -751,13 +745,13 @@ def reap(kids, func=None, once=False):
             func()
         try:
             pid, status = os.waitpid(-1, os.WNOHANG)
-        except OSError, e:
+        except OSError as e:
             # If the child procs had a bug we might have no children
-            if e.errno <> errno.ECHILD:
+            if e.errno != errno.ECHILD:
                 raise
             kids.clear()
             break
-        if pid <> 0:
+        if pid != 0:
             try:
                 del kids[pid]
             except KeyError:
@@ -1228,7 +1222,7 @@ def get_suffixes(url):
         return
     try:
         d = urllib2.urlopen(url)
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         syslog('error',
                'Unable to retrieve data from %s: %s',
                url, e)
@@ -1330,7 +1324,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         # validating mailman server won't see the _dmarc RR.  We should
         # mitigate this email to be safe.
         return True
-    except DNSException, e:
+    except DNSException as e:
         syslog('error',
                'DNSException: Unable to query DMARC policy for %s (%s). %s',
                email, dmarc_domain, e.__doc__)

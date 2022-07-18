@@ -40,7 +40,7 @@ def process(mlist, msg, msgdata):
     if ack == 'no' or msgdata.get('noack'):
         return
     precedence = msg.get('precedence', '').lower()
-    if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
+    if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
         return
     # Check to see if the list is even configured to autorespond to this email
     # message.  Note: the owner script sets the `toowner' key, and the various
@@ -59,7 +59,7 @@ def process(mlist, msg, msgdata):
     sender = msg.get_sender()
     now = time.time()
     graceperiod = mlist.autoresponse_graceperiod
-    if graceperiod > 0 and ack <> 'yes':
+    if graceperiod > 0 and ack != 'yes':
         if toadmin:
             quiet_until = mlist.admin_responses.get(sender, 0)
         elif torequest:

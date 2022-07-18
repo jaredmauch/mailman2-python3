@@ -370,7 +370,7 @@ def UpdateOldVars(l, stored_state):
     # value contains the case preserved value
     #
     for k in l.members.keys():
-        if k.lower() <> k:
+        if k.lower() != k:
             l.members[k.lower()] = Utils.LCDomain(k)
             del l.members[k]
         elif type(l.members[k]) == StringType and k == l.members[k].lower():
@@ -379,7 +379,7 @@ def UpdateOldVars(l, stored_state):
         else:
             l.members[k] = 0
     for k in l.digest_members.keys():
-        if k.lower() <> k:
+        if k.lower() != k:
             l.digest_members[k.lower()] = Utils.LCDomain(k)
             del l.digest_members[k]
         elif type(l.digest_members[k]) == StringType and \

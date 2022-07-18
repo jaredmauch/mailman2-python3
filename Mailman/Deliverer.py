@@ -31,13 +31,6 @@ from Mailman.Logging.Syslog import syslog
 
 _ = i18n._
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class Deliverer:
     def SendSubscribeAck(self, name, password, digest, text=''):

@@ -147,7 +147,7 @@ def main():
                     if output:
                         # Before we spit out the From_ line, make sure the
                         # previous line was blank.
-                        if prevline is not None and prevline <> '\n':
+                        if prevline is not None and prevline != '\n':
                             sys.stdout.write('\n')
                         sys.stdout.write(line)
                         sys.stdout.write(nextline)

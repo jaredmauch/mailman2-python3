@@ -74,19 +74,19 @@ def main():
     parts = Utils.GetPathPieces()
     if not parts:
         doc.AddItem(Header(2, _("List name is required.")))
-        print doc.Format()
+        print(doc.Format())
         return
 
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
-        print doc.Format()
+        print('Status: 404 Not Found')
+        print(doc.Format())
         syslog('error', 'edithtml: No such list "%s": %s', listname, e)
         return
 
@@ -103,8 +103,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     # CSRF check
@@ -161,7 +161,7 @@ def main():
             doc.SetTitle(_('Edit HTML : Error'))
             doc.AddItem(Header(2, _("%(safetemplatename)s: Invalid template")))
             doc.AddItem(mlist.GetMailmanFooter())
-            print doc.Format()
+            print(doc.Format())
             return
     else:
         doc.SetTitle(_('%(realname)s -- HTML Page Editing'))
@@ -173,7 +173,7 @@ def main():
             template_list.AddItem(l)
         doc.AddItem(FontSize("+2", template_list))
         doc.AddItem(mlist.GetMailmanFooter())
-        print doc.Format()
+        print(doc.Format())
         return
 
     try:
@@ -186,7 +186,7 @@ def main():
         FormatHTML(mlist, doc, template_name, template_info, lang=language)
     finally:
         doc.AddItem(mlist.GetMailmanFooter())
-        print doc.Format()
+        print(doc.Format())
 
 
 
@@ -259,9 +259,9 @@ must have shell access to your Mailman server.
     omask = os.umask(0)
     try:
         try:
-            os.mkdir(langdir, 02775)
-        except OSError, e:
-            if e.errno <> errno.EEXIST: raise
+            os.mkdir(langdir, 0o2775)
+        except OSError as e:
+            if e.errno != errno.EEXIST: raise
     finally:
         os.umask(omask)
     fp = open(os.path.join(langdir, template_name), 'w')

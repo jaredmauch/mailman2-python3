@@ -156,7 +156,7 @@ def kill_watcher(sig):
     try:
         os.kill(pid, sig)
     except OSError, e:
-        if e.errno <> errno.ESRCH: raise
+        if e.errno != errno.ESRCH: raise
         print >> sys.stderr, C_('No child with pid: %(pid)s')
         print >> sys.stderr, e
         print >> sys.stderr, C_('Stale pid file removed.')
@@ -180,13 +180,13 @@ def qrunner_state():
     # 0 if host matches but no proc
     # hostname if hostname doesn't match
     hostname, pid, tempfile = get_lock_data()
-    if hostname <> socket.gethostname():
+    if hostname != socket.gethostname():
         return hostname
     # Find out if the process exists by calling kill with a signal 0.
     try:
         os.kill(pid, 0)
     except OSError, e:
-        if e.errno <> errno.ESRCH: raise
+        if e.errno != errno.ESRCH: raise
         return 0
     return 1
 
@@ -300,7 +300,7 @@ def check_privs():
             syslog('error', 'Warning: unable to setgroups(%s)' % groups)
         os.setgid(gid)
         os.setuid(uid)
-    elif myuid <> uid:
+    elif myuid != uid:
         name = mm_cfg.MAILMAN_USER
         usage(1, C_(
             'Run this program as root or as the %(name)s user, or use -u.'))
@@ -463,7 +463,7 @@ def main():
                 try:
                     os.kill(pid, signal.SIGTERM)
                 except OSError, e:
-                    if e.errno <> errno.ESRCH: raise
+                    if e.errno != errno.ESRCH: raise
             syslog('qrunner', 'Master watcher caught SIGTERM.  Exiting.')
         signal.signal(signal.SIGTERM, sigterm_handler)
         # Finally, we need a SIGINT handler which will cause the sub-qrunners
@@ -485,7 +485,7 @@ def main():
                     if e.errno == errno.ECHILD:
                         break
                     # If the system call got interrupted, just restart it.
-                    elif e.errno <> errno.EINTR:
+                    elif e.errno != errno.EINTR:
                         raise
                     continue
                 killsig = exitstatus = None
@@ -500,8 +500,8 @@ def main():
                 # error!)
                 restarting = ''
                 if restart:
-                    if (exitstatus == None and killsig <> signal.SIGTERM) or \
-                       (killsig == None and exitstatus <> signal.SIGTERM):
+                    if (exitstatus == None and killsig != signal.SIGTERM) or \
+                       (killsig == None and exitstatus != signal.SIGTERM):
                         # Then
                         restarting = '[restarting]'
                 qrname, slice, count, restarts = kids[pid]
@@ -512,7 +512,7 @@ Master qrunner detected subprocess exit
                        pid, killsig, exitstatus, qrname,
                        slice+1, count, restarting)
                 # See if we've reached the maximum number of allowable restarts
-                if exitstatus <> signal.SIGINT:
+                if exitstatus != signal.SIGINT:
                     restarts += 1
                 if restarts > MAX_RESTARTS:
                     syslog('qrunner', """\
@@ -543,7 +543,7 @@ Qrunner %s reached maximum restart limit of %d, not restarting.""",
                 except OSError, e:
                     if e.errno == errno.ECHILD:
                         break
-                    elif e.errno <> errno.EINTR:
+                    elif e.errno != errno.EINTR:
                         raise
                     continue
         # Finally, give up the lock

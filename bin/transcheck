@@ -358,7 +358,7 @@ def main():
         elif opt in ('-q', '--quiet'):
             quiet = 1
 
-    if len(args) <> 1:
+    if len(args) != 1:
         usage(1)
 
     lang = args[0]

@@ -53,12 +53,6 @@ def D_(s):
 NL = '\n'
 OPTCOLUMNS = 11
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
@@ -74,11 +68,11 @@ def main():
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
+        print('Status: 404 Not Found')
         admin_overview(_('No such list <em>%(safelistname)s</em>'))
         syslog('error', 'admin: No such list "%s": %s\n',
                listname, e)
@@ -97,8 +91,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     # CSRF check
@@ -149,8 +143,8 @@ def main():
     if category == 'logout':
         # site-wide admin should also be able to logout.
         if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
-            print mlist.ZapCookie(mm_cfg.AuthSiteAdmin)
-        print mlist.ZapCookie(mm_cfg.AuthListAdmin)
+            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
+        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
         Auth.loginpage(mlist, 'admin', frontpage=1)
         return
 
@@ -247,7 +241,7 @@ def main():
                 tag=_('Warning: '))
         # Glom up the results page and print it out
         show_results(mlist, doc, category, subcat, cgidata)
-        print doc.Format()
+        print(doc.Format())
         mlist.Save()
     finally:
         # Now be sure to unlock the list.  It's okay if we get a signal here
@@ -358,7 +352,7 @@ def admin_overview(msg=''):
     doc.AddItem(table)
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
-    print doc.Format()
+    print(doc.Format())
 
 
 
@@ -386,7 +380,7 @@ def option_help(mlist, varhelp):
         bad = _('No valid variable name found.')
         doc.addError(bad)
         doc.AddItem(mlist.GetMailmanFooter())
-        print doc.Format()
+        print(doc.Format())
         return
     # Get the details about the variable
     varname, kind, params, dependancies, description, elaboration = \
@@ -432,7 +426,7 @@ def option_help(mlist, varhelp):
     doc.AddItem(Link(url, _('return to the %(categoryname)s options page.')))
     doc.AddItem('</em>')
     doc.AddItem(mlist.GetMailmanFooter())
-    print doc.Format()
+    print(doc.Format())
 
 
 
@@ -477,7 +471,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
                        '<br>&nbsp;<br>')
     # We do not allow through-the-web deletion of the site list!
     if mm_cfg.OWNERS_CAN_DELETE_THEIR_OWN_LISTS and \
-           mlist.internal_name() <> mm_cfg.MAILMAN_SITE_LIST:
+           mlist.internal_name() != mm_cfg.MAILMAN_SITE_LIST:
         otherlinks.AddItem(Link(mlist.GetScriptURL('rmlist'),
                                 _('Delete this mailing list')).Format() +
                            _(' (requires confirmation)<br>&nbsp;<br>'))
@@ -1459,14 +1453,14 @@ def change_options(mlist, category, subcat, cgidata, doc):
         if new == confirm:
             mlist.password = sha_new(new).hexdigest()
             # Set new cookie
-            print mlist.MakeCookie(mm_cfg.AuthListAdmin)
+            print(mlist.MakeCookie(mm_cfg.AuthListAdmin))
         else:
             doc.addError(_('Administrator passwords did not match'))
     # Give the individual gui item a chance to process the form data
     categories = mlist.GetConfigCategories()
     label, gui = categories[category]
     # BAW: We handle the membership page special... for now.
-    if category <> 'members':
+    if category != 'members':
         gui.handleForm(mlist, category, subcat, cgidata, doc)
     # mass subscription, removal processing for members category
     subscribers = ''
@@ -1790,7 +1784,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
 
             newlang = cgidata.getfirst(quser+'_language')
             oldlang = mlist.getMemberLanguage(user)
-            if Utils.IsLanguage(newlang) and newlang <> oldlang:
+            if Utils.IsLanguage(newlang) and newlang != oldlang:
                 mlist.setMemberLanguage(user, newlang)
 
             moderate = not not cgidata.getfirst(quser+'_mod')

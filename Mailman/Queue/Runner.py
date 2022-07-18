@@ -33,13 +33,6 @@ from Mailman.Queue.Switchboard import Switchboard
 
 import email.Errors
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class Runner:
     QDIR = None
@@ -97,7 +90,7 @@ class Runner:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
-            except Exception, e:
+            except Exception as e:
                 # This used to just catch email.Errors.MessageParseError,
                 # but other problems can occur in message parsing, e.g.
                 # ValueError, and exceptions can occur in unpickling too.
@@ -118,7 +111,7 @@ class Runner:
             try:
                 self._onefile(msg, msgdata)
                 self._switchboard.finish(filebase)
-            except Exception, e:
+            except Exception as e:
                 # All runners that implement _dispose() must guarantee that
                 # exceptions are caught and dealt with properly.  Still, there
                 # may be a bug in the infrastructure, and we do not want those
@@ -135,7 +128,7 @@ class Runner:
                     new_filebase = self._shunt.enqueue(msg, msgdata)
                     syslog('error', 'SHUNTING: %s', new_filebase)
                     self._switchboard.finish(filebase)
-                except Exception, e:
+                except Exception as e:
                     # The message wasn't successfully shunted.  Log the
                     # exception and try to preserve the original queue entry
                     # for possible analysis.
@@ -206,7 +199,7 @@ class Runner:
         # weakref.proxy created other issues.
         try:
             mlist = MailList.MailList(listname, lock=False)
-        except Errors.MMListError, e:
+        except Errors.MMListError as e:
             syslog('error', 'error opening list: %s\n%s', listname, e)
             return None
         return mlist

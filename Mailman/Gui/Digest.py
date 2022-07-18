@@ -36,7 +36,7 @@ class Digest(GUIBase):
         return 'digest', _('Digest options')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'digest':
+        if category != 'digest':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

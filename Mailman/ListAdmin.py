@@ -62,13 +62,6 @@ LOST = 2
 DASH = '-'
 NL = '\n'
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class ListAdmin:
     def InitVars(self):
@@ -88,8 +81,8 @@ class ListAdmin:
                     self.__db = cPickle.load(fp)
                 finally:
                     fp.close()
-            except IOError, e:
-                if e.errno <> errno.ENOENT: raise
+            except IOError as e:
+                if e.errno != errno.ENOENT: raise
                 self.__db = {}
                 # put version number in new database
                 self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
@@ -103,7 +96,7 @@ class ListAdmin:
             # should we be as paranoid as for the config.pck file?  Should we
             # use pickle?
             tmpfile = self.__filename + '.tmp'
-            omask = os.umask(007)
+            omask = os.umask(0o007)
             try:
                 fp = open(tmpfile, 'w')
                 try:
@@ -172,7 +165,7 @@ class ListAdmin:
         else:
             assert rtype == SUBSCRIPTION
             status = self.__handlesubscription(data, value, comment)
-        if status <> DEFER:
+        if status != DEFER:
             # BAW: Held message ids are linked to Pending cookies, allowing
             # the user to cancel their post before the moderator has approved
             # it.  We should probably remove the cookie associated with this
@@ -196,7 +189,7 @@ class ListAdmin:
         else:
             ext = 'txt'
         filename = 'heldmsg-%s-%d.%s' % (self.internal_name(), id, ext)
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'w')
             try:
@@ -241,8 +234,8 @@ class ListAdmin:
             # Preserve the message as plain text, not as a pickle
             try:
                 fp = open(path)
-            except IOError, e:
-                if e.errno <> errno.ENOENT: raise
+            except IOError as e:
+                if e.errno != errno.ENOENT: raise
                 return LOST
             try:
                 if path.endswith('.pck'):
@@ -277,8 +270,8 @@ class ListAdmin:
             # Approved.
             try:
                 msg = readMessage(path)
-            except IOError, e:
-                if e.errno <> errno.ENOENT: raise
+            except IOError as e:
+                if e.errno != errno.ENOENT: raise
                 return LOST
             msg = readMessage(path)
             msgdata['approved'] = 1
@@ -321,8 +314,8 @@ class ListAdmin:
             # normal delivery.
             try:
                 copy = readMessage(path)
-            except IOError, e:
-                if e.errno <> errno.ENOENT: raise
+            except IOError as e:
+                if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
             # It's possible the addr is a comma separated list of addresses.
             addrs = getaddresses([addr])
@@ -367,11 +360,11 @@ class ListAdmin:
             syslog('vette', note)
         # Always unlink the file containing the message text.  It's not
         # necessary anymore, regardless of the disposition of the message.
-        if status <> DEFER:
+        if status != DEFER:
             try:
                 os.unlink(path)
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
                 # We lost the message text file.  Clean up our housekeeping
                 # and inform of this status.
                 return LOST
@@ -553,8 +546,8 @@ class ListAdmin:
             finally:
                 fp.close()
             os.unlink(filename)
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
             filename = os.path.join(self.fullpath(), 'request.pck')
             try:
                 fp = open(filename)
@@ -562,8 +555,8 @@ class ListAdmin:
                     self.__db = cPickle.load(fp)
                 finally:
                     fp.close()
-            except IOError, e:
-                if e.errno <> errno.ENOENT: raise
+            except IOError as e:
+                if e.errno != errno.ENOENT: raise
                 self.__db = {}
         for id, x in self.__db.items():
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in

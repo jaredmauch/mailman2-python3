@@ -60,7 +60,7 @@ class Logger:
             return self.__fp
         else:
             try:
-                ou = os.umask(007)
+                ou = os.umask(0o007)
                 try:
                     try:
                         f = codecs.open(
@@ -71,7 +71,7 @@ class Logger:
                     self.__fp = f
                 finally:
                     os.umask(ou)
-            except IOError, e:
+            except IOError as e:
                 if self.__nofail:
                     _logexc(self, e)
                     f = self.__fp = sys.__stderr__

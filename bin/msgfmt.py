@@ -83,7 +83,7 @@ def generate():
         voffsets += [l2, o2+valuestart]
     offsets = koffsets + voffsets
     output = struct.pack("Iiiiiii",
-                         0x950412deL,       # Magic
+                         0x950412de,       # Magic
                          0,                 # Version
                          len(keys),         # # of entries
                          7*4,               # start of key index
@@ -167,7 +167,7 @@ def make(filename, outfile):
 
     try:
         open(outfile,"wb").write(output)
-    except IOError,msg:
+    except IOError as msg:
         print >> sys.stderr, msg
                       
 
@@ -176,7 +176,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
                                    ['help', 'version', 'output-file='])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     outfile = None

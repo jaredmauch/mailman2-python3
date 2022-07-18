@@ -56,7 +56,7 @@ class _Syslog:
             if kws:
                 msg %= kws
         # It's really bad if exceptions in the syslogger cause other crashes
-        except Exception, e:
+        except Exception as e:
             msg = 'Bad format "%s": %s: %s' % (origmsg, repr(e), e)
         try:
             logf.write(msg + '\n')

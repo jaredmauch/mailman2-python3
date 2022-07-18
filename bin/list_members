@@ -142,7 +142,7 @@ def whymatches(mlist, addr, why):
     # (i.e. not enabled).
     status = mlist.getDeliveryStatus(addr)
     if why is None:
-        return status <> MemberAdaptor.ENABLED
+        return status != MemberAdaptor.ENABLED
     return status == WHYCHOICES[why]
 
 
@@ -228,7 +228,7 @@ def main():
             args.insert(0, opt)
             break
 
-    if len(args) <> 1:
+    if len(args) != 1:
         usage(1)
 
     listname = args[0].lower().strip()

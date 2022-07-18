@@ -940,11 +940,11 @@ DEFAULT_RESPOND_TO_POST_REQUESTS = Yes
 
 QRUNNERS = [
     ('ArchRunner',     1), # messages for the archiver
-    ('BounceRunner',   1), # for processing the qfile/bounces directory
+    ('BounceRunner',   2), # for processing the qfile/bounces directory
     ('CommandRunner',  1), # commands and bounces from the outside world
-    ('IncomingRunner', 1), # posts from the outside world
+    ('IncomingRunner', 4), # posts from the outside world
     ('NewsRunner',     1), # outgoing messages to the nntpd
-    ('OutgoingRunner', 1), # outgoing messages to the smtpd
+    ('OutgoingRunner', 8), # outgoing messages to the smtpd
     ('VirginRunner',   1), # internally crafted (virgin birth) messages
     ('RetryRunner',    1), # retry temporarily failed deliveries
     ]
@@ -1189,7 +1189,7 @@ DEFAULT_ADMIN_IMMED_NOTIFY = Yes
 DEFAULT_ADMIN_NOTIFY_MCHANGES = No
 
 # Discard held messages after this days
-DEFAULT_MAX_DAYS_TO_HOLD = 0
+DEFAULT_MAX_DAYS_TO_HOLD = 90
 
 # Should list members, by default, have their posts be moderated?
 DEFAULT_DEFAULT_MEMBER_MODERATION = No

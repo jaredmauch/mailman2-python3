@@ -39,14 +39,6 @@ CONTINUATION = ',\n '
 COMMASPACE = ', '
 MAXLINELEN = 78
 
-# True/False
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def _isunicode(s):
     return isinstance(s, UnicodeType)
@@ -286,7 +278,7 @@ def process(mlist, msg, msgdata):
         # thing.  We also add the original From: to Cc: if it wasn't added
         # to Reply-To:
         add_list = (mlist.personalize == 2 and
-                    mlist.reply_goes_to_list <> 1 and
+                    mlist.reply_goes_to_list != 1 and
                     not mlist.anonymous_list)
         if add_list or o_from:
             # Watch out for existing Cc headers, merge, and remove dups.  Note

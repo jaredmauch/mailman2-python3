@@ -137,7 +137,7 @@ class GUIBase:
 
     def _setValue(self, mlist, property, val, doc):
         # Set the value, or override to take special action on the property
-        if not property.startswith('_') and getattr(mlist, property) <> val:
+        if not property.startswith('_') and getattr(mlist, property) != val:
             setattr(mlist, property, val)
 
     def _postValidate(self, mlist, doc):
@@ -214,7 +214,7 @@ class GUIBase:
         # the corrected string.
         if not dollarp:
             fixed = Utils.to_percent(Utils.to_dollar(val))
-            if fixed <> val:
+            if fixed != val:
                 doc.addError(_(
                     """Your <code>%(property)s</code> string appeared to
                     have some correctable problems in its new value.

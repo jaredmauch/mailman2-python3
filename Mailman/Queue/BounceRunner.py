@@ -40,13 +40,6 @@ from Mailman.i18n import _
 
 COMMASPACE = ', '
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class BounceMixin:
     def __init__(self):
@@ -91,7 +84,7 @@ class BounceMixin:
     def _queue_bounces(self, listname, addrs, msg):
         today = time.localtime()[:3]
         if self._bounce_events_fp is None:
-            omask = os.umask(006)
+            omask = os.umask(0o006)
             try:
                 self._bounce_events_fp = open(self._bounce_events_file, 'a+b')
             finally:
@@ -113,7 +106,7 @@ class BounceMixin:
         while True:
             try:
                 listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
-            except ValueError, e:
+            except ValueError as e:
                 syslog('bounce', 'Error reading bounce events: %s', e)
             except EOFError:
                 break
@@ -303,7 +296,7 @@ def verp_bounce(mlist, msg):
         if not mo:
             continue                          # no match of regexp
         try:
-            if bmailbox <> mo.group('bounces'):
+            if bmailbox != mo.group('bounces'):
                 continue                      # not a bounce to our list
             # All is good
             addr = '%s@%s' % mo.group('mailbox', 'host')
@@ -335,7 +328,7 @@ def verp_probe(mlist, msg):
         if not mo:
             continue                          # no match of regexp
         try:
-            if bmailbox <> mo.group('bounces'):
+            if bmailbox != mo.group('bounces'):
                 continue                      # not a bounce to our list
             # Extract the token and see if there's an entry
             token = mo.group('token')

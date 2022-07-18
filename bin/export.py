@@ -81,7 +81,7 @@ class Indenter:
         assert self._indent >= 0
 
     def write(self, s):
-        if s <> '\n':
+        if s != '\n':
             self._fp.write(self._indent * self._width * ' ')
         self._fp.write(s)
 
@@ -209,7 +209,7 @@ class XMLDumper(object):
         for member in sorted(mlist.getMembers()):
             attrs = dict(id=member)
             cased = mlist.getMemberCPAddress(member)
-            if cased <> member:
+            if cased != member:
                 attrs['original'] = cased
             self._push_element('member', **attrs)
             self._element('realname', mlist.getMemberName(member))

@@ -48,13 +48,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
 
 # 20 bytes of all bits set, maximum sha.digest() value
-shamax = 0xffffffffffffffffffffffffffffffffffffffffL
-
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
+shamax = 0xffffffffffffffffffffffffffffffffffffffff
 
 # This flag causes messages to be written as pickles (when True) or text files
 # (when False).  Pickles are more efficient because the message doesn't need
@@ -78,16 +72,16 @@ class Switchboard:
         omask = os.umask(0)                       # rwxrws---
         try:
             try:
-                os.mkdir(self.__whichq, 0770)
-            except OSError, e:
-                if e.errno <> errno.EEXIST: raise
+                os.mkdir(self.__whichq, 0o0770)
+            except OSError as e:
+                if e.errno != errno.EEXIST: raise
         finally:
             os.umask(omask)
         # Fast track for no slices
         self.__lower = None
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
-        if numslices <> 1:
+        if numslices != 1:
             self.__lower = ((shamax+1) * slice) / numslices
             self.__upper = (((shamax+1) * (slice+1)) / numslices) - 1
         if recover:
@@ -131,7 +125,7 @@ class Switchboard:
         # object or not.
         data['_parsemsg'] = (protocol == 0)
         # Write to the pickle file the message object and metadata.
-        omask = os.umask(007)                     # -rw-rw----
+        omask = os.umask(0o007)                     # -rw-rw----
         try:
             fp = open(tmpfile, 'w')
             try:
@@ -175,15 +169,15 @@ class Switchboard:
                 omask = os.umask(0)                       # rwxrws---
                 try:
                     try:
-                        os.mkdir(mm_cfg.BADQUEUE_DIR, 0770)
-                    except OSError, e:
-                        if e.errno <> errno.EEXIST: raise
+                        os.mkdir(mm_cfg.BADQUEUE_DIR, 0o0770)
+                    except OSError as e:
+                        if e.errno != errno.EEXIST: raise
                 finally:
                     os.umask(omask)
                 os.rename(bakfile, psvfile)
             else:
                 os.unlink(bakfile)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    bakfile, e)
 
@@ -195,7 +189,7 @@ class Switchboard:
             # By ignoring anything that doesn't end in .pck, we ignore
             # tempfiles and avoid a race condition.
             filebase, ext = os.path.splitext(f)
-            if ext <> extension:
+            if ext != extension:
                 continue
             when, digest = filebase.split('+')
             # Throw out any files which don't match our bitrange.  BAW: test

@@ -133,7 +133,7 @@ def main():
                 testfile(file)
             except IOError, e:
                 # Don't report ENOENT unless we're in verbose mode
-                if verbose or e.errno <> errno.ENOENT:
+                if verbose or e.errno != errno.ENOENT:
                     status = e
             except Exception, e:
                 status = e

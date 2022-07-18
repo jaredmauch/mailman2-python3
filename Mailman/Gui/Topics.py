@@ -23,12 +23,6 @@ from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
 from Mailman.Gui.GUIBase import GUIBase
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 OR = '|'
 
 
@@ -38,7 +32,7 @@ class Topics(GUIBase):
         return 'topics', _('Topics')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'topics':
+        if category != 'topics':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

@@ -103,7 +103,7 @@ def process(mlist, msg, msgdata):
         recast_multipart(msg)
     # If we removed some parts, make note of this
     changedp = 0
-    if numparts <> len([subpart for subpart in msg.walk()]):
+    if numparts != len([subpart for subpart in msg.walk()]):
         changedp = 1
     # Now perhaps convert all text/html to text/plain
     if mlist.convert_html_to_plaintext and mm_cfg.HTML_TO_PLAIN_TEXT_COMMAND:
@@ -217,7 +217,7 @@ def recast_multipart(msg):
         return
     if msg.is_multipart():
         if (len(msg.get_payload()) == 1 and
-                msg.get_content_type() <> 'message/rfc822'):
+                msg.get_content_type() != 'message/rfc822'):
             reset_payload(msg, msg.get_payload(0))
             # now that we've recast this part, check the subordinate parts
             recast_multipart(msg)
@@ -245,8 +245,8 @@ def to_plaintext(msg):
         finally:
             try:
                 os.unlink(filename)
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
         # Now replace the payload of the subpart and twiddle the Content-Type:
         del subpart['content-transfer-encoding']
         subpart.set_payload(plaintext)

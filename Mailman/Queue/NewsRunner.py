@@ -46,13 +46,6 @@ mcre = re.compile(r"""
     """, re.VERBOSE)
 
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
@@ -74,18 +67,18 @@ class NewsRunner(Runner):
                                         user=mm_cfg.NNTP_USERNAME,
                                         password=mm_cfg.NNTP_PASSWORD)
                     conn.post(fp)
-                except nntplib.error_temp, e:
+                except nntplib.error_temp as e:
                     syslog('error',
                            '(NNTPDirect) NNTP error for list "%s": %s',
                            mlist.internal_name(), e)
-                except socket.error, e:
+                except socket.error as e:
                     syslog('error',
                            '(NNTPDirect) socket error for list "%s": %s',
                            mlist.internal_name(), e)
             finally:
                 if conn:
                     conn.quit()
-        except Exception, e:
+        except Exception as e:
             # Some other exception occurred, which we definitely did not
             # expect, so set this message up for requeuing.
             self._log(e)

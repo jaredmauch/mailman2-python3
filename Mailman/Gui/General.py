@@ -37,7 +37,7 @@ class General(GUIBase):
         return 'general', _('General Options')
 
     def GetConfigInfo(self, mlist, category, subcat):
-        if category <> 'general':
+        if category != 'general':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 
@@ -529,7 +529,7 @@ class General(GUIBase):
 
     def _setValue(self, mlist, property, val, doc):
         if property == 'real_name' and \
-               val.lower() <> mlist.internal_name().lower():
+               val.lower() != mlist.internal_name().lower():
             # These values can't differ by other than case
             doc.addError(_("""<b>real_name</b> attribute not
             changed!  It must differ from the list's name by case
@@ -557,7 +557,7 @@ class General(GUIBase):
             mlist.subject_prefix = Utils.canonstr(
                 val, mlist.preferred_language)
         elif property == 'info':
-            if val <> mlist.info:
+            if val != mlist.info:
                 if Utils.suspiciousHTML(val):
                     doc.addError(_("""The <b>info</b> attribute you saved
 contains suspicious HTML that could potentially expose your users to cross-site
@@ -594,7 +594,7 @@ mlist.info.
             mlist.reply_goes_to_list = 0
 
     def getValue(self, mlist, kind, varname, params):
-        if varname <> 'subject_prefix':
+        if varname != 'subject_prefix':
             return None
         # The subject_prefix may be Unicode
         return Utils.uncanonstr(mlist.subject_prefix, mlist.preferred_language)

@@ -48,7 +48,7 @@ def HTMLFormatObject(item, indent):
     if type(item) == type(''):
         return item
     elif not hasattr(item, "Format"):
-        return `item`
+        return repr(item)
     else:
         return item.Format(indent)
 

@@ -28,13 +28,6 @@ from Mailman.Handlers.CookHeaders import change_header
 
 COMMASPACE = ', '
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def process(mlist, msg, msgdata):
     recips = msgdata['recips']

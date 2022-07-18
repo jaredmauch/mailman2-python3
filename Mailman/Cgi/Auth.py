@@ -43,19 +43,19 @@ def loginpage(mlist, scriptname, msg='', frontpage=None):
     if msg:
         msg = FontAttr(msg, color='#ff0000', size='+1').Format()
         # give an HTTP 401 for authentication failure
-        print 'Status: 401 Unauthorized'
+        print('Status: 401 Unauthorized')
     if scriptname == 'admindb':
         who = _('Moderator')
     else:
         who = _('Administrator')
     # Language stuff
     charset = Utils.GetCharSet(mlist.preferred_language)
-    print 'Content-type: text/html; charset=' + charset + '\n\n'
-    print Utils.maketext(
+    print('Content-type: text/html; charset=' + charset + '\n\n')
+    print(Utils.maketext(
         'admlogin.html',
         {'listname': mlist.real_name,
          'path'    : actionurl,
          'message' : msg,
          'who'     : who,
-         }, mlist=mlist)
-    print mlist.GetMailmanFooter()
+         }, mlist=mlist))
+    print(mlist.GetMailmanFooter())

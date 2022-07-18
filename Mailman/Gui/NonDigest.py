@@ -35,7 +35,7 @@ class NonDigest(GUIBase):
         return 'nondigest', _('Non-digest&nbsp;options')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'nondigest':
+        if category != 'nondigest':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

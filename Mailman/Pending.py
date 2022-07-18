@@ -40,13 +40,6 @@ _ALLKEYS = (SUBSCRIPTION, UNSUBSCRIPTION,
             RE_ENABLE, PROBE_BOUNCE,
             )
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 _missing = []
 
 
@@ -90,8 +83,8 @@ class Pending:
     def __load(self):
         try:
             fp = open(self.__pendfile)
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
             return {'evictions': {}}
         try:
             return cPickle.load(fp)
@@ -115,7 +108,7 @@ class Pending:
                 del evictions[cookie]
         db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
         tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             fp = open(tmpfile, 'w')
             try:

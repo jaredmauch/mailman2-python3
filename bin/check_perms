@@ -55,13 +55,6 @@ PROGRAM = sys.argv[0]
 
 # Gotta check the archives/private/*/database/* files
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class State:
     FIX = False
@@ -111,9 +104,9 @@ def checkwalk(arg, dirname, names):
         try:
             mode, gid = statgidmode(path)
         except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
             continue
-        if gid <> MAILMAN_GID:
+        if gid != MAILMAN_GID:
             try:
                 groupname = getgrgid(gid)[0]
             except KeyError:
@@ -146,7 +139,7 @@ def checkwalk(arg, dirname, names):
         else:
             targetperms = DIRPERMS
         octperms = oct(targetperms)
-        if S_ISDIR(mode) and (mode & targetperms) <> targetperms:
+        if S_ISDIR(mode) and (mode & targetperms) != targetperms:
             arg.ERRORS += 1
             print C_('directory permissions must be %(octperms)s: %(path)s'),
             if STATE.FIX:
@@ -156,7 +149,7 @@ def checkwalk(arg, dirname, names):
                 print
         elif os.path.splitext(path)[1] in ('.py', '.pyc', '.pyo'):
             octperms = oct(PYFILEPERMS)
-            if mode & PYFILEPERMS <> PYFILEPERMS:
+            if mode & PYFILEPERMS != PYFILEPERMS:
                 print C_('source perms must be %(octperms)s: %(path)s'),
                 arg.ERRORS += 1
                 if STATE.FIX:
@@ -167,7 +160,7 @@ def checkwalk(arg, dirname, names):
         elif path.endswith('-article'):
             # Article files must be group writeable
             octperms = oct(ARTICLEFILEPERMS)
-            if mode & ARTICLEFILEPERMS <> ARTICLEFILEPERMS:
+            if mode & ARTICLEFILEPERMS != ARTICLEFILEPERMS:
                 print C_('article db files must be %(octperms)s: %(path)s'),
                 arg.ERRORS += 1
                 if STATE.FIX:
@@ -189,10 +182,10 @@ def checkall():
         try:
             mode = statmode(d)
         except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
             print C_('WARNING: directory does not exist: %(d)s')
             continue
-        if (mode & DIRPERMS) <> DIRPERMS:
+        if (mode & DIRPERMS) != DIRPERMS:
             STATE.ERRORS += 1
             print C_('directory must be at least 02775: %(d)s'),
             if STATE.FIX:
@@ -235,7 +228,7 @@ def checkmboxfile(mboxdir):
             continue
         mboxfile = os.path.join(absdir, f)
         mode = statmode(mboxfile)
-        if (mode & MBOXPERMS) <> MBOXPERMS:
+        if (mode & MBOXPERMS) != MBOXPERMS:
             STATE.ERRORS = STATE.ERRORS + 1
             print C_('mbox file must be at least 0660:'), mboxfile
             if STATE.FIX:
@@ -307,9 +300,9 @@ def checkadminpw():
         try:
             mode = statmode(pwfile)
         except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
             return
-        if mode <> targetmode:
+        if mode != targetmode:
             STATE.ERRORS += 1
             octmode = oct(mode)
             print C_('%(pwfile)s permissions must be exactly 0640 '
@@ -349,9 +342,9 @@ def checkdata():
             try:
                 mode = statmode(path)
             except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+                if e.errno != errno.ENOENT: raise
                 continue
-            if (mode & targetmode) <> targetmode:
+            if (mode & targetmode) != targetmode:
                 STATE.ERRORS += 1
                 print C_('file permissions must be at least 660: %(path)s'),
                 if STATE.FIX:

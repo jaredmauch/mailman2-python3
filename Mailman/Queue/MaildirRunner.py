@@ -108,8 +108,8 @@ class MaildirRunner(Runner):
         # Cruise through all the files currently in the new/ directory
         try:
             files = os.listdir(self._dir)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
             # Nothing's been delivered yet
             return 0
         for file in files:
@@ -118,7 +118,7 @@ class MaildirRunner(Runner):
             xdstname = os.path.join(self._cur, file + ':1,X')
             try:
                 os.rename(srcname, dstname)
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ENOENT:
                     # Some other MaildirRunner beat us to it
                     continue
@@ -188,7 +188,7 @@ class MaildirRunner(Runner):
                     continue
                 queue.enqueue(msg, msgdata)
                 os.unlink(dstname)
-            except Exception, e:
+            except Exception as e:
                 os.rename(dstname, xdstname)
                 syslog('error', str(e))
 

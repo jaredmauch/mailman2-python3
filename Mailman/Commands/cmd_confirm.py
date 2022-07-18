@@ -37,14 +37,14 @@ def gethelp(mlist):
 
 def process(res, args):
     mlist = res.mlist
-    if len(args) <> 1:
+    if len(args) != 1:
         res.results.append(_('Usage:'))
         res.results.append(gethelp(mlist))
         return STOP
     cookie = args[0]
     try:
         results = mlist.ProcessConfirmation(cookie, res.msg)
-    except Errors.MMBadConfirmation, e:
+    except Errors.MMBadConfirmation as e:
         # Express in approximate days
         days = int(mm_cfg.PENDING_REQUEST_LIFE / mm_cfg.days(1) + 0.5)
         res.results.append(_("""\

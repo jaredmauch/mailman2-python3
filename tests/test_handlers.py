@@ -1070,7 +1070,7 @@ To: yall@dom.ain
             try:
                 os.unlink(file)
             except OSError, e:
-                if e.errno <> e.ENOENT: raise
+                if e.errno != e.ENOENT: raise
 
     def test_file_exists_no_member(self):
         msg = email.message_from_string("""\
@@ -1093,7 +1093,7 @@ To: yall@dom.ain
             try:
                 os.unlink(file)
             except OSError, e:
-                if e.errno <> e.ENOENT: raise
+                if e.errno != e.ENOENT: raise
 
     def test_file_exists_is_member(self):
         msg = email.message_from_string("""\
@@ -1117,7 +1117,7 @@ To: yall@dom.ain
             try:
                 os.unlink(file)
             except OSError, e:
-                if e.errno <> e.ENOENT: raise
+                if e.errno != e.ENOENT: raise
 
 
 
@@ -1137,7 +1137,7 @@ class TestHold(TestBase):
         try:
             os.unlink(os.path.join(mm_cfg.DATA_DIR, 'pending.db'))
         except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         for f in [holdfile for holdfile in os.listdir(mm_cfg.DATA_DIR)
                   if holdfile.startswith('heldmsg-')]:
             os.unlink(os.path.join(mm_cfg.DATA_DIR, f))
@@ -2001,7 +2001,7 @@ Here is message %(i)d
         try:
             os.unlink(self._path)
         except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
             os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
         TestBase.tearDown(self)

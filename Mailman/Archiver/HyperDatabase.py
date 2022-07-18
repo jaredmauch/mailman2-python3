@@ -176,8 +176,8 @@ class DumbBTree:
                 self.dict = marshal.load(fp)
             finally:
                 fp.close()
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
             pass
         except EOFError:
             pass
@@ -185,7 +185,7 @@ class DumbBTree:
             self.__sort(dirty=1)
 
     def close(self):
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             fp = open(self.path, 'w')
         finally:
@@ -248,9 +248,9 @@ class HyperDatabase(pipermail.Database):
         omask = os.umask(0)
         try:
             try:
-                os.mkdir(arcdir, 02770)
-            except OSError, e:
-                if e.errno <> errno.EEXIST: raise
+                os.mkdir(arcdir, 0o02770)
+            except OSError as e:
+                if e.errno != errno.EEXIST: raise
         finally:
             os.umask(omask)
         for i in ('date', 'author', 'subject', 'article', 'thread'):

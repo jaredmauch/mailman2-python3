@@ -28,13 +28,6 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import _, C_
 from Mailman.MTA.Utils import makealiases
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 # no-ops for interface compliance
 def makelock():

@@ -47,13 +47,6 @@ from email.Charset import Charset
 
 DOT = '.'
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 # Manage a connection to the SMTP server
 class Connection:
@@ -68,27 +61,27 @@ class Connection:
             if mm_cfg.SMTP_USE_TLS:
                 try:
                     self.__conn.starttls()
-                except SMTPException, e:
+                except SMTPException as e:
                     syslog('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
                     raise
                 try:
                     self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
-                except SMTPException, e:
+                except SMTPException as e:
                     syslog('smtp-failure', 'SMTP EHLO error: %s', e)
                     self.quit()
                     raise
             try:
                 self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
-            except smtplib.SMTPHeloError, e:
+            except smtplib.SMTPHeloError as e:
                 syslog('smtp-failure', 'SMTP HELO error: %s', e)
                 self.quit()
                 raise
-            except smtplib.SMTPAuthenticationError, e:
+            except smtplib.SMTPAuthenticationError as e:
                 syslog('smtp-failure', 'SMTP AUTH error: %s', e)
                 self.quit()
                 raise
-            except smtplib.SMTPException, e:
+            except smtplib.SMTPException as e:
                 syslog('smtp-failure',
                        'SMTP - no suitable authentication method found: %s', e)
                 self.quit()
@@ -246,7 +239,7 @@ def process(mlist, msg, msgdata):
         #    code in this case as a temporary, rather than permanent failure
         #    so the logic below works.
         #
-        if code >= 500 and code <> 552:
+        if code >= 500 and code != 552:
             # A permanent failure
             permfailures.append(recip)
         else:
@@ -265,6 +258,19 @@ def process(mlist, msg, msgdata):
 
 
 
+def domsort(uida, uidb):
+	## sort by domain
+	## usage foo.sort(domsort)
+        i = uida.rfind('@')
+        if i >= 0:
+            doma = uida[i+1:]
+
+        i = uidb.rfind('@')
+        if i >= 0:
+            domb = uidb[i+1:]
+
+        return cmp(doma, domb)
+
 def chunkify(recips, chunksize):
     # First do a simple sort on top level domain.  It probably doesn't buy us
     # much to try to sort on MX record -- that's the MTA's job.  We're just
@@ -273,11 +279,18 @@ def chunkify(recips, chunksize):
     # elaborated by BAW).
     chunkmap = {'com': 1,
                 'net': 2,
-                'org': 2,
-                'edu': 3,
-                'us' : 3,
-                'ca' : 3,
+                'org': 3,
+                'edu': 4,
+                'us' : 5,
+                'ca' : 6,
+		'uk' : 7,
+		'jp' : 8,
+		'au' : 9,
                 }
+    # Need to sort by domain name.  if we split to chunks it is possible
+    # some well-known domains will be interspersed as we sort by
+    # userid by default instead of by domain.  (jared mauch)
+    recips.sort(domsort)
     buckets = {}
     for r in recips:
         tld = None
@@ -422,11 +435,11 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     try:
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
-    except smtplib.SMTPRecipientsRefused, e:
+    except smtplib.SMTPRecipientsRefused as e:
         syslog('smtp-failure', 'All recipients refused: %s, msgid: %s',
                e, msgid)
         refused = e.recipients
-    except smtplib.SMTPResponseException, e:
+    except smtplib.SMTPResponseException as e:
         syslog('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
         # If this was a permanent failure, don't add the recipients to the
@@ -439,7 +452,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             # It's a temporary failure
             for r in recips:
                 refused[r] = (e.smtp_code, e.smtp_error)
-    except (socket.error, IOError, smtplib.SMTPException), e:
+    except (socket.error, IOError, smtplib.SMTPException) as e:
         # MTA not responding, or other socket problems, or any other kind of
         # SMTPException.  In that case, nothing got delivered, so treat this
         # as a temporary failure.

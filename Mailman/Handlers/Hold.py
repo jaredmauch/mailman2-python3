@@ -119,7 +119,7 @@ _ = i18n._
 def ackp(msg):
     ack = msg.get('x-ack', '').lower()
     precedence = msg.get('precedence', '').lower()
-    if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
+    if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
         return 0
     return 1
 

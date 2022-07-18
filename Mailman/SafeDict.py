@@ -35,7 +35,7 @@ class SafeDict(UserDict):
             if isinstance(key, StringType):
                 return '%('+key+')s'
             else:
-                return '<Missing key: %s>' % `key`
+                return '<Missing key: %s>' % repr(key)
 
     def interpolate(self, template):
         return template % self

@@ -24,7 +24,7 @@ acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
 def process(msg):
-    if msg.get('from', '').lower() <> 'mailer-daemon@sina.com':
+    if msg.get('from', '').lower() != 'mailer-daemon@sina.com':
         print 'out 1'
         return []
     if not msg.is_multipart():

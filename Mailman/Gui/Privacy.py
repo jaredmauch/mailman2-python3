@@ -25,13 +25,6 @@ from Mailman import Utils
 from Mailman.i18n import _
 from Mailman.Gui.GUIBase import GUIBase
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class Privacy(GUIBase):
     def GetConfigCategory(self):
@@ -47,7 +40,7 @@ class Privacy(GUIBase):
         return None
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'privacy':
+        if category != 'privacy':
             return None
         # Pre-calculate some stuff.  Technically, we shouldn't do the
         # sub_cfentry calculation here, but it's too ugly to indent it any

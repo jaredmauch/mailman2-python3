@@ -27,7 +27,7 @@ acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
 def process(msg):
-    if msg.get_content_type() <> 'multipart/mixed':
+    if msg.get_content_type() != 'multipart/mixed':
         return None
     # simple state machine
     #     0 == nothing seen

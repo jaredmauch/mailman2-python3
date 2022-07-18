@@ -62,8 +62,8 @@ class Digester:
             finally:
                 if mboxfp:
                     mboxfp.close()
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
             # List has no outstanding digests
             return 0
         return 1

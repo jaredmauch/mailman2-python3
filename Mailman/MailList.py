@@ -78,13 +78,6 @@ def D_(s):
 EMPTYSTRING = ''
 OR = '|'
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 # Use mixins here just to avoid having any one chunk be too large.
 class MailList(HTMLFormatter, Deliverer, ListAdmin,
@@ -116,7 +109,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         dict = {}
         try:
             execfile(filename, dict)
-        except IOError, e:
+        except IOError as e:
             # Ignore missing files, but log other errors
             if e.errno == errno.ENOENT:
                 pass
@@ -574,7 +567,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if mm_cfg.SYNC_AFTER_WRITE:
                 os.fsync(fp.fileno())
             fp.close()
-        except IOError, e:
+        except IOError as e:
             syslog('error',
                    'Failed config.pck write, retaining old state.\n%s', e)
             if fp is not None:
@@ -585,13 +578,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             # might not exist yet
             os.unlink(fname_last)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         try:
             # might not exist yet
             os.link(fname, fname_last)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         os.rename(fname_tmp, fname)
         # Reset the timestamp
         self.__timestamp = os.path.getmtime(fname)
@@ -610,7 +603,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             dict[key] = value
         # Make config.pck unreadable by `other', as it contains all the
         # list members' passwords (in clear text).
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             self.__save(dict)
         finally:
@@ -655,18 +648,18 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 # File is not newer
                 return None, None
             fp = open(dbfile)
-        except EnvironmentError, e:
-            if e.errno <> errno.ENOENT: raise
+        except EnvironmentError as e:
+            if e.errno != errno.ENOENT: raise
             # The file doesn't exist yet
             return None, e
         now = int(time.time())
         try:
             try:
                 dict = loadfunc(fp)
-                if type(dict) <> DictType:
+                if type(dict) != DictType:
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,
-                    cPickle.PicklingError, cPickle.UnpicklingError), e:
+                    cPickle.PicklingError, cPickle.UnpicklingError) as e:
                 return None, e
         finally:
             fp.close()
@@ -737,12 +730,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # calls if those files exist with different ownership.
             try:
                 os.rename(pfile, pfile + '.corrupt')
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
             try:
                 os.remove(pfile + '.safety')
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
             shutil.copy(file, pfile)
             shutil.copy(file, pfile + '.safety')
         elif file == dlast:
@@ -751,12 +744,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # calls if those files exist with different ownership.
             try:
                 os.rename(dfile, dfile + '.corrupt')
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
             try:
                 os.remove(dfile + '.safety')
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
             shutil.copy(file, dfile)
             shutil.copy(file, dfile + '.safety')
 
@@ -796,7 +789,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.web_page_url = (
                 mm_cfg.DEFAULT_URL or
                 mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST)
-        if self.web_page_url and self.web_page_url[-1] <> '/':
+        if self.web_page_url and self.web_page_url[-1] != '/':
             self.web_page_url = self.web_page_url + '/'
         # Legacy reply_to_address could be an illegal value.  We now verify
         # upon setting and don't check it at the point of use.
@@ -1188,7 +1181,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if listname == self.internal_name():
                 continue
             mlist = MailList(listname, lock=0)
-            if mlist.host_name <> self.host_name:
+            if mlist.host_name != self.host_name:
                 continue
             if not mlist.isMember(addr):
                 continue
@@ -1279,7 +1272,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         cpoldaddr = self.getMemberCPAddress(oldaddr)
         if self.isMember(newaddr) and (self.getMemberCPAddress(newaddr) ==
                 newaddr):
-            if cpoldaddr <> newaddr:
+            if cpoldaddr != newaddr:
                 self.removeMember(oldaddr)
         else:
             self.changeMemberAddress(oldaddr, newaddr)
@@ -1293,7 +1286,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if listname == self.internal_name():
                 continue
             mlist = MailList(listname, lock=0)
-            if mlist.host_name <> self.host_name:
+            if mlist.host_name != self.host_name:
                 continue
             if not mlist.isMember(oldaddr):
                 continue
@@ -1306,7 +1299,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 cpoldaddr = mlist.getMemberCPAddress(oldaddr)
                 if mlist.isMember(newaddr) and (
                         mlist.getMemberCPAddress(newaddr) == newaddr):
-                    if cpoldaddr <> newaddr:
+                    if cpoldaddr != newaddr:
                         mlist.removeMember(oldaddr)
                 else:
                     mlist.changeMemberAddress(oldaddr, newaddr)
@@ -1383,7 +1376,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # approval) because the policy could have been changed in the
             # middle of the confirmation dance.
             if invitation:
-                if invitation <> self.internal_name():
+                if invitation != self.internal_name():
                     # Not cool.  The invitee was trying to subscribe to a
                     # different list than they were invited to.  Alert both
                     # list administrators.
@@ -1455,7 +1448,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 # do not allow the site password here.
                 if self.Authenticate([mm_cfg.AuthListAdmin,
                                       mm_cfg.AuthListModerator],
-                                     approved) <> mm_cfg.UnAuthorized:
+                                     approved) != mm_cfg.UnAuthorized:
                     action = mm_cfg.APPROVE
                 else:
                     # The password didn't match.  Re-pend the message and
@@ -1598,7 +1591,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 value = line[i+1:].lstrip()
                 try:
                     cre = re.compile(value, re.IGNORECASE)
-                except re.error, e:
+                except re.error as e:
                     # The regexp was malformed.  BAW: should do a better
                     # job of informing the list admin.
                     syslog('config', '''\
@@ -1637,7 +1630,7 @@ bad regexp in bounce_matching_header line: %s
             return 1
         today = time.localtime()[:3]
         info = self.hold_and_cmd_autoresponses.get(sender)
-        if info is None or info[0] <> today:
+        if info is None or info[0] != today:
             # First time we've seen a -request/post-hold for this sender
             self.hold_and_cmd_autoresponses[sender] = (today, 1)
             # BAW: no check for MAX_AUTORESPONSES_PER_DAY <= 1
@@ -1714,7 +1707,7 @@ bad regexp in bounce_matching_header line: %s
                     if re.search(pattern, email, re.IGNORECASE):
                         matched = pattern
                         break
-                except re.error, e:
+                except re.error as e:
                     # BAW: we should probably remove this pattern
                     # The GUI won't add a bad regexp, but at least log it.
                     # The following kludge works because the ban_list stuff

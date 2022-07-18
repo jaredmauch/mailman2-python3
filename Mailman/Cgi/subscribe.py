@@ -54,20 +54,20 @@ def main():
     if not parts:
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script')))
-        print doc.Format()
+        print(doc.Format())
         return
 
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
-        print doc.Format()
+        print('Status: 404 Not Found')
+        print(doc.Format())
         syslog('error', 'subscribe: No such list "%s": %s\n', listname, e)
         return
 
@@ -81,8 +81,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
     if not Utils.IsLanguage(language):
         language = mlist.preferred_language
@@ -151,7 +151,7 @@ def process_form(mlist, doc, cgidata, lang):
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
                 results.append(_('reCAPTCHA validation failed: %(e_codes)s'))
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             e_reason = e.reason
             results.append(_('reCAPTCHA could not be validated: %(e_reason)s'))
 
@@ -210,7 +210,7 @@ def process_form(mlist, doc, cgidata, lang):
         password = Utils.MakeRandomPassword()
     elif not password or not confirmed:
         results.append(_('If you supply a password, you must confirm it.'))
-    elif password <> confirmed:
+    elif password != confirmed:
         results.append(_('Your passwords did not match.'))
 
     # Get the digest option for the subscription.
@@ -358,4 +358,4 @@ def print_results(mlist, results, doc, lang):
     replacements['<mm-results>'] = results
     output = mlist.ParseTags('subscribe.html', replacements, lang)
     doc.AddItem(output)
-    print doc.Format()
+    print(doc.Format())

@@ -44,7 +44,7 @@ def find_textplain(msg):
 
 
 def process(msg):
-    if msg.get_content_type() <> 'multipart/mixed' or not msg['x-mailer']:
+    if msg.get_content_type() != 'multipart/mixed' or not msg['x-mailer']:
         return None
     if msg['x-mailer'][:3].lower() not in ('nov', 'ntm', 'int'):
         return None

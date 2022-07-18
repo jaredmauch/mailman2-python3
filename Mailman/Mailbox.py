@@ -29,13 +29,6 @@ from Mailman import mm_cfg
 from Mailman.Message import Generator
 from Mailman.Message import Message
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def _safeparser(fp):
     try:
@@ -56,12 +49,12 @@ class Mailbox(mailbox.PortableUnixMailbox):
         # a newline (but not at the beginning of an empty file).
         try:
             self.fp.seek(-1, 2)
-        except IOError, e:
+        except IOError as e:
             # Assume the file is empty.  We can't portably test the error code
             # returned, since it differs per platform.
             pass
         else:
-            if self.fp.read(1) <> '\n':
+            if self.fp.read(1) != '\n':
                 self.fp.write('\n')
         # Seek to the last char of the mailbox
         self.fp.seek(0, 2)

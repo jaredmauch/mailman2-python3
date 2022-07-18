@@ -59,13 +59,6 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def usage(code, msg=''):
     if code:

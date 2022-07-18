@@ -39,13 +39,6 @@ VIRTFILE = os.path.join(mm_cfg.DATA_DIR, 'virtual-mailman')
 # and check_perms.
 targetmode = S_IFREG | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def _update_maps():
     # Helper function to fix owner and mode.
@@ -53,16 +46,16 @@ def _update_maps():
         # It's not necessary for the non-db file to be S_IROTH, but for
         # simplicity and compatibility with check_perms, we set it.
         stat = os.stat(file)
-        if (stat[ST_MODE] & targetmode) <> targetmode:
+        if (stat[ST_MODE] & targetmode) != targetmode:
             os.chmod(file, stat[ST_MODE] | targetmode)
         dbfile = file + '.db'
         try:
             stat = os.stat(dbfile)
-        except OSError, e:
-            if e.errno <> errno.ENOENT:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
                 raise
             return
-        if (stat[ST_MODE] & targetmode) <> targetmode:
+        if (stat[ST_MODE] & targetmode) != targetmode:
             os.chmod(dbfile, stat[ST_MODE] | targetmode)
         user = mm_cfg.MAILMAN_USER
         if stat[ST_UID] != pwd.getpwnam(user)[2]:
@@ -259,7 +252,7 @@ def _check_for_virtual_loopaddr(mlist, filename):
         sitebouncesaddr = '#' + sitebouncesaddr
         siterequestaddr = '#' + siterequestaddr
     infp = open(filename)
-    omask = os.umask(007)
+    omask = os.umask(0o007)
     try:
         outfp = open(filename + '.tmp', 'w')
     finally:
@@ -331,9 +324,9 @@ def _do_create(mlist, textfile, func):
     # Crack open the plain text file
     try:
         fp = open(textfile, 'r+')
-    except IOError, e:
-        if e.errno <> errno.ENOENT: raise
-        omask = os.umask(007)
+    except IOError as e:
+        if e.errno != errno.ENOENT: raise
+        omask = os.umask(0o007)
         try:
             fp = open(textfile, 'w+')
         finally:
@@ -375,12 +368,12 @@ def _do_remove(mlist, textfile, virtualp):
     outfp = None
     try:
         infp = open(textfile)
-    except IOError, e:
-        if e.errno <> errno.ENOENT: raise
+    except IOError as e:
+        if e.errno != errno.ENOENT: raise
         # Otherwise, there's no text file to filter so we're done.
         return
     try:
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             outfp = open(textfile + '.tmp', 'w')
         finally:
@@ -443,10 +436,10 @@ def checkperms(state):
         stat = None
         try:
             stat = os.stat(file)
-        except OSError, e:
-            if e.errno <> errno.ENOENT:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
                 raise
-        if stat and (stat[ST_MODE] & targetmode) <> targetmode:
+        if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
             print C_('%(file)s permissions must be 0664 (got %(octmode)s)'),
@@ -462,8 +455,8 @@ def checkperms(state):
         stat = None
         try:
             stat = os.stat(dbfile)
-        except OSError, e:
-            if e.errno <> errno.ENOENT:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
                 raise
             continue
         if state.VERBOSE:
@@ -485,7 +478,7 @@ def checkperms(state):
                 os.chown(dbfile, uid, gid)
             else:
                 print
-        if stat and (stat[ST_MODE] & targetmode) <> targetmode:
+        if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
             print C_('%(dbfile)s permissions must be 0664 (got %(octmode)s)'),

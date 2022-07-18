@@ -90,7 +90,7 @@ def main():
            print C_('No such list: %(listname)s')
            continue
 
-       if vhost and vhost <> mlist.host_name:
+       if vhost and vhost != mlist.host_name:
            continue
 
        owners = COMMASPACE.join(mlist.owner)

@@ -88,13 +88,6 @@ if sys.platform == 'darwin':
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def html_quote(s, lang=None):
     repls = ( ('&', '&amp;'),
@@ -117,10 +110,10 @@ def null_to_space(s):
 def sizeof(filename, lang):
     try:
         size = os.path.getsize(filename)
-    except OSError, e:
+    except OSError as e:
         # ENOENT can happen if the .mbox file was moved away or deleted, and
         # an explicit mbox file name was given to bin/arch.
-        if e.errno <> errno.ENOENT: raise
+        if e.errno != errno.ENOENT: raise
         return _('size not available')
     if size < 1000:
         # Avoid i18n side-effects
@@ -227,7 +220,7 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
                                     Utils.GetCharSet(lang),
                                     'replace')
                 text = sdict.interpolate(utemplate)
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
             # The template is really screwed up
             syslog('error', 'broken template: %s\n%s', filepath, e)
     # Make sure the text is in the given character set, or html-ify any bogus
@@ -347,7 +340,7 @@ class Article(pipermail.Article):
         if not mlist:
             try:
                 mlist = MailList.MailList(listname, lock=0)
-            except Errors.MMListError, e:
+            except Errors.MMListError as e:
                 syslog('error', 'error opening list: %s\n%s', listname, e)
                 return None
             else:
@@ -633,8 +626,8 @@ class HyperArchive(pipermail.T):
     __super_add_article = pipermail.T.add_article
 
     # some defaults
-    DIRMODE = 02775
-    FILEMODE = 0660
+    DIRMODE = 0o02775
+    FILEMODE = 0o0660
 
     VERBOSE = 0
     DEFAULTINDEX = 'thread'
@@ -890,7 +883,7 @@ class HyperArchive(pipermail.T):
             finally:
                 os.umask(omask)
             ef.seek(1,2)
-            if ef.read(1) <> '\n':
+            if ef.read(1) != '\n':
                 ef.write('\n')
             ef.write(wf.read())
             ef.close()
@@ -1321,12 +1314,12 @@ class HyperArchive(pipermail.T):
             f = open(filename)
             article.loadbody_fromHTML(f)
             f.close()
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
             self.message(C_('article file %(filename)s is missing!'))
         article.prev = prev
         article.next = next
-        omask = os.umask(002)
+        omask = os.umask(0o002)
         try:
             f = open(filename, 'w')
         finally:

@@ -275,8 +275,8 @@ class Article:
 # Pipermail formatter class
 
 class T:
-    DIRMODE = 0755      # Mode to give to created directories
-    FILEMODE = 0644     # Mode to give to created files
+    DIRMODE = 0o0755      # Mode to give to created directories
+    FILEMODE = 0o0644     # Mode to give to created files
     INDEX_EXT = ".html" # Extension for indexes
 
     def __init__(self, basedir = None, reload = 1, database = None):
@@ -343,7 +343,7 @@ class T:
         self.database.close()
         del self.database
 
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             f = open(os.path.join(self.basedir, 'pipermail.pck'), 'w')
         finally:
@@ -534,7 +534,7 @@ class T:
 
     def _open_index_file_as_stdout(self, arcdir, index_name):
         path = os.path.join(arcdir, index_name + self.INDEX_EXT)
-        omask = os.umask(002)
+        omask = os.umask(0o002)
         try:
             self.__f = open(path, 'w')
         finally:

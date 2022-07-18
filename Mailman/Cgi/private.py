@@ -63,16 +63,16 @@ def main():
     if not parts:
         doc.SetTitle(_("Private Archive Error"))
         doc.AddItem(Header(3, _("You must specify a list.")))
-        print doc.Format()
+        print(doc.Format())
         return
 
     path = os.environ.get('PATH_INFO')
     tpath = true_path(path)
-    if tpath <> path[1:]:
+    if tpath != path[1:]:
         msg = _('Private archive - "./" and "../" not allowed in URL.')
         doc.SetTitle(msg)
         doc.AddItem(Header(2, msg))
-        print doc.Format()
+        print(doc.Format())
         syslog('mischief', 'Private archive hostile path: %s', path)
         return
     # BAW: This needs to be converted to the Site module abstraction
@@ -102,15 +102,15 @@ def main():
 
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         msg = _('No such list <em>%(safelistname)s</em>')
         doc.SetTitle(_("Private Archive Error - %(msg)s"))
         doc.AddItem(Header(2, msg))
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
-        print doc.Format()
+        print('Status: 404 Not Found')
+        print(doc.Format())
         syslog('error', 'private: No such list "%s": %s\n', listname, e)
         return
 
@@ -125,8 +125,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
     password = cgidata.getfirst('password', '')
 
@@ -150,7 +150,7 @@ def main():
                  'Authorization failed (private): user=%s: list=%s: remote=%s',
                    username, listname, remote)
             # give an HTTP 401 for authentication failure
-            print 'Status: 401 Unauthorized'
+            print('Status: 401 Unauthorized')
         # Are we processing a password reminder from the login screen?
         if cgidata.has_key('login-remind'):
             if username:
@@ -170,7 +170,7 @@ def main():
                        username)
         # Output the password form
         charset = Utils.GetCharSet(mlist.preferred_language)
-        print 'Content-type: text/html; charset=' + charset + '\n\n'
+        print('Content-type: text/html; charset=' + charset + '\n\n')
         # Put the original full path in the authorization form, but avoid
         # trailing slash if we're not adding parts.  We add it below.
         action = mlist.GetScriptURL('private', absolute=1)
@@ -185,15 +185,15 @@ def main():
         # post URL (action) is a directory, it must be slash terminated, but
         # not if it's a file.  Otherwise, relative links in the target archive
         # page don't work.
-        if true_filename.endswith('/index.html') and parts[-1] <> 'index.html':
+        if true_filename.endswith('/index.html') and parts[-1] != 'index.html':
             action += SLASH
         # Escape web input parameter to avoid cross-site scripting.
-        print Utils.maketext(
+        print(Utils.maketext(
             'private.html',
             {'action'  : Utils.websafe(action),
              'realname': mlist.real_name,
              'message' : message,
-             }, mlist=mlist)
+             }, mlist=mlist))
         return
 
     lang = mlist.getMemberLanguage(username)
@@ -218,10 +218,10 @@ def main():
         msg = _('Private archive file not found')
         doc.SetTitle(msg)
         doc.AddItem(Header(2, msg))
-        print 'Status: 404 Not Found'
-        print doc.Format()
+        print('Status: 404 Not Found')
+        print(doc.Format())
         syslog('error', 'Private archive file not found: %s', true_filename)
     else:
-        print 'Content-type: %s\n' % ctype
+        print('Content-type: %s\n' % ctype)
         sys.stdout.write(f.read())
         f.close()

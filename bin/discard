@@ -43,12 +43,6 @@ from Mailman import mm_cfg
 from Mailman.MailList import MailList
 from Mailman.i18n import C_
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 cre = re.compile(r'heldmsg-(?P<listname>.*)-(?P<id>[0-9]+)\.(pck|txt)$')
 
 

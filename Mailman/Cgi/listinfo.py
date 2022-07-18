@@ -47,11 +47,11 @@ def main():
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
+        print('Status: 404 Not Found')
         listinfo_overview(_('No such list <em>%(safelistname)s</em>'))
         syslog('error', 'listinfo: No such list "%s": %s', listname, e)
         return
@@ -67,8 +67,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     if not Utils.IsLanguage(language):
@@ -169,7 +169,7 @@ def listinfo_overview(msg=''):
     doc.AddItem(table)
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
-    print doc.Format()
+    print(doc.Format())
 
 
 
@@ -277,7 +277,7 @@ def list_listinfo(mlist, lang):
 
     # Do the expansion.
     doc.AddItem(mlist.ParseTags('listinfo.html', replacements, lang))
-    print doc.Format()
+    print(doc.Format())
 
 
 

@@ -52,13 +52,6 @@ STOP = 1
 BADCMD = 2
 BADSUBJ = 3
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class Results:
     def __init__(self, mlist, msg, msgdata):
@@ -252,7 +245,7 @@ class CommandRunner(Runner):
         # it to prevent replybot response storms.
         precedence = msg.get('precedence', '').lower()
         ack = msg.get('x-ack', '').lower()
-        if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
+        if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
             syslog('vette', 'Precedence: %s message discarded by: %s',
                    precedence, mlist.GetRequestEmail())
             return False

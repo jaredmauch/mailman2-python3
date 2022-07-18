@@ -51,11 +51,11 @@ def main():
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
+        print('Status: 404 Not Found')
         error_page(_('No such list <em>%(safelistname)s</em>'))
         syslog('error', 'roster: No such list "%s": %s', listname, e)
         return
@@ -72,8 +72,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     if not Utils.IsLanguage(lang):
@@ -114,10 +114,10 @@ def main():
         doc = Document()
         doc.set_language(lang)
         # Send this with a 401 status.
-        print 'Status: 401 Unauthorized'
+        print('Status: 401 Unauthorized')
         error_page_doc(doc, _('%(realname)s roster authentication failed.'))
         doc.AddItem(mlist.GetMailmanFooter())
-        print doc.Format()
+        print(doc.Format())
         remote = os.environ.get('HTTP_FORWARDED_FOR',
                  os.environ.get('HTTP_X_FORWARDED_FOR',
                  os.environ.get('REMOTE_ADDR',
@@ -137,7 +137,7 @@ def main():
         text = _('View this page in'))
     replacements['<mm-lang-form-start>'] = mlist.FormatFormStart('roster')
     doc.AddItem(mlist.ParseTags('roster.html', replacements, lang))
-    print doc.Format()
+    print(doc.Format())
 
 
 
@@ -145,7 +145,7 @@ def error_page(errmsg):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
     error_page_doc(doc, errmsg)
-    print doc.Format()
+    print(doc.Format())
 
 
 def error_page_doc(doc, errmsg):

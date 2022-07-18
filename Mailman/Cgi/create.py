@@ -50,8 +50,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     parts = Utils.GetPathPieces()
@@ -79,7 +79,7 @@ def main():
                 Link(Utils.ScriptURL('admin'),
                      _('administrative list overview')).Format())
     doc.AddItem(MailmanLogo())
-    print doc.Format()
+    print(doc.Format())
 
 
 
@@ -141,7 +141,7 @@ def process_request(doc, cgidata):
         password = confirm = Utils.MakeRandomPassword(
             mm_cfg.ADMIN_PASSWORD_LENGTH)
     else:
-        if password <> confirm:
+        if password != confirm:
             request_creation(doc, cgidata,
                              _('Initial list passwords do not match'))
             return
@@ -202,14 +202,14 @@ def process_request(doc, cgidata):
         # Guarantee that all newly created files have the proper permission.
         # proper group ownership should be assured by the autoconf script
         # enforcing that all directories have the group sticky bit set
-        oldmask = os.umask(002)
+        oldmask = os.umask(0o002)
         try:
             try:
                 mlist.Create(listname, owner, pw, langs, emailhost,
                              urlhost=hostname)
             finally:
                 os.umask(oldmask)
-        except Errors.EmailAddressError, e:
+        except Errors.EmailAddressError as e:
             if e.args:
                 s = Utils.websafe(e.args[0])
             else:
@@ -222,7 +222,7 @@ def process_request(doc, cgidata):
             request_creation(doc, cgidata,
                              _('List already exists: %(listname)s'))
             return
-        except Errors.BadListNameError, e:
+        except Errors.BadListNameError as e:
             if e.args:
                 s = Utils.websafe(e.args[0])
             else:

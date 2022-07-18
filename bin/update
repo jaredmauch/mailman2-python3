@@ -137,7 +137,7 @@ def move_language_templates(mlist):
         try:
             fp = open(os.path.join(mlist.fullpath(), gtemplate))
         except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -147,7 +147,7 @@ def move_language_templates(mlist):
         try:
             fp = open(os.path.join(mlist.fullpath(), gtemplate + '.prev'))
         except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -157,7 +157,7 @@ def move_language_templates(mlist):
         try:
             fp = open(os.path.join(mlist.fullpath(), 'en', gtemplate))
         except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -167,7 +167,7 @@ def move_language_templates(mlist):
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
         except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -177,7 +177,7 @@ def move_language_templates(mlist):
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate + '.prev'))
         except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -235,7 +235,7 @@ def dolist(listname):
     #
     if not os.path.exists(mbox_dir):
         ou = os.umask(0)
-        os.mkdir(mbox_dir, 02775)
+        os.mkdir(mbox_dir, 0o02775)
         os.umask(ou)
     else:
         # this shouldn't happen, but hey, just in case
@@ -245,7 +245,7 @@ For some reason, %(mbox_dir)s exists as a file.  This won't work with
 b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding.""")
             os.rename(mbox_dir, "%s.tmp" % (mbox_dir))
             ou = os.umask(0)
-            os.mkdir(mbox_dir, 02775)
+            os.mkdir(mbox_dir, 0o2775)
             os.umask(ou)
 
     # Move any existing mboxes around, but watch out for both a public and a
@@ -342,7 +342,7 @@ script.
     # to a language code. All the templates get moved from templates/xx
     # to lists/xx. To avoid this, test the list name, and if it is 'en'
     # or matches a name in the messages directory, just skip this step.
-    if (mlist._internal_name <> 'en' and
+    if (mlist._internal_name != 'en' and
         mlist._internal_name not in os.listdir(mm_cfg.MESSAGES_DIR)):
         # It's okay to move the templates.
         tmpl_dir = os.path.join(mm_cfg.PREFIX, "templates")
@@ -450,7 +450,7 @@ def update_qfiles():
                 if msg is not None and data is not None:
                     sb.enqueue(msg, data)
         except EnvironmentError, e:
-            if e.errno <> errno.ENOTDIR:
+            if e.errno != errno.ENOTDIR:
                 raise
             print C_('Warning!  Not a directory: %(dirpath)s')
 
@@ -494,7 +494,7 @@ def dequeue(filebase):
         data = ext_read(dbfile)
         os.unlink(dbfile)
     except EnvironmentError, e:
-        if e.errno <> errno.ENOENT: raise
+        if e.errno != errno.ENOENT: raise
         data = {}
     # Between 2.1b4 and 2.1b5, the `rejection-notice' key in the metadata
     # was renamed to `rejection_notice', since dashes in the keys are not
@@ -515,14 +515,14 @@ def dequeue(filebase):
                     pass
             os.unlink(pckfile)
         except EnvironmentError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
             msgfp = None
             try:
                 msgfp = open(msgfile)
                 msg = email.message_from_file(msgfp, Message.Message)
                 os.unlink(msgfile)
             except EnvironmentError, e:
-                if e.errno <> errno.ENOENT: raise
+                if e.errno != errno.ENOENT: raise
             except (email.Errors.MessageParseError, ValueError), e:
                 # This message was unparsable, most likely because its
                 # MIME encapsulation was broken.  For now, there's not
@@ -558,7 +558,7 @@ def update_pending():
     try:
         fp = open(file20)
     except IOError, e:
-        if e.errno <> errno.ENOENT: raise
+        if e.errno != errno.ENOENT: raise
     else:
         print C_('Updating Mailman 2.0 pending_subscriptions.db database')
         db = marshal.load(fp)
@@ -569,7 +569,7 @@ def update_pending():
         try:
             fp = open(file214)
         except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+            if e.errno != errno.ENOENT: raise
         else:
             print C_('Updating Mailman 2.1.4 pending.pck database')
             db = cPickle.load(fp)
@@ -653,11 +653,11 @@ def update_pending():
     try:
         os.unlink(file20)
     except OSError, e:
-        if e.errno <> errno.ENOENT: raise
+        if e.errno != errno.ENOENT: raise
     try:
         os.unlink(file214)
     except OSError, e:
-        if e.errno <> errno.ENOENT: raise
+        if e.errno != errno.ENOENT: raise
 
 
 

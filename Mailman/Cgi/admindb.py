@@ -113,11 +113,11 @@ def main():
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
-        print 'Status: 404 Not Found'
+        print('Status: 404 Not Found')
         handle_no_list(_('No such list <em>%(safelistname)s</em>'))
         syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
         return
@@ -136,8 +136,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     # CSRF check
@@ -178,10 +178,10 @@ def main():
     # See if this is a logout request
     if len(parts) >= 2 and parts[1] == 'logout':
         if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
-            print mlist.ZapCookie(mm_cfg.AuthSiteAdmin)
+            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
         if mlist.AuthContextInfo(mm_cfg.AuthListModerator)[0]:
-            print mlist.ZapCookie(mm_cfg.AuthListModerator)
-        print mlist.ZapCookie(mm_cfg.AuthListAdmin)
+            print(mlist.ZapCookie(mm_cfg.AuthListModerator))
+        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
         Auth.loginpage(mlist, 'admindb', frontpage=1)
         return
 
@@ -259,7 +259,7 @@ def main():
                 '<b>%s</b>' % _('Logout')))
             doc.AddItem('</font></div>\n')
             doc.AddItem(mlist.GetMailmanFooter())
-            print doc.Format()
+            print(doc.Format())
             mlist.Save()
             return
 
@@ -273,7 +273,7 @@ def main():
                 2,
                 _('Administrative requests for mailing list:')
                 + ' <em>%s</em>' % mlist.real_name))
-        if details <> 'instructions':
+        if details != 'instructions':
             form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
         nomessages = not mlist.GetHeldMessageIds()
         if not (details or sender or msgid or nomessages):
@@ -341,7 +341,7 @@ def main():
             '<b>%s</b>' % _('Logout')))
         doc.AddItem('</font></div>\n')
         doc.AddItem(mlist.GetMailmanFooter())
-        print doc.Format()
+        print(doc.Format())
         # Commit all changes
         mlist.Save()
     finally:
@@ -363,7 +363,7 @@ def handle_no_list(msg=''):
     doc.AddItem(_('You must specify a list name.  Here is the %(link)s'))
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
-    print doc.Format()
+    print(doc.Format())
 
 
 
@@ -601,8 +601,8 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             # be close, but won't be exact.  Sigh, good enough.
             try:
                 size = os.path.getsize(os.path.join(mm_cfg.DATA_DIR, filename))
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
                 # This message must have gotten lost, i.e. it's already been
                 # handled by the time we got here.
                 mlist.HandleRequest(id, mm_cfg.DISCARD)
@@ -680,7 +680,7 @@ def show_post_requests(mlist, id, info, total, count, form):
     form.AddItem('<hr>')
     # Header shown on each held posting (including count of total)
     msg = _('Posting Held for Approval')
-    if total <> 1:
+    if total != 1:
         msg += _(' (%(count)d of %(total)d)')
     form.AddItem(Center(Header(2, msg)))
     # We need to get the headers and part of the textual body of the message
@@ -689,8 +689,8 @@ def show_post_requests(mlist, id, info, total, count, form):
     # just do raw reads on the file.
     try:
         msg = readMessage(os.path.join(mm_cfg.DATA_DIR, filename))
-    except IOError, e:
-        if e.errno <> errno.ENOENT:
+    except IOError as e:
+        if e.errno != errno.ENOENT:
             raise
         form.AddItem(_('<em>Message with id #%(id)d was lost.'))
         form.AddItem('<p>')
@@ -736,7 +736,7 @@ def show_post_requests(mlist, id, info, total, count, form):
     else:
         mcset = 'us-ascii'
     lcset = Utils.GetCharSet(mlist.preferred_language)
-    if mcset <> lcset:
+    if mcset != lcset:
         try:
             body = unicode(body, mcset, 'replace').encode(lcset, 'replace')
         except (LookupError, UnicodeError, ValueError):

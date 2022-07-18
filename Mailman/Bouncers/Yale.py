@@ -43,12 +43,12 @@ def process(msg):
         username, domain = whofrom.split('@', 1)
     except (IndexError, ValueError):
         return None
-    if username.lower() <> 'mailer-daemon':
+    if username.lower() != 'mailer-daemon':
         return None
     parts = domain.split('.')
     parts.reverse()
     for part1, part2 in zip(parts, ('edu', 'yale')):
-        if part1 <> part2:
+        if part1 != part2:
             return None
     # Okay, we've established that the bounce came from the mailer-daemon at
     # yale.edu.  Let's look for a name, and then guess the relevant domains.

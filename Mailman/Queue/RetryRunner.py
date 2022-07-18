@@ -20,13 +20,6 @@ from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 class RetryRunner(Runner):
     QDIR = mm_cfg.RETRYQUEUE_DIR

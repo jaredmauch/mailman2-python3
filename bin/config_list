@@ -185,7 +185,7 @@ def do_list_categories(mlist, k, subcat, outfp):
             if not lines:
                 print >> outfp, "''"
             elif len(lines) == 1:
-                if charset <> 'us-ascii' and nonasciipat.search(lines[0]):
+                if charset != 'us-ascii' and nonasciipat.search(lines[0]):
                     # This is more readable for non-english list.
                     print >> outfp, '"' + lines[0].replace('"', '\\"') + '"'
                 else:
@@ -350,7 +350,7 @@ def main():
         usage(1, C_('One of -i or -o is required'))
 
     # get the list name
-    if len(args) <> 1:
+    if len(args) != 1:
         usage(1, C_('List name is required'))
     listname = args[0].lower().strip()
 

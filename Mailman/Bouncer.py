@@ -150,7 +150,7 @@ class Bouncer:
             syslog('bounce', '%s: %s bounce score: %s', self.internal_name(),
                    member, info.score)
             # Continue to the check phase below
-        elif self.getDeliveryStatus(member) <> MemberAdaptor.ENABLED:
+        elif self.getDeliveryStatus(member) != MemberAdaptor.ENABLED:
             # The user is already disabled, so we can just ignore subsequent
             # bounces.  These are likely due to residual messages that were
             # sent before disabling the member, but took a while to bounce.

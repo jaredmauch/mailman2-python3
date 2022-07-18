@@ -48,13 +48,6 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def usage(code, msg=''):
     if code:
@@ -89,7 +82,7 @@ def main():
     except getopt.error, msg:
         usage(1, msg)
 
-    if len(args) <> 1:
+    if len(args) != 1:
         usage(1)
     listname = args[0].lower().strip()
 

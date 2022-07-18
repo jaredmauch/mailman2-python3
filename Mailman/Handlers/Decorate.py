@@ -30,13 +30,6 @@ from Mailman.i18n import _
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 
-try:
-    True, False
-except:
-    True = 1
-    False = 0
-
-
 
 def process(mlist, msg, msgdata):
     # Digests and Mailman-craft messages should not get additional headers
@@ -241,7 +234,7 @@ def decorate(mlist, template, what, extradict=None):
     try:
         text = re.sub(r'(?m)(?<!^--) +(?=\n)', '',
                       re.sub(r'\r\n', r'\n', template % d))
-    except (ValueError, TypeError), e:
+    except (ValueError, TypeError) as e:
         syslog('error', 'Exception while calculating %s:\n%s', what, e)
         text = template
     # Ensure text ends with new-line
