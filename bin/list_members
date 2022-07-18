@@ -89,13 +89,6 @@ PROGRAM = sys.argv[0]
 ENC = sys.getdefaultencoding()
 COMMASPACE = ', '
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 WHYCHOICES = {'enabled' : MemberAdaptor.ENABLED,
               'unknown' : MemberAdaptor.UNKNOWN,
               'byuser'  : MemberAdaptor.BYUSER,
