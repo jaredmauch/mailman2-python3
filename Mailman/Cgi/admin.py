@@ -1693,7 +1693,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             except Errors.MMHostileAddress:
                 subscribe_errors.append(
                     (safeentry, _('Hostile address (illegal characters)')))
-            except Errors.MembershipIsBanned, pattern:
+            except Errors.MembershipIsBanned as pattern:
                 subscribe_errors.append(
                     (safeentry, _('Banned address (matched %(pattern)s)')))
             else:

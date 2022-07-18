@@ -967,7 +967,7 @@ def process_form(mlist, doc, cgidata):
     if erroraddrs:
         for addr in erroraddrs:
             addr = Utils.websafe(addr)
-            doc.AddItem(`addr` + _(' is already a member') + '<br>')
+            doc.AddItem(str(addr) + _(' is already a member') + '<br>')
     if banaddrs:
         for addr, patt in banaddrs:
             addr = Utils.websafe(addr)
@@ -975,5 +975,5 @@ def process_form(mlist, doc, cgidata):
     if badaddrs:
         for addr in badaddrs:
             addr = Utils.websafe(addr)
-            doc.AddItem(`addr` + ': ' + _('Bad/Invalid email address') +
+            doc.AddItem(str(addr) + ': ' + _('Bad/Invalid email address') +
                         '<br>')

@@ -287,7 +287,7 @@ class T:
         # message in the HTML archive now -- Marc
         try:
             os.stat(self.basedir)
-        except os.error, errdata:
+        except os.error as errdata:
             errno, errmsg = errdata
             if errno != 2:
                 raise os.error, errdata

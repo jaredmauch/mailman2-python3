@@ -1033,7 +1033,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # requests database.  BAW: this should probably take a userdesc
             # just like above.
             self.HoldSubscription(email, name, password, digest, lang)
-            raise Errors.MMNeedApproval, _(
+            raise Errors.MMNeedApproval(
                 'subscriptions to %(realname)s require moderator approval')
 
     def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='',
@@ -1073,7 +1073,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Let's be extra cautious
         Utils.ValidateEmail(email)
         if self.isMember(email):
-            raise Errors.MMAlreadyAMember, email
+            raise Errors.MMAlreadyAMember(email)
         # Check for banned address here too for admin mass subscribes
         # and confirmations.
         pattern = self.GetBannedPattern(email)
@@ -1084,7 +1084,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 source = ''
             syslog('vette', '%s banned subscription: %s%s (matched: %s)',
                    self.real_name, email, source, pattern)
-            raise Errors.MembershipIsBanned, pattern
+            raise Errors.MembershipIsBanned(pattern)
         # Do the actual addition
         self.addNewMember(email, realname=name, digest=digest,
                           password=password, language=lang)
@@ -1135,8 +1135,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.ApprovedDeleteMember(name, whence, admin_notif, userack)
         else:
             self.HoldUnsubscription(email)
-            raise Errors.MMNeedApproval, _(
-                'unsubscriptions require moderator approval')
+            raise Errors.MMNeedApproval('unsubscriptions require moderator approval')
 
     def ApprovedDeleteMember(self, name, whence=None,
                              admin_notif=None, userack=None):
@@ -1217,7 +1216,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             syslog('vette',
                    '%s banned address change: %s -> %s (matched: %s)',
                    realname, oldaddr, newaddr, pattern)
-            raise Errors.MembershipIsBanned, pattern
+            raise Errors.MembershipIsBanned(pattern)
         # Pend the subscription change
         cookie = self.pend_new(Pending.CHANGE_OF_ADDRESS,
                                oldaddr, newaddr, globally)
@@ -1260,7 +1259,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             syslog('vette',
                    '%s banned address change: %s -> %s (matched: %s)',
                    self.real_name, oldaddr, newaddr, pattern)
-            raise Errors.MembershipIsBanned, pattern
+            raise Errors.MembershipIsBanned(pattern)
         # It's possible they were a member of this list, but choose to change
         # their membership globally.  In that case, we simply remove the old
         # address.  This gets tricky with case changes.  We can't just remove
@@ -1344,12 +1343,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         global _
         rec = self.pend_confirm(cookie)
         if rec is None:
-            raise Errors.MMBadConfirmation, 'No cookie record for %s' % cookie
+            raise Errors.MMBadConfirmation('No cookie record for %s' % cookie)
         try:
             op = rec[0]
             data = rec[1:]
         except ValueError:
-            raise Errors.MMBadConfirmation, 'op-less data %s' % (rec,)
+            raise Errors.MMBadConfirmation('op-less data %s' % (rec,))
         if op == Pending.SUBSCRIPTION:
             _ = D_
             whence = _('via email confirmation')
@@ -1368,7 +1367,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 digest = userdesc.digest
                 lang = userdesc.language
             except ValueError:
-                raise Errors.MMBadConfirmation, 'bad subscr data %s' % (data,)
+                raise Errors.MMBadConfirmation('bad subscr data %s' % (data,))
             _ = i18n._
             # Hack alert!  Was this a confirmation of an invitation?
             invitation = getattr(userdesc, 'invitation', False)
@@ -1386,7 +1385,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     not self.HasAutoApprovedSender(addr):
                 self.HoldSubscription(addr, fullname, password, digest, lang)
                 name = self.real_name
-                raise Errors.MMNeedApproval, _(
+                raise Errors.MMNeedApproval,(
                     'subscriptions to %(name)s require administrator approval')
             self.ApprovedAddMember(userdesc, whence=whence)
             return op, addr, password, digest, lang
@@ -1473,7 +1472,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
 
     def ConfirmUnsubscription(self, addr, lang=None, remote=None):
         if self.CheckPending(addr, unsub=True):
-            raise Errors.MMAlreadyPending, email
+            raise Errors.MMAlreadyPending(email)
         if lang is None:
             lang = self.getMemberLanguage(addr)
         cookie = self.pend_new(Pending.UNSUBSCRIPTION, addr)
