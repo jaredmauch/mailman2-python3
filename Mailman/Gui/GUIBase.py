@@ -96,7 +96,7 @@ class GUIBase:
                         bad_addrs.append(addr)
                 addrs.append(addr)
             if bad_addrs:
-                raise Errors.EmailAddressError, ', '.join(bad_addrs)
+                raise Errors.EmailAddressError(', '.join(bad_addrs))
             return addrs
         # This is a host name, i.e. verbatim
         if wtype == mm_cfg.Host:
@@ -172,7 +172,7 @@ class GUIBase:
             except ValueError:
                 doc.addError(_('Invalid value for variable: %(property)s'))
             # This is the parent of MMBadEmailError and MMHostileAddress
-            except Errors.EmailAddressError, error:
+            except Errors.EmailAddressError as error:
                 error = Utils.websafe(str(error))
                 doc.addError(
                     _('Bad email address for option %(property)s: %(error)s'))

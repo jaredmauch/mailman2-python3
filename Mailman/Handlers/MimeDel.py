@@ -260,7 +260,7 @@ def dispose(mlist, msg, msgdata, why):
     # filter_action == 0 just discards, see below
     if mlist.filter_action == 1:
         # Bounce the message to the original author
-        raise Errors.RejectMessage, why
+        raise Errors.RejectMessage(why)
     if mlist.filter_action == 2:
         # Forward it on to the list owner
         listname = mlist.internal_name()

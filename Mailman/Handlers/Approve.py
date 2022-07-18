@@ -126,7 +126,7 @@ def process(mlist, msg, msgdata):
                     if re.search(pattern, lines):
                         reset_payload(part, re.sub(pattern, '', lines))
                     elif re.search(pattern, re.sub('(?s)<.*?>', '', lines)):
-                        raise Errors.RejectMessage, REJECT
+                        raise Errors.RejectMessage(REJECT)
     if passwd is not missing and mlist.Authenticate((mm_cfg.AuthListPoster,
                                                      mm_cfg.AuthListModerator,
                                                      mm_cfg.AuthListAdmin),

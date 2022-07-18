@@ -219,7 +219,7 @@ class LockFile:
             self.set_lifetime(newlifetime)
         # Do we have the lock?  As a side effect, this refreshes the lock!
         if not self.locked() and not unconditionally:
-            raise NotLockedError, '%s: %s' % (repr(self), self.__read())
+            raise NotLockedError('%s: %s' % (repr(self), self.__read()))
 
     def lock(self, timeout=0):
         """Acquire the lock.

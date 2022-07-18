@@ -80,7 +80,7 @@ def process(mlist, msg, msgdata):
 Your urgent message to the %(realname)s mailing list was not authorized for
 delivery.  The original message as received by Mailman is attached.
 """)
-            raise Errors.RejectMessage, Utils.wrap(text)
+            raise Errors.RejectMessage(Utils.wrap(text))
     # Calculate the regular recipients of the message
     recips = [mlist.getMemberCPAddress(m)
               for m in mlist.getRegularMemberKeys()

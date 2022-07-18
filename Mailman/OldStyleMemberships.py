@@ -286,10 +286,10 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                     raise Errors.CantDigestError
                 # The user is turning on digest mode
                 if self.__mlist.digest_members.has_key(memberkey):
-                    raise Errors.AlreadyReceivingDigests, member
+                    raise Errors.AlreadyReceivingDigests(member)
                 cpuser = self.__mlist.members.get(memberkey)
                 if cpuser is None:
-                    raise Errors.NotAMemberError, member
+                    raise Errors.NotAMemberError(member)
                 del self.__mlist.members[memberkey]
                 self.__mlist.digest_members[memberkey] = cpuser
                 # If we recently turned off digest mode and are now

@@ -82,7 +82,7 @@ def process(mlist, msg, msgdata):
                 else:
                     # Use the default RejectMessage notice string
                     text = None
-                raise Errors.RejectMessage, text
+                raise Errors.RejectMessage(text)
             elif mlist.member_moderation_action == 2:
                 # Discard.  BAW: Again, it would be nice if we could send a
                 # discard notice to the sender

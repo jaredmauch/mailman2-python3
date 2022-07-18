@@ -90,7 +90,7 @@ class Logger:
         f = self.__get_f()
         try:
             f.write(msg)
-        except IOError, msg:
+        except IOError as msg:
             _logexc(self, msg)
 
     def writelines(self, lines):

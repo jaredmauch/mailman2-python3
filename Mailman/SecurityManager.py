@@ -213,7 +213,7 @@ class SecurityManager:
             else:
                 # What is this context???
                 syslog('error', 'Bad authcontext: %s', ac)
-                raise ValueError('Bad authcontext: %s' % ac))
+                raise ValueError('Bad authcontext: %s' % ac)
         return mm_cfg.UnAuthorized
 
     def WebAuthenticate(self, authcontexts, response, user=None):

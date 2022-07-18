@@ -68,7 +68,7 @@ def _update_maps():
     if status:
         errstr = os.strerror(status)
         syslog('error', msg, acmd, status, errstr)
-        raise RuntimeError, msg % (acmd, status, errstr)
+        raise RuntimeError(msg % (acmd, status, errstr))
     # Fix owner and mode of .db if needed.
     fixom(ALIASFILE)
     if os.path.exists(VIRTFILE):
@@ -77,7 +77,7 @@ def _update_maps():
         if status:
             errstr = os.strerror(status)
             syslog('error', msg, vcmd, status, errstr)
-            raise RuntimeError, msg % (vcmd, status, errstr)
+            raise RuntimeError(msg % (vcmd, status, errstr))
         # Fix owner and mode of .db if needed.
         fixom(VIRTFILE)
 

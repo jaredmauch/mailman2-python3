@@ -803,7 +803,7 @@ class BSDDBdatabase(Database):
         omask = os.umask(0)
         try:
             try:
-                os.mkdir(arcdir, 02775)
+                os.mkdir(arcdir, 0o02775)
             except OSError:
                 # BAW: Hmm...
                 pass

@@ -1042,15 +1042,15 @@ class HyperArchive(pipermail.T):
 
     def write_index_header(self):
         self.depth=0
-        print self.html_head()
+        print(self.html_head())
         if not self.THREADLAZY and self.type=='Thread':
             self.message(C_("Computing threaded index\n"))
             self.updateThreadedIndex()
 
     def write_index_footer(self):
         for i in range(self.depth):
-            print '</UL>'
-        print self.html_foot()
+            print('</UL>')
+        print(self.html_foot())
 
     def write_index_entry(self, article):
         subject = self.get_header("subject", article)
@@ -1070,9 +1070,9 @@ class HyperArchive(pipermail.T):
             'sequence': article.sequence,
             'author':   author
         }
-        print quick_maketext(
+        print(quick_maketext(
             'archidxentry.html', d,
-            mlist=self.maillist)
+            mlist=self.maillist))
 
     def get_header(self, field, article):
         # if we have no decoded header, return the encoded one
@@ -1090,11 +1090,11 @@ class HyperArchive(pipermail.T):
             depth = self.THREADLEVELS
         if depth < self.depth:
             for i in range(self.depth-depth):
-                print '</UL>'
+                print('</UL>')
         elif depth > self.depth:
             for i in range(depth-self.depth):
-                print '<UL>'
-        print '<!--%i %s -->' % (depth, article.threadKey)
+                print('<UL>')
+        print('<!--%i %s -->' % (depth, article.threadKey))
         self.depth = depth
         self.write_index_entry(article)
 

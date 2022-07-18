@@ -959,7 +959,7 @@ def process_form(mlist, doc, cgidata):
             continue
         except Errors.MMAlreadyAMember as v:
             erroraddrs.append(v)
-        except Errors.MembershipIsBanned, pattern:
+        except Errors.MembershipIsBanned as pattern:
             sender = mlist.GetRecord(request_id)[1]
             banaddrs.append((sender, pattern))
     # save the list and print the results

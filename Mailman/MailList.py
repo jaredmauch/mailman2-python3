@@ -139,7 +139,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 except AttributeError:
                     pass
             else:
-                raise AttributeError, name
+                raise AttributeError(name)
 
     def __repr__(self):
         if self.Locked():
