@@ -130,7 +130,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], 'l:x:wh',
                                    ['listname=', 'exclude=', 'owners',
                                     'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     options = Options()

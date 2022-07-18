@@ -146,7 +146,7 @@ def move_language_templates(mlist):
         # Match against the lists/<list>/*.prev template
         try:
             fp = open(os.path.join(mlist.fullpath(), gtemplate + '.prev'))
-        except IOError, e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
@@ -156,7 +156,7 @@ def move_language_templates(mlist):
         # Match against the lists/<list>/en/* templates
         try:
             fp = open(os.path.join(mlist.fullpath(), 'en', gtemplate))
-        except IOError, e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
@@ -166,7 +166,7 @@ def move_language_templates(mlist):
         # Match against the templates/* template
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
-        except IOError, e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
@@ -176,7 +176,7 @@ def move_language_templates(mlist):
         # Match against the templates/*.prev template
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate + '.prev'))
-        except IOError, e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
@@ -449,7 +449,7 @@ def update_qfiles():
                 msg, data = dequeue(filebase)
                 if msg is not None and data is not None:
                     sb.enqueue(msg, data)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             if e.errno != errno.ENOTDIR:
                 raise
             print C_('Warning!  Not a directory: %(dirpath)s')
@@ -493,7 +493,7 @@ def dequeue(filebase):
     try:
         data = ext_read(dbfile)
         os.unlink(dbfile)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
         if e.errno != errno.ENOENT: raise
         data = {}
     # Between 2.1b4 and 2.1b5, the `rejection-notice' key in the metadata
@@ -514,16 +514,16 @@ def dequeue(filebase):
                 except EOFError:
                     pass
             os.unlink(pckfile)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             if e.errno != errno.ENOENT: raise
             msgfp = None
             try:
                 msgfp = open(msgfile)
                 msg = email.message_from_file(msgfp, Message.Message)
                 os.unlink(msgfile)
-            except EnvironmentError, e:
+            except EnvironmentError as e:
                 if e.errno != errno.ENOENT: raise
-            except (email.Errors.MessageParseError, ValueError), e:
+            except (email.Errors.MessageParseError, ValueError) as e:
                 # This message was unparsable, most likely because its
                 # MIME encapsulation was broken.  For now, there's not
                 # much we can do about it.
@@ -557,7 +557,7 @@ def update_pending():
     # Try to load the Mailman 2.0 file
     try:
         fp = open(file20)
-    except IOError, e:
+    except IOError as e:
         if e.errno != errno.ENOENT: raise
     else:
         print C_('Updating Mailman 2.0 pending_subscriptions.db database')
@@ -568,7 +568,7 @@ def update_pending():
         # Try to load the Mailman 2.1.x where x < 5, file
         try:
             fp = open(file214)
-        except IOError, e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
             print C_('Updating Mailman 2.1.4 pending.pck database')
@@ -652,11 +652,11 @@ def update_pending():
             mlist.Unlock()
     try:
         os.unlink(file20)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ENOENT: raise
     try:
         os.unlink(file214)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ENOENT: raise
 
 
