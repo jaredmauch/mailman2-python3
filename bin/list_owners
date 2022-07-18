@@ -49,13 +49,6 @@ from Mailman.i18n import C_
 
 PROGRAM = sys.argv[0]
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def usage(code, msg=''):
     if code:
@@ -73,7 +66,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'wmh',
                                    ['with-listnames', 'moderators', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     withnames = moderators = False
@@ -102,9 +95,9 @@ def main():
                 unique[addr] = 1
             keys = unique.keys()
             keys.sort()
-            print listname
+            print(listname)
             for k in keys:
-                print '\t', k
+                print('\t', k)
     else:
         unique = {}
         for listname in listnames:
@@ -113,7 +106,7 @@ def main():
         keys = unique.keys()
         keys.sort()
         for k in keys:
-            print k
+            print(k)
 
 
 

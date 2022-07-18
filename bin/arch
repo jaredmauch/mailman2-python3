@@ -82,9 +82,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -95,7 +95,7 @@ def main():
         opts, args = getopt.getopt(
             sys.argv[1:], 'hs:e:q',
             ['help', 'start=', 'end=', 'quiet', 'wipe'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     start = None
@@ -139,7 +139,7 @@ def main():
     try:
         try:
             mlist = MailList(listname)
-        except Errors.MMListError, e:
+        except Errors.MMListError as e:
             usage(2, C_('No such list "%(listname)s"\n%(e)s'))
         if mbox is None:
             mbox = mlist.ArchiveFileName()
@@ -164,7 +164,7 @@ def main():
         # Try to open mbox before wiping old archive.
         try:
             fp = open(mbox)
-        except IOError, msg:
+        except IOError as msg:
             usage(3, C_('Cannot open mbox file %(mbox)s: %(msg)s'))
         # Maybe wipe the old archives
         if wipe:

@@ -48,9 +48,9 @@ from Mailman.i18n import C_
 
 
 def usage(code, msg=''):
-    print C_(__doc__.replace('%', '%%'))
+    print(C_(__doc__.replace('%', '%%')))
     if msg:
-        print msg
+        print(msg)
     sys.exit(code)
 
 
@@ -58,7 +58,7 @@ def usage(code, msg=''):
 def fix_url(mlist, *args):
     try:
         opts, args = getopt.getopt(args, 'u:v', ['urlhost=', 'verbose'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     verbose = 0
@@ -72,7 +72,7 @@ def fix_url(mlist, *args):
     # Make sure list is locked.
     if not mlist.Locked():
         if verbose:
-            print C_('Locking list')
+            print(C_('Locking list'))
         mlist.Lock()
     if urlhost:
         web_page_url = mm_cfg.DEFAULT_URL_PATTERN % urlhost
@@ -82,12 +82,12 @@ def fix_url(mlist, *args):
         mailhost = mm_cfg.DEFAULT_EMAIL_HOST
 
     if verbose:
-        print C_('Setting web_page_url to: %(web_page_url)s')
+        print(C_('Setting web_page_url to: %(web_page_url)s'))
     mlist.web_page_url = web_page_url
     if verbose:
-        print C_('Setting host_name to: %(mailhost)s')
+        print(C_('Setting host_name to: %(mailhost)s'))
     mlist.host_name = mailhost
-    print C_('Saving list')
+    print('Saving list')
     mlist.Save()
     mlist.Unlock()
 

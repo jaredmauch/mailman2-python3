@@ -314,11 +314,11 @@ script.
             newname = "%s.mm_install-dunno_what_this_was_but_its_in_the_way" \
                       % o_pub_mbox_file
             os.rename(o_pub_mbox_file, newname)
-            print C_("""\
+            print(C_("""\
     unknown file in the way, moving
         %(o_pub_mbox_file)s
     to
-        %(newname)s""")
+        %(newname)s"""))
         else: # directory
             print('Nothing to do.')
 
@@ -399,12 +399,12 @@ def remove_old_sources(module):
         print(C_('removing %(src)s'))
         try:
             os.unlink(src)
-        except os.error, rest:
+        except os.error as rest:
             print(C_("Warning: couldn't remove %(src)s -- %(rest)s"))
     if module.endswith('.py') and os.path.exists(pyc):
         try:
             os.unlink(pyc)
-        except os.error, rest:
+        except os.error as rest:
             print(C_("couldn't remove old file %(pyc)s -- %(rest)s"))
 
 
@@ -709,7 +709,7 @@ If your archives are big, this could take a minute or two..."""))
                 mlist.Lock(0.5)
             except TimeOutError:
                 print(C_(
-                    'WARNING: could not acquire lock for list: %(listname)s', file=sys.stderr)
+                    'WARNING: could not acquire lock for list: %(listname)s', file=sys.stderr))
                 errors = errors + 1
             else:
                 # Pre 1.0b7 stored 0 in the gate_watermarks file to indicate
@@ -771,7 +771,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hf',
                                    ['help', 'force'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     if args:

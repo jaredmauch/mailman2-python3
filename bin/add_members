@@ -105,9 +105,9 @@ def usage(status, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(status)
 
 
@@ -159,7 +159,7 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
                 userdesc.invitation = mlist.internal_name()
                 # InviteNewMember doesn't throw Errors.MMAlreadyAMember.
                 if mlist.isMember(userdesc.address):
-                    print >> tee, _('Already a member: %(member)s')
+                    print(_('Already a member: %(member)s'), file=tee)
                     continue
                 mlist.InviteNewMember(userdesc, invite_msg)
             else:
@@ -169,22 +169,22 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
                                         whence='bin/add_members',
                                        )
         except Errors.MMAlreadyAMember:
-            print >> tee, _('Already a member: %(member)s')
-        except Errors.MembershipIsBanned, pattern:
-            print >> tee, ('%s:' %
-                           member), _('Banned address (matched %(pattern)s)')
+            print(_('Already a member: %(member)s'), file=tee)
+        except Errors.MembershipIsBanned as pattern:
+            print(('%s:' %
+                           member), _('Banned address (matched %(pattern)s)'), file=tee)
         except Errors.MMBadEmailError:
             if userdesc.address == '':
-                print >> tee, _('Bad/Invalid email address: blank line')
+                print(_('Bad/Invalid email address: blank line'), file=tee)
             else:
-                print >> tee, _('Bad/Invalid email address: %(member)s')
+                print(_('Bad/Invalid email address: %(member)s'), file=tee)
         except Errors.MMHostileAddress:
-            print >> tee, _('Hostile address (illegal characters): %(member)s')
+            print(_('Hostile address (illegal characters): %(member)s'), file=tee)
         else:
             if invite:
-                print >> tee, _('Invited: %(member)s')
+                print(_('Invited: %(member)s'), file=tee)
             else:
-                print >> tee, _('Subscribed: %(member)s')
+                print(_('Subscribed: %(member)s'), file=tee)
                 if nomail:
                     mlist.setDeliveryStatus(
                         userdesc.address.lower(), MemberAdaptor.BYADMIN)
@@ -203,7 +203,7 @@ def main():
                                     'invite-msg-file=',
                                     'nomail',
                                     'help',])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     if len(args) != 1:
