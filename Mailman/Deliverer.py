@@ -18,8 +18,8 @@
 
 """Mixin class with message delivery routines."""
 
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 
 from Mailman import mm_cfg
 from Mailman import Errors

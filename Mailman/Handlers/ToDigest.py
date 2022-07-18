@@ -30,14 +30,13 @@ import re
 import copy
 import time
 import traceback
-from types import ListType
 from io import StringIO
 
 from email.Parser import Parser
 from email.Generator import Generator
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 from email.Utils import getaddresses, formatdate
 from email.Header import decode_header, make_header, Header
 from email.Charset import Charset
