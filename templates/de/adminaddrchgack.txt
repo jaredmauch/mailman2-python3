@@ -1,0 +1,2 @@
+Die E-Mail-Adresse für %(name)s auf der Liste %(listname)s wurde
+erfolgreich von %(oldaddr)s zu %(newaddr)s geändert.

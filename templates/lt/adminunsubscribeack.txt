@@ -1,0 +1,2 @@
+%(member)s paðalintas ið %(listname)s.
+%(whence)s

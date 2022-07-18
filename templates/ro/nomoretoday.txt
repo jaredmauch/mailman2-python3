@@ -1,0 +1,9 @@
+Am primit un mesaj de la adresa dumneavoastră '%(sender)s' prin care
+cereţi un răspuns automat de la lista de discuţii %(listname)s.  Am primit
+alte %(num)s asemenea mesaje de la dumneavoastră astăzi.  Pentru a preveni
+eventualele probleme precum buclele între roboţii de email, nu vă vom
+mai trimite nici un alt răspuns automat azi.  Vă rugăm să mai încercaţi mâine.
+
+Dacă credeţi că acest mesaj v-a fost trimis din greşeală, sau dacă aveţi orice
+alte întrebări, vă rugăm să contactaţi proprietarul listei, la adresa
+%(owneremail)s.

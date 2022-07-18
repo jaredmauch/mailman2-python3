@@ -1,0 +1,12 @@
+Vian peton al la dissendolisto %(listname)s
+
+    %(request)s
+
+malakceptis la moderiganto de la listo. La moderiganto
+indikis la jenan kialon por malakcepti vian peton:
+
+    "%(reason)s"
+
+Bonvolu sendi ĉiajn demandojn kaj komentojn a la listestro:
+
+    %(adminaddr)s

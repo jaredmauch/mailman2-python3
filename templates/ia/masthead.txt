@@ -1,0 +1,13 @@
+Invia messages al lista de diffusion %(real_name)s via le adresse
+    %(got_list_email)s
+
+Pro abonar te o disabonar te via le World Wide Web, visita
+    %(got_listinfo_url)s
+o, via email, invia un message con le subjecto o corpore 'help' a
+    %(got_request_email)s
+
+Tu pote scriber al persona que gere iste lista a
+    %(got_owner_email)s
+
+Quando tu responde, per favor, modifica le linea de subjecto de sorta que
+illo es plus specific que "Re: Digesto de %(real_name)s..."

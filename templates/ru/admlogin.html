@@ -1,0 +1,34 @@
+<html>
+<head>
+    <title>Аутентификация %(who)s списка рассылки %(listname)s</title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Аутентификация %(who)s списка рассылки %(listname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Введите пароль %(who)s:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT" name="admlogin" value="Начать работу..."></td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Важно:</em></strong> вы должны разрешить cookies,
+      в противном случае вы не сможете вносить какие бы то ни было изменения.
+
+      <p>Файлы cookies используются для того, чтобы хранить параметры сеанса работы.
+      В частности, при его использовании вам не потребуется вводить пароль при
+      выполнении каждой административной операции. Информация о сеансе работы будет
+      удалена, когда вы закроете броузер. Вы также можете явным образом завершить
+      сеанс, кликнув на ссылку <em>Завершить работу</em>. (Вы увидите ее после
+      входа в административный интерфейс).
+</FORM>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<html>
+<head>
+ <title>%(realname)s Priv&aacute;t arch&iacute;vum azonos&iacute;t&aacute;s</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(realname)s Priv&aacute;t arch&iacute;vum
+	    azonos&iacute;t&aacute;s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD> <div ALIGN="Right">E-mail c&iacute;m:  </div></TD>
+      <TD> <INPUT TYPE="TEXT" NAME="username" SIZE="30"> </TD>
+    <tr>
+    </tr>
+    <TD> <div ALIGN="Right">Jelsz&oacute;: </div> </TD>
+      <TD> <INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    <tr>
+    </tr>
+      <td colspan=2 align="middle"><INPUT TYPE="SUBMIT" name="submit" VALUE="Bel&eacute;p&eacute;s...">
+      </td>
+    </tr>
+  </TABLE>
+  <p><strong><em>Fontos:</em></strong> Ett&#337;l az oldalt&oacute;l enged&eacute;lyezned kell a s&uuml;tik 
+  fogad&aacute;s&aacute;t a b&ouml;ng&eacute;sz&#337;dben, k&uuml;l&ouml;nben semmilyen adminisztr&aacute;tori v&aacute;ltoztat&aacute;s nem fog v&eacute;grehajt&oacute;dni.
+
+  <p>A Mailman az adminisztr&aacute;ci&oacute;s m&#369;veletekn&eacute;l a folyamatos azonos&iacute;t&aacute;shoz s&uuml;tiket haszn&aacute;l, 
+  &iacute;gy nem kell minden m&oacute;dos&iacute;t&aacute;shoz &uacute;jraazonos&iacute;tani magadat. A s&uuml;ti a b&ouml;ng&eacute;sz&#337; bez&aacute;r&aacute;s&aacute;val, 
+  illetve az <em>Egy&eacute;b adminisztr&aacute;ci&oacute;s teend&#337;k</em> a <em>Kil&eacute;p&eacute;s</em>-re kattintva (ezt 
+  csak sikeres bejelentkez&eacute;s ut&aacute;n lehet el&eacute;rni) &eacute;rv&eacute;ny&eacute;t veszti.
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

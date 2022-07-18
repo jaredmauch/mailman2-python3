@@ -1,0 +1,15 @@
+Trimiteţi mesajele adresate listei %(real_name)s la adresa
+	%(got_list_email)s
+
+Pentru a vă abona sau dezabona prin intermediul Internetului, vizitaţi
+	%(got_listinfo_url)s
+
+sau, prin intermediul unui mesaj email: trimiteţi un mesaj cu subiectul
+sau mesajul 'help' la adresa
+	%(got_request_email)s
+
+Puteţi apela persoana care administrează lista la adresa
+	%(got_owner_email)s
+
+Când răspundeţi, vă rugăm să editaţi câmpul Subiect pentru a fi cât mai
+specific, nu doar "Re: Contents of %(real_name)s digest..."

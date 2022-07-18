@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- $Revision: 5063 $ -->
+<HTML>
+  <HEAD>
+    <TITLE><MM-List-Name> Info Sivu</TITLE>
+  
+  </HEAD>
+  <BODY BGCOLOR="#ffffff">
+
+    <P>
+      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
+	<TR>
+	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
+	<MM-List-Description></FONT></B>
+	  </TD>
+	</TR>
+	<tr>
+	    <td colspan="2">
+	      <p>&nbsp;
+	    </td>
+	  </tr>
+	  <tr>
+	    <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	      <B><FONT COLOR="#000000">Tietoja listasta <MM-List-Name></FONT></B>
+	    </TD>
+            <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+              <MM-lang-form-start><MM-displang-box> <MM-list-langs>
+              <MM-form-end>
+            </TD>
+	  </TR>
+	    <tr>
+	      <td colspan="2">
+		<P><MM-List-Info></P>
+	  <p> N&auml;hd&auml;ksesi listalle aikaisemmin l&auml;hetetyt viestit,
+	      siirry <MM-Archive><MM-List-Name>
+		  arkistoon</MM-Archive>.
+	      <MM-Restricted-List-Message>
+	  </p>
+	</TD>
+      </TR>
+      <TR>
+	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	  <B><FONT COLOR="#000000">Listan k&auml;ytt&auml;minen <MM-List-Name></FONT></B>
+	</TD>
+      </TR>
+      <tr>
+	<td colspan="2">
+	  Postittaaksesi viestin kaikille listan j&auml;senille, l&auml;het&auml;
+          viesti osoitteeseen 
+	  <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
+
+	  <p>Voit liitty&auml; listalle tai muuttaa asetuksiasi 
+	    allaolevassa kappaleessa.
+	</td>
+      </tr>
+      <TR>
+	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	  <B><FONT COLOR="#000000">Listalle <MM-List-Name> liittyminen</FONT></B>
+	</TD>
+      </TR>
+      <tr>
+	<td colspan="2">
+	  <P>
+	    Liity listalle <MM-List-Name> t&auml;ytt&auml;m&auml;ll&auml; oheinen lomake.
+	  <MM-List-Subscription-Msg>
+	  <ul>
+    <MM-Subscribe-Form-Start>
+	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
+		WIDTH="70%">
+		<TR>
+		  <TD BGCOLOR="#dddddd" WIDTH="55%">S&auml;hk&ouml;postiosoitteesi:</TD>
+		  <TD WIDTH="33%"><MM-Subscribe-Box>
+	</TD>
+	<TD WIDTH="12%">&nbsp;</TD></TR>
+      <tr>
+        <td bgcolor="#dddddd" width="55%">Nimesi (vapaaehtoinen):</td>
+        <td width="33%"><mm-fullname-box></td>
+	<TD WIDTH="12%">&nbsp;</TD></TR>
+      <TR>
+	<TD COLSPAN="3"><FONT SIZE=-1>Voit antaa t&auml;h&auml;n salasanan
+            asetustesi yll&auml;pitoa varten. T&auml;m&auml; salasanan suojaus
+            j&auml;rjestelm&auml;ss&auml; on heikko, mutta se est&auml;&auml; muita k&auml;ytt&auml;ji&auml; 
+            p&auml;&auml;sem&auml;st&auml; tahattomasti listalla oleviin tietoihisi k&auml;siksi.
+            <b>&Auml;l&auml; k&auml;yt&auml; t&auml;ss&auml; samaa salasanaa, jota k&auml;yt&auml;t t&auml;rkeiden 
+            asioiden suojaamiseen</b> sill&auml; salasana l&auml;hetet&auml;&auml;n 
+            tarvittaessa sinulle
+            suojaamattomana s&auml;hk&ouml;postiviestin&auml;. 
+
+            <br><br>Jos et t&auml;yt&auml; salasanakentt&auml;&auml; niin j&auml;rjestelm&auml;
+            generoi automaattisesti sinulle salasanan.
+            Salasana l&auml;hetet&auml;&auml;n sinulle s&auml;hk&ouml;postilla,
+            kun olet vahvistanut listalle liittymisesi.
+            Voit aina pyyt&auml;&auml; j&auml;rjestelm&auml;&auml; l&auml;hett&auml;m&auml;&auml;n salasanasi
+            s&auml;hk&ouml;postitse, jolloin voit muuttaa omia 
+            postituslista-asetuksiasi.
+	    <MM-Reminder>
+	    </font>
+	</TD>
+      </TR>  
+      <TR>
+	<TD BGCOLOR="#dddddd">Valitse salasana:</TD>
+	<TD><MM-New-Password-Box></TD>
+	<TD>&nbsp;</TD></TR>
+      <TR> 
+	<TD BGCOLOR="#dddddd">Valittu salasana uudestaan:</TD>
+	<TD><MM-Confirm-Password></TD>
+	<TD>&nbsp; </TD></TR>
+      <tr>
+        <TD BGCOLOR="#dddddd">Mill&auml; kielell&auml; haluat ohjeet ja lomakkeet?</TD> 
+        <TD> <MM-list-langs></TD>
+        <TD>&nbsp; </TD></TR>
+      <mm-digest-question-start>
+      <tr>
+	<td>Haluatko vastaanottaa listan viestit p&auml;ivitt&auml;isen&auml; kokoelmana yksitt&auml;isten
+          viestien sijaan?
+	  </td>
+	<td><MM-Undigest-Radio-Button> Ei
+	    <MM-Digest-Radio-Button>  Kyll&auml;
+	</TD>
+      </tr>
+      <mm-digest-question-end>
+      <mm-recaptcha-ui>
+      <mm-captcha-ui>
+      <tr>
+	<td colspan="3">
+	  <center><MM-Subscribe-Button></center>
+    </td>
+    </tr>
+    </TABLE>
+    <MM-Form-End>
+    </ul>
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	<a name="subscribers">
+        <B><FONT COLOR="#000000"><MM-List-Name> Listalle liittyneet</FONT></B></a>
+      </TD>
+    </TR>
+    <tr>
+      <TD COLSPAN="2" WIDTH="100%">
+	<MM-Roster-Form-Start>
+	<MM-Roster-Option>
+	    <MM-Form-End>
+	  <p>
+	<MM-Options-Form-Start>
+	<MM-Editing-Options>
+		<MM-Form-End>
+      </td>
+    </tr>
+  </table>
+<MM-Mailman-Footer>
+</BODY>
+</HTML>

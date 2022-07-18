@@ -1,0 +1,166 @@
+Received: from cccclyvw01.ccc.coopcam.com (firewall.camerondiv.com
+	[204.126.127.253])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k552hseW018615
+	for <gpc-talk-bounces@grizz.org>; Sun, 4 Jun 2006 19:43:54 -0700
+Received: from CCCCLYEX03.ccc.coopcam.com ([10.4.221.23]) by 
+	cccclyvw01.ccc.coopcam.com with InterScan Message Security Suite;
+	Sun, 04 Jun 2006 21:43:21 -0500
+Received: from cccclyna01.ccc.coopcam.com ([10.4.221.21]) by 
+	CCCCLYEX03.ccc.coopcam.com with Microsoft SMTPSVC(6.0.3790.0);
+	Sun, 4 Jun 2006 21:43:21 -0500
+From: postmaster@c-a-m.com
+To: gpc-talk-bounces@grizz.org
+Date: Sun, 4 Jun 2006 21:43:21 -0500
+MIME-Version: 1.0
+Content-Type: multipart/mixed; report-type=delivery-status;
+	boundary="=_Boundary_A1qfT7eEmP9CDBHy3Spw"
+X-DSNContext: 335a7efd - 4523 - 00000001 - 80040546
+Message-ID: <7CvPg3IK9000149b3@cccclyna01.ccc.coopcam.com>
+Subject: Delivery Status Notification (Failure)
+X-OriginalArrivalTime: 05 Jun 2006 02:43:21.0817 (UTC) 
+	FILETIME=[CF471490:01C68849]
+X-imss-version: 2.040
+X-imss-result: Passed
+X-imss-approveListMatch: *@c-a-m.com
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+This is a MIME-formatted message.  
+Portions of this message may be unreadable without a MIME-capable mail program.
+
+--=_Boundary_A1qfT7eEmP9CDBHy3Spw
+Content-Type: message/rfc822
+Content-Disposition: attachment;
+	filename=originalmail.eml
+
+Received: from CCCCLYEX03.ccc.coopcam.com ([10.4.221.23]) by 
+	cccclyvw01.ccc.coopcam.com with InterScan Message Security Suite;
+	Sun, 04 Jun 2006 21:43:21 -0500
+Received: from cccclyna01.ccc.coopcam.com ([10.4.221.21]) by 
+	CCCCLYEX03.ccc.coopcam.com with Microsoft SMTPSVC(6.0.3790.0);
+	Sun, 4 Jun 2006 21:43:21 -0500
+From: postmaster@c-a-m.com
+To: gpc-talk-bounces@grizz.org
+Date: Sun, 4 Jun 2006 21:43:21 -0500
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="9B095B5ADSN=_01C651B2AA11765C0001F6A4cccclyna01.ccc.c"
+X-DSNContext: 335a7efd - 4523 - 00000001 - 80040546
+Message-ID: <7CvPg3IK9000149b3@cccclyna01.ccc.coopcam.com>
+Subject: Delivery Status Notification (Failure)
+Return-Path: <>
+X-OriginalArrivalTime: 05 Jun 2006 02:43:21.0817 (UTC) 
+	FILETIME=[CF471490:01C68849]
+X-imss-version: 2.040
+X-imss-result: Passed
+X-imss-approveListMatch: *@c-a-m.com
+
+This is a MIME-formatted message.  
+Portions of this message may be unreadable without a MIME-capable mail program.
+
+--9B095B5ADSN=_01C651B2AA11765C0001F6A4cccclyna01.ccc.c
+Content-Type: text/plain; charset=unicode-1-1-utf-7
+
+This is an automatically generated Delivery Status Notification.
+
+Delivery to the following recipients failed.
+
+       userx@example.com
+
+
+
+
+--9B095B5ADSN=_01C651B2AA11765C0001F6A4cccclyna01.ccc.c
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns;cccclyna01.ccc.coopcam.com
+Received-From-MTA: dns;cccclyvw01.ccc.coopcam.com
+Arrival-Date: Sun, 4 Jun 2006 21:43:21 -0500
+
+Final-Recipient: rfc822;userx@example.com
+Action: failed
+Status: 5.1.1
+
+--9B095B5ADSN=_01C651B2AA11765C0001F6A4cccclyna01.ccc.c
+Content-Type: message/rfc822
+
+Received: from cccclyvw01.ccc.coopcam.com ([10.4.223.38]) by
+	cccclyna01.ccc.coopcam.com with Microsoft SMTPSVC(6.0.3790.0); 
+	Sun, 4 Jun 2006 21:43:21 -0500
+Received: from sb7.songbird.com ([208.184.79.137]) by 
+	cccclyvw01.ccc.coopcam.com with InterScan Message Security Suite;
+	Sun, 04 Jun 2006 21:43:20 -0500
+Received: from sb7.songbird.com (sb7.songbird.com [127.0.0.1])by 
+	sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k552hf0f018557for <userx@example.com>; Sun, 4 Jun 2006 19:43:41 -0700
+Subject: The results of your email commands
+From: gpc-talk-bounces@grizz.org
+To: userx@example.com
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="===============1628420505=="
+Message-ID: <mailman.4360.1149475419.1567.gpc-talk@grizz.org>
+Date: Sun, 04 Jun 2006 19:43:39 -0700
+Precedence: bulk
+X-BeenThere: gpc-talk@grizz.org
+X-Mailman-Version: 2.1.5
+List-Id: Grizzly Peak Cyclists general discussion list <gpc-talk.grizz.org>
+X-List-Administrivia: yes
+Sender: gpc-talk-bounces@grizz.org
+Errors-To: gpc-talk-bounces@grizz.org
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: gpc-talk-bounces@grizz.org
+X-imss-version: 2.040
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:3
+X-imss-tmaseResult: TT:1 TS:0.7500 TC:03 TRN:14 TV:3.52.1006(14484.000)
+X-imss-scores: Clean:5.68116 C:2 M:4 S:5 R:5
+X-imss-settings: Baseline:5 C:3 M:3 S:3 R:3 (1.5000 1.5000)
+Return-Path: gpc-talk-bounces@grizz.org
+X-OriginalArrivalTime: 05 Jun 2006 02:43:21.0006 (UTC)
+	FILETIME=[CECB54E0:01C68849]
+
+--===============1628420505==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+The results of your email command are provided below. Attached is your
+original message.
+
+- Results:
+    Ignoring non-text/plain MIME parts
+    userx@example.com is not a member of the GPC-talk mailing list
+
+
+
+--===============1628420505==
+Content-Type: message/rfc822
+MIME-Version: 1.0
+
+Message removed
+------=_NextPart_000_0001_01C6880F.0B172130--
+
+--===============1628420505==--
+
+--9B095B5ADSN=_01C651B2AA11765C0001F6A4cccclyna01.ccc.c--
+
+--=_Boundary_A1qfT7eEmP9CDBHy3Spw
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This e-mail is confidential, may contain proprietary information
+of Cameron and its operating Divisions and may be confidential
+or privileged.
+
+This e-mail should be read, copied, disseminated and/or used only
+by the addressee. If you have received this message in error please
+delete it, together with any attachments, from your system.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--=_Boundary_A1qfT7eEmP9CDBHy3Spw--
+

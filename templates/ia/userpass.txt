@@ -1,0 +1,26 @@
+Tu - o un persona agente in tu nomine - ha demandate un rememoration
+del contrasigno pro tu abonamento al lista de diffusion
+%(fqdn_lname)s. Tu ha besonio de iste contrasigno pro poter cambiar le
+preferentias de tu abonamento (p.ex. si tu desira livration regular de
+messages o un digesto quotidian con tote le messages del die). Haber
+iste contrasigno anque simplifica disabonar te del lista de diffusion.
+
+Tu es abonate con le adresse: %(user)s
+
+Tu contrasigno pro le lista %(listname)s es: %(password)s
+
+Pro cambiar le preferentias de tu abonamento, visita tu pagina de
+preferentias:
+
+    %(options_url)s
+
+Tu pote equalmente facer tal cambiamentos per posta electronic.
+Invia un message a:
+
+    %(requestaddr)s
+
+con le texto "help" (in anglese) in le subjecto o in le texto. Le
+responsa automatisate continera instructiones plus detaliate.
+
+Questiones o commentarios? Per favor, invia los al administrator del
+lista de diffusion %(listname)s al adresse %(owneraddr)s.

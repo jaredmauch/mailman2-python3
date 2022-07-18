@@ -1,0 +1,30 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from mta163.mail.re2.yahoo.com (mta163.mail.re2.yahoo.com [206.190.36.159])
+	by sb7.songbird.com (8.12.11/8.12.11) with SMTP id k11HW3n6004452
+	for <century-announce-bounces@grizz.org>; Wed, 1 Feb 2006 09:32:03 -0800
+Date: Wed, 1 Feb 2006 09:32:03 -0800
+Message-Id: <200602011732.k11HW3n6004452@sb7.songbird.com>
+From: MAILER-DAEMON@yahoo.com
+To: century-announce-bounces@grizz.org
+X-Loop: MAILER-DAEMON@yahoo.com
+Subject: Delivery failure
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Found to be clean
+X-Songbird-From: 
+
+Message from yahoo.com.
+Unable to deliver message to the following address(es).
+
+<userx@example.com>:
+This user doesn't have a yahoo.com account (userx@example.com) [0]
+
+<usery@example.com>:
+Sorry your message to usery@example.com cannot be delivered. This account has been disabled or discontinued [#102].
+
+<userz@example.com>:
+This user doesn't have a yahoo.com account (userz@example.com) [0]
+
+--- Original message follows.
+
+Message removed
+

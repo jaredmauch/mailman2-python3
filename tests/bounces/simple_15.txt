@@ -1,0 +1,40 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from mailserver.kviv.be (cust210-66.dsl.versadsl.be [62.166.210.66])
+	by sb7.songbird.com (8.12.11/8.12.11) with ESMTP id k2C4XpUM021161
+	for <gpc-talk-bounces@grizz.org>; Sat, 11 Mar 2006 20:33:52 -0800
+Received: from [192.9.1.53] by mailserver.kviv.be (NTMail
+	5.05.0002/CE0026.01.9294fe1f) with ESMTP id kvqkfaaa for
+	gpc-talk-bounces@grizz.org; Sun, 12 Mar 2006 05:36:18 +0000
+Date: Sun, 12 Mar 2006 05:36:18 +0100
+From: imss@kviv.be
+To: <gpc-talk-bounces@grizz.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="------------InterScan_NT_MIME_Boundary"
+Subject: Mail could not be delivered
+Message-Id: <04361859181401@mailserver.kviv.be>
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Found to be clean
+X-Songbird-From: 
+
+
+--------------InterScan_NT_MIME_Boundary
+Content-type: text/plain
+
+****** Message from InterScan Messaging Security Suite ******
+
+
+Sent <<< RCPT TO:<userx@example.be>
+Received >>> 550 5.1.1 unknown user.
+
+Unable to deliver message to <userx@example.be> (and other recipients in the same domain).
+
+************************     End of message     **********************
+
+--------------InterScan_NT_MIME_Boundary
+Content-type: message/rfc822
+
+Message removed
+
+--------------InterScan_NT_MIME_Boundary--
+

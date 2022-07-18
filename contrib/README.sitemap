@@ -1,0 +1,18 @@
+A bash script from Tomasz Chmielewski <mangoo@wpkg.org>.
+
+If you ever wondered how to generate a sitemap file for Mailman (the GNU
+Mailing List Manager), to be submitted i.e. to Google, here is how.
+
+All you have to do is replace a few variables, and submit the sitemap to
+your favourite search engine.  Consider using the new in 2.1.16 -p or
+--public-archive option to Mailman's bin/list_lists to generate the list of
+lists to process.  I.e.,
+
+LISTS=`/path/to/mailman/bin/list_lists -p -b`
+
+It is based on a real website running Mailman: http://lists.wpkg.org
+
+With sitemap code, it takes around 5 seconds to generate a sitemap consisting
+of 10000 articles.
+
+Run it once a day via cron.

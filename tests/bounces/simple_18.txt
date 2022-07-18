@@ -1,0 +1,33 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from mail.trusite.com (vendormail.truserv.com [64.94.39.5])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k57NS3QZ028360
+	for <gpc-talk-bounces@grizz.org>; Wed, 7 Jun 2006 16:28:03 -0700
+Message-Id: <200606072328.k57NS3QZ028360@sb7.songbird.com>
+Date: Wed, 7 Jun 2006 18:26:11 -0500
+Reply-to: postmaster@trusite.com
+From: "LSMTP for Windows NT v1.1b" <postmaster@mail.trusite.com>
+Subject: Undelivered mail
+To: gpc-talk-bounces@grizz.org
+X-Report-Type: Nondelivery; boundary="> Error description:"
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+An error was detected while processing the enclosed message.  A list of
+the affected recipient follows.   This list is in a special format that
+allows software like LISTSERV to automatically take action on incorrect
+addresses; you can safely ignore the numeric codes.
+
+--> Error description:
+Error-for:  userx@example.com
+Error-Code: 0
+Error-Text: Mailer mail.kesslersupply.com said:
+            "554 Message looping (received 6 times)"
+
+Error-End:  One error reported.
+
+------------------------------ Original message ------------------------------
+
+Message removed
+

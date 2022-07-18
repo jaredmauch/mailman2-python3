@@ -1,0 +1,4 @@
+%(member)s je bilo uspe¹no prijavljenih na %(listname)s.
+%(whence)s
+
+

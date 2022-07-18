@@ -1,0 +1,35 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from mimesweeper.ademe.fr (mail.ademe.fr [81.255.193.84])
+	by sb7.songbird.com (8.12.11/8.12.11) with ESMTP id k2ECmVcf007798
+	for <gpc-talk-bounces@grizz.org>; Tue, 14 Mar 2006 04:48:32 -0800
+Date: Tue, 14 Mar 2006 13:47:54 +0100 (CET)
+Message-Id: N77056c0a550a010202b5c
+Subject: =?UTF-8?Q?Utilisateur_non_recens=C3=A9_dans_l'annuaire_Ademe?=
+To: gpc-talk-bounces@grizz.org
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status; 
+	boundary="2453809.54.1306"
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Found to be clean
+X-Songbird-From: 
+
+--2453809.54.1306
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+A message could not be delivered to:
+userx@example.fr
+Subject: The results of your email commands
+L'adresse de messagerie r=C3=A9f=C3=A9renc=C3=A9e ci-dessus n'existe pas. V=
+euillez en v=C3=A9rifier l'orthographe.
+
+
+--2453809.54.1306
+Content-Type: message/delivery-status
+Reporting-MTA: mimesweeper.ademe.fr
+
+Message removed
+
+--2453809.54.1306--
+
+

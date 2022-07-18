@@ -1,0 +1,3 @@
+%(member)s bol úspešne prihlásený do konferencie %(listname)s.
+%(whence)s
+

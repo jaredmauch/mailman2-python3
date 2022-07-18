@@ -1,0 +1,46 @@
+Return-Path: <MAILER-DAEMON>
+Delivered-To: user@domain.com
+Received: from localhost (localhost [127.0.0.1])
+	by mail.domain.com (Postfix) with ESMTP id 7043958636E
+	for <user@domain.com>; Tue, 21 Dec 2010 14:05:59 -0600 (CST)
+X-Virus-Scanned: Debian amavisd-new at domain.com
+Received: from mail.domain.com ([127.0.0.1])
+	by localhost (mail.domain.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id GV6LC3VuoLKG for <user@domain.com>;
+	Tue, 21 Dec 2010 14:05:58 -0600 (CST)
+Received: by mail.domain.com (Postfix, from userid 5000)
+	id BD8D358639E; Tue, 21 Dec 2010 14:05:58 -0600 (CST)
+Message-ID: <dovecot-1292961958-380553-0@mail>
+Date: Tue, 21 Dec 2010 14:05:58 -0600
+From: Mail Delivery Subsystem <admin@domain.com>
+To: <user@domain.com>
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=disposition-notification;
+	boundary="15778/mail"
+Subject: Automatically rejected mail
+Auto-Submitted: auto-replied (rejected)
+Precedence: bulk
+
+This is a MIME-encapsulated message
+
+--15778/mail
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+Your message to <userx@example.com> was automatically rejected:
+Quota exceeded
+--15778/mail
+Content-Type: message/disposition-notification
+
+Reporting-UA: mail; Dovecot Mail Delivery Agent
+Final-Recipient: rfc822; userx@example.com
+Original-Message-ID: <2ee7df1322121930966bcc2318379726@localhost>
+Disposition: automatic-action/MDN-sent-automatically; deleted
+
+--15778/mail
+Content-Type: message/rfc822
+
+Message removed
+
+--15778/mail--

@@ -1,0 +1,10 @@
+Ihre Genehmigung ist für den folgenden Abonnementswunsch erforderlich:
+
+    Für:    %(username)s
+    Liste:  %(listname)s@%(hostname)s
+
+Bitte besuchen Sie bei Gelegenheit
+
+    %(admindb_url)s
+
+um diese Anfrage zu beantworten.

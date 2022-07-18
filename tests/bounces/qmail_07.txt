@@ -1,0 +1,25 @@
+From nobody Sat Dec 24 16:02:20 2011
+Return-Path: <>
+X-Original-To: announce-bounces@example.com
+Delivered-To: announce-bounces@example.com
+Received: from p3plsmtp18-06.prod.phx3.secureserver.net
+	(p3plsmtp18-06.prod.phx3.secureserver.net [173.201.193.191])
+	by example.com (Postfix) with ESMTP id 3E97F130D75
+	for <announce-bounces@example.com>;
+	Sat, 24 Dec 2011 16:02:07 -0500 (EST)
+Received: (qmail 1989 invoked for bounce); 24 Dec 2011 21:02:06 -0000
+Date: 24 Dec 2011 21:02:06 -0000
+From: MAILER-DAEMON@p3plsmtp18-06.prod.phx3.secureserver.net
+To: announce-bounces@example.com
+Subject: failure notice
+
+Your mail message to the following address(es) could not be delivered. This
+is a permanent error. Please verify the addresses and try again. If you are
+still having difficulty sending mail to these addresses, please contact
+Customer Support at 480-624-2500.
+
+<user@example.net>:
+child status 100...The e-mail message could not be delivered because the user's mailfolder is full.
+
+--- Below this line is a copy of the message.
+

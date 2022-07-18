@@ -1,0 +1,36 @@
+Ni bonvenigas vin en la retpoŝtoliston %(real_name)s@%(host_name)s
+%(welcome)s
+Por sendi poŝton al tiu ĉi listo, sendu viajn mesaĝojn al:
+
+  %(emailaddr)s
+
+Vi trovos ĝeneralan informon pri la listo ĉe:
+
+  %(listinfo_url)s
+
+Se iam volos malaboni ĝin aŭ ŝanĝi viajn agordojn (ekzemple 
+por (mal)ŝalti kompiladon de poŝto, ŝanĝi vian pasvorton, ktp.), 
+vizitu vian agordopaĝon ĉe:
+
+  %(optionsurl)s
+%(umbrella)s
+Vi povas ŝanĝi la samajn agordojn ankaŭ per retpoŝto sendante 
+mesaĝon al:
+
+  %(real_name)s-request@%(host_name)s
+
+kun la vorto «help» (sen citiloj) en la temo aŭ en la enhavo, 
+por ricevi mesaĝon kun instrukcioj.
+
+Vi devas koni vian pasvorton por ŝanĝi viajn agordojn (inkluzivante 
+ŝanĝon de via pasvorto mem) aŭ por malaboni la liston sen konfirmo.
+Ĝi estas jena:
+
+  %(password)s
+
+Kutime, la sistemo Mailman memorigos al vi viajn pasvortojn ĉe 
+%(host_name)s unu fojon monate, kvankam vi povas malŝalti tiun
+ĉi agordon laŭplaĉe. Tiu memorigo inkluzivos ankaŭ instrukciojn por
+ĉesigi aŭ reagordi vian abonon. 
+Via agordopaĝo ankaŭ havas butonon por resendi vian nunan
+pasvorton al vi.

@@ -1,0 +1,11 @@
+Hacked from bin/sync_members
+
+Copy mailman/contrib/sitemapgen to mailman/bin/ and execute it as so:
+
+  /path/to/mailman/bin/sitemapgen -l <listname>
+
+Alternatively add it to cron like so:
+
+5 0 * * *  for l in `/path/to/mailman/bin/list_lists -apb`; do 
+		/path/to/mailman/bin/sitemapgen $l; done
+

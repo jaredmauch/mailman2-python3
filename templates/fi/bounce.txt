@@ -1,0 +1,13 @@
+T‰m‰ on Mailman postituslistan kimmokeviestien (bounce) toimenpide- tiedotus:
+
+    Lista:	%(listname)s
+    J‰sen:	%(addr)s
+    Toimenpide:	Liittyminen %(negative)s%(did)s.
+    Syy:	Liian suuri m‰‰r‰ kimmokeviestej‰ (bounce).
+    %(but)s
+
+%(reenable)s
+Huomautus liitteen‰.
+
+Kysymyksi‰?
+Ottakaa yhteytt‰ Mailman- postituslistan yll‰pit‰j‰‰n %(owneraddr)s.

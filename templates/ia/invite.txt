@@ -1,0 +1,21 @@
+Le proprietario del lista %(listname)s a %(hostname)s te ha invitate a
+abonar tu adresse de e-mail "%(email)s" a su lista.
+
+Tu pote acceptar le invitation a %(listname)s simplemente per
+responder a iste message, mantenente le campo 'Subjecto:' intacte.
+
+Alternativemente, visita iste adresse web pro acceptar:
+
+    %(confirmurl)s
+
+Si mesmo isto non functiona, essaya mitter le linea sequente
+(e solmente le linea sequente!) in un message que tu invia a
+%(requestaddr)s :
+
+    confirm %(cookie)s
+
+Nonobstante, simplemente inviar un responsa a iste message deberea
+functionar ben pro le majoritate de programmas de e-mail.
+
+Si tu vole declinar iste invitation, il suffice ignorar iste message.
+Si tu ha questiones, per favor invia los a %(listowner)s.

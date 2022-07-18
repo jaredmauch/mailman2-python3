@@ -1,0 +1,23 @@
+From VM Thu Oct  4 15:25:26 2001
+X-VM-v5-Data: ([nil nil nil nil nil nil nil nil nil]
+	[nil "" "4" "November" "1999" "21:42:45" "-0000" "MAILER-DAEMON@gate0.n-h.net" "MAILER-DAEMON@gate0.n-h.net" nil "89" "failure notice" "^From:" nil nil "11" nil nil nil nil nil]
+	nil)
+Message-Id: <199911042119.QAA21584@python.org>
+Content-Length: 3215
+MIME-Version: 1.0
+From: MAILER-DAEMON@gate0.n-h.net
+To: psa-members-admin@python.org
+Subject: failure notice
+Date: 4 Nov 1999 21:42:45 -0000
+X-Digest: Mailman bounce lack-of-detection
+
+Hi. This is the qmail-send program at gate0.n-h.net.
+I'm afraid I wasn't able to deliver your message to the following addresses.
+This is a permanent error; I've given up. Sorry it didn't work out.
+
+<userx@example.de>:
+
+--- Below this line is a copy of the message.
+
+Message removed
+

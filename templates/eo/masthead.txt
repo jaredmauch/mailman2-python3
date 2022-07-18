@@ -1,0 +1,13 @@
+Sendu poŝton al la dissendolisto %(real_name)s per la adreso
+    %(got_list_email)s
+
+Por aboni aŭ malaboni ĝin per la interreto, vizitu
+    %(got_listinfo_url)s
+aŭ, per retpoŝto, sendu mesaĝon kun la temo aŭ enhavo 'help' al
+    %(got_request_email)s
+
+Vi povas skribi al la listestro ĉe 
+    %(got_owner_email)s
+
+Kiam vi respondos, bonvolu ŝanĝi la temlinion por ke ĝi estu 
+pli specifa ol "Re: Resumo de %(real_name)s..."

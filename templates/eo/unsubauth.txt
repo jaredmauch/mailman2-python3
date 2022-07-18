@@ -1,0 +1,11 @@
+Vian aprobon bezonas la jena peto malaboni 
+dissendoliston:
+
+    Por:  %(username)s
+    Listo:   %(listname)s@%(hostname)s
+
+Kiam oportunos al vi, vizitu la retpaĝon:
+
+    %(admindb_url)s
+
+por aprobi aŭ malaprobi la peton.

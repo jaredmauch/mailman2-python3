@@ -1,0 +1,31 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Auto-Submitted: auto-replied
+Date: Wed, 07 Nov 2012 10:47:34 +0400
+From: Mail Delivery System <Mailer-Daemon@mx183.mail.ru>
+Message-Id: <E1TVzQE-0003uW-ED@mx183.mail.ru>
+Subject: =?utf-8?b?0JLQsNGI0LUg0YHQvtC+0LHRidC10L3QuNC1INC90LUg0LTQvtGB0YLQsNCy0LvQ?=
+	=?utf-8?b?tdC90L4uIE1haWwgZmFpbHVyZS4=?=
+To: noreply@example.com
+Content-Transfer-Encoding: 8bit
+
+Это письмо создано автоматически сервером Mail.Ru, отвечать на него не нужно.
+
+К сожалению, Ваше письмо не может быть доставлено одному или нескольким получателям, потому что:
+
+  Message was not accepted -- invalid mailbox.
+ Local mailbox userx@example.ru is unavailable: user not found
+
+**********************
+
+A message that you sent was rejected by the local scanning code that
+checks incoming messages on this system. The following error was given:
+
+  Message was not accepted -- invalid mailbox.
+ Local mailbox userx@example.ru is unavailable: user not found
+
+------ This is a copy of your message, including all the headers.
+------ No more than 1K characters of the body are included.
+
+Message removed
+

@@ -1,0 +1,2 @@
+%(member)s er nå påmeldt listen %(listname)s.
+%(whence)s

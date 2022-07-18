@@ -1,0 +1,11 @@
+Autorizarea dumneavoastră este necesară în cazul unei cereri de abonare
+la o listă de discuţii:
+
+    De la:  %(username)s
+    Pentru: %(listname)s@%(hostname)s
+
+Când aveţi timp, vizitaţi adresa:
+
+    %(admindb_url)s
+
+pentru a procesa cererea.

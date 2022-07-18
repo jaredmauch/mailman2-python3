@@ -1,0 +1,59 @@
+<html>
+<head>
+    <title>%(realname)s privataus archyvo prisijungimas</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(realname)s privataus archyvo prisijungimas</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">El. pa&scaron;to adresas:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Slaptaþodis:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Uþeiti">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Important:</em></strong> From this point on, you
+      must have cookies enabled in your browser, otherwise no
+      administrative changes will take effect.
+
+      <p>Session cookies are used in Mailman's
+      administrative interface so that you don't need to
+      re-authenticate with every administrative operation.  This
+      cookie will expire automatically when you exit your browser, or
+      you can explicitly expire the cookie by hitting the
+      <em>Logout</em> link under <em>Other Administrative
+      Activities</em> (which you'll see once you successfully log in).
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

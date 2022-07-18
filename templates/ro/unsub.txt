@@ -1,0 +1,24 @@
+Confirmare de părăsire a listei de discuţii %(listname)s
+
+Am primit cererea %(remote)s de scoatere a adresei dumneavoastră,
+"%(email)s" din lista de discuţii %(listaddr)s.
+Pentru a confirma părăsirea acestei liste, returnaţi acest email
+(reply), păstrând intact câmpul Subiect, sau vizitaţi această
+adresă web:
+
+    %(confirmurl)s
+
+O altă alternativă este să includeţi următorul rând -- numai acesta --
+într-un mesaj către %(requestaddr)s:
+
+    confirm %(cookie)s
+
+De obicei, un simplu răspuns (reply) la acest mesaj ar trebui să
+funcţioneze în marea majoritate a cazurilor, atâta timp cât programul
+de email lasă câmpul Subiect în forma corectă (textul adiţional "Re:"
+ce este adăugat în Subiect nu contează).
+
+Dacă nu doriţi să părăsiţi lista, ignoraţi acest mesaj.  Dacă credeţi
+că cineva încearcă să vă scoata în mod abuziv de pe această listă,
+sau dacă aveţi alte întrebări, trimiteţi-le la următoarea adresă:
+%(listadmin)s.

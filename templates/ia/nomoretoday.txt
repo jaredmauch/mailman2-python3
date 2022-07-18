@@ -1,0 +1,11 @@
+Nos ha recipite un message de tu adresse `%(sender)s' demandante un responsa
+automatic del lista de diffusion %(listname)s. Hodie, nos ha jam
+vidite %(num)s de tal messages de te.
+
+A fin de evitar problemas como reexpedition infinite de messages inter
+systemas de messageria automatisate, nos non va inviar te alcun
+responsa ulterior hodie. Per favor, essaya de novo deman.
+
+Si tu crede que iste message te ha essite inviate in error, o si tu ha
+questiones, per favor, contacta le proprietario del lista al adresse
+%(owneremail)s.

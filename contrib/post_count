@@ -1,0 +1,39 @@
+# Show how much email sent through a mailman mail list
+# Copyright (c) Alain Williams <addw@phcomp.co.uk> January 2009
+# This program is free software and is licenced under the GPL: http://www.gnu.org/copyleft/gpl.html
+
+# Set the path to Mailman's private archives directory.
+# Adjust for your installation.
+ARCHIVES="/usr/local/mailman/archives/private"
+
+if [ "$1x" == "x" ] ; then
+	echo "Usage: $0 <list-name>"
+	exit
+fi
+
+cd $ARCHIVES/$1 || exit
+
+echo "Columns: month number-of-messages total-message-size"
+Months="January February March April May June July August September October November December"
+FilesTot=0
+
+# Work out starting year, look for something like: 2004-December
+startYear=$( ls -d [0-9][0-9][0-9][0-9]-* | sort | sed s/-.*// | head -1 )
+endYear=$( date '+%Y' )
+
+for year in $( seq $startYear $endYear  )
+do	echo "Year $year"
+	YearTot=0
+	for month in $Months
+	do
+		[[ ! -d $year-$month ]] && printf "$year $month\tnone\n" && continue
+		cd $year-$month || exit
+		files=$( ls -f [0-9]* | wc -l )
+		(( FilesTot += files ))
+		((  YearTot += files ))
+		printf "$year $month\t$files\t$( du -h | cut -f 1 )\n"
+		cd .. || exit
+	done
+	echo "Total for year $year: $YearTot"
+done
+echo "Emails total $FilesTot"

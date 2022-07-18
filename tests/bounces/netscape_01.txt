@@ -1,0 +1,76 @@
+Received: by master.kde.org id <S742399AbQEZVQS>;
+        Fri, 26 May 2000 23:16:18 +0200
+Received: from nmail.corel.com ([209.167.40.11]:48557 "EHLO nsmail.corel.com")
+        by master.kde.org with ESMTP id <S742400AbQEZVP6>;
+        Fri, 26 May 2000 23:15:58 +0200
+To:     kde-core-devel-admin@master.kde.org
+From:   Mail Administrator <Postmaster@nsmail.corel.com>
+Reply-To: Mail Administrator <Postmaster@nsmail.corel.com>
+Subject: Mail System Error - Returned Mail
+Date:   Fri, 26 May 2000 17:14:07 -0400
+Message-ID: <20000526211407.AAB24445@nsmail.corel.com>
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+                Boundary="===========================_ _= 461730(24445)"
+Sender: kde-core-devel-admin@master.kde.org
+Resent-Sender: kde-core-devel-admin@master.kde.org
+Resent-From: kde-core-devel@master.kde.org
+X-Mailing-List: <kde-core-devel@master.kde.org>
+Errors-To: kde-core-devel-admin@master.kde.org
+X-BeenThere: kde-core-devel@master.kde.org
+X-Mailman-Version: 2.0beta2
+Precedence: bulk
+List-Id: KDE's core development crew <kde-core-devel.master.kde.org>
+Resent-Date: Fri, 26 May 2000 23:16:18 +0200
+Return-Path: <kde-core-devel-admin@master.kde.org>
+X-Orcpt: rfc822;coolo@kde.org
+X-Mozilla-Status: 8001
+X-Mozilla-Status2: 00000000
+
+--===========================_ _= 461730(24445)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+This Message was undeliverable due to the following reason:
+
+Your message was not delivered because the destination computer was
+not reachable within the allowed queue period.  The amount of time
+a message is queued before it is returned depends on local configura-
+tion parameters.
+
+Most likely there is a network problem that prevented delivery, but
+it is also possible that the computer is turned off, or does not
+have a mail system running right now.
+
+Your message was not delivered within 2 days.
+Host corel.com is not responding.
+
+The following recipients did not receive your message:
+
+     <aaaaa@corel.com>
+The following recipients did not receive your message:
+
+     <bbbbb@corel.com>
+
+Please reply to Postmaster@nsmail.corel.com
+if you feel this message to be in error.
+
+
+--===========================_ _= 461730(24445)
+Content-Type: message/delivery-status
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+Reporting-MTA: dns; nsmail.corel.com
+Received-From-MTA: dns; [120.2.1.9] [120.2.1.9]
+Arrival-Date: Wed, 24 May 2000 16:50:34 -0400
+
+--===========================_ _= 461730(24445)
+Content-Type: message/rfc822
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+Message removed
+
+--===========================_ _= 461730(24445)--

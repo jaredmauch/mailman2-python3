@@ -1,0 +1,27 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from ns1.hbc.co.jp (ns1.hbc.co.jp [61.198.23.22])
+	by sb7.songbird.com (8.12.11/8.12.11) with SMTP id k2R85CVU014206
+	for <gpc-talk-bounces@grizz.org>; Mon, 27 Mar 2006 00:05:13 -0800
+Message-Id: <200603270805.k2R85CVU014206@sb7.songbird.com>
+Received: (qmail 25914 invoked from network); 27 Mar 2006 17:04:37 +0900
+Received: from unknown (HELO pop.hbc.co.jp) (192.168.0.122)
+	by ns1.hbc.co.jp with SMTP; 27 Mar 2006 17:04:37 +0900
+Received: (qmail 29689 invoked for bounce); 27 Mar 2006 17:04:37 +0900
+Date: 27 Mar 2006 17:04:37 +0900
+From: MAILER-DAEMON@pop.hbc.co.jp
+To: gpc-talk-bounces@grizz.org
+Subject: failure notice
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+He/Her is not HBC e-mail users.
+Check your send e-mail address.
+
+<userx@example.jp>:
+Sorry, no mailbox here by that name. vpopmail (#5.1.1)
+
+--- Below this line is a copy of the message.
+
+Message removed
+

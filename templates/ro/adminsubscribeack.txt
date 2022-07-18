@@ -1,0 +1,2 @@
+%(member)s a fost abonat cu succes la %(listname)s.
+%(whence)s

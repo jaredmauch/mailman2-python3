@@ -1,0 +1,42 @@
+<!-- $Revision: 5063 $ -->
+<html>
+<head>
+  <title>%(listname)s %(who)s Authentication</title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
+	    sis&auml;&auml;nkirjautuminen</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Listan %(who)s Salasana:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Sis&auml;&auml;n ...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>T&auml;rke&auml;&auml;:</em></strong> T&auml;st&auml; eteenp&auml;in
+      sinulla pit&auml;&auml; olla ev&auml;steet sallittuna selaimessasi,
+      muutoin haluamasi muutokset eiv&auml;t tallennu.
+
+      <p>Istuntokohtaiset ev&auml;steet ovat k&auml;yt&ouml;ss&auml; Mailman 
+      - ohjelmiston yll&auml;pitosivuilla, joten sinun ei tarvitse
+      kirjautua erikseen joka yll&auml;pitosivulle.
+      Ev&auml;ste tuhoutuu automaattisesti selain-istunnon p&auml;&auml;tteeksi.
+      Jos haluat ev&auml;steen tuhoutuvan aikaisemmin, t&auml;m&auml; 
+      onnistuu <em>Lopeta</em> linkki&auml; painamalla 
+      <em> kohdassa muut Yll&auml;pitotoimet</em> 
+      (jonka n&auml;et onnistuneen sis&auml;&auml;nkirjautumisen j&auml;lkeen).
+</FORM>
+</body>
+</html>

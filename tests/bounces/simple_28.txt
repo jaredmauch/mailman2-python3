@@ -1,0 +1,46 @@
+Return-Path: <>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by alan.rezo.net (Postfix) with ESMTP id 3909F3B0271
+	for <spip-commit-bounces@rezo.net>;
+	Sun, 15 Jun 2008 01:26:23 +0200 (CEST)
+Received: by fg-out-1718.google.com with SMTP id l27so3405949fgb.11
+	for <spip-commit-bounces@rezo.net>;
+	Sat, 14 Jun 2008 16:26:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=googlemail.com; s=gamma;
+	h=domainkey-signature:received:received:message-id:from:to:subject
+	:date; bh=BFkuUFhgu/6jTo35rSt+ExVUNbJkbG7m9ZSeWMMiYys=;
+	b=iARaUItND8loi45qRlzvtfufPkNdALsDLbSkg2q1kT7kQ+4v0OXcW2oCV6u8r6c+Ty
+	hOaxiihkqMqgFknPssT6kaYS/u1IWeuEQnSltFULpQNh+rpW4yHC1hxUQ1jP6NRH3hfB
+	y3T3UN69T0sG9Szqe/1zVYEVPxAbdnJnygZ64=
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=googlemail.com; s=gamma;
+	h=message-id:from:to:subject:date;
+	b=FZYhpgymcWTMdaReUBtWfMMdThgG3Lk2UyVlK9XjPB7pwvAoTS8+eXQnP1IOC+iYQ+
+	2wkii49cJP1JmtmMJBDmAJ5Hhq34r5g8R8yQqx5iLvj7I7aLP4AnmGnhSxqb6LbM/CoF
+	xqjobWv+LjVHXV1Cy2oo0//B0M2mWKAv2/xGE=
+Received: by 10.86.26.1 with SMTP id 1mr6414899fgz.49.1213485981022;
+	Sat, 14 Jun 2008 16:26:21 -0700 (PDT)
+Received: by 10.86.26.1 with SMTP id 1mr8116260fgz.49;
+	Sat, 14 Jun 2008 16:26:21 -0700 (PDT)
+Message-ID: <000e0cd25cf4d6b921044fa8b85f@googlemail.com>
+From: Mail Delivery Subsystem <mailer-daemon@googlemail.com>
+To: spip-commit-bounces@rezo.net
+Subject: Delivery Status Notification (Delay)
+Date: Sat, 14 Jun 2008 16:26:21 -0700 (PDT)
+
+This is an automatically generated Delivery Status Notification
+
+THIS IS A WARNING MESSAGE ONLY.
+
+YOU DO NOT NEED TO RESEND YOUR MESSAGE.
+
+Delivery to the following recipient has been delayed:
+
+     userx@example.com
+
+Message will be retried for 2 more day(s)
+
+   ----- Message header follows -----
+
+Message removed
+

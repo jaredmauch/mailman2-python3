@@ -1,0 +1,24 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from mta107.biz.mail.re2.yahoo.com (mta107.biz.mail.re2.yahoo.com [68.142.229.208])
+	by sb7.songbird.com (8.12.11/8.12.11) with SMTP id k11HWQXJ004484
+	for <century-announce-bounces@grizz.org>; Wed, 1 Feb 2006 09:32:26 -0800
+Date: Wed, 1 Feb 2006 09:32:26 -0800
+Message-Id: <200602011732.k11HWQXJ004484@sb7.songbird.com>
+From: MAILER-DAEMON@hamiltonpacific.com
+To: century-announce-bounces@grizz.org
+X-Loop: MAILER-DAEMON@hamiltonpacific.com
+Subject: Delivery failure
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Found to be clean
+X-Songbird-From: 
+
+Message from hamiltonpacific.com.
+Unable to deliver message to the following address(es).
+
+<userx@example.com>:
+This user doesn't have a hamiltonpacific.com account (userx@example.com) [0]
+
+--- Original message follows.
+
+Message removed
+

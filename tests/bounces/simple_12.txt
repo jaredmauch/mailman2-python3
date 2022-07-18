@@ -1,0 +1,24 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from rhine1.andrew.ac.jp ([202.48.128.57])
+	by sb7.songbird.com (8.12.11/8.12.11) with ESMTP id k2A0fwce026177
+	for <gpc-talk-bounces@grizz.org>; Thu, 9 Mar 2006 16:42:03 -0800
+Date: Fri, 10 Mar 2006 09:37:30 +0900
+Message-Id: <10603100937.AA64750950@rhine1.andrew.ac.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "Postmaster" <postmaster@rhine1.andrew.ac.jp>
+Sender: <postmaster@rhine1.andrew.ac.jp>
+To: <gpc-talk-bounces@grizz.org>
+Subject: Undeliverable Mail
+X-Mailer: <SMTP32 v8.05>
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Found to be clean
+X-Songbird-From: 
+
+Invalid final delivery userid: userx@example.ac.jp
+
+
+Original message follows.
+
+Message removed
+

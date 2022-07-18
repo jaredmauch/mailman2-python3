@@ -1,0 +1,15 @@
+Via mesaĝo al la listo '%(listname)s' titolita
+
+    %(subject)s
+
+estas retenata ĝis la moderiganto de la listo ĝin povos revizii por aprobi ĝin.
+
+La kialo de ĝia retenado estas:
+
+    %(reason)s
+
+Aŭ la mesaĝo estos liverata al la listo, aŭ vi ricevos sciigon de la decido
+de la moderiganto. Se vi deziras nuligi tiun mesaĝon, bonvolu viziti la jenan 
+retpaĝon:
+
+    %(confirmurl)s

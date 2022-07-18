@@ -1,0 +1,36 @@
+Ajutor pentru lista de discuţii %(listname)s:
+
+Acesta este mesajul de ajutor prin email pentru versiunea %(version)s
+a managerului de liste de discuţii "Mailman".  În continuare sunt descrise
+comenzile prin care puteţi obţine informaţii despre listă şi cu care
+puteţi modifica abonamentul dumneavoastră la listele Mailman de pe acest
+site.  O comandă poate fi inserată în linia de subiect sau în corpul
+mesajului.
+
+Nu uitaţi că majoritatea facilităţilor următoare pot fi de asemenea folosite
+pe Internet, la adresa:
+
+    %(listinfo_url)s
+
+În particular, puteţi folosi pagina Web pentru a vă re-trimite parola de acces
+la adresa de abonare.
+
+Comenzile specifice listei (subscribe, who, etc) trebuie trimise la adresa
+*-request pentru o listă anume; de ex. pentru lista 'mailman', folosiţi
+adresa 'mailman-request@...'.
+
+Câte ceva despre descrieri - cuvintele între paranteze ascuţite "<>"
+înseamnă valori OBLIGATORII, iar cuvintele între paranteze drepte "[]"
+denotă valori OPŢIONALE.  Nu icludeţi parantezele "<>" sau "[]" când
+folosiţi comenzile.
+
+Următoarele comenzi sunt valide:
+
+    %(commands)s
+
+Comenzile trebuie trimise la adresa %(requestaddr)s
+
+Întrebările şi reclamaţiile din partea dumneavoastră trebuie trimise la
+adresa
+
+    %(adminaddr)s

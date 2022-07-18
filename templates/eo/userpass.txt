@@ -1,0 +1,25 @@
+Vi petis (aŭ iu je via nomo) memorigilon de la pasvorto
+de via abono en la listo %(fqdn_lname)s. Vi bezonos
+ĉi tiun pasvorton por ŝanĝi viajn abon-agordojn (ekzemple,
+se vi volos ricevi unuopa aŭ kompilita la poŝton), kaj por 
+malaboni la liston.
+
+La adreso de via abono estas: %(user)s
+
+Via pasvorto por %(listname)s estas: %(password)s
+
+Se vi volas ŝanĝi viajn abon-agordojn, iru al via persona
+agordopaĝo ĉe:
+
+    %(options_url)s
+
+Vi povas fari tiujn ŝanĝojn ankaŭ per retpoŝto se vi sendos
+mesaĝon al:
+
+    %(requestaddr)s
+
+kun la teksto «help» en la temo aŭ en la enhavo. La
+aŭtomata respondo donos al vi pli detalajn instrukciojn.
+
+Se vi havas demandojn aŭ komentojn, sendu ilin al
+la listestro de la listo %(listname)s ĉe %(owneraddr)s.

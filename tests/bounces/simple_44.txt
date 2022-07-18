@@ -1,0 +1,28 @@
+Subject: [Postmaster] Email Delivery Failure
+Message-Id: <111195647-1608276241173@example.com>
+Date: Fri, 18 Dec 2020 09:24:01 +0200
+From: "Mail Delivery System" <mailer-daemon@example.com>
+To: "dns-operations" <dns-operations-bounces@example.net>
+X-Mimecast-Originator: <>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from quoted-printable to 8bit by example.net id 0BI7O1sk026573
+
+This is a delivery failure notification message indicating that
+an email dns-operations-bounces@example.net addressed to email address :
+-- user@example.com
+
+With subject Re: [dns-operations] Monitoring for impending expiration of domains? sent on the Mon, 14 Dec 2020 11:30:37 +0100 (CET)
+could not be delivered. The problem appears to be :
+-- Recipient server unavailable or busy
+
+Additional information follows :
+-- 4.4.4 Temporary server error. Please try again later ATTR5 [VE1EUR02FT049.eop-EUR02.prod.protection.outlook.com]
+
+This condition occurred after 30 attempt(s) to deliver over
+a period of 92 hour(s) and 52 minute(s).
+
+If you sent the email to multiple recipients, you will receive one
+of these messages for each one which failed delivery,  otherwise
+they have been sent.
+

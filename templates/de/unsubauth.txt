@@ -1,0 +1,8 @@
+Eine Authorisierung ist erforderlich, um sich von der Liste abzumelden:
+
+    Durch:   %(username)s
+    Von:     %(listname)s@%(hostname)s
+
+Besuchen Sie bitte die folgende Seite, um die Anforderung abzuwickeln:
+
+    %(admindb_url)s

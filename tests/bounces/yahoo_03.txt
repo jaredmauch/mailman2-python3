@@ -1,0 +1,45 @@
+Return-Path: <boost-admin@lists.boost.org>
+Received: from mx04.mrf.mail.rcn.net ([207.172.4.53] [207.172.4.53])
+          by mta02.mrf.mail.rcn.net with ESMTP
+          id <20020403141004.PXBK1795.mta02.mrf.mail.rcn.net@mx04.mrf.mail.rcn.net>;
+          Wed, 3 Apr 2002 09:10:04 -0500
+Received: from milliways.osl.iu.edu ([129.79.245.239])
+	by mx04.mrf.mail.rcn.net with esmtp (Exim 3.35 #5)
+	id 16slSd-0006Tx-00
+	for david.abrahams@rcn.com; Wed, 03 Apr 2002 09:10:04 -0500
+Received: from milliways.osl.iu.edu (localhost [127.0.0.1])
+	by milliways.osl.iu.edu (8.11.6/8.11.6/IUCS_2.44) with ESMTP id g33EA0A22345;
+	Wed, 3 Apr 2002 09:10:00 -0500
+Received: from mta545.mail.yahoo.com (mta545.mail.yahoo.com [216.136.131.27])
+	by milliways.osl.iu.edu (8.11.6/8.11.6/IUCS_2.44) with SMTP id g33E9DA22332
+	for <boost-admin@lists.boost.org>; Wed, 3 Apr 2002 09:09:13 -0500
+Date: Wed, 3 Apr 2002 09:09:13 -0500
+Message-Id: <200204031409.g33E9DA22332@milliways.osl.iu.edu>
+From: MAILER-DAEMON@yahoo.com
+To: boost-admin@lists.boost.org
+X-Loop: MAILER-DAEMON@yahoo.com
+Subject: Delivery failure
+Sender: boost-owner@lists.boost.org
+Errors-To: boost-owner@lists.boost.org
+X-BeenThere: boost@lists.boost.org
+X-Mailman-Version: 2.0.8
+Precedence: bulk
+List-Help: <mailto:boost-request@lists.boost.org?subject=help>
+List-Post: <mailto:boost@lists.boost.org>
+List-Subscribe: <http://lists.boost.org/mailman/listinfo.cgi/boost>,
+	<mailto:boost-request@lists.boost.org?subject=subscribe>
+List-Id: Boost mailing list <boost.lists.boost.org>
+List-Unsubscribe: <http://lists.boost.org/mailman/listinfo.cgi/boost>,
+	<mailto:boost-request@lists.boost.org?subject=unsubscribe>
+List-Archive: <http://lists.boost.org/MailArchives/boost/>
+
+Message from yahoo.com.
+Unable to deliver message to the following address(es).
+
+<userx@example.com>:
+Sorry your message to userx@example.com cannot be delivered. This account has been disabled or discontinued.
+
+--- Original message follows.
+
+Message removed
+

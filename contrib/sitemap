@@ -1,0 +1,86 @@
+#!/bin/bash
+ 
+# Simple sitemap.xml generator for Mailman
+ 
+# URL where your lists sit
+SITEURL=http://lists.wpkg.org/pipermail
+ 
+# path to your mailman archives/private
+MAILMANPATH=/path/to/htdocs/archives/private
+ 
+# lists we want to process
+LISTS="debian-non-standard iodine-users sheepdog sheepdog-users stgt wpkg-announce wpkg-users"
+ 
+# path to the sitemap.xml.gz file (gzipped)
+XMLSITEMAP=/path/to/htdocs/cgi-bin/sitemap.xml.gz
+ 
+# No need to change anything below
+set -u
+ 
+# find html files with their dates
+URLS=""
+for LIST in $LISTS; do
+    URLS="$URLS"$'\n'$(find $MAILMANPATH/$LIST/ -type f -name \*html | xargs ls --time-style=long-iso -l | awk '{print $6"T"$7":00+00:00 "$8}' | grep -v attachments)
+done
+ 
+# if the article is crawled once a month, it should be enough
+MONTHLYLIST=$(echo "$URLS" | egrep -v '(author.html|date.html|index.html|subject.html|thread.html)')
+ 
+# indexes should be crawled daily. We'll set them to monthly later on, if they are old
+DAILYLIST=$(echo "$URLS" | egrep '(author.html|date.html|index.html|subject.html|thread.html)') #'
+ 
+# print the header
+OUTPUT='<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+ 
+# process all URLs
+IFS="
+"
+ 
+CURDATE=$(date +%Y-%B)
+ 
+process_all() {
+    for URL in $URLS; do
+        FREQUENCY=$1
+        DATE=${URL%% *}
+        FILENAME=${URL#* }
+        if [ $FREQUENCY == daily ] ; then
+            # if not current month, update monthly anyway
+            echo $FILENAME | grep -q $CURDATE
+            if [ $? -eq 0 ] ; then
+                FREQ=daily
+                PRIO=1.0
+            else
+                FREQ=monthly
+                PRIO=0.3
+            fi
+        elif [ $FREQUENCY == monthly ] ; then
+            FREQ=monthly
+            PRIO=0.2
+        fi
+echo "        <url>
+                <loc>$FILENAME</loc>
+                <lastmod>$DATE</lastmod>
+                <changefreq>$FREQ</changefreq>
+                <priority>$PRIO</priority>
+        </url>"
+    done
+}
+ 
+# process the URLs
+# daily
+URLS="$DAILYLIST"
+OUTPUT="$OUTPUT
+$(process_all daily)"
+ 
+# monthly
+URLS="$MONTHLYLIST"
+OUTPUT="$OUTPUT
+$(process_all monthly)"
+ 
+# close the </urlset>
+OUTPUT="$OUTPUT
+</urlset>"
+ 
+echo "$OUTPUT" | sed -e "s#$MAILMANPATH#$SITEURL#g" | gzip -9 -c >$XMLSITEMAP.tmp
+mv $XMLSITEMAP.tmp $XMLSITEMAP

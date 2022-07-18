@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> %(title)s
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:%(email_url)s?Subject=%(subject_url)s&In-Reply-To=%(in_reply_to_url)s">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   %(encoding)s
+   %(prev)s
+   %(next)s
+ </HEAD>
+ <BODY BGCOLOR="#ffffff" dir="rtl">
+   <H1>%(subject_html)s</H1>
+    <B>%(author_html)s</B> 
+    <A HREF="mailto:%(email_url)s?Subject=%(subject_url)s&In-Reply-To=%(in_reply_to_url)s"
+       TITLE="%(subject_html)s">%(email_html)s
+       </A><BR>
+    <I>%(datestr_html)s</I>
+    <P><UL>
+        %(prev_wsubj)s
+        %(next_wsubj)s
+         <LI> <B>پیام‌های مرتب‌شده بر اساس:</B> 
+              <a href="date.html#%(sequence)s">[ تاریخ ]</a>
+              <a href="thread.html#%(sequence)s">[ مبحث ]</a>
+              <a href="subject.html#%(sequence)s">[ پدیدآور ]</a>
+              <a href="author.html#%(sequence)s">[ نویسنده ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+%(body)s
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	%(prev_wsubj)s
+	%(next_wsubj)s
+         <LI> <B>پیام‌های مرتب‌شده بر اساس:</B> 
+              <a href="date.html#%(sequence)s">[ تاریخ ]</a>
+              <a href="thread.html#%(sequence)s">[ مبحث ]</a>
+              <a href="subject.html#%(sequence)s">[ موضوع ]</a>
+              <a href="author.html#%(sequence)s">[ پدیدآور ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="%(listurl)s">اطلاعات بیشتر درباره‌ی فهرست پستی 
+%(listname)s</a><br>
+</body></html>

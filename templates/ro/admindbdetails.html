@@ -1,0 +1,65 @@
+Cererile administrative sunt afişate &icirc;n unul din cele două moduri,
+pe o <a href="%(summaryurl)s">pagină de sumar</a>, şi respectiv pe
+o pagină de <em>detalii</em>.  Pagina de sumar conţine cererile de
+abonare şi cele de părăsire a listei, precum şi mesajele reţinute
+pentru aprobare, grupate după adresa de email a expeditorului.
+Pagina de detalii conţine o imagine mai detaliată a fiecărui mesaj
+reţinut, incluz&acirc;nd toate headerele acestuia şi un extras al corpului
+mesajului.
+
+<p>Pe toate paginile, următoarele acţiuni sunt disponibile:
+
+<ul>
+<li><b>Am&acirc;nare</b> -- Am&acirc;naţi luarea unei decizii pentru mai t&acirc;rziu.
+    Nu este execută nici o acţiune pentru această cerere administrativă
+    &icirc;n aşteptare, dar pentru mesajele reţinute, mai puteţi re-trimite
+    (forward) sau păstra mesajul (vezi mai jos).
+
+<li><b>Aprobare</b> -- Aprobaţi mesajul, trimiţ&acirc;ndu-l listei. &Icirc;n cazul
+    cererilor legate de abonament, este aprobată schimbarea cerută.
+
+<li><b>Respingere</b> -- Mesajul este respins, fiind trimisă o notă cu
+    explicaţia refuzului către expeditor.  &Icirc;n cazul cererilor legate de
+    abonament, este refuzată cererea de schimbare a abonamentului.
+    &Icirc;n oricare din cazuri, este indicat să adăugaţi şi un motiv al respingerii
+    cererii &icirc;n c&acirc;mpul de alături.
+
+<li><b>Ignorare</b> -- Mesajul iniţial este ignorat, fără a fi trimisă vreo
+    notă a respingerii acestuia.  &Icirc;n cazul cererilor legate de abonament,
+    cererea este pur şi simplu ignorată, fără notificarea iniţiatorului.
+    Aceasta este acţiunea cel mai des folosită &icirc;n cazul situaţiilor de spam.
+</ul>
+
+<p>&Icirc;n cazul mesajelor reţinute, bifaţi opţiunea <b>Păstrează</b> dacă doriţi
+să salvaţi o copie a mesajului pentru administratorul site-ului.  Acest fapt
+este foarte folositor &icirc;n cazul mesajelor abuzive pe care doriţi să le ignoraţi,
+dar trebuie să le păstraţi pentru o inspecţie ulterioară.
+
+<p>Bifaţi opţiunea <b>Retrimite la </b>, şi completaţi adresa de destinaţie
+dacă doriţi să trimiteţi mesajul către o adresă ce nu se află pe listă.
+Pentru a edita un mesaj reţinut &icirc;nainte de a fi trimis listei, va trebui
+să retrimiteţi mesajul către dumneavoastră (sau către proprietarii listei),
+şi să ignoraţi mesajul iniţial.  Apoi, c&acirc;nd mesajul vă apare &icirc;n căsuţa
+postală, faceţi modificările cuvenite şi retrimiteţi-l către listă, incluz&acirc;nd
+un header <tt>Approved:</tt> av&acirc;nd parola listei ca valoare.  Neticheta
+(regulile de politeţe pe net) recomandă adăugarea unei note prin care să
+prezentaţi motivul modificărilor făcute.
+
+<p>Dacă expeditorul este un membru supravegheat (moderat) al listei, opţional
+puteţi reseta flag-ul de moderare.  Această facilitate este utilă c&acirc;nd lista
+dumneavoastra este configurata sa ţina noii membrii &icirc;ntr-o perioadă de probă,
+si aţi decis că acest membru este de &icirc;ncredere şi poate trimite direct mesaje
+către, listă fără alte aprobări.
+
+<p>Dacă expeditorul nu este un membru al listei, puteţi adăuga adresa de email
+unui <em>filtru de expeditori</em>.  Filtrele de expeditori sunt descrise pe
+<a href="%(filterurl)s">pagina de filtre a informaţiilor personale</a>,
+şi poate fi unul din <b>auto-accept</b> (Acceptare), <b>auto-hold</b> (Reţinere),
+<b>auto-reject</b> (Respingere), sau <b>auto-discard</b> (Ignorare).  Această opţiune
+nu va fi disponibilă dacă adresa este deja ataşată unui filtru de expeditor.
+
+<p>C&acirc;nd aţi terminat, apăsaţi pe butonul <em>Salvează toate datele</em> (aflat la
+extremităţile paginii).  Acest buton va trimite spre executare toate acţiunile selectate
+pentru toate cererile administrative pentru care aţi luat o decizie.
+
+<p><a href="%(summaryurl)s">&Icirc;napoi la pagina de sumar</a>.

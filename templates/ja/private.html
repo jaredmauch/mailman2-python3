@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>%(realname)s 限定公開保存書庫 認証</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(realname)s
+	    限定公開保存書庫 認証</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">電子メールアドレス:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">パスワード:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="認証...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>重要:</em></strong>
+      ここから先はブラウザのクッキーを有効にしてください。
+      クッキーが無効だと操作のたびに認証を要求されます。
+
+      <p>限定公開保存書庫インターフェースでの操作をするたびに認証が要求
+      されないように、セッションクッキーを発行します。
+      このクッキーはブラウザの終了時に自動的に失効します。
+      また、会員オプションのページに移動して<em>ログアウト</em>
+      ボタンを押すことで陽にクッキーを破棄することもできます。
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">パスワード備忘通知</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>パスワードがわからないときは、上のフォームにメールアドレスを入れて
+          <em>備忘通知</em>ボタンを押して下さい。
+          メールでパスワードを送ります。</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="備忘通知" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

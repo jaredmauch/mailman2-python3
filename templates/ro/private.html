@@ -1,0 +1,59 @@
+<html>
+<head>
+    <title>Autentificare la arhivele private %(realname)s</title>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Arhivele private %(realname)s - Autentificare</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">Adresa de email:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Parola:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Vreau s&Auml; intru...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Important:</em></strong> De aici &icirc;nainte trebuie să aveţi
+      activate cookie-urile &icirc;n browser; altfel nici o acţiune administrativă
+      nu va avea efect.
+
+      <p>Interfaţa administrativă Mailman foloseşte cookie-urile de sesiune,
+      astfel &icirc;nc&acirc;t nu trebuie să vă re-autentificaţi la fiecare operaţiune
+      administrativă.  Acest cookie va expira automat la ieşire, sau
+      explicit, la apăsarea linkului <em>Logout</em>, sub linkul <em>Alte activităţi
+      administrative</em> (care va apare de &icirc;ndată ce vă autentificaţi cu succes).
+
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

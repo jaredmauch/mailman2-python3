@@ -1,0 +1,24 @@
+Confirmarea abonării la lista de discuţii %(listname)s
+
+Am primit o cerere %(remote)s pentru înscrierea adresei dumneavoastră
+de email,  "%(email)s",  în lista de discuţii %(listaddr)s.  Pentru a
+confirma abonarea la această listă de discuţii, trebuie doar să
+răspundeţi (reply) la acest mesaj, păstrând câmpul Subiect intact.
+Alternativ, puteţi vizita această pagină web:
+
+    %(confirmurl)s
+
+O altă alternativă este să includeţi următorul rând -- numai acesta --
+într-un mesaj către %(requestaddr)s:
+
+    confirm %(cookie)s
+
+În mod normal, un simplu 'reply' la acest mesaj trebuie să funcţioneze
+din majoritatea programelor de email, atâta timp cât câmpul Subiect
+rămâne în forma corectă (particula adiţională "Re:" introdusă în subiect
+nu este o problemă).
+
+Dacă nu doriţi să vă abonaţi la această listă, ignoraţi acest mesaj.
+Dacă aveţi convingerea că cineva încearcă să vă aboneze în mod abuziv
+şi maliţios la această listă, sau aveţi alte întrebări, trimiteţi-le
+către administratirii listei: %(listadmin)s.

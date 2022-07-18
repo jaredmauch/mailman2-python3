@@ -1,0 +1,13 @@
+Autorizarea dumneavoastră este necesară în cazul următorului
+mesaj trimis spre publicare:
+
+    Lista:    %(listname)s@%(hostname)s
+    De la:    %(sender)s
+    Subiect:  %(subject)s
+    Motiv:    %(reason)s
+
+Când aveţi timp, vizitaţi adresa:
+
+    %(admindb_url)s
+
+pentru a procesa mesajul.

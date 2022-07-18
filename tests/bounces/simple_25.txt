@@ -1,0 +1,54 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from vipmail-g1.xinnetdns.com (cemail171012.ce.net.cn
+	[210.51.171.12])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with SMTP id
+	k4F8abax003550
+	for <gpc-talk-bounces@grizz.org>; Mon, 15 May 2006 01:36:38 -0700
+Received: (send program); Mon, 15 May 2006 16:35:54 +0800
+Message-ID: <347682154.08417@vipmail-g1.xinnetdns.com>
+Received: (EYOU MTA SYSTEM  8417 invoked for bounce);
+	Mon, 15 May 2006 16:35:54 +0800
+Date: Mon, 15 May 2006 16:35:54 +0800
+From: MAILER-DAEMON@vipmail-g1.xinnetdns.com
+To: gpc-talk-bounces@grizz.org
+Subject: failure notice
+Content-Type: multipart/mixed;
+	boundary="------=_1147682154_8417"
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+This is a multi-part message in MIME format.
+
+--------=_1147682154_8417
+Content-Type: text/html
+
+Hi. This is the deliver program at vipmail-g1.xinnetdns.com.<br>
+    I'm afraid I wasn't able to deliver your message to the following addresses.<br>
+            This is a permanent error; I've given up. Sorry it didn't work out.<br><br>
+
+userx@example.com<br>
+
+No such user<br>
+
+--- Attachment is a copy of the message.<br><br>
+
+[这是服务器 vipmail-g1.xinnetdns.com 的投递程序返回的提示信息]<br><br>
+
+<font color=red>到下列地址的信件投递失败，对方服务器无法正常接受或者拒绝接受这封邮件，<br>这是一个永久性的错误，服务器已经放弃继续投递。</font><br>
+userx@example.com<br><br>
+
+对方服务器返回错误提示:<br>
+<font color=red>No such user</font><br>
+--<br>
+[附件是您所发送信件的原件]<br>
+--------=_1147682154_8417
+Content-Type: message/rfc822;
+	name="att.eml"
+Content-Disposition: attachment;
+	filename="orig.eml"
+
+Message removed
+
+--------=_1147682154_8417--
+

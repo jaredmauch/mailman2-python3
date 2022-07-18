@@ -1,0 +1,48 @@
+Return-Path: <MAILER-DAEMON>
+Received: from bkb01-ims-01.ikon.com (bkb01-ims-01.ikon.com [205.145.1.251])
+	by plaidworks.com (8.12.2/8.12.2) with ESMTP id g94LJbkw021463
+	for <pit-penguins-bounces@plaidworks.com>; Fri, 4 Oct 2002 14:19:37 -0700 (PDT)
+Received: by bkb01-ims-01.ikon.com with Internet Mail Service (5.5.2656.59)
+	id <4C3HZXG8>; Fri, 4 Oct 2002 17:12:36 -0400
+Message-ID: <44136F3E78E1C44EB52A3F95C986EAED09DB0AAB@BKB02-IMS-01.ikon.org>
+From: System Administrator <postmaster@IKON.com>
+To: pit-penguins-bounces@plaidworks.com
+Subject: Undeliverable: RE: Waiver draft results explained
+Date: Fri, 4 Oct 2002 17:12:35 -0400 
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2656.59)
+X-MS-Embedded-Report: 
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01C26BEA.C2970D56"
+
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
+
+------_=_NextPart_000_01C26BEA.C2970D56
+Content-Type: text/plain;
+	charset="iso-8859-1"
+
+Your message
+
+  To:      pit-penguins@plaidworks.com
+  Subject: RE: Waiver draft results explained
+  Sent:    Fri, 4 Oct 2002 17:10:56 -0400
+
+did not reach the following recipient(s):
+
+c=US;a= ;p=IKON;o=Nexus2;dda:SMTP=userx@example.COM; on Fri, 4 Oct 2002
+17:12:28 -0400
+    The recipient name is not recognized
+	The MTS-ID of the original message is: c=us;a=
+;p=ikon;l=BKB02-IMS-010210042112TX06SNVK
+    MSEXCH:IMS:IKON:Nexus2:BKB02-IMS-01 0 (000C05A6) Unknown Recipient
+
+
+
+------_=_NextPart_000_01C26BEA.C2970D56
+Content-Type: message/rfc822
+
+Message removed
+
+------_=_NextPart_000_01C26BEA.C2970D56--
+

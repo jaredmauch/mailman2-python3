@@ -1,0 +1,15 @@
+Tu message al lista '%(listname)s' con le subjecto
+
+    %(subject)s
+
+es retenite usque le moderator del lista pote revider lo pro approbation.
+
+Le ration pro retener lo es:
+
+    %(reason)s
+
+O le message essera inviate al lista, o tu recipera un notification del
+decision del moderator. Si tu desira cancellar iste message, per favor,
+visita le sequente adresse web:
+
+    %(confirmurl)s

@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>%(realname)s privaatarhiiv</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(realname)s privaatarhiivi
+	    ligip&auml;&auml;sukontroll</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">Meiliaadress:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Parool:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Lase sisse...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Important:</em></strong> Sisse logimiseks peate
+      oma brauseril lubama 'cookie'-de aktsepteerimise sellest saidist.
+
+      <p>K&uuml;psiseid kasutatakse Mailman'i veebiliidese kasutamise lihtsustamiseks,
+      et sa ei peaks iga lehe vaatamisel uuesti kasutajanime ja parooli
+      sisestama.
+      K&uuml;psis kustutatakse automaatselt, kui oma brauseri sulged v&otilde;i klikid
+      <em>Logi v&auml;lja</em> lingil, mis asub lingi <em>Muud administreerimistegevused
+      </em> all.
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

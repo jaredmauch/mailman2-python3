@@ -1,0 +1,29 @@
+Return-Path: <>
+Received: from mout by moeu2.kundenserver.de id 0LkyaB-1VJZRH2iiz-00ahag;
+ Fri, 13 Dec 2013 01:07:54 +0100
+Date: Fri, 13 Dec 2013 01:07:54 +0100
+From: Mail Delivery System <mailer-daemon@kundenserver.de>
+To: mailman-users-bounces+user=example.com@python.org
+Subject: Warning: message delayed 2 days
+Message-Id: <0LkyaB-1VJZRH2iiz-00ahag@moeu2.kundenserver.de>
+X-Original-Id: 0LykMh-1VSY0J0JZn-015ri8
+
+This message was created automatically by mail delivery software.
+
+A message that you sent has not yet been delivered to one or more of
+its recipients after 2 days.
+
+The message has not yet been delivered to the following addresses:
+
+  <user@example.com>
+
+host lsvk.de[213.165.78.137]:
+connection to mail exchanger failed
+
+No action is required on your part. Delivery attempts will continue for
+some time, and this warning may be repeated at intervals if the message
+remains undelivered. Eventually the mail delivery software will give up,
+and when that happens, the message will be returned to you.
+
+--- The header of the original message is following. ---
+

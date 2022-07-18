@@ -1,0 +1,15 @@
+From: <MAILER-DAEMON@yahoo.es>
+To: <boost-admin@lists.boost.org>
+Subject: Delivery failure
+Date: Wednesday, April 03, 2002 5:56 AM
+
+Message from yahoo.es.
+Unable to deliver message to the following address(es).
+
+<userx@example.es>:
+Sorry, your message to userx@example.es cannot be delivered.  This account is over quota.
+
+--- Original message follows.
+
+Message removed
+

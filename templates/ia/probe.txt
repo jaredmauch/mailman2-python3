@@ -1,0 +1,29 @@
+Isto es un message de proba. Tu pote ignorar iste message.
+
+Le lista de diffusion %(listname)s ha recipite un numero de
+messages resaltate del adresse tue. Isto significa que il pote haber un
+problema in livrar messages a %(address)s.
+
+Un exemplo de un message resaltate es attachate infra. Per favor,
+examina iste message pro assecurar que il non ha problemas con tu
+adresse de e-mail. Tu pote eventualmente demandar adjuta de tu
+administrator de e-mail.
+
+Si tu pote leger isto, tu non ha besonio de facer alcun cosa pro
+mantener le tue abonamento active. Si iste message habeva resaltate, tu
+non haberea potite leger lo, e tu abonamento del lista haberea essite
+disactivate. Normalmente, quando le tue abonamento es disactivate, tu
+recipe messages occasional demandante te de re-activar tu abonamento.
+
+Tu pote anque visitar le pagina de tu abonamento a
+
+    %(optionsurl)s
+
+In le pagina de tu abonamento, tu pote cambiar varie optiones de
+livration, como tu adresse de posta electronic, e si tu prefere digestos
+o non.
+
+Si tu ha questiones o problemas, tu pote contactar le proprietario del
+lista a
+
+    %(owneraddr)s

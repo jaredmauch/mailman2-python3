@@ -1,0 +1,3 @@
+S'ha cancel·lat la subscripció de %(member)s a la llista %(listname)s.
+%(whence)s
+

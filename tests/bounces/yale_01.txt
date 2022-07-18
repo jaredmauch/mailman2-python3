@@ -1,0 +1,65 @@
+From VM Tue Dec 26 22:41:08 2000
+Return-Path: <mailman-users-admin@python.org>
+Received: from ns2.digicool.com ([216.164.72.2] verified)
+  by digicool.com (CommuniGate Pro SMTP 3.3.1)
+  with ESMTP id 400038 for xxxxx@mail.digicool.com; Tue, 26 Dec 2000 18:41:55 -0500
+Received: from mail.python.org (starship.python.net [63.102.49.30])
+	by ns2.digicool.com (8.9.3/8.9.3) with ESMTP id SAA03359
+	for <xxxxx@digicool.com>; Tue, 26 Dec 2000 18:41:47 -0500
+Received: from ns1.zope.org (localhost.localdomain [127.0.0.1])
+	by mail.python.org (Postfix) with ESMTP id DC80BE904
+	for <xxxxx@digicool.com>; Tue, 26 Dec 2000 13:27:01 -0500 (EST)
+Delivered-To: mm+mailman-users-admin@python.org
+Received: from mr2.its.yale.edu (mr2.its.yale.edu [130.132.21.43])
+	by mail.python.org (Postfix) with ESMTP id E27E8E904
+	for <mailman-users-admin@python.org>; Tue, 26 Dec 2000 13:26:19 -0500 (EST)
+Received: (from mailnull@localhost)
+	by mr2.its.yale.edu (8.8.8/8.8.8) id NAA14658;
+	Tue, 26 Dec 2000 13:26:18 -0500 (EST)
+Message-Id: <200012261826.NAA14658@mr2.its.yale.edu>
+Errors-To: mailman-users-owner@python.org
+Precedence: bulk
+List-Help: <mailto:mailman-users-request@python.org?subject=help>
+List-Post: <mailto:mailman-users@python.org>
+List-Subscribe: <http://www.python.org/mailman/listinfo/mailman-users>,
+	<mailto:mailman-users-request@python.org?subject=subscribe>
+List-Id: Mailman mailing list management users <mailman-users.python.org>
+List-Unsubscribe: <http://www.python.org/mailman/listinfo/mailman-users>,
+	<mailto:mailman-users-request@python.org?subject=unsubscribe>
+List-Archive: <http://www.python.org/pipermail/mailman-users/>
+From: MAILER-DAEMON@mr2.its.yale.edu
+Sender: mailman-users-owner@python.org
+To: mailman-users-admin@python.org
+Subject: Returned mail - nameserver error report
+Date: Tue, 26 Dec 2000 13:26:18 -0500 (EST)
+X-BeenThere: mailman-users@python.org
+X-Mailman-Version: 2.0
+
+ --------Message not delivered to the following:
+
+ userx    No matches to nameserver query
+
+ --------Error Detail (phquery V4.1):
+
+ The message, "No matches to nameserver query," is generated whenever
+ Yale's on-line directory fails to locate either a ph alias, name or
+ nickname field that matches the supplied name.  The usual causes are
+ typographical errors.  Recommended action is to query the Yale on-line
+ directory prior to mailing using the ``ph -s directory.yale.edu NAME'',
+ ``finger NAME@directory.yale.edu'', or equivalent commands, or by
+ querying the Yale Directory within YaleInfo, where NAME is your party's
+ name, email alias, or nickname.  If no lookup tools are available to
+ you, try sending to the most explicit form of the name, e.g., if
+ mike.fox@yale.edu fails, try michael.j.fox@yale.edu.
+ 
+ To reach a party that was formerly reachable by emailing NAME@yale.edu,
+ try emailing to NAME@cs.yale.edu instead.
+ 
+
+ --------Unsent Message below:
+
+Message removed
+
+ --------End of Unsent Message
+
+

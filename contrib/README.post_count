@@ -1,0 +1,14 @@
+This is a bash script to go through the archives of a list and report
+number of posts by month, year and total as well as a rough report of
+total post size by month.
+
+The script was contributed by Alain Williams <addw@phcomp.co.uk>
+and has been slightly modified by Mark Sapiro <mark@msapiro.net> to
+run with only read access to the archive and to remove the perl
+dependency.
+
+The original from Alain is at
+<https://mail.python.org/pipermail/mailman-users/2014-February/076106.html>.
+
+Both versions work only with archives whose archive_volume_frequency
+is Monthly.

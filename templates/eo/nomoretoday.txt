@@ -1,0 +1,9 @@
+Ni ricevis mesaĝon de via adreso `%(sender)s' petanta aŭtomatan 
+respondon de la dissendolisto %(listname)s. Hodiaŭ, ni jam vidis
+ %(num)s tiajn mesaĝojn de vi.
+
+Por eviti problemojn tiajn kia senfina resendado inter poŝto-robotoj, 
+ni ne plu sendos pliajn respondojn hodiaŭ. Bonvolu reprovi morgaŭ.
+
+Se vi kredas ke tiu ĉi mesaĝo eraras, aŭ se vi havas demandojn, 
+bonvolu kontakti la listestron ĉe %(owneremail)s.

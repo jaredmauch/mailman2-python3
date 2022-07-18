@@ -1,0 +1,26 @@
+Via abono de la listo %(listname)s estas malŝaltita %(reason)s.
+
+Vi ne plu ricevos poŝton de ĉi tiu listo ĝis vi reaktivigos ĝin. Vi plu
+ricevos %(noticesleft)s rememorigojn kiel tiun ĉi ĝis la servilo 
+malabonigos vin el la listo definitive.
+
+Por reaktivigi vian abonon, simple respondu ĉi tiun mesaĝon,
+konservante la kaplinion "Temo:" neŝanĝita. Aŭ vizitu la jenan
+retpaĝon:
+
+    %(confirmurl)s
+
+Vi ankaŭ povas viziti la agordopaĝon de via abono ĉe
+
+    %(optionsurl)s
+
+En la agordopaĝo de via abono, vi povas ŝanĝi plurajn liver-agordojn, 
+kiel vian retpoŝtadreson, aŭ ĉu vi preferas kompilitan poŝton aŭ ne.
+Por via rememoro, la pasvorto de via abono estas
+
+    %(password)s
+
+Se vi havas demandojn aŭ dubojn, kontaktu la listestron ĉe
+
+    %(owneraddr)s
+

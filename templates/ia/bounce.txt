@@ -1,0 +1,14 @@
+Isto es un notification de action pro tractar messages resaltate de un
+lista de diffusion de Mailman:
+
+    Lista:      %(listname)s
+    Membro:     %(addr)s
+    Action:     Abonamento %(negative)s%(did)s.
+    Motivo:     Resaltamentos excessive o fatal.
+    %(but)s
+
+%(reenable)s
+Le notification de resaltamento determinante es attachate in basso.
+
+Questiones?
+Contacta le administrator del sito de Mailman a %(owneraddr)s.

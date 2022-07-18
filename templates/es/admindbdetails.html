@@ -1,0 +1,63 @@
+Las solicitudes administrativas se muestran de una de las dos formas, como una
+<a href="%(summaryurl)s">p&aacute;gina de resumen</a>, o como una
+<em>p&aacute;gina con detalles</em>.   La p&aacute;gina con el sumario contiene solicitudes de
+alta o baja pendientes, env&iacute;os a la lista que han sido retenidos para que 
+sean aprobados, agrupados por direcci&oacute;n de remitente. La p&aacute;gina con los detalles
+contiene una vista m&aacute;s detallada de cada uno de los mensajes retenidos,
+junto con las cabeceras del mensaje y un extracto del cuerpo del mismo.
+
+<p>En cualquiera de estas p&aacute;ginas est&aacute;n disponibles las siguientes acciones:
+
+<ul>
+<li><b>Diferir</b> -- Pospone su decisi&oacute;n para m&aacute;s tarde.  No se aplica ninguna
+acci&oacute;n ahora para esta solicitud administrativa pendiente, a&uacute;n as&iacute; puede reenviar
+o preservar el mensaje (vea m&aacute;s abajo).
+
+<li><b>Aprobar</b> -- Aprobar el mensaje, envi&aacute;ndolo a la lista. Para las
+solicitudes de subscripci&oacute;n, aprobar las mismas.
+
+<li><b>Rechazar</b> -- Rechazar el mensaje, enviando un mensaje de rechazo al
+remitente, y descartando el mensaje original.  Para las solicitudes de
+subscripci&oacute;n, rechaza las mismas. En cualquier caso, deberia poner el motivo del
+rechazo en el cuadro de texto adjunto.
+
+<li><b>Descartar</b> -- Tirar el mensaje original, sin mandar un mensaje de
+rechazo. Para las solicitudes de subscripci&oacute;n, esto &uacute;nicamente descarta la
+solicitud sin avisar a la persona que hizo la solicitud. Esta opci&oacute;n se usa
+normalmente con el correo no solicitado o spam.
+</ul>
+
+<p>Para los mensajes retenidos, active la opci&oacute;n <b>Preservar</b> si quiere
+guardar una copia de los mensajes para el administrador del servidor.  Esto es
+&uacute;til para aquellos mensajes abusivos que quieres descartar, pero que necesites
+guardar un registro para ehcarle un vistazo despu&eacute;s.
+
+<p>Active la opci&oacute;n <b>Redirigir a</b> y rellene la direcci&oacute;n correspondiente si
+quiere reenviar el mensaje a alguien que no est&eacute; en la lista.   Para editar un
+mensaje retenido antes de que se env&iacute;e a la lista, puede reenviarselo a s&iacute; mismo
+(o al propietario de la lista), y descartar el mensaje original.   Entonces,
+cuando el mensaje se muestre en su buz&oacute;n de entrada, haga sus correcciones y
+reenv&iacute;elo a la lista, incluyendo una cabecera <tt>Approved:</tt> con la clave de
+la lista como valor.   Es de buena costumbre en este caso, incluir una nota
+en el mensaje explicando que ha modificado el texto.
+
+<p>Si el remitente es un subscriptor que est&aacute; siendo moderado, puede limpiar
+opcionalmente su marca de moderaci&oacute;n.  Esto es &uacute;til cuando su lista est&aacute;
+configurada para poner a los subscriptores nuevos en cuarentena y decide que
+puede confiar en este subscriptor a la hora de mandar mensajes a la lista sin
+aprobaci&oacute;n.
+
+<p>Si el remitente no es un subscriptor de la lista, puede a&ntilde;adir esta direcci&oacute;n
+de correo electr&oacute;nico al <em>filtrado de remitentes</em>.  El filtrado de
+remitentes se describen en la <a href="%(filterurl)s">p&aacute;gina de fitros de
+privacidad</a>, y puede ser <b>aceptar autom&aacute;ticamente</b>, <b>retener
+autom&aacute;ticamente</b>, <b>rechazar autom&aacute;ticamente</b> o <b>descartar
+autom&aacute;ticamente</b>.  Esta opci&oacute;n no estar&aacute; disponible si la direcci&oacute;n ya est&aacute; en
+uno de los filtros de remitente.
+
+<p>Cuando haya terminado, dele con el rat&oacute;n en el bot&oacute;n <em>Enviar todos los
+datos</em> del final de la p&aacute;gina.  Este bot&oacute;n entregar&aacute; todas las acciones
+seleccionadas de las solicitudes administrativas para las que haya indicado
+alguna selecci&oacute;n.
+
+<p><a href="%(summaryurl)s">Regresar a la p&aacute;gina con los sumarios</a>.

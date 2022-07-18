@@ -1,0 +1,20 @@
+Isto es un rememoration, emittite un vice per mense, concernente tu
+abonamentos a listas de diffusion a %(hostname)s.  Illo include
+tu information de abonamento e como usar lo pro cambiar lo o disabonar
+te de un lista.
+
+Visita le adresses web sequente pro disabonar te, cambiar le livration in
+modo digesto, disactivar le livration totalmente (p.ex. durante le ferias),
+o definir un pluralitate de altere optiones e configurationes.
+
+Alternativemente, tu pote usar e-mail pro facer tal cambiamentos.
+Pro plus information, invia un message al adresse '-request' del lista
+(per exemplo, %(exreq)s), scribente solmente le parola 'help' (in
+anglese) in le corpore del message, e tu recipera un message de
+e-mail con instructiones.
+
+Si tu ha questiones, problemas, commentos, etc, invia los a
+%(owner)s.  Gratias!
+
+Le contrasignos de %(useraddr)s:
+

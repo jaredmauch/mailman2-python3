@@ -1,0 +1,25 @@
+Ĉi tiu estas provmesaĝo. Vi povas malatenti ĝin.
+
+La dissendolisto %(listname)s ricevis plurajn mesaĝojn resaltintajn
+el via retpoŝtadreso. Tio signifas ke povas esti iu problemo en 
+la liverado de poŝto al %(address)s.
+
+Unu ekzemplo de resaltinta mesaĝo estas alkroĉita sube. Bonvolu
+revizii tiun mesaĝon por certiĝi ke ne estas problemoj ĉe via 
+retpoŝtadreso. Vi povas laŭbezone peti helpon de via poŝto-servanto.
+
+Se vi povas legi ĉi tion, vi devas nenion fari por teni vian abonon aktiva.
+Se ĉi tiu mesaĝo estus resaltinta, vi ne povus legi ĝin, kaj via abono 
+estus nun malaktiva. Kutime, kiam abono estas malaktiva, oni ricevas
+okazajn avertojn petantajn reaktivigi ĝin.
+
+Vi ankaŭ povas viziti la agordopaĝon de via abono ĉe
+
+    %(optionsurl)s
+
+En la agordopaĝo de via abono, vi povas ŝanĝi plurajn liver-agordojn, 
+kiel vian retpoŝtadreson, aŭ ĉu vi preferas kompilitan poŝton aŭ ne.
+
+Se vi havas demandojn aŭ dubojn, kontaktu la listestron ĉe
+
+    %(owneraddr)s

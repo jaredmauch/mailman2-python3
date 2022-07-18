@@ -1,0 +1,27 @@
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Subject: Mail Delivery Warning
+Date: Thu, 19 Feb 2009 16:12:07 -0800
+Message-ID: <200902200012.n1K0C71m032486@example.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+From: <Postmaster\@example.com@xxx.com>
+To: <huntads-bounces@example.com>
+
+This is an advisory-only email.  Please do not reply to it.
+		=09
+Delivery of email to this address
+		=09
+"calvin@example.com"
+		=09
+has been postponed due to a full mailbox.
+		=09
+We will continue to try to deliver your message over the next few days.
+		=09
+The first 50 lines of your original message follow:
+Message removed
+

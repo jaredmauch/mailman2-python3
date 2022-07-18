@@ -1,0 +1,293 @@
+<!-- $Revizia: 2.10.2.1 $ -->
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title>Configurarea abonamentului <MM-Presentable-User> la lista <MM-List-Name></title>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        Lista de discuţii <MM-List-Name> - configurarea abonamentului pentru
+        <MM-Presentable-User>
+        </FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        Situaţia abonamentului <b><MM-Presentable-User></b>,
+        parola şi opţiunile pentru lista de discuţii <MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+        <MM-Disabled-Notice>
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Informaţiile de abonament la lista <MM-List-Name></B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">Puteţi schimba adresa cu care v-aţi abonat la lista
+        de discuţii introduc&acirc;nd o nouă adresă &icirc;n c&acirc;mpurile de mai jos.  Nu uitaţi
+	că un mesaj de confirmare va fi trimis la noua adresă, şi această
+	schimbare trebuie confirmată &icirc;nainte de a intra &icirc;n vigoare.
+
+        <p>Confirmările expiră după aproximativ <mm-pending-days>.
+
+        <p>De asemenea, puteţi seta sau modifica numele afişat
+        (de ex. <em>Ion Pop</em>).
+
+        <p>Dacă doriţi să faceţi modificări de abonament pentru toate listele
+	de la <mm-host> la la care sunteţi abonat, bifaţi opţiunea
+	<em>Modificări globale</em>.
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Noua adresă:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Adresa din nou:</div></td>
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Numele (opţional):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Modificări globale</center></td>
+    </tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Dezabonarea de la lista <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Celelalte abonamente la <MM-Host> pe care le aveţi</B>
+        </FONT></TD></TR>
+
+    <tr><td>
+        Bifaţi c&acirc;mpul de confirmare şi apăsaţi butonul pentru a
+        vă dezabona de la această listă.  <strong>Atenţie:</strong>
+        Acţiunea va avea loc imediat!
+        <p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
+        Puteţi afişa toate celelalte liste de discuţii la <mm-host>
+        la care aveţi abonament.  Folosiţi această facilitate pentru a
+        seta aceleaşi opţiuni personale şi &icirc;n cazul celorlalte abonamente.
+
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Parola <MM-List-Name></B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Aţi uitat parola?</h3>
+        </center>
+        Apăsaţi acest buton pentru a vă trimite parola la adresa de email abonată.
+        <p><MM-Umbrella-Notice>
+        <center><MM-Email-My-Pw></center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Modificare parolă</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">Noua parolă:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Parola, din nou:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Modifică global
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Opţiunile personale de abonament la lista <MM-List-Name></B>
+        </FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>Valorile actuale sunt selectate.</strong></i>
+
+<p>Unele din opţiuni au o opţiune <em>setare globală</em>.
+Bif&acirc;nd această opţiune, modificările vor fi salvate pentru toate
+listele de la <mm-host> la care sunteţi abonat.  Apăsaţi pe butonul
+<em>Afişează-mi celelalte abonamente</em> de mai sus pentru a vedea
+toate celelalte liste de discuţii la care aveţi abonament.
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Livrare mesaje email</strong></a><p>
+        Setaţi această opţiune ca fiind <em>Activă</em> pentru a recepţiona mesajele
+        publicate pe această listă de discuţii.<br>Setaţi opţiunea <em>Inactivă</em>
+        dacă doriţi să răm&acirc;neţi abonat, dar nu doriţi să primiţi mesaje o vreme<br>
+        (de ex. c&acirc;nd sunteţi &icirc;n vacanţă).<br>Dacă dezactivaţi livrarea de mesaje
+        nu uitaţi să o reactivaţi la &icirc;ntoarcere; ea nu va fi activată automat.
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Activă<br>
+        <mm-delivery-disable-button>Inactivă<p>
+        <mm-global-deliver-button><i>Setează global</i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Modul de livrare rezumat</strong><p>
+        Dacă activaţi modul rezumat (digest), veţi primi mesajele adunate
+        &icirc;ntr-un singur mesaj rezumat<br>
+        (de obicei unul pe zi dar e posibil şi mai des &icirc;n cazul listelor foarte aglomerate),
+        &icirc;n locul mesajelor individuale.<br>
+        Dacă dezactivaţi livrarea de rezumate, s-ar putea să mai primiţi un ultim rezumat.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Inactiv<br>
+        <MM-Digest-Radio-Button>Activ
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Rezumate MIME sau text simplu?</strong><p>
+        Este posibil ca programul dumneavoastră de email să nu suporte rezumatele MIME.<br>
+        &Icirc;n general, rezumatele MIME sunt de preferat, dar dacă aveţi probleme la citirea lor,<br>
+        alegeţi rezumatele sub formă de text simplu.
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Text simplu<p>
+        <mm-global-mime-button><i>Setează global</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Doriţi să primiţi duplicate ale mesajelor trimise listei?</strong><p>
+        &Icirc;n mod normal, veţi primi o copie a fiecărui mesaj trimis către listă.<br>
+        Dacă nu doriţi să primiţi aceste mesaje, alegeţi <em>Nu</em>.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>Nu<br>
+        <mm-receive-own-mail-button>Da</td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Doriţi confirmare pentru mesajele trimise?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>Nu<br>
+        <mm-ack-posts-button>Da</td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Doriţi mesaje de reamintire a parolei pentru această listă?</strong><p>
+        Lunar veţi primi un mesaj ce conţine parola de acces pentru fiecare listă
+        de la acest server,<br>
+        la care aveţi abonament.  Puteţi anula această opţiune pentru fiecare listă
+        &icirc;n parte, aleg&acirc;nd <em>Nu</em>.<br>
+        Dacă anulaţi mesajele de reamintire a parolei pentru toate listele de pe
+        acest server la care sunteţi abonat,<br>
+        nici un mesaj de reamintire nu vă va mai fi trimis.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Nu<br>
+        <mm-get-password-reminder-button>Da<p>
+        <mm-global-remind-button><i>Setează global</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Să vă ascundem din lista membrilor?</strong><p>
+        C&acirc;nd cineva afişează lista membrilor acestei liste, adresa dumneavoastră de email<br>
+        este &icirc;n mod normal afişată (&icirc;ntr-o formă aparte, pentru a &icirc;ngreuna munca spammerilor).<br>
+        Dacă doriţi ca adresa dumneavoastră de email să nu apară deloc &icirc;n lista membrilor,<br>
+        alegeţi <em>Da</em> la această opţiune.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Nu<br>
+        <MM-Hide-Subscription-Button>Da</td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Ce limbă preferaţi?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>La ce topici de discuţie doriţi să vă abonaţi?</strong><p>
+        Aleg&acirc;nd una sau mai multe topici, puteţi filtra traficul listei, pentru
+        a primi doar mesajele de interes.<br>
+        Dacă un mesaj se potriveşte la una sau mai multe topici, veţi primi acel mesaj;
+        &icirc;n caz contrar nu-l veţi primi.
+
+        <p>Dacă un mesaj aparţine nici unei topici, regula de livrare depinde de
+        setarea opţiunii de mai jos.<br>
+        Dacă nu alegeţi nici o topică de interes, veţi primi toate mesajeletrimisei listei de discuţii.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Doriţi să primiţi mesajele care nu aparţin nici unei topici?</strong><p>
+        Această opţiune are efect doar dacă aţi ales cel puţin o topică mai sus. Ea descrie ce regulă<br>
+        de bază se aplică pentru mesajele care nu &icirc;ndeplinesc nici una din condiţiile de filtrare<br>
+        după topici.  Aleg&acirc;nd <em>Nu</em>, dacă mesajul nu se &icirc;ncadrează &icirc;n nici una din topicile alese,<br>
+        atunci nu veţi primi mesajele, &icirc;n timp ce dacă alegeţi <em>Da</em>, veţi primi şi aceste mesaje.
+        
+        <p>Dacă nu aţi ales nici o topică de interes mai sus, atunci veţi primi toate<br>
+        mesajele trimise listei de discuţii.
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>Nu<br>
+        <mm-receive-nonmatching-topics>Da</td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Blochez mesajele duplicate?</strong><p>
+
+                C&acirc;nd sunteţi trecut &icirc;n mod explicit &icirc;n c&acirc;mpurile <tt>To:</tt> sau <tt>Cc:</tt>
+                ale unui mesaj către listă,<br>
+                puteţi opta pentru a nu mai primi o altă copie din
+                partea listei.<br>
+                Alegeţi <em>Da</em> pentru a evita primirea de duplicate din partea
+                listei; alegeţi <em>Nu</em> pentru a primi duplicate.
+
+                <p>Dacă lista are activate mesajele personalizate pentru utilizatori,
+                şi alegeţi să primiţi copii ale mesajelor,<br>
+                fiecare copie va avea un header <tt>X-Mailman-Copy: yes</tt> ataşat.
+
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>Nu<br>
+        <mm-dont-receive-duplicates-button>Da<p>
+        <mm-global-nodupes-button><i>Setează global</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

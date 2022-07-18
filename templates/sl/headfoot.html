@@ -1,0 +1,27 @@
+To besedilo lahko vkljuèuje
+<a href="https://docs.python.org/2/library/stdtypes.html#string-formatting-operations">Python
+nize</a>, ki jih uporabljamo namesto atributov seznama. Seznam
+mo¾nih nadomestil:
+
+<ul>
+    <li><b><code>real_name</code></b> - `Javno' ime seznama; ponavadi
+    je to kar ime seznama, pisano z veliko zaèetnico.
+
+    <li><b><code>list_name</code></b> - Ime, s katerim se seznam prepozna
+    v URL-jih, kjer so pomembne velike in male èrke.(Za obratno zdru¾ljivost
+    je enakovredno <code>_internal_name</code>.)
+
+    <li><b><code>host_name</code></b> - Polno in veljavno ime domene, v
+    kateri deluje stre¾nik.
+
+    <li><b><code>web_page_url</code></b> - Osnovni URL za Mailman. Temu
+    lahko dodate
+    npr. <em><code>listinfo/%(list_name)s</code></em> za stran s
+    podatki o po&scaron;tnem seznamu.
+
+    <li><b><code>description</code></b> - Kratek opis po&scaron;tnega seznama.
+
+    <li><b><code>info</code></b> - Dalj&scaron;i opis po&scaron;tnega seznama.
+
+    <li><b><code>cgiext</code></b> - Pripona, dodana za CGI skripte.
+</ul>

@@ -1,0 +1,11 @@
+Tu autorisation es requirite pro approbar un requesta de disabonamento de un
+lista de diffusion:
+
+    Per:  %(username)s
+    De:   %(listname)s@%(hostname)s
+
+Quando il te conveni, visita:
+
+    %(admindb_url)s
+
+pro tractar le requesta.

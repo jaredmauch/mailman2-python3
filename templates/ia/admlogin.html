@@ -1,0 +1,40 @@
+<html>
+<head>
+  <title>Authentication pro %(who)s de %(listname)s</title>
+  <script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Authentication pro %(who)s
+      de %(listname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Contrasigno de %(who)s pro le lista:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Lassa me entrar...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Importante:</em></strong> De iste puncto in
+      avante, tu debe haber le cookies activate in tu navigator
+      o tu non potera exequer alcun operation.
+
+      <p>Le cookies de session es usate in le pannello de controlo
+      de Mailman pro evitar que tu debe re-authenticar te ante
+      cata operation. Iste cookie essera eliminate automaticamente
+      quando tu sorti del navigator, o quando tu lo elimina explicitemente
+      per cliccar sur le ligamine <em>Clauder session</em> in le section
+      <em>Altere activitates administrative</em> (que tu videra post
+      tu entrata in le systema).
+</FORM>
+</body>
+</html>

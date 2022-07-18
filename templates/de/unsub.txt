@@ -1,0 +1,26 @@
+Bitte um Rückbestätigung der Kündigung der Mailingliste %(listname)s
+
+Wir haben den Auftrag %(remote)s erhalten, die E-Mail-Adresse "%(email)s"
+aus der Mailingliste %(listaddr)s auszutragen.
+
+Wenn Sie Ihre E-Mail-Adresse wirklich streichen lassen wollen, müssen Sie
+das zur Sicherheit noch einmal bestätigen. Antworten Sie bitte in diesem
+Falle einfach auf diese E-Mail, ohne die Betreffzeile zu verändern.
+
+Wenn Sie sich *nicht* austragen möchten, so ignorieren Sie diese
+Anfrage einfach. Sie bleiben dann Mitglied der Liste.
+
+Alternativ können Sie zur Bestätigung auch die folgende Web-Seite besuchen:
+
+    %(confirmurl)s
+
+Oder Sie können die folgende Zeile an  %(requestaddr)s zurückmailen:
+
+    confirm %(cookie)s
+
+Normalerweise reicht dafür eine einfache Antwort auf diese E-Mail völlig
+aus. Fügt Ihre Mailsoftware bei einer Antwort ein "Re:" oder "AW:" vor
+dem Betreff ein, ist das kein Problem.
+
+Wenn Sie meinen, ungefragterweise auf diese Liste geraten zu sein
+oder andere Fragen haben, schicken Sie diese bitte an %(listadmin)s.

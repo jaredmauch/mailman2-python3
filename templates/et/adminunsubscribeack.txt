@@ -1,0 +1,3 @@
+%(member)s eemaldati listist %(listname)s.
+%(whence)s
+

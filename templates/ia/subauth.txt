@@ -1,0 +1,11 @@
+Tu autorisation es demandate pro approbar un requesta de abonamento a un
+lista de diffusion:
+
+    Pro:   %(username)s
+    Lista: %(listname)s@%(hostname)s
+
+Quando il te conveni, visita:
+
+    %(admindb_url)s
+	
+pro tractar le requesta.

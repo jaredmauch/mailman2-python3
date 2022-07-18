@@ -1,0 +1,40 @@
+<html>
+<head>
+  <title>اصالت‌سنجی %(who)s در %(listname)s </title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" dir="rtl" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">اصالت‌سنجی %(who)s در %(listname)s </FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">گذرواژه‌ی %(who)s فهرست :</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Let me in...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>مهم:</em></strong> از این‌جا به بعد باید کلوچک‌ها را در مرورگرتان
+        به‌کارانداخته باشید، در غیر این‌صورت تغییرات سرپرستی
+       عمل نخواهند کرد.
+
+      <p>در نشست‌های رابط سرپرستی میل‌من از 
+        کلوچک‌های نشست استفاده می‌شود، تا مجبور نباشید
+        برای هر عملیات عملیات سرپرستی دوباره اصالت‌سنجی
+        کنید. این کلوچک به طور خودکار پس از خروج شما از مرورگر
+        منقضی می‌شوند  یا هم می‌توانید خودتان با زدن پیوند <em>خروج از سیستم</em>
+        تحت قسمت <em>دیگر فعالیت‌های سرپرستی</em> خودتان دستی آن منقضی کنید.
+     (این قسمت را وقتی با موفقیت  وارد شدید، خواهید دید.)
+
+</FORM>
+</body>
+</html>

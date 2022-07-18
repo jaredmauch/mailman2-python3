@@ -1,0 +1,59 @@
+<html>
+<head>
+    <title>Автентифікація доступу до закритого списку розсилки %(realname)s</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Автентифікація доступу до закритого списку розсилки %(realname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">Електронна адреса:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Пароль:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Let me in...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Важливо:</em></strong> Вам потрібно дозволити 
+	використання cookies у вашому переглядачі, у іншому випадку
+	ви не зможете вносити будь-які зміни 
+
+      <p>Cookies використовуються для зберігання інформації сеансу
+	роботи, це дозволяє не вводити пароль при виконанні будь-якого
+	адміністративного завдання. Інформацію сеансу буде автоматично
+	втрачено при завершенні переглядача. Також ви можете певним чином
+	завершити сеанс натиснувши посилання <em>Від'єднатись</em> 
+	у розділі <em>Інші адміністративні дії</em> 
+	(Ви зможете його побачити лише після початку сеансу).
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

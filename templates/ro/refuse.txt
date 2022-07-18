@@ -1,0 +1,13 @@
+Cererea dumneavoastră trimisă listei de discuţii
+
+    %(request)s
+
+a fost respinsă de către moderatorul listei.
+Refuzul cererii dumneavoastră a fost motivat astfel:
+
+"%(reason)s"
+
+Orice întrebări sau comentarii trebuie trimise către
+administratorul listei, la adresa:
+
+    %(adminaddr)s

@@ -1,0 +1,308 @@
+<!-- $Revision: 6029 $ -->
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> be&aacute;ll&iacute;t&aacute;sai a(z) <MM-List-Name> list&aacute;n
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        <MM-Presentable-User> tag be&aacute;ll&iacute;t&aacute;sai a(z) <MM-List-Name> levelez&#337;list&aacute;n
+	</FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b><MM-Presentable-User></b> tag feliratkoz&aacute;si st&aacute;tusza,
+	jelszava &eacute;s be&aacute;ll&iacute;t&aacute;sai a(z) <MM-List-Name> levelez&eacute;si list&aacute;n.
+	</td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+	<MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B><MM-List-Name> levelez&#337;list&aacute;n haszn&aacute;lt c&iacute;med m&oacute;dos&iacute;t&aacute;sa</B>
+	</FONT></TD></TR>
+    <tr><td colspan="2">A list&aacute;n tal&aacute;lhat&oacute; feliratkoz&aacute;si c&iacute;medet tudod
+    itt megv&aacute;ltoztatni egy &uacute;j megad&aacute;s&aacute;val. A v&aacute;ltoztat&aacute;s csak akkor
+    hajt&oacute;dik v&eacute;gre, ha az &uacute;j c&iacute;medre elk&uuml;ld&ouml;tt &eacute;rtes&iacute;t&eacute;st meger&#337;s&iacute;ted.
+
+        <p>A meger&#337;s&iacute;t&eacute;si lehet&#337;s&eacute;g <mm-pending-days> m&uacute;lva megsz&#369;nik.
+
+	<p>Ha akarod, akkor megadhatod a teljes nevedet is 
+	(pl. <em>T&oacute;th B&eacute;la</em>).
+	
+	<p>Ha a(z) <mm-host> g&eacute;pen tal&aacute;lhat&oacute; &ouml;sszes listatags&aacute;god feliratkoz&aacute;si
+	c&iacute;m&eacute;t az itt megadottra akarod v&aacute;ltoztatni, akkor jel&ouml;ld be a 
+	<em>&Aacute;ll&iacute;tsd mindenhol</em> kapcsol&oacute;t.
+	
+    </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">&Uacute;j c&iacute;m:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">&Uacute;j c&iacute;m m&eacute;g egyszer:</div></td> 
+            <td><mm-confirm-address-box></td>
+	    </tr>
+       </tr></table></center>
+            </td>
+            <td><center>
+            <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+	    <tr><td bgcolor="#dddddd"><div align="right">Teljes n&eacute;v (nem k&ouml;telez&#337; 
+	    megadni):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+       </table></center>
+            </td>
+            </tr>
+        <tr><td colspan="2"><center><mm-change-address-button>
+            <p><mm-global-change-of-address>&Aacute;ll&iacute;tsd mindenhol</center></td>
+	</tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B><MM-List-Name> list&aacute;r&oacute;l leiratkoz&aacute;s</B></td>
+
+	<TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Tov&aacute;bbi <MM-Host> listatags&aacute;gaid</B>
+	</FONT></TD></TR>
+
+	<tr><td>
+	Jel&ouml;ld be a leiratkoz&aacute;si sz&aacute;nd&eacute;kodat meger&#337;s&iacute;t&#337; kapcsol&oacute;t
+	majd kattints a gombra. <strong>Fontos:</strong> A kattint&aacute;s
+	ut&aacute;n azonnal v&eacute;grehajt&oacute;dik a v&aacute;ltoztat&aacute;s!
+        <p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
+        <mm-host> g&eacute;pen tal&aacute;lhat&oacute; t&ouml;bbi levelez&#337;lista tags&aacute;godat
+	tekintheted meg a gombra kattintva. Haszn&aacute;ld akkor, ha azt
+	szeretn&eacute;d hogy a t&ouml;bbi list&aacute;n is ugyanezeket a be&aacute;ll&iacute;t&aacute;sokat
+	tudd elv&eacute;gezni.
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+	</TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B><MM-List-Name> list&aacute;n a jelszavad </B>
+	</FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Elfelejtetted a jelszavadat?</h3>
+        </center>
+        Kattints a gombra, hogy emailben megkapd a jelszavadat.
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Jelsz&oacute; megv&aacute;ltoztat&aacute;sa</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">&Uacute;j jelsz&oacute;:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">&Uacute;j jelsz&oacute; m&eacute;g egyszer:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+	<p><center><mm-global-pw-changes-button>&Aacute;ll&iacute;tsd mindenhol
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Be&aacute;ll&iacute;t&aacute;said a(z) <MM-List-Name> levelez&#337;list&aacute;n</B>
+	</FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>A jelenlegi be&aacute;ll&iacute;t&aacute;sok pip&aacute;val jel&ouml;lve.</strong></i>
+
+<p>N&eacute;h&aacute;ny be&aacute;ll&iacute;t&aacute;sn&aacute;l <em>&Aacute;ll&iacute;tsd mindenhol</em> kapcsol&oacute;t is lehet
+v&aacute;lasztani. A kapcsol&oacute; bejel&ouml;l&eacute;s&eacute;vel minden olyan levelez&#337;lista
+tags&aacute;god be&aacute;ll&iacute;t&aacute;s&aacute;t meg tudod v&aacute;ltoztatni, amely a(z) <mm-host> g&eacute;pen
+m&#369;k&ouml;dik. A <em>Mutassd a t&ouml;bbi feliratkoz&aacute;somat</em> gombra kattintva
+megtekintheted, mely levelez&#337;list&aacute;knak vagy tagja ezen a g&eacute;pen.
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Lev&eacute;lk&uuml;ld&eacute;s be-/kikapcsol&aacute;sa</strong></a><p>
+	A list&aacute;r&oacute;l akkor kapod meg a leveleket, ha <em>Bekapcsolva</em> 
+	van megadva.
+	Ha nem akarsz a list&aacute;r&oacute;l egy bizonyos ideig levelet kapni (mert pl.
+	szabads&aacute;gra m&eacute;sz), akkor &aacute;ll&iacute;tsd &aacute;t <em>Kikapcsoltra</em>. 
+	El ne felejtsd &uacute;jra bekapcsolni a lev&eacute;lk&uuml;ld&eacute;st, ha &uacute;jra
+	fogadni akarod a leveleket.
+        </td><td bgcolor="#cccccc">
+	<mm-delivery-enable-button>Bekapcsolva<br>
+	<mm-delivery-disable-button>Kikapcsolva<p>
+        <mm-global-deliver-button><i>&Aacute;ll&iacute;tsd mindenhol</i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+         <strong>Digest forma megad&aacute;sa</strong><p>
+         Digest form&aacute;ban a leveleket nem egyes&eacute;vel kapod, hanem egybef&#369;zve
+         naponta egyszer. A digest forma lemond&aacute;sa ut&aacute;n m&eacute;g egyszer utolj&aacute;ra
+         digestben kapod meg a leveleket.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Ki<br>
+	<MM-Digest-Radio-Button>Be
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>MIME k&oacute;dol&aacute;s&uacute; vagy sima digest levelek?</strong><p>
+	A levelez&#337;programod lehet hogy t&aacute;mogatja, de lehet hogy nem a
+	MIME k&oacute;dol&aacute;s&uacute; digest levelek olvas&aacute;s&aacute;t. &Aacute;ltal&aacute;ban a MIME digest az
+	elfogadott, de ha b&aacute;rmilyen probl&eacute;m&aacute;d van az ilyen t&iacute;pus&uacute;
+	levelekkel, akkor v&aacute;laszd a sima form&aacute;t.
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Sima sz&ouml;veg<p>
+        <mm-global-mime-button><i>&Aacute;ll&iacute;tsd mindenhol</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>A list&aacute;ra k&uuml;ld&ouml;tt leveleidr&#337;l k&eacute;rsz m&aacute;solatot?</strong><p>
+	Alapesetben minden list&aacute;ra k&uuml;ld&ouml;tt leveledr&#337;l m&aacute;solatot kapsz.
+	Ha nem akarsz r&oacute;luk m&aacute;solatot kapni, akkor itt <em>Nem</em>-et
+	&aacute;ll&iacute;ts be.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>Nem<br>
+        <mm-receive-own-mail-button>Igen
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>A list&aacute;ra sikeresen elk&uuml;ld&ouml;tt leveleidr&#337;l k&eacute;rsz &eacute;rtes&iacute;t&eacute;st?</strong><p>
+        </td><td bgcolor="#cccccc">
+	<mm-dont-ack-posts-button>Nem<br>
+	<mm-ack-posts-button>Igen
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+    <strong>K&eacute;rsz a list&aacute;hoz tartoz&oacute; jelszavadr&oacute;l havonta eml&eacute;kezet&#337;t?</strong><p>
+        Havonta egyszer minden ezen a g&eacute;pen m&#369;k&ouml;d&#337; levelez&#337;list&aacute;hoz
+	tartoz&oacute; jelszavad elk&uuml;ld&eacute;sre ker&uuml;l. Ezt a be&aacute;ll&iacute;t&aacute;st minden
+	list&aacute;n egyedileg meg tudod v&aacute;ltoztatni, a <em>Nem</em>-mel
+	ki lehet kapcsolni a jelsz&oacute; elk&uuml;ld&eacute;st. Ha az &ouml;sszes list&aacute;n
+	kikapcsolod a jelsz&oacute; elk&uuml;ld&eacute;st, akkor a g&eacute;pr&#337;l nem ker&uuml;l
+	havi jelsz&oacute; eml&eacute;keztet&#337; elk&uuml;ld&eacute;sre.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Nem<br>
+	<mm-get-password-reminder-button>Igen<p>
+	<mm-global-remind-button><i>&Aacute;ll&iacute;tsd mindenhol</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+	<strong>Elrejts&uuml;nk a feliratkozottak list&aacute;j&aacute;b&oacute;l?</strong><p>
+	Ha valaki lek&eacute;ri a listatagok n&eacute;vsor&aacute;t, akkor alapesetben
+	a te email c&iacute;med is megjelenik (egy kicsit &aacute;talak&iacute;tva, hogy
+	a spam gy&#369;jt&#337;k ne tudj&aacute;k felhaszn&aacute;lni). Ha szeretn&eacute;d
+	az email c&iacute;medet a listatagok n&eacute;vsor&aacute;b&oacute;l elt&uuml;ntetni, akkor
+	&aacute;ll&iacute;tsd &aacute;t ezt a be&aacute;ll&iacute;t&aacute;st <em>Igen</em>-re.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Nem<br>
+	<MM-Hide-Subscription-Button>Igen
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Milyen nyelven szeretn&eacute;d a list&aacute;t haszn&aacute;lni?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+   <tr><td bgcolor="#cccccc">
+           <strong>Milyen t&eacute;m&aacute;j&uacute; leveleket szeretn&eacute;l fogadni?</strong><p>
+	           Egy vagy t&ouml;bb t&eacute;ma megad&aacute;s&aacute;val a levelez&#337;list&aacute;n
+		   megjelen&#337; levelek k&ouml;z&uuml;l csak azokat kapod meg, amelyek
+		   a megadott t&eacute;m&aacute;k legal&aacute;bb egyik&eacute;nek megfelelnek. Minden
+		   m&aacute;s lev&eacute;l sors&aacute;r&oacute;l a k&ouml;vetkez&#337; be&aacute;ll&iacute;t&aacute;s d&ouml;nt.
+
+		   <p>Azon a levelek fogad&aacute;s&aacute;r&oacute;l melyek t&eacute;m&aacute;ja nem egyezik a 
+		   k&iacute;v&aacute;natos, be&aacute;ll&iacute;tott t&eacute;m&aacute;k egyik&eacute;vel sem a k&ouml;vetkez&#337;
+		   be&aacute;ll&iacute;t&aacute;ssal lehet gondoskodni. Ha nincs egyetlen egy t&eacute;ma
+		   sem megadva, akkor a levelez&#337;list&aacute;ra k&uuml;ld&ouml;tt &ouml;sszes lev&eacute;l
+		   k&eacute;zbes&iacute;tve lesz.
+	    </td><td bgcolor="#cccccc">
+             <mm-topics>
+	     </td></tr>
+	     
+    <tr><td bgcolor="#cccccc">
+    <strong>Szeretn&eacute;d azokat a leveleket is megkapni, amelyek nem feleltek
+    	    meg a be&aacute;ll&iacute;tott t&eacute;m&aacute;k egyik&eacute;nek sem?</strong><p>
+
+	    Ez a be&aacute;ll&iacute;t&aacute;s csak akkor &eacute;rv&eacute;nyes&uuml;l, ha feljebb legal&aacute;bb egy
+	    t&eacute;m&aacute;t kiv&aacute;lasztottunk. A be&aacute;ll&iacute;t&aacute;s megmondja, hogy alapesetben
+	    mi t&ouml;rt&eacute;njen azokkal a levelekkel, amelyek a v&aacute;lasztott t&eacute;m&aacute;k
+	    egyik&eacute;vel sem egyezik meg. <em>Nem</em>-et v&aacute;lasztva nem ker&uuml;lnek
+	    tov&aacute;bb&iacute;t&aacute;sra azok a levelek, amelyek t&eacute;m&aacute;ja a be&aacute;ll&iacute;tott t&eacute;m&aacute;k
+	    egyik&eacute;vel sem egyezik. Ha az ilyen leveleket m&eacute;gis is meg akarod kapni,
+	    akkor <em>Igen</em>-t kell be&aacute;ll&iacute;tani.
+
+	    <p>Ha nem lett a levelek sz&#369;r&eacute;se feljebb be&aacute;ll&iacute;tva, akkor a 
+	    levelez&#337;list&aacute;ra &eacute;rkez&#337; &ouml;sszes lev&eacute;l k&eacute;zbes&iacute;tve lesz.
+      </td><td bgcolor="#cccccc">
+          <mm-suppress-nonmatching-topics>Nem<br>
+	  <mm-receive-nonmatching-topics>Igen
+            </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Szeretn&eacute;d, hogy a leveleket csak egy p&eacute;ld&aacute;nyban kapd meg?</strong><p>
+
+ 	     Ha a list&aacute;ra k&uuml;ld&ouml;tt lev&eacute;l <tt>To:</tt> vagy <tt>Cc:</tt> mez&#337;j&eacute;ben 
+	     k&uuml;l&ouml;n meg van adva a c&iacute;med, akkor be&aacute;ll&iacute;thatod, hogy a lista
+	     ne k&eacute;zbes&iacute;tse neked az ilyen leveleket. <em>Igen</em>-t v&aacute;lasztva a 
+	     lista nem fogja neked k&eacute;zbes&iacute;teni az ilyen leveleket; m&iacute;g
+	     <em>Nem</em>-et v&aacute;lasztva a list&aacute;r&oacute;l is meg fogod kapni a levelet.
+
+   	     <p>Ha a list&aacute;n szem&eacute;lyre szabott lev&eacute;lk&uuml;ld&eacute;s van be&aacute;ll&iacute;tva &eacute;s
+ 	     k&eacute;red a levelek tov&aacute;bbi p&eacute;ld&aacute;ny&aacute;nak k&uuml;ld&eacute;s&eacute;t, akkor minden
+	     egyes p&eacute;ld&aacute;nyban megtal&aacute;lhat&oacute; lesz a <tt>X-Mailman-Copy: yes</tt>
+	     fejl&eacute;c.
+     </td><td bgcolor="#cccccc"> 
+          <mm-receive-duplicates-button>Nem<br> 
+          <mm-dont-receive-duplicates-button>Igen<p> 
+          <mm-global-nodupes-button><i>&Aacute;ll&iacute;tsd mindenhol</i>
+     </td></tr>
+     
+      <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+      </td></tr>
+					
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

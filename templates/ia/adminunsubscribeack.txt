@@ -1,0 +1,2 @@
+%(member)s ha essite removite de %(listname)s.
+%(whence)s

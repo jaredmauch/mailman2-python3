@@ -1,0 +1,16 @@
+From: MAILER-DAEMON@yahoo.com
+To: user@bellsouth.net
+Date: Wed, 20 Feb 2013 15:50:26 -0000
+Subject: Failure Notice
+
+Sorry, we were unable to deliver your message to the following address.
+
+<bad_user@aol.com>:
+Remote host said: 550 5.1.1 <bad_user@aol.com>: Recipient address rejected: aol.com [RCPT_TO]
+
+--- Below this line is a copy of the message.
+
+The following should not be found as we should have stopped looking.
+
+<bogus@dont.find.me.invalid>:
+

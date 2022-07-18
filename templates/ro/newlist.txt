@@ -1,0 +1,38 @@
+Lista de discuţii '%(listname)s' a fost creată pentru dumneavoastră.
+În continuare aveţi câteva informaţii de bază despre această listă.
+
+Parola dumnevoastră de acces la listă este:
+
+    %(password)s
+
+Veţi avea nevoie de această parolă pentru a vă putea configura lista
+de discuţii.  De asemenea, parola vă va folosi la gestionarea cererilor
+administrative, precum aprobarea mesajelor în cazul unei liste moderate.
+
+Puteţi configura lista de discuţii la următoarea adresă web:
+
+    %(admin_url)s
+
+Pagina de acces pentru utilizatorii listei dumneavoastră este:
+
+    %(listinfo_url)s
+
+Puteţi chiar să personalizaţi aceste pagini, prin intermediul paginii
+de configurare a listei.  Totuşi, vă sunt necesare cunoştinţe HTML
+pentru a putea face asta.
+
+De asemenea, este disponibilă şi o interfaţă pentru utilizatori,
+bazată pe mesaje email; puteţi astfel obţine informaţii despre modul
+de folosire a listei, trimiţând un mesaj ce are cuvântul 'help' ca
+şi subiect sau ca unic conţinut, la adresa:
+
+    %(requestaddr)s
+
+Pentru a dezabona un utilizator: din pagina web 'listinfo' a listei,
+faceţi click pe adresa de email a utilizatorului, ca şi cum aţi fi acel
+utilizator. În locul parolei de utilizator, puneţi parola dumneaoastră de
+administrare.  Puteţi de asemenea, folosind parola de administrare, să
+modificaţi opţiunile utilizatorilor, incluzând rezumatele zilnice,
+anularea livrării, etc.
+
+Va rugăm să adresaţi toate întrebările către %(siteowner)s.

@@ -1,0 +1,306 @@
+<!-- $Revision: 6335 $ -->
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> configura&ccedil;&atilde;o de utilizador em <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        <MM-List-Name>, configura&ccedil;&atilde;o para o utilizador
+        <MM-Presentable-User>
+        </FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        Estado da inscri&ccedil;&atilde;o de <b><MM-Presentable-User></b>,
+        password e op&ccedil;&otilde;es para a lista <MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Alterar a informa&ccedil;&atilde;o de membro em <MM-List-Name></B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">Pode alterar o endere&ccedil;o que utiliza, introduzindo 
+        o novo endere&ccedil;o nos campos seguintes. Note que uma mensagem de 
+	confirma&ccedil;&atilde;o ser&aacute; enviada para o novo endere&ccedil;o e a altera&ccedil;&atilde;o tem de
+	ser confirmada antes de se tornar efectiva.
+
+        <p>As confirma&ccedil;&otilde;es expiram ao fim de aproximadamente <mm-pending-days> dias.
+
+        <p>Tamb&eacute;m pode, se desejar, introduzir ou alterar o seu nome real
+        (por exemplo <em>John Smith</em>).
+
+        <p>Se deseja fazer altera&ccedil;&otilde;es em todas as listas em que est&aacute; inscrito
+	em <mm-host>, active a op&ccedil;&atilde;o <em>Alterar globalmente</em>.
+
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Novo endere&ccedil;o:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Confirma&ccedil;&atilde;o:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">O seu nome
+            (opcional):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Alterar globalmente</center></td>
+    </tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Cancelar a inscri&ccedil;&atilde;o em <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>As suas outras inscri&ccedil;&otilde;es em <MM-Host></B>
+        </FONT></TD></TR>
+
+    <tr><td>
+        Active esta op&ccedil;&atilde;o e clique neste bot&atilde;o para cancelar a sua 
+	inscri&ccedil;&atilde;o nesta lista. <strong>Aviso:</strong> Esta ac&ccedil;&atilde;o ser&aacute;
+	activada imediatamente!
+        <p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
+	Pode ver quais as listas de que &eacute; membro em <mm-host>. Utilize 
+	esta op&ccedil;&atilde;o se deseja fazer as mesmas altera&ccedil;&otilde;es em todas 
+        essas listas.
+
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>A sua password em <MM-List-Name></B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Esqueceu-se da Password?</h3>
+        </center>
+        Clique neste bot&atilde;o para receber a password no seu endere&ccedil;o de
+	membro.
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Alterar a Password</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">Nova
+                password:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Confirma&ccedil;&atilde;o:
+                </div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Alterar globalmente.
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>As suas op&ccedil;&otilde;es de membro em <MM-List-Name></B>
+        </FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>Os valores activos est&atilde;o marcados.</strong></i>
+
+<p>Note que algumas op&ccedil;&otilde;es t&ecirc;m uma op&ccedil;&atilde;o <em>Alterar globalmente</em>.  
+Activar este campo faz com que as altera&ccedil;&otilde;es sejam feitas em todas as
+listas de que &eacute; membro em <mm-host>. Clique em
+<em>Listar outras inscri&ccedil;&otilde;es</em> para ver quais as listas em que 
+est&aacute; inscrito.
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Entrega de correio</strong></a><p>
+        <em>Active</em> para receber as mensagens enviadas para a lista.
+        <em>Desactive</em> se deseja permanecer inscrito, mas n&atilde;o quer,
+	de momento, receber mensagens (por exemplo quando for de f&eacute;rias).
+	Se desactivar a entrega de mensagens n&atilde;o se esque&ccedil;a de a 
+        reactivar quando voltar.
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Activa<br>
+        <mm-delivery-disable-button>Inactiva<p>
+        <mm-global-deliver-button><i>Alterar globalmente</i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Escolher modo digest</strong><p>
+        Se activar o modo digest receber&aacute; as mensagens agrupadas 
+        (normalmente uma por dia, mas por vezes mais em listas muito activas),
+        em vez de as ir recebendo &agrave; medida que s&atilde;o enviadas. Depois de
+	desactivar o modo digest ainda pode receber mais uma mensagem dessas.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Inactivo<br>
+        <MM-Digest-Radio-Button>Activo
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Receber os digests em formato MIME ou em texto simples?</strong><p>
+        O seu programa de correio pode n&atilde;o suportar digests em formato MIME.
+        Regra geral digests em formato MIME s&atilde;o prefer&iacute;veis, mas, 
+        se tiver problemas a l&ecirc;-los, escolha texto simples.
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Texto simples<p>
+        <mm-global-mime-button><i>Alterar globalmente</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Receber as suas mensagens para a lista?</strong><p>
+        Normalmente recebe uma c&oacute;pia das mensagens que envia para a lista.
+        Se n&atilde;o a desejar receber escolha a op&ccedil;&atilde;o <em>N&atilde;o</em>.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>N&atilde;o<br>
+        <mm-receive-own-mail-button>Sim
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Receber mensagem de confirma&ccedil;&atilde;o quando envia mensagens 
+        para a lista?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>N&atilde;o<br>
+        <mm-ack-posts-button>Sim
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Receber lembrete da password desta lista?</strong><p>
+        Uma vez por m&ecirc;s, receber&aacute; uma mensagem com a sua password em 
+        cada lista em que est&aacute; inscrito neste computador. Pode desactivar
+        esta op&ccedil;&atilde;o, seleccionando <em>N&atilde;o</em>.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>N&atilde;o<br>
+        <mm-get-password-reminder-button>Sim<p>
+        <mm-global-remind-button><i>Alterar globalmente</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Deseja n&atilde;o aparecer na lista de inscritos?</strong><p>
+        Quando algu&eacute;m v&ecirc; a lista de inscritos o seu endere&ccedil;o &eacute; normalmente
+        apresentado (de uma maneira indirecta, para dificultar o trabalho
+        aos coleccionadores de endere&ccedil;os). Se deseja que o seu endere&ccedil;o n&atilde;o
+        apare&ccedil;a de todo na lista de membros seleccione <em>Sim</em>.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>N&atilde;o<br>
+        <MM-Hide-Subscription-Button>Sim
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Que idioma prefere?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Que t&oacute;picos lhe interessam?</strong><p>
+                Ao seleccionar um ou mais t&oacute;picos pode filtrar o tr&aacute;fego 
+		que recebe da lista, de forma a s&oacute; receber algumas 
+                mensagens. Se um dos t&oacute;picos da mensagem for um dos 
+                por si escolhidos ser-lhe-&aacute; 
+                enviada.
+
+                <p>se n&atilde;o mensagem n&atilde;o tiver nenhum t&oacute;pico a regra de 
+                entrega depende da op&ccedil;&atilde;o seguinte. Se n&atilde;o escolher 
+                nenhum t&oacute;pico recebera todas as mensagens da lista.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Deseja receber mensagens que n&atilde;o correspondam a nenhum
+		t&oacute;pico?</strong><p>
+
+                Esta op&ccedil;&atilde;o s&oacute; &eacute; &uacute;til se tiver seleccionado pelo menos
+                um t&oacute;pico. Ela decide o que acontece &agrave;s mensagens que
+		n&atilde;o correspondem a nenhum t&oacute;pico. Se seleccionar <em>N&atilde;o</em>
+                implica que se uma mensagem n&atilde;o corresponder a nenhum dos
+                t&oacute;picos ela n&atilde;o lhe ser&aacute; enviada, enquanto seleccionar
+                <em>Sim</em> quer dizer que deseja receber essas mensagens
+                "sem t&oacute;pico".
+
+                <p>Se n&atilde;o seleccionar nenhum t&oacute;pico receber&aacute; todas as
+                mensagens enviadas para a lista.
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>N&atilde;o<br>
+        <mm-receive-nonmatching-topics>Sim
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Evitar duplica&ccedil;&atilde;o de mensagens?</strong><p>
+
+                Quando estiver indicado explicitamente nos <tt>To:</tt> ou
+                <tt>Cc:</tt> de uma mensagem enviada para a lista pode 
+                escolher se tamb&eacute;m a deseja receber atrav&eacute;s da lista.
+                Seleccione <em>Sim</em> para evitar receber c&oacute;pia atrav&eacute;s
+                da lista; seleccione <em>N&atilde;o</em> para receber c&oacute;pias.
+
+                <p>Se a lista tiver activa a op&ccedil;&atilde;o para personalizar 
+                mensagens e escolher receber c&oacute;pias, a cada c&oacute;pia ser&aacute; 
+                acrescentado um cabe&ccedil;alho  <tt>X-Mailman-Copy: yes</tt>.
+
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>N&atilde;o<br>
+        <mm-dont-receive-duplicates-button>Sim<p>
+        <mm-global-nodupes-button><i>Alterar globalmente</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

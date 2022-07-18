@@ -1,0 +1,29 @@
+Received: from smtp.digikom.net (smtp.digikom.net [195.43.38.47])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	kBP0vmk8004590
+	for <gpc-talk-bounces@grizz.org>; Sun, 24 Dec 2006 16:57:49 -0800
+Received: from s05.dknet.se ([195.43.38.5]) by smtp.digikom.net with Microsoft
+	SMTPSVC(5.0.2195.6713); Mon, 25 Dec 2006 01:57:36 +0100
+Date: Mon, 25 Dec 2006 01:57:35 +0100
+Message-Id: <10612250157.AA21532089@s05.dknet.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "Postmaster" <postmaster@s05.dknet.se>
+Sender: <postmaster@s05.dknet.se>
+To: <gpc-talk-bounces@grizz.org>
+Subject: Undeliverable Mail
+X-Mailer: <SMTP32 v8.15>
+X-Declude-Sender: <> [208.184.79.137]
+X-OriginalArrivalTime: 25 Dec 2006 00:57:36.0535 (UTC)
+	FILETIME=[AB0D2270:01C727BF]
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+Invalid final delivery userid: userx@example.com
+
+
+Original message follows.
+
+Message removed
+

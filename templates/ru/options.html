@@ -1,0 +1,289 @@
+<!-- $Revision: 7370 $ -->
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User>: параметры подписки на список рассылки <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        Параметры подписки <MM-Presentable-User> для списка рассылки <MM-List-Name>
+        </FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        Состояние подписки <b><MM-Presentable-User></b>,
+        пароль и параметры подписки на список рассылки <MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Изменение параметров Вашей подписки на список рассылки <MM-List-Name></B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">Вы можете изменить адрес, на который должны доставляться сообщения.
+        Для этого введите его в поле ниже. Имейте в виду, что на новый адрес
+        будет выслана просьба подтвердить эту операцию и что без этого
+        подтверждения адрес изменен не будет.
+
+        <p>Подписку необходимо подтвердить в течении <mm-pending-days>.
+
+        <p>Вы также можете указать или изменить свое имя
+        (например, <em>Иван Петров</em>).
+
+        <p>Если Вы хотите, чтобы указанные изменения произошли во всех
+        ваших подписках на сервере <mm-host>, Вы можете воспользоваться
+        параметром <em>Изменить во всех подписках</em>.
+
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Новый адрес:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Еще раз новый адрес:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Ваше имя (необязательно):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Изменить во всех подписках</center></td>
+    </tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Удалить подписку на <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Другие подписки на сервере <MM-Host></B>
+        </FONT></TD></TR>
+
+    <tr><td>
+        Кликните чекбокс для подтверждения намерения отписки
+        и нажмите на эту кнопку для удаления Вашей подписки.  <strong>Предупреждение:</strong>
+        Это действие будет иметь немедленный эффект!
+        <p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>Вы также можете получить список всех своих подписок на сервере
+        <mm-host>; если Вы хотите изменить параметры какой-либо из них,
+        нажмите на эту кнопку.
+
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Пароль для списка рассылки <MM-List-Name></B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center><h3>Забыли свой пароль?</h3></center>
+        Нажмите эту кнопку, чтобы получить пароль на адрес Вашей подписки.
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Изменить пароль</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">Новый пароль:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Подтвердите новый пароль:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Изменить во всех подписках.
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Параметры Вашей подписки на <MM-List-Name></B>
+        </FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>Текущие значения отмечены</strong></i>
+
+<p>Обратите внимание, что значения некоторых параметров вы можете <em>Изменить
+во всех подписках</em>. Установка этого чекбокса приведет к тому, что изменения
+будут сделаны для всех подписок на сервере <mm-host>. Их список можно получить
+при помощи кнопки <em>Список моих подписок</em>, расположенной выше на этой странице.
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Доставка сообщений</strong></a><p>
+        Выберите <em>Включена</em> чтобы получать сообщения из этого
+        списка рассылки. Выберите <em>Отключена</em> если Вы хотите
+        временно приостановить получение сообщений (например, на
+        время отпуска). Если Вы отключили доставку сообщений, не
+        забудьте затем включить ее обратно, это не происходит автоматически.
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Включена<br>
+        <mm-delivery-disable-button>Отключена<p>
+        <mm-global-deliver-button><i>Изменить во всех подписках</i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Режим дайджеста</strong><p>
+        Если Вы включите этот режим, то будете получать сообщения в виде дайджеста
+        (обычно одного в день, или больше для очень активных списков рассылки) вместо
+        каждого сообщения отдельно. После выключения этого режима Вы можете получить
+        еще один последний дайджест.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Откл.<br>
+        <MM-Digest-Radio-Button>Вкл.
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Присылать дайджесты в формате MIME или Plain Text?</strong><p>
+        Ваша почтовая программа может поддерживать дайджесты в формате MIME или нет.
+        Обычно формат MIME предпочтительнее, но если дайджесты отображаются неправильно,
+        выберите формат Plain Text.
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Plain Text<p>
+        <mm-global-mime-button><i>Изменить во всех подписках</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Получать свои собственные сообщения в список рассылки?</strong><p>
+        В общем случае Вы будете получать копию каждого Вашего сообщения, отправленного
+        в список рассылки. Если Вы этого не хотите, выберите вариант <em>Нет</em>.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>Нет<br>
+        <mm-receive-own-mail-button>Да
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Получать письмо-подтверждение об отправке сообщения в список рассылки?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>Нет<br>
+        <mm-ack-posts-button>Да
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Получать ежемесячные напоминания пароля?</strong><p>
+        Один раз в месяц Вы будете получать письмо, содержащее
+        пароль для каждого списка рассылки на этом сервере, на который
+        Вы подписаны. Вы можете отключить эти напоминания отдельно
+        для этого списка рассылки или же для всех подписок сразу.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Нет<br>
+        <mm-get-password-reminder-button>Да<p>
+        <mm-global-remind-button><i>Изменить во всех подписках</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Скрыть себя из списка подписчиков?</strong><p>
+        На странице просмотра списка подписчиков Ваш электронный
+        адрес будет показан в специальном виде, чтобы затруднить
+        работу сборщиков адресов для рассылки спама. Если Вы не хотите,
+        чтобы Ваш адрес вообще там показывался, выберите значение <em>Да</em>.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Нет<br>
+        <MM-Hide-Subscription-Button>Да
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Какой язык Вы предпочитаете?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>На какие тематические категории Вы хотели бы подписаться?</strong><p>
+                Выбрав одну или несколько категорий, Вы можете отфильтровать
+                ненужные сообщения, получая только те из них, что соответствуют
+                выбранным категориям.
+
+                <p>Если Вы не выбрали ни одну из представленных категорий,
+                Вы будете получать все сообщения.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+            <strong>Хотите ли Вы получать сообщения которые не относятся ни к одной категории?</strong>
+
+            <p>Этот параметр действует только в случае выбора хотя бы одной категории
+            в поле выше. Если Вы выберете <em>Нет</em>, то не будете получать
+            сообщения, которые не относятся ни к одной категории. В случае <em>Да</em>
+            такие сообщения будут Вам пересылаться.
+
+            <p>Если в поле выше не выбрано ни одной категории, то Вы будете получать все сообщения.
+        </td>
+        <td bgcolor="#cccccc">
+            <mm-suppress-nonmatching-topics>Нет<br>
+            <mm-receive-nonmatching-topics>Да
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+            <strong>Блокировать отправку нескольких копий сообщения?</strong>
+
+            <p>Вы можете избежать получения дублирующих друг друга сообщений, в которых Ваш адрес указан
+            в поле <tt>To:</tt> или <tt>Cc:</tt>. Для этого выберите <em>Да</em>.
+            При выборе <em>Нет</em> Вы будете получать копии таких сообщений.
+
+            <p>Если для списка рассылки активирован режим персонализации сообщений,
+            и Вы выбрали <em>Нет</em> чтобы получать копии, то каждая из них будет иметь
+            заголовок <tt>X-Mailman-Copy: yes</tt>.
+        </td>
+        <td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>Нет<br>
+        <mm-dont-receive-duplicates-button>Да<p>
+        <mm-global-nodupes-button><i>Изменить во всех подписках</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

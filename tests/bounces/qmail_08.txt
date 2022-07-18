@@ -1,0 +1,24 @@
+From contact@example.com  Mon Mar 18 11:39:41 2013
+Return-Path: <contact@example.com>
+X-Original-To: noreply@example.org
+Delivered-To: noreply@example.org
+Received: from example.com (example.com [1.2.3.4])
+	by worker1.example.org (Postfix) with ESMTP id 58C7E14C1208
+	for <noreply@example.org>; Mon, 18 Mar 2013 11:39:40 +0000 (GMT)
+Received: from contact by example.com with local (Exim 4.80)
+	(envelope-from <contact@example.com>)
+	id 1UHYPj-0001DB-Ij
+	for noreply@example.org; Mon, 18 Mar 2013 06:39:39 -0500
+To: "Example Sender" <noreply@example.org>
+MIME-Version: 1.0
+Precedence: auto_reply
+X-Precedence: auto_reply
+From: "Example user" <contact@example.com>
+Content-type: text/plain; charset=ansi_x3.110-1983
+Subject: Auto reply
+Message-Id: <E1UHYPj-0001DB-Ij@example.com>
+Date: Mon, 18 Mar 2013 06:39:39 -0500
+X-Comment: qmail detector would throw UnicodeDecodeError on this message
+X-Comment: when running under Python 2.x.  Bug LP: 1074592.
+
+Gracias por contactar con nosotros!! en este instante estamos procesando la respuesta a tu consulta, a la mayor brevedad posible tendrás noticias nuestras...

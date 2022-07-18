@@ -1,0 +1,4 @@
+Le adresse del membro %(name)s ha essite cambiate con successo
+de %(oldaddr)s a %(newaddr)s pro le lista %(listname)s.
+
+

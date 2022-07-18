@@ -1,0 +1,13 @@
+Vian aprobon bezonas la jena mesaĝo 
+sendita al dissendolisto:
+
+    Listo:    %(listname)s@%(hostname)s
+    De:       %(sender)s
+    Temo: %(subject)s
+    Kialo:   %(reason)s
+
+Kiam oportunos al vi, vizitu la retpaĝon:
+
+    %(admindb_url)s
+        
+por aprobi aŭ malaprobi la peton.

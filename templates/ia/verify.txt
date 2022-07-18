@@ -1,0 +1,26 @@
+Requesta de confirmation de abonamento al lista de diffusion %(listname)s
+
+Nos ha recipite un requesta%(remote)s pro abonamento de tu adresse de
+posta electronic, "%(email)s", al lista de diffusion %(listaddr)s.
+
+Pro confirmar que tu desira esser abonate a iste lista, simplemente
+responde a iste message, mantenente le capite Subjecto intacte.
+
+Alternativemente, visita iste pagina web:
+
+    %(confirmurl)s
+
+Si mesmo isto non functiona, include le linea sequente (e solmente le
+linea sequente!) in un message a %(requestaddr)s:
+
+    confirm %(cookie)s
+
+Nota que simplemente inviar un 'responsa' a iste message debe
+functionar ben pro le majoritate de programmas de posta electronic,
+pois que illos normalmente lassa le capite Subjecto in le forma
+correcte (le texto "Re:" addite in le subjecto es in ordine).
+
+Si vos non desira esser abonate a iste lista, per favor, simplemente
+ignora iste message. Si tu crede que alcuno essaya malitiosemente
+abonar te al lista, o si tu ha altere questiones, per favor contacta le
+administrator del lista al adresse %(listadmin)s.

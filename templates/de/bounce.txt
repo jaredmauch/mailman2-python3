@@ -1,0 +1,12 @@
+Eine Mailadresse war mehrfach unzustellbar:
+
+    Liste:      %(listname)s
+    Mitglied:   %(addr)s
+    Vorgang:    Abonnement %(negative)s%(did)s.
+    Grund:      Zu viele oder problematische Bounces
+    %(but)s
+
+%(reenable)s
+Die letzte betroffene Nachricht ist an diese E-Mail angehängt.
+
+Fragen? Kontaktieren Sie den Mailman-Systemverwalter unter %(owneraddr)s.

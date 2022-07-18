@@ -1,0 +1,4 @@
+%(member)s با موفقیت در  %(listname)s مشترک شد.
+%(whence)s
+
+

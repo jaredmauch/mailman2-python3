@@ -1,0 +1,53 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from rs-so-b2.amenworld.com (rs-so-b2.amenworld.com [62.193.206.27])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k9H6S7E3014456
+	for <gpc-talk-bounces@grizz.org>; Mon, 16 Oct 2006 23:28:07 -0700
+Received: from av3.amenworld.com (av3.amenworld.com [62.193.206.46])
+	by rs-so-b2.amenworld.com (Postfix) with ESMTP id 93A72655806
+	for <gpc-talk-bounces@grizz.org>; Tue, 17 Oct 2006 08:33:33 +0200 (CEST)
+Date: Tue, 17 Oct 2006 08:27:49 +0200
+From: Mail Delivery System <Mail.Delivery.System@sb7.songbird.com>
+To: gpc-talk-bounces@grizz.org
+Subject: Delivery status notification
+MIME-Version: 1.0
+Content-Type: multipart/report;
+	boundary="------------I305M09060309060P_013011610664690"
+Message-Id: <20061017063333.93A72655806@rs-so-b2.amenworld.com>
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+This is a multi-part message in MIME format.
+
+--------------I305M09060309060P_013011610664690
+Content-Type: text/plain; charset=UTF-8;
+Content-Transfer-Encoding: 8bit
+
+============================================================================
+      This is an automatically generated Delivery Status Notification.      
+
+Delivery to the following recipients failed permanently:
+
+   * userx@example.com
+
+
+============================================================================
+                             Technical details:                             
+
+SMTP:RCPT host 62.193.203.102: 553 5.3.0 <userx@example.com>... No such user here
+
+
+============================================================================
+
+
+--------------I305M09060309060P_013011610664690
+Content-Type: message/rfc822; charset=UFT-8;
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment
+
+
+Message removed
+
+--------------I305M09060309060P_013011610664690--
+

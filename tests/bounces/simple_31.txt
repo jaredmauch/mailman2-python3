@@ -1,0 +1,49 @@
+Return-Path: <>
+Received: from rs-so-b1.amenworld.com (rs-so-b1.amenworld.com [62.193.206.26])
+	by alan.rezo.net (Postfix) with ESMTP id 0E7913B02A3
+	for <immigration.jetable-bounces@rezo.net>;
+	Fri, 20 Jun 2008 20:24:00 +0200 (CEST)
+Received: from av2.amenworld.com (av2.amenworld.com [62.193.206.45])
+	by rs-so-b1.amenworld.com (Postfix) with ESMTP id 5A7EA55884
+	for <immigration.jetable-bounces@rezo.net>;
+	Fri, 20 Jun 2008 20:38:06 +0200 (CEST)
+Date: Fri, 20 Jun 2008 20:23:54 +0200
+From: Mail Delivery System <>
+To: immigration.jetable-bounces@rezo.net
+Subject: Delivery status notification
+MIME-Version: 1.0
+Content-Type: multipart/report;
+	boundary="------------I305M09060309060P_788012139862340"
+Message-Id: <20080620183806.5A7EA55884@rs-so-b1.amenworld.com>
+
+This is a multi-part message in MIME format.
+
+--------------I305M09060309060P_788012139862340
+Content-Type: text/plain; charset=UTF-8;
+Content-Transfer-Encoding: 8bit
+
+      This is an automatically generated Delivery Status Notification.      
+
+Delivery to the following recipients failed permanently:
+
+   * userx@example.fr
+
+
+
+--------------I305M09060309060P_788012139862340
+Content-Type: message/delivery-status; charset=UFT-8;
+Content-Transfer-Encoding: 8bit
+
+Reporting-MTA: dns; av2.amenworld.com [62.193.206.40]
+Received-From-MTA: dns; alan.rezo.net [217.24.84.2]
+Arrival-Date: Fri, 20 Jun 2008 20:23:54 +0200
+
+--------------I305M09060309060P_788012139862340
+Content-Type: message/rfc822; charset=UFT-8;
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment
+
+Message removed
+
+--------------I305M09060309060P_788012139862340--
+

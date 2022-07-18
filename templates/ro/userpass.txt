@@ -1,0 +1,26 @@
+Dumneavoastră sau cineva în numele dumneavoastră, a cerut retrimiterea
+parolei de acces la lista de discuţii %(fqdn_lname)s.  Veţi avea nevoie
+de această parolă pentru a putea schimba opţiunile de abonament (de ex.
+livrare normală sau rezumat zilnic), şi totodată pentru o mai uşoară
+dezabonare de pe lista de discuţii.
+
+Abonamentul dumneavoastră este înregistrat pe adresa: %(user)s
+
+Parola de acces la lista %(listname)s este: %(password)s
+
+Pentru a modifica opţiunile de abonament, intraţi pe pagina de
+opţiuni:
+
+    %(options_url)s
+
+Puteti, de asemenea, face schimbări şi prin email, trimiţând un mesaj
+la adresa:
+
+    %(requestaddr)s
+
+având cuvântul "help" în subiect sau ca mesaj.
+Răspunsul automat va conţine instrucţiuni detaliate.
+
+Întrebări sau comentarii?
+Vă rugăm să le trimiteţi administratorului listei %(listname)s
+la adresa %(owneraddr)s.

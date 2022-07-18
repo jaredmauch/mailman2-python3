@@ -1,0 +1,28 @@
+Helpo de la dissendolisto %(listname)s:
+
+Ĉi tio estas la helpo pri la poŝt-ordonoj por la versio %(version)s de la mastrumilo 
+de dissendolistoj «Mailman». Ĉi tiu mesaĝo priskribas la ordonojn kiujn vi povas sendi por
+ricevi informon pri via abono kaj ŝanĝi viajn abonojn je listoj en la servilo Mailman.
+La ordonoj povas esti sendataj en la temkampo aŭ en la enhavo de mesaĝo.
+
+La plimulto de tio priskribata ĉi-sube estas farebla ankaŭ per interreto ĉe:
+
+    %(listinfo_url)s
+
+Specife, vi povas uzi la retejon por ricevi vian pasvorton al via abonanta retpoŝtadreso.
+
+La specifaj ordonoj de la listo (subscribe, who, etc) estu sendataj al la adreso *-request 
+de la celata listo. Ekzemple, por la listo «mailman» sendu ilin al la adreso «mailman-request@...».
+
+Pri la priskriboj, la vortoj inter "<>" esprimas DEVIGAJN partojn, dum la vortoj inter "[]"
+celas NEDEVIGAJN partojn. Ne inkluzivu la krampojn <> aŭ [] kiam vi sendos la ordonojn.
+
+La jenaj ordonoj estas uzeblaj:
+
+    %(commands)s
+
+La ordonoj estu sendataj al %(requestaddr)s
+
+Demandoj kaj duboj celantaj atenton de la listestro estu sendataj al
+
+    %(adminaddr)s

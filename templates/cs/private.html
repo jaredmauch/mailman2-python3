@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>Konference %(realname)s - pøihl&aacute;&scaron;en&iacute; pro pø&iacute;stup do priv&aacute;tn&iacute;ho archivu </title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Konference %(realname)s - 
+	    pøihl&aacute;&scaron;en&iacute; pro pø&iacute;stup do priv&aacute;tn&iacute;ho archivu</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">Emailov&aacute; adresa:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Heslo:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Pus» mì dovnitø...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Pozor:</em></strong> Aby syst&eacute;m fungoval 
+      spr&aacute;vnì mus&iacute;te m&iacute;t povolen&eacute; cookie ve Va&scaron;em prohl&iacute;¾eèi.
+
+      <p>Cookies se pou¾&iacute;vaj&iacute; na to, abyste nemuseli jeden
+      ka¾d&yacute; po¾adavek znovu potvrzovat heslem. Zaniknou
+      pokud ukonè&iacute;te prohl&iacute;¾eè a nebo kdy¾ se odhl&aacute;s&iacute;te.
+      Odhl&aacute;sit se mù¾ete kliknut&iacute;m na <em>Odhl&aacute;sit</em>. 
+      Tento odkaz uvid&iacute;te a¾ po &uacute;spì&scaron;n&eacute;m pøihl&aacute;&scaron;en&iacute;.
+
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

@@ -1,0 +1,11 @@
+Uw toestemming is nodig voor een maillijst
+aanmeldingsverzoek:
+
+    Voor:  %(username)s
+    Lijst: %(listname)s@%(hostname)s
+
+Zodra het u schikt, bezoek:
+
+    %(admindb_url)s
+
+om het verzoek af te handelen.

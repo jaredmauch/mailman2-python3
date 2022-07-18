@@ -1,0 +1,25 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from mta113.sbc.mail.mud.yahoo.com (mta113.sbc.mail.mud.yahoo.com [68.142.198.176])
+	by sb7.songbird.com (8.12.11/8.12.11) with SMTP id k11HTqgC004200
+	for <century-announce-bounces@grizz.org>; Wed, 1 Feb 2006 09:29:52 -0800
+Date: Wed, 1 Feb 2006 09:29:52 -0800
+Message-Id: <200602011729.k11HTqgC004200@sb7.songbird.com>
+From: MAILER-DAEMON@sbcglobal.net
+To: century-announce-bounces@grizz.org
+X-Loop: MAILER-DAEMON@sbcglobal.net
+Subject: Delivery failure
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Found to be clean
+X-Songbird-From: 
+
+Message from sbcglobal.net.
+Unable to deliver message to the following address(es).
+
+<userx@example.net>:
+This user doesn't have a sbcglobal.net account (userx@example.net) [-9]
+
+--- Original message follows.
+
+
+Message removed
+

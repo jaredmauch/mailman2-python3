@@ -1,0 +1,60 @@
+<!-- $Revision: 7647 $ -->
+<html>
+<head>
+    <title>%(realname)s Private Archives Authentication</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Sis&auml;&auml;nkirjautuminen
+            yksityiseen arkistoon %(realname)s
+	    </FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">S&auml;hk&ouml;postiosoite:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Salasana:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Sis&auml;&auml;n...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>T&auml;rke&auml;&auml;:</em></strong> T&auml;st&auml; eteenp&auml;in sinulla
+      pit&auml;&auml; olla ev&auml;steet valittuina aktiiviseksi selaimessasi. Muuten
+	mitk&auml;&auml;n yll&auml;pit&auml;j&auml;n toimet eiv&auml;t tule suoritetuiksi.
+
+      <p>Istuntokohtaiset ev&auml;steet ovat aktiivisina Mailmanin yll&auml;pit&auml;j&auml;n ymp&auml;rist&ouml;ss&auml;/oikeuksissa, 
+      joten sinun ei tarvitse uudelleenkirjautua jokaisen yll&auml;pit&auml;j&auml;n toimen suorittamiseksi. T&auml;m&auml;
+      ev&auml;ste katoaa automaattisesti kun suljet selaimen tai voit nimenomaan sulkea ev&auml;steen painamalla
+	<em>Muut yll&auml;pit&auml;j&auml;n toimet</em> otsikon alla olevaa <em>Kirjaudu ulos</em> -valintaa.
+      (jonka n&auml;et, kun olet onnistuneesti kirjautunut sis&auml;&auml;n).
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

@@ -1,0 +1,15 @@
+Cererea dumneavoastră la %(requestaddr)s:
+
+    %(cmd)s
+
+a fost direcţionată către administratorul acestei liste.
+
+Acest fapt se datorează probabil fiincă încercaţi să vă abonaţi
+la o listă 'închisă'.
+
+Veţi primi un mesaj de notificare cu decizia proprietarului acestei liste
+privind cererea dumneavoastra de abonare.
+
+Orice alte întrebări despre politica acestei liste trebuie trimise la adresa:
+
+    %(adminaddr)s

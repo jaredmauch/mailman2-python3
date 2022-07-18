@@ -1,0 +1,27 @@
+Tu abonamento al lista de diffusion %(listname)s ha essite
+disactivate %(reason)s.
+
+Tu non recipera plus messages de iste lista usque tu reactiva tu
+abonamento. Tu recipera ancora %(noticesleft)s rememorationes como iste
+ante que le systema te disabona definitivemente del lista.
+
+Pro reactivar tu abonemento, tu pote simplemente responder a iste
+message (lassante le linea 'subjecto:' intacte), o visitar le pagina
+de confirmation a
+
+    %(confirmurl)s
+
+Tu anque pote visitar tu pagina de membro a
+
+    %(optionsurl)s
+
+In tu pagina de membro, tu pote cambiar varie optiones de livration
+como tu adresse de e-mail e si tu vole reciper digestos o non. Pro tu
+memoria, tu contrasigno de abonamento es
+
+    %(password)s
+
+Si tu ha qualcunque questiones o problemas, tu pote contactar le
+proprietario del lista a
+
+    %(owneraddr)s

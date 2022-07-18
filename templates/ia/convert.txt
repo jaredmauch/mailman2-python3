@@ -1,0 +1,36 @@
+Le lista de diffusion %(listname)s ha justo ora vidite un grande
+cambiamento.  Ora illo functiona sur un nove systema de listas de
+diffusion denominate "Mailman".  Nos spera que isto resolvera
+multe problemas que le administration de iste lista ha presentate.
+
+Como te importa isto?
+
+1) Messages dirigite a tote le lista debe esser inviate a: %(listaddr)s.
+
+2) Tu ha recipite un contrasigno aleatorimente generate pro evitar que
+alteres te disabona sin tu cognoscentia. Illo essera inviate a te in un
+email separate, que tu pote haber jam recipite. Non inquieta te si tu
+oblida iste contrasigno; un rememoration te essera inviate in e-mail
+cata mense.
+
+3) Si tu ha accesso al World Wide Web, tu pote usar lo a omne momento
+pro disabonar te de iste lista, entrar in e exir del modo digesto,
+consultar editiones anterior del lista (que essera disponibile post que
+le lista ha recipite messages per un die o plus), etc. Le adresse Web
+pro iste ressources es:
+
+    %(listinfo_url)s
+
+4) Si tu non ha accesso al WWW, tu pote facer iste mesme cosas via
+email. Invia un message a %(requestaddr)s ubi le subjecto o corpore
+contine solmente le parola "help" (sin virgulettas). Tu recipera un
+responsa automatisate que te dara instructiones ulterior.
+
+Per favor, dirige omne questiones o problemas con iste nove
+configuration a:
+
+    %(adminaddr)s
+
+Iste message ha essite generate automaticamente per Mailman %(version)s.
+Pro plus information sur le software Mailman, visita le sito de
+Mailman a http://www.list.org/

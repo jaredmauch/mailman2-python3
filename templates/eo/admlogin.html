@@ -1,0 +1,31 @@
+<html>
+<head>
+  <title>Ensaluto de %(who)s en la liston %(listname)s </title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Ensaluto de %(who)s en la liston %(listname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Pasvorto de %(who)s en la listo:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Lasu min eniri...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Grava:</em></strong> Ekde tiu ĉi paĝo, vi devas aktivigi kuketojn en via retumilo; se ne, neniun ŝanĝon vi povos efektivigi.
+
+      <p>La mastruma interfaco de Mailman uzas seanco-kuketojn por ke vi ne devu reensaluti ĉe ĉiu mastrum-agado. Tiu kuketo kadukiĝos aŭtomate kiam vi fermos vian retumilon, aŭ alie vi povos mem kadukigi ĝin premante la ligilon <em>Elsalutu</em> sub <em>Aliaj mastrumaj agadoj</em> (kiun vi vidos ensalutinte).
+</FORM>
+</body>
+</html>

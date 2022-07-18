@@ -1,0 +1,14 @@
+Via peto al %(requestaddr)s:
+
+    %(cmd)s
+
+estas plusendita al la mastrumanto de la listo.
+
+Kredeble tio okazas ĉar vi provis aboni liston 'fermitan'.
+
+Vi ricevos per retpoŝto sciigon pri la decido de la listestro
+rilate vian abonpeton.
+
+Ĉiujn demandojn pri la reguloj de la listestro sendu al:
+
+    %(adminaddr)s

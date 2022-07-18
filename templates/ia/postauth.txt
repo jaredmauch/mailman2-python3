@@ -1,0 +1,13 @@
+Como administrator del lista, tu autorisation es demandate pro le sequente
+message inviate al lista:
+
+    Lista:    %(listname)s@%(hostname)s
+    De:       %(sender)s
+    Subjecto: %(subject)s
+    Ration:   %(reason)s
+
+Quando il te conveni, visita:
+
+    %(admindb_url)s
+        
+pro approbar o refusar le requesta.

@@ -1,0 +1,15 @@
+Ĉi tio estas sciigo por pritrakti resalton el dissendolisto 
+de Mailman:
+
+    Listo:      %(listname)s
+    Abonanto:     %(addr)s
+    Ago:     Abono %(negative)s%(did)s.
+    Kialo:     Troaj aŭ fatalaj resaltoj.
+    %(but)s
+
+%(reenable)s
+La kaŭzinta resalto-sciigo estas alkroĉita ĉi-sube.
+
+Se vi havas demandojn aŭ dubojn, kontaktu la listestron ĉe
+
+    %(owneraddr)s

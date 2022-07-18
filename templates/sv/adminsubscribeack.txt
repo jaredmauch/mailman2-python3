@@ -1,0 +1,2 @@
+%(member)s är nu anmälda till listan %(listname)s.
+%(whence)s

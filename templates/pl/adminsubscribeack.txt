@@ -1,0 +1,4 @@
+%(member)s zosta³ zapisany na listê %(listname)s.
+%(whence)s
+
+

@@ -1,0 +1,29 @@
+Date:     Tue, 24 Jan 2006 22:17:41 -0700
+Message-Id: <10601242217.AA12075059@mail.example.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From:     "Postmaster" <postmaster@mail.example.net>
+Sender:   <postmaster@mail.example.net>
+To:       <msapiro@example.net>
+Subject:  Undeliverable Mail
+X-Mailer: <SMTP32 v8.15>
+X-RCPT-TO: <msapiro@example.net>
+Status: U
+X-UIDL: 430587558
+
+Unknown user: after_another@example.net
+
+RCPT TO generated following response:
+553 5.3.0 <after_another@example.net>... Addressee unknown, relay=[205.208.202.10]
+
+Unknown user: one_bad_address@example.net
+
+RCPT TO generated following response:
+553 5.3.0 <one_bad_address@example.net>... Addressee unknown, relay=[205.208.202.10]
+
+
+
+Original message follows.
+
+Message removed
+

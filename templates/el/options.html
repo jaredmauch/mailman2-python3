@@ -1,0 +1,327 @@
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> ρυθμίσεις συμμετοχής στη λίστα για το μέλος <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        <MM-List-Name> ρυθμίσεις συμμετοχής στη λίστα για το μέλος
+        <MM-Presentable-User>
+        </FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b><MM-Presentable-User></b>'s κατάσταση της εγγραφής του μέλους,
+        κωδικός, και επιλογές για τη <MM-List-Name> λίστα.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Αλλαγή των πληροφοριών εγγραφής για τη λίστα <MM-List-Name> </B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">Μπορείτε να αλλάξετε τη διεύθυνση με την οποία είστε
+        εγγεγραμμένος στη λίστα δίνοντας τη νέα διεύθυνση στα παρακάτω πεδία.  
+		Πρέπει να σημειωθεί ότι ένα μήνυμα επιβεβαίωσης θα σταλεί στη νέα
+        διεύθυνση, και η αλλαγή πρέπει να επιβεβαιωθεί πριν γίνει η 
+		αποδοχή της από το σύστημα.
+
+        <p>Τα αιτήματα επιβεβαίωσης λήγουν μετά από <mm-pending-days>.
+
+        <p>Προαιρετικά επίσης, μπορείτε να ορίσετε ή να αλλάξετε το
+        πραγματικό σας όνομα (π.χ. <em>Μαρία Παπαδοπούλου</em>).
+
+        <p>Αν θέλετε να κάνετε αλλαγές στη συμμετοχή σας για όλες τις λίστες
+        στις οποίες είστε εγγεγραμμένος στο <mm-host>, ενεργοποιήστε την επιλογή
+        <em>Αλλαγή παντού</em>.
+
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Νέα διεύθυνση:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Ξανά για
+            επιβεβαίωση:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Το όνομά σας
+            (προαιρετικά):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Αλλαγή παντού</center></td>
+    </tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Διαγραφή από τη λίστα <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Οι άλλες σας συμμετοχές στο <MM-Host></B>
+        </FONT></TD></TR>
+
+    <tr><td>
+        Ενεργοποιήστε το checkbox επιβεβαίωσης και πατήστε αυτό το
+        κουμπί για να διαγραφείτε από αυτή τη λίστα.  <strong>Προειδοποίηση:</strong>
+        Αυτή η ενέργεια θα ολοκληρωθεί αμέσως!
+        <p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
+        Μπορείτε να δείτε μια λίστα με όλες τις άλλες λίστες στο
+        <mm-host> στις οποίες είστε μέλος.  Χρησιμοποιήστε αυτή την επιλογή αν
+        θέλετε να κάνετε τις ίδιες αλλαγές στη συμμετοχή σας και
+        στις υπόλοιπες λίστες.
+
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Ο κωδικός της λίστας σας <MM-List-Name></B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Ξεχάσατε Τον Κωδικό Σας;</h3>
+        </center>
+        Πατήστε αυτό το κουμπί για να σας αποσταλεί ο κωδικός σας με email
+        στη διεύθυνση με την οποία έχετε εγγραφεί.
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Αλλαγή Του Κωδικού Σας</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">Νέος
+                κωδικός πρόσβασης:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Ξανά για
+                επιβεβαίωση:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Αλλαγή παντού.
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Οι επιλογές της εγγραφής σας στη λίστα <MM-List-Name></B>
+        </FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>Οι τρέχουσες επιλογές είναι προεπιλεγμένες.</strong></i>
+
+<p>Σημειώστε ότι ορισμένες από τις επιλογές έχουν το πεδίο <em>Ορισμός παντού</em>. 
+Αν επιλέξετε αυτό το πεδίο οι αλλαγές θα γίνουν σε όλες τις λίστες
+στο <mm-host> στις οποίες είστε μέλος.  Πατήστε στο
+<em>Εμφάνιση των άλλων λιστών</em> παραπάνω για να δείτε σε ποιές άλλες
+λίστες είστε εγγεγραμμένος.
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Παράδοση Mail</strong></a><p>
+        Ορίστε αυτή την επιλογή σε <em>Ενεργοποιημένο</em> για να λαμβάνετε τα
+        μηνύματα που στέλνονται σε αυτή τη λίστα.  Χρησιμοποιήστε το <em>Απενεργοποιημένο</em> αν θέλετε να μείνετε εγγεγραμμένος, αλλά δεν θέλετε να παραδίδονται μηνύματα σε εσάς
+		για κάποιο διάστημα (π.χ. τον Αύγουστο που λείπετε για διακοπές).  Αν απενεργοποιήσετε
+        την παράδοση μηνυμάτων, μην ξεχάσετε να την ενεργοποιήσετε πάλι όταν επιστρέψετε&#183 δεν
+        θα ενεργοποιηθεί αυτόματα.
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Ενεργοποιημένη<br>
+        <mm-delivery-disable-button>Απενεργοποιημένη<p>
+        <mm-global-deliver-button><i>Ορισμός παντού</i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Ορισμός Συνόψεων</strong><p>
+        Αν ενεργοποιήσετε τις συνόψεις, τα μηνύματα θα σας στέλνονται 
+        πακεταρισμένα (συνήθως ένα κάθε ημέρα αλλά πιθανών συχνότερα σε
+		λίστες με μεγάλη κίνηση), αντί να τα λαμβάνετε καθέ ένα ξεχωριστά
+        την ώρα που στέλνονται.  Αν απενεργοποιήσετε την αποστολή συνόψεων,
+		μπορεί να λάβετε μια τελευταία σύνοψη.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Off<br>
+        <MM-Digest-Radio-Button>On
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Να λαμβάνετε συνόψεις απλού κειμένου ή MIME συνόψεις;</strong><p>
+        Το πρόγραμμα σας για την ανάγνωση των μηνυμάτων ηλεκτρονικού
+		ταχυδρομείου μπορεί να υποστηρίζει MIME συνόψεις ή όχι.  Εν'
+        γένει οι MIME συνόψεις είναι προτιμότερες, αλλά αν έχετε 
+		πρόβλημα στην ανάγνωσή τους, επιλέξτε να λαμβάνετε συνόψεις
+		απλού κειμένου.
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Απλό Κείμενο<p>
+        <mm-global-mime-button><i>Ορισμός Παντού</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Λήψη των δικών σας μηνυμάτων στη λίστα;</strong><p>
+        Κανονικά, θα λαμβάνετε αντίγραφο κάθε μηνύματος που στέλνετε 
+		στη λίστα.  Αν δε θέλετε να λαμβάνετε αυτό το αντίγραφο, 
+		ορίστε αυτή την επιλογή σε <em>Όχι</em>.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>No<br>
+        <mm-receive-own-mail-button>Yes
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Να λαμβάνετε επιβεβαίωση λήψης του μηνύματος όταν 
+		στέλνετε ένα μήνυμα στη λίστα;</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>Όχι<br>
+        <mm-ack-posts-button>Ναι
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Να λαμβάνετε email για την υπενθύμιση του κωδικού σας
+		για αυτή τη λίστα;</strong><p>
+        Μια φορά το μήνα, θα λαμβάνετε ένα email το οποίο θα 
+        περιέχει τον κωδικό σας για κάθε λίστα στην οποία είστε 
+		εγγεγραμμένος σε αυτό το server.  Μπορείτε να απενεργοποιήσετε
+		αυτή την επιλογή σε κάθε λίστα επιλέγοντας <em>Όχι</em> στο σημείο αυτό.  
+		Αν απενεργοποιήσετε τις υπενθυμίσεις των κωδικών για όλες τις 
+		λίστες στις οποίες είστε εγγεγραμμένος, δε θα σας σταλεί κανένα
+		μήνυμα υπενθύμισης.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Όχι<br>
+        <mm-get-password-reminder-button>Ναι<p>
+        <mm-global-remind-button><i>Ορισμός Παντού</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Απόκρυψη από τη λίστα μελών;</strong><p>
+        Όταν κάποιος βλέπει τα μέλη της λίστας, η δική σας email
+		διεύθυνση φαίνεται κανονικά (συγκαλυμμένη με τέτοιο τρόπο
+		ώστε να εμποδίζονται όσοι θα ήθελαν να πάρουν τις διευθύνσεις
+		για την αποστολή spam μηνυμάτων).  Αν δε θέλετε να φαίνεται
+        η email διεύθυνσή σας σε αυτό τον κατάλογο μελών καθόλου, 
+		επιλέξτε <em>Ναι</em> στο σημείο αυτό.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Όχι<br>
+        <MM-Hide-Subscription-Button>Ναι
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Ποιά γλώσσα προτιμάτε;</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Σε ποιές κατηγορίες θεμάτων θα θέλατε να εγγραφείτε;</strong><p>
+                Επιλέγοντας ένα ή περισσότερα θέματα, μπορείτε να 
+				φιλτράρετε την κίνηση της λίστας, ώστε να λαμβάνετε
+				μόνο ένα υποσύνολο των μηνυμάτων.  Αν ένα μήνυμα
+				ταιριάζει στα επιλεγμένα θέματα, τότε θα το λάβετε,
+                διαφορετικά όχι.
+
+                <p>Αν ένα μήνυμα δεν ταιριάζει σε κανένα θέμα, ο 
+				κανόνας παράδοσης εξαρτάται από τις ρυθμίσεις της παρακάτω 
+				επιλογής.  Αν δεν έχετε επιλέξει τα θέματα που σας
+                ενδιαφέρουν, θα λαμβάνετε όλα τα μηνύματα που στέλνονται
+				στη λίστα.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Θέλετε να λαμβάνετε μηνύματα που δεν ταιριάζουν
+                με κανένα από τα φίλτρα θέματος;</strong><p>
+
+                Αυτή η επιλογή ενεργοποιείται μόνο αν είστε εγγεγραμμένος
+				σε ένα τουλάχιστον από τα παραπάνω θέματα. Περιγράφει
+				ποιός είναι ο προκαθορισμένος τρόπος παράδοσης για 
+				τα μηνύματα που δεν ταιριάζουν με κανένα από τα θεματικά
+				φίλτρα. Η επιλογή <em>Όχι</em> σημαίνει ότι αν το μήνυμα
+				δεν ταιριάζει με κανένα από τα φίλτρα, τότε δεν θα λάβετε 
+				το μήνυμα, ενώ η επιλογή <em>Ναι</em> σημαίνει ότι θα 
+				σας παραδοθούν και τα μηνύματα που δεν ταιριάζουν με τα
+				φίλτρα που έχουν ορισθεί.
+
+                <p>Αν δεν έχετε επιλέξει παραπάνω κανένα από τα θέματα
+				ενδιαφέροντος, τότε θα λαμβάνετε κάθε μήνυμα που 
+				στέλνετε στη λίστα ηλεκτρονικού ταχυδρομείου.
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>Όχι<br>
+        <mm-receive-nonmatching-topics>Ναι
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Να αποφεύγονται τα διπλά αντίγραφα των μηνυμάτων;</strong><p>
+
+                Όταν αναφέρεστε ρητά στα <tt>To:</tt> ή 
+                <tt>Cc:</tt> headers ενός μηνύματος της λίστας, μπορείτε
+				να επιλέξετε να μην λάβετε άλλο αντίγραφο αυτού του
+				μηνύματος από τη λίστα. Επιλέξτε <em>Ναι</em> για να
+				αποφύγετε τη λήψη αντιγράφου του ίδιου μηνύματος από τη 
+				λίστα. Επιλέξτε <em>Όχι</em> για να λάβετε το αντίγραφο.
+
+                <p>Αν η λίστα έχει ενεργοποιημένη την δυνατότητα προσωποποιημένων
+				μηνυμάτων των μελών, και επιλέξετε να λαμβάνετε αντίγραφα, κάθε
+				αντίγραφο θα έχει ένα <tt>X-Mailman-Copy: yes</tt> header το οποίο
+				θα έχει προστεθεί σε αυτό.
+
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>Όχι<br>
+        <mm-dont-receive-duplicates-button>Ναι<p>
+        <mm-global-nodupes-button><i>Ορισμός Παντού</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

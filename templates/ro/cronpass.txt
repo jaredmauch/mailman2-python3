@@ -1,0 +1,19 @@
+Acesta este un mesaj lunar, de reamintire a datelor dumneavoastră de acces
+la listele de discuţii de la %(hostname)s.  Mesajul include informaţii
+despre abonamente şi cum să modificaţi aceste date sau cum să părăsiţi
+o listă.
+
+Puteţi vizita adresele URL pentru a vă modifica opţiunile personale sau
+datele de abonament, inclusiv dezabonarea, setarea livrării de rezumate
+zilnice sau anularea totală livrării mesajelor (de ex. în vacanţ), şi
+aşă mai departe.
+
+În plus, pe lângă aceste interfeţe URL, mai puteţi utiliza emailul pentru
+a face schimbările dorite.  Pentru mai multe detalii, trimiteţi un email
+la adresa '-request' a listei (de exemplu, %(exreq)s), conţinând doar
+cuvântul 'help' ca mesaj, şi veţi primi un răspuns automat cu instrucţiuni.
+
+Dacă aveţi întrebări, nelămuriri, comentarii, etc, trimiteţi-le la %(owner)s.
+Vă mulţumim!
+
+Parola pentru %(useraddr)s:

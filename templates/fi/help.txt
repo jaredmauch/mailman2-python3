@@ -1,0 +1,35 @@
+Käyttöohje postituslistalle %(listname)s:
+
+Tämä on sähköpostipohjainen opastus version %(version)s "Mailman"
+postituslistapalvelimen ylläpitäjälle. Seuraavassa kuvataan
+komennot jotka voit lähettää sähköpostilla. Komento voi sijaita 
+viestin otsikkokentässä tai leipätekstissä.
+
+Komennot voivat olla joko viestin otsikossa tai tekstikentässä.
+
+Huomioi, että voit tehdä saman myös www-sivun kautta:
+
+    %(listinfo_url)s
+
+Etenkin kun haluat saada unohtamasi listan salasanan voit käyttää
+www-sivua salasanan lähettämiseen sähköpostiisi.
+
+Postituslistakohtaiset komennot (subscribe, who, jne) pitäisi lähettää
+listan *-request -alkuiseen osoitteeseen. Esim. jos listan nimi on
+'mailman' niin käytä osoitetta 'mailman-request@...'.
+
+Allaolevassa kuvauksessa - sanat jotka ovat "<>" -merkkien sisällä
+ovat PAKOLLISIA ja sanat "[]" -merkkien sisällä ovat VALINNAISIA.
+Älä laita sanojen ympärille ohjeissa olevia "<>" tai "[]" -merkkejä
+kun käytät komentoja.
+
+Seuraavassa käytettävät komennot:
+
+    %(commands)s
+
+Komennot tulee lähettää osoitteeseen %(requestaddr)s 
+
+Henkilökohtaiset yhteydenotot listan ylläpitäjiin sähköpostitse
+osoitteeseen:
+
+    %(adminaddr)s

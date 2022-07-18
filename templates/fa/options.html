@@ -1,0 +1,249 @@
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> تنظیمات عضویت برای  <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff" dir="rtl">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        <MM-List-Name> تنظیمات عضویت فهرست پستی برای
+        <MM-Presentable-User>
+        </FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b>وضعیت اشتراک، گذرواژه و گزینه‌های <MM-Presentable-User></b>در فهرست پستی<MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>تغییر دادن اطلاعات عضویت شما در <MM-List-Name> </B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">می توانید نشانی رایانامه‌ای را که با آن عضو این فهرست شده‌اید، با نشانی جدیدی که در زیر وارد می‌کنید جایگزین کنید. به یاد داشته باشید که پس از تغییر نشانی، یک رایانامه برای تایید نشانی جدید فرستاده می‌شود و این تغییر تنها پس از پاسخ به تاییدیه اعمال خواهد شد.
+
+        <p>نامه‌ی تاییدیه، پس از مدت  <mm-pending-days> منقضی می‌شود.
+
+        <p>همچنین در صورت تمایل می‌توانید نام واقعی خود را مشخص کنید و مثلاً 
+        <em>حسین موسوی</em> بگذارید.
+
+        <p>اگر می‌خواهید تغییر اطلاعات عضویت شما در تمام فهرست های پستی <mm-host> اعمال شود، گزینه  <em>تغییر سراسری</em> را تیک بزنید.
+
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">نشانی جدید:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">یک بار دیگر برای تایید:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">نام شما (اختیاری): </div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>تغییر سراسری</center></td>
+    </tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B> لغو اشتراک از <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>دیگر اشتراک های شما در  <MM-Host></B>
+        </FONT></TD></TR>
+
+    <tr><td>
+        برای لغو اشتراک از این فهرست پستی گزینه‌ی «تایید» را تیک بزنید و روی این دکمه کلیک کنید <strong>هشدار: </strong>
+        این کار به صورت درجا و آنی انجام خواهد شد.
+        <p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
+        می‌توانید فهرستی از تمام دیگر فهرست‌های پستی موجود در <mm-host> را که عضو آن شده‌اید ببینید. اگر می‌خواهید تغییرات عضویت درج شده در اینجا را در سایر اشتراک‌های خود نیز اعمال کنید، از این گزینه استفاده کنید.
+
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B> گذرواژه‌ی شما در <MM-List-Name> </B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3> آیا گذرواژه خود را فراموش کرده‌اید؟</h3>
+        </center>
+        این دکمه را بزنید تا گذرواژه‌تان به نشانی رایانامه عضویت شما ارسال شود.
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3> تغییر گذرواژه‌تان </h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right"> گذرواژه‌ی جدید: </div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">یک بار دیگر برای تایید: </div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>تغییر سراسری.
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B> گزینه های اشتراک شما در <MM-List-Name> </B>
+        </FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>Current values are checked.</strong></i>
+
+<p>دقت شود که بعضی تنظیمات، دارای گزینه  <em>تغییر سراسری</em> هستند.  تیک زدن این گزینه باعث می شود تغییرات در تمام فهرست‌های پستی که در <mm-host> عضو آنها هستید اعمال شود. روی گزینه 
+<em>فهرست دیگر اشتراک‌های من</em> در بالا کلیک کنید تا ببینید عضو چه فهرست‌های پستی دیگری هستید.  
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong> رساندن رایانامه</strong></a><p>
+        این گزینه را روی  <em> فعال </em> بگذارید تا پیام‌هایی که به فهرست پستی کنونی فرستاده می شوند را دریافت کنید. اگر می‌خواهید همچنان مشترک باشید ولی فعلا رایانامه‌ای دریافت کنید روی <em> از کار افتاده </em> تنظیم‌اش کنید.(مثلاً می‌خواهید به سفری بروید). اگر رساندن رایانامه را از کار انداختید، فراموش نکنید که وقتی برگشتید دوباره فعال‌ش کنید که خودش خودکار، دوباره فعال نخواهد شد.</td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>فعال<br>
+        <mm-delivery-disable-button> از کار افتاده<p>
+        <mm-global-deliver-button><i>تغییر سراسری </i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>تنظیم حالت یک‌جا </strong><p>
+        اگر حالت یک‌جا را فعال کنید، پیام‌ها به صورت دسته جمعی در یک رایانامه به دست‌تان می رسد.(معمولاً یک بار در روز، ولی احتمالا در لیست های شلوغ، از این هم بیشتر), ولی دیگر رایانامه‌ها به صورت تک‌تک به محض فرستاده شدن هر پیام برایتان نمی‌آید. اگر حالت تحویل یک‌جا را از روشن به خاموش تغییر دهید، ممکن است یک رایانامه‌ی یک‌جای دیگر نیز به عنوان آخرین دریافت کنید.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button> خاموش <br>
+        <MM-Digest-Radio-Button> روشن 
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>دریافت حالت یک‌جا به صورت MIME یا متن ساده؟ </strong><p>
+        بعضی رایانامه‌خوان‌ها، حالت یک‌جا با MIME را پشتیبانی می کنند و برخی نه. معمولاً رایانامه‌های یکجای MIME بهتر هستند ولی چنانچه برای خواندن‌شان مشکلی دارید، حالت متن ساده را انتخاب نمایید. 
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button> MIME <br>
+        <MM-Plain-Digests-Button> متن ساده <p>
+        <mm-global-mime-button><i>تغییر سراسری</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>دریافت پیام‌های خودتان به فهرست </strong><p>
+        به طور معمول، هر پیامی که به فهرست می فرستید، یک رونوشت از آن را نیز خودتان دریافت می نمایید. چنان‌چه نمی‌خواهید این رونوشت برای‌تان فرستاده شود گزینه‌ی <em>خیر</em> را انتخاب کنید.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>خیر<br>
+        <mm-receive-own-mail-button>بله
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong> آیا می خواهید هنگامی که پیامی به گروه می‌فرستید، تاییدیه‌ی فرستاده‌شدن پیام را دریافت کنید؟.</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>خیر<br>
+        <mm-ack-posts-button>بلی
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>دریافت رایانامه‌ی یادآوری گذرواژه برای این فهرست</strong><p>
+هر ماه یک‌بار یک رایانامه دربردارنده‌ی یادآوری گذرواژه‌ی شما برای هر یک از فهرست‌های روی این میزبان که مشترک‌شان هستید، فرستاده می‌شود. شما می‌توانید با انتخاب <em> خیر </em> این امکان را برای هر فهرست جداگانه از کار بیندازید. اگر یادآور گذرواژه را برای همه‌ی فهرست‌ها از کاربیندازید، هیچ یادآور گذرواژه‌ای دریافت نخواهید کرد.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>خیر<br>
+        <mm-get-password-reminder-button>بلی<p>
+        <mm-global-remind-button><i>تغییر سراسری</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>پنهان کردن نام‌تان از فهرست مشترکان</strong><p>
+هنگامی که فردی اعضای فهرست را می‌بینید، به طور معمول نشانی رایانامه‌ی شما دیده می‌شود(به شکلی عجق وجغ که دروگرهای هرزنامه را سرِکار بگذارد). اگر نمی‌خواهد اصلا نشانی رایانامه‌تان در این صورت اعضا بیاید، <em>بلی</em> را انتخاب کنید.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>خیر<br>
+        <MM-Hide-Subscription-Button>بلی
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>چه زبانی را ترجیح می دهید؟ </strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>دوست دارید در کدام دسته از سرفصل‌های زیر، مشترک شوید؟</strong><p>
+با انتخاب یک یا چند سرفصل، می‌توانید ترافیک فهرست پستی را برای خود پالایش کنید تا فقط زیرگروهی از پیام‌ها را دریافت کنید. اگر پیامی با یکی از سرفصل‌هایی که انتخاب کرده‌اید، جور باشد، آن‌گاه آن را دریافت خواهید کرد و در غیراین‌صورت نه.
+                <p>اگر پیامی با هیچ‌کدام از سرفصل‌ها جور درنیاید، فرستاده شدن آن به تنظیم گزینه‌ی زیر بستگی دارد. اگر هیچ سرفصل مورد علاقه‌ای را انتخاب نکنید، تمام پیام‌های فرستاده شده با فهرست پستی را دریافت خواهید کرد.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>آیا دوست دارید رایانامه‌ایی که با هیچ یک از پالایه‌های سرفصلی جور نیست را دریافت کنید؟</strong><p>
+این گزینه تنها وقتی اثر خواهد کرد که شما حداقل در یکی از سرفصل‌های بالا مشترک شده باشید. این گزینه مشخص می‌کند که برای پیام‌هایی که با هیچ پالایه‌ی سرفصلی جور نیستند، قاعده‌ی پیش‌فرض چیست؟ اگر <em>خیر</em> را انتخاب کنید، این پیام‌ها را دریافت نخواهید کرد و انتخاب <em>بلی</em> این پیام‌های جور نشده با پالایه‌ی سرفصل را برای‌تان خواهد فرستاد.
+                <p> اگر هیچ سرفصل مورد علاقه‌ای را در بالا انتخاب نکرده باشد، تمام پیام‌های فرستاده شده به فهرست پستی را دریافت خواهید کرد.
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>خیر<br>
+        <mm-receive-nonmatching-topics>بلی
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>آیا جلوی رونوشت‌های تکراری از یک پیام گرفته شود؟</strong><p>
+اگر نشانی شما به طور صریح در قسمت <tt>To:</tt> یا <tt>Cc:</tt> سربرگ پیام آمده باشد، می‌توانید انتخاب کنید که رونوشت دیگری از طرف فهرست پستی دریافت نکنید. برای اجتناب از دریافت این رونوشت‌های از فهرست پستی <em>بلی</em> را انتخاب کنید؛ و برای دریافت آن‌ها <em>خیر</em> را.
+                
+<p>اگر ویژگی پیام‌های شخصی‌شده برای اعضا در این فهرست پستی فعال باشد، و شما دریافت کردن رونوشت‌ها را انتخاب  کرده باشد، هر رونوشتی که دریافت می‌کنید عبارت <tt>X-Mailman-Copy: yes</tt> به سربرگ آن پیام افزوده خواهد شد.
+
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>خیر<br>
+        <mm-dont-receive-duplicates-button>بلی<p>
+        <mm-global-nodupes-button><i>تغییر سراسری</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

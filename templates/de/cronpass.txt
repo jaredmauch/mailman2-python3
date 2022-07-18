@@ -1,0 +1,18 @@
+In dieser regelmäßigen E-Mail erhalten Sie monatlich eine Übersicht Über
+Ihre Abonnements bei %(hostname)s und den dazugehörigen Informationen.
+
+Sie können auf den untenstehenden Seiten Ihre Einstellungen ändern oder
+ein Abonnement kündigen. In Ihren Einstellungen können Sie bspw. die Art
+der E-Mail-Zustellung ändern oder die Zustellung deaktivieren (z. B. wenn
+Sie in Urlaub sind).
+
+Zusätzlich zu den Internetseiten können Sie Ihre Einstellungen auch direkt
+per E-Mail vornehmen. Eine Anleitung dazu erhalten Sie, indem Sie eine
+E-Mail mit dem Wort "help" (ohne Anführungszeichen) an die "-request"-Adresse
+der Mailingliste senden (z. B. %(exreq)s).
+
+Bei Fragen, Problemen oder Kommentaren wenden Sie sich bitte an %(owner)s.
+Danke.
+
+Hier sind Passwörter und Mailinglisten für %(useraddr)s:
+

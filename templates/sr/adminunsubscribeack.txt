@@ -1,0 +1,3 @@
+﻿%(member)s је искључен-а са листе %(listname)s.
+%(whence)s
+

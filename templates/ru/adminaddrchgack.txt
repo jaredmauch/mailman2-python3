@@ -1,0 +1,5 @@
+Адрес подписки на %(listname)s
+для %(name)s был успешно изменен
+с %(oldaddr)s на %(newaddr)s.
+
+

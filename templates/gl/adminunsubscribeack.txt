@@ -1,0 +1,4 @@
+%(member)s anulou a súa subscrición de %(listname)s.
+%(whence)s
+
+

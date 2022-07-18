@@ -1,0 +1,37 @@
+Le lista de diffusion `%(listname)s' ha justo ora essite create pro te.
+Lo sequente es alcun informationes de base sur tu lista de diffusion.
+
+Tu contrasigno al lista de diffusion es:
+
+    %(password)s
+
+Tu ha besonio de iste contrasigno pro configurar tu lista de diffusion.
+Tu anque lo require pro tractar requestas administrative como approbar
+messages, si tu decide de haber un lista moderate.
+
+Tu pote configurar tu lista de diffusion per le sequente pagina web:
+
+    %(admin_url)s
+
+Le pagina web pro usatores de tu lista de diffusion es: 
+
+    %(listinfo_url)s
+
+Tu pote personalisar iste paginas web a partir del pagina de configuration
+del lista. Nonobstante, tu debe cognoscer HTML pro saper facer isto.
+
+Il ha anque un interfacie basate sur posta electronic pro usatores (non
+administratores) de tu lista. Tu pote obtener informationes de como
+usar lo per inviar un message simplemente usante le parola 'help' (in
+anglese) somo subjecto o in le texto mesme, a:
+
+    %(requestaddr)s
+
+Pro disabonar un usator: Inle pagina 'listinfo' del lista de diffusion,
+clicca a o insere le adresse electronic del usator, como si tu esseva
+ille usator. Ubi ille usator deberea inserer su contrasigno pro
+disabonar se, insere tu contrasigno de administrator. Tu pote anque
+usar tu contrasigno pro cambiar le optiones de un membro, incluse
+cambiar le digesto quotidian, stoppar livration, etc.
+
+Per favor, invia omne questiones a %(siteowner)s.

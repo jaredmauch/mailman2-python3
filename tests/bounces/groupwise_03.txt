@@ -1,0 +1,91 @@
+Received: from courriel.lahavane.com (unknown [192.168.64.30])
+	by mercurio.lahavane.com (Postfix) with ESMTPS id 5703592626F
+	for <catchall+keKf29aH@xxxxx.com>; Tue, 23 Feb 2016 13:27:54 -0500 (CST)
+Received: from HRAJCARPETA (unknown [192.168.107.148])
+	by correo.yyyyy.cu (Postfix) with ESMTPA id 8DF8C126F6B
+	for <catchall+keKf29aH@xxxxx.com>; Tue, 23 Feb 2016 13:21:55 -0500 (CST)
+From: "Ivette" <reservas@yyyyy.cu>
+To: <catchall+keKf29aH@xxxxx.com>
+Subject: RE: Vuille  - (PO28169) - IND
+Date: Tue, 23 Feb 2016 13:26:01 -0500
+Message-ID: <!~!UENERkVCMDkAAQACAAAAAAAAAAAAAAAAABgAAAAAAAAAb8aDTsTUYUWKpwEPi9zh68KAAAAQAAAAV5VlkDLux0e838EhDwTJcQEAAAAA>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_00C9_01D16E3D.BD956500"
+X-Mailer: Microsoft Office Outlook, Build 11.0.5510
+Thread-Index: AdFuZ6XxOH+qH5H+R76f2odV/Vn8MQ==
+In-Reply-To: <1456018944.242038011550903.872471708902354@mercurio>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+Disposition-Notification-To: "Ivette" <reservas@yyyyy.cu>
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_00C9_01D16E3D.BD956500
+Content-Type: multipart/related;
+	boundary="----=_NextPart_001_00CA_01D16E3D.BD956500"
+
+
+------=_NextPart_001_00CA_01D16E3D.BD956500
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_002_00CB_01D16E3D.BD956500"
+
+
+------=_NextPart_002_00CB_01D16E3D.BD956500
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Solicitudes de Reservas a:
+ <mailto:reservas@yyyyy.cu>
+reservas@yyyyy.cu
+
+
+De: keKf29aH@xxxxx.com
+Enviado el: S=E1bado, 20 de Febrero de 2016 08:42 p.m.
+Para: Hotel Raquel
+Asunto: Fwd: (PO28169) - IND
+
+lorem et...
+
+
+----------Mensaje original----------
+Subject: (PO28169) - IND
+De: Yuselis Gomez Calero
+Para: Hotel Raquel,Monica Perez Ansean
+Date: Thu Feb 18 2016 15:31:20 GMT-0500 (CST)
+
+
+lorem et ....
+
+Saludos,
+
+Email : yyyy@xxxxx.com
+Cc: reservas@xxxxxx.cu
+
+
+------=_NextPart_002_00CB_01D16E3D.BD956500
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>Removed part</html>
+------=_NextPart_002_00CB_01D16E3D.BD956500--
+
+------=_NextPart_001_00CA_01D16E3D.BD956500
+Content-Type: image/jpeg;
+	name="Hotel Raquel (19).jpg"
+Content-Transfer-Encoding: base64
+Content-ID: <182512518@23022016-2BC4>
+
+[Removed part]
+------=_NextPart_001_00CA_01D16E3D.BD956500--
+
+------=_NextPart_000_00C9_01D16E3D.BD956500
+Content-Type: application/msword;
+	name="pratt nc 34050.RTF"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="pratt nc 34050.RTF"
+
+[Removed part]
+------=_NextPart_000_00C9_01D16E3D.BD956500--

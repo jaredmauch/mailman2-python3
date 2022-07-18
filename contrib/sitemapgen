@@ -1,0 +1,164 @@
+#! @PYTHON@
+
+# For a given listname, this script generates sitemap.xml.gz files
+# under archives/private/<listname>/
+#
+# Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
+#
+# graciously hacked from bin/sync_members
+#
+
+"""Build Sitemap files for an archive
+
+Usage: %(program)s [options] listname
+
+Where `options' are:
+
+    --help
+    -h
+        Print this message.
+
+    listname
+        Required.  This specifies the list to generate sitemaps for.
+"""
+
+import os
+import sys
+import paths
+# Import this /after/ paths so that the sys.path is properly hacked
+import email.Utils
+from Mailman import MailList
+from Mailman import Errors
+from Mailman import Utils
+from Mailman.UserDesc import UserDesc
+from Mailman import mm_cfg
+from Mailman.i18n import _
+import getopt
+import re
+import time
+from stat import *
+from datetime import datetime, timedelta
+import gzip
+
+
+# sitemap priorities in age-in-weeks/priority/changefreq tuples
+priorities = ([1, 1.0, "daily"],
+              [4, 1.0, "weekly"],
+              [30, 1.0, "monthly"],
+              [52, 0.9, "never"],
+              [100, 0.8, "never"],
+              [200, 0.7, "never"],
+              [300, 0.6, "never"],
+              [400, 0.5, "never"])
+
+
+program = sys.argv[0]
+
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print >> fd, _(__doc__)
+    if msg:
+        print >> fd, msg
+    sys.exit(code)
+
+
+
+def main():
+    listname = None
+
+    # TBD: can't use getopt with this command line syntax, which is broken and
+    # should be changed to be getopt compatible.
+    i = 1
+    while i < len(sys.argv):
+        opt = sys.argv[i]
+        if opt in ('-h', '--help'):
+            usage(0)
+        else:
+            try:
+                listname = sys.argv[i].lower()
+                i += 1
+            except IndexError:
+                usage(1, _('No listname given'))
+            break
+
+    if listname is None:
+        usage(1, _('Must have a listname'))
+
+    # get the locked list object
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError, e:
+        print _('No such list: %(listname)s')
+        sys.exit(1)
+
+    rootdir = mlist.archive_dir()
+    rooturl = mlist.GetBaseArchiveURL()
+
+    reArcPath = re.compile(r'^\d+')
+    reArcFile = re.compile(r'\d+\.html')
+
+    sitemaps = []
+
+    now = datetime.now()
+
+    for folder in os.listdir(rootdir):
+        path = os.path.join(rootdir,folder)
+        if not os.path.isdir(path) or not reArcPath.search(folder):
+            continue
+    
+        dirtime = os.path.getmtime(path)
+    
+        os.umask(0022)
+        sitemap = os.path.join(rootdir,folder,"sitemap.xml.gz")
+        f = gzip.open(sitemap, 'wb')
+    
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+    
+        for file in os.listdir(path):
+            if not reArcFile.search(file):
+                continue
+    
+            # get timestamp of file
+            st = os.stat(os.path.join(rootdir,folder,file))
+            mtime = st[ST_MTIME] #modification time
+    
+            ts = datetime.fromtimestamp(mtime)
+            for weeks, priority, changefreq in priorities:
+                if ts > now - timedelta(weeks = weeks):
+                    break
+    
+            f.write('  <url>\n  <loc>' + os.path.join(rooturl,folder,file) + '</loc>\n')
+            f.write('    <lastmod>' + time.strftime("%Y-%m-%d",time.gmtime(mtime)) + '</lastmod>\n')
+            f.write('    <changefreq>' + changefreq + '</changefreq>\n')
+            f.write('    <priority>' + str(priority) + '</priority>\n')
+            f.write('  </url>\n')
+    
+        f.write('</urlset>\n')
+        f.close()
+    
+        sitemaps.append((os.path.join(rooturl,folder,"sitemap.xml.gz")))
+    
+    
+    # write out the sitemapindex file
+    sitemapindex = os.path.join(rootdir,"sitemap.xml.gz")
+    f = gzip.open(sitemapindex, 'wb')
+    
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+    
+    for sitemap in sitemaps:
+        f.write('  <sitemap>\n  <loc>' + sitemap + '</loc>\n')
+        f.write('    <lastmod>' + time.strftime("%Y-%m-%d", now.timetuple()) + '</lastmod>\n')
+        f.write('  </sitemap>\n')
+    
+    f.write('</sitemapindex>\n')
+    f.close()
+
+
+if __name__ == '__main__':
+    main()
+

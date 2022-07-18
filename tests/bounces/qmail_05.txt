@@ -1,0 +1,27 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from outbound20-2.nyc.untd.com (outbound20-2.nyc.untd.com
+	[64.136.20.160])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with SMTP id
+	k5BBPhZR024133
+	for <wed_ride-bounces@grizz.org>; Sun, 11 Jun 2006 04:25:43 -0700
+Message-Id: <200606111125.k5BBPhZR024133@sb7.songbird.com>
+Received: (qmail 29409 invoked for bounce); 11 Jun 2006 11:25:12 -0000
+Date: 11 Jun 2006 11:25:12 -0000
+From: MAILER-DAEMON@mx06.nyc.untd.com
+To: wed_ride-bounces@grizz.org
+Subject: Mail Not Delivered
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+Unfortunately, your mail was not delivered to the following address:
+
+<userx@example.com>:
+64.136.25.171 does not like recipient.
+Remote host said: 550 <userx@example.com>: Recipient address rejected: User unknown in virtual alias table
+Giving up on 64.136.25.171.
+
+--- Below this line is a copy of the message.
+
+Message removed
+

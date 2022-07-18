@@ -1,0 +1,4 @@
+تم اشتراك %(member)s بنجاح في القائمة  %(listname)s.
+%(whence)s
+
+

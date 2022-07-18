@@ -1,0 +1,24 @@
+Konfirmilo de abono de la dissendolisto %(listname)s
+
+Ni ĵus ricevis peton%(remote)s por abonigi vian 
+retpoŝtadreson "%(email)s" al la listo %(listaddr)s. Por 
+konfirmi ke vi volas aboni tiun liston, simple respondu 
+ĉi tiun mesaĝon, konservante la kaplinion "Temo:" 
+neŝanĝita. Aŭ vizitu la jenan retpaĝon:
+
+    %(confirmurl)s
+
+Aŭ inkluzivu la jenan linion -- kaj nur la jenan linion -- en
+mesaĝo al %(requestaddr)s:
+
+    confirm %(cookie)s
+
+Atentu ke simple respondi tiun ĉi mesaĝon devus sufiĉi por 
+la plimultaj retpoŝtiloj, ĉar tio kutime lasas la linion "Temo:" 
+en la ĝusta formo (aldona teksto "Re:" en la linio "Temo:"
+estas akceptebla).
+
+Se vi ne deziras aboni tiun liston, bonvolu malatenti 
+ĉi tiun mesaĝon. Se vi kredas ke iu provas malice abonigi
+vin al la listo, aŭ se vi havas aliajn demandojn, kontaktu la
+listestron ĉe %(listadmin)s.

@@ -1,0 +1,49 @@
+<html>
+<head>
+    <title>Ensaluto en la privatajn arĥivojn de %(realname)s</title>
+    <script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+  <B><FONT COLOR="#000000" SIZE="+1">Ensaluto en la privatajn arĥivojn de %(realname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">Retpoŝtadreso:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Pasvorto:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Lasu min eniri...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Grava:</em></strong> Ekde tiu ĉi paĝo, vi devas aktivigi kuketojn en via retumilo; se ne, vi devos reensaluti ĉe ĉiu paŝo.
+
+      <p>La privat-arĥiva interfaco de Mailman uzas seanco-kuketojn por ke vi ne devu reensaluti ĉe ĉiu ago. Tiu kuketo kadukiĝos aŭtomate kiam vi fermos vian retumilon, aŭ alie vi povos mem kadukigi ĝin premante la ligilon <em>Elsalutu</em> sub <em>Aliaj mastrumaj agadoj</em> (kiun vi vidos ensalutinte).
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Pasvorto-memorigo</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>Ĉu forgesis pasvorton? Enskribu vian retpoŝtadreson ĉi-sube kaj premu la butonon <em>Memorigu</em>, kaj via pasvorto estos sendata al vi.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Memorigu" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

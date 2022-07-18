@@ -1,0 +1,2 @@
+%(member)s bol odhlásený z konferencie %(listname)s.
+%(whence)s

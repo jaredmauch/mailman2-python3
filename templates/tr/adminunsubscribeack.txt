@@ -1,0 +1,4 @@
+%(member)s, %(listname)s listesinden çıkarıldı.
+%(whence)s
+
+

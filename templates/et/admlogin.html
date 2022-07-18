@@ -1,0 +1,36 @@
+<html>
+<head>
+  <title>%(listname)s %(who)s autoriseerimine</title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
+	    autentimine</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Listi %(who)s parool:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Logi sisse">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>NB:</em></strong> Selle veebiliidese kasutamiseks
+      pead oma brauseril lubama k&uuml;psiste vastuv&otilde;tmise sellest saidist.
+      Kui sa seda ei tee, siis ei saa tehtud muudatusi salvestada.
+
+      <p>K&uuml;psised on kasutusel selleks, et sa ei peaks igal lehel uuesti
+      parooli sisestama. K&uuml;psis kustutatakse, kui oma brauseri sulged v&otilde;i
+      veebiliidesest v&auml;lja logid.
+</FORM>
+</body>
+</html>

@@ -1,0 +1,13 @@
+Aceasta este o notificare de eşec (bounce) a livrării mesajelor listei de discuţii:
+
+    Lista:        %(listname)s
+    Utilizatorul: %(addr)s
+    Actiunea:     Abonamentul este în prezent %(negative)s%(did)s.
+    Motivul:      Eşecuri de livrare excesive sau fatale.s
+    %(but)s
+
+%(reenable)s
+Detaliile sunt ataşate mai jos.
+
+Aveţi întrebări?
+Contactaţi administratorul acestei liste la adresa %(owneraddr)s.

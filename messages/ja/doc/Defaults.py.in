@@ -1,0 +1,2012 @@
+# -*- python -*-
+# -*- coding: euc-jp -*-
+
+# Copyright (C) 1998-2020 by the Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+# [訳註] このファイルは、Mailman 2.1.35 配布物に含まれる
+#   Mailman/Defaults.py.in (launchpad.net でのファイルの Bazaar
+#   リビジョンは 1871) のコメント部分を日本語 (共通語) に翻訳したものです。
+#   配布等の条件は原文と同様、GNU 一般公衆利用許諾契約書 (GNU
+#   General Public License) に従います (上記も参照ください)。内容の
+#   正確な理解のためには、配布物に含まれる原文を参照されることを
+#   お勧めします。
+#   訳者: IKEDA Soji <hatuka@nezumi.nu>
+#   (2.1.22 以降の再訳: Yasuhito FUTATSUKI at POEM <futatuki@poem.co.jp>)
+
+
+"""配布時点の Mailman の主要な設定変数の初期設定値。"""
+
+# サイト固有の設定を行うのを目的としてこのファイルを変更しては
+# ***いけません***。そうするかわりに mm_cfg.py の指定された範囲に
+# 書くようにしてください。詳しくは mm_cfg.py のコメントを見てください。
+
+import os
+
+def seconds(s): return s
+def minutes(m): return m * 60
+def hours(h): return h * 60 * 60
+def days(d): return d * 60 * 60 * 24
+
+# 便宜的定数
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+Yes = yes = On = on = True
+No = no = Off = off = False
+
+
+
+#####
+# システム全般の初期設定値
+#####
+
+# ロゴ画像を使うかどうか。0 に設定すると「我々の後援者」のロゴ画像を
+# 無効にし、テキストのリンクを張るだけになります (これはショートカットの
+# 「favicon」も無効にします)。 または、ここはロゴ画像の URL のベースパスに
+# しなければいけません。(最後のスラッシュを含める必要があります)。
+# Mailman のロゴ入りページフッタまでも無効にしたいのであれば、
+# Mailman/htmlformat.py: MailmanLogo() を修正してください。リンクと
+# 画像の名前はそこに埋め込んであります。
+IMAGE_LOGOS = '/icons/'
+
+# Mailman の favicon のファイル名
+SHORTCUT_ICON = 'mm-icon.png'
+
+# MAILMAN_URL は、ミラーサイトいずれかを指すようにしたい場合以外は変えては
+# いけません。
+MAILMAN_URL = 'http://www.gnu.org/software/mailman/index.html'
+#MAILMAN_URL = 'http://www.list.org/'
+#MAILMAN_URL = 'http://mailman.sf.net/'
+
+# Mailman に (少なくとも) 二つの完全修飾ドメイン名(FQDN)を設定する
+# 必要があります。1) あなたのURL に使うホスト名、 2) あなたのドメインの
+# 電子メールアドレスに使うホスト名です。たとえば、Mailman システムに
+# "http://www.example.org/mailman" でアクセスさせるのであれば、
+# あなたの URL に使う FQDN は "www.exapmle.org" になります。 また、あなたの
+# システムにメールを送るのに "yourlist@example.org" 宛にするのであれば、
+# あなたの電子メールの FQDN は "example.org" になります。DEFAULT_URL_HOST は
+# 前者の URL に使う FQDN を制御し DEFAULT_EMAIL_HOST は後者の電子メール
+# アドレスに使う FQDN を制御します。(訳註: Mailman が Web の画面や電子
+# メールメッセージにそうしたホスト名を埋め込む部分があり、そのような所で
+# これらの値が参照されます) Mailman はまた、URL に使うホスト名と電子メールに
+# 使うホスト名の相互の対応(マッピング)を知っている必要があります(これは特に、
+# 仮想ドメインで運用する場合には重要です)。新しく対応(マッピング)を
+# 追加するのには "add_virtualhost(urlfqdn, emailfqdn)"とします。
+# (URLのFQDN を"urlfqdn"、電子メールのFQDNを"emailfqdn"とした場合)
+#
+# mm_cfg.py で DEFAULT_EMAIL_HOST と DEFAULT_URL_HOST を変更する必要が
+# ないのであれば、これに関しては特に追加の設定は不要です; 既定のホスト名の
+# マッピングは自動的に追加されます。しかし、mm_cfg.py でいずれかの変数値を
+# 変えたのであれば、以下の設定も mm_cfg.py に追加してあるのを確認して
+# ください。
+#
+#     add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
+#
+# この設定がないと、既定のホスト名の対応(マッピング)は修正されません。
+DEFAULT_EMAIL_HOST = '@MAILHOST@'
+DEFAULT_URL_HOST = '@URLHOST@'
+DEFAULT_URL_PATTERN = 'http://%s/mailman/'
+
+# かつての設定変数である DEFALUT_HOST_NAME は DEFAULT_EMAIL_HOST へと
+# 変数名が変更されましたが、mm_cfg.py に前の DEFAULT_HOST_NAME の記述が
+# 残っているサイトもあります。そのような場合にはその記述を信用しますが、
+# DEFAULT_HOST_NAME が設定されていない場合には DEFAULT_EMAIL_HOST を
+# 信用します。DEFAULT_URL についても同様です。
+DEFAULT_HOST_NAME = None
+DEFAULT_URL = None
+
+HOME_PAGE         = 'index.html'
+MAILMAN_SITE_LIST = 'mailman'
+
+# サイト管理者がウェブページ上でサイトパスワードを用いて認証を行う場合、
+# 通常はリスト管理者として認証されたことを示すクッキーが与えられます。
+# サイト認証のクッキーを発行すると、そのクッキーがクラックされたり
+# 盗まれたりしたときに攻撃者がすべてのリストにアクセスができるようになる
+# 恐れがあります。一方、サイト上のリスト毎に再度認証を行わずにすむのはとても
+# 便利ではあります。この値を"Yes"に設定することで、サイト管理者のクッキーの
+# 発行を許可します。
+# [訳註] 2.1.7 での仕様変更: リスト管理者は、会員オプション画面で「全部
+#   変更」を有効にしてオプション変更や会員の退会を実行できなくなりました。
+#   サイト管理者は、この変数が Yes のときだけ、会員オプション画面で「全部
+#   変更」を有効にしてオプション変更や会員の退会を実行できるようになりました。
+ALLOW_SITE_ADMIN_COOKIES = No
+
+# 次の値を0以外に設定すると、ウェブの認証クッキーは、それを最後に使用してから
+# 設定秒数後に期限切れになります。
+AUTHENTICATION_COOKIE_LIFETIME = 0
+
+# フォームの有効期限をクロスサイトリクエストフォージェリ(CSRF;リクエスト強要)
+# 対策のために設定します。
+FORM_LIFETIME = hours(1)
+
+# 次の値を空でない文字列に設定すると、その文字列と時刻、リストの名前、
+# リクエストを送信してきたIPアドレスの組みを用いて隠しハッシュ値を生成して
+# メーリングリスト案内(listinfo)のページの入会のためのフォームの一部として
+# 用います。このハッシュ値はフォームが送られて来た時にに検査され、一致
+# しなければ 入会の申込みは失敗します。つまり、最初に listinfo CGI から
+# フォームを取得したのと同じIPアドレスからそのフォーム内容を送信しないと
+# いけません。フォームを取得してからの時間が上の FORM_LIFETIME よりも経過
+# していたり、下の SUBSCRIBE_FORM_MIN_TIME 未満であった場合にも入会は
+# 失敗します。
+# 重要: サイト上に静的な入会申込みのフォームがある場合、このオプションを
+# 設定するとそれらを壊すことになります。このオプションを設定した場合、
+# 入会用フォームは隠しデータを内包させて動的に生性されなければなりません。
+# 隠しデータの詳細については Mailman/Cgi/listinfo.py の
+# "if mm_cfg.SUBSCRIBE_FORM_SECRET:" から始まるコードブロックを参照して
+# ください。
+SUBSCRIBE_FORM_SECRET = None
+
+# SUBSCRIBE_FORM_SECRET が None でない場合、この値はユーザがフォームを
+# 取得してから内容を送信してくるまで経過していなければいけない時間の
+# 最小値になります。0 を設定するとこのテストは行いません。
+SUBSCRIBE_FORM_MIN_TIME = seconds(5)
+
+# 入会に対する spam 行為に対抗するため、カスタムメイドの問答型 CAPTCHA を
+# 使用します。
+# SUBSCRIBE_FORM_SECRETを設定しないと有効になりません。
+# CAPTCHAS には言語をキーとして、問と答の対(2タプル)を要素とするリストを
+# 返すような辞書を設定します。例:
+# CAPTCHAS = {
+#   'en': [
+#     ('What is two times six?', '(12|twelve)'),
+#     ('What is this mailing list software called?', '[Mm]ailman'),
+#   ],
+#   'de': [
+#     ('Was ist 3 mal 6?', '(18|achtzehn)'),
+#   ],
+# }
+# 正規表現は文字列全体にマッチするものでなければなりません。つまり、
+# 暗黙のうちに正規表現の先頭に "^" が、末尾に "$" があるものとして
+# 扱われます。
+# 設定されている言語に対応する問と答が存在しない場合のフォールバックとして
+# 使用するため 'en' のキーは必須です。
+CAPTCHAS = None
+
+# 入会用フォームをスパムボットから守るために Google reCAPTCHA を使用します。
+# 以下には https://www.google.com/recaptcha/admin で発行される reCAPTHA
+# サービス用の鍵ペアを設定する必要があります。
+RECAPTCHA_SITE_KEY = None
+RECAPTCHA_SECRET_KEY = None
+
+# インストール環境全体でのBANリスト。このインストール環境全体のすべての
+# リストで入会を禁止する電子メールアドレスおよび正規表現パターン(先頭文字
+# が「^」)のリストです。これはリスト個別の ban_list を補完します。
+# 例として、 xxx@example.net と @example.com の yyy から始まる任意の
+# アドレスを入会禁止にするには
+# GLOBAL_BAN_LIST = ['xxx@example\.net', '^yyy.*@example\.com$']
+# のように設定します。
+GLOBAL_BAN_LIST = []
+
+# 以下を Yes にセットすると、Web からの入会依頼で Spamhaus の SBL, CSS,
+# XBL に登録されている IP アドレスからのものをブロックします。
+# py2-ipaddress がインストールされている場合には IPv6 アドレスにも
+# 対応しますが、なければ IPv4 アドレスにのみ対応します。
+# py2-ipaddress モジュールが Python 環境にインストールされていなければ
+# pip を使用してインストールすることができます。
+BLOCK_SPAMHAUS_LISTED_IP_SUBSCRIBE = No
+
+# 以下を Yes にセットすると、SpamhausのDBLに登録されているドメインの
+# メールアドレスでの入会をブロックします。
+BLOCK_SPAMHAUS_LISTED_DBL_SUBSCRIBE = No
+
+# text/html パートをプレーンテキストに変換するコマンド。このコマンドは
+# 結果を標準出力に出力しなければなりません。 %(filename)s はプログラムが
+# 処理する一時ファイルの名前になります。
+HTML_TO_PLAIN_TEXT_COMMAND = '/usr/bin/lynx -dump %(filename)s'
+
+# リストの名前として使用可能な文字集合を定義したPythonの正規表現。
+# この正規表現にマッチしない文字を含んだ名前ではリストは作成できません。
+# この集合に「/」を含めてはいけません。
+ACCEPTABLE_LISTNAME_CHARACTERS = '[-+_.=a-z0-9]'
+
+# このインストール環境でのメーリングリスト名の文字数の最大値。LP: #1780874 の
+# 修正ではコンテンツの誤認行為を許す脆弱性を回避するためにWeb URLに含められた
+# メーリングリスト名をここで指定する長さで切り捨てます。この値が既定値の0の
+# ままである場合には、Webアクセスのたびにこのインストール環境のメーリング
+# リスト名の長さをすべて調べ、その最大値を確認します。このことは非常に多くの
+# メーリングリストを作成している場合にはパフォーマンスに悪影響を及ぼします。
+# 毎回の最大値の確認をしないように機能を使用するには、この値に正当な
+# メーリングリスト名として予想される最大の長さを指定します。(訳注: ただし、
+# ここで指定されたメーリングリスト名の最大長はWeb URL中に現れるものに
+# 対して切捨てを行う用途にのみ用いられますので、ここに指定した長さよりも
+# 長い名前でメーリングリストは作れてしまいますし、すでに存在するメーリング
+# リストでこの長さよりも長いものがあった場合にはWeb UI上不都合が生じると
+# 思われますのでご注意下さい。)
+MAX_LISTNAME_LENGTH = 0
+
+# リストのメンバー表の表示のとき、電子メールアドレスと一緒にユーザの名前を
+# 表示しますか? このオプションができる以前の挙動にあわせるために、
+# 初期設定は「No」です。
+ROSTER_DISPLAY_REALNAME = No
+
+# 一部の出力をユーザ端末の文字集合(LC_CTYPEとLC_MESSAGES)が
+# Mailmanのインストール環境設定、あるいは個別リストの言語に紐付いている
+# 文字集合と異なる場合にユーザ端末に合わせて変換して出力するようになりました。
+# この機能は各 locale で十分にテストされたものではないため、これが問題を
+# 起こした場合には次の値を「Yes」にすることでこの機能を無効にできます。
+DISABLE_COMMAND_LOCALE_CSET = No
+
+
+#####
+# 仮想ドメイン
+#####
+
+# 仮想ホストの対応(マッピング)の設定をここで行います。この設定の主な
+# 用途はWeb画面を使用したリストの作成で使用することなので、この設定の
+# 影響範囲は今のところ限られています。 新たにマッピングを追加するには
+# add_virtualhost() 呼出しを使用してください。マッピングのキーは
+# Utils.get_domain() で返って来る文字列、マッピングされる値は
+# DEFAULT_HOSTNAME として使用する適切な値です。
+# (訳註: 2.1.21 時点で Utils.get_domain() はウェブサーバの環境変数
+# SERVER_PORT, HTTP_HOST, SERVER_NAME をこの順に見てホスト名を取得
+# しようとします)
+VIRTUAL_HOSTS = {}
+
+# 「Yes」に設定すると、listinfo とリスト管理一覧(admin overview)のページで
+# 表示するリストを、見ているページのURLに含まれているホスト名がリストの
+# 設定オプションの web_page_url に含まれているリストのみ - 「仮想ホスト上の」
+# リストのみ - に制限します。「No」に設定すると、一覧にすべての公開リストを
+# 表示します。
+VIRTUAL_HOST_OVERVIEW = On
+
+
+# ヘルパー関数; mm_cfg.py ファイルでこれを使ってください。省略可能な
+# 引数の emailhost を省略すると、urlhost の最初の名前を取り除いたものを
+# 暗黙の値として用います。たとえば、
+#
+# add_virtualhost('www.example.org')
+# VIRTUAL_HOSTS['www.example.org']
+# ==> 'example.org'
+#
+def add_virtualhost(urlhost, emailhost=None):
+    DOT = '.'
+    if emailhost is None:
+        emailhost = DOT.join(urlhost.split(DOT)[1:])
+    VIRTUAL_HOSTS[urlhost.lower()] = emailhost.lower()
+
+# そして、初期設定値
+add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
+
+# 既存のリストのドメインを変更するために bin/fix_url.py を実行しようと
+# している人への注意。bin/fix_url.py は bin/withlist スクリプトから
+# 呼び出して使用しなければなりません。例えば、次のように:
+# bin/withlist -l -r bin/fix_url.py <listname>
+
+
+
+#####
+# 迷惑メール防止の初期設定値
+#####
+
+# この変数には (header, regex) という書式の2-タプルからなるリストを設定します。
+# Maleman/Handlers/SpamDetect.py モジュールは現在処理しているメッセージとの
+# 比較にこの設定値を用います。regex の正規表現に現在のメッセージの header で
+# 示されるヘッダの内容がマッチした場合には、そのメッセージが迷惑メールである
+# というフラグを立てます。header で指定する文字の大文字小文字の区別はせず、
+# また、最後のコロン(「:」)は含めてはいけません。regex は常に re.IGNORECASE
+# でマッチングを行われます。
+#
+# 迷惑メール検索を増やせば増やすほど、全体の処理が遅くなることに注意が必要
+# です。迷惑メール検知は、リストおよびリストの -owner 宛に到着するすべての
+# 電子メールメッセージのうち明示的に承認されたもの以外に対して実行されます。
+KNOWN_SPAMMERS = []
+
+# プライバシー・オプション... -> 迷惑メールフィルタ の header_filter_rules と
+# ヘッダのマッチングは、それぞれをUnicodeに変換し、正規化した後に行います。
+# この設定はこの正規化における正規形を指定します。 'NFC', 'NFD', 'NFKC',
+# 'NFKD' のいずれかを指定します。
+# https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
+# (訳注: 日本語ドキュメント
+# https://docs.python.org/ja/2.7/library/unicodedata.html#unicodedata.normalize
+# )を参照してください。
+NORMALIZE_FORM = 'NFKC'
+
+
+
+#####
+# ウェブユーザインターフェース(UI)の初期設定値
+#####
+
+# Mailman のウェブインターフェースで使用されているほとんどの色は次の
+# 変数でパラメタ化されています。これによって大きなソースコードの変更を
+# しなくても、好きなように色使いを変更できます。
+# サイト全体、仮想ドメイン全体での、あるいはリスト毎で独自にテンプレートでの
+# 色使いの初期設定値の上書きを簡単に行えるので、テンプレートの色使いは
+# 通常はここには含めないことを付記しておきます。
+
+WEB_BG_COLOR = 'white'                            # ページ背景
+WEB_HEADER_COLOR = '#99ccff'                      # 大見出し
+WEB_SUBHEADER_COLOR = '#fff0d0'                   # 小見出し
+WEB_ADMINITEM_COLOR = '#dddddd'                   # オプション項目背景
+WEB_ADMINPW_COLOR = '#99cccc'                     # パスワードボックスの色
+WEB_ERROR_COLOR = 'red'                           # エラーメッセージの文字色
+WEB_LINK_COLOR = ''                               # 真ならば LINK= の値を強制
+WEB_ALINK_COLOR = ''                              # 真ならば ALINK= の値を強制
+WEB_VLINK_COLOR = ''                              # 真ならば VLINK= の値を強制
+WEB_HIGHLIGHT_COLOR = '#dddddd'                   # 真ならば、listinfo と admin
+                                                  # 画面の行の色を交互に変更
+
+# Mailman のウェブページの <HEAD> セクションに、たとえばスタイル情報や
+# スタイルシートへのリンクといった、追加の要素を置きたい場合には、
+# 次の値を設定すればよいです。例えば、CSS スタイルシートの参照を
+# 入れたい場合には mm_cfg.py に
+# WEB_HEAD_ADD = """<LINK REL=stylesheet
+#                TYPE="text/css"
+#                HREF="path or URL"
+#                >"""
+# と書くことができます。
+# <HEAD> セクションに置けるものならなんでも指定することができます。既定
+# 状態では何も加えません。この設定は内部的に生成するページにのみ適用
+# されます。テンプレートから生成されるページについてはそうした情報を
+# 入れたカスタムテンプレートを作成することができます。
+WEB_HEAD_ADD = None
+
+# 利用者が入力したデータはウェブの応答画面で再度表示する時にクロスサイト
+# スクリプティング攻撃(XSS)をさせないために、HTML上で特別な意味を持つ文字を
+# エスケープ処理します。通常のエスケープ処理では「< 」「>」「&」「"」を
+# それぞれ HTML の実体参照 「&lt;」「&gt;」「&amp;」「&quot;」に
+# 置き換えます。古いぽんこつなブラウザの中には、特定の非アスキー文字を
+# 誤って「< 」「>」や「"」として解釈してしまうものもあるようです。
+# 次の2つの設定は、追加でエスケープ処理を行うかどうか、どの文字を
+# 何に置き換えるかを指定します。注意: ある文字を複数バイトのシーケンスで
+# 表すようなエンコーディングでは(訳註:原文はcharacter sets...文字集合と
+# なっているが character set と encoding を混同していると思われる)、
+# 追加のエスケープ処理を有効にすると、複数バイトの並びの一部を HTML の
+# 実体参照に置き換えてしまい、無害であったはずの文字を壊してしまうことが
+# あるかもしれません。
+#
+# ウェブの文字列のエスケープ処理で、追加の置き換え処理を有効にします。
+BROKEN_BROWSER_WORKAROUND = No
+#
+# 上記の設定を「Yes」にした場合、次の辞書で追加で文字を何に置き換えるかを
+# 指定します。
+BROKEN_BROWSER_REPLACEMENTS = {'\x8b': '&#8249;',  # single left angle quote
+                               '\x9b': '&#8250;',  # single right angle quote
+                               '\xbc': '&#188;',   # 「<」 + 0x80
+                               '\xbe': '&#190;',   # 「>」 + 0x80
+                               '\xa2': '&#162;',   # 「"」 + 0x80
+                              }
+# (訳註:
+#   HTML4 の仕様での文字実体参照での名称は以下の通り
+#       single left  angle quote -> single left-pointing  angle quotation mark
+#       single right angle quote -> single right-pointing angle quotation mark
+#   '\x8b' および '\x9b' の例は charset/encodingが Windows-1252 のものを
+#   Unicode の実体参照に置き換える例、'\xbc', '\xbe', '\xa2' の例は
+#   Windows-1252 または iso-8859-1 のものを \x80 のビットを無視して解釈して
+#   それぞれ「<」「>」「"」として解釈されるのを避けるために iso-8859-1 の
+#   文字実体参照に置き換える例です。。日本語の文字を扱うのであれば、この設定を
+#   有効にすると文字化けの元になると思われます。)
+#
+# admindb の保留メッセージの一覧表示でグループ化と並べ替えの時にボタンを
+# 表示しますか?  mm_cfg.py の中で次のなかの一つを設定してください:
+# SSENDER -> 送信者でグループ化と並べ替えを行うのを既定とします。
+# SSENDERTIME -> 送信者でグループ化、時刻で並べ替えを行うのを既定とします。
+# STIME -> グループ化を行わず、時刻で並べ替えを行うのを既定とします。
+DISPLAY_HELD_SUMMARY_SORT_BUTTONS = No
+#
+# admin の「まとめて入会登録」の機能を「入会」の処理ではなく「招待」と
+# しますか? mm_cfg.py でこれを「Yes」にすると、「招待」を既定の処理とします。
+DEFAULT_SUBSCRIBE_OR_INVITE = No
+
+
+
+#####
+# アーカイブ(保存書庫)の初期設定値
+#####
+
+# 公開アーカイブへの URL のテンプレート。List-Archive: ヘッダーや
+# リストの listinfo のページからアーカイブへのリンク、リスト管理のページで
+# などを含めて、いろいろなところで使われます。
+#
+# これにの中に「%(listname)s」の文字列をどこかに含める必要があります。
+# Mailman はこの文字列をリストの名前に置き換えます。ホスト名(通常は
+# DEFAULT_URL_HOST)を置き換えるために「%(hostname)s」の文字列を含める
+# こともできます。
+PUBLIC_ARCHIVE_URL = 'http://%(hostname)s/pipermail/%(listname)s'
+
+# 既定でアーカイブの利用するかどうか? 「On」で利用し、「Off」で利用しません
+DEFAULT_ARCHIVE = On
+
+# 既定でアーカイブは公開するか限定にするか。
+# 0=公開、1=限定
+DEFAULT_ARCHIVE_PRIVATE = 0
+
+# ARCHIVE_TO_MBOX
+#-1 - 何も保存しない
+# 0 - mbox 形式で保存しない。Mailman 組込みの html アーカイブのみ
+# 1 - Mailman 組込みの html アーカイブを利用しない。mbox 形式での保存のみ
+# 2 - mbox 系式と Mailman 組込みの html アーカイブの両方で保存する。
+#     Mailman 組込みのアーカイブ機能を外部プログラムのアーカイバで
+#     置き換えるのに使える PUBLIC_EXTERNAL_ARCHIVER と
+#     PRIVATE_EXTERNAL_ARCHIVER についての下の設定を御覧ください。
+#     フラットな mbox 形式のファイルは検索に利用しやすいですし、
+#     外部アーカイバプログラムとのインターフェースとしての
+#     別の一手段としても使えたりもします。
+#     (訳註: mbox 形式は一般的に使われておりシンプルなので、
+#     別の形式へのコンバートをはじめとしてさまざまな処理を行うための
+#     ツールも多く作られています)
+ARCHIVE_TO_MBOX = 2
+
+# 0 - 年毎
+# 1 - 月毎
+# 2 - 4半期毎
+# 3 - 週毎
+# 4 - 日毎
+DEFAULT_ARCHIVE_VOLUME_FREQUENCY = 1
+DEFAULT_DIGEST_VOLUME_FREQUENCY = 1
+
+# 次の2つの変数は外部プログラムのアーカイバの使用方法を指定します。通常、
+# アーカイブへの保存が有効になっている場合(上のARCHIVE_TO_BOXの設定と
+# 各リストの archive* 属性を参照してください) 組込みの Pipermail
+# アーカイバを使用します。これは両方の変数が「No」に設定されている時の
+# 既定の動作です。変数にセットできる値は、os.popen() 関数に引き渡す
+# shell コマンドの文字列です。この文字列には以下の置換用文字列を使用できます:
+#
+#     %(listname)s -- リストの内部名
+#     %(hostname)s -- リストの電子メールホスト名
+#
+# アーカイブの動作は指定した shell コマンドに置き換えられます。
+# os.popen() 関数が使われるということにご注意ください。
+#
+# どちらか一方の変数を設定をした場合にはもう一方も設定しなければならない
+# ことに注意してください(同じ文字列を設定できます)。設定を分けているのは
+# 外部のアーカイバプログラムが公開アーカイブを扱っているのか限定アーカイブを
+# 扱っているのかを気にしないですむようにするためです。
+PUBLIC_EXTERNAL_ARCHIVER = No
+PRIVATE_EXTERNAL_ARCHIVER = No
+
+# マルチパートのメッセージを「フラット」にするためフィルタモジュール。
+# Pipermail がこれを必要としていますが、外部のアーカイバのためにこれを
+# 「0」に設定したいと思うかもしれません。これを自身で作成したモジュールに
+# 置き換えることもできますが、その場合にはそのモジュールに MailList
+# オブジェクトと Message オブジェクトを引数としてとる process() 関数が
+# なければなりません。その関数はメッセージを捨ててしまう場合には
+# Errors.DiscardMessage 例外を raise する必要があります。メッセージを
+# 捨てない場合には、Message object を必要に応じて改変しなければなりません。
+ARCHIVE_SCRUBBER = 'Mailman.Handlers.Scrubber'
+
+# パラメタが示すものを用いるか代わりに「attachment-xxx」形式で生成したものを
+# 用いるかを制御するパラメタ。PCやMacのアプリケーションは非ascii文字を
+# 含んだ長いファイル名を用いるようになってきているため、初期設定値は
+# 「True」です。歴史的には 2.1.6 では後方互換性のために「False」に
+# 設定されましたが、より安全取り扱うために 2.1.7 で「True」へと初期設定を
+# 変更しました。
+SCRUBBER_DONT_USE_ATTACHMENT_FILENAME = True
+
+# 添付ファイルの拡張子をありのままに扱うのは、マルウェアが拡張子を偽装する
+# ことがあるため危険な場合があります。この変数を「True」にセットすることで
+# 拡張子によてえ添付ファイルをフィルタすることができます。
+SCRUBBER_USE_ATTACHMENT_FILENAME_EXTENSION = False
+
+# この変数は text/html サブパートをどのように扱うかを決めます。text/html
+# サブパートは完全に取り除くか、エスケープするか、外部プログラムに
+# よってフィルターするかすることができます。有効な設定値は
+# 0 - text/html パートを完全に剥ぎ取り、剥ぎ取ったことを通知するメッセージを
+#     残します。外側のパートが text/html のみであった場合にはメッセージ
+#     全体を捨てます。
+# 1 - 埋め込まれた text/html パートを分離し、HTMLをエスケープした
+#     添付ファイルを別途参照できるように残します。外側の text/html パートは
+#     単純に HTML エスケープします。
+# 2 - インラインで残しますが、HTMLエスケープを行います。
+# 3 - text/html を添付ファイルとして分離しますが、HTMLをエスケープしません。
+#     注意: これはあなたのサイトに誰でも悪意のある Javascript やウェブの
+#     バグやその他の厭らしいものを含んだ HTML 電子メールを送ることが
+#     出来て、アーカイブを見に来た人にそれを踏ませることができるということを
+#     意味するわけですから、とても危険です。このオプションを検討に入れるのは
+#     リストの投稿に対して入念なモデレーションを行う場合のみとするべきです。
+#
+# 注意: 今のアーカイブを行うコードは text/html パートをエスケープしないで
+# そのままインラインに残すことはできません。そのようなことをするのは
+# 筋が悪いですから。
+#
+# 設定値は文字列を指定することもできます。文字列を指定した場合にはその
+# 文字列を HTML ページを処理するフィルターコマンドと解釈します。
+# その結果の出力は添付ファイルとして残されるか、あるいは外側のパートが
+# text/html の場合にはメッセージ全体となります。設定値の文字列には
+# プログラムが処理する一時ファイルの名前として「%(filename)s」が
+# 含まれていなければなりません。また、処理した結果のメッセージは標準出力に
+# 書き出さなければなりません。HTML からプレインテキストへの変換プログラムを
+# 指定するためには、これを HTML_TO_PLAIN_TEXT_COMMAND に設定します。
+ARCHIVE_HTML_SANITIZER = 1
+
+# .txt ファイル形式のアーカイブを gzip で圧縮したものをダウンロード可能に
+# するにはこれを「Yes」に設定します。これは**非常に**非効率的であり、
+# 代替の方法としては単にメッセージを .txt ファイルにまとめておき
+# 毎晩 txt.gz ファイルを作成するジョブを cron で走らせるという方法があります。
+# 詳しくは cron/nightly_gzip を御覧ください。
+GZIP_ARCHIVE_TXT_FILES = No
+
+# アーカイバの「日付の強引な取り扱い」のポリシーの初期設定。メッセージを
+# Pipermail あるいは外部のアーカイバで保存するとき、Mailman は Date: ヘッダを
+# 元の Date: ヘッダの内容のかわりに受信した日時に変更するようにできます。
+# この機能は主におかしな日付の受信メッセージの取り扱いに有益です。
+# これを 0 に設定すると元のメッセージの日付をそのままに、1 に設定すると
+# 常に書き換えを行います。また、2 に設定すると日付の
+# 「賢い置き換え(smart override)」を行います。これは日付が現在日時0よりも
+# ARCHIVER_ALLOWABLE_SANE_DATE_SKEW 以上過去または未来のものであった場合に
+# 受信した日時に置き換えるというものです。
+ARCHIVER_CLOBBER_DATE_POLICY = 2
+ARCHIVER_ALLOWABLE_SANE_DATE_SKEW = days(15)
+
+# Pipermail のアーカイブには投稿メッセージの著者の電子メールアドレスが
+# そのままの状態で含まれています。これは迷惑メールアドレス収集者にとっては
+# 金脈だという見方もあります。ARCHIVER_OBSCURES_EMAILADDRS を「Yes」に
+# 設定するとアーカイブではメッセージ中の電子メールアドレスを適度にぼかします。
+# が、同時に mailto: の URL も壊れることになるので注意が必要です。
+ARCHIVER_OBSCURES_EMAILADDRS = Yes
+
+# Pipermail はメッセージのボディは US-ASCII のテキストであると
+# 想定しています。アーカイブの既定の文字集合(character set)を別の
+# ものにするにはこのオプションを変更します。「文字集合(character set)」
+# という用語はここでは MIME においてオクテットの並びから文字の並びへの
+# 変換方式を示すものです(訳註: MIME における "charset" の説明としては
+# 正しいですが、一般的な概念としてはこれは encoding に関するものですので
+# 注意が必要です)。既定の文字集合を変更した場合、下の VERBATIM_ENCODING に
+# それを加える必要があるかもしれません。
+DEFAULT_CHARSET = None
+
+# ほとんどの文字集合のエンコーディングでは Pipermail のアーカイブで
+# 正しく表示を行うために HTML の特別な意味を持つ文字を実体文字参照へと
+# クオート処理が必要です。ところが、文字集合によってはブラウザが適切に
+# レンダリングを行うためにはこのクオート処理をしてはいけないものもあります。
+# 主に問題になるのは 0x26 というオクテットが必ずしも「&」という文字を
+# 表すとは限らないようなマルチバイトエンコーディングです。
+# この変数にはそうしたアーカイブで HTML クオートを行わない文字集合の
+# リストを設定します。
+VERBATIM_ENCODING = ['iso-2022-jp']
+
+# アーカイブを公開にしたとき、Mailman が生の Unix mbox ファイルを一般に
+# 公開しますか?
+PUBLIC_MBOX = No
+
+
+
+#####
+# 配送の初期設定
+#####
+
+# 外に出て行く電子メールのための最終配送モジュール。このハンドラはメッセージを
+# smtpd を通してリストへと、あるいは個々のユーザへの配送のために使います。
+# 設定値は Mailman.Handlers パッケージを指す名前の文字列でなければなりません。
+#
+# 警告: 「Sendmail」モジュールにはセキュリティホールが複数あり、使用を
+# 避けるべきです。実際問題、これを動くようにする前に
+# Mailman/Handlers/Sendmail.py の中を読まなければなりません。
+#
+#DELIVERY_MODULE = 'Sendmail'
+DELIVERY_MODULE = 'SMTPDirect'
+
+# 時折、デバグの難しい「低水準の」smtplib での失敗があります。smtplib から
+# Mailman のエラーログへのかなり詳細なデバグ情報を有効にするには
+# 次の変数を 1 にします。これは DELVERY_MODULE = 'SMTPDirect' かつ
+# Python のバージョンが 2.4 以上のときのみ機能するでしょう。
+SMTPLIB_DEBUG_LEVEL = 0
+
+# 「MTA」には、リストを作成したり削除したりするための機能をMTA毎に個別に
+# 実装した Mailman/MTA にあるモジュールを指定します。Exim のように
+# 新しいリストを自動的に認識するように設定することができるMTAもありますが、
+# そうした MTA に対してはこの変数は 「None」を設定してください。
+# 新しい aliases を /etc/aliases 形式のファイルを手で修正するために
+# 標準出力に出力する(あるいはサイトリスト管理者にメールを送る)には
+# 「'Manual'」を使用してください。MTA に Postfix を使用している場合には、
+# 「'Postfix'」を使用してください。但し、POSTFIX_STYPE_VIRTUAL_DOMAINS も
+# 参照してください。
+# (訳註: それぞれ「'Manual'」「'Postfix'」は '' で囲まれた文字列、「None」は
+# そのまま Python の None であることに注意)
+MTA = 'Manual'
+
+# MTA='Postfix' に設定した場合で仮想ドメインを使用している場合、
+# 仮想ドメイン利用の形式によっては次の変数をするとよいでしょう。
+# Postfix で仮想ドメインを使用していない場合、(全てのアドレスがそれぞれの
+# ドメインですべて見えるような) Sendmail スタイルの仮想ドメインを使用する
+# 場合にはこの変数には空のリストを設定します。Postfix スタイルの仮想ドメイン、
+# つまり aliases が仮想ドメイン中でしか見えないような仮想ドメインを
+# 使用している場合には、仮想のエントリをわけるべき host_name のリストを
+# セットします。つまり、real.example.com と virtual1.example.com と
+# virtual2.example.com を使用していて virtual1.example.com と
+# virtual2.example.com だけが仮想ドメインである場合にはこの変数には
+# [ 'virtual1.example.com', 'virtual2.example.com' ] をセットします。
+# これとの比較はメーリングリストの host_name 属性に対してのみ行われます。
+# 詳しくはインストールマニュアルの Postfix のセクションを参照してください。
+POSTFIX_STYLE_VIRTUAL_DOMAINS = []
+
+# 上記リストで仮想ドメインを指定した場合、Mailman はこれらの仮想ドメイン上の
+# リストのアドレスをローカルのアドレスに対応付けるため、以下の仮想マッピングを
+# 生成します。
+#
+# listaddress@virtual2.example.com      listaddress
+# 等。
+#
+# 対応付けの右辺に
+#
+# listaddress@virtual2.example.com      listaddress@localhost
+# あるいは
+# listaddress@virtual2.example.com      listaddress@other.local.domain.example
+#
+# のように指定したドメインを付けるには、mm_cfg.py の中でつけたい
+# ローカルドメイン名を
+#
+# VIRTUAL_MAILMAN_LOCAL_DOMAIN = 'localhost'
+# あるいは
+# VIRTUAL_MAILMAN_LOCAL_DOMAIN = 'other.local.domain.example'
+#
+# のように指定します。指定した文字列の値はどんなものであっても
+# 右辺のリストのローカルパートの後に「@」と共に追加されます。
+VIRTUAL_MAILMAN_LOCAL_DOMAIN = None
+
+# これらの変数は aliases.db と virtual-mailman.db ファイルをそれぞれ
+# 関連付けられたプレインテキストのファイルから再生成するのに使用する
+# プログラムを記述します。更新されるファイル名は(空白文字を挟んで)
+# この変数値に付けられますが、これは os.system() 渡すのに適切に
+# なるようにする必要があります。
+POSTFIX_ALIAS_CMD = '/usr/sbin/postalias'
+POSTFIX_MAP_CMD = '/usr/sbin/postmap'
+
+# 単一の SMTP トランザクションで指定できる受信者アドレスの数の上限値。
+# これを 0 にせっとすると単一トランザクションでリストのすべての受信者
+# アドレスへと送ろうとします。SMTPDirect DELIVERY_MODULE でのみ使用されます。
+SMTP_MAX_RCPTS = 500
+
+# 単一のソケットで行う SMTP セッション数の上限値。MTA によってはこれを
+# 制限しているものがあります。この変数を 0 にセットするといくらでも
+# セッションを繰り返します(つまり、MTAがこれを制限していないことを
+# 仮定しています) これを 0 よりも大きい数に設定すると、Mailman はその
+# 回数だけセッションを繰り返した後に SMTP コネクションを一旦閉じ、再度
+# SMTP コネクションを作成します。
+SMTP_MAX_SESSIONS_PER_CONNECTION = 0
+
+# SMTP 配送に用いるサブスレッドの最大同時使用数。受信者アドレスのリストが
+# SMTP_MAX_RCPTSによるまとまりに分割されたあと、そうした別々のスレッドが
+# smtpd にそれぞれのまとまりを渡します。もしPythonインタープリタが
+# スレッドを使用するようになっていなければ、この機能は無効化されます。
+# どんな場合でも MAX_DELIVERY_THREADS を 0 にセットすることでこの機能を
+# 明示的に無効にできます。この機能は SMTPDirect DELIVERY_MODULE でのみ
+# サポートしています。
+#
+# 注意: この機能は実験的なもので、限られたテストでは実際には
+# Python のグローバルインタープリターロック(gil)によるものと思われる、
+# パフォーマンスに悪影響が見られることさえあるものでした。
+# 注意深く使ってください。
+# (訳註: Mailman 2.1.9 以前の頃から10年以上この状態です)
+MAX_DELIVERY_THREADS = 0
+
+# DELIVERY_MODULE が 'SMTPDirect' であるときに使用する SMTP ホスト
+# およびポート。 確実にホストが存在し、かつ名前解決ができるようになっている
+# ようにしてください。(つまり、これが既定値の 'localhost' であるならば、
+# localhost のエントリが /etc/hosts にあるようにしてくだい!)
+SMTPHOST = 'localhost'
+SMTPPORT = 0                                      # smtplib に初期値を任せます
+
+# DELIVERY_MODULE が 'Sendmail' であるとき、コマンドパイプで直接
+# sendmail 互換プログラムへと配送を行うコマンド。
+SENDMAIL_CMD = '/usr/lib/sendmail'
+
+# DELIVERY_MODULE = 'SMTPDirect' 用の SMTP 認証。SMTPDirect で SASL 認証を
+# 有効にするには SMTP_AUTH = Yes とセットし、SMTP_USER および SMTP_PASSWD に
+# 適切な値を与えて下さい。
+# (訳註: これを有効にする場合には Mailman 環境のサーバにアクセス可能な
+# 人/プログラムからの悪用を防ぐためには mm_cfg.py のアクセス権に注意を
+# 払う必要があるかと思われます)
+SMTP_AUTH = No
+SMTP_USER = ''
+SMTP_PASSWD = ''
+
+# SASL 認証を利用する場合(SMTP_AUTH = Yes)、以下を Yes に設定することで
+# TLS も使用します。この設定は SMTP_AUTH = No の時には何の影響もありません。
+SMTP_USE_TLS = No
+
+# TLS を使用する場合、以下で SMTP サーバが Mailman を識別するために
+# 用いるホスト名を設定すべきです。既定ではこれには DEFAULT_URL_HOST を
+# 用います。通常、これは変更すべきではありません。
+SMTP_HELO_HOST = DEFAULT_URL_HOST
+
+# Usenet への投稿あるいは閲覧で NNTP サーバで認証が必要な場合にはこれらの
+# 変数を設定してください。認証が不要ならば、「None」を両方の変数に
+# 設定してください。
+NNTP_USERNAME = None
+NNTP_PASSWORD = None
+
+# リストのゲートウェイとして使用するのに適した NNTP サーバがあるのであれば
+# これに設定してください。
+DEFAULT_NNTP_HOST = ''
+
+# これらの変数はメッセージを NNTP サーバが受け入れられるように
+# ヘッダをきれいにする方法を制御するのに使用します。INN のように
+# 禁止されたヘッダを持っていたり、重複するヘッダがあるとメッセージを
+# 受け入れないサーバもあります。NNTP サーバは他の理由でメッセージを
+# 受け入れないことはありますが、それらに対してプログラムで機械的に
+# 処理できることはほとんどありません。Mailman/Queue/NewsRunner.py を
+# 参照してください。
+#
+# まず、これらのヘッダ(大文字小文字を区別しません)を元のメッセージから
+# 取り除きます。
+NNTP_REMOVE_HEADERS = ['nntp-posting-host', 'nntp-posting-date', 'x-trace',
+                       'x-complaints-to', 'xref', 'date-received', 'posted',
+                       'posting-version', 'relay-version', 'received']
+
+# 次に、これらのヘッダは重複がない限りはそのまま残します。2度目以降に
+# 出現したヘッダは2番目の名前にヘッダ名を書き換えます(大文字小文字を
+# 保存します)。
+NNTP_REWRITE_DUPLICATE_HEADERS = [
+    ('to', 'X-Original-To'),
+    ('cc', 'X-Original-Cc'),
+    ('content-transfer-encoding', 'X-Original-Content-Transfer-Encoding'),
+    ('mime-version', 'X-MIME-Version'),
+    ]
+
+# リストへの投稿や -owner アドレスへのメールに DomainKey あるいは
+# DomainKeys Identified Mail (DKIM) の署名ヘッダ <http://www.dkim.org/> が
+# 含まれていることがあります。リスト用ヘッダやフッタの付与、添付ファイルの
+# 除去や reply-to の書き換えでさえもこうしたリスト処理によるメッセージの
+# 加工はこうした署名を損ねる場合があります。一般的にはこうした署名は
+# たとえそれが損なわれていてもそれによって外に出て行くメッセージが破棄
+# されることになるとしても、価値があるものだと受け止められています。
+# しかし、これらのヘッダを取り除きたいというサイトもあるでしょう。
+# この変数に設定できる値とその意味は:
+# No, 0, False -> ヘッダを取り除きません
+# Yes, 1, True -> from_is_list あるいは dmarc_moderation_action の設定により
+#                 from ヘッダの書き換えを行う場合のみヘッダを取り除きます。
+# 2 -> 常にヘッダを取り除きます。
+# 3 -> 常にヘッダを取り除きますが、元の DKIM 関連のヘッダはヘッダ名を変えて
+#      保存します。
+REMOVE_DKIM_HEADERS = No
+
+# 空でない文字列を以下に設定すると、個人別配送で VERP を使用した配送(訳註:
+# VERPについては後に説明があります)を行う時に、その文字列を名前のヘッダに
+# 受信者のメールアドレスを base64 エンコードしたものをセットします。
+# これは「迷惑メール報告」フィードバックループのメッセージから取り出すのとは
+# 別の方法で受信者を特定することを可能にするためのものです。例として
+# RCPT_BASE64_HEADER_NAME = 'X-Mailman-R-Data'
+# としたとき、user@example.com に送られるメッセージには
+# X-Mailman-R-Data: dXNlckBleGFtcGxlLmNvbQo=
+# のようなヘッダが含められます。
+RCPT_BASE64_HEADER_NAME = ''
+
+# リストメンバー全体に配送される「通常の」メッセージはすべてこのハンドラ
+# モジュールのパイプラインを通って行きます。各リストはそれぞれ「pipeline」
+# 属性を定義することでこのグローバルパイプラインを上書きすることができます。
+GLOBAL_PIPELINE = [
+    # これらはすべての配送経路について共通なタスクを行うモジュールです。
+    'SpamDetect',
+    'Approve',
+    'Replybot',
+    'Moderate',
+    'Hold',
+    'MimeDel',
+    'Scrubber',
+    'Emergency',
+    'Tagger',
+    'CalcRecips',
+    'AvoidDuplicates',
+    'Cleanse',
+    'CleanseDKIM',
+    'CookHeaders',
+    # そして、ここでメッセージをダイジェスト(まとめ読み) mbox ファイルに
+    # 配送し、また、arch と news のキューにも入れます。ランナーが
+    # これらそれぞれの経路に固有なメッセージのさらなる処理を提供しています。
+    'ToDigest',
+    'ToArchive',
+    'ToUsenet',
+    # ここで会員の(外向きの)配送に固有な2,3の追加処理を行い、最後に
+    # 外部に向けてのキューにメッセージを残します。
+    'AfterDelivery',
+    'Acknowledge',
+    'WrapMessage',
+    'ToOutgoing',
+    ]
+
+# -owner アドレスへ送られてきたメッセージが通るパイプラインです。
+OWNER_PIPELINE = [
+    'SpamDetect',
+    'Replybot',
+    'OwnerRecips',
+    'ToOutgoing',
+    ]
+
+
+# SMTPDirect 配送モジュール(上の 前述の DELIVERY_MODULE の項を参照して
+# ください) からの syslog() への出力の書式の文字列を定義します。有効な
+# %() による置換は以下のものを含みます:
+#
+#     time -- Mailman が smtp で smtpd に メッセージの受渡しを完了するまでに
+#     かかった秒数(浮動小数点数)
+#
+#     size -- メッセージ全体のサイズ(単位バイト)
+#
+#     #recips -- メッセージの実際の受信者の数
+#
+#     #refused -- smtp で拒絶された受信者の数(SMTP_LOG_REFUSED でのみ
+#     使用してください)
+#
+#     listname -- 投稿されたメッセージのメーリングリストの「内部での」名前
+#
+#     msg_<header> -- 配送したメッセージの「header」で指定したヘッダの値。
+#     メッセージに該当するヘッダがない場合には「n/a」に置き換わります。
+#     メッセージに該当ヘッダが複数あった時にどの値が用いられるかは
+#     未定義ですので注意してください。
+#
+#     allmsg_<header> - 上の msg_<header> と同様ですが、該当するヘッダが
+#     複数あった場合にはそれらをカンマと空白で区切ってすべて出力します。
+#
+#     sender -- メッセージの「送信者」です。下の USE_ENVELOPE_SENDER 変数に
+#     で From: あるいはエンベロープの送信者のどちらを使用するかを決めます。
+#
+# 指定の書式は 2-タプル で、第一要素は logs/ ディレクトリ中でメッセージを
+# 出力するファイル名、第二要素は Python の %-書式に従った書式文字列です。
+# ファイルの名前は任意で、qfiles/<名前> が存在しないときにはそれを
+# 自動的作ります。
+#
+# 配送されるメッセージ毎に出力するログメッセージの書式。ログメッセージは
+# 配送が成功したか失敗したかに寄らず出力されます。これを None に設定すると
+# このメッセージの出力を出力しません。
+SMTP_LOG_EVERY_MESSAGE = (
+    'smtp',
+    '%(msg_message-id)s smtp to %(listname)s for %(#recips)d recips, completed in %(time).3f seconds')
+
+# smtp 上で直接の配送失敗がない場合に出力します。
+# SMTP_LOG_REFUSED とどちらか一方のみを出力します。
+SMTP_LOG_SUCCESS = (
+    'post',
+    'post to %(listname)s from %(sender)s, size=%(size)d, message-id=%(msg_message-id)s, success')
+
+# smtp で配送に失敗したアドレスがある場合に出力します。
+# SMTP_LOG_SUCCESS とどちらか一方のみを出力します。
+SMTP_LOG_REFUSED = (
+    'post',
+    'post to %(listname)s from %(sender)s, size=%(size)d, message-id=%(msg_message-id)s, %(#refused)d failures')
+
+# 各受信者毎の配送失敗を記録します。 %()s で追加で使えるものは以下のものです:
+#
+#     recipient -- 配送失敗した受信者アドレス
+#     failcode  -- smtp 上の(エラーの)応答コード
+#     failmsg   -- (もしあれば)実際の SMTP 上のメッセージ
+SMTP_LOG_EACH_FAILURE = (
+    'smtp-failure',
+    'delivery to %(recipient)s failed with code %(failcode)d: %(failmsg)s')
+
+# 以下の変数はバウンスの検知を向上するための VERP-like な配送の書式と頻度を
+# コントロールします。VERP とは Variable Envelope Return Path (可変
+# エンベロープ Return PATH) のことで、以下に定義があります:
+#
+# https://cr.yp.to/proto/verp.txt
+#
+# これは、enverope 送信者アドレス(つまり、SMTP の 「MAIL FROM:」のアドレス)
+# の中に我々(Mailman)がわかるように受信者のアドレスを符号化して含ませる
+# ものです。こうすることで、メールのフォワードによって受信者のアドレスが
+# 変わるようなことがあって、その挙げ句にバウンスしたとしても、バウンスした
+# アドレスをうやむやにすることなくバウンスの通知を受け取れるようになります。
+#
+# しかし、これは技術的には VERP-like であって VERP そのものではありません。
+# エンベロープ送信者の符号化は Mailman で行うのであって MTA が行っている
+# のではないからです。MTA と協調して動作させることが必要ですので、MTA の
+# 設定で拡張メールアドレスのセマンティクスが有効になっているのを確認する
+# 必要があります。(訳註: 下の例で説明されるように動的に生成された宛先を
+# 埋め込んだ envelope 送信者のアドレスに向けてメールを送った時に mailman が
+# 処理するメールボックスへと 配送されるように設定する必要があります)
+#
+# 最初の変数には VERP エンベロープにどのように符号化するかを記述します。
+# これには以下の3つの置換用文字列を含まなければなりません:
+#
+# %(bounces)s -- list-bounces メールボックスに置換します
+# %(mailbox)s -- 受信者のメールボックスに置換します
+# %(host)s    -- 受信者のホスト名に置換します
+#
+# 以下の例を下の初期設定に使用してみます。
+#
+# リストの FQDN でのアドレスが: mylist@example.org
+# 受信者のアドレスが          : aperson@another.exapmle.com
+#
+# であるとき、エンベロープ送信者のアドレスは
+# mylist-bounce+aperson=another.example.com@example.org になります。
+#
+# MTA が こうしたアドレス向けのメールを mylist-bounce メールボックスに配送
+# するように構成されるように***なっていなければならない***ことに注意すること!
+VERP_FORMAT = '%(bounces)s+%(mailbox)s=%(host)s'
+
+# 2番目は バウンスが発生したMTAからのバウンスメールの To: ヘッダにセットされる
+# こうしたアドレスを一意に復号化するための正規表現を記述します。これを
+# 正しく記述するのは大変重要ですが、厄介です。使用している Python の正規表現を
+# 調べてください。上で定義しているのと同じ「bounces」、「mailbox」、「host」の
+# 3 つの名前つきのグループを定義しなければなりません。この正規表現は
+# 大文字小文字を区別せずにコンパイルされます。
+VERP_REGEXP = r'^(?P<bounces>[^+]+?)\+(?P<mailbox>[^=]+)=(?P<host>[^@]+)@.*$'
+
+# メッセージの検査のための VERP の書式と正規表現
+VERP_PROBE_FORMAT = '%(bounces)s+%(token)s'
+VERP_PROBE_REGEXP = r'^(?P<bounces>[^+]+?)\+(?P<token>[^@]+)@.*$'
+# これを「Yes」に設定するとバウンスによる配送停止のための VERP 検査が
+# 有効になります。
+VERP_PROBES = No
+
+# パスワードリマインダでは全会員に向けて個別に送るため、VERP による配送検査を
+# 行うのには最高の機会です。これを「Yes」に設定するとすべてのパスワード
+# リマインダで VERP を有効にします。しかしながら、パスワードリマインダは
+# サイトリスト管理者を送信者として送信を行い、また、そのバウンスメッセージは
+# 自動処理を行わずにサイト管理者に転送されるに過ぎないため、さほど有用と
+# いうわけでもありません。 なぜ Mailman はそのバウンスメッセージを自動処理
+# しないかについては Mailman/Queue/BounceRunner.py の 70-84 行目のコメントを
+# 参照してください。
+VERP_PASSWORD_REMINDERS = No
+
+# 普通配送が個人別配送であるならば、それもまた VERP 配送検査のよい機会です。
+# ここでも書きますが、個別の受信者に対して別々に送るのはパフォーマンスに
+# 問題が出ます。これを「Yes」に設定するとすべての個人別普通配送で
+# VERP を有効にします(個人別まとめ読みはまだサポートしていません)
+VERP_PERSONALIZED_DELIVERIES = No
+
+# そして最後に個人別にしていない普通配送に VERP を用いることもできます。
+# パフォーマンスに大きな影響を与えることがあるため、普通配送にVERP を
+# 用いる頻度を決めることができます。VERP 宛先アドレスを用いるメッセージ数の
+# 間隔を指定します。この変数一つで普通配送とまとめ読み配送の両方を
+# コントロールします。これを 0 に設定すると臨時の VERP を無効にします。
+# 1 に設定すると全ての配送で VERP を有効にします。 1 よりも大きい数を
+# 設定するとその数のメッセージ毎に1回 VERP を有効にします。
+VERP_DELIVERY_INTERVAL = 0
+
+# 承認メールを良くするため、返信用アドレスにVERP-like な承認クッキーを
+# 使用します。これによってメッセージの件名にはもっとユーザフレンドリな
+# ものを置くことができますが、これを機能させるには MTA との協調が必要です。
+# 書式は上記の VERP_FORMAT と同様ですが、次の置換があります:
+#
+# %(addr)s -- list-confirm のメールボックスに置換されます
+# %(cookie)s  -- 承認クッキーに置換されます
+VERP_CONFIRM_FORMAT = '%(addr)s+%(cookie)s'
+
+# これは VERP_REGEXP に似ていますが、 VERP_COONFIRM_FORMAT によって
+# 分割するのに使います。MUA によっては返信時に
+# From: local_part@host
+# を
+# To: "local_part" <local_part@host>
+# あるいは
+# To: "local_part@host" <localpart@host>
+# とまで書き換えたり、ヘッダを折り返ししたりするものが見受けられるため、
+# 「<」の前に何かがあればそれらすべてを無視するようにし、また、
+# 折り返しのあるヘッダで改行も「.」にマッチするように「(?s)」の指示を
+# 含めています。
+VERP_CONFIRM_REGEXP = r'(?s)^(.*<)?(?P<addr>.+)\+(?P<cookie>[0-9a-f]{40})@.*$'
+
+# これを「Yes」に設定すると VERP-like な(よりユーザフレンドリな)
+# 承認メッセージが有効になります
+VERP_CONFIRMATIONS = No
+
+# -request メッセージあるいは投稿の保留に起因する自動応答の一アドレス
+# 当たりに送る最大数です。この制限は Mailman と外部の設定ミスをしている
+# 自動メールプログラムとの間の応答ループを抑制します。Mailman はあらかじめ
+# "Preferences: bulk|list|junk" とヘッダでラベル付けされているメッセージに
+# ついてはすべて自動応答を禁止しています。これは安全性を確保するための
+# フォールバックのための値なので、かなり大きめに設定するべきです。
+# 0 に設定すると無制限になります(デバグのためにしか有益ではないでしょう)
+MAX_AUTORESPONSES_PER_DAY = 10
+
+
+
+#####
+# 後方散乱メールの軽減
+#####
+
+# コマンドなしの-request アドレスへのメッセージや、To: アドレスが
+# 上で定めた VERP_CONFIRM_REGEXP にマッチしない -confirm への
+# メッセージに対して返信を行うのか、ログに記録するだけにするのかを
+# コントロールします。
+DISCARD_MESSAGE_WITH_NO_COMMAND = Yes
+
+# 自動応答のメッセージに元のメッセージ内容をどこまで含めるかを制御します。
+# コントロールします。値は:
+# 0 - 処理されなかったコマンドや無視されたコマンドを含めません。元の
+#     メッセージを含めません。
+# 1 - 処理されなかったコマンドや無視されたコマンドを含めません。元の
+#     メッセージのヘッダのみを含めます。
+# 2 - 処理されなかったコマンドや無視されたコマンドを含めます。元の
+#     メッセージをまるごと含めます。
+#
+# 管理目的のアドレスに送られる迷惑メールによる後方散乱の影響を最小に
+# 抑えるため、これを 0 に設定することを推奨しますが、後方互換性のために
+# 初期設定は 2 としています。
+RESPONSE_INCLUDE_LEVEL = 2
+
+# 新しいリストを作成したときの respond_to_post_requests の初期値を設定します。
+# 後方互換性のために 2 を初期設定値としていますが、「No」に設定することを
+# 真剣に検討することをお勧めします。
+DEFAULT_RESPOND_TO_POST_REQUESTS = Yes
+
+
+
+#####
+# Qrunner の初期値
+#####
+
+# どのキューに対してマスターの qrunner が監視プロセスを生成を行いますか?
+# これには、キューのクラス名(Mailman.Queue パッケージの中にあるモジュールと
+# 同じ名前である必要がります)とそれぞれのqrunnerで fork する並列プロセスの
+# 数からなる2-タプル、のリストを設定します。2 以上のプロセス数を指定した
+# 場合には、それぞれのプロセスにハッシュ空間を等分して割り当てます。
+
+# 蛇足: いつかは重み付きのハッシュ空間をサポートするかもしれません。
+#       (訳註: と10年以上前から書かれてます)
+# 蛇足: 強制はされていませんが、分割の数は2の巾である必要があります。
+
+QRUNNERS = [
+    ('ArchRunner',     1), # アーカイバに送られるメッセージ(メール)用
+    ('BounceRunner',   1), # qfile/bounce ディレクトリの処理用
+    ('CommandRunner',  1), # 外界からのコマンドとバウンス
+    ('IncomingRunner', 1), # 外界からの投稿メッセージ
+    ('NewsRunner',     1), # 外界に向けて nntpd に送られるメッセージ
+    ('OutgoingRunner', 1), # 外界に向けて smtpd に送られるメッセージ
+    ('VirginRunner',   1), # 内部的に作られた(できたての)メッセージ
+    ('RetryRunner',    1), # 一時的に配送に失敗にしたものの再送
+    ]
+
+# 「Maildir」配送オプションを使用するにはこれを「Yes」にセットします。
+# これを変更した場合、リストの自動検知を使用していない MTA を使っている
+# ならば bin/genaliases を再度実行する必要があります。
+#
+# 警告: Maildir 配送を使用したいのであれば、Mailman の qrunner を
+# ルート権限で実行することが***必須***です。さもなくば権限上の問題に
+# 見舞われることになるでしょう。
+#
+# 注意: Mailman 2.1 では Maildir 配送は実験的なものです。
+USE_MAILDIR = No
+# 注意: USE_MAILDIR = YES に設定したら、次の行を mm_cfg.py ファイルに加えて
+# ください(もちろんコメントではなくして)。
+# QRUNNERS.append(('MaildirRunner', 1))
+
+# qrunner のスライスが全てのファイルを処理した後、次にキューディレクトリの
+# 新しいファイルをチェックするまでに sleep する時間。これは1秒未満に
+# も設定できますし、ゼロを指定して直ちにチェックする(本質的には
+# 出来る限り早く行うビジーループ)こともできます。
+QRUNNER_SLEEP_TIME = seconds(1)
+
+# (email パッケージで)構造を読み取れないメッセージを受け取ったとき、
+# それをどう処理しますか? 構造を読み取れないメッセージで最もよくあるのは
+# MIMEによるカプセル化構造が壊れている場合で、その場合でもっともよくあるのが
+# それが Nimda ウィルスのようなマルウェアである場合です。この変数を「No」に
+# 設定するとそのようなメッセージは破棄し、「Yes」に設定すると qfiles/bad
+# サブディレクトリに保存します。
+QRUNNER_SAVE_BAD_MESSAGES = Yes
+
+# 上の設定次第では、構造を読み取れないメッセージのキューエントリは
+# qfiles/bad に保存されます。キューエントリからメッセージの取り出そうと
+# している間に起きる他の特定の例外によってもエントリを qfiles/bad に
+# 保存します。メッセージ処理を行っている間に起きるさまざまな例外では、
+# メッセージを退避し(qfiles/shunt に保存します)、原因となった問題が
+# 修正された後に bin/unshunt で再処理できるようにします。cron ジョブの
+# cull_bad_shunt は qfiles/bad と qfile/shunt の古いエントリを取り除き、
+# できればアーカイブするために通常一日一回動かします。以下の設定は
+# これをコントロールするものです。
+
+# qfiles/bad と qfiles/shunt のファイルが古くなってしまったと判断する
+# までの時間。 qfiles/bad と qfiles/shunt のエントリの摘み取りを
+# 無効にするにはゼロに設定します。
+BAD_SHUNT_STALE_AFTER = days(7)
+
+# 摘み取った qfiles/bad と qfiles/shunt のエントリを退避するための
+# (Mailman の cron のユーザから検索可能かつ書き込み可能な)ディレクトリの
+# パス名。None に設定すると摘み取ったエントリは単に削除されるだけになります。
+BAD_SHUNT_ARCHIVE_DIRECTORY = None
+
+# このフラグでデータファイルに内容を書き込んでフラッシュした後に
+# fsync() するように Mailman に指示します。この動作はデータがディスクに
+# 確実に書かれるようにするものではありますが、パフォーマンスを殺すものと
+# なるでしょう。このフラグはメッセージの pickle 化にも MailList の
+# config.pck ファイルにも両方に作用することに注意してください。
+SYNC_AFTER_WRITE = No
+
+# mailmanctl が使用するマスターロックファイルの名前。共有された 'locks'
+# ディレクトリを使用するクラスタ化された負荷共有環境では各ホストの
+# mailmanctl 毎に別々のロックを使用するのが望ましい。これはそれを可能にする
+# ためのものです。
+MASTER_LOCK_FILE = 'master-qrunner'
+
+
+
+#####
+# 全般的な項目の初期値
+#####
+
+# このサーバでの既定の言語。リストに関する局面なのかユーザに関する局面なのか
+# 判断できないような場合は常に落し所としてこの言語を使います。指定可能な値に
+# ついては下の LC_DESCRIPTIONS を参照してください。
+DEFAULT_SERVER_LANGUAGE = 'en'
+
+# メーリングリストへの投稿を会員からのみ許可する場合、どのようにメッセージの
+# 送信者を認定しますか? この変数を「Yes」に設定した場合、まずメッセージの
+# エンベロープ送信者が使用され、エンベロープ送信者が設定されてない場合の
+# フォールバックとして(ヘッダの)送信者が使用します。この変数を「No」に
+# 設定した場合、常に(ヘッダの)送信者を使用します。
+#
+# エンベロープ送信者は SMTP 配送によってセットされます。ですので
+# 送信者は通常は From: ヘッダから取ってこられるため、エンドユーザでも
+# 簡単に偽装できる(ヘッダ)送信者と比べると少しだけ偽装が簡単ではありません。
+# しかし、エンベロープ送信者は時として正しく設定されず、リストの会員から
+# 送られてきたものであると判っているメッセージであったとしても承認のために
+# 保留にされることによって、そのことが明らかになったりします。
+# もしこのような問題があるのであれば、この変数を「No」にしてください。
+# ただし、偽装されたメッセージには通ってしまうものがあることは
+# 理解してください。
+# (訳註: 上記2パラグラフは原文訳ですが、原文が誤っています。以下の説明は
+# mailman-users の2009年のメール
+#   https://mail.python.org/pipermail/mailman-users/2009-February/065014.html
+# および実際のコードをもとにしています)
+# メーリングリストへの投稿を会員からのみ許可する場合、どのようにメッセージの
+# 送信者を認定しますか? この変数を「Yes」に設定した場合、まず有効な
+# Sender: ヘッダの探しその内容を使用し、なければ From: ヘッダの内容を
+# 使用します。どちらも見付からない場合にはエンベロープ送信者を使用します。
+# 「No」に設定した場合は有効な From: ヘッダを探して使用し、なければ
+# Sender: ヘッダを探して使用して、どちらも見付からない場合には
+# エンベロープ送信者を使用します。変数名に反してどちらの場合であっても
+# ヘッダで「送信者」を見付けられない場合にはエンベロープ送信者が使用される
+# ことに注意してください。
+USE_ENVELOPE_SENDER = No
+
+# 投稿に対する会員資格の確認は通常ヘッダ群を見ることで行われ、
+# いずれかのヘッダの値がリストの会員に合致していれば合格になります。
+# チェックする順番はこの変数の値で定める通りです。「None」値は
+# From_ ヘッダ(エンベロープ送信者)を意味します。フィールド名は大文字小文字を
+# 区別しません。
+SENDER_HEADERS = ('from', None, 'reply-to', 'sender')
+
+# admin CGI で会員の退会や設定の変更を行うとき、一度に何名分の表示をしますか?
+DEFAULT_ADMIN_MEMBER_CHUNKSIZE = 30
+
+# admindb の Web ページで保留しているメッセージを何バイトまで表示しますか?
+# メッセージのサイズによらず、メッセージ全体を表示するには負の数を指定
+# してください(但し、そのページの表示が遅くなるはなるでしょう)
+ADMINDB_PAGE_TEXT_LIMIT = 4096
+
+# リスト管理者に自身の管理しているリストを削除するのを許可するのには
+# この変数を「Yes」に設定してください。リスト管理者にそれだけの権限を
+# 与えたくないと考えるかもしれませんが、その場合にはこの変数を「No」に
+# 設定することで、リストの削除はサイト管理者がコマンドラインスクリプト
+# bin/rmlist で行うことが必要になります。
+OWNERS_CAN_DELETE_THEIR_OWN_LISTS = No
+
+# リストに「個別化」のフラグを設定するのをリスト管理者に許可するには
+# この変数を「Yes」に設定します。「個別化」のフラグをオンにすることで、
+# メッセージを各会員に向けてMTA送るのにバッチでまとめて送る代わりに
+# 各ユーザに個別の電子メールメッセージを送るようにと Mailman に指示します。
+# これは各会員により個人的なカスタマイズを行ったメッセージを届けることには
+# なりますが、システムに重大な性能上の問題を引き起こす可能性があります。
+OWNERS_CAN_ENABLE_PERSONALIZATION = No
+
+# 会員管理のページで会員のパスワードを変更するのをリスト管理者に許可するには
+# この変数を「Yes」に設定します。リスト管理者が会員のパスワードを変更した後に
+# その会員としてログインして全体に関わる変更を行うのを許可するだけの信用を
+# すべてのリスト管理者に対して置けると言うのでない限りはそのように設定しないで
+# ください。
+OWNERS_CAN_CHANGE_MEMBER_PASSWORDS = No
+
+# 保留にしたメッセージを Python の pickles として保存しますか? それとも
+# プレインテキストとして保存しますか? 前者は Mailman が毎回もメッセージの
+# 構造を解析したり生成したりする必要がないので効率がよいですが、後者は
+# ディスク上で保留にしたメッセージを編集したいと考えるのであればこちらの方が
+# 向いているでしょう。
+HOLD_MESSAGES_AS_PICKLES = Yes
+
+# この変数は admin CGI のページでリスト個別の設定分類を表示する順番を
+# コントロールします。
+ADMIN_CATEGORIES = [
+    # 一列目
+    'general', 'passwords', 'language', 'members', 'nondigest', 'digest',
+    # 二列目
+    'privacy', 'bounce', 'archive', 'gateway', 'autoreply',
+    'contentfilter', 'topics',
+    ]
+
+# 下の「ユーザオプションのビットフィールド」を参照してください: これらの
+# オプションで設定するものの和ををリストの新しい会員の初期値として使用します。
+# 初期値としてユーザは投稿を重複して受け取ることを望まないことを
+# 仮定しています。但し、会員の投稿制限のフラグの初期値はリストの
+# 設定の変数 default_member_moderation によって制御されることには
+# 注意してください。
+DEFAULT_NEW_MEMBER_OPTIONS = 256
+
+# 会員登録のリクエストでユーザがパスワードを埋めてない場合や、リスト作成の
+# 際に管理者パスワードの自動生成が選択されている場合などに Mailman が
+# 生成するパスワードのタイプ。
+#
+# 由緒正しい Mailman のユーザフレンドリ(気味)なパスワードにするには
+# この値を「Yes」に設定します。これにより、Mailman はより覚えやすいような
+# ほぼ発音できるようなパスワードを生成します。
+# (使用しているオペレーティングシステムとPythonのバージョンが必要な機能を
+# 備えていれば...具体的には /dev/urandom が利用可能ということ)暗号的に
+# 安全だけれども覚えにくいパスワードを生成するにはこの値を「No」に設定します。
+USER_FRIENDLY_PASSWORDS = Yes
+# 既定の会員パスワードの長さとリスト管理者のパスワードの長さを指定します。
+MEMBER_PASSWORD_LENGTH = 8
+ADMIN_PASSWORD_LENGTH = 10
+
+# 次のヘッダは投稿者の身元あるいは少なくともドメインを晒す可能性があるため
+# 匿名リストでは削除します。
+#
+# From:, Reply-To:, Sender:, Return-Path:, X-Originating-Email:, Received:,
+# Message-ID: and X-Envelope-From:.
+#
+# さらに、Return-Receipt-To:, Disposition-Notification-To:,
+# X-Confirm-Reading-To:, X-Pmrqc: ヘッダは送信者の情報を明らかにする
+# だけではなく、リストの入会者の情報を収集するのに使われる恐れがあるため、
+# すべてのリストへの投稿で削除します。
+#
+# 上述のヘッダ削除に加え、匿名リストでは以下の正規表現群にマッチした
+# ヘッダ以外の全てのヘッダを削除します。以下の初期値では X- で始まらない
+# ヘッダと Mailman が付与するこれらの X- ヘッダおよびすべての X-Spam- を
+# 残し(他を削除し)ます。
+ANONYMOUS_LIST_KEEP_HEADERS = ['^(?!x-)', '^x-mailman-',
+                               '^x-content-filtered-by:', '^x-topics:',
+                               '^x-ack:', '^x-beenthere:',
+                               '^x-list-administrivia:', '^x-spam-',
+                              ]
+#
+# 第三者が繰り返し入会フォームから入会を申し込むことでメールボム行為
+# (訳註: メールボムについては
+#   https://ja.wikipedia.org/wiki/%E3%83%A1%E3%83%BC%E3%83%AB%E3%83%9C%E3%83%A0
+# 等を参照のこと)が可能です。以下を Yes に設定することで、すでに入会確認を
+# 発行済みの相手からの入会申請を拒否し、メールボム行為を防ぐことができます。
+# これを設定することの欠点は、入会申請を行った人が入会確認手続きの
+# メールをなくしてしまったり、あるいは入会確認手続きのメールが届かなかった
+# 場合には、その人が再度入会申請を行えるようになるまでに PENDING_REQUEST_LIFE 
+# (初期値では3日)だけ待たなければならなくなることです。この設定は
+# 退会の申し込みの繰り返しに対しても適用されます。
+REFUSE_SECOND_PENDING = No
+# 繰り返し会員登録を試みることの結果として繰り返して会員に警告が送られる
+# ことによって、会員名簿非公開のリストの会員に対してのメールボムが発生する
+# 可能性があります。以下を "No" に設定することで、すでに会員である時の
+# 会員登録に対する警告を抑止します。
+WARN_MEMBER_OF_SUBSCRIBE = Yes
+
+
+
+#####
+# 各リストの初期値 注意: ここの値を変更しても既存のリストの設定値を
+# ****変更することにはなりません***。値を変更値に新たに作成するリストの
+# 初期値を定義しているだけです。
+#####
+
+# リストを既定で公開にしますか? 明示的な受信者の数の最大を既定でいくつに
+# しますか? メッセージの最大サイズはどこまで許容しますか?
+DEFAULT_LIST_ADVERTISED = Yes
+DEFAULT_MAX_NUM_RECIPIENTS = 10
+DEFAULT_MAX_MESSAGE_SIZE = 40           # KB
+
+# 書式文字列は辞書(ルックアップテーブル)を用いて展開されます。
+# [訳註]
+#   2.1.6 以降, DEFAULT_SUBJECT_PREFIX に %d を含めると通し番号が
+#   入るようになりました。 %04d 等の書式も使えます。
+#   mm_cfg.py で設定するときには %%d のように書かなければならないことに
+#   注意が必要です。
+DEFAULT_SUBJECT_PREFIX  = "[%(real_name)s] "
+# DEFAULT_SUBJECT_PREFIX = "[%(real_name)s %%d]" # 付番する場合
+DEFAULT_MSG_HEADER = ""
+DEFAULT_MSG_FOOTER = """-- 
+%(real_name)s mailing list
+%(real_name)s@%(host_name)s
+%(web_page_url)slistinfo%(cgiext)s/%(_internal_name)s
+"""
+
+# 「Re:」付きメッセージで件名のプレフィクスを付ける位置:
+#
+#     昔のスタイル  : Re: [prefix] test
+#     新しいスタイル: [prefix 123] Re: test ... (番号はオプショナル)
+#
+# 後方互換性のため、昔のスタイルを既定値とします。リスト管理者が
+# プレフィクスに %d (付番)を入れた場合には強制的に新しいスタイルになります。
+# サイト管理者が以前に新しいスタイルにするパッチ(SourceForgeのパッチ
+# 置場にあります)を適用したのであれば、これを「No」に設定するのを
+# 望むことでしょう。
+OLD_STYLE_PREFIXING = Yes
+
+# 普通配送メールで添付ファイルを削除します
+DEFAULT_SCRUB_NONDIGEST = False
+
+# メールコマンドの処理系は指定した最大行数より後のメールコマンドを
+# 無視しします。
+DEFAULT_MAIL_COMMANDS_MAX_LINES = 25
+
+# リスト管理者に管理要求の通知を毎日の保留要求通知だけではなく電子メールで
+# ただちに送りますか?
+DEFAULT_ADMIN_IMMED_NOTIFY = Yes
+
+ リスト管理者に入会/退会を通知しますか?
+DEFAULT_ADMIN_NOTIFY_MCHANGES = No
+
+# この日数経過後、保留メッセージを破棄します。
+DEFAULT_MAX_DAYS_TO_HOLD = 0
+
+# 会員の初期状態を、投稿の制限(モデレート)付きにしますか?
+DEFAULT_DEFAULT_MEMBER_MODERATION = No
+
+# 自動的に破棄される会員以外からの投稿をモデレータ(司会者)に転送しますか?
+DEFAULT_FORWARD_AUTO_DISCARDS = Yes
+
+# From: のドメインの DMARC ポリシーが拒否(reject)のメッセージと同様に
+# DMARC ポリシーが隔離(quarantine)のメッセージにも dmarc_moderation_action を
+# 適用しますか? この設定はリストの設定の初期値をコントロールします。
+DEFAULT_DMARC_QUARANTINE_MODERATION_ACTION = Yes
+
+# From: のアドレスのドメインが拒否(reject)または隔離(quarantine)の
+# ポリシーであったときの既定の動作。下の DEFAULT_FROM_IS_LIST を
+# 参照してください。ここで設定した既定値よりも低い値をリスト管理者が
+# 設定しても有効にはなりません。ただし、すでに作成されているリストで
+# この既定値を変更した結果によって新たに既定値未満の設定値になったものは、
+# リスト設定の プライバシー・オプション... -> 送信フィルタ のページで
+# 「変更を送信する」が押されるまではこの変更は反映されません。
+# 0 = 許可(Accept)
+# 1 = From を書き換え(Munge From)
+# 2 = メール内に添付(Wrap Message)
+# 3 = 拒否(Reject)
+# 4 = 破棄(Discard)
+DEFAULT_DMARC_MODERATION_ACTION = 0
+
+# ドメイン所有者は DMARC 判定失敗の報告を受け取りたいが、From: ドメインの
+# DMARC 判定失敗したメッセージに対しては特に何もしたくないという要求を
+# 満たすだめに、DMARC のポリシーを p=none として公開することができます。
+# dmarc_moderation_action が 1 または 2 であることによってメッセージの
+# 書き換えが起きるのであれば、このことにより、DMARC ポリシーをよりきつくした
+# 場合に隔離あるいは拒否されるメッセージの数を過大にすることになる
+# かもしれません。そのため、dmarc_moderaction_action の 1 または 2 を
+# From: のドメインの DMARC ポリシーが p=none であるメッセージについても
+# 適用するかどうかのオプションがリストの設定にあります。このオプションを
+# 「Yes」に設定するのに意味をもつのは dmarc_quarantine_moderaction_action も
+# 同様に「Yes」であるときにのみです。次の設定は新しいリストに対する
+# このオプションの既定値です。
+DEFAULT_DMARC_NONE_MODERATION_ACTION = No
+
+# dmarc_moderation_action がメール内に添付(Wrap Message)の時に
+# 元のメッセージの message/rfc822 パートに先だって独立して挿入される
+# text/plain パートに置かれる文字列の既定値。
+DEFAULT_DMARC_WRAPPED_MESSAGE_TEXT = ''
+
+# DMARC による DNS 参照のパラメタ。エラーログに「DNSException:
+# Unable to query DMARC policy ...」というエントリが出るのであれば
+# これらを調整する必要があるかもしれません。
+# ネームサーバからの応答をタイムアウトにするまでに待つ時間。
+DMARC_RESOLVER_TIMEOUT = seconds(3)
+# 問い合わせから答を得るまでに費す全体での時間。
+DMARC_RESOLVER_LIFETIME = seconds(5)
+
+# DMARC ポリシーを参照するために Organizational Domain
+# (訳註: RFC 7489参照; レジストラが登録する個別のドメイン) を求める
+# アルゴリズムのためのデータを取って来る URL。ここに設定できるのは
+# Python の urllib2.urlopen 関数で扱えるものです。これについては
+# https://publicsuffix.org/list/ を参照してください。
+DMARC_ORGANIZATIONAL_DOMAIN_DATA_URL = \
+'https://publicsuffix.org/list/public_suffix_list.dat'
+
+# 頻繁に投稿しすぎる会員にサーバが自動制限(モデレーション)をかけるべきか。
+# ここの設定はリストに登録して短い時間の間に多数の迷惑メールメッセージを
+# 送るボットを使用するような人を止めるのを目的としています。
+# これらの既定値の設定は新規作成のリストに対してのものです。
+# より詳しくは、admin の Web ページの「プライバシー・オプション」 ->
+# 「送信者フィルタ」を見て「member_verbosity_threashold の詳細」および
+# 「member_verbosity_interval の詳細」のリンクを参照して下さい。
+# DEFAULT_MEMBER_VERBOSITY_INTERVAL = 投稿を追跡する秒数
+# DEFAULT_MEMBER_VERBOSITY_THRESHOLD = 上記時間の間に許容する投稿数
+#                                      (機能を無効にするには0をセットします)
+DEFAULT_MEMBER_VERBOSITY_INTERVAL = 300
+DEFAULT_MEMBER_VERBOSITY_THRESHOLD = 0
+
+# 会員の投稿頻度に関する機能を実現するために使用している辞書(ルックアップ
+# テーブルから古い投稿時刻のエントリをどれくらいの頻度で掃除するかを
+# コントロールします。これはエントリを掃除するのに使用するリソースと
+# 辞書が肥大化するのをどこまで許容するかとの妥協です。
+# この設定は辞書を掃除するまでそのコードを通る回数です。(訳註: 会員の
+# 投稿頻度を確認する設定になっているリストに投稿が届くたびに実行される
+# のでその回数です)
+VERBOSE_CLEAN_LIMIT = 1000
+
+# 投稿あるいは投稿制限(モデレーション)の目的でリストの会員であるかを
+# 確認するの時に同一のドメインと看做したいドメイン群。
+# リストの会員であるかのテストの際に、同じローカルパートであるが異なる
+# ドメインである二つの投稿者のアドレスを同一と看做したい場合には、
+# それらのドメインをリストの equivalent_domains に入れます。
+# これは新しいリストに設定する初期値です。
+# 設定には一つ以上の同一と看做したいドメインのグループを書きます。
+# グループ内ではドメインはカンマ「,」で区切り、グループはセミコロン「;」で
+# 区切ります。空白は無視されます。
+# 例:
+#
+#    'example.com,mail.example.com;mac.com,me.com,icloud.com'
+#
+# この例では user@example.com がリストの会員だったとして
+# 投稿が user@mail.example.com からのものだった場合、
+# リストの会員であることの確認や配送制限(モデレーション)の
+# 確認の際にはこの投稿が user@example.com からのもの同様に
+# 扱います。同様に user@me.com がリストの会員だった場合に
+# 投稿が user@mac.com あるいは user@icloud.com からのもので
+# あった場合には user@me.com からのもの同様に扱います。
+DEFAULT_EQUIVALENT_DOMAINS = ''
+
+# 明示的な非会員の処理に合致しないような非会員の投稿をどうしましますか?
+# 0 = 承認
+# 1 = 保留
+# 2 = 拒否
+# 3 = 破棄
+DEFAULT_GENERIC_NONMEMBER_ACTION = 1
+
+# 「To:」「Cc:」あるいは「Resent-To:」フィールドのいずれもリストを
+# 明示的に指定していない場合、バウンスしますか?
+# これは迷惑メール対策の手段です。
+DEFAULT_REQUIRE_EXPLICIT_DESTINATION = Yes
+
+# リストで明示的な宛先として受け付ける別名。
+DEFAULT_ACCEPTABLE_ALIASES ="""
+"""
+# 他のメーリングリストのみを会員とするメーリングリスト
+# (umbrella list;親子リスト用か:
+DEFAULT_UMBRELLA_LIST = No
+
+# 親子リストで管理上の通知(入会の承認やパスワード備忘通知)で用いる
+# アドレスのローカルパートのサフィックス
+DEFAULT_UMBRELLA_MEMBER_ADMIN_SUFFIX = "-owner"
+
+# 普通配送で除外/包含する(姉妹)リスト
+DEFAULT_REGULAR_EXCLUDE_LISTS = []
+DEFAULT_REGULAR_INCLUDE_LISTS = []
+DEFAULT_REGULAR_EXCLUDE_IGNORE = True
+ALLOW_CROSS_DOMAIN_SIBLING = False
+
+# 月毎のパスワード備忘通知を送るか否かを制御する変数。
+DEFAULT_SEND_REMINDERS = Yes
+
+# 新入会員に歓迎メッセージを送りますか?
+DEFAULT_SEND_WELCOME_MSG = Yes
+
+# 退会する会員にお別れのメッセージを送りますか?
+DEFAULT_SEND_GOODBYE_MSG = Yes
+
+# 次の設定は 3 通りです。これは dmarc_moderation_action で「承認」
+# 以外が適用される投稿を除いてすべての投稿に適用される
+# from_is_list ポリシーの既定値を設定します。
+# 0 -> From: の書き換えもメール内に添付も行わない
+# 1 -> 投稿の From: ヘッダを投稿者のアドレスをリストのアドレスに置き換えて
+#      書き換える。前述の REMOVE_DKIM_HEADERS も参照してください。
+# 2 -> From: に変更を加えませんが、From: をリストのアドレスとした
+#      メッセージで包みます(メール内に添付します)
+DEFAULT_FROM_IS_LIST = 0
+
+# 送信者の情報を消して リスト-admin アドレスから全てのメッセージを
+# 送信しているように見せかけますか?
+DEFAULT_ANONYMOUS_LIST = No
+
+# (ヘッダ名: 正規表現) 迷惑メールフィルタ - いくつか例示します。
+DEFAULT_BOUNCE_MATCHING_HEADERS = """
+# 行頭が「#」の行はコメントです。
+to: friend@public.com
+message-id: relay.comanche.denmark.eu
+from: list@listme.com
+from: .*@uplinkpro.com
+"""
+
+# Mailman を通過するメッセージに対して Reply-To: ヘッダを書き換えるように
+# 設定できます。Reply-To: を書き換えを行わない正当な理由がある一方で、
+# 他方、人々はこの機能が本当に欲しいと願っていると思われます。
+# この件についての議論へのリンクは Web UI の reply_goes_to_list のヘルプを
+# 参照してください。
+# 0 - Reply-To: を書き換えません
+# 1 - Reply-To: をリストに戻るように書き換えます
+# 2 - Reply-To: を明示された値に書き換えます (reply_to_address)
+DEFAULT_REPLY_GOES_TO_LIST = 0
+
+# Mailman を元々あった Reply-To: を取り除くように、あるいは上の設定を
+# 基に元の Reply-To: に単純に追加を行うように設定できます。
+DEFAULT_FIRST_STRIP_REPLY_TO = No
+
+# 入会手続きの方針
+# 0 - 開放(ALLOW_OPEN_SUBSCRIBE が 1 に設定されている場合のみ)
+# 1 - 入会には当人の確認が必要
+# 2 - 入会には管理者の承認が必要
+# 3 - 入会には当人の確認と管理者の承認の両方が必要
+#
+# ** 入会を開放することを許容しないのであれば、この設定で 0 を
+# 選ばないでください(入会の開放についてはこれの次の変数です)
+DEFAULT_SUBSCRIBE_POLICY = 1
+
+# このサイトでは全くチェックを行うことなく入会するのを許可しますか?
+ALLOW_OPEN_SUBSCRIBE = No
+
+# 入会手続きの方針(SUBSCRIBE_POLICY)が 2 または 3 のとき、承認を免除する
+# アドレスおよび正規表現(「^」で始まります)のリストの初期値
+DEFAULT_SUBSCRIBE_AUTO_APPROVAL = []
+
+# 退会に対する既定のポリシー。 0 (退会にモデレータ(司会者)が関与しない)を
+# 強く推奨します。
+# 0 - 退会にモデレータ(司会者)が関与しない
+# 1 - 退会には承認が必要
+DEFAULT_UNSUBSCRIBE_POLICY = 0
+
+# 会員名簿を非公開にする(Private_roster) ==
+# 0: 誰でも閲覧可能 1: 会員のみ可能 2: 管理者のみ可能
+DEFAULT_PRIVATE_ROSTER = 1
+
+# 会員を公開する場合、迷惑メール目的での Web からのアドレスの自動収集が
+# できないように電子メールアドレスとして認識できないようにします。
+DEFAULT_OBSCURE_ADDRESSES = Yes
+
+# RFC 2369 では メーリングリストを通じて会員に送るすべてのメッセージに
+# 付加する List-* ヘッダを定義しています。これらのヘッダはエンドユーザに
+# とってとても有用な助けになりますし、常に付けるべきものです。しかし、
+# すべての MUA がそれに対応しているわけではなく、多くの会員がそうした
+# MUA を使用していると、そうしたヘッダの抑止せよと要求してくるかもしれません。
+# この変数を「Yes」に設定すると、リスト管理者はこれらのヘッダを抑止する
+# ためのオプションを使用することができるようになります。逆に「No」に
+# 設定するとリスト管理者はこれらのヘッダを抑止するためのオプションを
+# 使用できなくなります(が、アナウンス専用のリスト、あるいはアーカイブを
+# 使用しないリストでは(関係するヘッダは)抑止されます)
+ALLOW_RFC2369_OVERRIDES = Yes
+
+# RFC 2822 では Mailman が実際の転送に責任を持つエージェントであるときに
+# Sender ヘッダを付与しないのは RFC に違反することを示唆しています。
+# しかし、MUA の中には From ヘッダの詳細の代わりに Sender ヘッダを表示
+# しようとするものがあり(有名なものは Outlookです)、これがユーザを混乱させ、
+# あるいはまた、メールを転送したときに元の送信者情報を落してしまいます。
+# この変数を「Yes」に設定することで、リスト管理者はこのヘッダを付与するのを
+# 抑止するオプションを利用できるようになります。
+ALLOW_SENDER_OVERRIDES = Yes
+
+# メーリングリストのコンテンツフィルタの既定値。DEFAULT_FILTER_CONTENT を
+# true に設定するとコンテンツフィルタが有効になります。
+DEFAULT_FILTER_CONTENT = No
+
+# DEFAULT_FILTER_MIME_TYPES は取り除く MIME タイプのリストです。リストの
+# 要素は "maintype/subtype" という形式か単純に "maintype" という形式の
+# 文字列です。例えば "text/html" はすべての html 形式の添付ファイルを
+# 取り除き、"image" は subtype が(jpeg、 gif、など)何であれ画像の
+# 添付ファイルを取り除きます。
+DEFAULT_FILTER_MIME_TYPES = []
+
+# DEFAULT_PASS_MIME_TYPES  はそのまま通す MIME タイプのリストです。
+# 書式は DEFAULT_FILTER_MIME_TYPES と同様です。
+DEFAULT_PASS_MIME_TYPES = ['multipart',
+                           'message/rfc822',
+                           'application/pgp-signature',
+                           'text/plain',
+                          ]
+
+# DEFAULT_FILTER_FILENAME_EXTENSIONS は取り除くファイルの拡張子のリストです。
+# 多くのマルウェアは content-type を無害なものと偽りつつ実行ファイルの
+# 拡張子を付けた状態にしておき、犠牲者が「開く」ことで実行するのを
+# 期待しているので、そうしたものに対してこれは有効です。
+DEFAULT_FILTER_FILENAME_EXTENSIONS = [
+    'exe', 'bat', 'cmd', 'com', 'pif', 'scr', 'vbs', 'cpl'
+    ]
+
+# DEFAULT_PASS_FILENAME_EXTENSIONS はそのまま通すファイル名の拡張子の
+# リストです。書式は DEFAULT_FILTER_FILENAME_EXTENSIONS と同様です。
+DEFAULT_PASS_FILENAME_EXTENSIONS = []
+
+# multipart/alternative 形式のものを最初のパートのみに置き換えます。
+DEFAULT_COLLAPSE_ALTERNATIVES = Yes
+
+# コンテンツフィルタを行った後に text/html を text/plain に変換するかどうか。
+# 変換は HTML_TO_PLAIN_TEXT_COMMAND を使用して行います。
+DEFAULT_CONVERT_HTML_TO_PLAINTEXT = Yes
+
+# フィルタしたメッセージに対する処理
+# 0 = 破棄、 1 = 拒否、 2 = 転送、 3 = 保留
+DEFAULT_FILTER_ACTION = 0
+
+# リスト管理者に対し、コンテンツフィルタに引っかかったメッセージを
+# ディスク上の特別なキューに保存することを許容するかどうか。
+OWNERS_CAN_PRESERVE_FILTERED_MESSAGES = Yes
+
+# リスト本体に送られたメッセージ内の管理コマンドをチェックしますか?
+DEFAULT_ADMINISTRIVIA = Yes
+
+# 直接To:あるいはCc:に向けられている会員のアドレスにリスト宛のメールのコピーを
+# 送るのを避ける過程で、長いスレッドで Cc: の列挙が長く伸びるのをさけるために
+# Cc: からアドレスを削ることがあります。このことによって DKIM 署名が壊れたり
+# 誤解を招いたりすることがあるため、これは望ましいことではないかもしれません。
+# Cc: ヘッダに手を加えるのを避けるにはこれを「いいえ」にセットします。
+DEFAULT_DROP_CC = Yes
+
+
+
+#####
+# まとめ読みの初期値。同様にここでの設定はリストの初期値であることに注意。
+#####
+
+# リストをまとめ読みなしにできるようにしますか?
+DEFAULT_NONDIGESTABLE = Yes
+
+# リストをまとめ読みで利用できるようにしますか?
+DEFAULT_DIGESTABLE = Yes
+DEFAULT_DIGEST_HEADER = ""
+DEFAULT_DIGEST_FOOTER = """%(real_name)s mailing list
+%(real_name)s@%(host_name)s
+%(web_page_url)slistinfo%(cgiext)s/%(_internal_name)s
+"""
+
+DEFAULT_DIGEST_IS_DEFAULT = No
+DEFAULT_MIME_IS_DEFAULT_DIGEST = No
+DEFAULT_DIGEST_SIZE_THRESHHOLD = 30     # KB
+DEFAULT_DIGEST_SEND_PERIODIC = Yes
+
+# RFC 1153 (プレインテキスト)ダイジェストと MIME ダイジェストの両方で
+# 保存するヘッダ。RFC 1153 ではこれらのヘッダに対してこの通りの
+# 順序についても規定しており、順序も問題になります。
+# (訳註: コードを見る限りでは MIME_DIGEST_KEEP_HEADERS の設定は
+# RFC 1153 形式のダイジェストには影響を与えないように見えます)
+MIME_DIGEST_KEEP_HEADERS = [
+    'Date', 'From', 'To', 'Cc', 'Subject', 'Message-ID', 'Keywords',
+    # これらのヘッダに付いても順序を保存するべきであると考えます。
+    'In-Reply-To', 'References', 'Content-Type', 'MIME-Version',
+    'Content-Transfer-Encoding', 'Precedence', 'Reply-To', 'List-Post',
+    # Mailman 2.0 (以降)では以下のヘッダを付加します。
+    'Message',
+    ]
+
+# このリストで RFC 1153 ダイジェストヘッダの順序を制御します。
+# また、このリスト中のヘッダは MIME ダイジェストにおいて、上の
+# MIME_DIGEST_KEEP_HEADERS にないヘッダであっても保存します。
+# 最後に、両方のリストに現れるヘッダは、それぞれ大文字小文字が
+# 一致していなければならず、一致していない場合にはダイジェストの中で
+# そのヘッダが複数回出力されることがあります。
+PLAIN_DIGEST_KEEP_HEADERS = [
+    'Message',
+    # RFC 1153 ヘッダ、順に
+    'Date', 'From', 'To', 'Cc', 'Subject', 'Message-ID', 'Keywords',
+    'Content-Type',
+    ]
+
+
+
+#####
+# バウンス(エラーメール)の処理の初期値。同様にここでの設定はリストの
+# 初期値であることに注意。
+#####
+
+# どんなバウンスメールに対してもとにかく処理をしますか?
+DEFAULT_BOUNCE_PROCESSING = Yes
+
+# bounce qrunner にどれくらいの頻度で検知してキューに入れたバウンスを
+# 処理させますか?
+REGISTER_BOUNCES_EVERY = minutes(15)
+
+# バウンスの処理は次のようなものです: 会員からのバウンスを受信すると、
+# その会員の「バウンス情報」を探します。もしバウンス情報がなければ
+# これがその会員からの最初のバウンスです。その場合には今日の日付を記録し、
+# バウンススコア(エラー点)を初期化します(初期値については後述します)
+#
+# この会員のバウンス情報があった場合には、直近にバウンスを受信した日付を
+# 確認します。その日付が現在から「バウンス情報保持期間」以上過去だった
+# 場合にはその日以前の古いデータを捨てて、今回がこの会員の初めての
+# バウンスであった場合と同様にバウンススコアを初期化します。
+#
+# 会員のバウンスがバウンス情報保持期間内の日付の場合には、バウンススコアを
+# 加算します。バウンスがソフト(弱)かハード(強)か(つまり、一時的なものか
+# 致命的か)を判断出来る場合には、加算するスコアをソフトバウンスの場合には
+# 0.5、ハードバウンスの場合には 1.0 とします。1日に1つのバウンスに対してだけ
+# スコアをつけるのに注意してください。バウンススコアが「バウンス閾値
+# (最大エラー点)」を超えた場合にはその会員のアドレスを無効にします。
+#
+# 会員のアドレスを無効化した後、その会員に警告のメッセージを送ることが
+# できます。警告メッセージには配送を有効にするための承認用クッキー/URLが
+# 含まれています。設定で変更可能な一定期間の後、そのアドレスはリストから
+# 削除されます。バウンスのために会員のアドレスを削除する際、会員に最後の
+# メッセージを一通送ります。
+
+# アドレスを無効にするバウンススコア(エラー点)の閾値(バウンススコアが
+# この超えたらそのアドレスを無効にします)
+DEFAULT_BOUNCE_SCORE_THRESHOLD = 5.0
+
+# この期間より古いバウンス情報は無効になったと看做し、
+# バウンス情報を破棄します。
+DEFAULT_BOUNCE_INFO_STALE_AFTER = days(7)
+
+# 配送停止/除去した会員に対し、リストから削除する前に送る通知の数。値 0 は
+# (最後の一通の通知を送り)直ちにアドレスを除去することを意味します。
+# 最初の通知は会員登録状態が無効になった際に送られることに注意して下さい。
+DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS = 3
+
+# 配送停止の警告を送る時間間隔
+DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL = days(7)
+
+# リスト管理者に -bounce (および -admin)アドレス宛でバウンス検知に
+# かからなかったメッセージを送りますか?
+DEFAULT_BOUNCE_UNRECOGNIZED_GOES_TO_LIST_OWNER = Yes
+
+# 会員のバウンススコアを増加させることになったけれども配送停止には
+# 至らなかったような検知されたバウンスに対してすべてコピーを
+# リスト管理者に送りますか?
+DEFAULT_BOUNCE_NOTIFY_OWNER_ON_BOUNCE_INCREMENT = No
+
+# バウンスの処理の通知。1番目のはバウンスによって会員を配送停止したときに
+# リスト管理者に通知を送るかどうかを指定し、二番目のはバウンスによって
+# 会員を削除したときに通知を送るかどうかを指定します。
+DEFAULT_BOUNCE_NOTIFY_OWNER_ON_DISABLE = Yes
+DEFAULT_BOUNCE_NOTIFY_OWNER_ON_REMOVAL = Yes
+
+
+
+#####
+# 一般的な時間制限
+#####
+
+# リクエスト(申請)を保留データベースに保管しておき、取り除くまでの
+# 期間の初期値。
+PENDING_REQUEST_LIFE = days(3)
+
+# 配送失敗したメッセージの再送のリトライをどれだけの期間続けますか?
+# この期間経過後、送ることのできなかった受信者のいるメッセージは
+# キューから取り除かれ、その受信者は当該メッセージを受け取ることが
+# なくなります。
+DELIVERY_RETRY_PERIOD = days(5)
+
+# 一時的な配送失敗の際に再送を試みるまでにどれだけの時間待ちますか?
+# RetryRunner はキューの処理と処理の間に15分スリープしますので、ここで
+# 指定した値は実際には15分の倍数に切り上げられます。
+DELIVERY_RETRY_WAIT = hours(1)
+
+
+
+#####
+# ロック管理の初期値
+#####
+
+# これらの変数はロックの獲得と保持のある種の側面をコントロールします。
+# これらはあなたの環境にあわせて適切に調整するべきものです。変数値はすべて
+# 浮動小数点数の秒単位で指定します。(強調)これらの変数はメーリングリストの
+# サイズ、ハードウェアのパフォーマンス、一般的なメールを捌く能力等々に応じて
+# 調整する必要があるでしょう。(強調終り)
+
+# MailList オブジェクトのロックのデバグメッセージを有効にするには
+# この変数を「On」にします。デバグメッセージは logs/locks に書き出されます。
+# ロックに問題があると思われる場合、あるいはあなたのシステムにあわせて
+# 調整したい場合には、ロックのデバグを有効にして下さい。
+LIST_LOCK_DEBUGGING = Off
+
+# この変数にはメーリングリスト上の特定の操作のためにロックをどれだけの
+# 時間維持するかを指定します。logs/lock ファイルを見て、そこでロックが
+# 破れているのをたくさん見たのであれば、この値を引き上げる必要がある
+# でしょう。しかし、あまりこの値を大きくしすぎると、欠陥のあるスクリプト
+# (あるいは bin/withlist の使い方の誤り)がロックの寿命が過ぎるまで
+# リストが使用できなくなる可能性があります。これはおそらくシステム中で
+# 最も重要な調整項目の一つです。
+LIST_LOCK_LIFETIME = hours(5)
+
+# この変数には incoming qrunner のプロセスがロックを取得しようと試みる
+# 時間の長さを指定します。ロック取得が時間切れになった場合には、後で
+# 配送するためにメッセージを再度キューに戻します。
+LIST_LOCK_TIMEOUT = seconds(10)
+
+# 保留中のリクエスト(申請)のデータベースに関してのロックのデバグメッセージを
+# 有効にするにはこの変数を「On」にします。デバグメッセージは logs/locks に
+# 書き出されます。ロックに問題があると思われる場合、あるいはあなたの
+# システムにあわせて調整したい場合には、ロックのデバグを有効にして下さい。
+PENDINGDB_LOCK_DEBUGGING = Off
+
+
+
+#####
+# ここから下にはユーザが設定可能なものはありません。これらの値のほとんどは
+# システム内部使用の便宜上このファイルにあります。mm_cfg.py ファイルで
+# これらを変更したりオーバーライドしたりしてはいけません!
+#####
+
+# これらのディレクトリは Mailman のインストール環境でさまざまな重要な
+# ファイルを見付けるために使用されます。PREFIX および EXEC_PREFIX は
+# configure で設定され、Mailman パッケージのインストールされるディレクトリを
+# 指しているべきです。
+PYTHON          = '@PYTHON@'
+PREFIX          = '@prefix@'
+EXEC_PREFIX     = '@exec_prefix@'
+VAR_PREFIX      = '@VAR_PREFIX@'
+
+# autoconf 2.12 のバグの回避策
+if EXEC_PREFIX == '${prefix}':
+    EXEC_PREFIX = PREFIX
+
+# CGI の拡張子。 configure script を用いて変更してください。
+CGIEXT = '@CGIEXT@'
+
+# Mailman のインストール環境を所有するグループのグループ ID
+MAILMAN_USER = '@MAILMAN_USER@'
+MAILMAN_GROUP = '@MAILMAN_GROUP@'
+
+# Mailman CGI のウィジェットの列挙
+Toggle      = 1
+Radio       = 2
+String      = 3
+Text        = 4
+Email       = 5
+EmailList   = 6
+Host        = 7
+Number      = 8
+FileUpload  = 9
+Select      = 10
+Topics      = 11
+Checkbox    = 12
+# 「拡張電子メールリスト」。内容は電子メールアドレスか「^」を前置した
+# 正規表現です。送信者制限のテキストボックスで使用します。
+EmailListEx = 13
+# 拡張迷惑メールフィルタウィジェット
+HeaderFilter  = 14
+
+# 処置
+DEFER = 0
+APPROVE = 1
+REJECT = 2
+DISCARD = 3
+SUBSCRIBE = 4
+UNSUBSCRIBE = 5
+ACCEPT = 6
+HOLD = 7
+
+# admindb の一覧の並べ替えボタンの設定。いずれの値の評価結果は True で
+# なければなりません。
+SSENDER = 1
+SSENDERTIME = 2
+STIME = 3
+
+# 標準のテキストフィールドの幅
+TEXTFIELDWIDTH = 40
+
+# ユーザ設定項目のためのビットフィールド。新規作成のリストの初期値については
+# 前述の DEFAULT_NEW_MEMBER_OPTIONS を参照して下さい。
+Digests             = 0 # 他の仕組みで制御するのでフラグとしては不要
+DisableDelivery     = 1 # 廃止; set/getDeliveryStatus() を使用する
+DontReceiveOwnPosts = 2 # 普通配送のユーザのみ
+AcknowledgePosts    = 4
+DisableMime         = 8 # ダイジェスト(まとめ読み)のユーザのみ
+ConcealSubscription = 16
+SuppressPasswordReminder = 32
+ReceiveNonmatchingTopics = 64
+Moderate = 128
+DontReceiveDuplicates = 256
+
+# 短いオプションのタグとフラグとの対応
+OPTINFO = {'hide'    : ConcealSubscription,
+           'nomail'  : DisableDelivery,
+           'ack'     : AcknowledgePosts,
+           'notmetoo': DontReceiveOwnPosts,
+           'digest'  : 0,
+           'plain'   : DisableMime,
+           'noremind': SuppressPasswordReminder,
+           'nmtopics': ReceiveNonmatchingTopics,
+           'mod'     : Moderate,
+           'nodupes' : DontReceiveDuplicates
+           }
+
+# 認証のコンテクスト
+#
+# Mailman では以下のロール(役割)を定義しています:
+
+# - User(ユーザ), 自身のオプション設定を変更する以外の権限を持たない
+#   一般の利用者
+# - List creator(リスト作成者), リストを作成したり削除したりはできるが
+#   リストに構成変更を行うことが出来るとは限らない者
+# - List poster(リスト投稿者), Approved: または X-Approved:ヘッダ、
+#   あるいは本文の最初の一行目の疑似ヘッダに含まれた投稿者の
+#   パスワードによってリストへの投稿を事前に承認された者。
+#   リスト管理者あるいはリストモデレータ(司会者)パスワードをこの用途にも
+#   使用することはできますが、投稿者のパスワードはこの目的にのみ使用でき、
+#   他の用途には利用できません。
+# - List moderator(リストモデレータ(司会者)), 未処理の入会依頼や保留された
+#   メッセージなどのリクエスト(申請)の処理を行うことのできる者
+# - List administrator(リスト管理者), リストの全体をコントロールすることの
+#   できる者で、リストの設定、リストの会員のユーザオプションの変更、
+#   会員の入会処理、退会処理などを行うことができます。
+# - Site administrator(サイト管理者), サイトに関わる全体をコントロールする
+#   ことのできる者で、上で述べた全てのタスクを行うことができます。
+#   この人物は通常コマンドラインでのアクセスも可能です。
+
+UnAuthorized = 0
+AuthUser = 1          # ユーザの誰か
+AuthCreator = 2       # リスト作成者 / 抹消者
+AuthListAdmin = 3     # リスト管理者 (リストの全体にわたってコントロール)
+AuthListModerator = 4 # リストモデレータ (保留リクエストの処理のみ可能)
+AuthSiteAdmin = 5     # サイト管理者 (すべてのことをコントロール)
+AuthListPoster = 6    # リスト投稿者 (投稿についてのみ Approved: <pw> ヘッダ)
+
+# ディレクトリ
+LIST_DATA_DIR   = os.path.join(VAR_PREFIX, 'lists')
+LOG_DIR         = os.path.join(VAR_PREFIX, 'logs')
+LOCK_DIR        = os.path.join(VAR_PREFIX, 'locks')
+DATA_DIR        = os.path.join(VAR_PREFIX, 'data')
+SPAM_DIR        = os.path.join(VAR_PREFIX, 'spam')
+WRAPPER_DIR     = os.path.join(EXEC_PREFIX, 'mail')
+BIN_DIR         = os.path.join(PREFIX, 'bin')
+SCRIPTS_DIR     = os.path.join(PREFIX, 'scripts')
+TEMPLATE_DIR    = os.path.join(PREFIX, 'templates')
+MESSAGES_DIR    = os.path.join(PREFIX, 'messages')
+PUBLIC_ARCHIVE_FILE_DIR  = os.path.join(VAR_PREFIX, 'archives', 'public')
+PRIVATE_ARCHIVE_FILE_DIR = os.path.join(VAR_PREFIX, 'archives', 'private')
+
+# qrunner サブシステムで使用するディレクトリ
+QUEUE_DIR       = os.path.join(VAR_PREFIX, 'qfiles')
+INQUEUE_DIR     = os.path.join(QUEUE_DIR, 'in')
+OUTQUEUE_DIR    = os.path.join(QUEUE_DIR, 'out')
+CMDQUEUE_DIR    = os.path.join(QUEUE_DIR, 'commands')
+BOUNCEQUEUE_DIR = os.path.join(QUEUE_DIR, 'bounces')
+NEWSQUEUE_DIR   = os.path.join(QUEUE_DIR, 'news')
+ARCHQUEUE_DIR   = os.path.join(QUEUE_DIR, 'archive')
+SHUNTQUEUE_DIR  = os.path.join(QUEUE_DIR, 'shunt')
+VIRGINQUEUE_DIR = os.path.join(QUEUE_DIR, 'virgin')
+BADQUEUE_DIR    = os.path.join(QUEUE_DIR, 'bad')
+RETRYQUEUE_DIR  = os.path.join(QUEUE_DIR, 'retry')
+MAILDIR_DIR     = os.path.join(QUEUE_DIR, 'maildir')
+
+# その他のファイル
+PIDFILE = os.path.join(DATA_DIR, 'master-qrunner.pid')
+SITE_PW_FILE = os.path.join(DATA_DIR, 'adm.pw')
+LISTCREATOR_PW_FILE = os.path.join(DATA_DIR, 'creator.pw')
+
+# バージョン番号の類をインポート
+from Version import *
+
+# Vgg: 言語の説明と文字集合(キャラクタセット)の辞書(Pythonのdict)で、
+# 新しくサポートした言語はすべてここに対応するエントリを追加しなければ
+# なりません。辞書のキーはローカライズしたテキストを格納した
+# ディレクトリ名です。データはタプルでその要素は最初が説明でカタログ内に
+# 記述し、2番目の要素はその言語の文字集合(キャラクタセット)です。
+# (訳註: 原文では更新されていませんが、このタプルは拡張されており、
+# 現在は3番目の要素としてその言語の(横書き時の)方向を 'ltr' (左から右)
+# あるいは 'rtl' (右から左) で指定するようになっています)
+# キーのコードは私の GNU/Linux 環境の /usr/share/locale から取りました。
+def _(s):
+    return s
+
+LC_DESCRIPTIONS = {}
+
+def add_language(code, description, charset, direction='ltr'):
+    LC_DESCRIPTIONS[code] = (description, charset, direction)
+
+add_language('ar',    _('Arabic'),              'utf-8',       'rtl')
+add_language('ast',   _('Asturian'),            'iso-8859-1',  'ltr')
+add_language('ca',    _('Catalan'),             'utf-8',       'ltr')
+add_language('cs',    _('Czech'),               'iso-8859-2',  'ltr')
+add_language('da',    _('Danish'),              'iso-8859-1',  'ltr')
+add_language('de',    _('German'),              'iso-8859-1',  'ltr')
+add_language('en',    _('English (USA)'),       'us-ascii',    'ltr')
+add_language('eo',    _('Esperanto'),           'utf-8',       'ltr')
+add_language('es',    _('Spanish (Spain)'),     'iso-8859-1',  'ltr')
+add_language('et',    _('Estonian'),            'iso-8859-15', 'ltr')
+add_language('eu',    _('Euskara'),             'iso-8859-15', 'ltr') # Basque
+add_language('fa',    _('Persian'),             'utf-8',       'rtl')
+add_language('fi',    _('Finnish'),             'iso-8859-1',  'ltr')
+add_language('fr',    _('French'),              'iso-8859-1',  'ltr')
+add_language('gl',    _('Galician'),            'utf-8',       'ltr')
+add_language('el',    _('Greek'),               'iso-8859-7',  'ltr')
+add_language('he',    _('Hebrew'),              'utf-8',       'rtl')
+add_language('hr',    _('Croatian'),            'iso-8859-2',  'ltr')
+add_language('hu',    _('Hungarian'),           'iso-8859-2',  'ltr')
+add_language('ia',    _('Interlingua'),         'iso-8859-15', 'ltr')
+add_language('it',    _('Italian'),             'iso-8859-1',  'ltr')
+add_language('ja',    _('Japanese'),            'euc-jp',      'ltr')
+add_language('ko',    _('Korean'),              'euc-kr',      'ltr')
+add_language('lt',    _('Lithuanian'),          'iso-8859-13', 'ltr')
+add_language('nl',    _('Dutch'),               'iso-8859-1',  'ltr')
+add_language('no',    _('Norwegian'),           'iso-8859-1',  'ltr')
+add_language('pl',    _('Polish'),              'iso-8859-2',  'ltr')
+add_language('pt',    _('Portuguese'),          'iso-8859-1',  'ltr')
+add_language('pt_BR', _('Portuguese (Brazil)'), 'iso-8859-1',  'ltr')
+add_language('ro',    _('Romanian'),            'utf-8',       'ltr')
+add_language('ru',    _('Russian'),             'utf-8',       'ltr')
+add_language('sk',    _('Slovak'),              'utf-8',       'ltr')
+add_language('sl',    _('Slovenian'),           'iso-8859-2',  'ltr')
+add_language('sr',    _('Serbian'),             'utf-8',       'ltr')
+add_language('sv',    _('Swedish'),             'iso-8859-1',  'ltr')
+add_language('tr',    _('Turkish'),             'iso-8859-9',  'ltr')
+add_language('uk',    _('Ukrainian'),           'utf-8',       'ltr')
+add_language('vi',    _('Vietnamese'),          'utf-8',       'ltr')
+add_language('zh_CN', _('Chinese (China)'),     'utf-8',       'ltr')
+add_language('zh_TW', _('Chinese (Taiwan)'),    'utf-8',       'ltr')
+
+del _

@@ -1,0 +1,1492 @@
+   #GNU Mailman Manual del Suscriptor de Listas Contents About this
+   document... About this document...
+
+              Previous Page Up one Level Next Page GNU Mailman
+                       Manual del Suscriptor de Listas
+     __________________________________________________________________
+
+GNU Mailman Manual del Suscriptor de Listas
+
+   Terri Oda
+
+   terri(en)zone12.com
+
+   Release 2.1
+   11 de enero 2020
+
+                                    Prefacio
+
+  Resumen:
+
+   Este documento describe el interfaz del suscriptor de listas GNU
+   Mailman 2.1. Este manual contiene instrucciones para suscripciÃ³n,
+   desuscripciÃ³n, consulta de los archivos de la lista, ediciÃ³n de
+   opciones de suscriptor, obtenciÃ³n de recordatorios de contraseÃ±as y
+   otras tareas a nivel del suscriptor. TambiÃ©n responde algunas
+   preguntas comunes de interÃ©s para miembros de listas Mailman.
+
+Ãndice General
+
+     *
+          + 1 IntroducciÃ³n
+               o 1.1 Reconocimientos
+               o 1.2 Â¿QuÃ© es una lista de correo?
+               o 1.3 GNU Mailman
+          + 2 Pasando de nuestros ejemplos a las listas reales
+          + 3 Interfaces de Mailman
+               o 3.1 El interfaz web
+               o 3.2 El interfaz de correo electrÃ³nico
+          + 4 Â¡Necesito hablar con un humano!
+          + 5 SuscripciÃ³n y desuscripciÃ³n
+               o 5.1 Â¿CÃ³mo me uno a la lista? (subscribe)
+               o 5.2 Â¿CÃ³mo dejo la lista? (unsubscribe)
+          + 6 ContraseÃ±as
+               o 6.1 Â¿CÃ³mo obtengo mi contraseÃ±a?
+               o 6.2 Â¿CÃ³mo cambio mi contraseÃ±a?
+               o 6.3 Â¿CÃ³mo activo/desactivo los recordatorios de
+                 contraseÃ±as? (opciÃ³n reminders)
+          + 7 Cambiando la entrega del correo
+               o 7.1 Â¿CÃ³mo activo o desactivo la entrega de correo?
+                 (opciÃ³n delivery)
+               o 7.2 Â¿CÃ³mo puedo evitar recibir mensajes duplicados?
+                 (opciÃ³n duplicates)
+               o 7.3 Â¿CÃ³mo cambio mi direcciÃ³n de suscripciÃ³n?
+               o 7.4 Â¿CÃ³mo hago para dejar de o iniciar a recibir copias
+                 de mis propios envÃos? (opciÃ³n myposts)
+               o 7.5 Â¿CÃ³mo puedo hacer para que Mailman me diga cuando
+                 mi envÃo ha sido recibido por la lista? (opciÃ³n ack)
+               o 7.6 Parece que no estoy recibiendo correo de las listas.
+                 Â¿QuÃ© deberÃa hacer?
+          + 8 EnvÃos agrupados
+               o 8.1 Â¿CÃ³mo puedo iniciar o dejar de recibir los mensajes
+                 enviados a la lista agrupados en un correo de gran
+                 tamaÃ±o? (opciÃ³n digest)
+               o 8.2 Â¿QuÃ© son los EnvÃos Agrupados MIME o de Texto
+                 Plano? Â¿CÃ³mo puedo decidir cuales recibir? (opciÃ³n
+                 digest)
+          + 9 Temas de listas de correo
+               o 9.1 Â¿CÃ³mo puedo asegurarme que mis envÃos tienen el
+                 tema apropiado?
+               o 9.2 Â¿CÃ³mo me suscribo a algunos o a todos los temas de
+                 una lista?
+               o 9.3 Â¿CÃ³mo logro o evito recibir mensajes sin tema
+                 definido?
+          + 10 Definiendo otras opciones
+               o 10.1 Â¿Cambiar Globalmente? Â¿Definir Globalmente? Â¿QuÃ©
+                 significa esto?
+               o 10.2 Â¿CÃ³mo cambio el nombre que registrÃ© en Mailman?
+               o 10.3 Â¿CÃ³mo selecciono mi idioma preferido?
+               o 10.4 Â¿CÃ³mo evito que mi nombre aparezca en la lista de
+                 suscriptores? (opciÃ³n hide)
+          + 11 Otras preguntas comunes
+               o 11.1 Â¿CÃ³mo puedo consultar los archivos de la lista?
+               o 11.2 Â¿QuÃ© hace Mailman para ayudar a protegerme de
+                 correo basura no solicitado (spam)?
+          + 1 Referencia rÃ¡pida de Ã³rdenes de correo electrÃ³nico
+          + 2 Referencia rÃ¡pida de opciones del suscriptor
+
+                               1 IntroducciÃ³n
+
+   Este documento tiene como propÃ³sito ayudar a los miembros de una lista
+   de correo Mailman 2.1 a aprender a usar las caracterÃsticas de este
+   software, disponibles para ellos. Este cubre el uso de los interfaces
+   web y de correo electrÃ³nico para suscribipciÃ³n y desuscripciÃ³n,
+   cambio de opciones de suscriptor y otras tareas a nivel de suscriptor.
+   TambiÃ©n responde algunas preguntas comunes de interÃ©s para miembros
+   de listas Mailman.
+
+   La informaciÃ³n para administradores de listas y de sitio se
+   proporciona en otros documentos.
+
+   Este documento se debe leer en orden. Si usted simplemente estÃ¡
+   buscando una respuesta a una pregunta especÃfica, consulte la secciÃ³n
+   o subsecciÃ³n que necesite, donde encuentrarÃ¡ referencias a otras
+   secciones, en caso de ser necesario o de potencial utilidad.
+
+   Nota: Para los propÃ³sitos de este documento, se asume que el lector
+   estÃ¡ familiarizado con tÃ©rminos comunes relacionados con correo
+   electrÃ³nico (por ejemplo: LÃnea de Asunto, cuerpo del mensaje) y
+   sitios web (por ejemplo: cuadro de lista desplegable, botÃ³n), o los
+   puede consultar. TambiÃ©n se asume que el lector ya puede usar lo
+   suficientemente bien su programa de correo electrÃ³nico y navegador
+   web, de tal forma que sean claras las instrucciones tales como ``envÃe
+   correo electrÃ³nico a esta direcciÃ³n'' o ``visite esta pÃ¡gina web'' o
+   ``rellene el formulario proporcionado''. Si usted no estÃ¡
+   familiarizado con estas acciones, usted puede desear consultar otra
+   documentaciÃ³n para aprender como hacer estas cosas con su
+   configuraciÃ³n particular.
+
+1.1 Reconocimientos
+
+   Varias secciones de este documento se tomaron del Manual de
+   Administrador de Listas del CVS de Mailman, escritas por Barry A.
+   Warsaw, y tambiÃ©n de la ayuda integrada de Mailman 2.1.
+
+   El resto de este manual fue escrito por Terri Oda. Terri ha estado
+   manteniendo listas de correo desde el aÃ±o que ella alcanzÃ³ la edad
+   para votar en Canada, aunque las dos cosas no estÃ¡n relacionadas. Ella
+   actualmente administra las listas de correo de Linuxchix.org, asÃ como
+   tambien varios servidores mÃ¡s pequeÃ±os. En el mundo ajeno a la
+   administraciÃ³n de listas, Terri estÃ¡ haciendo un trabajo con un
+   detector de spam de vida artificial, y realmente es mÃ¡s una
+   programadora que una escritora de temas tÃ©cnicos.
+
+   Gracias a Margaret McCarthy, Jason Walton y Barry Warsaw por su ayuda
+   en la revisiÃ³n y mejoramiento de este manual.
+
+   Gracias tambiÃ©n a Ikeda Soji, quien hizo una traducciÃ³n Japonesa de
+   este documento.
+
+1.2 Â¿QuÃ© es una lista de correo?
+
+   Una lista de correo es simplemente una lista de direcciones a las
+   cuales se envÃa la misma informaciÃ³n. Si usted fuera un editor de una
+   revista, usted tendrÃa una lista de direcciones de correo postal de
+   todos los suscriptores de la revista. En el caso de las listas de
+   correo electrÃ³nico, se usa una una lista de direcciones de correo
+   electrÃ³nico de gente interesada en escuchar o discutir acerca de un
+   tema dado.
+
+   Dos tipos comunes de listas de correo electrÃ³nico son las listas de
+   anuncios y las listas de discusiÃ³n.
+
+   Las listas de anuncios sirven para que una o mÃ¡s personas puedan
+   enviar anuncios a un grupo de personas, en forma similar a la manera
+   cÃ³mo hace un editor de una revista que utiliza su lista de direcciones
+   postales para enviar las revistas. Por ejemplo, una banda musical
+   podrÃa usar una lista de anuncios para facilitar que sus seguidores
+   estÃ©n al tanto de sus conciertos futuros.
+
+   Una lista de discusiÃ³n permite a un grupo de personas discutir
+   temÃ¡ticas entre ellos mismos, pudiendo cada uno enviar correo a la
+   lista y hacer que se distribuya a todos los integrantes del grupo. Esta
+   discusiÃ³n tambiÃ©n se puede moderar, de tal manera que sÃ³lo los
+   mensajes seleccionados se envien al grupo como un todo, o que
+   Ãºnicamente se le permita enviar al grupo a ciertas personas. Por
+   ejemplo, un grupo de entusiastas de modelos de aviones podrÃan usar una
+   lista de discusiÃ³n para compartir consejos Ãºtiles sobre la
+   construcciÃ³n de modelos y aviaciÃ³n.
+
+   Algunos tÃ©rminos comunes:
+     * Un ``envÃo'' tÃpicamente denota un mensaje que se envÃa a una lista
+       de correo. (Piense en poner un mensaje en un tablero de anuncios.)
+     * A las personas que son parte de una lista de correo electrÃ³nico
+       normalmente se las llama ``miembros'' de la lista o
+       ``suscriptores.''
+     * ``Los administradores de las listas'' son personas encargadas de,
+       precisamente, mantener esas listas. Las listas pueden tener uno o
+       mÃ¡s administradores.
+     * Una lista puede tener tambiÃ©n personas encargadas de leer los
+       mensajes enviados a la lista y decidir si ellos deberÃan ser
+       enviados a todos los suscriptores. A estas personas se las llama
+       moderadores de las listas.
+     * A menudo varias listas de correo electrÃ³nico utilizan el mismo
+       software. A la persona que mantiene el software gracias al cual
+       funcionan las listas se le llama el ``administrador del sitio.'' A
+       menudo el administrador del sitio tambiÃ©n administra listas
+       individuales.
+
+1.3 GNU Mailman
+
+   GNU Mailman es software que le permite administrar listas de correo
+   electrÃ³nico, con soporte para un rango amplio de tipos de listas de
+   correo, tales como listas de discusiÃ³n general y listas de sÃ³lo
+   anuncios. Mailman tiene caracterÃsticas extensivas que lo hacen bueno
+   para listas de suscriptores, tales como facilidad en la suscripciÃ³n y
+   desuscripciÃ³n, opciones de privacidad, y la capacidad de detener
+   temporalmente la recepciÃ³n de los envÃos a la lista. En este documento
+   se incluye sobre las caracterÃsticas de los miembros de las listas.
+
+   Mailman tambiÃ©n tiene muchas caracterÃsticas que lo hacen atractivo a
+   administradores de listas y administradores de sitio. Estas
+   caracterÃsticas estÃ¡n cubiertas en los manuales del administrador de
+   listas y del sitio.
+
+               2 Pasando de nuestros ejemplos a las listas reales
+
+   A menudo es mÃ¡s fÃ¡cil, simplemente dar un ejemplo que explicar
+   exactamente como encontrar la direcciÃ³n de una lista especÃfica. Por
+   ello, aquÃ frecuentemente se darÃ¡n ejemplos para una lista ficticia
+   llamada NOMBRELISTA@DOMINIO cuya pÃ¡gina de informaciÃ³n se puede
+   encontrar en http://SERVIDORWEB/mailman/listinfo/NOMBRELISTA.
+
+   Ninguna de estas direcciones es real, pero muestran la forma tÃpica de
+   las direcciones de las listas. Las letras mÃ¡yusculas utilizadas para
+   las partes especÃficas a las listas de cada direcciÃ³n deberÃa hacerlo
+   mÃ¡s fÃ¡cil para mirar lo que se deberÃa cambiar para cada lista.
+   Aunque las configuraciones especÃficas para las listas pueden ser
+   diferentes, usted probablemente podrÃ¡ simplemente reemplazar las
+   palabras dadas en letras mayÃºsculas con los valores apropiados para
+   una lista real:
+
+   NOMBRELISTA
+          El nombre de su lista.
+
+   DOMINIO
+          El nombre del servidor de correo que gestiona la lista.
+
+   SERVIDORWEB
+          El nombre del servidor web que gestiona el interfaz web de la
+          lista. Este puede ser el mismo utilizado como DOMINIO, y a
+          menudo se refiere a la misma mÃ¡quina, pero no tiene que ser
+          idÃ©ntico.
+
+   Como ejemplo de la vida real, si usted estÃ¡ interesado en la lista de
+   usuarios mailman (mailman-users), usted realizarÃa las siguientes
+   sustituciones: NOMBRELISTA=mailman-users, DOMINIO=python.org,
+   SERVIDORWEB=mail.python.org. De esta forma, para la lista de correo
+   mailman-users@python.org, la pÃ¡gina de informaciÃ³n de esa lista se
+   encontrarÃa en la direcciÃ³n URL
+   http://mail.python.org/mailman/listinfo/mailman-users (estas, a
+   diferencia de la mayorÃa de ejemplos datos en este documento, son
+   direcciones reales).
+
+   La mayorÃa de las listas tendrÃ¡n esta informaciÃ³n almacenada en las
+   cabeceras List-*:. Muchos programs de correo ocultarÃ¡n estas cabeceras
+   por omisiÃ³n, asÃ que usted tiene que seleccionar mirar todas las
+   cabeceras antes que pueda mirar estas cabeceras informativas.
+
+                            3 Interfaces de Mailman
+
+   Mailman tiene dos interfaces diferentes para los suscriptores de las
+   listas: la interfaz web y la interfaz de correo electrÃ³nico. La
+   mayorÃa de suscriptores de las listas de discusiÃ³n usan el interfaz de
+   correo electrÃ³nico, ya que Ã©sta incluye las direcciones de correo
+   electrÃ³nico que usted utiliza para enviar correo a todos los
+   suscriptores de esa lista.
+
+   La interfaz que usted use para cambiar las opciones es cuestiÃ³n de
+   preferencia, ya que la mayorÃa de (pero no todas) las opciones que se
+   pueden cambiar utilizando la interfaz web tambiÃ©n se pueden cambiar
+   por correo electrÃ³nico. Usualmente es mÃ¡s fÃ¡cil utilizar la interfaz
+   web para cambiar opciones, ya que la interfaz web proporciona
+   instrucciones como parte de las mismas pÃ¡ginas, pero hay ocasiones en
+   las cuales las personas prefieren la interfaz de correo electrÃ³nico,
+   asÃ que las dos se proporcionan y son Ãºtiles.
+
+3.1 El interfaz web
+
+   Para mucha gente, el interfaz web de Mailman es su punto mÃ¡s
+   destacable ya que lo hace mucho mÃ¡s fÃ¡cil para suscriptores y
+   administradores mirar que opciones estÃ¡n disponibles y lo que hacen
+   estas opciones.
+
+   Cada lista de correo tambiÃ©n estÃ¡ accesible desde un nÃºmero de
+   pÃ¡ginas web. Note que las direcciones URL exactas son configurables
+   por el administrador del sitio, asÃ que ellas pueden ser diferentes a
+   las que se describen abajo. Nosotros describiremos la configuraciÃ³n
+   mÃ¡s comÃºn, pero consulte los detalles con su administrador de sitio o
+   proveedor del servicio.
+
+   PÃ¡gina de informaciÃ³n de la lista (listinfo)
+
+          + Usualmente se encuentra en http://SERVIDORWEB/mailman
+            /listinfo/NOMBRELISTA (por ejemplo,
+            http://listas.ejemplo.com/mailman/listinfo/milista).
+          + La pÃ¡gina listinfo es el punto de inicio del interfaz del
+            suscriptor. Como uno podrÃa asumir por el nombre dado, Ã©sta
+            contiene informaciÃ³n acerca de la lista NOMBRELISTA.
+            Usualmente todas las otras pÃ¡ginas del suscriptor se pueden
+            acceder desde este punto, asÃ que realmente usted sÃ³lo
+            necesita conocer esta direcciÃ³n.
+
+   PÃ¡gina de opciones del suscriptor
+
+          + Usualmente se encuentra en http://SERVIDOR/mailman/options
+            /NOMBRELISTA/DIRECCIONCORREO (por ejemplo,
+            http://listas.ejemplo.com/mailman/options/milista
+            /maria@aqui.com).
+          + TambiÃ©n se puede acceder a esta pÃ¡gina yendo a la pÃ¡gina
+            listinfo y entrando su direcciÃ³n de correo en el cuadro de
+            texto junto al botÃ³n marcado ``Opciones de EdiciÃ³n y
+            DesuscripciÃ³n'' (este estÃ¡ cerca del final de la pÃ¡gina).
+          + La pÃ¡gina de opciones de suscriptor le permite a usted
+            entrar/salir y cambiar la configuraciÃ³n de sus opciones, asÃ
+            como tambiÃ©n desuscribirse u obtener una copia de su
+            contraseÃ±a por correo electrÃ³nico.
+          + Para ingresar en su pÃ¡gina de opciones de suscriptor: Si
+            usted aÃºn no ha ingresado, encontrarÃ¡ un cuadro de texto
+            cerca a la parte superior de la pÃ¡gina para introducir su
+            contraseÃ±a (si usted no conoce su contraseÃ±a, mire la
+            seccion 6.1 para mÃ¡s informaciÃ³n sobre cÃ³mo obtener su
+            contraseÃ±a). Entre su contraseÃ±a en el cuadro de texto
+            mencionado y haga clic en el botÃ³n ``Cambiar''.
+          + Una vez usted estÃ© adentro, podrÃ¡ mirar y cambiar toda la
+            configuraciÃ³n personal de su lista.
+
+   Archivos de la Lista
+
+          + Usualmente los encontrarÃ¡ en
+            http://SERVIDORWEB/pipermail/NOMBRELISTA si la lista se
+            archiva pÃºblicamente, y
+            http://SERVIDORWEB/mailman/private/NOMBRELISTA si la lista se
+            archiva en forma privada (por ejemplo,
+            http://listas.ejemplo.com/pipermail/milista o
+            http://listas.ejemplo.com/mailman/private/milista).
+          + Las pÃ¡ginas de los archivos de la lista disponen de una copia
+            de los mensajes enviados a la lista de correo, usualmente
+            agrupados por mes. En cada grupo mensual, los envÃos se
+            indexan por autor, fecha, hilo, y asunto.
+          + Nota: Pipermail es el nombre del archivador predeterminado que
+            viene con Mailman. Otros programas de archivado estÃ¡n
+            disponibles.
+          + Si el archivo es privado, usted necesitarÃ¡ suministrar su
+            direcciÃ³n de correo de suscriptor y su contraseÃ±a para
+            ingresar (mire la SecciÃ³n 6.1 para mayor informaciÃ³n sobre
+            la obtenciÃ³n de su contraseÃ±a).
+
+3.2 El interfaz de correo electrÃ³nico
+
+   Toda lista de correo tiene un conjunto de direcciones de correo
+   electrÃ³nico a las cuales se pueden enviar los mensajes. Siempre hay
+   una direcciÃ³n para enviar los mensajes a la lista, una direcciÃ³n a a
+   la cual se envÃan los mensajes devueltos y direcciones para procesar
+   Ã³rdenes de correo. Para una lista de correo ficticia llamada
+   milista@ejemplo.com, usted encontrarÃa estas direcciones:
+
+     * milista@ejemplo.com - esta es la direcciÃ³n de correo que la gente
+       deberÃa usar para los nuevos envÃos a la lista.
+     * milista-join@ejemplo.com - enviando un mensaje a esta direcciÃ³n,
+       un nuevo miembro puede solicitar suscripciÃ³n a la lista. Tanto la
+       cabecera de Asunto: como el cuerpo de tal mensaje son ignorados.
+       Note que milista-subscribe@ejemplo.com es un alias para la
+       direcciÃ³n -join.
+     * milista-leave@ejemplo.com - enviando un mensaje a esta direcciÃ³n
+       un miembro puede solicitar desuscripciÃ³n de la lista. Igual que
+       con la direcciÃ³n -join, la cabecera Asunto: y el cuerpo del
+       mensaje son ignorados. Note que milista-unsubscribe@ejemplo.com es
+       un alias para la direcciÃ³n -leave.
+     * milista-owner@ejemplo.com - Con esta direcciÃ³n se llega
+       directamente al propietario y moderador de la lista. Esta es la
+       direcciÃ³n que usted usa si necesita contactar a la persona o
+       personas encargadas de la lista.
+     * milista-request@ejemplo.com - Esta direcciÃ³n alcanza un robot de
+       correo que procesa Ã³rdenes de correo electrÃ³nico que se pueden
+       usar para definir opciones de suscripciÃ³n de los miembros, asÃ
+       como tambiÃ©n para procesar otros comandos. En el ApÃ©ndice A se
+       proporciona una lista de Ã³rdenes de correo electrÃ³nico de
+       miembros de listas.
+     * milista-bounces@ejemplo.com - Esta direcciÃ³n se usa para
+       procesamiento automÃ¡tico de mensajes devueltos de Mailman.
+     * milista-confirm@ejemplo.com - Esta direcciÃ³n se usa para procesar
+       mensajes de confirmaciÃ³n de solicitudes de suscripciÃ³n y
+       desuscripciÃ³n.
+
+   TambiÃ©n hay una direcciÃ³n -admin con la cual tambiÃ©n se llega a los
+   administradores de listas, pero esta direcciÃ³n solamente existe por
+   compatibilidad con las versiones mÃ¡s antigÃ¼as de Mailman.
+
+   Para cambiar las opciones, se usa la direcciÃ³n NOMBRELISTA-request
+   (por ejemplo, milista-request@ejemplo.com).
+
+   Las Ã³rdenes pueden aparecer en la lÃnea de asunto o en el cuerpo del
+   mensaje. Cada comando deberÃa ir en una lÃnea separada. Si su programa
+   de correo adiciona automÃ¡ticamente una firma a sus mensajes, usted
+   podrÃa desear colocar la palabra ``end'' (sin las comillas) en una
+   lÃnea separada despuÃ©s de sus otras Ã³rdenes. La orden end le dice a
+   Mailman que no procese el correo electrÃ³nico despuÃ©s de ese punto.
+
+   La Ã³rden mÃ¡s importante es probablemente la orden ``help'', ya que
+   Ã©sta hace que Mailman devuelva un mensaje completo de informaciÃ³n
+   Ãºtil sobre las Ã³rdenes de correo y direcciones para uso del interfaz
+   web.
+
+   En los ApÃ©ndices A y B se proporcionan referencias rÃ¡pidas a las
+   Ã³rdenes de suscriptor (Ã©stas se han adaptado ligeramente de la salida
+   de la orden help.)
+
+                      4 Â¡Necesito hablar con un humano!
+
+   Si usted tiene problemas con cualquiera de estas Ã³rdenes, usted
+   siempre puede contactar a la persona o personas encargadas de las
+   listas utilizando las direcciones administrativas de las listas. Los
+   administradores de las listas pueden ayudar a resolver como hacer algo,
+   suscribirlo/desuscribirlo, o cambiar su configuraciÃ³n si usted no
+   puede cambiarla por alguna razÃ³n. Por favor recuerde que muchos
+   administradores de listas de correo son voluntarios quienes estÃ¡n
+   donando su tiempo libre para administrar la lista y ellos pueden ser
+   gente muy ocupada.
+
+   La direcciÃ³n de correo del administrador de una lista tiene la forma
+   NOMBRELISTA-owner@DOMINIO, donde NOMBRELISTA es el nombre de la lista
+   (por ejemplo: usuarios-mailman) y DOMINIO es el nombre del servidor
+   (por ejemplo: python.org). Esta direcciÃ³n de correo, junto con las
+   direcciones de correo electrÃ³nico de administradores especÃficos,
+   estÃ¡n dadas en la parte inferior de las pÃ¡ginas de informaciÃ³n de
+   cada lista. Mire en la SecciÃ³n 3.1 mayor informaciÃ³n sobre cÃ³mo
+   encontrar la pÃ¡gina de informaciÃ³n de su lista.
+
+                      5 SuscripciÃ³n y desuscripciÃ³n
+
+   Dado que suscribirse (unirse) o desuscribirse (salirse) son a menudo
+   las Ãºnicas cosas que un miembro de lista necesita conocer, con Mailman
+   Ã©stas se pueden hacer opcionalmente sin necesidad de que usted conozca
+   una contraseÃ±a.
+
+5.1 Â¿CÃ³mo me uno a la lista? (subscribe)
+
+   Hay dos formas comunes para que usted se suscriba a una lista de correo
+   Mailman.
+
+   Usando el interfaz web:
+    1. Vaya a la pÃ¡gina de informaciÃ³n de la lista a la cual usted desea
+       suscribirse (esta serÃ¡ probablemente similar a
+       http://SERVIDORWEB/mailman/listinfo/NOMBRELISTA).
+    2. Mire la secciÃ³n identificada como ``Suscribirse a NOMBRELISTA'' y
+       rellene en los cuadros de texto. Usted puede introducir lo
+       siguiente:
+          + Usted debe entrar su direcciÃ³n de correo electrÃ³nico.
+          + Usted puede suministrar su nombre real.
+          + Usted puede seleccionar una contraseÃ±a. Si no selecciona una,
+            Mailman generarÃ¡ una para usted.
+            Advertencia: NO use una contraseÃ±a valiosa, ya que
+            eventualmente esta contraseÃ±a se enviarÃ¡ por correo
+            electrÃ³nico como texto plano.
+          + Si la lista soporta mÃ¡s de un idioma, usted puede seleccionar
+            su idioma preferido. Nota: Este cambio no afecta los envÃos a
+            la lista, solamente a los textos Mailman que vienen con el
+            software de la listas, tal como su pÃ¡gina de opciones de
+            suscriptor.
+    3. Haga clic en el botÃ³n subscribe. Una nueva pÃ¡gina deberÃa
+       aparecer diciÃ©ndole que se ha recibido su solicitud de
+       suscripciÃ³n. Esta pÃ¡gina le proporcionarÃ¡ instrucciones
+       adicionales, tales como la necesidad de esperar y responder a un
+       mensaje de confirmaciÃ³n, dependiendo de las polÃticas de
+       suscripciÃ³n de la lista.
+
+   Usando el interfaz de correo electrÃ³nico:
+    1. Abra un programa de correo que le permita enviar correo desde la
+       direcciÃ³n que usted desea suscribir.
+    2. EnvÃe un correo a la direcciÃ³n de suscripciÃ³n de la lista, la
+       cual estarÃ¡ en la forma NOMBRELISTA-join@DOMINIO. El asunto y
+       cuerpo del mensaje se ignorarÃ¡n, asÃ que no importa lo que usted
+       coloque ahÃ.
+
+   DespuÃ©s de seguir uno de los dos procedimientos (Â¡usted no necesita
+   llevar a cabo los dos!), hay unos pocas posibilidades dependiendo de la
+   configuraciÃ³n de la lista:
+     * Usted puede recibir un mensaje de correo de confirmaciÃ³n que usted
+       realmente desea suscribirse a la lista. Esto es para prevenir que
+       cualquier otra persona lo suscriba a la lista sin su permiso. Siga
+       las instrucciones dadas en el mensaje para confirmar su deseo de
+       estar suscrito.
+     * Un moderador tambiÃ©n puede necesitar confirmar su suscripciÃ³n si
+       usted se estÃ¡ suscribiendo a una lista cerrada.
+     * O usted puede tener que esperar a un moderador y seguir las
+       instrucciones en el correo de confirmaciÃ³n.
+
+   Una vez hecho esto, usted muy probablemente recibirÃ¡ otro mensaje,
+   dÃ¡ndole la bienvenida a la lista. Este mensaje contiene informaciÃ³n
+   Ãºtil, incluyendo su contraseÃ±a de la lista y algunos enlaces directos
+   para el cambio de sus opciones, de manera que usted puede desear
+   guardarlo para referencia posterior.
+
+   Nota: La suscripciÃ³n tambiÃ©n se puede realizar de otras maneras. Mire
+   en el ApÃ©ndice A las Ã³rdenes de suscripciÃ³n por correo electrÃ³nico
+   mÃ¡s avanzadas.
+
+5.2 Â¿CÃ³mo dejo la lista? (unsubscribe)
+
+   Â¿Ya no desea estar en una lista? Si usted sÃ³lo va a salir de
+   vacaciones o estÃ¡ demasiado ocupado para leer correos y desea
+   suspender temporalmente la recepciÃ³n de esos mensajes, usted puede
+   desear detener la entrega de correo en lugar de desuscribirse. Esto
+   significa que usted mantendrÃ¡ su contraseÃ±a y configuraciÃ³n personal
+   de manera que usted pueda aÃºn, por ejemplo, aÃºn tener acceso a los
+   archivos privados de la lista. Si esto es lo que usted desea, mire en
+   la SecciÃ³n 7.1 las instrucciones para inhabilitar temporalmente la
+   entrega de correo.
+
+   Si usted realmente desea dejar la lista, hay dos formas para que usted
+   se desuscriba de una lista de correo Mailman.
+
+   Usando el interfaz web:
+    1. Vaya a la pÃ¡gina de informaciÃ³n de la lista que usted desea dejar
+       (la direcciÃ³n de esa pÃ¡gina probablemente serÃ¡ similar a
+       http://SERVIDORWEB/mailman/listinfo/NOMBRELISTA).
+    2. Ubique la secciÃ³n identificada como ``suscriptores de
+       NOMBRELISTA'' (usualmente se encuentra cerca de la parte inferior
+       de la pÃ¡gina).
+    3. DeberÃa haber un botÃ³n etiquetado ``Desuscribirse o Editar
+       Opciones.'' Introduzca su direcciÃ³n de correo electrÃ³nico en el
+       cuadro de texto que se encuentra junto a ese botÃ³n y haga clic en
+       el.
+    4. Usted deberÃa observar en pantalla una nueva pÃ¡gina con un botÃ³n
+       de ``Desuscribir''. Haga clic en Ã©l para desuscribirse y siga las
+       instrucciones dadas.
+
+   Usando el interfaz de correo electrÃ³nico:
+    1. Abra un programa de correo que le permita enviar correo desde la
+       direcciÃ³n que usted desee desuscribir.
+    2. EnvÃe un correo a la direcciÃ³n de desuscripciÃ³n de la lista, la
+       cual tendrÃ¡ la forma NOMBRELISTA-leave@DOMINIO. El asunto y cuerpo
+       del mensaje serÃ¡n ignorados, asÃ que no importa lo que usted
+       coloque ahÃ.
+
+   DespuÃ©s de seguir alguno de estos procedimientos (Â¡usted no
+   necesitarÃ¡ llevar a cabo los dos!), a usted se le enviarÃ¡ un correo
+   de confirmaciÃ³n, siendo necesario que usted siga las instrucciones
+   dadas en ese correo para completar la desuscripciÃ³n. Esto es neceario
+   para evitar que otras personas lo desuscriban sin su permiso. En
+   adiciÃ³n, un moderador puede necesitar aprobar su desuscripciÃ³n (son
+   poco comunes las desuscripciones aprobadas por un administrador).
+
+   Si usted no recibe ese correo de confirmaciÃ³n con las instrucciones
+   incluidas, asegÃºrese de haber escrito correctamente la direcciÃ³n de
+   correo electrÃ³nico (si usted estÃ¡ usando el interfaz web para
+   desuscribirse) y que la direcciÃ³n que usted tratÃ³ de dar de baja,
+   estÃ¡ de hecho, realmente suscrita a la lista. Por razones de
+   seguridad, Mailman genera la misma pÃ¡gina de opciones de suscriptor
+   independientemente de si la direcciÃ³n entrada estÃ¡ o no suscrita.
+   Esto significa que la gente no puede usar esta parte del interfaz web
+   para averiguar si alguien estÃ¡ suscrito a la lista, pero tambiÃ©n
+   significa que es difÃcil decir si usted solamente cometiÃ³ un error al
+   teclear.
+
+   Una vez que se haya procesado su desuscripciÃ³n, usted probablemente
+   recibirÃ¡ otro mensaje confirmando su desuscripciÃ³n de la lista, y en
+   ese punto usted deberÃa dejar de recibir mensajes.
+
+   Si usted desea saltarse el proceso de confirmaciÃ³n (por ejemplo,
+   podrÃa estar desuscribiendo una direcciÃ³n que ya no trabaja), es
+   posible omitirlo utilizando su contraseÃ±a en su lugar, ya sea,
+   ingresando a su pÃ¡gina de opciones usando su contraseÃ±a (ver
+   SecciÃ³n 3.1), o enviar la contraseÃ±a con sus Ã³rdenes de correo a
+   NOMBRELISTA-request (mire en el ApÃ©ndice A las Ã³rdenes avanzadas de
+   suscripciÃ³n por correo electrÃ³nico). Mire en la SecciÃ³n 6.1 mÃ¡s
+   informaciÃ³n sobre obtenciÃ³n de su contraseÃ±a.
+
+                                6 ContraseÃ±as
+
+   Cuando usted se suscribiÃ³, usted seleccionÃ³ su contraseÃ±a o Mailman
+   se la generÃ³. Usted probablemente tiene una copia de ella en el
+   mensaje de bienvenida que se le envÃo a usted cuando se uniÃ³ a la
+   lista, y puede tambiÃ©n recibir un recordatorio de ella cada mes. Esta
+   se usa para verificar su identidad ante Mailman, de manera que sÃ³lo
+   quien tenga la contraseÃ±a (Â¡usted!) y los administradores puedan
+   mirar y cambiar su configuraciÃ³n.
+
+   Advertencia: No use contraseÃ±as valiosas con Mailman, ya que Ã©stas
+   eventualmente se envÃan en formato de texto plano.
+
+6.1 Â¿CÃ³mo obtengo mi contraseÃ±a?
+
+   Si usted ha olvidado su contraseÃ±a y no ha grabado el mensaje de
+   bienvenida o cualquier mensaje recordatorio, usted siempre puede
+   obtener un recordatorio a travÃ©s del interfaz web:
+
+    1. Vaya a la pÃ¡gina de informaciÃ³n de la lista de la cual usted
+       desea obtener su contraseÃ±a (esta probablemente serÃ¡ similar a
+       http://SERVIDORWEB/mailman/listinfo/NOMBRELISTA).
+    2. Ubique la secciÃ³n identificada como ``Suscriptores de
+       NOMBRELISTA'' (esta secciÃ³n usualmente se encuentra cerca de la
+       parte inferior de la pÃ¡gina).
+    3. DeberÃa haber un botÃ³n etiquetado ``Desuscribir o Editar
+       Opciones.'' Introduzca su direcciÃ³n de correo electrÃ³nico en el
+       cuadro de texto que se encuentra junto a ese botÃ³n y haga clic en
+       Ã©l.
+    4. Usted deberÃa observar en pantalla una nueva pÃ¡gina que tiene una
+       secciÃ³n identificada como ``Recordatorio de ContraseÃ±a''. Haga
+       clic en el botÃ³n ``Recordar'' para hacer que se le envÃe su
+       contraseÃ±a por correo electrÃ³nico.
+
+   Si usted no recibe el recordatorio de contraseÃ±a por correo
+   electrÃ³nico despuÃ©s de hacer esto, asegÃºrese de haber escrito
+   correctamente su direcciÃ³n de correo electrÃ³nico y que la direcciÃ³n
+   que utilizÃ³ estÃ¡, efectivamente, realmente suscrita a la lista. Por
+   razones de seguridad, Mailman genera la misma pÃ¡gina de opciones de
+   suscriptor independientemente de si la direcciÃ³n entrada estÃ¡ o no
+   suscrita. Esto significa que la gente no puede usar esta parte del
+   interfaz web para averiguar si alguien estÃ¡ suscrito a la lista, pero
+   tambiÃ©n significa que es difÃcil decir si usted solamente cometiÃ³ un
+   error al teclear.
+
+   Usted tambiÃ©n puede obtener un recordatorio utilizando el interfaz de
+   correo electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden password
+       Los comandos pueden aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje (mire en la SecciÃ³n 3.2 mayor informaciÃ³n
+       sobre envÃo de Ã³rdenes de correo).
+       Si usted no estÃ¡ enviando correo desde la direcciÃ³n suscrita,
+       tambiÃ©n puede especificar esta direcciÃ³n enviando la orden
+       password address= $<$ DIRECCIÃN $>$ .
+
+6.2 Â¿CÃ³mo cambio mi contraseÃ±a?
+
+   Advertencia: NO use una contraseÃ±a valiosa, ya que esta contraseÃ±a se
+   puede enviar por correo como texto plano.
+
+   Desde el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (Mire en la
+       Section 3.1 las instrucciones de cÃ³mo hacer esto).
+    2. Ubique los cuadros de texto de cambio de contraseÃ±a en el lado
+       derecho de la pÃ¡gina e introduzca allÃ su nueva contraseÃ±a, luego
+       haga clic en el botÃ³n etiquetado ``Cambiar mi contraseÃ±a''.
+
+   Esto tambiÃ©n se puede cambiar para mÃºltiples listas al mismo tiempo
+   si usted estÃ¡ suscrito a mÃ¡s de una lista en el mismo dominio. Mire
+   en la SecciÃ³n 10.1 la informaciÃ³n sobre cambios globales de
+   configuraciÃ³n.
+
+   Desde el interfaz de correo electrÃ³nico:
+    1. EnvÃe un correo a la direcciÃ³n de correo
+       NOMBRELISTA-request@DOMINIO con la orden password  $<$
+       CONTRASEÃA - ANTERIOR $>$   $<$ CONTRASEÃA - NUEVA $>$ .
+       Las Ã³rdenes pueden aparecer ya sea en cuerpo o en la lÃnea de
+       asunto del mensaje (mire en la SecciÃ³n 3.2 la informaciÃ³n sobre
+       el envÃo de Ã³rdenes de correo).
+       Si usted no estÃ¡ enviando correo desde su direcciÃ³n de membresÃa,
+       usted puede tambiÃ©n especificar esta direcciÃ³n con address= $<$
+       DIRECCIÃN $>$ despuÃ©s de $<$ CONTRASEÃA-NUEVA $>$ .
+       Por ejemplo, si maria@micasa.com deseaba cambiar su contraseÃ±a de
+       la lista milista, de zirc a miko, pero ella estaba enviando correo
+       desde la direcciÃ³n de la oficina maria@trabajo.com, podrÃa enviar
+       un mensaje a milista-request@ejemplo.com con la lÃnea de asunto
+       password zirc miko address=maria@micasa.com.
+
+6.3 Â¿CÃ³mo activo/desactivo los recordatorios de contraseÃ±as? (opciÃ³n
+reminders)
+
+   Si usted no desea recibir recordatorios de contraseÃ±a cada mes, puede
+   desactivarlos desde la pÃ¡gina de opciones del suscriptor (usted
+   siempre puede conseguir que se le envÃe la contraseÃ±a por correo
+   cuando realmente lo desee. Mire las instrucciones en la SecciÃ³n 6.1).
+
+   Usando el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 las instrucciones de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identificada como ``Obtener recordatorio de
+       contraseÃ±a para esta lista'' y cambie el valor en forma apropiada.
+
+   Esto tambiÃ©n se puede cambiar para mÃºltiples listas al mismo tiempo
+   si usted estÃ¡ suscrito a mÃ¡s de una lista en el mismo dominio. Mire
+   en la SecciÃ³n 10.1 la informaciÃ³n sobre cambios globales de
+   configuraciÃ³n.
+
+   Usando el interfaz de correo electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden
+       set reminders on o set reminders off.
+       Las Ã³rdenes pueden aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje. Mire en la SecciÃ³n 3.2 la informaciÃ³n sobre
+       el envÃo de Ã³rdenes de correo.
+    2. Seleccione ``on'' para recibir recordatorios y ``off'' para dejar
+       de recibir los recordatorios.
+
+                       7 Cambiando la entrega del correo
+
+7.1 Â¿CÃ³mo activo o desactivo la entrega de correo? (opciÃ³n delivery)
+
+   Usted puede desear dejar de recibir temporalmente los mensajes de la
+   lista sin necesidad de darse de baja. Si usted desactiva la entrega de
+   correo, ya no podrÃ¡ recibir mensajes, pero aÃºn serÃ¡ un suscriptor y
+   como tal retendrÃ¡ su contraseÃ±a y su configuraciÃ³n.
+
+   Esto puede ser prÃ¡ctico en muchos casos diferentes. Por ejemplo, usted
+   podrÃa salir de vacaciones o necesitar un descanso de la lista porque
+   estÃ¡ demasiado ocupado para leer cualquier correo extra.
+
+   TambiÃ©n, muchas listas de correo Ãºnicamente permiten a los
+   suscriptores enviar mensajes a la lista, asÃ que si usted comunmente
+   envÃa correo desde mÃ¡s de una direcciÃ³n (por ejemplo, una direcciÃ³n
+   para la casa y otra para cuando estÃ¡ viajando), podrÃa tener mÃ¡s de
+   una cuenta suscrita, pero hacer que solamente una de ellas realmente
+   reciba correo.
+
+   Usted tambiÃ©n puede usar su suscripciÃ³n como un medio para leer
+   archivos privados, inclusive en una lista que pueda ser demasiado
+   ocupada para que usted haga enviar los mensajes directamente a su
+   buzÃ³n de correo. Todo lo que necesita hacer es suscribirse, desactivar
+   la entrega de correo, y usar su contraseÃ±a y direcciÃ³n de correo
+   electrÃ³nico para acceder a los archivos.
+
+   Para desactivar/activar la entrega de correo usando el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones (mire las instrucciones en la
+       SecciÃ³n 3.1).
+    2. Ubique la secciÃ³n identificada como ``Entrega de correo'' y
+       seleccione ``Desactivar'' para detener la recepciÃ³n de correo, y
+       ``Activar'' para iniciar a recibir el correo.
+
+   Esto tambiÃ©n se puede cambiar para mÃºltiples listas al mismo tiempo,
+   si usted estÃ¡ suscrito a mÃ¡s de una lista en el mismo dominio. Mire
+   en la SecciÃ³n 10.1 la informaciÃ³n acerca de cambios globales de
+   configuraciÃ³n.
+
+   Para activar/desactivar la entrega de correo usando el interfaz de
+   correo electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden
+       set delivery off o set delivery on.
+       Las Ã³rdenes pueden aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje (mire en la SecciÃ³n 3.2 mÃ¡s informaciÃ³n sobre
+       envÃo de Ã³rdenes de correo).
+    2. Seleccione ``off'' para parar la recepciÃ³n de los envÃos, y ``on''
+       para iniciar a recibirlos otra vez.
+
+7.2 Â¿CÃ³mo puedo evitar recibir mensajes duplicados? (opciÃ³n duplicates)
+
+   Mailman no puede impedir completamente que usted reciba mensajes
+   duplicados, pero puede ayudar. Una razÃ³n comÃºn para que la gente
+   reciba mÃºltiples copias de un correo es que el remitente haya usado
+   una funciÃ³n ``responder al grupo'' para enviar correo tanto a la lista
+   como a algÃºn nÃºmero de individuos. Si usted desea evitar recibir
+   estos mensajes, se puede configurar Mailman para que revise y mire si
+   usted estÃ¡ en las lÃneas To: o Cc: del mensaje. Si su direcciÃ³n
+   aparece ahÃ, entonces se le puede indicar a Mailman que no le envÃe
+   otra copia. Esto significa que usted recibirÃ¡ solamente la copia
+   enviada por el remitente, y no una copia que haya sido alterada por
+   Mailman (incluir cabeceras y piÃ©s, borrar adjuntos, etc.).
+
+   Para activar/desactivar esta opciÃ³n usando el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 los detalles de cÃ³mo hacer esto).
+    2. Ubique en la parte inferior de la pÃ¡gina la secciÃ³n identificada
+       como ``Â¿Evitar copias de mensajes duplicados?'' y cambie el valor
+       segÃºn corresponda.
+
+   Esto tambiÃ©n se puede cambiar para mÃºltiples listas al mismo tiempo
+   si usted estÃ¡ suscrito a mÃ¡s de una lista en el mismo dominio. Mire
+   en la SecciÃ³n 10.1 la informaciÃ³n sobre cambios globales de
+   configuraciÃ³n.
+
+   Para activar/desactivar esto usando el interfaz de correo electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden
+       set duplicates on o set duplicates off.
+       Las Ã³rdenes pueden aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje (mire en la SecciÃ³n 3.2 mÃ¡s informaciÃ³n sobre
+       envÃo de Ã³rdenes de correo).
+    2. Seleccione ``on'' para recibir copias de los mensajes que ya le
+       hayan enviado, seleccione ``off'' para evitar recibir esos
+       duplicados.
+
+7.3 Â¿CÃ³mo cambio mi direcciÃ³n de suscripciÃ³n?
+
+   Para cambiar su direcciÃ³n de suscripciÃ³n:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer esto).
+    2. Introduzca su nueva direcciÃ³n en la secciÃ³n identificada como
+       ``Cambiando su informaciÃ³n de membresÃa de NOMBRELISTA''.
+    3. Si usted desea cambiar su direcciÃ³n para todas sus suscripciones
+       usando la direcciÃ³n antigÃ¼a, habilite la opciÃ³n ``Cambiar
+       globalmente''. Si uste tiene suscripciones desde otras direcciones
+       o suscripciones a listas en un dominio diferente, estas tendrÃ¡n
+       que hacerse por separado. Mire en la SecciÃ³n 10.1 mÃ¡s
+       informaciÃ³n sobre cambios globales de configuraciÃ³n.
+
+   Mailman le enviarÃ¡ un mensaje de confirmaciÃ³n a su nueva direcciÃ³n,
+   pero el cambio no tendrÃ¡ efecto hasta que usted confirme el cambio
+   siguiendo las instrucciones dadas en ese mensaje.
+
+   No hay una forma especial de hacer esto desde el interfaz de correo
+   electrÃ³nico, pero usted puede suscribirse y desuscribirse para
+   conseguir mÃ¡s o menos el mismo efecto (mire en las Secciones 5.1 y 5.2
+   mÃ¡s informaciÃ³n sobre suscripciÃ³n y desuscripciÃ³n).
+
+7.4 Â¿CÃ³mo hago para dejar de o iniciar a recibir copias de mis propios envÃos?
+(opciÃ³n myposts)
+
+   Por omisiÃ³n en Mailman, usted recibe una copia de todos los mensajes
+   que usted envÃa a la lista. A algunas personas les gusta esto ya que
+   les permite saber que el envÃo ha alcanzado su destino y asÃ ellas
+   tienen una copia de sus propias palabras con el resto de una
+   discusiÃ³n, pero otros no desean molestarse recibiendo copias de sus
+   propios envÃos.
+
+   Nota: Esta opciÃ³n no tiene efecto si usted estÃ¡ recibiendo mensajes
+   agrupados
+
+   Usted tambiÃ©n puede desear mirar la SecciÃ³n 7.5, la cual discute
+   sobre los correos electrÃ³nicos de acuso de recibo de los mensajes que
+   se envÃan a la lista.
+
+   Para hacer esto usando el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 las instrucciones de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identificada como ``Â¿Recibir sus propios envÃos
+       a la lista?'', seleccione ``Si'' para recibir copias de sus propios
+       mensajes, y ``No'' para evitar recibirlos.
+
+   Para hacer esto usando el interfaz de correo:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden
+       set myposts on o set myposts off. Las Ã³rdenes pueden aparecer ya
+       sea en el cuerpo o en la lÃnea de asunto del mensaje. Mire en la
+       SecciÃ³n 3.2 mÃ¡s informaciÃ³n sobre el envÃo de Ã³rdenes de
+       correo.
+    2. Seleccione ``on'' para recibir copias de sus propios mensajes, y
+       ``off'' para evitar recibirlos.
+
+7.5 Â¿CÃ³mo puedo hacer para que Mailman me diga cuando mi envÃo ha sido
+recibido por la lista? (opciÃ³n ack)
+
+   En la mayorÃa de las listas, usted simplemente recibirÃ¡ una copia de
+   su correo cuando Ã©ste se haya ido, no obstante, esta opciÃ³n puede ser
+   Ãºtil para usted, si esta opciÃ³n estÃ¡ desactivada (ver Section 7.4),
+   su entrega de correo estÃ¡ desactivada (ver Section 7.1), usted no
+   estÃ¡ suscrito a ese tema (ver Section 9.2) o usted simplemente desea
+   una confirmaciÃ³n de mensaje recibido extra del sistema.
+
+   Nota: Si usted no estÃ¡ suscrito a la lista, no se puede usar esta
+   opciÃ³n. Usted debe, ya sea, revisar los archivos por su cuenta (si la
+   lista tiene archivos pÃºblicos), preguntarle a alguien que estÃ©
+   suscrito a la lista, o suscribirse para usar esta opciÃ³n.
+
+   Para utilizar esta opciÃ³n usando el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 mayores detalles de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identficada como ``Â¿Recibir correos de acuso de
+       rebibo cuando usted envÃa correo a la lista?'' Seleccione ``Si''
+       para recibir un correo haciÃ©ndole saber que se ha recibido su
+       envÃo y ``No'' para evitar recibir tal mensaje de acuso de recibo.
+
+   Para utilizar esta opciÃ³n usando el interfaz de correo electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden
+       set ack on o set ack off.
+       Las Ã³rdenes pueden aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje. Mire en la SecciÃ³n 3.2 mÃ¡s informaciÃ³n sobre
+       el envÃo de Ã³rdenes de correo.
+    2. Seleccione ``on'' si usted desea recibir correo haciÃ©ndole saber
+       que se ha recibido su envÃo y ``off'' para evitar recibir tal
+       mensaje de acuso de recibo.
+
+7.6 Parece que no estoy recibiendo correo de las listas. Â¿QuÃ© deberÃa hacer?
+
+   Hay pocas razones comunes para que esto ocurra:
+     * Durante un cierto lapso de tiempo nadie ha enviado correo a la
+       lista o listas en las cuales usted estÃ¡ suscrito.
+       Para revisar si este es el caso, intente accediendo a los archivos
+       de la lista (asumiendo que la lista tiene archivos). Si la lista no
+       tiene archivos, puede preguntar a otro suscriptor (mire en la
+       SecciÃ³n 3.1 la ayuda para encontrar los archivos de una lista).
+       Nota: Generalmente se considera descortÃ©s envÃar mensajes de
+       prueba a la lista entera. Si usted siente la necesidad de probar
+       que la lista estÃ¡ trabajando y por alguna razÃ³n usted no puede
+       simplemente redactar un mensaje regular a la lista, es menos
+       perturbador solicitar un mensaje de ayuda a la direcciÃ³n
+       administrativa de la lista (NOMBRELISTA-request@DOMINIO) para mirar
+       si trabaja, o contactar al administrador de la lista para
+       preguntarle si la lista estÃ¡ operando normalmente.
+     * Su direcciÃ³n de correo estÃ¡ causando mensajes devueltos y por
+       ello el software de la lista le ha deshabilitado la entrega de
+       correo (temporalmente).
+       Si su proveedor de correo ``devuelve'' demasiados mensajes (es
+       decir, si le dice a Mailman que el mensaje no se pudo enviar),
+       Mailman eventualmente ya no intenta enviarle correo. Esta
+       caracterÃstica permite a Mailman manipular con gusto direcciones
+       que ya no existen (por ejemplo, cuando un suscriptor encuentra un
+       nuevo servicio de Internet y olvida darse de baja de la direcciÃ³n
+       antigÃ¼a), asÃ como tambiÃ©n direcciones que estÃ¡n temporalmente
+       fuera de servicio (por ejemplo, cuando el suscriptor ha utilizado
+       todo el espacio asignado de su cuenta de correo, o cuando el
+       proveedor de correo del suscriptor estÃ¡ experimentando
+       dificultades).
+       AÃºn si usted no estÃ¡ enterado de cualquier dificultad con su
+       proveedor de correo, es una buena idea revisar esto. Algunos
+       proveedores populares de correo basado en web y servidores de
+       Internet no son tan confiables como uno podrÃa asumir, ni tampoco
+       lo es el Internet como un todo. Usted tambiÃ©n puede desear
+       enviarse usted mismo un mensaje de prueba desde otra cuenta o
+       pedirle a un amigo que le envÃe un mensaje de prueba para
+       asegurarse que su direcciÃ³n suscrita estÃ¡ trabajando.
+       Para revisar si esta puede ser la razÃ³n por la cual usted no estÃ¡
+       recibiendo mensajes, ingrese a su pÃ¡gina de opciones (consulte en
+       la SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer esto) y mire sus
+       opciones. Si se ha desactivado su suscripciÃ³n o si Mailman ha
+       recibido mensajes devueltos provenientes de su direcciÃ³n de
+       correo, usted encontrarÃ¡ un gran mensaje en la parte superior de
+       esta pÃ¡gina.
+       Para reactivar la entrega de correo, ubique una opciÃ³n
+       identificada como ``Entrega del correo'' y seleccione ``Habilitar''
+       para iniciar de nuevo a recibir el correo. Para deshacerse de su
+       puntaje de mensajes devueltos, usted puede desactivar y luego
+       volver a activar la entrega. MÃ¡s instrucciones sobre la
+       desactivaciÃ³n o activaciÃ³n de la entrega del correo se encuentran
+       en la SecciÃ³n 7.1.
+       Nota: AÃºn si usted no estuviera inhabilitado en el momento en que
+       revisa, usted podrÃa estar recibiendo mensajes devueltos y no haber
+       alcanzado el lÃmite para que su suscripciÃ³n se desactive. Usted
+       puede necesitar revisar de nuevo.
+     * Hay un retardo o interrupciÃ³n en las redes existentes entre usted
+       y el servidor de listas.
+       Por mucho que nos gustarÃa, Internet no es 100% confiable ni
+       siempre es rÃ¡pida. Algunas veces los mensajes simplemente demoran
+       mucho tiempo en llegar. Trate de ser paciente, especialmente si el
+       servidor estÃ¡ alejado (en tÃ©rminos de redes, no geogrÃ¡ficamente,
+       aunque a menudo lo uno implica lo otro) de su proveedor de servicio
+       de Internet.
+       Para revisar si esta podrÃa ser la causa de su problema, usted
+       puede probar realizando un ping al servidor de la lista o trazar la
+       ruta entre usted y Ã©l (las instrucciones de cÃ³mo hacer esto varÃa
+       de una plataforma a otra, asÃ que usted puede desear usar un motor
+       de bÃºsqueda para encontrar aquellas mÃ¡s apropiadas para usted).
+     * El servidor de correo o Mailman podrÃan no estar funcionando
+       correctamente. Esto puede ocurrir si el sistema estÃ¡ sobrecargado
+       con virus o spam y el sistema de correo que aloja Mailman tiene
+       problemas al procesarlos.
+       Para revisar si este es el caso, pruebe utilizando el interfaz web
+       de la lista y trate de enviar un mensaje a
+       NOMBRELISTA-request@DOMINIO con la orden ``help'' (sin las
+       comillas) en la lÃnea de Asunto:. Si nada de esto funciona despuÃ©s
+       de un razonable lapso de tiempo, ese puede ser el problema. Usted
+       puede desear contactar al administrador de la lista o al
+       administrador del sitio.
+
+                              8 EnvÃos agrupados
+
+8.1 Â¿CÃ³mo puedo iniciar o dejar de recibir los mensajes enviados a la lista
+agrupados en un correo de gran tamaÃ±o? (opciÃ³n digest)
+
+   Los grupos de envÃos se llaman ``digests'' en Mailman. En lugar de
+   recibir los mensajes de uno en uno, usted puede recibir los mensajes
+   agrupados (digests). En una lista bastante ocupada, esto tÃpicamente
+   significa que usted recibe un correo por dÃa, aunque podrÃa ser mÃ¡s o
+   menos frecuente dependiendo de la lista.
+
+   Usted tambiÃ©n puede desear mirar la SecciÃ³n 8.2 que trata sobre los
+   envÃos agrupados en formato MIME y texto plano.
+
+   Para activar o desactivar los envÃos en modo agrupado usando la
+   interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identificada como ``Activar envÃos agrupados''
+       Seleccione ``On'' para recibir los envÃos agrupados. Seleccione
+       ``Off'' para recibir por separado cada uno de los envÃos.
+
+   Para activar o desactivar los envÃos en modo agrupado usando el
+   interfaz de correo electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la orden
+       set digest plain o set digest mime o set digest off.
+       Las Ã³rdenes pueden aparecer ya sea en el cuerpo o el la lÃnea de
+       asunto de un mensaje (ver en la SecciÃ³n 3.2 mÃ¡s informaciÃ³n
+       sobre el envÃo de Ã³rdenes de correo).
+    2. Seleccione ``off'' si usted desea recibir los mensajes cada uno por
+       separado y seleccione ``plain'' o ``mime'' para recibir los
+       mensajes agrupados en un gran correo, en forma periÃ³dica. Mire en
+       la SecciÃ³n 8.2 mÃ¡s informaciÃ³n sobre envÃos agrupados en formato
+       MIME versus texto plano.
+
+8.2 Â¿QuÃ© son los EnvÃos Agrupados MIME o de Texto Plano? Â¿CÃ³mo puedo decidir
+cuales recibir? (opciÃ³n digest)
+
+   MIME es la sigla de Multipurpose Internet Mail Extensions (Extensiones
+   MultipropÃ³sito de Correo de Internet). Se usa para enviar por correo
+   electrÃ³nico cosas que no necesariamente son simple texto plano (por
+   ejemplo, se podrÃa usar MIME si usted fuera a enviar una fotografÃa de
+   su perro a un amigo).
+
+   Un envÃo agrupado en formato MIME contiene cada mensaje como un adjunto
+   dentro del mensaje, junto con un resumen de la tabla de contenido.
+
+   Un envÃo agrupado en formato texto plano es una forma mÃ¡s simple de
+   envÃo agrupado, el cual deberÃa ser legible aÃºn en los lectores de
+   correo que no soportan MIME. Los mensajes se ponen simplemente uno
+   despuÃ©s de otro en un gran mensaje de texto.
+
+   Los programas de correo mÃ¡s modernos soportan MIME, asÃ que usted
+   sÃ³lo necesita seleccionar envÃos agrupados en formato de texto plano
+   si estÃ¡ teniendo problemas al leer los que estÃ¡n en formato MIME.
+
+   Nota: Esta opciÃ³n no tiene efecto si usted no estÃ¡ recibiendo correo
+   en modo agrupado (mire en la SecciÃ³n 8.1 mÃ¡s informaciÃ³n sobre
+   recepciÃ³n del correo en modo agrupado).
+
+   Para seleccionar el tipo de envÃos agrupados a recibir, usando el
+   interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identificada como ``Â¿Recibir envÃos agrupados
+       MIME o de texto plano?''
+       Seleccione ``MIME'' para recibir los envÃos agrupados en formato
+       MIME, o ``Plain text'' para recibir los envÃos agrupados en formato
+       de texto plano.
+
+   Esto tambiÃ©n se puede cambiar para mÃºltiples listas al mismo tiempo
+   si usted estÃ¡ suscrito a mÃ¡s de una lista en el mismo dominio. Mire
+   en la SecciÃ³n 10.1 la informaciÃ³n sobre cambios globales de
+   configuraciÃ³n.
+
+   Para seleccionar su tipo de envÃos agrupados a recibir, usando el
+   interfaz de correo electrÃ³nico:
+    1. EnvÃe un correo electrÃ³nico a NOMBRELISTA-request@DOMINIO con la
+       orden set digest plain o set digest mime.
+       Los comandos pueden aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje (mire en la SecciÃ³n 3.2 mÃ¡s informaciÃ³n sobre
+       envÃo de Ã³rdenes de correo).
+    2. Seleccione ``plain'' para recibir los envÃos agrupados en formato
+       de texto plano, o ``mime'' para recibir los envÃos agrupados en
+       formato MIME.
+
+                          9 Temas de listas de correo
+
+   Algunas listas estÃ¡n configuradas para que Mailman maneje diferentes
+   temas. Por ejemplo, la lista de cursos en Linuxchix.org es una lista de
+   discusiÃ³n para cursos que se estÃ¡n dictando para miembros de
+   linuxchix, y a menudo, hay varios cursos que se estÃ¡n dictando al
+   mismo tiempo (por ejemplo, redes para principiantes, programaciÃ³n en
+   C, etiquetado de documentos LaTeX).
+
+   Cada uno de estos cursos que se estÃ¡n dictando estÃ¡ asociado con un
+   tema diferente en la lista de manera que la gente puede escoger que
+   curso o cursos tomar. El administrador debe configurar los temas, pero
+   es responsabilidad de cada suscriptor asegurarse que cada envÃo tenga
+   el tema correcto. Usualmente, ello requiere adicionar una palabra o
+   etiqueta de algÃºn tipo a la lÃnea de asunto (por ejemplo: [Redes]
+   Â¿QuÃ© tipos de cables necesito?) o asegurarse que la lÃnea Palabras
+   claves: tiene la informaciÃ³n correcta (por omisiÃ³n, usted puede poner
+   una secciÃ³n Palabras claves: en el comienzo del cuerpo de su mensaje,
+   pero esto lo puede configurar su administrador de la lista). Note que
+   estas etiquetas no son sensibles a minÃºsculas/mayÃºsculas.
+
+9.1 Â¿CÃ³mo puedo asegurarme que mis envÃos tienen el tema apropiado?
+
+   Cuando un administrador de lista define un tema, puede definir tres
+   cosas:
+     * un nombre de tema
+     * una expresiÃ³n regular (regexp)
+     * una descripciÃ³n
+
+   Usted puede mirar esta informaciÃ³n ingresando a su pÃ¡gina de opciones
+   de suscriptor (ver en la SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer
+   esto) y haciendo clic en el enlace ``Detalles'' de cualquiera de los
+   temas que le interesen.
+
+   Para enviar un mensaje sobre un determinado tema, usted necesita
+   asegurarse que las Palabras claves: o las cabeceras de Asunto: de su
+   mensaje concuerdan con la expresiÃ³n regular de ese tema. Una
+   expresiÃ³n regular es un patrÃ³n que puede coincidir con mÃ¡s de una
+   cosa. Realmente las expresiones regulares pueden ser mucho mÃ¡s
+   complejas, asÃ que usted puede sencillamente preguntar al administrador
+   de la lista si usted no sabe como crear cabeceras o colas de una
+   expresiÃ³n dada.
+
+   Si realmente usted desea saber mÃ¡s sobre expresiones regulares, siga
+   leyendo, pero para la mayor parte, su administador de la lista deberÃa
+   incluir en la descripciÃ³n del tema, lo que usted necesita adicionar a
+   sus Palabras Claves o lÃnea de Asunto para que coincida con el patrÃ³n
+   del tema.
+
+   La mayorÃa de expresiones de temas Mailman corresponderan a expresiones
+   regulares bastante simples, asÃ que en este documento simplemente se
+   darÃ¡n algunos ejemplos comunes. Las expresiones regulares son un
+   poquito complejas para enseÃ±ar aquÃ en unas pocas lÃneas, asÃ que si
+   usted realmente desea entender como trabajan, usted deberÃa encontrar
+   un instructivo o referencia en otro lado (por ejemplo, DevShed tiene un
+   buen instructivo en
+   http://www.devshed.com/Server_Side/Administration/RegExp/)
+
+   AquÃ hay algunos ejemplos de posibles expresiones regulares y lÃneas
+   concordantes:
+
+   ExpresiÃ³n Regular LÃneas concordantes
+   zuff Palabras Claves: zuff
+   zuff Palabras Claves: ZUFF
+   zuff Palabras Claves: Zuff
+   zuff Palabras Claves: amarilis, zuff, purÃ© de manzana
+   zuff Asunto: [zuff] Â¿Tienes lo necesario para el zuff?
+   zuff Asunto: Â¿Tienes lo apropiado para el zuff?
+   zuff Asunto: Â¿QuÃ© es zuff?
+   \[zuff\] Palabras Claves: [zuff]
+   \[zuff\] Asunto: [zuff] Â¿Tienes lo necesario?
+   \[zuff\] Asunto: Tutoriales en lÃnea de zuff (Re: [zuff] Â¿QuÃ© es
+   zuff?)
+
+   Unas pocas notas:
+     * Las concordancias no son sensibles a mayÃºsculas/minÃºsculas, asÃ
+       que si concuerda zuff, lo harÃ¡ ZUFF, zuFF, y cualquier otra
+       variaciÃ³n en el uso de las mayÃºsculas/minÃºsculas.
+     * Algunos caracteres tienen un significado especial en una expresiÃ³n
+       regular, asÃ que para concordar especÃficamente con esos
+       caracteres, ellos deben ser ``escapados'' con una diagonal inversa
+       (\). Como usted puede ver en los ejemplos de arriba, los
+       parÃ©ntesis rectangulares ([ y ]) son unos de esos caracteres
+       (otros incluyen ``.'', ``?'', y ``*''). La diagonal inversa
+       tambiÃ©n se usa para otras cosas (no es broma la complejidad de las
+       expresiones regulares: consulte en otra documentaciÃ³n los detalles
+       sobre otros usos del caracter de diagonal inversa), pero este es el
+       uso mÃ¡s probable en una expresiÃ³n de tema.
+
+9.2 Â¿CÃ³mo me suscribo a algunos o a todos los temas de una lista?
+
+   Si el administrador de su lista configurÃ³ temas, usted puede elegir
+   suscribirse solamente a una parte de la lista seleccionado los temas
+   que usted desee recibir.
+
+   Si usted desea recibir todos los mensajes enviados a la lista,
+   asegÃºrese que usted no estÃ¡ suscrito a ninguno de los temas.
+
+   Probablemente usted tambiÃ©n desdea mirar la SecciÃ³n 9.3 la cual
+   discute el cambio de su configuraciÃ³n para mensajes que no tienen
+   temas definidos.
+
+   Para seleccionar los temas que desea recibir, utilizado el interfaz
+   web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identificada como ``Â¿A quÃ© temas le gustarÃa
+       suscribirse?''
+       Si algÃºn tema estÃ¡ definido, usted puede seleccionar aquelos que
+       desee. Si usted no selecciona ningÃºn tema de interÃ©s, usted
+       recibirÃ¡ todos los mensajes enviados a la lista.
+
+9.3 Â¿CÃ³mo logro o evito recibir mensajes sin tema definido?
+
+   Algunos mensajes no corresponderÃ¡n con ninguno de los patrones de
+   temas definidos. Usted puede escoger recibir o ignorar tales mensajes
+   que no coinciden. Si usted desea recibir todos los mensajes enviados a
+   la lista, asegÃºrse que usted no estÃ¡ suscrito a ningÃºn tema
+   especÃfico (ver SecciÃ³n 9.2).
+
+   Si usted Ãºnicamente estÃ¡ suscrito a algunos temas, usted puede elegir
+   si recibe o no recibe mensajes sin tema definido, de la misma forma
+   cÃ³mo usted puede seleccionar suscribirse Ãºnicamente a ciertos temas.
+
+   Para cambiar esta opciÃ³n:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 los detalles de cÃ³mo hacer esto).
+    2. Ubique la secciÃ³n identificado como ``Â¿Desea recibir mensajes que
+       no concuerden con algÃºn filtro de tema?''
+       Si usted desea recibir mensajes sin tema definido, seleccione
+       ``Si''. Si usted no desea recibir tales mensajes, seleccione
+       ``No''.
+
+   This setting has no effect if you are not subscribed to any topics.
+   Este cambio no tiene efecto si usted no estÃ¡ suscrito a algÃºn tema de
+   las listas.
+
+                          10 Definiendo otras opciones
+
+10.1 Â¿Cambiar Globalmente? Â¿Definir Globalmente? Â¿QuÃ© significa esto?
+
+   Para algunas de las opciones dadas en su pÃ¡gina de opciones de
+   suscriptor, hay una casilla de verificaciÃ³n que dice ``Cambiar
+   globalmente'' o ``Aplicar globalmente''. Esto significa que si usted
+   cambia esta opciÃ³n, tambiÃ©n se harÃ¡ el cambio para todas las
+   suscripciones que usted tenga en el mismo dominio. Esto puede ser
+   prÃ¡ctico si, por ejemplo, usted desea utilizar una misma contraseÃ±a
+   para todas sus listas, o si usted sale de vacaciones y desea suspender
+   la entrega de correo de todas las listas.
+
+10.2 Â¿CÃ³mo cambio el nombre que registrÃ© en Mailman?
+
+   Para cambiar su nombre de suscripciÃ³n:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 mÃ¡s detalles de cÃ³mo hacer esto).
+    2. En la secciÃ³n ``Cambio de su informaciÃ³n de suscriptor de
+       NOMBRELISTA'', entre su nuevo nombre en el cuadro de texto
+       apropiado.
+
+   Esto tambiÃ©n se puede cambiar para mÃºltiples listas al mismo tiempo
+   si usted estÃ¡ suscrito a mÃ¡s de una lista en el mismo dominio. Mire
+   en la SecciÃ³n 10.1 informaciÃ³n sobre cambios globales de
+   configuraciÃ³n.
+
+   Nota: Usted no necesita tener un nombre de suscriptor definido.
+
+10.3 Â¿CÃ³mo selecciono mi idioma preferido?
+
+   Mailman es multilingÃ¼e, lo que quiere decir que su interfaz se ha
+   traducido a muchos idiomas diferentes. El administrador de su lista
+   puede habilitar varios idiomas para su uso cuando se interactÃºa con
+   Mailman. (Para obtener un listado completo de los idiomas disponibles
+   mire http://wiki.list.org/display/DEV/Languages). Si su lista tiene
+   otros idiomas habilitados, usted puede utilizar el interfaz web y el
+   interfaz de correo electrÃ³nico, en un idioma de su elecciÃ³n.
+
+   Nota: Esto no significa que los mensajes enviados a la lista estarÃ¡n
+   en el idioma que haya seleccionado. Ãnicamente las plantillas y otros
+   textos propios de Mailman, serÃ¡n afectados por esta configuraciÃ³n.
+   Los envÃos se hacen en el idioma que escriban los suscriptores.
+
+   Su idioma preferido se define cuando usted se suscribe (mire la
+   SecciÃ³n5.1), pero se puede cambiar posteriormente si la lista soporta
+   mÃ¡s de un idioma.
+
+   Para cambiar su idioma preferido en Mailman:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 las instrucciones sobre cÃ³mo hacer esto).
+    2. Vaya a la secciÃ³n identificada como ``Â¿QuÃ© idioma prefiere?'' y
+       escoja el idioma apropiado de la lista desplegable. Si no hay una
+       lista de idiomas, probablemente la lista en que se encuentra sÃ³lo
+       soporta un idioma.
+
+   Si su lista no soporta el idioma que usted preferirÃa usar, puede
+   contactar al administrador de la lista (NOMBRELISTA-owner@DOMINIO) para
+   mirar si se puede adicionar, pero recuerde que esto puede representar
+   mayor trabajo y el administrador de la lista o del sitio pueden no
+   tener el tiempo necesario o la capacidad de hacerlo.
+
+   Si el idioma de su elecciÃ³n no estÃ¡ disponible porque no existe
+   traducciÃ³n para Mailman, por favor considere ofrecer su tiempo como
+   traductor voluntario. Para mayor informaciÃ³n, usted puede desear
+   consultar la lista de correo mailman-i18n en
+   http://mail.python.org/mailman/listinfo/mailman-i18n. InformaciÃ³n
+   sobre el estado actual de los esfuerzos de internacionalizaciÃ³n se
+   encuentra en http://wiki.list.org/display/DEV/Languages.
+
+   Nota: i18n en una abreviatura para ``internationalization'' ya que la
+   palabra comienza con una i, termina con una n, y tiene 18 letras entre
+   ellas. Si usted musita un poco, i18n inclusive suena un tanto como
+   ``internationalization''.
+
+10.4 Â¿CÃ³mo evito que mi nombre aparezca en la lista de suscriptores? (opciÃ³n
+hide)
+
+   Si usted por alguna razÃ³n no desea que su direcciÃ³n de correo
+   aparezca en la lista de suscriptores, puede optar por tenerla oculta.
+
+   Las razones comunes para hacer esto incluyen el evitar correo basura no
+   solicitado (spam). Por omisiÃ³n la lista de suscriptores se oculta para
+   bloquear a recolectores de spam, pero si usted siente que esto es
+   insuficiente, es bastante fÃ¡cil eliminar su direcciÃ³n de la lista de
+   de suscriptores dada en las pÃ¡ginas de informaciÃ³n o mediante una
+   solicitud de correo electrÃ³nico (note que esto no oculta su direcciÃ³n
+   de los administradores de la lista). Si usted desea mire en la
+   SecciÃ³n 11.2 mÃ¡s informaciÃ³n sobre lo que Mailman hace para ayudar a
+   evitar el spam.
+
+   Para cambiar esta opciÃ³n utilizando el interfaz web:
+    1. Ingrese a su pÃ¡gina de opciones de suscriptor (mire en la
+       SecciÃ³n 3.1 instrucciones sobre cÃ³mo hacer esto).
+    2. Vaya a la secciÃ³n identificada como ``Â¿Ocultarse de la lista de
+       suscriptores?'' y escoja ``Si'' para ocultar su nombre de la lista,
+       o ``No'' para permitir que su nombre aparezca en la lista.
+
+   Para cambiar esta opciÃ³n utilizando el interfaz de correo
+   electrÃ³nico:
+    1. EnvÃe un correo a NOMBRELISTA-request@DOMINIO con la Ã³rden
+       set hide on o set hide off.
+       Las Ã³rdenes puede aparecer ya sea en el cuerpo o en la lÃnea de
+       asunto del mensaje (mire en la SecciÃ³n 3.2 mÃ¡s informaciÃ³n sobre
+       el envÃo de Ã³rdenes de correo.
+    2. Seleccione ``on'' para ocultar su direcciÃ³n de correo electrÃ³nico
+       de la lista de membresÃa, u ``off'' para dejar de ocultar su
+       direcciÃ³n.
+
+                           11 Otras preguntas comunes
+
+11.1 Â¿CÃ³mo puedo consultar los archivos de la lista?
+
+   Si la lista se estÃ¡ archivando, los mensajes previamente enviados se
+   pueden ver yendo a las pÃ¡ginas web del archivo, un enlace al cual se
+   encuentra en la pÃ¡gina de informaciÃ³n de la lista y en la cabecera
+   List-Archive: de todo mensaje enviado (a menos que el administraciÃ³n
+   de su lista haya desactivado tales cabeceras). Muchos programas de
+   correo ocultan la cabecera de correo List-Archive:, asÃ que usted
+   primero necesita hacer que su programa de correo le muestre las
+   cabeceras completas antes de que usted pueda mirar esa cabecera.
+
+   Los archivos pÃºblicos usualmente tienen direcciones de la forma
+   http://SERVIDORWEB/pipermail/NOMBRELISTA/, mientras que los archivos
+   privados usualmente tienen direcciones de la forma
+   http://SERVIDORWEB/mailman /private/NOMBRELISTA.
+
+   Mire en la SecciÃ³n 3.1 mÃ¡s informaciÃ³n sobre bÃºsqueda de
+   direcciones de una lista.
+
+11.2 Â¿QuÃ© hace Mailman para ayudar a protegerme de correo basura no solicitado
+(spam)?
+
+   Los archivos de una lista tÃ©cnica pueden incluir respuestas a un rango
+   de preguntas diferentes. A menudo, la gente que ha enviado estas
+   respuestas estarÃa gustoso de ayudar a alguien que no entiende
+   completamente la respuesta, y no le preocuparÃa dar su direcciÃ³n para
+   ese propÃ³sito. Pero aunque serÃa maravilloso si todos nos puedieramos
+   contactar unos a otros con facilidad, tambiÃ©n queremos asegurarnos que
+   la gente que envÃa spam no abuse de la lista ni de los archivos de la
+   lista.
+
+   Para hacer que un rango de opciones estÃ© disponible a los
+   administradores de listas, Mailman permite una variedad de
+   configuraciones para ayudar a proteger las direcciones de correo.
+   Muchos de estas configuraciones son opcionales para el administrador de
+   la lista, asÃ que su lista particular puede estar configurada en forma
+   diferente. Los administradores de listas deben encontrar un punto de
+   equilibrio entre proteger a suscriptores y hacerlo difÃcil para que la
+   gente se ponga en contacto.
+
+     * Lista de suscriptores
+          + El administrador de la lista puede seleccionar entre tener la
+            lista de suscriptores pÃºblica, visible Ãºnicamente a miembros
+            de la lista, o visible Ãºnicamente a administradores de la
+            lista.
+          + La lista de suscriptores se muestra con las direcciones
+            disimuladas para que a los recolectores de spam se les
+            dificulte obtener su direcciÃ³n.
+          + Usted puede mantener su direcciÃ³n oculta de la lista de
+            suscriptores (mire mÃ¡s informaciÃ³n en la SecciÃ³n 10.4).
+          + Nota: La lista entera de suscriptores siempre estÃ¡ disponible
+            a los administradores de la lista.
+     * Archivos de la lista
+          + El administrador de la lista pueden elegir que los archivos
+            sean pÃºblicos, visibles Ãºnicamente a suscriptores
+            (privados), o completamente no disponibles.
+          + Los archivos HTML que son creados por Pipermail (el programa
+            de archivado que viene incluido por omisiÃ³n con Mailman)
+            contienen Ãºnicamente direcciones disimuladas. Existen otros
+            programas de archivado que modifican las direcciones en
+            diferentes grados para que permanezcan menos legibles.
+          + Si usted desea estar mÃ¡s seguro, puede definir la cabecera de
+            correo ``X-No-archive: yes'' y Mailman no archivarÃ¡ sus
+            envÃos. Similarmente, puede definir la cabecera de correo
+            ``X-Archive: no'' para inhabilitar el archivado.
+            Advertencia: Esto no evita que otros suscritores reenvÃen sus
+            mensajes, posiblemente aÃºn, incluyendo su direcciÃ³n de
+            correo electrÃ³nico.
+     * EnvÃos limitados a las listas
+          + El administrador de la lista puede elegir quien puede envÃar a
+            la lista. La mayorÃa de las listas, se moderan (un moderador o
+            administrador revisa cada envÃo), se configuran para que
+            solamente los suscriptores puedan enviar a la lista, o se
+            permite que cualquier persona pueda enviar a la lista.
+          + Permitiendo que solamente los suscriptores puedan enviar a la
+            lista, Mailman a menudo bloquea todo el spam y algunos virus
+            que se envÃan a la lista. Como tal, esta es una configuraciÃ³n
+            bastante comÃºn utilizada por los administradores de listas.
+     * Listas anÃ³nimas
+          + Las listas tambiÃ©n se pueden volver completamente anÃ³nimas:
+            toda la informaciÃ³n que identifique al remitente se elimina
+            de la cabecera antes de enviar un mensaje.
+          + Esto no es tipicamente usado como medida anti-spam (tiene
+            otros usos), pero se podrÃa usar en esa forma si se quisiera.
+
+   Por supuesto, muchos mÃ©todos para disimular direcciones pueden ser
+   burlados por determinadas personas, asÃ que sea consciente de que las
+   protecciones usadas pueden no ser suficientes.
+
+         1 Referencia rÃ¡pida de Ã³rdenes de correo electrÃ³nico
+
+     * confirm $<$ CADENA-DE-CONFIRMACIÃN $>$
+          + Confirma una acciÃ³n. La cadena de confirmaciÃ³n es
+            obligatoria y se deberÃa enviar en la respuesta al mensaje de
+            confirmaciÃ³n enviado por Mailman.
+     * end
+          + Termina el procesamiento de Ã³rdenes. Utilice esta orden si su
+            programa de correo aÃ±ade automÃ¡ticamente un archivo de
+            firma.
+     * help
+          + Recibe una copia del mensaje de ayuda.
+     * info
+          + Obtiene informaciÃ³n acerca de la lista.
+     * lists
+          + Obtiene una listado de las listas de correo (cuyos nombres se
+            muestran pÃºblicamente), del servidor GNU Mailman.
+     * password [ $<$ CONTRASEÃA-ANTERIOR $>$ $<$ CONTRASEÃA-NUEVA $>$ ]
+       [address= $<$ DIRECCIÃN $>$ ]
+          + Obtiene o cambia su contraseÃ±a. Sin argumentos, devuelve su
+            contraseÃ±a actual. Usted puede cambiar su contraseÃ±a
+            indicando los argumentos $<$ CONTRASEÃA-ANTERIOR $>$ y $<$
+            CONTRASEÃA-NUEVA $>$
+     * set ...
+          + Cambia o muestra sus opciones de membresÃa.
+            Use `set help' (sin las comillas) para obtener una lista mÃ¡s
+            detallada de las opciones que puede cambiar. Esta lista
+            tambiÃ©n se presenta en el ApÃ©ndice B.
+            Use `set show' (sin las comillas) para mirar la configuraciÃ³n
+            actual de sus opciones.
+     * subscribe [ $<$ CONTRASEÃA $>$ ] [digest|nodigest] [address= $<$
+       DIRECCIÃN $>$ ]
+          + Suscribirse a la lista de correo. Usted debe proporcionar su
+            contraseÃ±a para desuscribirse o cambiar sus opciones, pero si
+            omite la contraseÃ±a, Mailman le generarÃ¡ una. Usted puede
+            obtener recordatorios de su contraseÃ±a periÃ³dicamente.
+            El siguiente parÃ¡metro puede ser ya sea: `nodigest' o
+            `digest' (sin comillas). Si usted desea suscribir una
+            direcciÃ³n diferente de la direcciÃ³n desde donde estÃ¡
+            enviando esta solicitud, puede especificar `address= $<$
+            DIRECCIÃN $>$ ' (sin parÃ©ntesis angulares ni comillas).
+     * unsubscribe [ $<$ CONTRASEÃA $>$ ] [address= $<$ DIRECCIÃN $>$ ]
+          + Desuscribirse de la lista de correo. Si usted suministra una
+            contraseÃ±a, Ã©sta debe concordar con su contraseÃ±a actual.
+            Si se omite, el sistema le enviarÃ¡ un mensaje de
+            confirmaciÃ³n para desuscribir la direcciÃ³n. Si usted desea
+            desuscribir una direcciÃ³n diferente a la direcciÃ³n desde
+            donde envÃa esta solicitud, puede especificar `address= $<$
+            DIRECCIÃN $>$ ' (sin parÃ©ntesis angulares ni comillas).
+     * who [ $<$ CONTRASEÃA $>$ ] [address= $<$ DIRECCIÃN $>$ ]
+          + Muestra quien pertenece a la lista de correo. La lista estÃ¡
+            limitada Ãºnicamente a los suscriptores, y usted debe
+            proporcionar su contraseÃ±a de membresÃa para obtenerla. Si
+            usted estÃ¡ enviando desde una direcciÃ³n diferente a su
+            direcciÃ³n de membresÃa, especifique su direcciÃ³n de
+            membresÃa con `address= $<$ DIRECCIÃN $>$ ' (sin parÃ©ntesis
+            angulares ni comillas).
+
+               2 Referencia rÃ¡pida de opciones del suscriptor
+
+     * set help
+          + Muestra esta ayuda detallada.
+     * set show [address= $<$ DIRECCIÃN $>$ ]
+          + Muestra la configuraciÃ³n actual de sus opciones. Si usted
+            estÃ¡ enviando desde una direcciÃ³n diferente de su direcciÃ³n
+            de membresÃa, especifique su direcciÃ³n de membresÃa con
+            `address= $<$ DIRECCIÃN $>$ ' (sin parÃ©ntesis angulares ni
+            comillas).
+     * set authenticate $<$ CONTRASEÃA $>$ [address= $<$ DIRECCIÃN $>$ ]
+          + Para cambiar cualquiera de sus opciones, usted debe incluir
+            este comando primero, junto con su contraseÃ±a de membresÃa.
+            Si usted estÃ¡ enviando desde una direcciÃ³n diferente de su
+            direcciÃ³n de membresÃa, especifique su direcciÃ³n de
+            membresÃa con `address= $<$ DIRECCIÃN $>$ ' (sin parÃ©ntesis
+            angulares ni comillas).
+     * set ack on
+       set ack off
+          + Cuando se activa la opciÃ³n `ack', usted recibirÃ¡ un mensaje
+            de acuso de recibo cada vez que usted envÃe un mensaje a la
+            lista.
+     * set digest plain
+       set digest mime
+       set digest off
+          + Cuando la opciÃ³n `digest' estÃ¡ desactivada, usted recibirÃ¡
+            los mensajes inmediatamente cuando ellos se envÃan. Use `set
+            digest plain' si en su lugar desea recibir los mensajes
+            agrupados en formato texto plano (p.e. envÃos agrupados RFC
+            1153). Use `set digest mime' si en su lugar desea recibir los
+            mensajes agrupados en formato MIME.
+     * set delivery on
+       set delivery off
+          + Activa o desactiva la entrega. Esta opciÃ³n no lo desuscribe,
+            en lugar de ello, hace que Mailman deje de entregarle
+            mensajes. Esto puede ser Ãºtil si usted sale de vacaciones.
+            Â¡AsegÃºrese de usar `set delivery on' cuando regrese de
+            vacaciones!
+     * set myposts on
+       set myposts off
+          + Use `set myposts off' para evitar recibir copias de los
+            mensajes que usted envÃa a la lista. Esto no tiene efecto si
+            usted estÃ¡ recibiendo envÃos agrupados.
+     * set hide on
+       set hide off
+          + Use `set hide on' para ocultar su direcciÃ³n de correo
+            electrÃ³nico cuando la gente solicite la lista de
+            suscriptores.
+     * set duplicates on
+       set duplicates off
+          + Use `set duplicates off' si usted desea que Mailman no le
+            envÃe mensajes si su direcciÃ³n estÃ¡ explicitamente en los
+            campos To: o Cc: del mensaje. Esto puede reducir el nÃºmero de
+            envÃos duplicados que usted recibe.
+     * set reminders on
+       set reminders off
+          + Use `set reminders off' si usted desea desactivar el
+            recordatorio mensual de contraseÃ±a para la lista de correo.
+
+                            Sobre este documento...
+
+   GNU Mailman Manual del Suscriptor de Listas, 11 de enero 2020, Release
+   2.1
+
+   This document was generated using the LaTeX2HTML translator.
+
+   LaTeX2HTML is Copyright © 1993, 1994, 1995, 1996, 1997, Nikos Drakos,
+   Computer Based Learning Unit, University of Leeds, and Copyright ©
+   1997, 1998, Ross Moore, Mathematics Department, Macquarie University,
+   Sydney.
+
+   The application of LaTeX2HTML to the Python documentation has been
+   heavily tailored by Fred L. Drake, Jr. Original navigation icons were
+   contributed by Christopher Petrilli.
+     __________________________________________________________________
+
+              Previous Page Up one Level Next Page GNU Mailman
+                       Manual del Suscriptor de Listas
+     __________________________________________________________________
+
+   Release 2.1, documentation updated on 11 de enero 2020.

@@ -1,0 +1,8 @@
+Mesajul dumneavoastră, intitulat
+
+    %(subject)s
+
+a ajuns cu succes la lista de discuţii %(listname)s.
+
+Informaţii generale:  %(listinfo_url)s
+Preferinţe personale: %(optionsurl)s

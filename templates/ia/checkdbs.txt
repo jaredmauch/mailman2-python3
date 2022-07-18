@@ -1,0 +1,7 @@
+Le lista de diffusion %(real_name)s@%(host_name)s ha
+%(count)d requesta(s) attendente tu consideration a:
+
+    %(adminDB)s
+
+Per favor, tracta isto le plus tosto possibile. Iste notification de
+requestas attendente, si alcun existe, essera expedite quotidianmente.

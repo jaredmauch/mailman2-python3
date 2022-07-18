@@ -1,0 +1,24 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from spock.dadoservice.it (ip-49-45.sn1.eutelia.it [62.94.49.45])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with SMTP id
+	k3H2DwGc027145
+	for <gpc-talk-bounces@grizz.org>; Sun, 16 Apr 2006 19:13:58 -0700
+Subject: Delivery failure
+From: postmaster@spock.dadoservice.it
+Message-Id: <B0024075754@spock.dadoservice.it>
+Date: Mon, 17 Apr 2006 04:07:34 +0200
+To: gpc-talk-bounces@grizz.org
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+Your message has encountered delivery problems
+to local user userx.
+(Originally addressed to userx@example.it)
+
+User not known
+
+Your message reads (in part):
+
+Message removed
+

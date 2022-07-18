@@ -1,0 +1,4 @@
+メーリングリスト %(listname)s の会員の %(name)s さんの
+旧アドレス %(oldaddr)s を新アドレス %(newaddr)s に変更しました。
+
+

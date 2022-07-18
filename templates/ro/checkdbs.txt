@@ -1,0 +1,7 @@
+Lista de discuţii %(real_name)s@%(host_name)s are %(count)d request(s)
+în aşteptare (când aveţi timp) la:
+
+	%(adminDB)s
+
+Vă rugăm să vizitaţi această adresă de îndată ce timpul vă permite.
+Această notă de cereri în aşteptare va fi trimisă zilnic.

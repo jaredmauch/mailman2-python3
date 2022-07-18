@@ -1,0 +1,15 @@
+Mesajul dumneavoastră către '%(listname)s', având subiectul
+
+    %(subject)s
+
+este reţinut până când moderatorul listei îl va revizui pentru aprobare.
+
+Motivul acestei verificări:
+
+    %(reason)s
+
+Acest mesaj va fi publicat pe listă, sau în caz contrar veţi primi o
+notificare a deciziei moderatorului.  Dacă doriţi să anulaţi publicarea
+acestui mesaj, vă rugăm să vizitaţi următoarea adresă:
+
+    %(confirmurl)s

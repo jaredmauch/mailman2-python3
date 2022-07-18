@@ -1,0 +1,33 @@
+<html>
+<head>
+   <title>%(listname)s %(who)s Azonos&iacute;t&aacute;s</title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s Azonos&iacute;t&aacute;s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD> <div ALIGN="Right">Lista %(who)s Jelszava: </div> </TD>
+      <TD> <INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle> <INPUT TYPE="SUBMIT" name="admlogin"
+						       value="Bel&eacute;p&eacute;s...">
+      </td>
+    </tr>
+  </TABLE>
+  <p><strong><em>Fontos:</em></strong> Ett&#337;l az oldalt&oacute;l enged&eacute;lyezned kell a s&uuml;tik 
+  fogad&aacute;s&aacute;t a b&ouml;ng&eacute;sz&#337;dben, k&uuml;l&ouml;nben semmilyen adminisztr&aacute;tori v&aacute;ltoztat&aacute;s nem fog v&eacute;grehajt&oacute;dni.
+
+  <p>A Mailman az adminisztr&aacute;ci&oacute;s m&#369;veletekn&eacute;l a folyamatos azonos&iacute;t&aacute;shoz, hogy ne kelljen minden adminisztr&aacute;ci&oacute;s v&aacute;ltoztat&aacute;shoz &uacute;jra azonos&iacute;tanod magadat, s&uuml;tiket haszn&aacute;l.
+  A s&uuml;ti a b&ouml;ng&eacute;sz&#337; bez&aacute;r&aacute;s&aacute;val, illetve az <em>Egy&eacute;b Adminisztr&aacute;ci&oacute;s Teend&#337;k</em> pontban a 
+  <em>Kil&eacute;p&eacute;s</em>-re (ez csak sikeres bejelentkez&eacute;s ut&aacute;n l&aacute;that&oacute;) kattintva &eacute;rv&eacute;ny&eacute;t veszti.
+</FORM>
+</body>
+</html>

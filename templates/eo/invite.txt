@@ -1,0 +1,21 @@
+La listestro de la dissendolisto %(listname)s ĉe %(hostname)s 
+ĵus invitis vin abonigi vian retpoŝtadreson "%(email)s" al tiu listo.
+
+Por akcepti la inviton al %(listname)s, simple respondu ĉi tiun mesaĝon, 
+konservante la kaplinion "Temo:" neŝanĝita. Aŭ vizitu la jenan retpaĝon:
+
+    %(confirmurl)s
+
+Aŭ inkluzivu la jenan linion -- kaj nur la jenan linion -- en
+mesaĝo al %(requestaddr)s:
+
+    confirm %(cookie)s
+
+Atentu ke simple respondi tiun ĉi mesaĝon devus sufiĉi por la 
+plimultaj retpoŝtiloj, ĉar tio kutime lasas la linion "Temo:" en la 
+ĝusta formo (aldona teksto "Re:" en la linio "Temo:" estas 
+akceptebla).
+
+Se vi preferas malakcepti la inviton, bonvolu malatenti ĉi tiun 
+mesaĝon. 
+Se vi havas demandojn, sendu ilin al %(listowner)s.

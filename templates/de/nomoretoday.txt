@@ -1,0 +1,8 @@
+Wir haben eine Nachricht von der Adresse "%(sender)s" erhalten, mit der
+eine automatische Antwort von der Liste "%(listname)s" angefordert wurde.
+Heute haben wir %(num)s solcher Nachrichten festgestellt. Um Probleme zu
+vermeiden, werden wir heute keine weiteren Antworten versenden. Bitte
+versuchen Sie es morgen wieder.
+
+Wenn diese Nachricht fehlerhaft ist oder Fragen zur Liste bestehen,
+freut sich der Eigner der Liste über eine Nachricht an %(owneremail)s.

@@ -1,0 +1,3 @@
+تمت إزالة %(member)s من القائمة %(listname)s.
+%(whence)s
+

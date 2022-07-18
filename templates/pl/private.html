@@ -1,0 +1,52 @@
+<html>
+ <head>
+  <title>Prywatne archiwum listy %(realname)s - uwierzytelnianie</title>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-2">
+  <meta name="robots" content="noindex,nofollow">
+  <script>function sf(){document.f.username.focus();}</script>
+ </head>
+ <body bgcolor="#ffffff" onLoad="sf()">
+  <form method=POST action="%(action)s" name="f">
+%(message)s
+   <table width="100%%" border="0" cellspacing="4" cellpadding="5">
+    <tr>
+     <td colspan="2" width="100%%" bgcolor="#99CCFF" align="center">
+      <b><font color="#000000" size="+1">Prywatne archiwum listy %(realname)s - uwierzytelnianie</font></b>
+     </td>
+    </tr>
+    <tr>
+     <td><div align="Right">Adres e-mail:</div></td>
+     <td><input type="text" name="username" size="30"></td>
+    </tr>
+    <tr>
+     <td><div align="Right">Has&#322;o:</div></td>
+     <td><input type="password" name="password" size="30"></td>
+    </tr>
+    <tr>
+     <td colspan=2 align="middle"><INPUT type="submit" name="submit" value="Zaloguj"></td>
+    </tr>
+   </table>
+   <p><strong><em>Wa&#380;ne</em></strong>:
+    Od tego momentu, ciasteczka w przegl&#261;darce musz&#261; by&#263; w&#322;&#261;czone.
+    W przeciwnym wypadku &#380;adne zmiany administracyjne nie zostan&#261; zastosowane.
+
+   <p>Ciasteczka sesji s&#261; u&#380;ywane przez interfejs administracyjny Mailmana,
+    aby nie by&#322;o potrzeby osobnego uwierzytelniania ka&#380;dej operacji administracyjnej.
+    Ciasteczko automatycznie wyga&#347;nie po zamkni&#281;ciu (sesji) przegl&#261;darki.
+    Mo&#380;na je r&oacute;wnie&#380; usun&#261;&#263; korzystaj&#261;c z odno&#347;nika <em>Wyloguj</em> w sekcji <em>Inne czynno&#347;ci administracyjne</em>
+    (kt&oacute;ra zostanie wy&#347;wietlona po udanym zalogowaniu).
+   <p>
+   <table width="100%%" border="0" cellspacing="4" cellpadding="5">
+    <tr>
+     <td colspan="2" width="100%%" bgcolor="#99CCFF" align="center"><b><font color="#000000" size="+1">Przypomnienie has&#322;a</font></b></td>
+    </tr>
+    <tr>
+     <td>Je&#347;li nie pami&#281;tasz has&#322;a, wprowad&#378; powy&#380;ej adres e-mail i kliknij przycisk <em>Przypomnij</em> a has&#322;o zostanie wys&#322;ane.</td>
+    </tr>
+    <tr>
+     <td><center><INPUT name="login-remind" type="submit" value="Przypomnij" ></center></td>
+    </tr>
+   </table>
+  </form>
+ </body>
+</html>

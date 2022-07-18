@@ -1,0 +1,24 @@
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Subject: Delivery Failure
+Date: Thu, 19 Feb 2009 16:19:28 -0800
+Message-ID: <633706571685360000@mx10.lttf.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+From: <"System Administrator"@example.com>
+To: <huntads-bounces@example.com>
+
+
+Could not deliver message to the following recipient(s):
+
+Failed Recipient: userx@example.com
+Reason: Remote host said: 550 unknown user <userx@example.com>
+
+   -- The header and top 20 lines of the message follows --
+
+Message removed
+

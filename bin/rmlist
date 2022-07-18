@@ -1,0 +1,162 @@
+#! @PYTHON@
+#
+# Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+"""Remove the components of a mailing list with impunity - beware!
+
+This removes (almost) all traces of a mailing list.  By default, the lists
+archives are not removed, which is very handy for retiring old lists.
+
+Usage:
+    rmlist [-a] [-h] listname
+
+Where:
+    --archives
+    -a
+        Remove the list's archives too, or if the list has already been
+        deleted, remove any residual archives.
+
+    --help
+    -h
+        Print this help message and exit.
+
+"""
+
+import os
+import re
+import sys
+import getopt
+import shutil
+
+import paths
+from Mailman import mm_cfg
+from Mailman import Utils
+from Mailman import MailList
+from Mailman.i18n import C_
+
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+
+
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print >> fd, C_(__doc__)
+    if msg:
+        print >> fd, msg
+    sys.exit(code)
+
+
+
+def remove_it(listname, filename, msg):
+    if os.path.islink(filename):
+        print C_('Removing %(msg)s')
+        os.unlink(filename)
+    elif os.path.isdir(filename):
+        print C_('Removing %(msg)s')
+        shutil.rmtree(filename)
+    elif os.path.isfile(filename):
+        os.unlink(filename)
+    else:
+        print C_('%(listname)s %(msg)s not found as %(filename)s')
+
+
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'ah',
+                                   ['archives', 'help'])
+    except getopt.error, msg:
+        usage(1, msg)
+
+    if len(args) <> 1:
+        usage(1)
+    listname = args[0].lower().strip()
+
+    removeArchives = False
+    for opt, arg in opts:
+        if opt in ('-a', '--archives'):
+            removeArchives = True
+        elif opt in ('-h', '--help'):
+            usage(0)
+
+    if not Utils.list_exists(listname):
+        if not removeArchives:
+            usage(1, C_(
+                     'No such list (or list already deleted): %(listname)s'))
+        else:
+            print C_(
+                'No such list: %(listname)s.  Removing its residual archives.')
+
+    if not removeArchives:
+        print C_('Not removing archives.  Reinvoke with -a to remove them.')
+
+
+    REMOVABLES = []
+    if Utils.list_exists(listname):
+        mlist = MailList.MailList(listname, lock=0)
+
+        # Do the MTA-specific list deletion tasks
+        if mm_cfg.MTA:
+            modname = 'Mailman.MTA.' + mm_cfg.MTA
+            __import__(modname)
+            sys.modules[modname].remove(mlist)
+
+        REMOVABLES = [
+            (os.path.join(mm_cfg.LIST_DATA_DIR, listname), C_('list info')),
+            ]
+
+    # Remove any stale locks associated with the list
+    for filename in os.listdir(mm_cfg.LOCK_DIR):
+        fn_listname = filename.split('.')[0]
+        if fn_listname == listname:
+            REMOVABLES.append((os.path.join(mm_cfg.LOCK_DIR, filename),
+                               C_('stale lock file')))
+
+    # Remove any held messages for this list
+    for filename in os.listdir(mm_cfg.DATA_DIR):
+        cre = re.compile('^heldmsg-%s-\d+\.(pck|txt)$' % re.escape(listname),
+                         re.IGNORECASE)
+        if cre.match(filename):
+            REMOVABLES.append((os.path.join(mm_cfg.DATA_DIR, filename),
+                               C_('held message file')))
+
+    if removeArchives:
+        REMOVABLES.extend([
+            (os.path.join(mm_cfg.PRIVATE_ARCHIVE_FILE_DIR, listname),
+             C_('private archives')),
+            (os.path.join(mm_cfg.PRIVATE_ARCHIVE_FILE_DIR, listname + '.mbox'),
+             C_('private archives')),
+            (os.path.join(mm_cfg.PUBLIC_ARCHIVE_FILE_DIR, listname),
+             C_('public archives')),
+            (os.path.join(mm_cfg.PUBLIC_ARCHIVE_FILE_DIR, listname + '.mbox'),
+             C_('public archives')),
+            ])
+
+    for dir, msg in REMOVABLES:
+        remove_it(listname, dir, msg)
+
+
+
+if __name__ == '__main__':
+    main()

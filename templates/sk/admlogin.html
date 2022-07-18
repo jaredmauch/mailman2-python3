@@ -1,0 +1,37 @@
+<html>
+<head>
+  <title>%(listname)s: prihl&aacute;senie ako %(who)s</title>
+  <script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER"">
+    <B><FONT COLOR="#000000" SIZE="+1">%(listname)s: prihl&aacute;senie ako
+        %(who)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Heslo pre %(who)s:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Vst&uacute;piť...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Pozor:</em></strong> Aby syst&eacute;m fungoval 
+      spr&aacute;vne, mus&iacute;te mať vo Va&scaron;om prehliadači povolen&eacute; cookies.
+
+      <p>Cookies sa použ&iacute;vaj&uacute; na to, aby ste nemuseli
+      každ&uacute; požiadavku znovu potvrdzovať heslom. Bud&uacute; zmazan&eacute;
+      keď zavriete prehliadač alebo pri odhl&aacute;sen&iacute;.
+      Odhl&aacute;siť sa m&ocirc;žete kliknut&iacute;m na <em>Odhl&aacute;siť</em>. 
+      Tento odkaz uvid&iacute;te až po &uacute;spe&scaron;nom prihl&aacute;sen&iacute;.
+</FORM>
+</body>
+</html>

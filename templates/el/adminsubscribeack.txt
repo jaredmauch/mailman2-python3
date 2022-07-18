@@ -1,0 +1,4 @@
+%(member)s έχουν εγγραφεί με επιτυχία στη %(listname)s.
+%(whence)s
+
+

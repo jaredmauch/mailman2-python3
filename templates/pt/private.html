@@ -1,0 +1,61 @@
+<html>
+<head>
+    <title>%(realname)s Autentica&ccedil;&atilde;o de Arquivos Privados</title>
+<script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(realname)s Autentica&ccedil;&atilde;o
+	    de Arquivos Privados</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">Endere&ccedil;o de Email:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Password:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Deixe-me entrar...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Importante:</em></strong> Deste ponto em diante,
+      voc&ecirc; tem de ter as cookies activadas no seu navegador, caso 
+      contr&aacute;rio nenhuma modifica&ccedil;&atilde;o administrativa ter&aacute; efeito. 
+ 
+      <p>Os cookies de sec&ccedil;&atilde;o s&atilde;o usados pela interface administrativa
+      do Mailman para n&atilde;o ser necess&aacute;ria uma nova autentica&ccedil;&atilde;o ap&oacute;s
+      cada opera&ccedil;&atilde;o administrativa. Este cookie expirar&aacute; automaticamente
+      quando sair do seu navegador ou quando expirar o cookie explicitamente
+      clicando no link <em>Sair</em> abaixo de <em>Outras Actividades 
+      Administrativas</em> (o qual ser&aacute; visto logo que entrar com sucesso no 
+      sistema).
+      <p>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
+          above and click the <em>Remind</em> button and your
+          password will be emailed to you.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>
+

@@ -1,0 +1,49 @@
+Return-Path: <MDaemon@webmail.pla.net.py>
+Received: from webmail.pla.net.py (ms4-jupiter.pla.net.py [201.217.19.3])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3BAZX1M004077
+	for <gpc-talk-bounces@grizz.org>; Tue, 11 Apr 2006 03:35:35 -0700
+Received: from webmail.pla.net.py [201.217.19.3] by webmail.pla.net.py
+	[201.217.19.3] with RAW (MDaemon.PRO.v5.0.4.R)
+	for <gpc-talk-bounces@grizz.org>; Tue, 11 Apr 2006 06:30:59 -0300
+Date: Tue, 11 Apr 2006 06:30:59 -0300
+From: MDaemon@webmail.pla.net.py
+Reply-To: MDaemon@webmail.pla.net.py
+Precedence: bulk
+X-MDSend-Notifications-To: [trash]
+Subject: Warning: userx@example.net.py - User unknown!
+To: gpc-talk-bounces@grizz.org
+X-MDaemon-Deliver-To: gpc-talk-bounces@grizz.org
+Message-ID: <MDAEMON11221122200604110630.AA3059037@webmail.pla.net.py>
+Mime-Version: 1.0
+X-Actual-From: MDaemon@webmail.pla.net.py
+Content-Type: multipart/mixed; boundary="0411-0630-59-PART-BREAK"
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: mdaemon@webmail.pla.net.py
+
+   The following data may contain sections which represent BASE64 encoded
+   file attachments.  These sections will be unreadable without MIME aware
+   tools.  Seek your system administrator if you need help extracting any
+   files which may be embedded within this message.
+
+--0411-0630-59-PART-BREAK
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+userx@example.net.py - no such user here.
+
+There is no user by that name at this server.
+
+: Message contains [1] file attachments
+
+--0411-0630-59-PART-BREAK
+Content-Type: message/rfc822; charset=US-ASCII; name="pd75019146383.md"
+Content-Transfer-Encoding: 7bit
+Content-ID: <MDAEMON11221122200604110630.AA3059037@webmail.pla.net.py>
+Content-Description: 
+
+Message removed
+
+--0411-0630-59-PART-BREAK--
+

@@ -1,0 +1,67 @@
+From VM Tue Oct  3 18:16:48 2000
+Return-Path: <mailman-developers-admin@python.org>
+Delivered-To: zzzzz@mail.wooz.org
+Received: from ns1.beopen.com (unknown [208.185.174.104])
+	by mail.wooz.org (Postfix) with ESMTP id 0C841D37D5
+	for <yyyyy@wooz.org>; Tue,  3 Oct 2000 18:08:44 -0400 (EDT)
+Received: from dinsdale.python.org (dinsdale.cnri.reston.va.us [132.151.1.21])
+	by ns1.beopen.com (8.9.3/8.9.3) with ESMTP id PAA65355
+	for <zzzzz@beopen.com>; Tue, 3 Oct 2000 15:09:08 -0700 (PDT)
+	(envelope-from mailman-developers-admin@python.org)
+Received: from dinsdale.python.org (localhost [127.0.0.1])
+	by dinsdale.python.org (Postfix) with ESMTP id 2EF421CDC9
+	for <zzzzz@beopen.com>; Tue,  3 Oct 2000 18:07:03 -0400 (EDT)
+Delivered-To: mailman-developers-admin@python.org
+Received: by dinsdale.python.org (Postfix) via BOUNCE
+	id 7CE611CE55; Tue,  3 Oct 2000 18:06:58 -0400 (EDT)
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="BDD021CF6B.970610818/dinsdale.python.org"
+Message-Id: <20001003220658.7CE611CE55@dinsdale.python.org>
+Errors-To: mailman-developers-owner@python.org
+Precedence: bulk
+List-Help: <mailto:mailman-developers-request@python.org?subject=help>
+List-Post: <mailto:mailman-developers@python.org>
+List-Subscribe: <http://www.python.org/mailman/listinfo/mailman-developers>, <mailto:mailman-developers-request@python.org?subject=subscribe>
+List-Id: Mailman mailing list developers <mailman-developers.python.org>
+List-Unsubscribe: <http://www.python.org/mailman/listinfo/mailman-developers>, <mailto:mailman-developers-request@python.org?subject=unsubscribe>
+List-Archive: <http://www.python.org/pipermail/mailman-developers/>
+From: MAILER-DAEMON@python.org (Mail Delivery System)
+Sender: mailman-developers-owner@python.org
+To: mailman-developers-admin@python.org
+Subject: Undelivered Mail Returned to Sender
+Date: Tue,  3 Oct 2000 18:06:58 -0400 (EDT)
+X-BeenThere: mailman-developers@python.org
+X-Mailman-Version: 2.0beta6
+
+This is a MIME-encapsulated message.
+
+--BDD021CF6B.970610818/dinsdale.python.org
+Content-Description: Notification
+Content-Type: text/plain
+
+This is the Postfix program at host dinsdale.python.org.
+
+I'm sorry to have to inform you that the message returned
+below could not be delivered to one or more destinations.
+
+For further assistance, please contact <postmaster@python.org>
+
+If you do so, please include this problem report. You can
+delete your own text from the message returned below.
+
+			The Postfix program
+
+<xxxxx@local.ie>: host mail.local.ie[195.7.46.14] said: 550 5.1.1
+    <xxxxx@local.ie>... User unknown
+
+
+--BDD021CF6B.970610818/dinsdale.python.org
+Content-Description: Undelivered Message
+Content-Type: message/rfc822
+
+Message removed
+
+--BDD021CF6B.970610818/dinsdale.python.org--
+
+

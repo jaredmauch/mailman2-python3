@@ -1,0 +1,4 @@
+﻿%(member)s је успјешно уписан-а на листу %(listname)s.
+%(whence)s
+
+

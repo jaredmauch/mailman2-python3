@@ -1,0 +1,39 @@
+Return-Path: <MAILER-DAEMON@sb7.songbird.com>
+Received: from boeing.ieo-research.it (boeing.ieo-research.it [85.239.176.145])
+	by sb7.songbird.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3MHGOfW014766
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <wed_ride-bounces@grizz.org>; Sat, 22 Apr 2006 10:16:25 -0700
+Received: (qmail 41487 invoked by uid 809); 22 Apr 2006 17:14:50 -0000
+Message-ID: <20060422171450.41486.qmail@boeing.ieo-research.it>
+Content-Disposition: inline
+Content-Transfer-Encoding: binary
+Content-Type: text/plain
+MIME-Version: 1.0
+X-Mailer: MIME::Lite 3.01 (F2.73; A1.66; B3.05; Q3.03)
+Date: Sat, 22 Apr 2006 17:14:50 UT
+From: IFOM-IEO Campus Mailserver <MAILER-DAEMON@ifom-ieo-campus.it>
+To: wed_ride-owner@grizz.org
+Subject: Your message to userx@example.it could not be delivered.
+X-SongbirdInformation: support@songbird.com for more information
+X-Songbird: Clean
+X-Songbird-From: 
+
+Hello,
+
+this is the email server at IFOM-IEO Campus.
+
+Your message to userx@example.it has reached our local address 
+userx@example.it, but this email address is wrong or no longer valid.
+
+Your message has NOT been delivered.
+
+You can find all the addresses in the campus on our web site at
+http://www.ifom-ieo-campus.it under the "Contacts" area.
+
+Best regards.
+
+A summary of the undelivered message you sent follows:
+--------------
+Message removed
+

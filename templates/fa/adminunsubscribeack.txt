@@ -1,0 +1,4 @@
+%(member)s از  %(listname)s حذف شد.
+%(whence)s
+
+

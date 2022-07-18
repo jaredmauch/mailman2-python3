@@ -1,0 +1,295 @@
+<!-- $Revision: 8177 $ -->
+<html>
+<head>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> Konfigurace konference <MM-List-Name></title>
+
+</head>
+<BODY BGCOLOR="#ffffff">
+	<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+	<TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+	<FONT COLOR="#000000" SIZE=+1>
+        <MM-List-Name> Nastaven&iacute; pro u¾ivatele: <MM-Presentable-User>
+	</FONT></B></TD></TR> </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b>U¾ivatel <MM-Presentable-User></b>, konfigurace
+	u¾ivatelsk&eacute;ho &uacute;ètu pro konferenci <MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
+</table>
+
+<MM-Form-Start>
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Zmìna konfigurace pro konferenci <MM-List-Name></B>
+	</FONT></TD></TR>
+    <tr><td colspan="2">Mù¾ete zmìnit e-mailovou adresu, na kterou se
+    zas&iacute;laj&iacute; pø&iacute;spìvky. Zadejte novou adresu do tohoto pole. Na Va&scaron;i
+    st&aacute;vaj&iacute;c&iacute; adresu bude zasl&aacute;na ¾&aacute;dost o ovìøen&iacute; a zmìna bude
+    provedena teprve po potvrzen&iacute;.
+
+        <p>Na potvrzen&iacute; budeme èekat <mm-pending-days> dn&iacute;.
+
+        <p>Mù¾ete si nastavit i sv&eacute; jm&eacute;no, jako napø.
+        <em>Petr Nov&aacute;k</em>.
+
+        <p>Pokud se maj&iacute; proveden&eacute; zmìny projevit ve v&scaron;ech
+	konferenc&iacute;ch na tomto serveru, mus&iacute;te za&scaron;krtnout volbu
+        <em>Zmìnit glob&aacute;lnì</em>.
+
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Nov&aacute; adresa:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Znovu pro potvrzen&iacute;:
+            </div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Cel&eacute; jm&eacute;no
+            (nepovinn&eacute;):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Zmìnit glob&aacute;lnì</center></td>
+    </tr>
+</table>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING=5" CELLPADDING="5">
+	<TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+<B>Odhl&aacute;&scaron;en&iacute; z <MM-List-Name></B>
+
+	<TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+<B>Va&scaron;e ostatn&iacute;  pøihl&aacute;&scaron;en&eacute; konference na  <MM-Host></B>
+	</FONT></TD></TR>
+
+	<tr><td>
+         Pro odhl&aacute;&scaron;en&iacute; za&scaron;krtnìte pol&iacute;èko a kliknìte na tlaè&iacute;tko
+	 Odhl&aacute;sit. <strong>Pozor:</strong>
+	 Zmìna se projev&iacute; okam¾itì.
+	 <p>
+	 <center><MM-Unsubscribe-Button></center></td>
+     <td>
+        Mù¾ete si zobrazit seznam v&scaron;ech dal&scaron;&iacute;ch konferenc&iacute; na tomto
+	serveru, jejich¾ jste èleny. Pokud zvol&iacute;te tuto volbu,
+	prom&iacute;tnou se zde proveden&eacute; zmìny i do v&scaron;ech ostatn&iacute;ch kont.
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+	</TD></TR>
+</table>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+     <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+	<B>Va&scaron;e heslo pro  <MM-List-Name></B>
+	</FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Zapomnìli jste heslo?</h3>
+        </center>
+         Kliknìte na toto tlaè&iacute;tko a heslo V&aacute;m bude zasl&aacute;no na Va&scaron;&iacute;
+         e-mailovou adresu.
+	 <p>
+	 <MM-Umbrella-Notice>
+	 <center>
+	 <MM-Email-My-Pw>
+	 </center>
+	 </td>
+
+     <td WIDTH="50%">
+         <a name=changepw>
+         <center>
+	 <h3>Zmìna hesla</h3>
+      	 <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+	    <TR><TD BGCOLOR="#dddddd">Nov&eacute; heslo:</TD>
+	<TD><MM-New-Pass-Box></TD>
+      </TR>
+      <TR> 
+	<TD BGCOLOR="#dddddd">A je&scaron;tì jednou nov&eacute; pro kontrolu:</TD>
+	<TD><MM-Confirm-Pass-Box></TD>
+      </TR>
+</table>
+           <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Zmìnit glob&aacute;lnì.
+     </TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+	<TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+<B>Nastaven&iacute; Va&scaron;eho konta pro konferenci <MM-List-Name> </B>
+	</FONT></TD></TR>
+</table>
+
+<p>
+<i><strong>Aktu&aacute;ln&iacute; hodnoty jsou za&scaron;krtnuty</strong></i><p>
+
+<p>Pozor, u nìkter&yacute;ch voleb je checkbox <em>Nastavit glob&aacute;lnì</em>.
+Pokud jej za&scaron;krtnete, provedou se zmìny ve v&scaron;ech konferenc&iacute;ch, do
+kter&yacute;ch jste pøihl&aacute;&scaron;eni na tomto serveru. Pokud chcete vìdìt, kter&eacute; to
+jsou, kliknìte na <em>Seznam ostatn&iacute;ch konferenc&iacute;</em> nahoøe na str&aacute;nce.
+<p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Zak&aacute;zat zas&iacute;l&aacute;n&iacute; pø&iacute;spìvkù</strong></a><p>
+Vyberte tuto volbu, pokud si nepøejete dost&aacute;vat ¾&aacute;dn&eacute; pø&iacute;spìvky.
+</td><td bgcolor="#cccccc">
+<mm-delivery-enable-button> Zas&iacute;lat<br>
+<mm-delivery-disable-button> Nezas&iacute;lat<br>
+        <mm-global-deliver-button><i>Nastavit glob&aacute;lnì</i>
+        </td></tr>
+
+<!--Start-Digests-Delete-->
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Zapnut&iacute; digest re¾imu</strong><p>
+Pokud je zapnut digest re¾im dostanete v&scaron;echny pø&iacute;spìvky v jednom dopise
+jednou dennì. Pokud digest vypnete, dostanete pø&iacute;spìvky z posledn&iacute;ho dne
+je&scaron;tì v digest formì.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Vypnuto<br>
+        <MM-Digest-Radio-Button>Zapnuto
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Pøejete si digest dost&aacute;vat jako MIME zpr&aacute;vu nebo èist&yacute;
+	text?</strong><p>
+Pokud V&aacute;&scaron; po&scaron;tovn&iacute; klient nedok&aacute;¾e pøeè&iacute;st MIME zpr&aacute;vu, nastavte si zde
+volbu èist&yacute; text. Tato volba nem&aacute; ¾&aacute;dn&yacute; v&yacute;znam, pokud nen&iacute; digest aktivn&iacute;.<br>
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Èist&yacute; text<p>
+        <mm-global-mime-button><i>Nastavit glob&aacute;lnì</i>
+        </td></tr>
+<!--End-Digests-Delete-->
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Pøejete si dost&aacute;vat pø&iacute;spìvky, kter&eacute; jste sami zaslali do
+konference?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>Ne<br>
+        <mm-receive-own-mail-button>Ano
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong> Pøejete si dost&aacute;vat ozn&aacute;men&iacute; o rozesl&aacute;n&iacute; vlastn&iacute;ch pø&iacute;spìvkù?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>Ne<br>
+        <mm-ack-posts-button>Ano
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Chcete dost&aacute;vat upozornìn&iacute; na hesla?</strong><p>
+	Ve v&yacute;choz&iacute; konfiguraci dost&aacute;v&aacute;te jednou mìs&iacute;ènì mailem
+	zpr&aacute;vu, kde je uveden seznam konferenc&iacute; a k nim pø&iacute;slu&scaron;n&aacute;
+	hesla, kter&aacute; potøebujete pro rùzn&eacute; administrativn&iacute; operace.
+        Pokud vyberete <em>Ne</em>, nebudete tento mail
+	dost&aacute;vat. Pø&iacute;padnì zapomenut&eacute; heslo si mù¾ete poslat
+	z webovsk&eacute;ho rozhran&iacute;.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Ne<br>
+        <mm-get-password-reminder-button>Ano<p>
+        <mm-global-remind-button><i>Nastavit glob&aacute;lnì</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Pøejete si b&yacute;t vidìt v seznamu &uacute;èastn&iacute;kù?</strong><p>
+	Pokud si nìkdo zobraz&iacute; seznam &uacute;èastn&iacute;kù, ve v&yacute;choz&iacute;
+	konfiguraci vid&iacute; adresy v&scaron;ech &uacute;èastn&iacute;kù. Pokud na tomto
+	seznamu nechcete b&yacute;t uvedeni, mù¾ete zde zobrazen&iacute; zak&aacute;zat.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Zobrazit<br>
+        <MM-Hide-Subscription-Button>Skr&yacute;t
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Jakou øeè preferujete pro komunikaci s listserverem?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Kter&aacute; t&eacute;mata V&aacute;s zaj&iacute;maj&iacute;?</strong><p>
+	        Pokud si vyberete jedno nebo v&iacute;ce t&eacute;mat, mù¾ete
+		filtrovat pø&iacute;spìvky z konference a dost&aacute;vat jedinì
+		ty, kter&eacute; V&aacute;s zaj&iacute;maj&iacute;.
+
+                <p>U pø&iacute;spìvkù, kter&eacute; se nepodaø&iacute; zatø&iacute;dit do ¾&aacute;dn&eacute;
+		kategorie, z&aacute;vis&iacute; na nastaven&iacute; dal&scaron;&iacute; volby, jestli je
+		dostanete nebo ne. Pokud nezvol&iacute;te ¾&aacute;dn&eacute; t&eacute;ma, budete
+		dost&aacute;vat v&scaron;echny pø&iacute;spìvky.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Chcete dost&aacute;vat pø&iacute;spìvky, kter&eacute; se nepodaøilo
+	zaøadit do ¾&aacute;dn&eacute; kategorie?</strong><p>
+
+                Tato volba m&aacute; smysl jedinì pokud jste si v pøedchoz&iacute;
+		volbì vybral nìjak&eacute; t&eacute;ma. Pokud zde
+		odpov&iacute;te <em>Ne</em> nebudete dost&aacute;vat ¾&aacute;dn&eacute;
+		pø&iacute;spìvky, kter&eacute; nespadaj&iacute; do Va&scaron;ich t&eacute;mat, jinak
+		budete dost&aacute;vat i nezatøiditeln&eacute;.
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>Ne<br>
+        <mm-receive-nonmatching-topics>Ano
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Eliminuj duplicitn&iacute; pø&iacute;spìvky?</strong><p>
+
+                Pokud dostane listserver k rozesl&aacute;n&iacute; pø&iacute;spìvek
+                jste uvedeni v hlavièce <tt>To:</tt>
+                nebo <tt>Cc:</tt> dostanete pø&iacute;spìvek dvakr&aacute;t, jednou
+                pø&iacute;mo a jednou pøes konferenci. Pokud vyberete
+                volbu <em>Ano</em>, listserver takov&yacute; pø&iacute;spìvek na va&scaron;i
+                adresu neza&scaron;le a vy dostanete jen ten, kter&yacute; v&aacute;m
+                zas&iacute;l&aacute; pø&iacute;mo autor. Pokud vyberete volbu <em>Ne</em>
+                dostanete pø&iacute;spìvek pravdìpodobnì dvakr&aacute;t.
+
+                <p>Pokud listserver rozes&iacute;l&aacute; ka¾d&yacute; pø&iacute;spìvek zvl&aacute;&scaron;»,
+                a vy m&aacute;te nastaveno, ¾e si pøejete dost&aacute;vat
+                duplicitn&iacute; pø&iacute;spìvky, bude m&iacute;t ka¾d&yacute; duplicitn&iacute;
+                pø&iacute;spìvek pøid&aacute;nu hlavièku 
+                <tt>X-Mailman-Copy: yes</tt>.
+
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>Ne<br>
+        <mm-dont-receive-duplicates-button>Ano<p>
+        <mm-global-nodupes-button><i>Nastavit glob&aacute;lnì</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
+</table>
+</center>
+<p>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
+</html>

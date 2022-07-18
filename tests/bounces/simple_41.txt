@@ -1,0 +1,27 @@
+Received: from intercitytime.com (unknown [218.255.171.146])
+	by mail.mailman3.org (Postfix) with ESMTP id 7675880267
+	for <mailman-users-bounces@mailman3.org>; Tue, 14 Feb 2017 09:29:16 +0000 (UTC)
+From: "Delivery Subsystem" <POSTMASTER@intercitytime.com>
+To: <mailman-users-bounces@mailman3.org>
+Subject: Message Delivery Failure
+Date: Tue, 14 Feb 2017 17:29:12 +0800
+Message-ID: <BD6CB5FA118F4A91B33FFF4DEF67E03E.MAI@intercitytime.com>
+X-MEFilter: 1
+Precedence: bulk
+Auto-Submitted: auto-replied
+Message-ID-Hash: QD4JEJZEMX3L2YZ3EPVXIXH2QNFQ5Z7D
+X-Message-ID-Hash: QD4JEJZEMX3L2YZ3EPVXIXH2QNFQ5Z7D
+X-MailFrom: <>
+
+
+MailEnable: Message could not be delivered to some recipients.
+The following recipient(s) could not be reached:
+
+	Recipient: [SMTP:userx@example.com]
+	Reason: Remote SMTP Server Returned: 550 Requested action not taken: mailbox unavailable or not local.
+
+
+Message headers follow:
+
+Message removed
+

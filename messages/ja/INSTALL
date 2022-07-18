@@ -1,0 +1,27 @@
+Mailman - The GNU Mailing List Management System
+Copyright (C) 1998-2005 Free Software Foundation, Inc.
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+
+インストールとアップグレードの手順は、現在はすべて 「Mailman
+installation Guide.」に書かれています。 Web, PostScript, PDF
+および素のテキストのそれぞれの形式のこのガイドはこの
+ソースディストリビューションにも含まれていますし、オンラインでも
+参照できます。
+
+このソースディストリビューションでは全てのマニュアル文書は
+doc/ ディレクトリ以下で提供しています。(訳注:英語です)
+
+    HTML        : doc/mailman-install/index.html
+    PostScript  : doc/mailman-install.ps
+    PDF         : doc/mailman-install.pdf
+    plain text  : doc/mailman-install.txt
+
+あるいは http://www.list.org/site.html にアクセスしてオンラインの
+インストールガイドを見付けてください。(訳注:英語です)
+
+
+訳注: 日本語の Mailman の各種マニュアルは「Mailman日本語情報」
+http://docs.python.jp/contrib/mailman/ にまとまってありますが、
+このページを管理されていた菊地氏が2012年1月に永眠されましたため、
+以後更新がされておりません。
+このため、内容がやや古くなりつつありますので注意しつつ利用ください。

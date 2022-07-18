@@ -1,0 +1,3 @@
+%(member)s er nu fjernet fra listen %(listname)s.
+%(whence)s
+

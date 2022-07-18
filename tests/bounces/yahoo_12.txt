@@ -1,0 +1,18 @@
+From: MAILER-DAEMON@yahoo.com
+To: list-bounces@lists.example.org
+Message-ID: <1724157855.37526491587724620658.JavaMail.yahoo@mpq204.consmr.mail.bf2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID-Hash: NMFBS7K2KRA44XW6KCW6CW6NNKCXESHM
+X-Message-ID-Hash: NMFBS7K2KRA44XW6KCW6CW6NNKCXESHM
+X-MailFrom: MAILER-DAEMON@yahoo.com
+
+I'm afraid I wasn't able to deliver the following message.
+This is a permanent error; I've given up. Sorry it didn't work out.
+
+Subject: [List] Re: Name for MP3 Folder
+To: user@yahoo.com
+
+---Below this line is a copy of the message.
+

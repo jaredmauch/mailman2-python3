@@ -1,0 +1,19 @@
+Ĉi tio estas memorigilo, sendata unu fojon monate, pri viaj abonoj
+je dissendolistoj ĉe %(hostname)s. Ĝi inkluzivas la informon de viaj 
+abonoj kaj kiel uzi ĝin por reagordi ĝin aŭ malaboni la liston.
+
+Vizitu la retpaĝon de la listo por malaboni la listojn, aktivigi liveradon
+de poŝto per resumoj, tute malŝalti liveradon (ekzemple dum ferioj),
+aŭ ŝanĝi aliajn agordojn.
+
+Krom la retpaĝo, vi povas fari tiujn ŝanĝojn ankaŭ sendante retpoŝton.
+Por plu informiĝi, sendu messaĝon al la retpoŝtadreso '-request' de la 
+listo (ekzemple, %(exreq)s), enhavantan nur la vorton 'help' (en la 
+angla) en la temlinio, kaj vi ricevos retpoŝton kun instrukcioj.
+
+Se vi havas demandojn aŭ dubojn, kontaktu la listestron ĉe
+
+    %(owner)s
+    
+Jen la pasvorto de %(useraddr)s:
+

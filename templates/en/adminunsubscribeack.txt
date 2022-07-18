@@ -1,0 +1,3 @@
+%(member)s has been removed from %(listname)s.
+%(whence)s
+

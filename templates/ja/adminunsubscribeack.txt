@@ -1,0 +1,3 @@
+%(member)s さんが %(listname)s から退会しました。
+%(whence)s
+

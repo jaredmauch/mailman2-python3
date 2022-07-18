@@ -1,0 +1,35 @@
+Bun venit pe lista de discuţii %(real_name)s@%(host_name)s!
+%(welcome)s
+Pentru a publica mesaje pe listă, trimiteţi un email la adresa:
+
+  %(emailaddr)s
+
+Găsiţi informaţii generale despre listă la adresa:
+
+  %(listinfo_url)s
+
+Dacă doriţi să vă dezabonaţi sau să vă schimbaţi preferinţele personale
+(de ex. să vă schimbaţi parola, sau să treceţi la modul rezumat),
+vizitaţi pagina de preferinţe personale la adresa:
+
+  %(optionsurl)s
+%(umbrella)s
+Puteţi, de asemenea face ajustări prin email, trimiţând un mesaj la adresa:
+
+  %(real_name)s-request@%(host_name)s
+
+având cuvântul 'help' ca subiect sau ca mesaj (nu includeţi ghilimelele),
+şi veţi primi un mesaj cu instrucţiuni.
+
+Trebuie să ştiţi parola de acces pentru a vă putea modifica preferinţele
+(inclusiv pentru schimbarea vechii parole) sau pentru dezabonare.
+Parola de acces este:
+
+  %(password)s
+
+În mod normal, Mailman vă va reaminti lunar parola de acces la lista de
+discuţii %(host_name)s, dar aveţi posibilitatea de a anula
+aceasta dacă doriţi.  Mesajul de reamintire va include şi instrucţiuni
+detaliate despre dezabonare sau modificarea opţiunilor personale.
+Există de asemenea un buton pe pagina de preferinţe personale care vă
+trimite direct parola de acces prin email.

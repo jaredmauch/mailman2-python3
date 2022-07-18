@@ -1,0 +1,63 @@
+Requestas administrative es monstrate in duo modos, in un
+<a href="%(summaryurl)s">pagina summario</a> e in un pagina
+<em>detalios</em>. Le pagina summario contine requestas de (dis)abonamento
+pendente, e messages attendente le approbation tue, gruppate per adresse de
+e-mail de expeditor. Le pagina detalios contine un vista plus detaliate sur
+cata message retenite, includente le capite complete del message e un
+extracto del texto.
+
+<p>In tote le paginas, le sequente actiones es disponibile:
+
+
+<ul>
+<li><b>Postponer</b> -- Postponer tu decision. Nulle action es exequite
+    ora pro iste requesta, ma tu pote totevia re-inviar o conservar le
+    messages retenite (vide infra).
+
+<li><b>Approbar</b> -- Acceptar le message e inviar lo al lista.
+    Pro requestas de abonamento, approbar le cambiamento de stato de abonamento.
+
+<li><b>Rejectar</b> -- Rejectar le message e inviar un notification de rejection
+    al expeditor.
+    Pro requestas de abonamento, rejectar le cambiamento de stato de abonamento.
+    In omne caso, tu deberea scriber in le texto juncte le ration pro le
+    rejection.
+
+<li><b>Abandonar</b> -- Jectar via le message original, sin inviar un notification
+    de rejection. Pro requestas de abonamento, isto simplemente abandona le
+    requesta sin notificar le persona qui lo demandava. Isto es le action que
+    on deberea generalmente exequer pro le casos de spam.
+
+</ul>
+
+<p>Pro messages retenite, activa le option <b>Conservar</b> si tu vole
+salveguardar un copia del message pro le administrator del sito. Isto es utile
+pro messages abusive que tu vole abandonar, ma que tu debe conservar pro
+inspection ulterior.
+
+<p>Activa le option <b>Re-inviar a</b> e insere le adresse del destinatario
+si tu vole reinviar le message a un altere persona qui non es in le lista.
+Pro modificar un message ante su invio al lista, tu debe re-inviar le message a
+te mesme (o al proprietarios del lista), e abandonar le message original.
+Alora, quando le message se monstra in tu cassa postal, modifica lo e reinvia lo
+al lista, con un linea <tt>Approved:</tt> in le capite, habente como valor le 
+contrasigno del lista. Il es un bon comportamento includer in le message un
+nota explicative, pro declarar que tu lo ha modificate.
+
+<p>Si le expeditor es un abonato sub moderation, tu pote optionalmente liberar
+le del moderation. Isto es utile quando tu lista es configurate pro poner
+le nove membros sub proba, e tu ha decidite que iste membro es digne de fide
+pro scriber al lista sin approbation.
+
+<p>Si le expeditor non es membro del lista, tu pote adder le adresse de
+e-posta a un <em>filtro expeditor</em>. Le filtros expeditor es describite in
+le <a href="%(filterurl)s">pagina de privacy de filtros expeditor</a>, e pote
+esser <b>auto-accept</b> (Accepta), <b>auto-hold</b> (Retene),
+<b>auto-reject</b> (Rejecta) o <b>auto-discard</b> (Abandona). Iste option
+non essera disponibile si le adresse es jam in un del filtros expeditor.
+
+<p>Quando tu ha finite, clicca sur le button <em>Confirmar tote te datos</em>
+al initio o al fin del pagina. Iste button inviara tote le selectiones
+pro tote le requestas administrative que tu ha decidite.
+
+<p><a href="%(summaryurl)s">Retornar al pagina summario</a>.

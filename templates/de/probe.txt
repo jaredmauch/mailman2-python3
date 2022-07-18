@@ -1,0 +1,20 @@
+Dies ist eine Erprobungsnachricht. Sie kann übergangen werden.
+
+Die Liste %(listname)s hat eine Reihe von Rückläufern erhalten, so dass
+es anscheinend Probleme beim Zustellen von Nachrichten an %(address)s gibt.
+Ein Muster ist beigefügt. Bitte überprüfen Sie die Nachricht hinsichtlich
+der E-Mail-Adresse.
+
+Wenn diese Nachricht angekommen ist, ist nichts zu veranlassen. Kommt sie
+zurück, wird die Adresse aus der Liste ausgetragen.
+
+Die Mitgliedsseite befindet sich unter
+
+    %(optionsurl)s
+
+Auf dieser Seite können Zustellungsdaten geändert werden.
+
+Wenn Fragen zur Liste bestehen, freut sich der Eigner der Liste auf
+über eine Nachricht an
+
+    %(owneraddr)s

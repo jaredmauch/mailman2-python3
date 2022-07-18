@@ -1,0 +1,78 @@
+Return-Path: <scr-admin@socal-raves.org>
+Received: from westmail2.West.Sun.COM (westmail2.West.Sun.COM [129.153.100.30])
+	by angus.west.sun.com (8.11.4+Sun/8.11.4) with ESMTP id fADLhna07541
+	for <scr-listmaster@angus.west.sun.com>; Tue, 13 Nov 2001 13:43:49 -0800 (PST)
+Received: from pheriche.sun.com (pheriche.Central.Sun.COM [129.147.5.34])
+	by westmail2.West.Sun.COM (8.9.3+Sun/8.9.3/ENSMAIL,v2.1p1) with ESMTP id NAA21411
+	for <scr-listmaster@angus.west.sun.com>; Tue, 13 Nov 2001 13:43:49 -0800 (PST)
+Received: from babylon.socal-raves.org (ip-209-85-222-117.dreamhost.com [209.85.222.117])
+	by pheriche.sun.com (8.9.3+Sun/8.9.3) with ESMTP id OAA24699
+	for <scr-listmaster@angus.west.sun.com>; Tue, 13 Nov 2001 14:43:44 -0700 (MST)
+Received: by babylon.socal-raves.org (Postfix)
+	id 7153B51D5B; Tue, 13 Nov 2001 13:42:35 -0800 (PST)
+Delivered-To: dmick-lm@babylon.socal-raves.org
+Received: from babylon.socal-raves.org (localhost [127.0.0.1])
+	by babylon.socal-raves.org (Postfix) with ESMTP id 5E63D51B8A
+	for <listmaster@socal-raves.org>; Tue, 13 Nov 2001 13:42:35 -0800 (PST)
+Delivered-To: scr-admin@socal-raves.org
+Received: from kitkat.hotpop.com (kitkat.hotpop.com [204.57.55.30])
+	by babylon.socal-raves.org (Postfix) with ESMTP id DEC4D51B8A
+	for <scr-admin@socal-raves.org>; Tue, 13 Nov 2001 13:42:32 -0800 (PST)
+Received: from hotpop.com (unknown [204.57.55.31])
+	by kitkat.hotpop.com (Postfix) with SMTP id 53D27324D3
+	for <scr-admin@socal-raves.org>; Tue, 13 Nov 2001 21:43:27 +0000 (UTC)
+From: MAILER-DAEMON@HotPOP.com (Mail Delivery System)
+Subject: Undelivered Mail Returned to Sender
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="------------1903.1005687801/HotPOP.com"
+Message-Id: <20011113214327.53D27324D3@kitkat.hotpop.com>
+Date: Tue, 13 Nov 2001 21:43:27 +0000 (UTC)
+To: undisclosed-recipients: ;
+Sender: scr-owner@socal-raves.org
+Errors-To: scr-owner@socal-raves.org
+X-BeenThere: scr@socal-raves.org
+X-Mailman-Version: 2.1a3+
+Precedence: bulk
+List-Help: <mailto:scr-request@socal-raves.org?subject=help>
+List-Post: <mailto:scr@socal-raves.org>
+List-Subscribe: <http://socal-raves.org/mailman/listinfo/scr>,
+	<mailto:scr-request@socal-raves.org?subject=subscribe>
+List-Id: SoCal-Raves <scr.socal-raves.org>
+List-Unsubscribe: <http://socal-raves.org/mailman/listinfo/scr>,
+	<mailto:scr-request@socal-raves.org?subject=unsubscribe>
+List-Archive: <http://socal-raves.org/mailman/private/scr/>
+Content-Length: 5470
+Status:  O
+X-Status: $$$$
+X-UID: 0000014497
+
+This is a MIME-encapsulated message.
+
+--------------1903.1005687801/HotPOP.com
+Content-Description: Notification
+Content-Type: text/plain
+
+Undeliverable Address: userx@example.com
+
+Reason: The email you sent to the address specified
+above has been returned because the recipient is over disk quota.  This
+account will not be able to receive any email until the account owner
+removes some email from the server.
+
+
+System Contact: postmaster@HotPOP.com
+
+
+Original message attached (Max 5k)
+
+--------------1903.1005687801/HotPOP.com
+Content-Description: Undelivered Message
+Content-Type: message/rfc822
+
+Message removed
+
+--------------1903.1005687801/HotPOP.com--
+
+
+

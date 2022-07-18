@@ -1,0 +1,4 @@
+%(member)s נרשם בהצלחה אל %(listname)s.
+%(whence)s
+
+

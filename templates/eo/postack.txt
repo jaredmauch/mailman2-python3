@@ -1,0 +1,8 @@
+Vian mesaĝon titolitan
+
+    %(subject)s
+
+sukcese ricevis la dissendolisto %(listname)s.
+
+Informopaĝo de la listo: %(listinfo_url)s
+Agordoj de via abono: %(optionsurl)s

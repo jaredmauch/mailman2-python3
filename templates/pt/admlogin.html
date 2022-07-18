@@ -1,0 +1,39 @@
+<html>
+<head>
+  <title>%(listname)s %(who)s Authentication</title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
+	    Authentication</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">List %(who)s Password:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Let me in...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Importante:</em></strong> A partir de agora o seu 
+      browser tem de estar configurado para permitir cookies, se n&atilde;o
+      o fizer as altera&ccedil;&otilde;es administrativas n&atilde;o ter&atilde;o efeito.
+      
+      <p>S&atilde;o utilizadas Cookies, a n&iacute;vel da sess&atilde;o, na interface
+       administrativa do Mailman, de forma a n&atilde;o ter que reautenticar 
+       cada opera&ccedil;&atilde;o. A cookie expira automaticamente quando termina o
+       browser, ou pode expir&aacute;-la explicitamente carregando no link 
+       <em>Sair</em> em <em>Outras actividades administrativas</em>, o 
+       qual poder&aacute; ver depois de autenticar-se.
+</FORM>
+</body>
+</html>

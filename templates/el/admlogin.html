@@ -1,0 +1,40 @@
+<html>
+<head>
+  <title>%(listname)s Πιστοποίηση του %(who)s</title>
+  <script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Πιστοποίηση του %(who)s της
+	    λίστας %(listname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Κωδικός του %(who)s:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Αφήστε με να συνδεθώ ...">
+      </td>
+    </tr>
+  </TABLE>
+     <p><strong><em>Σημαντικό:</em></strong> Από το 
+      σημείο αυτό και έπειτα, θα πρέπει να έχετε ενεργοποιημένα τα cookies στον browser. 
+      Σε διαφορετική περίπτωση καμία διαχειριστική αλλαγή δεν θα ενεργοποιηθεί.
+
+      <p>Τα session cookies χρησιμοποιούνται στο διαχειριστικό περιβάλλον 
+	  του Mailman έτσι ώστε να μη χρειάζεται να γίνεται πιστοποίηση του χρήστη
+	  για κάθε διαχειριστική λειτουργία. Αυτό το
+      cookie θα λήξει αυτόματα όταν θα βγείτε από το browser. Εναλλακτικά
+      μπορείτε να το καταστρέψετε και εσείς πατώντας το σύνδεσμο
+      <em>Έξοδος</em> κάτω από το <em>'Αλλες Διαχειριστικές 
+	  Λειτουργίες</em> (διαθέσιμο αφού συνδεθείτε επιτυχώς).
+</FORM>
+</body>
+</html>

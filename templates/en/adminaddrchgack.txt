@@ -1,0 +1,4 @@
+Address for member %(name)s has been successfully changed
+from %(oldaddr)s to %(newaddr)s for list %(listname)s.
+
+

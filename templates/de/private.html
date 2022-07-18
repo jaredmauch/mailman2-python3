@@ -1,0 +1,63 @@
+<html>
+<head>
+    <title>Authentifizierung f&uuml;r den Zugriff auf das Archiv von %(realname)s</title>
+    <script>function sf(){document.f.username.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
+%(message)s
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Authentifizierung f&uuml;r den Zugriff auf das Archiv von %(realname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">E-Mail-Adresse:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Passwort:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Anmelden">
+      </td>
+    </tr>
+  </TABLE>
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <tr>
+      <td><p><strong><em>Wichtig:</em></strong> Ab diesem Punkt m&uuml;ssen in Ihrem
+      Browser "Cookies" aktiviert sein, ansonsten m&uuml;ssen Sie sich f&uuml;r
+      jede Aktion wieder anmelden.
+
+      <p>Mailmans Administrationsinterface benutzt sog. "session cookies",
+      damit Sie sich nicht f&uuml;r jede Administrationsaufgabe erneut
+      authentifizieren m&uuml;ssen. Diese "Cookies" verfallen automatisch bei
+      Beendigung Ihres Webbrowsers; Sie k&ouml;nnen Sie allerdings auch sofort
+      verfallen lassen, indem Sie auf den <em>Ausloggen</em>-Link unter
+      <em>Andere Administrative T&auml;tigkeiten</em> klicken (den Sie sehen
+      werden, sobald Sie erfolgreich eingeloggt sind).
+      <p></td>
+    <tr>
+  </TABLE>
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Passwort-Erinnerung</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>Falls Sie Ihr Passwort nicht mehr wissen, tragen Sie oben Ihre
+          E-Mail-Adresse ein und klicken Sie auf <em>Passwort zusenden</em>
+          und es wird Ihnen per E-Mail zugestellt werden.</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Passwort zusenden" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
+</body>
+</html>

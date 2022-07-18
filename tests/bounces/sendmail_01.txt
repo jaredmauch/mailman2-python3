@@ -1,0 +1,60 @@
+From VM Sat Oct 14 00:29:43 2000
+Return-Path: <mailman-users-admin@python.org>
+Delivered-To: bxxxxx@mail.example.org
+Received: from ns1.example.com (unknown [208.185.174.104])
+	by mail.example.org (Postfix) with ESMTP id DF2B1D38CD
+	for <yyyyy@example.org>; Sat, 14 Oct 2000 00:16:04 -0400 (EDT)
+Received: from dinsdale.python.org (dinsdale.cnri.reston.va.us [132.151.1.21])
+	by ns1.example.com (8.9.3/8.9.3) with ESMTP id VAA04124
+	for <bxxxxx@example.com>; Fri, 13 Oct 2000 21:17:08 -0700 (PDT)
+	(envelope-from mailman-users-admin@python.org)
+Received: from dinsdale.python.org (localhost [127.0.0.1])
+	by dinsdale.python.org (Postfix) with ESMTP id 46F711D08C
+	for <bxxxxx@example.com>; Sat, 14 Oct 2000 00:15:15 -0400 (EDT)
+Delivered-To: mailman-users-admin@python.org
+Received: from banzai.nfg.nl (banzai.nfg.nl [194.109.206.156])
+	by dinsdale.python.org (Postfix) with ESMTP id 201661D08C
+	for <mailman-users-admin@python.org>; Sat, 14 Oct 2000 00:14:45 -0400 (EDT)
+Received: from localhost (localhost)
+	by banzai.nfg.nl (8.9.3/8.9.3/Debian 8.9.3-21) with internal id GAB17388;
+	Sat, 14 Oct 2000 06:14:45 +0200
+Message-Id: <200010140414.GAB17388@banzai.nfg.nl>
+Auto-Submitted: auto-generated (failure)
+Errors-To: mailman-users-owner@python.org
+Precedence: bulk
+List-Help: <mailto:mailman-users-request@python.org?subject=help>
+List-Post: <mailto:mailman-users@python.org>
+List-Subscribe: <http://www.python.org/mailman/listinfo/mailman-users>,
+	<mailto:mailman-users-request@python.org?subject=subscribe>
+List-Id: Mailman mailing list management users <mailman-users.python.org>
+List-Unsubscribe: <http://www.python.org/mailman/listinfo/mailman-users>,
+	<mailto:mailman-users-request@python.org?subject=unsubscribe>
+List-Archive: <http://www.python.org/pipermail/mailman-users/>
+From: Mail Delivery Subsystem <MAILER-DAEMON@banzai.nfg.nl>
+Sender: mailman-users-owner@python.org
+To: mailman-users-admin@python.org
+To: postmaster@banzai.nfg.nl
+Subject: Returned mail: Too many hops 26 (25 max): from mailman-users-admin@python.org via localhost, to zzzzz@nfg.nl
+Date: Sat, 14 Oct 2000 06:14:45 +0200
+X-BeenThere: mailman-users@python.org
+X-Mailman-Version: 2.0beta6
+
+The original message was received at Sat, 14 Oct 2000 06:14:45 +0200
+from uucp@localhost
+
+   ----- The following addresses had permanent fatal errors -----
+zzzzz@shaft.coal.nl
+    (expanded from: zzzzz@nfg.nl)
+
+   ----- Transcript of session follows -----
+554 Too many hops 26 (25 max): from mailman-users-admin@python.org via localhost, to zzzzz@nfg.nl
+
+   ----- Message header follows -----
+
+Message header removed
+
+
+   ----- Message body suppressed -----
+
+
+

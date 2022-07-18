@@ -1,0 +1,25 @@
+Abunamentul dumneavoastră la lista de discuţii %(listname)s a fost
+dezactivat %(reason)s.  Nu veţi mai primi mesaje din partea acestei liste
+până la re-activarea abonamentului dumneavoastră.  Veţi primi încă
+%(noticesleft)s mesaje de atenţionare ca acesta înainte ca abonamentul
+dumneavoastră la listă să fie anulat definitiv.
+
+Pentru a vă re-activa abonamentul, puteţi răspunde (reply) la acest mesaj
+(lăsând câmpul Subiect intact), sau puteţi vizita pagina de confirmare la
+
+    %(confirmurl)s
+
+De asemenea, puteţi vizita pagina de preferinţe personale la
+
+    %(optionsurl)s
+
+Pe această pagină veţi putea modifica diverse opţiuni de livrare, precum
+adresa de email de destinaţie şi dacă doriţi sau nu primirea unui singur
+rezumat zilnic.  Pentru a nu uita, parola dumneavoastră de acces este
+
+    %(password)s
+
+Dacă aveţi orice întrebări sau probleme, puteţi contacta proprietarul listei
+la adresa
+
+    %(owneraddr)s

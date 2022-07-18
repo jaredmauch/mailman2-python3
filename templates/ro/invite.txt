@@ -1,0 +1,21 @@
+Adresa dumneavoastră "%(email)s" a fost aleasă pentru a vă invita să
+vă abonaţi la lista de discuţii %(listname)s de la %(hostname)s.
+Invitaţia este făcută de către proprietarul listei %(listname)s.
+Puteţi accepta această invitaţie printr-un simplu răspuns (reply) la
+acest mesaj, menţinând intact câmpul Subiect.
+
+De asemenea, puteţi vizita pagina web:
+
+    %(confirmurl)s
+
+sau puteţi include următorul rând -- dar numai acesta --
+într-un mesaj trimis la adresa %(requestaddr)s:
+
+    confirm %(cookie)s
+
+Notaţi că un simplu răspuns (reply) la acest mesaj funcţionează din
+marea majoritate a programelor de email.
+
+Dacă nu doriţi să onoraţi această invitaţie, ignoraţi acest mesaj.
+Dacă aveţi orice alte întrebări, vă rugăm să le trimiteţi la
+%(listowner)s.

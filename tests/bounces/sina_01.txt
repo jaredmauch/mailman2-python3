@@ -1,0 +1,67 @@
+Return-Path: <boost-admin@lists.boost.org>
+Received: from mx04.mrf.mail.rcn.net ([207.172.4.53] [207.172.4.53])
+          by mta05.mrf.mail.rcn.net with ESMTP
+          id <20020403160608.EQZZ19155.mta05.mrf.mail.rcn.net@mx04.mrf.mail.rcn.net>;
+          Wed, 3 Apr 2002 11:06:08 -0500
+Received: from milliways.osl.iu.edu ([129.79.245.239])
+	by mx04.mrf.mail.rcn.net with esmtp (Exim 3.35 #5)
+	id 16snGx-0005F0-00
+	for user@example.com; Wed, 03 Apr 2002 11:06:07 -0500
+Received: from milliways.osl.iu.edu (localhost [127.0.0.1])
+	by milliways.osl.iu.edu (8.11.6/8.11.6/IUCS_2.44) with ESMTP id g33G61A24861;
+	Wed, 3 Apr 2002 11:06:01 -0500
+Received: from sina.com ([202.106.187.178])
+	by milliways.osl.iu.edu (8.11.6/8.11.6/IUCS_2.44) with SMTP id g33G5CA24792
+	for <boost-admin@lists.boost.org>; Wed, 3 Apr 2002 11:05:13 -0500
+Message-Id: <200204031605.g33G5CA24792@milliways.osl.iu.edu>
+Received: (qmail 53818 invoked for bounce); 3 Apr 2002 15:55:44 -0000
+Date: 3 Apr 2002 15:55:44 -0000
+From: MAILER-DAEMON@sina.com
+To: boost-admin@lists.boost.org
+Subject: 邮件传输失败！
+MIME-Version: 1.0
+X-Priority: 3
+X-Mailer: SinaMail 3.0
+Content-Type: multipart/mixed;
+  boundary="----------101784934443375SINAEMAIL---"
+Sender: boost-owner@lists.boost.org
+Errors-To: boost-owner@lists.boost.org
+X-BeenThere: boost@lists.boost.org
+X-Mailman-Version: 2.0.8
+Precedence: bulk
+List-Help: <mailto:boost-request@lists.boost.org?subject=help>
+List-Post: <mailto:boost@lists.boost.org>
+List-Subscribe: <http://lists.boost.org/mailman/listinfo.cgi/boost>,
+	<mailto:boost-request@lists.boost.org?subject=subscribe>
+List-Id: Boost mailing list <boost.lists.boost.org>
+List-Unsubscribe: <http://lists.boost.org/mailman/listinfo.cgi/boost>,
+	<mailto:boost-request@lists.boost.org?subject=unsubscribe>
+List-Archive: <http://lists.boost.org/MailArchives/boost/>
+
+This is a multi-part message in MIME format.
+
+------------101784934443375SINAEMAIL---
+Content-Type: text/plain;
+   charset="gb2312"
+Content-Transfer-Encoding: binary
+
+sina.com.
+邮件无法发送到您指定的地址中。
+在邮件传输过程中由于外部的无法避免的错误导致邮件无法送达。
+
+<userx@sina.com>:
+
+<usery@sina.com>:
+
+--- 附件中的内容是原信件的一份拷贝
+
+------------101784934443375SINAEMAIL---
+Content-Type: message/rfc822;
+ name="original message.eml"
+Content-Transfer-Encoding: binary
+Content-Disposition: attachment;
+ filename="original message.eml"
+
+Message removed
+
+------------101784934443375SINAEMAIL-----

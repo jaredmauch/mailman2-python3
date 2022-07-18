@@ -1,0 +1,65 @@
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by strategicnetwork.org (Postfix) with ESMTP id E71AC73423D
+	for <userx@example.com>; Sat, 17 May 2008 11:15:50 -0600 (MDT)
+From: "Mail Delivery System" <MAILER-DAEMON@strategicnetwork.org>
+To: <mailman-bounces@strategicnetwork.org>
+Subject: Undelivered Mail Returned to Sender
+Date: Sun, 18 May 2008 01:15:51 +0800
+Message-ID: <20080517171551.6EBAB734E3A@strategicnetwork.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0092_01C8B8BF.529D6450"
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Aci4Qafw1YeAmx2mRI2jVZKbY8YZ5A==
+
+This is a multipart message in MIME format.
+
+------=_NextPart_000_0092_01C8B8BF.529D6450
+Content-Type: text/plain;
+	boundary="E71AC73423D.1211044551/strategicnetwork.org";
+	charset="iso-8859-1";
+	report-type=delivery-status
+Content-Transfer-Encoding: 7bit
+
+This is the Postfix program at host strategicnetwork.org.
+
+I'm sorry to have to inform you that your message could not
+be delivered to one or more recipients. It's attached below.
+
+For further assistance, please send mail to <postmaster>
+
+If you do so, please include this problem report. You can
+delete your own text from the attached returned message.
+
+			The Postfix program
+
+<userx@example.com>: host mx.pastors.com[70.183.18.160] said: 550
+    unknown user <userx@example.com> (in reply to RCPT TO command)
+
+------=_NextPart_000_0092_01C8B8BF.529D6450
+Content-Type: message/delivery-status;
+	name="details.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="details.txt"
+
+Reporting-MTA: dns; strategicnetwork.org
+X-Postfix-Queue-ID: E71AC73423D
+X-Postfix-Sender: rfc822; mailman-bounces@strategicnetwork.org
+Arrival-Date: Sat, 17 May 2008 11:15:50 -0600 (MDT)
+
+Final-Recipient: rfc822; userx@example.com
+Action: failed
+Status: 5.0.0
+Diagnostic-Code: X-Postfix; host mx.pastors.com[70.183.18.160] said: 550
+	unknown user <userx@example.com> (in reply to RCPT TO command)
+
+------=_NextPart_000_0092_01C8B8BF.529D6450
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment
+
+Message removed
+
+------=_NextPart_000_0092_01C8B8BF.529D6450--
+
