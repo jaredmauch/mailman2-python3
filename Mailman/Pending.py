@@ -21,7 +21,7 @@ import os
 import time
 import errno
 import random
-import cPickle
+import pickle
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
@@ -87,7 +87,7 @@ class Pending:
             if e.errno != errno.ENOENT: raise
             return {'evictions': {}}
         try:
-            return cPickle.load(fp)
+            return pickle.load(fp)
         finally:
             fp.close()
 
@@ -112,7 +112,7 @@ class Pending:
         try:
             fp = open(tmpfile, 'w')
             try:
-                cPickle.dump(db, fp)
+                pickle.dump(db, fp)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:

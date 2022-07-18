@@ -40,7 +40,7 @@ import time
 import errno
 import getopt
 import shutil
-import cPickle
+import pickle
 import marshal
 
 import paths
@@ -506,11 +506,11 @@ def dequeue(filebase):
     try:
         try:
             msgfp = open(pckfile)
-            msg = cPickle.load(msgfp)
+            msg = pickle.load(msgfp)
             if not data:
                 # There was no .db file. Is this a post 2.1.5 .pck?
                 try:
-                    data = cPickle.load(msgfp)
+                    data = pickle.load(msgfp)
                 except EOFError:
                     pass
             os.unlink(pckfile)
@@ -572,7 +572,7 @@ def update_pending():
             if e.errno != errno.ENOENT: raise
         else:
             print('Updating Mailman 2.1.4 pending.pck database')
-            db = cPickle.load(fp)
+            db = pickle.load(fp)
     if db is None:
         print('Nothing to do.')
         return

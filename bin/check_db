@@ -53,7 +53,7 @@ import os
 import errno
 import getopt
 import marshal
-import cPickle
+import pickle
 
 import paths
 from Mailman import mm_cfg
@@ -81,7 +81,7 @@ def testfile(dbfile):
     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
         loadfunc = marshal.load
     elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-        loadfunc = cPickle.load
+        loadfunc = pickle.load
     else:
         assert 0
     fp = open(dbfile)

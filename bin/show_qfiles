@@ -34,7 +34,7 @@ Example: show_qfiles qfiles/shunt/*.pck
 
 import sys
 import getopt
-from cPickle import load
+from pickle import load
 
 import paths
 from Mailman.i18n import C_

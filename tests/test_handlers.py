@@ -22,7 +22,7 @@ import os
 import time
 import email
 import errno
-import cPickle
+import pickle
 import unittest
 from types import ListType
 from email.Generator import Generator

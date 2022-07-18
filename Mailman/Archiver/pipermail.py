@@ -8,7 +8,7 @@ import re
 import sys
 import time
 from email.Utils import parseaddr, parsedate_tz, mktime_tz, formatdate
-import cPickle as pickle
+import pickle
 from cStringIO import StringIO
 from string import lowercase
 

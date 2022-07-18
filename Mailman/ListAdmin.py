@@ -26,7 +26,7 @@ elsewhere.
 import os
 import time
 import errno
-import cPickle
+import pickle
 import marshal
 from cStringIO import StringIO
 
@@ -78,7 +78,7 @@ class ListAdmin:
             try:
                 fp = open(self.__filename)
                 try:
-                    self.__db = cPickle.load(fp)
+                    self.__db = pickle.load(fp)
                 finally:
                     fp.close()
             except IOError as e:
@@ -100,7 +100,7 @@ class ListAdmin:
             try:
                 fp = open(tmpfile, 'w')
                 try:
-                    cPickle.dump(self.__db, fp, 1)
+                    pickle.dump(self.__db, fp, 1)
                     fp.flush()
                     os.fsync(fp.fileno())
                 finally:
@@ -194,7 +194,7 @@ class ListAdmin:
             fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'w')
             try:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
-                    cPickle.dump(msg, fp, 1)
+                    pickle.dump(msg, fp, 1)
                 else:
                     g = Generator(fp)
                     g.flatten(msg, 1)
@@ -239,7 +239,7 @@ class ListAdmin:
                 return LOST
             try:
                 if path.endswith('.pck'):
-                    msg = cPickle.load(fp)
+                    msg = pickle.load(fp)
                 else:
                     assert path.endswith('.txt'), '%s not .pck or .txt' % path
                     msg = fp.read()
@@ -552,7 +552,7 @@ class ListAdmin:
             try:
                 fp = open(filename)
                 try:
-                    self.__db = cPickle.load(fp)
+                    self.__db = pickle.load(fp)
                 finally:
                     fp.close()
             except IOError as e:
@@ -614,7 +614,7 @@ def readMessage(path):
             msg = email.message_from_file(fp, Message.Message)
         else:
             assert ext == '.pck'
-            msg = cPickle.load(fp)
+            msg = pickle.load(fp)
     finally:
         fp.close()
     return msg

@@ -48,7 +48,7 @@ Python pickle.  In either case, if you want to override the default assumption
 import sys
 import getopt
 import pprint
-import cPickle
+import pickle
 import marshal
 from types import StringType
 
@@ -116,7 +116,7 @@ def main():
         load = marshal.load
         typename = 'marshal'
     else:
-        load = cPickle.load
+        load = pickle.load
         typename = 'pickle'
     fp = open(filename)
     m = []

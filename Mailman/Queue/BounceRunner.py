@@ -20,7 +20,7 @@
 import os
 import re
 import time
-import cPickle
+import pickle
 
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
@@ -90,7 +90,7 @@ class BounceMixin:
             finally:
                 os.umask(omask)
         for addr in addrs:
-            cPickle.dump((listname, addr, today, msg),
+            pickle.dump((listname, addr, today, msg),
                          self._bounce_events_fp, 1)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
@@ -105,7 +105,7 @@ class BounceMixin:
         self._bounce_events_fp.seek(0)
         while True:
             try:
-                listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
+                listname, addr, day, msg = pickle.load(self._bounce_events_fp)
             except ValueError as e:
                 syslog('bounce', 'Error reading bounce events: %s', e)
             except EOFError:

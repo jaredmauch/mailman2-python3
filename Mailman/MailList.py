@@ -30,7 +30,7 @@ import re
 import shutil
 import socket
 import urllib
-import cPickle
+import pickle
 
 from cStringIO import StringIO
 from UserDict import UserDict
@@ -562,7 +562,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             fp = open(fname_tmp, 'w')
             # Use a binary format... it's more efficient.
-            cPickle.dump(dict, fp, 1)
+            pickle.dump(dict, fp, 1)
             fp.flush()
             if mm_cfg.SYNC_AFTER_WRITE:
                 os.fsync(fp.fileno())
@@ -625,7 +625,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
             loadfunc = marshal.load
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-            loadfunc = cPickle.load
+            loadfunc = pickle.load
         else:
             assert 0, 'Bad database file name'
         try:
@@ -659,7 +659,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 if type(dict) != DictType:
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,
-                    cPickle.PicklingError, cPickle.UnpicklingError) as e:
+                    pickle.PicklingError, pickle.UnpicklingError) as e:
                 return None, e
         finally:
             fp.close()

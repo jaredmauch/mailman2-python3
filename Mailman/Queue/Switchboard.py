@@ -38,7 +38,7 @@ import os
 import time
 import email
 import errno
-import cPickle
+import pickle
 import marshal
 
 from Mailman import mm_cfg
@@ -101,10 +101,10 @@ class Switchboard:
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
             protocol = 1
-            msgsave = cPickle.dumps(_msg, protocol)
+            msgsave = pickle.dumps(_msg, protocol)
         else:
             protocol = 0
-            msgsave = cPickle.dumps(str(_msg), protocol)
+            msgsave = pickle.dumps(str(_msg), protocol)
         hashfood = msgsave + listname + repr(now)
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
@@ -130,7 +130,7 @@ class Switchboard:
             fp = open(tmpfile, 'w')
             try:
                 fp.write(msgsave)
-                cPickle.dump(data, fp, protocol)
+                pickle.dump(data, fp, protocol)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:
@@ -151,8 +151,8 @@ class Switchboard:
         # the .pck file in order to try again.
         os.rename(filename, backfile)
         try:
-            msg = cPickle.load(fp)
-            data = cPickle.load(fp)
+            msg = pickle.load(fp)
+            data = pickle.load(fp)
         finally:
             fp.close()
         if data.get('_parsemsg'):
@@ -218,9 +218,9 @@ class Switchboard:
             fp = open(src, 'rb+')
             try:
                 try:
-                    msg = cPickle.load(fp)
+                    msg = pickle.load(fp)
                     data_pos = fp.tell()
-                    data = cPickle.load(fp)
+                    data = pickle.load(fp)
                 except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
@@ -234,7 +234,7 @@ class Switchboard:
                         protocol = 0
                     else:
                         protocol = 1
-                    cPickle.dump(data, fp, protocol)
+                    pickle.dump(data, fp, protocol)
                     fp.truncate()
                     fp.flush()
                     os.fsync(fp.fileno())
