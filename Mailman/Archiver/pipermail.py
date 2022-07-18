@@ -395,10 +395,10 @@ class T:
                 try:
                     key, tempid = \
                          self.subjectIndex.set_location(article.subject)
-                    print key, tempid
+                    print(key, tempid)
                     self.subjectIndex.next()
                     [subject, date] = key.split('\0')
-                    print article.subject, subject, date
+                    print(article.subject, subject, date)
                     if subject == article.subject and tempid not in children:
                         parentID = tempid
                 except KeyError:
@@ -602,7 +602,7 @@ class T:
         # If the archive directory doesn't exist, create it
         try:
             os.stat(archivedir)
-        except os.error, errdata:
+        except os.error as errdata:
             errno, errmsg = errdata
             if errno == 2:
                 omask = os.umask(0)

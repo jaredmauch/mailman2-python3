@@ -432,7 +432,7 @@ def remove(mlist, cgi=False):
 def checkperms(state):
     for file in ALIASFILE, VIRTFILE:
         if state.VERBOSE:
-            print C_('checking permissions on %(file)s')
+            print(C_('checking permissions on %(file)s'))
         stat = None
         try:
             stat = os.stat(file)
@@ -442,9 +442,9 @@ def checkperms(state):
         if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
-            print C_('%(file)s permissions must be 0664 (got %(octmode)s)'),
+            print(C_('%(file)s permissions must be 0664 (got %(octmode)s)'),)
             if state.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(file, stat[ST_MODE] | targetmode)
             else:
                 print
@@ -468,11 +468,11 @@ def checkperms(state):
                 owner = pwd.getpwuid(stat[ST_UID])[0]
             except KeyError:
                 owner = 'uid %d' % stat[ST_UID]
-            print C_(
-                '%(dbfile)s owned by %(owner)s (must be owned by %(user)s'),
+            print(C_(
+                '%(dbfile)s owned by %(owner)s (must be owned by %(user)s'),)
             state.ERRORS += 1
             if state.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 uid = pwd.getpwnam(user)[2]
                 gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2]
                 os.chown(dbfile, uid, gid)
@@ -481,9 +481,9 @@ def checkperms(state):
         if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
-            print C_('%(dbfile)s permissions must be 0664 (got %(octmode)s)'),
+            print(C_('%(dbfile)s permissions must be 0664 (got %(octmode)s)'),)
             if state.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(dbfile, stat[ST_MODE] | targetmode)
             else:
-                print
+                print()

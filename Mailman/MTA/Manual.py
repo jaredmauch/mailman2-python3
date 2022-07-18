@@ -67,21 +67,21 @@ Here are the entries for the /etc/aliases file:
         outfp = sfp
     else:
         if not quiet:
-            print C_("""\
+            print(C_("""\
 To finish creating your mailing list, you must edit your /etc/aliases (or
 equivalent) file by adding the following lines, and possibly running the
 `newaliases' program:
-""")
-        print C_("""\
-## %(listname)s mailing list""")
+"""))
+        print(C_("""\
+## %(listname)s mailing list"""))
         outfp = sys.stdout
     # Common path
     for k, v in makealiases(listname):
-        print >> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
+        print(k + ':', ((fieldsz - len(k)) * ' '), v, file=outfp)
     # If we're using the command line interface, we're done.  For ttw, we need
     # to actually send the message to mailman-owner now.
     if not cgi:
-        print >> outfp
+        print('', file=outfp)
         return
     # Send the message to the site -owner so someone can do something about
     # this request.
