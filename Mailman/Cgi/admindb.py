@@ -957,7 +957,7 @@ def process_form(mlist, doc, cgidata):
             # That's okay, it just means someone else has already updated the
             # database while we were staring at the page, so just ignore it
             continue
-        except Errors.MMAlreadyAMember, v:
+        except Errors.MMAlreadyAMember as v:
             erroraddrs.append(v)
         except Errors.MembershipIsBanned, pattern:
             sender = mlist.GetRecord(request_id)[1]
