@@ -290,7 +290,7 @@ class T:
         except os.error as errdata:
             errno, errmsg = errdata
             if errno != 2:
-                raise os.error, errdata
+                raise os.error(errdata)
             else:
                 self.message(C_('Creating archive directory ') + self.basedir)
                 omask = os.umask(0)
@@ -611,7 +611,7 @@ class T:
                 finally:
                     os.umask(omask)
             else:
-                raise os.error, errdata
+                raise os.error(errdata)
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
