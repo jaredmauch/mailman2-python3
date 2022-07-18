@@ -382,9 +382,9 @@ def archive_path_fixer(unused_arg, dir, files):
         abs = os.path.join(dir, f)
         if os.path.isdir(abs):
             if f == "database":
-                os.chmod(abs, 02770)
+                os.chmod(abs, 0o02770)
             else:
-                os.chmod(abs, 02775)
+                os.chmod(abs, 0o02775)
         elif os.path.isfile(abs):
             os.chmod(abs, 0664)
 
