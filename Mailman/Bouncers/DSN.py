@@ -27,13 +27,6 @@ from cStringIO import StringIO
 
 from Mailman.Bouncers.BouncerAPI import Stop
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def process(msg):
     # Iterate over each message/delivery-status subpart

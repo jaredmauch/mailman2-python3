@@ -94,7 +94,7 @@ def csrf_check(mlist, token, cgi_user=None):
         context = keydict.get(key)
         key, secret = mlist.AuthContextInfo(context, user)
         assert key
-        mac = sha_new(secret + `issued`).hexdigest()
+        mac = sha_new(secret + repr(issued)).hexdigest()
         if (mac == received_mac 
             and 0 < time.time() - issued < mm_cfg.FORM_LIFETIME):
             return True

@@ -111,7 +111,7 @@ def main():
     
         dirtime = os.path.getmtime(path)
     
-        os.umask(0022)
+        os.umask(0o022)
         sitemap = os.path.join(rootdir,folder,"sitemap.xml.gz")
         f = gzip.open(sitemap, 'wb')
     

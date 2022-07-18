@@ -877,7 +877,7 @@ class HyperArchive(pipermail.T):
                    'Archive working file %s present.  '
                    'Check %s for possibly unarchived msgs',
                    wname, ename)
-            omask = os.umask(007)
+            omask = os.umask(0o007)
             try:
                 ef = open(ename, 'a+')
             finally:
@@ -1100,7 +1100,7 @@ class HyperArchive(pipermail.T):
 
     def write_TOC(self):
         self.sortarchives()
-        omask = os.umask(002)
+        omask = os.umask(0o002)
         try:
             toc = open(os.path.join(self.basedir, 'index.html'), 'w')
         finally:
@@ -1110,7 +1110,7 @@ class HyperArchive(pipermail.T):
 
     def write_article(self, index, article, path):
         # called by add_article
-        omask = os.umask(002)
+        omask = os.umask(0o002)
         try:
             f = open(path, 'w')
         finally:
@@ -1120,7 +1120,7 @@ class HyperArchive(pipermail.T):
 
         # Write the text article to the text archive.
         path = os.path.join(self.basedir, "%s.txt" % index)
-        omask = os.umask(002)
+        omask = os.umask(0o002)
         try:
             f = open(path, 'a+')
         finally:
@@ -1150,7 +1150,7 @@ class HyperArchive(pipermail.T):
             except (IOError, RuntimeError, os.error):
                 pass
             try:
-                ou = os.umask(002)
+                ou = os.umask(0o002)
                 newz = gzip.open(gzipfile, 'w')
             finally:
                 # XXX why is this a finally?

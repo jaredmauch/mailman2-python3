@@ -36,13 +36,6 @@ from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def makelink(old, new):
     try:

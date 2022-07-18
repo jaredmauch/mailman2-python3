@@ -409,7 +409,7 @@ class HTMLFormatter:
                 self.RestrictedListMessage(_('The current archive'),
                                            self.archive_private),
             '<mm-num-reg-users>' : repr(member_len),
-            '<mm-num-digesters>' : repr(dmember_len)
+            '<mm-num-digesters>' : repr(dmember_len),
             '<mm-num-members>' : repr(member_len + dmember_len),
             '<mm-posting-addr>' : '%s' % self.GetListEmail(),
             '<mm-request-addr>' : '%s' % self.GetRequestEmail(),

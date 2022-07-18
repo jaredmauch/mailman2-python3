@@ -112,7 +112,7 @@ class Switchboard:
         # this system) and the sha hex digest.
         #rcvtime = data.setdefault('received_time', now)
         rcvtime = data.setdefault('received_time', now)
-        filebase = `rcvtime` + '+' + sha_new(hashfood).hexdigest()
+        filebase = repr(rcvtime) + '+' + sha_new(hashfood).hexdigest()
         filename = os.path.join(self.__whichq, filebase + '.pck')
         tmpfile = filename + '.tmp'
         # Always add the metadata schema version number
