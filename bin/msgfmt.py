@@ -110,7 +110,7 @@ def make(filename, outfile):
 
     try:
         lines = open(infile).readlines()
-    except IOError, msg:
+    except IOError as msg:
         print >> sys.stderr, msg
         sys.exit(1)
     
