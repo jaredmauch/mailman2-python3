@@ -241,8 +241,8 @@ class FakeDoc:
     # Fake the error reporting API for the htmlformat.Document class
     def addError(self, s, tag=None, *args):
         if tag:
-            print >> sys.stderr, tag
-        print >> sys.stderr, s % args
+            print(tag, file=sys.stderr)
+        print(s % args, file=sys.stderr)
 
     def set_language(self, val):
         pass
@@ -253,7 +253,7 @@ def do_input(listname, infile, checkonly, verbose):
     # open the specified list locked, unless checkonly is set
     try:
         mlist = MailList.MailList(listname, lock=not checkonly)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         usage(1, C_('No such list "%(listname)s"\n%(e)s'))
     savelist = 0
     guibyprop = getPropertyMap(mlist)
@@ -267,17 +267,17 @@ def do_input(listname, infile, checkonly, verbose):
             if k in ('mlist', '__builtins__'):
                 continue
             if not hasattr(mlist, k):
-                print >> sys.stderr, C_('attribute "%(k)s" ignored')
+                print(C_('attribute "%(k)s" ignored'), file=sys.stderr)
                 continue
             if verbose:
-                print >> sys.stderr, C_('attribute "%(k)s" changed')
+                print(C_('attribute "%(k)s" changed'), file=sys.stderr)
             missing = []
             gui, wtype = guibyprop.get(k, (missing, missing))
             if gui is missing:
                 # This isn't an official property of the list, but that's
                 # okay, we'll just restore it the old fashioned way
-                print >> sys.stderr, C_(
-                                     'Non-standard property restored: %(k)s')
+                print(C_(
+                                     'Non-standard property restored: %(k)s'), file=sys.stderr)
                 setattr(mlist, k, v)
             else:
                 # BAW: This uses non-public methods.  This logic taken from
@@ -285,11 +285,11 @@ def do_input(listname, infile, checkonly, verbose):
                 try:
                     validval = gui._getValidValue(mlist, k, wtype, v)
                 except ValueError:
-                    print >> sys.stderr, C_(
-                                         'Invalid value for property: %(k)s')
+                    print(C_(
+                                         'Invalid value for property: %(k)s'), file=sys.stderr)
                 except Errors.EmailAddressError:
-                    print >> sys.stderr, C_(
-                        'Bad email address for option %(k)s: %(v)s')
+                    print(C_(
+                        'Bad email address for option %(k)s: %(v)s'), file=sys.stderr)
                 else:
                     # BAW: Horrible hack, but then this is special cased
                     # everywhere anyway. :(  Privacy._setValue() knows that
