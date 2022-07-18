@@ -1385,7 +1385,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     not self.HasAutoApprovedSender(addr):
                 self.HoldSubscription(addr, fullname, password, digest, lang)
                 name = self.real_name
-                raise Errors.MMNeedApproval,(
+                raise Errors.MMNeedApproval(
                     'subscriptions to %(name)s require administrator approval')
             self.ApprovedAddMember(userdesc, whence=whence)
             return op, addr, password, digest, lang
