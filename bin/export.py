@@ -345,7 +345,7 @@ included in the XML output.  Multiple -l flags may be given."""))
         parser.error(C_('Unexpected arguments'))
     if opts.list_hash_schemes:
         for label in SCHEMES:
-            print label.upper()
+            print(label.upper())
         sys.exit(0)
     if opts.password_scheme.lower() not in SCHEMES:
         parser.error(C_('Invalid password scheme'))

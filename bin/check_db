@@ -70,9 +70,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -95,7 +95,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ahv',
                                    ['all', 'verbose', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     verbose = 0
@@ -111,12 +111,12 @@ def main():
 
     listnames = [n.lower().strip() for n in listnames]
     if not listnames:
-        print C_('Nothing to do.')
+        print(C_('Nothing to do.'))
         sys.exit(0)
 
     for listname in listnames:
         if not Utils.list_exists(listname):
-            print C_('No list named:'), listname
+            print(C_('No list named:'), listname)
             continue
         mlist = MailList(listname, lock=0)
         pfile = os.path.join(mlist.fullpath(), 'config.pck')
@@ -125,27 +125,27 @@ def main():
         dlast = dfile + '.last'
 
         if verbose:
-            print C_('List:'), listname
+            print(C_('List:'), listname)
 
         for file in (pfile, plast, dfile, dlast):
             status = 0
             try:
                 testfile(file)
-            except IOError, e:
+            except IOError as e:
                 # Don't report ENOENT unless we're in verbose mode
                 if verbose or e.errno != errno.ENOENT:
                     status = e
-            except Exception, e:
+            except Exception as e:
                 status = e
             # Report errors
             if status:
                 if isinstance(status, EnvironmentError):
                     # This already includes the file name
-                    print '   ', status
+                    print('   ', status)
                 else:
-                    print '    %s: %s' % (file, status)
+                    print('    %s: %s' % (file, status))
             elif verbose:
-                print C_('   %(file)s: okay')
+                print(C_('   %(file)s: okay'))
 
 
 
