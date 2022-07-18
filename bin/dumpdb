@@ -123,16 +123,16 @@ def main():
     try:
         cnt = 1
         if doprint:
-            print C_('[----- start %(typename)s file -----]')
+            print(C_('[----- start %(typename)s file -----]'))
         while True:
             try:
                 obj = load(fp)
             except EOFError:
                 if doprint:
-                    print C_('[----- end %(typename)s file -----]')
+                    print(C_('[----- end %(typename)s file -----]'))
                 break
             if doprint:
-                print C_('<----- start object %(cnt)s ----->')
+                print(C_('<----- start object %(cnt)s ----->'))
                 if isinstance(obj, StringType):
                     print obj
                 else:
