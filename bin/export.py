@@ -18,6 +18,7 @@
 # USA.
 
 """Export an XML representation of a mailing list."""
+from __future__ import print_function
 
 import os
 import sys
@@ -115,11 +116,11 @@ class XMLDumper(object):
         else:
             attrstr = ''
         if more:
-            print >> self._fp, '<%s%s>' % (name, attrstr)
+            print('<%s%s>' % (name, attrstr), file=self._fp)
             self._fp.indent()
             self._stack.append(name)
         else:
-            print >> self._fp, '<%s%s/>' % (name, attrstr)
+            print('<%s%s/>' % (name, attrstr), file=self._fp)
 
     # Use this method when you know you have sub-elements.
     def _push_element(self, _name, **_tagattrs):
@@ -133,7 +134,7 @@ class XMLDumper(object):
             name = self._stack.pop()
             assert name == _name, 'got: %s, expected: %s' % (_name, name)
             self._fp.dedent()
-            print >> self._fp, '</%s>' % name
+            print('</%s>' % name, file=self._fp)
 
     # Use this method when you do not have sub-elements
     def _element(self, _name, _value=None, **_attributes):
@@ -143,10 +144,10 @@ class XMLDumper(object):
         else:
             attrs = ''
         if _value is None:
-            print >> self._fp, '<%s%s/>' % (_name, attrs)
+            print('<%s%s/>' % (_name, attrs), file=self._fp)
         else:
             value = escape(unicode(_value))
-            print >> self._fp, '<%s%s>%s</%s>' % (_name, attrs, value, _name)
+            print('<%s%s>%s</%s>' % (_name, attrs, value, _name), file=self._fp)
 
     def _do_list_categories(self, mlist, k, subcat=None):
         is_converted = bool(getattr(mlist, 'use_dollar_strings', False))
@@ -259,7 +260,7 @@ class XMLDumper(object):
         self._pop_element('list')
 
     def dump(self, listnames, password_scheme):
-        print >> self._fp, '<?xml version="1.0" encoding="UTF-8"?>'
+        print('<?xml version="1.0" encoding="UTF-8"?>', file=self._fp)
         self._push_element('mailman', **{
             'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
             'xsi:noNamespaceSchemaLocation': 'ssi-1.0.xsd',
@@ -268,7 +269,7 @@ class XMLDumper(object):
             try:
                 mlist = MailList(listname, lock=False)
             except Errors.MMUnknownListError:
-                print >> sys.stderr, C_('No such list: %(listname)s')
+                print(C_('No such list: %(listname)s'), file=sys.stderr)
                 continue
             self._dump_list(mlist, password_scheme)
         self._pop_element('mailman')

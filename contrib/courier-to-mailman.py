@@ -114,12 +114,12 @@ give you directions on how to post to each mailing list.\n"""
 
 try:
         sys.exit(main())
-except SystemExit, argument:
+except SystemExit as argument:
         sys.exit(argument)
 
-except Exception, argument:
+except Exception as argument:
         info = sys.exc_info()
         trace = info[2]
-        sys.stderr.write("%s %s\n" % (sys.exc_type, argument))
+        sys.stderr.write("%s %s\n" % (sys.exc_info()[0], argument))
         sys.stderr.write("LINE %d\n" % (trace.tb_lineno))
         sys.exit(111) # Soft failure, try again later.

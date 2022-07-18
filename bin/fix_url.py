@@ -37,6 +37,7 @@ Options:
 
 If run standalone, it prints this help text and exits.
 """
+from __future__ import print_function
 
 import sys
 import getopt
