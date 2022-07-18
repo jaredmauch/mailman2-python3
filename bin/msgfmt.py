@@ -56,12 +56,10 @@ def add(id, str, fuzzy):
 def generate():
     "Return the generated output."
     global MESSAGES
-    keys = MESSAGES.keys()
     # the keys are sorted in the .mo file
-    keys.sort()
     offsets = []
     ids = strs = ''
-    for id in keys:
+    for id in MESSAGES.keys():
         # For each string, we need size and file offset.  Each string is NUL
         # terminated; the NUL does not count into the size.
         offsets.append((len(ids), len(id), len(strs), len(MESSAGES[id])))
@@ -111,7 +109,7 @@ def make(filename, outfile):
     try:
         lines = open(infile, encoding='latin-1').readlines()
     except IOError as msg:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
         sys.exit(1)
     
     section = None
@@ -154,9 +152,8 @@ def make(filename, outfile):
         elif section == STR:
             msgstr += l
         else:
-            print >> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
-                  'before:'
-            print >> sys.stderr, l
+            print('Syntax error on %s:%d' % (infile, lno), 'before:', file=sys.stderr)
+            print(l, file=sys.stderr)
             sys.exit(1)
     # Add last entry
     if section == STR:
@@ -168,7 +165,7 @@ def make(filename, outfile):
     try:
         open(outfile,"wb").write(output)
     except IOError as msg:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
                       
 
 
@@ -185,14 +182,14 @@ def main():
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-V', '--version'):
-            print >> sys.stderr, "msgfmt.py", __version__
+            print("msgfmt.py", __version__, file=sys.stderr)
             sys.exit(0)
         elif opt in ('-o', '--output-file'):
             outfile = arg
     # do it
     if not args:
-        print >> sys.stderr, 'No input file given'
-        print >> sys.stderr, "Try `msgfmt --help' for more information."
+        print('No input file given', file=sys.stderr)
+        print("Try `msgfmt --help' for more information.", file=sys.stderr)
         return
 
     for filename in args:
