@@ -178,7 +178,7 @@ def main():
             mlist.Unlock()
 
         # Notification
-        print C_('New %(listname)s password: %(notifypassword)s')
+        print(C_('New %(listname)s password: %(notifypassword)s'))
         if not quiet:
             otrans = i18n.get_translation()
             i18n.set_language(mlist.preferred_language)
