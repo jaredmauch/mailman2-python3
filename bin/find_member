@@ -161,7 +161,7 @@ def main():
     options.regexps = args
 
     if not options.listnames:
-        print C_('No lists to search')
+        print('No lists to search')
         return
 
     matches = scanlists(options)
@@ -170,13 +170,13 @@ def main():
     for k in addrs:
         hits = matches[k]
         lists = hits.keys()
-        print k, C_('found in:')
+        print(k, C_('found in:'))
         for name in lists:
             aswhat = hits[name]
             if aswhat & AS_MEMBER:
-                print '    ', name
+                print('    ', name)
             if aswhat & AS_OWNER:
-                print '    ', name, C_('(as owner)')
+                print('    ', name, C_('(as owner)'))
 
 
 

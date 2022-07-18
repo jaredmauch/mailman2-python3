@@ -54,9 +54,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -65,7 +65,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ch',
                                    ['listcreator', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     # Defaults
@@ -86,18 +86,18 @@ def main():
             pw1 = getpass.getpass(C_('New %(pwdesc)s password: '))
             pw2 = getpass.getpass(C_('Again to confirm password: '))
             if pw1 != pw2:
-                print C_('Passwords do not match; no changes made.')
+                print(C_('Passwords do not match; no changes made.'))
                 sys.exit(1)
         except KeyboardInterrupt:
-            print C_('Interrupted...')
+            print(C_('Interrupted...'))
             sys.exit(0)
     # Set the site password by writing it to a local file.  Make sure the
     # permissions don't allow other+read.
     Utils.set_global_password(pw1, siteadmin)
     if Utils.check_global_password(pw1, siteadmin):
-        print C_('Password changed.')
+        print(C_('Password changed.'))
     else:
-        print C_('Password change failed.')
+        print(C_('Password change failed.'))
 
 
 

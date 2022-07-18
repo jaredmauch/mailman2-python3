@@ -81,9 +81,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(fd, msg, file=fd)
     sys.exit(code)
 
 
@@ -91,14 +91,14 @@ def usage(code, msg=''):
 def dolist(mlist, options):
     SPACE = ' '
     if not options.quiet:
-        print C_('processing mailing list:'), mlist.internal_name()
+        print(C_('processing mailing list:'), mlist.internal_name())
 
     # scan the list owners.  TBD: mlist.owner keys should be lowercase?
     oldowners = mlist.owner[:]
     oldowners.sort()
     if options.admintoo:
         if not options.quiet:
-            print C_('    scanning list owners:'), SPACE.join(oldowners)
+            print(C_('    scanning list owners:'), SPACE.join(oldowners))
         newowners = {}
         foundp = 0
         for owner in mlist.owner:
@@ -115,10 +115,10 @@ def dolist(mlist, options):
             mlist.owner = newowners
         if not options.quiet:
             if newowners != oldowners:
-                print
-                print C_('    new list owners:'), SPACE.join(newowners)
+                print()
+                print(C_('    new list owners:'), SPACE.join(newowners))
             else:
-                print C_('(no change)')
+                print(C_('(no change)'))
 
     # see if the fromaddr is a digest member or regular member
     if options.lfromaddr in mlist.getDigestMemberKeys():
@@ -127,13 +127,13 @@ def dolist(mlist, options):
         digest = 0
     else:
         if not options.quiet:
-            print C_('    address not found:'), options.fromaddr
+            print(C_('    address not found:'), options.fromaddr)
         return
     # Check for banned to address.
     pattern = mlist.GetBannedPattern(options.toaddr)
     if pattern:
         if not options.quiet:
-            print '   ', C_('Banned address (matched %(pattern)s)')
+            print('   ', C_('Banned address (matched %(pattern)s)'))
         return
 
     # Now change the membership address
@@ -142,13 +142,13 @@ def dolist(mlist, options):
             mlist.changeMemberAddress(options.fromaddr, options.toaddr,
                                       not options.remove)
         if not options.quiet:
-            print C_('    clone address added:'), options.toaddr
+            print(C_('    clone address added:'), options.toaddr)
     except Errors.MMAlreadyAMember:
         if not options.quiet:
-            print C_('    clone address is already a member:'), options.toaddr
+            print(C_('    clone address is already a member:'), options.toaddr)
 
     if options.remove:
-        print C_('    original address removed:'), options.fromaddr
+        print(C_('    original address removed:'), options.fromaddr)
 
 
 
@@ -166,7 +166,7 @@ def main():
         opts, args = getopt.getopt(
             sys.argv[1:], 'arl:qnh',
             ['admin', 'remove', 'listname=', 'quiet', 'nomodify', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     options = Options()
@@ -211,8 +211,8 @@ def main():
     for listname in options.listnames:
         try:
             mlist = MailList.MailList(listname)
-        except Errors.MMListError, e:
-            print C_('Error opening list "%(listname)s", skipping.\n%(e)s')
+        except Errors.MMListError as e:
+            print(C_('Error opening list "%(listname)s", skipping.\n%(e)s'))
             continue
         try:
             dolist(mlist, options)
