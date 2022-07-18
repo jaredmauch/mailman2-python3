@@ -540,7 +540,7 @@ def _seed():
         if e.errno != errno.ENOENT:
             raise
         from Mailman.Utils import sha_new
-        d = sha_new(`os.getpid()`+`time.time()`).hexdigest()
+        d = sha_new(str(os.getpid())+str(time.time())).hexdigest()
     random.seed(d)
 
 

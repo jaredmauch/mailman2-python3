@@ -304,10 +304,10 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                     raise Errors.MustDigestError
                 # The user is turning off digest mode
                 if self.__mlist.members.has_key(memberkey):
-                    raise Errors.AlreadyReceivingRegularDeliveries, member
+                    raise Errors.AlreadyReceivingRegularDeliveries(member)
                 cpuser = self.__mlist.digest_members.get(memberkey)
                 if cpuser is None:
-                    raise Errors.NotAMemberError, member
+                    raise Errors.NotAMemberError(member)
                 del self.__mlist.digest_members[memberkey]
                 self.__mlist.members[memberkey] = cpuser
                 # When toggling off digest delivery, we want to be sure to set

@@ -1610,7 +1610,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             msg = _('%(schange_from)s is not a member')
         except Errors.MMAlreadyAMember:
             msg = _('%(schange_to)s is already a member')
-        except Errors.MembershipIsBanned, pat:
+        except Errors.MembershipIsBanned as pat:
             spat = Utils.websafe(str(pat))
             msg = _('%(schange_to)s matches banned pattern %(spat)s')
         else:

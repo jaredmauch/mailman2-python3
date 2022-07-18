@@ -512,13 +512,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                langs=None, emailhost=None, urlhost=None):
         assert name == name.lower(), 'List name must be all lower case.'
         if Utils.list_exists(name):
-            raise Errors.MMListAlreadyExistsError, name
+            raise Errors.MMListAlreadyExistsError(name)
         # Problems and potential attacks can occur if the list name in the
         # pipe to the wrapper in an MTA alias or other delivery process
         # contains shell special characters so allow only defined characters
         # (default = '[-+_.=a-z0-9]').
         if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', name)) > 0:
-            raise Errors.BadListNameError, name
+            raise Errors.BadListNameError(name)
         # Validate what will be the list's posting address.  If that's
         # invalid, we don't want to create the mailing list.  The hostname
         # part doesn't really matter, since that better already be valid.
@@ -530,7 +530,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             Utils.ValidateEmail(postingaddr)
         except Errors.EmailAddressError:
-            raise Errors.BadListNameError, postingaddr
+            raise Errors.BadListNameError(postingaddr)
         # Validate the admin's email address
         Utils.ValidateEmail(admin)
         self._internal_name = name
@@ -699,7 +699,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Nothing worked, so we have to give up
             syslog('error', 'All %s fallbacks were corrupt, giving up',
                    self.internal_name())
-            raise Errors.MMCorruptListDatabaseError, e
+            raise Errors.MMCorruptListDatabaseError(e)
         # Now, if we didn't end up using the primary database file, we want to
         # copy the fallback into the primary so that the logic in Save() will
         # still work.  For giggles, we'll copy it to a safety backup.  Note we
@@ -860,7 +860,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if pattern:
             syslog('vette', '%s banned invitation: %s (matched: %s)',
                    self.real_name, invitee, pattern)
-            raise Errors.MembershipIsBanned, pattern
+            raise Errors.MembershipIsBanned(pattern)
         # Hack alert!  Squirrel away a flag that only invitations have, so
         # that we can do something slightly different when an invitation
         # subscription is confirmed.  In those cases, we don't need further

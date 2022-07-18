@@ -1510,7 +1510,7 @@ def _invert_xml(mo):
 
 def xml_to_unicode(s, cset):
     """This converts a string s, encoded in cset to a unicode with translation
-    of XML character references and textual '\uxxxx' escapes.  It is more or less
+    of XML character references and textual \u xxxx escapes.  It is more or less
     the inverse of unicode.decode(cset, errors='xmlcharrefreplace').  It is
     similar to canonstr above except for replacing invalid refs with the
     unicode replace character and recognizing \u escapes.
