@@ -35,10 +35,10 @@ def convert(mlist):
         t = Utils.to_dollar(s)
         setattr(mlist, attr, t)
     mlist.use_dollar_strings = 1
-    print C_('Saving list')
+    print(C_('Saving list'))
     mlist.Save()
 
 
 
 if __name__ == '__main__':
-    print C_(__doc__.replace('%', '%%'))
+    print(C_(__doc__.replace('%', '%%')))
