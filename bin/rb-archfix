@@ -74,7 +74,7 @@ def main():
     # get command line arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:
@@ -82,7 +82,7 @@ def main():
             usage(0)
 
     for filename in args:
-        print 'processing:', filename
+        print('processing:', filename)
         fp = open(filename, 'rb')
         d = marshal.load(fp)
         fp.close()
@@ -100,7 +100,7 @@ def main():
         os.rename(filename, filename + '.bak')
         os.rename(filename + '.tmp', filename)
 
-    print 'You should now run "bin/check_perms -f"'
+    print('You should now run "bin/check_perms -f"')
 
 
 

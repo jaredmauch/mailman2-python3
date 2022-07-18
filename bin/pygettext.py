@@ -402,7 +402,7 @@ def main():
              'style=', 'verbose', 'version', 'width=', 'exclude-file=',
              'docstrings', 'no-docstrings',
              ])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     # for holding option values
@@ -460,7 +460,7 @@ def main():
         elif opt in ('-v', '--verbose'):
             options.verbose = 1
         elif opt in ('-V', '--version'):
-            print _('pygettext.py (xgettext for Python) %s') % __version__
+            print(_('pygettext.py (xgettext for Python) %s') % __version__)
             sys.exit(0)
         elif opt in ('-w', '--width'):
             try:
@@ -504,21 +504,21 @@ def main():
     for filename in args:
         if filename == '-':
             if options.verbose:
-                print _('Reading standard input')
+                print(_('Reading standard input'))
             fp = sys.stdin
             closep = 0
         else:
             if options.verbose:
-                print _('Working on %s') % filename
+                print(_('Working on %s') % filename)
             fp = open(filename)
             closep = 1
         try:
             eater.set_filename(filename)
             try:
                 tokenize.tokenize(fp.readline, eater)
-            except tokenize.TokenError, e:
-                print >> sys.stderr, '%s: %s, line %d, column %d' % (
-                    e[0], filename, e[1][0], e[1][1])
+            except tokenize.TokenError as e:
+                print('%s: %s, line %d, column %d' % (
+                    e[0], filename, e[1][0], e[1][1]), file=sys.stderr)
         finally:
             if closep:
                 fp.close()

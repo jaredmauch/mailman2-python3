@@ -146,7 +146,7 @@ def kill_watcher(sig):
         pidstr = fp.read()
         fp.close()
         pid = int(pidstr.strip())
-    except (IOError, ValueError), e:
+    except (IOError, ValueError) as e:
         # For i18n convenience
         pidfile = mm_cfg.PIDFILE
         print(C_('PID unreadable in: %(pidfile)s'), file=sys.stderr)
@@ -155,7 +155,7 @@ def kill_watcher(sig):
         return
     try:
         os.kill(pid, sig)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ESRCH: raise
         print(C_('No child with pid: %(pid)s'), file=sys.stderr)
         print(e, file=sys.stderr)
@@ -428,7 +428,7 @@ def main():
         # Instead of cd'ing to root, cd to the Mailman installation home
         os.chdir(mm_cfg.PREFIX)
         # Set our file mode creation umask
-        os.umask(007)
+        os.umask(0o007)
         # I don't think we have any unneeded file descriptors.
         #
         # Now start all the qrunners.  This returns a dictionary where the

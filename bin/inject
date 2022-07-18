@@ -69,7 +69,7 @@ def main():
         opts, args = getopt.getopt(
             sys.argv[1:], 'hl:q:L',
             ['help', 'listname=', 'queue=', 'showqnames'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     qdir = mm_cfg.INQUEUE_DIR

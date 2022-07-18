@@ -96,9 +96,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -107,11 +107,11 @@ def make_qrunner(name, slice, range, once=0):
     modulename = 'Mailman.Queue.' + name
     try:
         __import__(modulename)
-    except ImportError, e:
+    except ImportError as e:
         if AS_SUBPROC:
             # Exit with SIGTERM exit code so mailmanctl won't try to restart us
-            print >> sys.stderr, 'Cannot import runner module', modulename
-            print >> sys.stderr, e
+            print('Cannot import runner module', modulename, file=sys.stderr)
+            print(e, file=sys.stderr)
             sys.exit(signal.SIGTERM)
         else:
             usage(1, e)
@@ -161,7 +161,7 @@ def main():
         opts, args = getopt.getopt(
             sys.argv[1:], 'hlor:vs',
             ['help', 'list', 'once', 'runner=', 'verbose', 'subproc'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     once = 0
@@ -176,8 +176,8 @@ def main():
                     name = runnername[:-len('Runner')]
                 else:
                     name = runnername
-                print C_('%(name)s runs the %(runnername)s qrunner')
-            print C_('All runs all the above qrunners')
+                print(C_('%(name)s runs the %(runnername)s qrunner'))
+            print(C_('All runs all the above qrunners'))
             sys.exit(0)
         elif opt in ('-o', '--once'):
             once = 1

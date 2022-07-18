@@ -47,9 +47,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__.replace('%', '%%'))
+    print(C_(__doc__.replace('%', '%%')), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -57,7 +57,7 @@ def usage(code, msg=''):
 def reset_pw(mlist, *args):
     try:
         opts, args = getopt.getopt(args, 'v', ['verbose'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     verbose = False
@@ -67,13 +67,13 @@ def reset_pw(mlist, *args):
 
     listname = mlist.internal_name()
     if verbose:
-        print C_('Changing passwords for list: %(listname)s')
+        print(C_('Changing passwords for list: %(listname)s'))
 
     for member in mlist.getMembers():
         randompw = Utils.MakeRandomPassword()
         mlist.setMemberPassword(member, randompw)
         if verbose:
-            print C_('New password for member %(member)40s: %(randompw)s')
+            print(C_('New password for member %(member)40s: %(randompw)s'))
 
     mlist.Save()
 
