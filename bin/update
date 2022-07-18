@@ -799,7 +799,7 @@ Downgrade detected, from version %(hexlversion)s to version %(hextversion)s
 This is probably not safe.
 Exiting."""))
         sys.exit(1)
-    print('Upgrading from version %(hexlversion)s to %(hextversion)s')
+    print(C_('Upgrading from version %(hexlversion)s to %(hextversion)s'))
     errors = main()
     if not errors:
         # Record the version we just upgraded to
