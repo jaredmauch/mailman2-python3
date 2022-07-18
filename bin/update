@@ -193,8 +193,8 @@ def dolist(listname):
     try:
         mlist.Lock(0.5)
     except TimeOutError:
-        print >> sys.stderr, C_('WARNING: could not acquire lock for list: '
-                                '%(listname)s')
+        print(C_('WARNING: could not acquire lock for list: '
+                                '%(listname)s', file=sys.stderr))
         return 1
 
     # Sanity check the invariant that every BYBOUNCE disabled member must have
@@ -212,13 +212,13 @@ def dolist(listname):
         # re-disable them if necessary.
         n = len(noinfo)
         if n > 0:
-            print C_(
-                'Resetting %(n)s BYBOUNCEs disabled addrs with no bounce info')
+            print(C_(
+                'Resetting %(n)s BYBOUNCEs disabled addrs with no bounce info'))
             for addr in noinfo.keys():
                 mlist.setDeliveryStatus(addr, ENABLED)
 
     # Update the held requests database
-    print C_("""Updating the held requests database.""")
+    print(C_("""Updating the held requests database."""))
     mlist._UpdateRecords()
 
     mbox_dir = make_varabs('archives/private/%s.mbox' % (listname))
@@ -240,9 +240,9 @@ def dolist(listname):
     else:
         # this shouldn't happen, but hey, just in case
         if not os.path.isdir(mbox_dir):
-            print C_("""\
+            print(C_("""\
 For some reason, %(mbox_dir)s exists as a file.  This won't work with
-b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding.""")
+b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding."""))
             os.rename(mbox_dir, "%s.tmp" % (mbox_dir))
             ou = os.umask(0)
             os.mkdir(mbox_dir, 0o2775)
@@ -252,7 +252,7 @@ b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding.""")
     # private one existing
     if os.path.isfile(o_pri_mbox_file) and os.path.isfile(o_pub_mbox_file):
         if mlist.archive_private:
-            print C_("""\
+            print(C_("""\
 
 %(listname)s has both public and private mbox archives.  Since this list
 currently uses private archiving, I'm installing the private mbox archive
@@ -264,10 +264,10 @@ to
 You can integrate that into the archives if you want by using the 'arch'
 script.
 """) % (mlist._internal_name, o_pri_mbox_file, o_pub_mbox_file,
-        o_pub_mbox_file)
+        o_pub_mbox_file))
             os.rename(o_pub_mbox_file, "%s.preb6" % (o_pub_mbox_file))
         else:
-            print C_("""\
+            print(C_("""\
 %s has both public and private mbox archives.  Since this list
 currently uses public archiving, I'm installing the public mbox file
 archive file (%s) as the active one, and renaming
@@ -278,13 +278,13 @@ archive file (%s) as the active one, and renaming
 You can integrate that into the archives if you want by using the 'arch'
 script.
 """) % (mlist._internal_name, o_pub_mbox_file, o_pri_mbox_file,
-        o_pri_mbox_file)
+        o_pri_mbox_file))
             os.rename(o_pri_mbox_file, "%s.preb6" % (o_pri_mbox_file))
     #
     # move private archive mbox there if it's around
     # and take into account all sorts of absurdities
     #
-    print C_('- updating old private mbox file')
+    print('- updating old private mbox file')
     if os.path.exists(o_pri_mbox_file):
         if os.path.isfile(o_pri_mbox_file):
             os.rename(o_pri_mbox_file, mbox_file)
@@ -292,21 +292,21 @@ script.
             newname = "%s.mm_install-dunno_what_this_was_but_its_in_the_way" \
                       % o_pri_mbox_file
             os.rename(o_pri_mbox_file, newname)
-            print C_("""\
+            print(C_("""\
     unknown file in the way, moving
         %(o_pri_mbox_file)s
     to
-        %(newname)s""")
+        %(newname)s"""))
         else:
             # directory
-            print C_('Nothing to do.')
+            print('Nothing to do.')
 
 
     #
     # move public archive mbox there if it's around
     # and take into account all sorts of absurdities.
     #
-    print C_('- updating old public mbox file')
+    print('- updating old public mbox file')
     if os.path.exists(o_pub_mbox_file):
         if os.path.isfile(o_pub_mbox_file):
             os.rename(o_pub_mbox_file, mbox_file)
@@ -320,7 +320,7 @@ script.
     to
         %(newname)s""")
         else: # directory
-            print C_('Nothing to do.')
+            print('Nothing to do.')
 
     #
     # move the html archives there
@@ -350,21 +350,21 @@ script.
         b4_tmpl_dir = os.path.join(tmpl_dir, mlist._internal_name)
         new_tmpl_dir = os.path.join(list_dir, mlist._internal_name)
         if os.path.exists(b4_tmpl_dir):
-            print C_("""\
-- This list looks like it might have <= b4 list templates around""")
+            print( C_("""\
+- This list looks like it might have <= b4 list templates around"""))
             for f in os.listdir(b4_tmpl_dir):
                 o_tmpl = os.path.join(b4_tmpl_dir, f)
                 n_tmpl = os.path.join(new_tmpl_dir, f)
                 if os.path.exists(o_tmpl):
                     if not os.path.exists(n_tmpl):
                         os.rename(o_tmpl, n_tmpl)
-                        print C_('- moved %(o_tmpl)s to %(n_tmpl)s')
+                        print(C_('- moved %(o_tmpl)s to %(n_tmpl)s'))
                     else:
-                        print C_("""\
-- both %(o_tmpl)s and %(n_tmpl)s exist, leaving untouched""")
+                        print(C_("""\
+- both %(o_tmpl)s and %(n_tmpl)s exist, leaving untouched"""))
                 else:
-                    print C_("""\
-- %(o_tmpl)s doesn't exist, leaving untouched""")
+                    print(C_("""\
+- %(o_tmpl)s doesn't exist, leaving untouched"""))
     #
     # Move all the templates to the en language subdirectory as required for
     # Mailman 2.1
@@ -393,24 +393,24 @@ def remove_old_sources(module):
     src = '%s/%s' % (mm_cfg.PREFIX, module)
     pyc = src + "c"
     if os.path.isdir(src):
-        print C_('removing directory %(src)s and everything underneath')
+        print(C_('removing directory %(src)s and everything underneath'))
         shutil.rmtree(src)
     elif os.path.exists(src):
-        print C_('removing %(src)s')
+        print(C_('removing %(src)s'))
         try:
             os.unlink(src)
         except os.error, rest:
-            print C_("Warning: couldn't remove %(src)s -- %(rest)s")
+            print(C_("Warning: couldn't remove %(src)s -- %(rest)s"))
     if module.endswith('.py') and os.path.exists(pyc):
         try:
             os.unlink(pyc)
         except os.error, rest:
-            print C_("couldn't remove old file %(pyc)s -- %(rest)s")
+            print(C_("couldn't remove old file %(pyc)s -- %(rest)s"))
 
 
 def update_qfiles():
-    print C_('updating old qfiles')
-    prefix = `time.time()` + '+'
+    print('updating old qfiles')
+    prefix = str(time.time()) + '+'
     # Be sure the qfiles/in directory exists (we don't really need the
     # switchboard object, but it's convenient for creating the directory).
     sb = Switchboard(mm_cfg.INQUEUE_DIR)
@@ -452,7 +452,7 @@ def update_qfiles():
         except EnvironmentError as e:
             if e.errno != errno.ENOTDIR:
                 raise
-            print C_('Warning!  Not a directory: %(dirpath)s')
+            print(C_('Warning!  Not a directory: %(dirpath)s'))
 
 
 
@@ -527,7 +527,7 @@ def dequeue(filebase):
                 # This message was unparsable, most likely because its
                 # MIME encapsulation was broken.  For now, there's not
                 # much we can do about it.
-                print C_('message is unparsable: %(filebase)s')
+                print(C_('message is unparsable: %(filebase)s'))
                 msgfp.close()
                 msgfp = None
                 if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
@@ -541,7 +541,7 @@ def dequeue(filebase):
                 msg = data = None
         except EOFError:
             # For some reason the pckfile was empty.  Just delete it.
-            print C_('Warning!  Deleting empty .pck file: %(pckfile)s')
+            print(C_('Warning!  Deleting empty .pck file: %(pckfile)s'))
             os.unlink(pckfile)
     finally:
         if msgfp:
@@ -560,7 +560,7 @@ def update_pending():
     except IOError as e:
         if e.errno != errno.ENOENT: raise
     else:
-        print C_('Updating Mailman 2.0 pending_subscriptions.db database')
+        print('Updating Mailman 2.0 pending_subscriptions.db database')
         db = marshal.load(fp)
         # Convert to the pre-Mailman 2.1.5 format
         db = Pending._update(db)
@@ -571,10 +571,10 @@ def update_pending():
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
-            print C_('Updating Mailman 2.1.4 pending.pck database')
+            print('Updating Mailman 2.1.4 pending.pck database')
             db = cPickle.load(fp)
     if db is None:
-        print C_('Nothing to do.')
+        print('Nothing to do.')
         return
     # Now upgrade the database to the 2.1.5 format.  Each list now has its own
     # pending.pck file, but only the RE_ENABLE operation actually recorded the
@@ -595,7 +595,7 @@ def update_pending():
             op = val[0]
             data = val[1:]
         except (IndexError, ValueError):
-            print C_('Ignoring bad pended data: %(key)s: %(val)s')
+            print(C_('Ignoring bad pended data: %(key)s: %(val)s'))
             continue
         if op in (Pending.UNSUBSCRIPTION, Pending.CHANGE_OF_ADDRESS):
             # data[0] is the address being unsubscribed
@@ -611,7 +611,7 @@ def update_pending():
             # data[0] is the hold id.  There better only be one entry per id
             id = data[0]
             if holds_by_id.has_key(id):
-                print C_('WARNING: Ignoring duplicate pending ID: %(id)s.')
+                print(C_('WARNING: Ignoring duplicate pending ID: %(id)s.'))
             else:
                 holds_by_id[id] = (key, val)
     # Now we have to lock every list and re-pend all the appropriate
@@ -664,7 +664,7 @@ def update_pending():
 def main():
     errors = 0
     # get rid of old stuff
-    print C_('getting rid of old source files')
+    print('getting rid of old source files')
     for mod in ('Mailman/Archiver.py', 'Mailman/HyperArch.py',
                 'Mailman/HyperDatabase.py', 'Mailman/pipermail.py',
                 'Mailman/smtplib.py', 'Mailman/Cookie.py',
@@ -674,29 +674,29 @@ def main():
         remove_old_sources(mod)
     listnames = Utils.list_names()
     if not listnames:
-        print C_('no lists == nothing to do, exiting')
+        print('no lists == nothing to do, exiting')
         return
     #
     # for people with web archiving, make sure the directories
     # in the archiving are set with proper perms for b6.
     #
     if os.path.isdir("%s/public_html/archives" % mm_cfg.PREFIX):
-        print C_("""\
+        print(C_("""\
 fixing all the perms on your old html archives to work with b6
-If your archives are big, this could take a minute or two...""")
+If your archives are big, this could take a minute or two..."""))
         os.path.walk("%s/public_html/archives" % mm_cfg.PREFIX,
                      archive_path_fixer, "")
-        print C_('done')
+        print('done')
     for listname in listnames:
-        print C_('Updating mailing list: %(listname)s')
+        print(C_('Updating mailing list: %(listname)s'))
         errors = errors + dolist(listname)
         print
-    print C_('Updating Usenet watermarks')
+    print('Updating Usenet watermarks')
     wmfile = os.path.join(mm_cfg.DATA_DIR, 'gate_watermarks')
     try:
         fp = open(wmfile)
     except IOError:
-        print C_('- nothing to update here')
+        print('- nothing to update here')
     else:
         d = marshal.load(fp)
         fp.close()
@@ -708,8 +708,8 @@ If your archives are big, this could take a minute or two...""")
             try:
                 mlist.Lock(0.5)
             except TimeOutError:
-                print >> sys.stderr, C_(
-                    'WARNING: could not acquire lock for list: %(listname)s')
+                print(C_(
+                    'WARNING: could not acquire lock for list: %(listname)s', file=sys.stderr)
                 errors = errors + 1
             else:
                 # Pre 1.0b7 stored 0 in the gate_watermarks file to indicate
@@ -719,7 +719,7 @@ If your archives are big, this could take a minute or two...""")
                 mlist.Save()
                 mlist.Unlock()
         os.unlink(wmfile)
-        print C_('- usenet watermarks updated and gate_watermarks removed')
+        print('- usenet watermarks updated and gate_watermarks removed')
     # In Mailman 2.1, the pending database format and file name changed, but
     # in Mailman 2.1.5 it changed again.  This should update all existing
     # files to the 2.1.5 format.
@@ -733,7 +733,7 @@ If your archives are big, this could take a minute or two...""")
     # There's no good way of figuring this out for releases prior to 2.0beta2
     # :(
     if lastversion == NOTFRESH:
-        print C_("""
+        print("""
 
 NOTE NOTE NOTE NOTE NOTE
 
@@ -760,7 +760,7 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__) % globals()
+    print(C_(__doc__) % globals(), file=fd)
     if msg:
         print >> sys.stderr, msg
     sys.exit(code)
@@ -790,15 +790,15 @@ if __name__ == '__main__':
     hextversion = hex(thisversion)
     if lastversion == thisversion and not force:
         # nothing to do
-        print C_('No updates are necessary.')
+        print ('No updates are necessary.')
         sys.exit(0)
     if lastversion > thisversion and not force:
-        print C_("""\
+        print(C_("""\
 Downgrade detected, from version %(hexlversion)s to version %(hextversion)s
 This is probably not safe.
-Exiting.""")
+Exiting."""))
         sys.exit(1)
-    print C_('Upgrading from version %(hexlversion)s to %(hextversion)s')
+    print(C_('Upgrading from version %(hexlversion)s to %(hextversion)s'))
     errors = main()
     if not errors:
         # Record the version we just upgraded to
@@ -807,7 +807,7 @@ Exiting.""")
         fp.close()
     else:
         lockdir = mm_cfg.LOCK_DIR
-        print C_('''\
+        print('''\
 
 ERROR:
 
