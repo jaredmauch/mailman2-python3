@@ -34,9 +34,8 @@ import time
 import errno
 import base64
 import random
-import urllib2
-import urlparse
-import htmlentitydefs
+import urllib.request, urllib.parse, urllib.error
+import html.entities
 import email.Header
 import email.Iterators
 from email.Errors import HeaderParseError
@@ -640,7 +639,7 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
                 text = sdict.interpolate(template)
             except UnicodeError:
                 # Try again after coercing the template to unicode
-                utemplate = unicode(template, GetCharSet(lang), 'replace')
+                utemplate = str(template, GetCharSet(lang), 'replace')
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
             # The template is really screwed up
@@ -688,7 +687,7 @@ def is_administrivia(msg):
         lines.append(line)
     bodytext = NL.join(lines)
     # See if the body text has only one word, and that word is administrivia
-    if ADMINDATA.has_key(bodytext.strip().lower()):
+    if bodytext.strip().lower() in ADMINDATA:
         return True
     # Look at the first N lines and see if there is any administrivia on the
     # line.  BAW: N is currently hardcoded to 5.  str-ify the Subject: header
@@ -728,7 +727,7 @@ def GetRequestURI(fallback=None, escape=True):
     unless `escape' is set to 0.
     """
     url = fallback
-    if os.environ.has_key('REQUEST_URI'):
+    if 'REQUEST_URI' in os.environ:
         url = os.environ['REQUEST_URI']
     elif os.environ.has_key('SCRIPT_NAME') and os.environ.has_key('PATH_INFO'):
         url = os.environ['SCRIPT_NAME'] + os.environ['PATH_INFO']
@@ -772,7 +771,7 @@ def GetDirection(lang):
     return mm_cfg.LC_DESCRIPTIONS[lang][2]
 
 def IsLanguage(lang):
-    return mm_cfg.LC_DESCRIPTIONS.has_key(lang)
+    return lang in mm_cfg.LC_DESCRIPTIONS
 
 
 
@@ -886,14 +885,14 @@ def canonstr(s, lang=None):
     parts = re.split(r'&(?P<ref>[^;]+);', s)
     def appchr(i):
         # do everything in unicode
-        newparts.append(unichr(i))
+        newparts.append(chr(i))
     def tounicode(s):
         # We want the default fallback to be iso-8859-1 even if the language
         # is English (us-ascii).  This seems like a practical compromise so
         # that non-ASCII characters in names can be used in English lists w/o
         # having to change the global charset for English from us-ascii (which
         # I superstitiously think may have unintended consequences).
-        if isinstance(s, unicode):
+        if isinstance(s, str):
             return s
         if lang is None:
             charset = 'iso-8859-1'
@@ -901,7 +900,7 @@ def canonstr(s, lang=None):
             charset = GetCharSet(lang)
             if charset == 'us-ascii':
                 charset = 'iso-8859-1'
-        return unicode(s, charset, 'replace')
+        return str(s, charset, 'replace')
     while True:
         newparts.append(tounicode(parts.pop(0)))
         if not parts:
@@ -942,7 +941,7 @@ def uncanonstr(s, lang=None):
         if isinstance(s, UnicodeType):
             return s.encode(charset)
         else:
-            u = unicode(s, charset)
+            u = str(s, charset)
             return s
     except UnicodeError:
         # Nope, it contains funny characters, so html-ref it
@@ -1221,8 +1220,8 @@ def get_suffixes(url):
     if not url:
         return
     try:
-        d = urllib2.urlopen(url)
-    except urllib2.URLError as e:
+        d = urllib.request.urlopen(url)
+    except urllib.error.URLError as e:
         syslog('error',
                'Unable to retrieve data from %s: %s',
                url, e)
@@ -1259,7 +1258,7 @@ def get_org_dom(domain):
     hits = []
     d = domain.lower().split('.')
     d.reverse()
-    for k in s_dict.keys():
+    for k in list(s_dict.keys()):
         ks = k.split('.')
         if len(d) >= len(ks):
             for i in range(len(ks)-1):
@@ -1367,8 +1366,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         for name in want_names:
             if name not in results_by_name:
                 continue
-            dmarcs = filter(lambda n: n.startswith('v=DMARC1;'),
-                            results_by_name[name])
+            dmarcs = [n for n in results_by_name[name] if n.startswith('v=DMARC1;')]
             if len(dmarcs) == 0:
                 return 'continue'
             if len(dmarcs) > 1:
@@ -1435,7 +1433,7 @@ fact is returned."""
     recentMemberPostings.setdefault(email,[]).append(now +
                                        float(mlist.member_verbosity_interval)
                                    )
-    x = range(len(recentMemberPostings[email]))
+    x = list(range(len(recentMemberPostings[email])))
     x.reverse()
     for i in x:
         if recentMemberPostings[email][i] < now:
@@ -1444,8 +1442,8 @@ fact is returned."""
     clean_count += 1
     if clean_count >= mm_cfg.VERBOSE_CLEAN_LIMIT:
         clean_count = 0
-        for addr in recentMemberPostings.keys():
-            x = range(len(recentMemberPostings[addr]))
+        for addr in list(recentMemberPostings.keys()):
+            x = list(range(len(recentMemberPostings[addr])))
             x.reverse()
             for i in x:
                 if recentMemberPostings[addr][i] < now:
@@ -1498,9 +1496,9 @@ def _invert_xml(mo):
     # escapes to unicodes.
     try:
         if mo.group(1)[:1] == '#':
-            return unichr(int(mo.group(1)[1:]))
+            return chr(int(mo.group(1)[1:]))
         elif mo.group(1)[:1].lower() == 'u':
-            return unichr(int(mo.group(1)[1:], 16))
+            return chr(int(mo.group(1)[1:], 16))
         else:
             return(u'\ufffd')
     except ValueError:
@@ -1528,7 +1526,7 @@ def banned_ip(ip):
         return False
     if have_ipaddress:
         try:
-            uip = unicode(ip, encoding='us-ascii', errors='replace')
+            uip = str(ip, encoding='us-ascii', errors='replace')
             ptr = ipaddress.ip_address(uip).reverse_pointer
         except ValueError:
             return False

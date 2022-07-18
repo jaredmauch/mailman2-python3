@@ -46,6 +46,7 @@ import marshal
 import paths
 import email
 
+sys.path.append("@VAR_PREFIX@/Mailman")
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
