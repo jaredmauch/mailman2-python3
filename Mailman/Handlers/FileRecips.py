@@ -25,7 +25,7 @@ from Mailman import Errors
 
 
 def process(mlist, msg, msgdata):
-    if msgdata.has_key('recips'):
+    if 'recips' in msgdata:
         return
     filename = os.path.join(mlist.fullpath(), 'members.txt')
     try:

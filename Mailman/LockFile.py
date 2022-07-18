@@ -51,6 +51,7 @@ called `LockFile.log' and placed in the temp directory (calculated from
 tempfile.mktemp()).
 
 """
+from __future__ import print_function
 
 # This code has undergone several revisions, with contributions from Barry
 # Warsaw, Thomas Wouters, Harald Meland, and John Viega.  It should also work
@@ -58,6 +59,9 @@ tempfile.mktemp()).
 # requiring file locking.  See the __main__ section at the bottom of the file
 # for unit testing.
 
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import socket
 import time
@@ -88,7 +92,7 @@ def _get_logfile():
             dir = os.path.split(tempfile.mktemp())[0]
             path = os.path.join(dir, 'LockFile.log')
             # open in line-buffered mode
-            class SimpleUserFile:
+            class SimpleUserFile(object):
                 def __init__(self, path):
                     self.__fp = open(path, 'a', 1)
                     self.__prefix = '(%d) ' % os.getpid()
@@ -500,7 +504,7 @@ def _dochild():
     # than this.
     workinterval = 5 * random.random()
     hitwait = 20 * random.random()
-    print(prefix, 'workinterval:', workinterval)
+    print((prefix, 'workinterval:', workinterval))
     islocked = False
     t0 = 0
     t1 = 0
@@ -508,26 +512,26 @@ def _dochild():
     try:
         try:
             t0 = time.time()
-            print(prefix, 'acquiring...')
+            print((prefix, 'acquiring...'))
             lockfile.lock()
-            print( prefix, 'acquired...')
+            print(( prefix, 'acquired...'))
             islocked = True
         except TimeOutError:
-            print(prefix, 'timed out')
+            print((prefix, 'timed out'))
         else:
             t1 = time.time()
-            print(prefix, 'acquisition time:', t1-t0, 'seconds')
+            print((prefix, 'acquisition time:', t1-t0, 'seconds'))
             time.sleep(workinterval)
     finally:
         if islocked:
             try:
                 lockfile.unlock()
                 t2 = time.time()
-                print(prefix, 'lock hold time:', t2-t1, 'seconds')
+                print((prefix, 'lock hold time:', t2-t1, 'seconds'))
             except NotLockedError:
-                print(prefix, 'lock was broken')
+                print((prefix, 'lock was broken'))
     # wait for next web hit
-    print(prefix, 'webhit sleep:', hitwait)
+    print((prefix, 'webhit sleep:', hitwait))
     time.sleep(hitwait)
 
 

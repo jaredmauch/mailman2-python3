@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 """Remove/delete mailing lists through the web."""
+from __future__ import print_function
 
 import os
 import cgi
@@ -100,7 +101,7 @@ def main():
         syslog('mischief', 'Attempt to sneakily delete a list: %s', listname)
         return
 
-    if cgidata.has_key('doit'):
+    if 'doit' in cgidata:
         process_request(doc, cgidata, mlist)
         print(doc.Format())
         return

@@ -23,6 +23,8 @@ denied.  Situations that could hold a message for approval or confirmation are
 not tested by this module.
 """
 
+from builtins import zip
+from builtins import range
 import re
 
 from email.Iterators import typed_subpart_iterator
@@ -79,7 +81,7 @@ def process(mlist, msg, msgdata):
         if part is not None and part.get_payload() is not None:
             lines = part.get_payload(decode=True).splitlines()
             line = ''
-            for lineno, line in zip(range(len(lines)), lines):
+            for lineno, line in zip(list(range(len(lines))), lines):
                 if line.strip():
                     break
             i = line.find(':')

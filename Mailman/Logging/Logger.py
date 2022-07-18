@@ -17,6 +17,8 @@
 
 """File-based logger, writes to named category files in mm_cfg.LOG_DIR."""
 
+from builtins import str
+from builtins import object
 import sys
 import os
 import codecs
@@ -85,7 +87,7 @@ class Logger:
 
     def write(self, msg):
         if isinstance(msg, StringType):
-            msg = unicode(msg, self.__encoding, 'replace')
+            msg = str(msg, self.__encoding, 'replace')
         f = self.__get_f()
         try:
             f.write(msg)

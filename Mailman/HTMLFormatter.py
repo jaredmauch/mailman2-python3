@@ -18,6 +18,8 @@
 
 """Routines for presentation of list-specific HTML text."""
 
+from builtins import map
+from builtins import object
 import time
 import re
 
@@ -38,7 +40,7 @@ COMMASPACE = ', '
 
 
 
-class HTMLFormatter:
+class HTMLFormatter(object):
     def GetMailmanFooter(self):
         ownertext = Utils.ObscureEmail(self.GetOwnerEmail(), 1)
         # Remove the .Format() when htmlformat conversion is done.
@@ -368,7 +370,7 @@ class HTMLFormatter:
         i = 1
         while i < len(parts):
             tag = parts[i].lower()
-            if replacements.has_key(tag):
+            if tag in replacements:
                 repl = replacements[tag]
                 if isinstance(repl, type(u'')):
                     repl = repl.encode(charset, 'replace')
@@ -439,7 +441,7 @@ class HTMLFormatter:
             lang = self.preferred_language
         # Figure out the available languages
         values = self.GetAvailableLanguages()
-        legend = map(_, map(Utils.GetLanguageDescr, values))
+        legend = list(map(_, list(map(Utils.GetLanguageDescr, values))))
         try:
             selected = values.index(lang)
         except ValueError:

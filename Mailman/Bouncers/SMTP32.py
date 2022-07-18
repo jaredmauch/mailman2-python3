@@ -57,4 +57,4 @@ def process(msg):
         mo = acre.search(line)
         if mo:
             addrs[mo.group('addr')] = 1
-    return addrs.keys()
+    return list(addrs.keys())

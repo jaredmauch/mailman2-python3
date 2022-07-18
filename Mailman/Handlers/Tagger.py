@@ -58,7 +58,7 @@ def process(mlist, msg, msgdata):
     else:
         # Scan just some of the body lines
         matchlines.extend(scanbody(msg, mlist.topics_bodylines_limit))
-    matchlines = filter(None, matchlines)
+    matchlines = [_f for _f in matchlines if _f]
     # For each regular expression in the topics list, see if any of the lines
     # of interest from the message match the regexp.  If so, the message gets
     # added to the specific topics bucket.
@@ -71,8 +71,8 @@ def process(mlist, msg, msgdata):
                 hits[name] = 1
                 break
     if hits:
-        msgdata['topichits'] = hits.keys()
-        change_header('X-Topics', NLTAB.join(hits.keys()),
+        msgdata['topichits'] = list(hits.keys())
+        change_header('X-Topics', NLTAB.join(list(hits.keys())),
                       mlist, msg, msgdata, delete=False)
 
 

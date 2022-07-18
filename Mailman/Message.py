@@ -82,10 +82,10 @@ class Message(email.message.Message):
         if version >= VERSION:
             return
         # Messages grew a _charset attribute between email version 0.97 and 1.1
-        if not d.has_key('_charset'):
+        if '_charset' not in d:
             self._charset = None
         # Messages grew a _default_type attribute between v2.1 and v2.2
-        if not d.has_key('_default_type'):
+        if '_default_type' not in d:
             # We really have no idea whether this message object is contained
             # inside a multipart/digest or not, so I think this is the best we
             # can do.
@@ -275,17 +275,17 @@ class UserNotification(Message):
         # Since we're crafting the message from whole cloth, let's make sure
         # this message has a Message-ID.  Yes, the MTA would give us one, but
         # this is useful for logging to logs/smtp.
-        if not self.has_key('message-id'):
+        if 'message-id' not in self:
             self['Message-ID'] = Utils.unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
-        if not self.has_key('date'):
+        if 'date' not in self:
             self['Date'] = email.Utils.formatdate(localtime=1)
         # UserNotifications are typically for admin messages, and for messages
         # other than list explosions.  Send these out as Precedence: bulk, but
         # don't override an existing Precedence: header.
         # Also, if the message is To: the list-owner address, set Precedence:
         # list.  See note below in OwnerNotification.
-        if not (self.has_key('precedence') or noprecedence):
+        if not ('precedence' in self or noprecedence):
             if self.get('to') == mlist.GetOwnerEmail():
                 self['Precedence'] = 'list'
             else:

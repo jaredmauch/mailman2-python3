@@ -16,6 +16,7 @@
 # USA.
 
 """Provide a password-interface wrapper around private archives."""
+from __future__ import print_function
 
 import os
 import sys
@@ -139,7 +140,7 @@ def main():
                                   mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
                                  password, username):
-        if cgidata.has_key('submit'):
+        if 'submit' in cgidata:
             # This is a re-authorization attempt
             message = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -152,7 +153,7 @@ def main():
             # give an HTTP 401 for authentication failure
             print('Status: 401 Unauthorized')
         # Are we processing a password reminder from the login screen?
-        if cgidata.has_key('login-remind'):
+        if 'login-remind' in cgidata:
             if username:
                 message = Bold(FontSize('+1', _("""If you are a list member,
                           your password has been emailed to you."""))).Format()

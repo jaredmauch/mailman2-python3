@@ -763,7 +763,7 @@ def usage(code, msg=''):
         fd = sys.stdout
     print(C_(__doc__) % globals(), file=fd)
     if msg:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
     sys.exit(code)
 
 
@@ -819,3 +819,4 @@ Mailman was still active when you upgraded, or there were stale locks in the
 You must put Mailman into a quiescent state and remove all stale locks, then
 re-run "make update" manually.  See the INSTALL and UPGRADE files for details.
 ''')
+

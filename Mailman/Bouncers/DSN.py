@@ -78,4 +78,4 @@ def process(msg):
         if a is not None:
             realname, a = parseaddr(a)
             rtnaddrs[a] = True
-    return rtnaddrs.keys()
+    return list(rtnaddrs.keys())

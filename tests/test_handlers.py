@@ -17,6 +17,7 @@
 
 """Unit tests for the various Mailman/Handlers/*.py modules.
 """
+from __future__ import print_function
 
 import os
 import time
@@ -225,7 +226,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_moderator(self):
@@ -237,7 +238,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approved_admin(self):
@@ -249,7 +250,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_admin(self):
@@ -261,7 +262,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_unapproved(self):
@@ -311,7 +312,7 @@ From: dperson@dom.ain
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -326,7 +327,7 @@ From: cperson@dom.ain
         self._mlist.setMemberOption('cperson@dom.ain',
                                     mm_cfg.DontReceiveOwnPosts, 1)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain'])
@@ -340,7 +341,7 @@ Urgent: xxXXxx
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -357,7 +358,7 @@ Urgent: xxXXxx
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -1061,14 +1062,14 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print >> fp, addr
+                print(addr, file=fp)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
             self.assertEqual(msgdata.get('recips'), addrs)
         finally:
             try:
                 os.unlink(file)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != e.ENOENT: raise
 
     def test_file_exists_no_member(self):
@@ -1084,14 +1085,14 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print >> fp, addr
+                print(addr, file=fp)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
             self.assertEqual(msgdata.get('recips'), addrs)
         finally:
             try:
                 os.unlink(file)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != e.ENOENT: raise
 
     def test_file_exists_is_member(self):
@@ -1107,7 +1108,7 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print >> fp, addr
+                print(addr, file=fp)
                 self._mlist.addNewMember(addr)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
@@ -1115,7 +1116,7 @@ To: yall@dom.ain
         finally:
             try:
                 os.unlink(file)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != e.ENOENT: raise
 
 
@@ -1135,7 +1136,7 @@ class TestHold(TestBase):
         TestBase.tearDown(self)
         try:
             os.unlink(os.path.join(mm_cfg.DATA_DIR, 'pending.db'))
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
         for f in [holdfile for holdfile in os.listdir(mm_cfg.DATA_DIR)
                   if holdfile.startswith('heldmsg-')]:
@@ -1999,7 +2000,7 @@ Here is message %(i)d
     def tearDown(self):
         try:
             os.unlink(self._path)
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
             os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))

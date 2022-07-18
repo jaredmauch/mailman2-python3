@@ -45,7 +45,7 @@ except NameError: # Python2.3
 def process(mlist, msg, msgdata):
     # Short circuit if we've already calculated the recipients list,
     # regardless of whether the list is empty or not.
-    if msgdata.has_key('recips'):
+    if 'recips' in msgdata:
         return
     # Should the original sender should be included in the recipients list?
     include_sender = 1

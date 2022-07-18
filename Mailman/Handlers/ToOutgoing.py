@@ -36,7 +36,7 @@ def process(mlist, msg, msgdata):
     #
     # Note that the verp flag may already be set, e.g. by mailpasswds using
     # VERP_PASSWORD_REMINDERS.  Preserve any existing verp flag.
-    if msgdata.has_key('verp'):
+    if 'verp' in msgdata:
         pass
     elif mlist.personalize:
         if mm_cfg.VERP_PERSONALIZED_DELIVERIES:

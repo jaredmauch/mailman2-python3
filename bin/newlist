@@ -164,7 +164,7 @@ def main():
     if len(args) > 0:
         listname = args[0]
     else:
-        listname = raw_input(C_('Enter the name of the list: '))
+        listname = raw_input('Enter the name of the list: ')
     listname = listname.lower()
 
     if '@' in listname:

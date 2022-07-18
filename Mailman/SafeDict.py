@@ -60,7 +60,7 @@ class MsgSafeDict(SafeDict):
 
     def copy(self):
         d = self.data.copy()
-        for k in self.__msg.keys():
+        for k in list(self.__msg.keys()):
             vals = self.__msg.get_all(k)
             if len(vals) == 1:
                 d['msg_'+k.lower()] = vals[0]

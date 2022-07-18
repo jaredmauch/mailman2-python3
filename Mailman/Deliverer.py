@@ -18,6 +18,8 @@
 
 """Mixin class with message delivery routines."""
 
+from builtins import str
+from builtins import object
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 
@@ -32,7 +34,7 @@ from Mailman.Logging.Syslog import syslog
 _ = i18n._
 
 
-class Deliverer:
+class Deliverer(object):
     def SendSubscribeAck(self, name, password, digest, text=''):
         pluser = self.getMemberLanguage(name)
         # Need to set this here to get the proper l10n of the Subject:
@@ -114,7 +116,7 @@ your membership administrative address, %(addr)s.'''))
         # TK: Make unprintables to ?
         # The list owner should allow users to set language options if they
         # want to use non-us-ascii characters in password and send it back.
-        password = unicode(password, cset, 'replace').encode(cset, 'replace')
+        password = str(password, cset, 'replace').encode(cset, 'replace')
         # get the text from the template
         text = Utils.maketext(
             'userpass.txt',

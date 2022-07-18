@@ -627,7 +627,7 @@ class Privacy(GUIBase):
     def _handleForm(self, mlist, category, subcat, cgidata, doc):
         # TK: If there is no hdrfilter_* in cgidata, we should not touch
         # the header filter rules.
-        if not cgidata.has_key('hdrfilter_rebox_01'):
+        if 'hdrfilter_rebox_01' not in cgidata:
             return
         # First deal with
         rules = []
@@ -646,7 +646,7 @@ class Privacy(GUIBase):
             downtag   = 'hdrfilter_down_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata.has_key(deltag):
+            if deltag in cgidata:
                 continue
             # Get the data for the current box
             pattern = cgidata.getfirst(reboxtag)
@@ -659,7 +659,7 @@ class Privacy(GUIBase):
             if pattern is None:
                 # We came to the end of the boxes
                 break
-            if cgidata.has_key(newtag) and not pattern:
+            if newtag in cgidata and not pattern:
                 # This new entry is incomplete.
                 if i == 2:
                     # OK it is the first.
@@ -688,7 +688,7 @@ class Privacy(GUIBase):
                 rule will be ignored."""))
                 continue
             # Was this an add item?
-            if cgidata.has_key(addtag):
+            if addtag in cgidata:
                 # Where should the new one be added?
                 where = cgidata.getfirst(wheretag)
                 if where == 'before':
@@ -700,14 +700,14 @@ class Privacy(GUIBase):
                     rules.append((pattern, action, False))
                     rules.append(('', mm_cfg.DEFER, True))
             # Was this an up movement?
-            elif cgidata.has_key(uptag):
+            elif uptag in cgidata:
                 # As long as this one isn't the first rule, move it up
                 if rules:
                     rules.insert(-1, (pattern, action, False))
                 else:
                     rules.append((pattern, action, False))
             # Was this the down movement?
-            elif cgidata.has_key(downtag):
+            elif downtag in cgidata:
                 downi = i - 2
                 rules.append((pattern, action, False))
             # Otherwise, just retain this one in the list

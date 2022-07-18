@@ -17,6 +17,7 @@
 
 """Reading and writing message objects and message metadata.
 """
+from __future__ import division
 
 # enqueue() and dequeue() are not symmetric.  enqueue() takes a Message
 # object.  dequeue() returns a email.Message object tree.
@@ -34,6 +35,9 @@
 # 2), and rfc822 style plain text.  You can write your own if you have other
 # needs.
 
+from builtins import str
+from builtins import object
+from past.utils import old_div
 import os
 import time
 import email
@@ -82,8 +86,8 @@ class Switchboard:
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
         if numslices != 1:
-            self.__lower = ((shamax+1) * slice) / numslices
-            self.__upper = (((shamax+1) * (slice+1)) / numslices) - 1
+            self.__lower = old_div(((shamax+1) * slice), numslices)
+            self.__upper = (old_div(((shamax+1) * (slice+1)), numslices)) - 1
         if recover:
             self.recover_backup_files()
 
@@ -118,7 +122,7 @@ class Switchboard:
         # Always add the metadata schema version number
         data['version'] = mm_cfg.QFILE_SCHEMA_VERSION
         # Filter out volatile entries
-        for k in data.keys():
+        for k in list(data.keys()):
             if k.startswith('_'):
                 del data[k]
         # We have to tell the dequeue() method whether to parse the message
@@ -195,13 +199,13 @@ class Switchboard:
             # Throw out any files which don't match our bitrange.  BAW: test
             # performance and end-cases of this algorithm.  MAS: both
             # comparisons need to be <= to get complete range.
-            if lower is None or (lower <= long(digest, 16) <= upper):
+            if lower is None or (lower <= int(digest, 16) <= upper):
                 key = float(when)
-                while times.has_key(key):
+                while key in times:
                     key += DELTA
                 times[key] = filebase
         # FIFO sort
-        keys = times.keys()
+        keys = list(times.keys())
         keys.sort()
         return [times[k] for k in keys]
 

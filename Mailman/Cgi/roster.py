@@ -18,15 +18,18 @@
 
 Takes listname in PATH_INFO.
 """
+from __future__ import print_function
 
 
 # We don't need to lock in this script, because we're never going to change
 # data.
 
+from future import standard_library
+standard_library.install_aliases()
 import sys
 import os
 import cgi
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from Mailman import mm_cfg
 from Mailman import Utils

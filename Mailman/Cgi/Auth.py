@@ -17,6 +17,7 @@
 """Common routines for logging in and logging out of the list administrator
 and list moderator interface.
 """
+from __future__ import print_function
 
 from Mailman import mm_cfg
 from Mailman import Utils

@@ -17,6 +17,7 @@
 
 """Mixin class with list-digest handling methods and settings."""
 
+from builtins import object
 import os
 from stat import ST_SIZE
 import errno
@@ -29,7 +30,7 @@ from Mailman.i18n import _
 
 
 
-class Digester:
+class Digester(object):
     def InitVars(self):
         # Configurable
         self.digestable = mm_cfg.DEFAULT_DIGESTABLE

@@ -21,6 +21,8 @@
 Mixes in many task-specific classes.
 """
 
+from past.builtins import execfile
+from builtins import str
 import sys
 import os
 import time
@@ -771,7 +773,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if not waslocked:
             self.Lock()
         try:
-            from versions import Update
+            from .versions import Update
             Update(self, stored_state)
             self.data_version = mm_cfg.DATA_FILE_VERSION
             self.Save()
@@ -1760,4 +1762,4 @@ bad regexp in bounce_matching_header line: %s
             langs.append(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         # When testing, it's possible we've disabled a language, so just
         # filter things out so we don't get tracebacks.
-        return [lang for lang in langs if mm_cfg.LC_DESCRIPTIONS.has_key(lang)]
+        return [lang for lang in langs if lang in mm_cfg.LC_DESCRIPTIONS]

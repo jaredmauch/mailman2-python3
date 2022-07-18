@@ -19,12 +19,23 @@
 
 # For Python 2.1.x compatibility
 from __future__ import nested_scopes
+from __future__ import division
+from __future__ import print_function
 
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import chr
+from builtins import str
+from builtins import zip
+from builtins import map
+from builtins import range
+from past.utils import old_div
 import sys
 import os
 import re
 import cgi
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import signal
 
 from email.Utils import unquote, parseaddr, formataddr
@@ -98,7 +109,7 @@ def main():
     safe_params = ['VARHELP', 'adminpw', 'admlogin',
                    'letter', 'chunk', 'findmember',
                    'legend']
-    params = cgidata.keys()
+    params = list(cgidata.keys())
     if set(params) - set(safe_params):
         csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
                                   'admin')
@@ -112,7 +123,7 @@ def main():
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
                                  cgidata.getfirst('adminpw', '')):
-        if cgidata.has_key('adminpw'):
+        if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -148,7 +159,7 @@ def main():
         return
 
     # Sanity check
-    if category not in mlist.GetConfigCategories().keys():
+    if category not in list(mlist.GetConfigCategories().keys()):
         category = 'general'
 
     # Is the request for variable details?
@@ -157,7 +168,7 @@ def main():
     parsedqs = None
     if qsenviron:
         parsedqs = cgi.parse_qs(qsenviron)
-    if cgidata.has_key('VARHELP'):
+    if 'VARHELP' in cgidata:
         varhelp = cgidata.getfirst('VARHELP')
     elif parsedqs:
         # POST methods, even if their actions have a query string, don't get
@@ -206,7 +217,7 @@ def main():
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        if cgidata.keys():
+        if list(cgidata.keys()):
             if csrf_checked:
                 # There are options to change
                 change_options(mlist, category, subcat, cgidata, doc)
@@ -483,8 +494,8 @@ def show_results(mlist, doc, category, subcat, cgidata):
     # These are links to other categories and live in the left column
     categorylinks_1 = categorylinks = UnorderedList()
     categorylinks_2 = ''
-    categorykeys = categories.keys()
-    half = len(categorykeys) / 2
+    categorykeys = list(categories.keys())
+    half = old_div(len(categorykeys), 2)
     counter = 0
     subcat = None
     for k in categorykeys:
@@ -727,7 +738,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
            values, legend, selected = params
         else:
            values = mlist.GetAvailableLanguages()
-           legend = map(_, map(Utils.GetLanguageDescr, values))
+           legend = list(map(_, list(map(Utils.GetLanguageDescr, values))))
            selected = values.index(mlist.preferred_language)
         return SelectOptions(varname, values, legend, selected)
     elif kind == mm_cfg.Topics:
@@ -977,9 +988,9 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         if qsenviron:
             qs = cgi.parse_qs(qsenviron)
             bucket = qs.get('letter', '0')[0].lower()
-        keys = buckets.keys()
+        keys = list(buckets.keys())
         keys.sort()
-        if not bucket or not buckets.has_key(bucket):
+        if not bucket or bucket not in buckets:
             bucket = keys[0]
         members = buckets[bucket]
         action = adminurl + '/members?letter=%s' % bucket
@@ -990,7 +1001,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             numchunks = i + (not not r * 1)
             # Now chunk them up
             chunkindex = 0
-            if qs.has_key('chunk'):
+            if 'chunk' in qs:
                 try:
                     chunkindex = int(qs['chunk'][0])
                 except ValueError:
@@ -1018,9 +1029,9 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         for letter in keys:
             findfrag = ''
             if regexp:
-                findfrag = '&findmember=' + urllib.quote(regexp)
+                findfrag = '&findmember=' + urllib.parse.quote(regexp)
             url = adminurl + '/members?letter=' + letter + findfrag
-            if isinstance(url, unicode):
+            if isinstance(url, str):
                 url = url.encode(Utils.GetCharSet(mlist.preferred_language),
                                  errors='ignore')
             if letter == bucket:
@@ -1048,7 +1059,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # Find the longest name in the list
     longest = 0
     if members:
-        names = filter(None, [mlist.getMemberName(s) for s in members])
+        names = [_f for _f in [mlist.getMemberName(s) for s in members] if _f]
         # Make the name field at least as long as the longest email address
         longest = max([len(s) for s in names + members])
     # Abbreviations for delivery status details
@@ -1059,7 +1070,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                   }
     # Now populate the rows
     for addr in members:
-        qaddr = urllib.quote(addr)
+        qaddr = urllib.parse.quote(addr)
         link = Link(mlist.GetOptionsURL(addr, obscure=1),
                     mlist.getMemberCPAddress(addr))
         fullname = Utils.uncanonstr(mlist.getMemberName(addr),
@@ -1208,7 +1219,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             start = chunkmembers[i*chunksz]
             end = chunkmembers[min((i+1)*chunksz, last)-1]
             thisurl = url + 'chunk=%d' % i + findfrag
-            if isinstance(thisurl, unicode):
+            if isinstance(thisurl, str):
                 thisurl = thisurl.encode(
                                  Utils.GetCharSet(mlist.preferred_language),
                                  errors='ignore')
@@ -1466,7 +1477,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     subscribers += cgidata.getfirst('subscribees', '')
     subscribers += cgidata.getfirst('subscribees_upload', '')
     if subscribers:
-        entries = filter(None, [n.strip() for n in subscribers.splitlines()])
+        entries = [_f for _f in [n.strip() for n in subscribers.splitlines()] if _f]
         send_welcome_msg = safeint('send_welcome_msg_to_this_batch',
                                    mlist.send_welcome_msg)
         send_admin_notif = safeint('send_notifications_to_list_owner',
@@ -1541,13 +1552,13 @@ def change_options(mlist, category, subcat, cgidata, doc):
             doc.AddItem('<p>')
     # Unsubscriptions
     removals = ''
-    if cgidata.has_key('unsubscribees'):
+    if 'unsubscribees' in cgidata:
         removals += cgidata['unsubscribees'].value
-    if cgidata.has_key('unsubscribees_upload') and \
+    if 'unsubscribees_upload' in cgidata and \
            cgidata['unsubscribees_upload'].value:
         removals += cgidata['unsubscribees_upload'].value
     if removals:
-        names = filter(None, [n.strip() for n in removals.splitlines()])
+        names = [_f for _f in [n.strip() for n in removals.splitlines()] if _f]
         send_unsub_notifications = safeint(
             'send_unsub_notifications_to_list_owner',
             mlist.admin_notify_mchanges)
@@ -1579,7 +1590,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             doc.AddItem(UnorderedList(*unsubscribe_errors))
             doc.AddItem('<p>')
     # Address Changes
-    if cgidata.has_key('change_from'):
+    if 'change_from' in cgidata:
         change_from = cgidata.getfirst('change_from', '')
         change_to = cgidata.getfirst('change_to', '')
         schange_from = Utils.websafe(change_from)
@@ -1656,13 +1667,12 @@ def change_options(mlist, category, subcat, cgidata, doc):
         # entities. We need to fix those.
         def i_to_c(mo):
             # Convert a matched string of digits to the corresponding unicode.
-            return unichr(int(mo.group(1)))
+            return chr(int(mo.group(1)))
         def clean_input(x):
             # Strip leading/trailing whitespace and convert numeric HTML
             # entities.
             return re.sub(r'&#(\d+);', i_to_c, x.strip())
-        entries = filter(None,
-                         [clean_input(n) for n in memberlist.splitlines()])
+        entries = [_f for _f in [clean_input(n) for n in memberlist.splitlines()] if _f]
         lc_addresses = [parseaddr(x)[1].lower() for x in entries
                         if parseaddr(x)[1]]
         subscribe_errors = []
@@ -1733,7 +1743,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             doc.AddItem('<p>')
 
     # See if this was a moderation bit operation
-    if cgidata.has_key('allmodbit_btn'):
+    if 'allmodbit_btn' in cgidata:
         val = safeint('allmodbit_val')
         if val not in (0, 1):
             doc.addError(_('Bad moderation flag value'))
@@ -1741,19 +1751,19 @@ def change_options(mlist, category, subcat, cgidata, doc):
             for member in mlist.getMembers():
                 mlist.setMemberOption(member, mm_cfg.Moderate, val)
     # do the user options for members category
-    if cgidata.has_key('setmemberopts_btn') and cgidata.has_key('user'):
+    if 'setmemberopts_btn' in cgidata and 'user' in cgidata:
         user = cgidata['user']
         if type(user) is ListType:
             users = []
             for ui in range(len(user)):
-                users.append(urllib.unquote(user[ui].value))
+                users.append(urllib.parse.unquote(user[ui].value))
         else:
-            users = [urllib.unquote(user.value)]
+            users = [urllib.parse.unquote(user.value)]
         errors = []
         removes = []
         for user in users:
-            quser = urllib.quote(user)
-            if cgidata.has_key('%s_unsub' % quser):
+            quser = urllib.parse.quote(user)
+            if '%s_unsub' % quser in cgidata:
                 try:
                     _ = D_
                     whence=_('member mgt page')
@@ -1767,7 +1777,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 doc.addError(_('Ignoring changes to deleted member: %(user)s'),
                              tag=_('Warning: '))
                 continue
-            value = cgidata.has_key('%s_digest' % quser)
+            value = '%s_digest' % quser in cgidata
             try:
                 mlist.setMemberOption(user, mm_cfg.Digests, value)
             except (Errors.AlreadyReceivingDigests,
@@ -1791,14 +1801,14 @@ def change_options(mlist, category, subcat, cgidata, doc):
 
             # Set the `nomail' flag, but only if the user isn't already
             # disabled (otherwise we might change BYUSER into BYADMIN).
-            if cgidata.has_key('%s_nomail' % quser):
+            if '%s_nomail' % quser in cgidata:
                 if mlist.getDeliveryStatus(user) == MemberAdaptor.ENABLED:
                     mlist.setDeliveryStatus(user, MemberAdaptor.BYADMIN)
             else:
                 mlist.setDeliveryStatus(user, MemberAdaptor.ENABLED)
             for opt in ('hide', 'ack', 'notmetoo', 'nodupes', 'plain'):
                 opt_code = mm_cfg.OPTINFO[opt]
-                if cgidata.has_key('%s_%s' % (quser, opt)):
+                if '%s_%s' % (quser, opt) in cgidata:
                     mlist.setMemberOption(user, opt_code, 1)
                 else:
                     mlist.setMemberOption(user, opt_code, 0)
@@ -1810,5 +1820,5 @@ def change_options(mlist, category, subcat, cgidata, doc):
         if errors:
             doc.AddItem(Header(5, _("Error Unsubscribing:")))
             items = ['%s -- %s' % (x[0], x[1]) for x in errors]
-            doc.AddItem(apply(UnorderedList, tuple((items))))
+            doc.AddItem(UnorderedList(*tuple((items))))
             doc.AddItem("<p>")

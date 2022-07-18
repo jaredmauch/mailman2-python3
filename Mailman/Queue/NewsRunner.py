@@ -17,6 +17,7 @@
 
 """NNTP queue runner."""
 
+from builtins import str
 import re
 import socket
 import nntplib

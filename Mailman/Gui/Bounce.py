@@ -1,3 +1,4 @@
+from __future__ import division
 # Copyright (C) 2001-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -14,6 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+from past.utils import old_div
 from Mailman import mm_cfg
 from Mailman.i18n import _
 from Mailman.mm_cfg import days
@@ -201,4 +203,4 @@ class Bounce(GUIBase):
         if varname not in ('bounce_info_stale_after',
                            'bounce_you_are_disabled_warnings_interval'):
             return None
-        return int(getattr(mlist, varname) / days(1))
+        return int(old_div(getattr(mlist, varname), days(1)))

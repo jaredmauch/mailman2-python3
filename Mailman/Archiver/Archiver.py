@@ -21,7 +21,10 @@ Public archives are separated from private ones.  An external archival
 mechanism (eg, pipermail) should be pointed to the right places, to do the
 archival.
 """
+from __future__ import absolute_import
 
+from builtins import str
+from builtins import object
 import os
 import errno
 import traceback
@@ -204,7 +207,7 @@ class Archiver:
         else:
             # use the internal archiver
             f = StringIO(txt)
-            import HyperArch
+            from . import HyperArch
             h = HyperArch.HyperArchive(self)
             h.processUnixMailbox(f)
             h.close()

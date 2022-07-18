@@ -20,6 +20,7 @@ Also do other manipulations of From:, Reply-To: and Cc: depending on
 list configuration.
 """
 
+from builtins import str
 from __future__ import nested_scopes
 import re
 
@@ -75,7 +76,7 @@ def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
         # ToDigest, ToArchive and ToUsenet.  Thus, we put them in
         # msgdata[add_header] here and apply them in WrapMessage.
         msgdata.setdefault('add_header', {})[name] = value
-    elif repl or not msg.has_key(name):
+    elif repl or name not in msg:
         if delete:
             del msg[name]
         msg[name] = value
@@ -152,15 +153,15 @@ def process(mlist, msg, msgdata):
         # in the charset of the list's preferred language or possibly unicode.
         # if it's from the email address, it should be ascii. In any case,
         # make it a unicode.
-        if isinstance(realname, unicode):
+        if isinstance(realname, str):
             urn = realname
         else:
             rn, cs = ch_oneline(realname)
-            urn = unicode(rn, cs, errors='replace')
+            urn = str(rn, cs, errors='replace')
         # likewise, the list's real_name which should be ascii, but use the
         # charset of the list's preferred_language which should be a superset.
         lcs = Utils.GetCharSet(mlist.preferred_language)
-        ulrn = unicode(mlist.real_name, lcs, errors='replace')
+        ulrn = str(mlist.real_name, lcs, errors='replace')
         # get translated 'via' with dummy replacements
         realname = '%(realname)s'
         lrn = '%(lrn)s'
@@ -170,7 +171,7 @@ def process(mlist, msg, msgdata):
         i18n.set_language(mlist.preferred_language)
         via = _('%(realname)s via %(lrn)s')
         i18n.set_translation(otrans)
-        uvia = unicode(via, lcs, errors='replace')
+        uvia = str(via, lcs, errors='replace')
         # Replace the dummy replacements.
         uvia = re.sub(u'%\(lrn\)s', ulrn, re.sub(u'%\(realname\)s', urn, uvia))
         # And get an RFC 2047 encoded header string.
@@ -212,7 +213,7 @@ def process(mlist, msg, msgdata):
         d = {}
         def add(pair):
             lcaddr = pair[1].lower()
-            if d.has_key(lcaddr):
+            if lcaddr in d:
                 return
             d[lcaddr] = pair
             new.append(pair)
@@ -238,7 +239,7 @@ def process(mlist, msg, msgdata):
         # there so we don't add the original From: to Cc:
         if o_from and mlist.reply_goes_to_list == 0:
             if o_rt:
-                if d.has_key(o_from[1].lower()):
+                if o_from[1].lower() in d:
                     # Original From: address is in original Reply-To:.
                     # Pretend we added it.
                     o_from = None
@@ -289,8 +290,8 @@ def process(mlist, msg, msgdata):
                 add(o_from)
             # AvoidDuplicates may have set a new Cc: in msgdata.add_header,
             # so check that.
-            if (msgdata.has_key('add_header') and
-                    msgdata['add_header'].has_key('Cc')):
+            if ('add_header' in msgdata and
+                    'Cc' in msgdata['add_header']):
                 for pair in getaddresses([msgdata['add_header']['Cc']]):
                     add(pair)
             else:
@@ -355,7 +356,7 @@ def process(mlist, msg, msgdata):
             headers['List-Archive'] = '<%s>' % archiveurl
     # First we delete any pre-existing headers because the RFC permits only
     # one copy of each, and we want to be sure it's ours.
-    for h, v in headers.items():
+    for h, v in list(headers.items()):
         # Wrap these lines if they are too long.  78 character width probably
         # shouldn't be hardcoded, but is at least text-MUA friendly.  The
         # adding of 2 is for the colon-space separator.
@@ -392,7 +393,7 @@ def prefix_subject(mlist, msg, msgdata):
     # range.  It is safe to use unicode string when manupilating header
     # contents with re module.  It would be best to return unicode in
     # ch_oneline() but here is temporary solution.
-    subject = unicode(subject, cset)
+    subject = str(subject, cset)
     # If the subject_prefix contains '%d', it is replaced with the
     # mailing list sequential number.  Sequential number format allows
     # '%d' or '%05d' like pattern.
@@ -432,7 +433,7 @@ def prefix_subject(mlist, msg, msgdata):
         subject = _('(no subject)')
         i18n.set_translation(otrans)
         cset = Utils.GetCharSet(mlist.preferred_language)
-        subject = unicode(subject, cset)
+        subject = str(subject, cset)
     # and substitute %d in prefix with post_id
     try:
         prefix = prefix % mlist.post_id

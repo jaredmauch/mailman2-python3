@@ -17,6 +17,7 @@
 
 """Bounce queue runner."""
 
+from builtins import object
 import os
 import re
 import time
@@ -112,7 +113,7 @@ class BounceMixin:
                 break
             events.setdefault(listname, []).append((addr, day, msg))
         # Now register all events sorted by list
-        for listname in events.keys():
+        for listname in list(events.keys()):
             mlist = self._open_list(listname)
             mlist.Lock()
             try:
@@ -254,7 +255,7 @@ class BounceRunner(Runner, BounceMixin):
                 return
         # If that still didn't return us any useful addresses, then send it on
         # or discard it.
-        addrs = filter(None, addrs)
+        addrs = [_f for _f in addrs if _f]
         if not addrs:
             syslog('bounce',
                    '%s: bounce message w/no discernable addresses: %s',

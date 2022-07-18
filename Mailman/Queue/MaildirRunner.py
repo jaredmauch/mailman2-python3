@@ -49,6 +49,7 @@ mechanism.
 
 # NOTE: Maildir delivery is experimental in Mailman 2.1.
 
+from builtins import str
 import os
 import re
 import errno

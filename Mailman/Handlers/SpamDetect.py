@@ -25,6 +25,7 @@ immediately.
 TBD: This needs to be made more configurable and robust.
 """
 
+from builtins import str
 import re
 
 from unicodedata import normalize
@@ -69,7 +70,7 @@ def getDecodedHeaders(msg, cset='utf-8'):
     """
 
     headers = u''
-    for h, v in msg.items():
+    for h, v in list(msg.items()):
         uvalue = u''
         try:
             v = decode_header(re.sub('\n\s', ' ', v))
@@ -79,14 +80,14 @@ def getDecodedHeaders(msg, cset='utf-8'):
             if not cs:
                 cs = 'us-ascii'
             try:
-                uvalue += unicode(frag, cs, 'replace')
+                uvalue += str(frag, cs, 'replace')
             except LookupError:
                 # The encoding charset is unknown.  At this point, frag
                 # has been QP or base64 decoded into a byte string whose
                 # charset we don't know how to handle.  We will try to
                 # unicode it as iso-8859-1 which may result in a garbled
                 # mess, but we have to do something.
-                uvalue += unicode(frag, 'iso-8859-1', 'replace')
+                uvalue += str(frag, 'iso-8859-1', 'replace')
         uhdr = h.decode('us-ascii', 'replace')
         headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
     return headers

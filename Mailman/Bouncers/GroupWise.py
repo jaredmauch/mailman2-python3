@@ -69,4 +69,4 @@ def process(msg):
                 addrs[line] = 1
             else:
                 addrs[line[:i]] = 1
-    return addrs.keys()
+    return list(addrs.keys())

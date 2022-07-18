@@ -28,6 +28,9 @@ for python and, recursively, for nested HTML formatting objects.
 # shouldn't be adding their own newlines.  The next object should.
 
 
+from builtins import zip
+from builtins import range
+from builtins import object
 import types
 
 from Mailman import mm_cfg
@@ -54,17 +57,17 @@ def HTMLFormatObject(item, indent):
 
 def CaseInsensitiveKeyedDict(d):
     result = {}
-    for (k,v) in d.items():
+    for (k,v) in list(d.items()):
         result[k.lower()] = v
     return result
 
 # Given references to two dictionaries, copy the second dictionary into the
 # first one.
 def DictMerge(destination, fresh_dict):
-    for (key, value) in fresh_dict.items():
+    for (key, value) in list(fresh_dict.items()):
         destination[key] = value
 
-class Table:
+class Table(object):
     def __init__(self, **table_opts):
         self.cells = []
         self.cell_info = {}
@@ -96,16 +99,16 @@ class Table:
 
     def AddCellInfo(self, row, col, **kws):
         kws = CaseInsensitiveKeyedDict(kws)
-        if not self.cell_info.has_key(row):
+        if row not in self.cell_info:
             self.cell_info[row] = { col : kws }
-        elif self.cell_info[row].has_key(col):
+        elif col in self.cell_info[row]:
             DictMerge(self.cell_info[row], kws)
         else:
             self.cell_info[row][col] = kws
 
     def AddRowInfo(self, row, **kws):
         kws = CaseInsensitiveKeyedDict(kws)
-        if not self.row_info.has_key(row):
+        if row not in self.row_info:
             self.row_info[row] = kws
         else:
             DictMerge(self.row_info[row], kws)
@@ -123,7 +126,7 @@ class Table:
                       'bgcolor']
         output = ''
 
-        for (key, val) in info.items():
+        for (key, val) in list(info.items()):
             if not key in valid_mods:
                 continue
             if key == 'nowrap':
@@ -138,7 +141,7 @@ class Table:
         valid_mods = ['align', 'valign', 'bgcolor']
         output = ''
 
-        for (key, val) in info.items():
+        for (key, val) in list(info.items()):
             if not key in valid_mods:
                 continue
             output = output + ' %s="%s"' % (key.upper(), val)
@@ -151,7 +154,7 @@ class Table:
 
         output = ''
 
-        for (key, val) in info.items():
+        for (key, val) in list(info.items()):
             if not key in valid_mods:
                 continue
             if key == 'border' and val == None:
@@ -207,7 +210,7 @@ class Table:
         return output
 
 
-class Link:
+class Link(object):
     def __init__(self, href, text, target=None):
         self.href = href
         self.text = text
@@ -221,7 +224,7 @@ class Link:
                                           texpr,
                                           HTMLFormatObject(self.text, indent))
 
-class FontSize:
+class FontSize(object):
     """FontSize is being deprecated - use FontAttr(..., size="...") instead."""
     def __init__(self, size, *items):
         self.items = list(items)
@@ -234,7 +237,7 @@ class FontSize:
         output = output + '</font>'
         return output
 
-class FontAttr:
+class FontAttr(object):
     """Present arbitrary font attributes."""
     def __init__(self, *items, **kw):
         self.items = list(items)
@@ -242,7 +245,7 @@ class FontAttr:
 
     def Format(self, indent=0):
         seq = []
-        for k, v in self.attrs.items():
+        for k, v in list(self.attrs.items()):
             seq.append('%s="%s"' % (k, v))
         output = '<font %s>' % SPACE.join(seq)
         for item in self.items:
@@ -251,7 +254,7 @@ class FontAttr:
         return output
 
 
-class Container:
+class Container(object):
     def __init__(self, *items):
         if not items:
             self.items = []
@@ -342,7 +345,7 @@ class Document(Container):
                 kws.setdefault('alink', mm_cfg.WEB_ALINK_COLOR)
             if mm_cfg.WEB_LINK_COLOR:
                 kws.setdefault('link', mm_cfg.WEB_LINK_COLOR)
-            for k, v in kws.items():
+            for k, v in list(kws.items()):
                 quals.append('%s="%s"' % (k, v))
             output.append('%s<BODY %s' % (tab, SPACE.join(quals)))
             # Language direction
@@ -421,7 +424,7 @@ class Center(StdContainer):
 class Form(Container):
     def __init__(self, action='', method='POST', encoding=None, 
                        mlist=None, contexts=None, user=None, *items):
-        apply(Container.__init__, (self,) +  items)
+        Container.__init__(*(self,) +  items)
         self.action = action
         self.method = method
         self.encoding = encoding
@@ -448,7 +451,7 @@ class Form(Container):
         return output
 
 
-class InputObj:
+class InputObj(object):
     def __init__(self, name, ty, value, checked, **kws):
         self.name = name
         self.type = ty
@@ -460,13 +463,13 @@ class InputObj:
         charset = get_translation().charset() or 'us-ascii'
         output = ['<INPUT name="%s" type="%s" value="%s"' %
                   (self.name, self.type, self.value)]
-        for item in self.kws.items():
+        for item in list(self.kws.items()):
             output.append('%s="%s"' % item)
         if self.checked:
             output.append('CHECKED')
         output.append('>')
         ret = SPACE.join(output)
-        if self.type == 'TEXT' and isinstance(ret, unicode):
+        if self.type == 'TEXT' and isinstance(ret, str):
             ret = ret.encode(charset, 'xmlcharrefreplace')
         return ret
 
@@ -491,7 +494,7 @@ class Hidden(InputObj):
     def __init__(self, name, value=''):
         InputObj.__init__(self, name, 'HIDDEN', value, checked=0)
 
-class TextArea:
+class TextArea(object):
     def __init__(self, name, text='', rows=None, cols=None, wrap='soft',
                  readonly=0):
         if isinstance(text, str):
@@ -519,30 +522,30 @@ class TextArea:
         if self.readonly:
             output += ' READONLY'
         output += '>%s</TEXTAREA>' % self.text
-        if isinstance(output, unicode):
+        if isinstance(output, str):
             output = output.encode(charset, 'xmlcharrefreplace')
         return output
 
 class FileUpload(InputObj):
     def __init__(self, name, rows=None, cols=None, **kws):
-        apply(InputObj.__init__, (self, name, 'FILE', '', 0), kws)
+        InputObj.__init__(*(self, name, 'FILE', '', 0), **kws)
 
 class RadioButton(InputObj):
     def __init__(self, name, value, checked=0, **kws):
-        apply(InputObj.__init__, (self, name, 'RADIO', value, checked), kws)
+        InputObj.__init__(*(self, name, 'RADIO', value, checked), **kws)
 
 class CheckBox(InputObj):
     def __init__(self, name, value, checked=0, **kws):
-        apply(InputObj.__init__, (self, name, "CHECKBOX", value, checked), kws)
+        InputObj.__init__(*(self, name, "CHECKBOX", value, checked), **kws)
 
-class VerticalSpacer:
+class VerticalSpacer(object):
     def __init__(self, size=10):
         self.size = size
     def Format(self, indent=0):
         output = '<spacer type="vertical" height="%d">' % self.size
         return output
 
-class WidgetArray:
+class WidgetArray(object):
     Widget = None
 
     def __init__(self, name, button_names, checked, horizontal, values):
@@ -561,7 +564,7 @@ class WidgetArray:
     def Format(self, indent=0):
         t = Table(cellspacing=5)
         items = []
-        for i, name, value in zip(range(len(self.button_names)),
+        for i, name, value in zip(list(range(len(self.button_names))),
                                   self.button_names,
                                   self.values):
             ischecked = (self.ischecked(i))
@@ -582,7 +585,7 @@ class RadioButtonArray(WidgetArray):
     def __init__(self, name, button_names, checked=None, horizontal=1,
                  values=None):
         if values is None:
-            values = range(len(button_names))
+            values = list(range(len(button_names)))
         # BAW: assert checked is a scalar...
         WidgetArray.__init__(self, name, button_names, checked, horizontal,
                              values)
@@ -600,7 +603,7 @@ class CheckBoxArray(WidgetArray):
         else:
             assert len(checked) == len(button_names)
         if values is None:
-            values = range(len(button_names))
+            values = list(range(len(button_names)))
         WidgetArray.__init__(self, name, button_names, checked, horizontal,
                              values)
 
@@ -679,7 +682,7 @@ def MailmanLogo():
     return t
 
 
-class SelectOptions:
+class SelectOptions(object):
    def __init__(self, varname, values, legend,
                 selected=0, size=1, multiple=None):
       self.varname  = varname
@@ -689,11 +692,11 @@ class SelectOptions:
       self.multiple = multiple
       # we convert any type to tuple, commas are needed
       if not multiple:
-         if type(selected) == types.IntType:
+         if type(selected) == int:
              self.selected = (selected,)
-         elif type(selected) == types.TupleType:
+         elif type(selected) == tuple:
              self.selected = (selected[0],)
-         elif type(selected) == types.ListType:
+         elif type(selected) == list:
              self.selected = (selected[0],)
          else:
              self.selected = (0,)

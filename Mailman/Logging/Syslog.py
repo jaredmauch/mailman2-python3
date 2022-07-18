@@ -20,6 +20,7 @@
 This might eventually be replaced by a syslog based logger, hence the name.
 """
 
+from builtins import object
 import quopri
 
 from Mailman.Logging.StampedLogger import StampedLogger
@@ -32,7 +33,7 @@ syslog = None
 
 
 # Don't instantiate except below.
-class _Syslog:
+class _Syslog(object):
     def __init__(self):
         self._logfiles = {}
 
@@ -64,7 +65,7 @@ class _Syslog:
             # Python 2.4 may fail to write 8bit (non-ascii) characters
             # Also, if msg is unicode with non-ascii, quopri.encodestring()
             # will throw UnicodeEncodeError, so avoid that.
-            if isinstance(msg, unicode):
+            if isinstance(msg, str):
                 msg = msg.encode('iso-8859-1', 'replace')
             logf.write(quopri.encodestring(msg) + '\n')
 
@@ -72,7 +73,7 @@ class _Syslog:
     __call__ = write
 
     def close(self):
-        for kind, logger in self._logfiles.items():
+        for kind, logger in list(self._logfiles.items()):
             logger.close()
         self._logfiles.clear()
 

@@ -16,13 +16,20 @@
 # USA.
 
 """Produce and handle the member options."""
+from __future__ import division
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import re
 import sys
 import os
 import cgi
 import signal
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -104,7 +111,7 @@ def main():
     safe_params = ['displang-button', 'language', 'email', 'password', 'login',
                    'login-unsub', 'login-remind', 'VARHELP', 'UserOptions']
     try:
-        params = cgidata.keys()
+        params = list(cgidata.keys())
     except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -169,7 +176,7 @@ def main():
     # Avoid cross-site scripting attacks
     if set(params) - set(safe_params):
         csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
-                                  Utils.UnobscureEmail(urllib.unquote(user)))
+                                  Utils.UnobscureEmail(urllib.parse.unquote(user)))
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
@@ -201,7 +208,7 @@ def main():
     msgb = _('You already have a subscription pending confirmation')
     msga = _("""If you are a list member, your unsubscription request has been
              forwarded to the list administrator for approval.""")
-    if cgidata.has_key('login-unsub'):
+    if 'login-unsub' in cgidata:
         # Because they can't supply a password for unsubscribing, we'll need
         # to do the confirmation dance.
         if mlist.isMember(user):
@@ -245,7 +252,7 @@ def main():
     # Are we processing a password reminder from the login screen?
     msg = _("""If you are a list member,
             your password has been emailed to you.""")
-    if cgidata.has_key('login-remind'):
+    if 'login-remind' in cgidata:
         if mlist.isMember(user):
             mlist.MailUserPassword(user)
             doc.addError(msg, tag='')
@@ -285,7 +292,7 @@ def main():
         # Not authenticated, so throw up the login page again.  If they tried
         # to authenticate via cgi (instead of cookie), then print an error
         # message.
-        if cgidata.has_key('password'):
+        if 'password' in cgidata:
             doc.addError(_('Authentication failed.'))
             remote = os.environ.get('HTTP_FORWARDED_FOR',
                      os.environ.get('HTTP_X_FORWARDED_FOR',
@@ -330,29 +337,29 @@ def main():
 
     # See if this is VARHELP on topics.
     varhelp = None
-    if cgidata.has_key('VARHELP'):
+    if 'VARHELP' in cgidata:
         varhelp = cgidata['VARHELP'].value
     elif os.environ.get('QUERY_STRING'):
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
         qs = cgi.parse_qs(os.environ['QUERY_STRING']).get('VARHELP')
-        if qs and type(qs) == types.ListType:
+        if qs and type(qs) == list:
             varhelp = qs[0]
     if varhelp:
         # Sanitize the topic name.
         while '%' in varhelp:
-            varhelp = urllib.unquote_plus(varhelp)
+            varhelp = urllib.parse.unquote_plus(varhelp)
         varhelp = re.sub('<.*', '', varhelp)
         topic_details(mlist, doc, user, cpuser, userlang, varhelp)
         return
 
-    if cgidata.has_key('logout'):
+    if 'logout' in cgidata:
         print(mlist.ZapCookie(mm_cfg.AuthUser, user))
         loginpage(mlist, doc, user, language)
         print(doc.Format())
         return
 
-    if cgidata.has_key('emailpw'):
+    if 'emailpw' in cgidata:
         mlist.MailUserPassword(user)
         options_page(
             mlist, doc, user, cpuser, userlang,
@@ -360,7 +367,7 @@ def main():
         print(doc.Format())
         return
 
-    if cgidata.has_key('othersubs'):
+    if 'othersubs' in cgidata:
         # Only the user or site administrator can view all subscriptions.
         if not is_user_or_siteadmin:
             doc.addError(_("""The list administrator may not view the other
@@ -394,7 +401,7 @@ def main():
         print(doc.Format())
         return
 
-    if cgidata.has_key('change-of-address'):
+    if 'change-of-address' in cgidata:
         # We could be changing the user's full name, email address, or both.
         # Watch out for non-ASCII characters in the member's name.
         membername = cgidata.getfirst('fullname')
@@ -512,7 +519,7 @@ address.  Upon confirmation, any other mailing list containing the address
         print(doc.Format())
         return
 
-    if cgidata.has_key('changepw'):
+    if 'changepw' in cgidata:
         # Is this list admin and is list admin allowed to change passwords.
         if not (is_user_or_siteadmin
                 or mm_cfg.OWNERS_CAN_CHANGE_MEMBER_PASSWORDS):
@@ -559,7 +566,7 @@ address.  Upon confirmation, any other mailing list containing the address
         print(doc.Format())
         return
 
-    if cgidata.has_key('unsub'):
+    if 'unsub' in cgidata:
         # Was the confirming check box turned on?
         if not cgidata.getfirst('unsubconfirm'):
             options_page(
@@ -623,7 +630,7 @@ address.  Upon confirmation, any other mailing list containing the address
         print(doc.Format())
         return
 
-    if cgidata.has_key('options-submit'):
+    if 'options-submit' in cgidata:
         # Digest action flags
         digestwarn = 0
         cantdigest = 0
@@ -688,7 +695,7 @@ address.  Upon confirmation, any other mailing list containing the address
                 # Assume it was a bare string, so listify it
                 topicnames = [topicnames]
             # unquote the topic names
-            topicnames = [urllib.unquote_plus(n) for n in topicnames]
+            topicnames = [urllib.parse.unquote_plus(n) for n in topicnames]
 
         # The standard sigterm handler (see above)
         def sigterm_handler(signum, frame, mlist=mlist):
@@ -721,13 +728,13 @@ address.  Upon confirmation, any other mailing list containing the address
             mlist.Unlock()
 
         # A bag of attributes for the global options
-        class Global:
+        class Global(object):
             enable = None
             remind = None
             nodupes = None
             mime = None
-            def __nonzero__(self):
-                 return len(self.__dict__.keys()) > 0
+            def __bool__(self):
+                 return len(list(self.__dict__.keys())) > 0
 
         globalopts = Global()
 
@@ -887,7 +894,7 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
     replacements['<mm-global-nodupes-button>'] = (
         CheckBox('nodupes-globally', 1, checked=0).Format())
 
-    days = int(mm_cfg.PENDING_REQUEST_LIFE / mm_cfg.days(1))
+    days = int(old_div(mm_cfg.PENDING_REQUEST_LIFE, mm_cfg.days(1)))
     if days > 1:
         units = _('days')
     else:
@@ -912,7 +919,7 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
         for name, pattern, description, emptyflag in mlist.topics:
             if emptyflag:
                 continue
-            quotedname = urllib.quote_plus(name)
+            quotedname = urllib.parse.quote_plus(name)
             details = Link(mlist.GetScriptURL('options') +
                            '/%s/?VARHELP=%s' % (user, quotedname),
                            ' (Details)')
@@ -1123,7 +1130,7 @@ def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
     name = None
     topicname = _('<missing>')
     if len(reflist) == 1:
-        topicname = urllib.unquote_plus(reflist[0])
+        topicname = urllib.parse.unquote_plus(reflist[0])
         for name, pattern, description, emptyflag in mlist.topics:
             if name == topicname:
                 break

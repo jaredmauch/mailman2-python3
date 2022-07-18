@@ -238,4 +238,4 @@ def process(msg, patterns=None):
                     break
         if addrs:
             break
-    return [x for x in addrs.keys() if VALID.match(x)]
+    return [x for x in list(addrs.keys()) if VALID.match(x)]

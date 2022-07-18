@@ -16,7 +16,9 @@
 # USA.
 
 """Create mailing lists through the web."""
+from __future__ import print_function
 
+from builtins import object
 import sys
 import os
 import signal
@@ -61,10 +63,10 @@ def main():
         doc.AddItem(
             Header(3, Bold(FontAttr(title, color='#ff0000', size='+2'))))
         syslog('error', 'Bad URL specification: %s', parts)
-    elif cgidata.has_key('doit'):
+    elif 'doit' in cgidata:
         # We must be processing the list creation request
         process_request(doc, cgidata)
-    elif cgidata.has_key('clear'):
+    elif 'clear' in cgidata:
         request_creation(doc)
     else:
         # Put up the list creation request form
@@ -175,7 +177,7 @@ def process_request(doc, cgidata):
     # Make sure the web hostname matches one of our virtual domains
     hostname = Utils.get_domain()
     if mm_cfg.VIRTUAL_HOST_OVERVIEW and \
-           not mm_cfg.VIRTUAL_HOSTS.has_key(hostname):
+           hostname not in mm_cfg.VIRTUAL_HOSTS:
         safehostname = Utils.websafe(hostname)
         request_creation(doc, cgidata,
                          _('Unknown virtual host: %(safehostname)s'))
@@ -297,7 +299,7 @@ def process_request(doc, cgidata):
 
 
 # Because the cgi module blows
-class Dummy:
+class Dummy(object):
     def getfirst(self, name, default):
         return default
 dummy = Dummy()
@@ -410,9 +412,9 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Create the table of initially supported languages, sorted on the long
     # name of the language.
     revmap = {}
-    for key, (name, charset, direction) in mm_cfg.LC_DESCRIPTIONS.items():
+    for key, (name, charset, direction) in list(mm_cfg.LC_DESCRIPTIONS.items()):
         revmap[_(name)] = key
-    langnames = revmap.keys()
+    langnames = list(revmap.keys())
     langnames.sort()
     langs = []
     for name in langnames:

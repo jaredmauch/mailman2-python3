@@ -16,6 +16,7 @@
 
 """Unit tests for the various Message class methods.
 """
+from __future__ import print_function
 
 import sys
 import unittest
@@ -113,8 +114,8 @@ if __name__ == '__main__':
     else:
         x = sys.argv[1]
     if x not in ('1', '2'):
-        print >> sys.stderr, (
-            'usage: python test_message.py [n] where n = 1, 2 is the sub-test to run.')
+        print((
+            'usage: python test_message.py [n] where n = 1, 2 is the sub-test to run.'), file=sys.stderr)
         sys.exit(1)
     unittest.TextTestRunner(verbosity=2).run(suite(x)) 
 

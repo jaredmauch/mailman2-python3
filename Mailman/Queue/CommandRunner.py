@@ -25,7 +25,6 @@
 
 
 # BAW: get rid of this when we Python 2.2 is a minimum requirement.
-from __future__ import nested_scopes
 
 import re
 import sys
@@ -93,7 +92,7 @@ class Results:
             return
         body = part.get_payload(decode=True)
         if (part.get_content_charset(None)):
-            body = unicode(body, part.get_content_charset(),
+            body = str(body, part.get_content_charset(),
                            errors='replace').encode(
                            Utils.GetCharSet(self.msgdata['lang']),
                            errors='replace')

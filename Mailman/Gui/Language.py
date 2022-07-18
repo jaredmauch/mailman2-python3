@@ -56,7 +56,7 @@ class Language(GUIBase):
             except LookupError:
                 return 0
 
-        all = [key for key in mm_cfg.LC_DESCRIPTIONS.keys()
+        all = [key for key in list(mm_cfg.LC_DESCRIPTIONS.keys())
                if checkcodec(Utils.GetCharSet(key))]
         all.sort()
         checked = [L in langs for L in all]

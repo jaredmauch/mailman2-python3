@@ -23,6 +23,8 @@ Pending subscriptions which are requiring a user's confirmation are handled
 elsewhere.
 """
 
+from builtins import str
+from builtins import object
 import os
 import time
 import errno
@@ -63,7 +65,7 @@ DASH = '-'
 NL = '\n'
 
 
-class ListAdmin:
+class ListAdmin(object):
     def InitVars(self):
         # non-configurable data
         self.next_request_id = 1
@@ -116,7 +118,7 @@ class ListAdmin:
         while True:
             next = self.next_request_id
             self.next_request_id += 1
-            if not self.__db.has_key(next):
+            if next not in self.__db:
                 break
         return next
 
@@ -130,7 +132,7 @@ class ListAdmin:
 
     def __getmsgids(self, rtype):
         self.__opendb()
-        ids = [k for k, (op, data) in self.__db.items() if op == rtype]
+        ids = [k for k, (op, data) in list(self.__db.items()) if op == rtype]
         ids.sort()
         return ids
 
@@ -558,7 +560,7 @@ class ListAdmin:
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 self.__db = {}
-        for id, x in self.__db.items():
+        for id, x in list(self.__db.items()):
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in
             # just info being stored instead of (op, info)
             if len(x) == 2:

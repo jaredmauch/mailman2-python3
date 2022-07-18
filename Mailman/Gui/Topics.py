@@ -89,7 +89,7 @@ class Topics(GUIBase):
 
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         # MAS: Did we come from the authentication page?
-        if not cgidata.has_key('topic_box_01'):
+        if 'topic_box_01' not in cgidata:
             return
         topics = []
         # We start i at 1 and keep going until we no longer find items keyed
@@ -105,7 +105,7 @@ class Topics(GUIBase):
             newtag   = 'topic_new_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata.has_key(deltag):
+            if deltag in cgidata:
                 continue
             # Get the data for the current box
             name  = cgidata.getfirst(boxtag)
@@ -114,7 +114,7 @@ class Topics(GUIBase):
             if name is None:
                 # We came to the end of the boxes
                 break
-            if cgidata.has_key(newtag) and (not name or not pattern):
+            if newtag in cgidata and (not name or not pattern):
                 # This new entry is incomplete.
                 doc.addError(_("""Topic specifications require both a name and
                 a pattern.  Incomplete topics will be ignored."""))
@@ -130,7 +130,7 @@ class Topics(GUIBase):
                 legal regular expression.  It will be discarded."""))
                 continue
             # Was this an add item?
-            if cgidata.has_key(addtag):
+            if addtag in cgidata:
                 # Where should the new one be added?
                 where = cgidata.getfirst(wheretag)
                 if where == 'before':

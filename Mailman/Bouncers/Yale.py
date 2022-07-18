@@ -23,6 +23,7 @@ their MTA. :(
 
 """
 
+from builtins import zip
 import re
 from io import StringIO
 from email.Utils import getaddresses
@@ -73,7 +74,7 @@ def process(msg):
     # Now we have a bunch of names, these are either @yale.edu or
     # @cs.yale.edu.  Add them both.
     addrs = []
-    for name in names.keys():
+    for name in list(names.keys()):
         addrs.append(name + '@yale.edu')
         addrs.append(name + '@cs.yale.edu')
     return addrs

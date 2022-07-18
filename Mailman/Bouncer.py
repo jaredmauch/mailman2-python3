@@ -17,6 +17,7 @@
 
 """Handle delivery bounces."""
 
+from builtins import object
 import sys
 import time
 
@@ -52,7 +53,7 @@ _ = i18n._
 
 
 
-class _BounceInfo:
+class _BounceInfo(object):
     def __init__(self, member, score, date, noticesleft):
         self.member = member
         self.cookie = None
@@ -77,7 +78,7 @@ class _BounceInfo:
 
 
 
-class Bouncer:
+class Bouncer(object):
     def InitVars(self):
         # Configurable...
         self.bounce_processing = mm_cfg.DEFAULT_BOUNCE_PROCESSING

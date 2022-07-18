@@ -17,6 +17,7 @@
 """This class mixes in topic feature configuration for mailing lists.
 """
 
+from builtins import object
 import re
 
 from Mailman import mm_cfg
@@ -24,7 +25,7 @@ from Mailman.i18n import _
 
 
 
-class TopicMgr:
+class TopicMgr(object):
     def InitVars(self):
         # Configurable
         #

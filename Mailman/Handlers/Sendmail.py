@@ -39,6 +39,7 @@ the sendmail MTA, and if a message contains a single dot on a line by itself,
 your list members will receive many duplicates.
 """
 
+from builtins import str
 import string
 import os
 

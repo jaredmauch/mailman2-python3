@@ -66,7 +66,7 @@ def process(mlist, msg, msgdata):
     newrecips = []
     for r in recips:
         # If this recipient is explicitly addressed...
-        if explicit_recips.has_key(r.lower()):
+        if r.lower() in explicit_recips:
             send_duplicate = True
             # If the member wants to receive duplicates, or if the recipient
             # is not a member at all, just flag the X-Mailman-Duplicate: yes
@@ -80,7 +80,7 @@ def process(mlist, msg, msgdata):
             if send_duplicate:
                 msgdata.setdefault('add-dup-header', {})[r] = True
                 newrecips.append(r)
-            elif ccaddrs.has_key(r.lower()):
+            elif r.lower() in ccaddrs:
                 del ccaddrs[r.lower()]
                 munge_cc = True
         else:
@@ -95,7 +95,7 @@ def process(mlist, msg, msgdata):
         # There are remaining Ccs and we've dropped one or more and the list
         # allows changing.
         change_header('Cc',
-        COMMASPACE.join([formataddr(i) for i in ccaddrs.values()]),
+        COMMASPACE.join([formataddr(i) for i in list(ccaddrs.values())]),
         mlist, msg, msgdata)
     elif not ccaddrs and mlist.drop_cc:
         # The list allows changing and there are no remaining Ccs

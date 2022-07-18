@@ -44,4 +44,4 @@ def process(msg):
             mo = a2cre.search(line)
         if mo:
             addrs[mo.group('addr')] = 1
-    return addrs.keys()
+    return list(addrs.keys())

@@ -18,6 +18,7 @@
 """Generic queue runner class.
 """
 
+from builtins import object
 import time
 import traceback
 from io import StringIO

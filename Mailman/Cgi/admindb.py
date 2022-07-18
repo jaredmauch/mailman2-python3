@@ -16,7 +16,12 @@
 # USA.
 
 """Produce and process the pending-approval items for a list."""
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
 import sys
 import os
 import cgi
@@ -24,7 +29,7 @@ import errno
 import signal
 import email
 import time
-from urllib import quote_plus, unquote_plus
+from urllib.parse import quote_plus, unquote_plus
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -75,7 +80,7 @@ def helds_by_skey(mlist, ssort=SSENDER):
             skey = (ptime, sender)
         byskey.setdefault(skey, []).append((ptime, id))
     # Sort groups by time
-    for k, v in byskey.items():
+    for k, v in list(byskey.items()):
         if len(v) > 1:
             v.sort()
             byskey[k] = v
@@ -141,7 +146,7 @@ def main():
 
     # CSRF check
     safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
-    params = cgidata.keys()
+    params = list(cgidata.keys())
     if set(params) - set(safe_params):
         csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
                                   'admindb')
@@ -156,7 +161,7 @@ def main():
                                   mm_cfg.AuthListModerator,
                                   mm_cfg.AuthSiteAdmin),
                                  cgidata.getfirst('adminpw', '')):
-        if cgidata.has_key('adminpw'):
+        if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -229,7 +234,7 @@ def main():
         signal.signal(signal.SIGTERM, sigterm_handler)
 
         realname = mlist.real_name
-        if not cgidata.keys() or cgidata.has_key('admlogin'):
+        if not list(cgidata.keys()) or 'admlogin' in cgidata:
             # If this is not a form submission (i.e. there are no keys in the
             # form) or it's a login, then we don't need to do much special.
             doc.SetTitle(_('%(realname)s Administrative Database'))
@@ -383,7 +388,7 @@ def show_pending_subs(mlist, form):
     for id in pendingsubs:
         addr = mlist.GetRecord(id)[1]
         byaddrs.setdefault(addr, []).append(id)
-    addrs = byaddrs.items()
+    addrs = list(byaddrs.items())
     addrs.sort()
     num = 0
     for addr, ids in addrs:
@@ -440,7 +445,7 @@ def show_pending_unsubs(mlist, form):
     for id in pendingunsubs:
         addr = mlist.GetRecord(id)
         byaddrs.setdefault(addr, []).append(id)
-    addrs = byaddrs.items()
+    addrs = list(byaddrs.items())
     addrs.sort()
     num = 0
     for addr, ids in addrs:
@@ -497,7 +502,7 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
     admindburl = mlist.GetScriptURL('admindb', absolute=1)
     table = Table(border=0)
     form.AddItem(table)
-    skeys = byskey.keys()
+    skeys = list(byskey.keys())
     skeys.sort()
     for skey in skeys:
         sender = skey[1]
@@ -737,10 +742,10 @@ def show_post_requests(mlist, id, info, total, count, form):
     lcset = Utils.GetCharSet(mlist.preferred_language)
     if mcset != lcset:
         try:
-            body = unicode(body, mcset, 'replace').encode(lcset, 'replace')
+            body = str(body, mcset, 'replace').encode(lcset, 'replace')
         except (LookupError, UnicodeError, ValueError):
             pass
-    hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in msg.items()])
+    hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
     hdrtxt = Utils.websafe(hdrtxt)
     # Okay, we've reconstituted the message just fine.  Now for the fun part!
     t = Table(cellspacing=0, cellpadding=0, width='100%')
@@ -804,7 +809,7 @@ def process_form(mlist, doc, cgidata):
     senderactions = {}
     badaddrs = []
     # Sender-centric actions
-    for k in cgidata.keys():
+    for k in list(cgidata.keys()):
         for prefix in ('senderaction-', 'senderpreserve-', 'senderforward-',
                        'senderforwardto-', 'senderfilterp-', 'senderfilter-',
                        'senderclearmodp-', 'senderbanp-'):
@@ -824,7 +829,7 @@ def process_form(mlist, doc, cgidata):
         discardalldefersp = 0
     # Get the summary sequence
     ssort = int(cgidata.getfirst('summary_sort', SSENDER))
-    for sender in senderactions.keys():
+    for sender in list(senderactions.keys()):
         actions = senderactions[sender]
         # Handle what to do about all this sender's held messages
         try:
@@ -899,7 +904,7 @@ def process_form(mlist, doc, cgidata):
     # Now, do message specific actions
     banaddrs = []
     erroraddrs = []
-    for k in cgidata.keys():
+    for k in list(cgidata.keys()):
         formv = cgidata[k]
         if type(formv) == ListType:
             continue
@@ -932,13 +937,13 @@ def process_form(mlist, doc, cgidata):
         preserve = 0
         forward = 0
         forwardaddr = ''
-        if cgidata.has_key(commentkey):
+        if commentkey in cgidata:
             comment = cgidata[commentkey].value
-        if cgidata.has_key(preservekey):
+        if preservekey in cgidata:
             preserve = cgidata[preservekey].value
-        if cgidata.has_key(forwardkey):
+        if forwardkey in cgidata:
             forward = cgidata[forwardkey].value
-        if cgidata.has_key(forwardaddrkey):
+        if forwardaddrkey in cgidata:
             forwardaddr = cgidata[forwardaddrkey].value
         # Should we ban this address?  Do this check before handling the
         # request id because that will evict the record.

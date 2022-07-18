@@ -17,6 +17,8 @@
 
 """Base class for all web GUI components."""
 
+from builtins import str
+from builtins import object
 import re
 
 from Mailman import mm_cfg
@@ -156,9 +158,9 @@ class GUIBase:
             #
             # The property may be uploadable...
             uploadprop = property + '_upload'
-            if cgidata.has_key(uploadprop) and cgidata[uploadprop].value:
+            if uploadprop in cgidata and cgidata[uploadprop].value:
                 val = cgidata[uploadprop].value
-            elif not cgidata.has_key(property):
+            elif property not in cgidata:
                 continue
             elif isinstance(cgidata[property], ListType):
                 val = [x.value for x in cgidata[property]]
@@ -193,11 +195,11 @@ class GUIBase:
             ids = Utils.percent_identifiers(val)
         # Here's the list of allowable interpolations
         for allowed in alloweds:
-            if ids.has_key(allowed):
+            if allowed in ids:
                 del ids[allowed]
         if ids:
             # What's left are not allowed
-            badkeys = ids.keys()
+            badkeys = list(ids.keys())
             badkeys.sort()
             bad = BADJOINER.join(badkeys)
             doc.addError(_(

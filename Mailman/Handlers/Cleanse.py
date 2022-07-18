@@ -17,6 +17,7 @@
 
 """Cleanse certain headers from all messages."""
 
+from builtins import str
 import re
 
 from email.Utils import formataddr, getaddresses, parseaddr
@@ -38,7 +39,7 @@ for regexp in mm_cfg.ANONYMOUS_LIST_KEEP_HEADERS:
                regexp, e)
 
 def remove_nonkeepers(msg):
-    for hdr in msg.keys():
+    for hdr in list(msg.keys()):
         keep = False
         for cre in cres:
             if cre.search(hdr):

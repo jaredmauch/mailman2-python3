@@ -17,6 +17,7 @@
 
 
 """Handle passwords and sanitize approved messages."""
+from __future__ import print_function
 
 # There are current 5 roles defined in Mailman, as codified in Defaults.py:
 # user, list-creator, list-moderator, list-admin, site-admin.
@@ -47,6 +48,7 @@
 # difficulty and expense of retrying the cgi dialog for each attempt.  It
 # also relies on the security of SHA1.
 
+from builtins import object
 import os
 import re
 import time

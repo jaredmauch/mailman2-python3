@@ -16,14 +16,18 @@
 # USA.
 
 """Process subscription or roster requests from listinfo form."""
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import sys
 import os
 import cgi
 import time
 import signal
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import json
 
 from Mailman import mm_cfg
@@ -138,20 +142,20 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Check reCAPTCHA submission, if enabled
     if mm_cfg.RECAPTCHA_SECRET_KEY:
-        request = urllib2.Request(
+        request = urllib.request.Request(
             url = 'https://www.google.com/recaptcha/api/siteverify',
-            data = urllib.urlencode({
+            data = urllib.parse.urlencode({
                 'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
                 'response': cgidata.getvalue('g-recaptcha-response', ''),
                 'remoteip': remote}))
         try:
-            httpresp = urllib2.urlopen(request)
+            httpresp = urllib.request.urlopen(request)
             captcha_response = json.load(httpresp)
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
                 results.append(_('reCAPTCHA validation failed: %(e_codes)s'))
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             e_reason = e.reason
             results.append(_('reCAPTCHA could not be validated: %(e_reason)s'))
 

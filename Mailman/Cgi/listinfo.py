@@ -17,9 +17,11 @@
 
 """Produce listinfo page, primary web entry-point to mailing lists.
 """
+from __future__ import print_function
 
 # No lock needed in this script, because we don't change data.
 
+from builtins import str
 import os
 import cgi
 import time
@@ -148,7 +150,7 @@ def listinfo_overview(msg=''):
          Link('mailto:' + siteowner, siteowner),
          '.<p>'))
 
-    table.AddRow([apply(Container, welcome)])
+    table.AddRow([Container(*welcome)])
     table.AddCellInfo(max(table.GetCurrentRowIndex(), 0), 0, colspan=2)
 
     if advertised:

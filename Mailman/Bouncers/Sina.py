@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 """sina.com bounces"""
+from __future__ import print_function
 
 import re
 from email import Iterators
@@ -44,4 +45,4 @@ def process(msg):
         mo = acre.match(line)
         if mo:
             addrs[mo.group('addr')] = 1
-    return addrs.keys()
+    return list(addrs.keys())

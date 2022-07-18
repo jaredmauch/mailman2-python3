@@ -24,7 +24,8 @@ the mailing lists, and whatever else doesn't belong elsewhere.
 
 """
 
-from __future__ import nested_scopes
+from future import standard_library
+standard_library.install_aliases()
 
 import os
 import sys
@@ -728,7 +729,7 @@ def GetRequestURI(fallback=None, escape=True):
     url = fallback
     if 'REQUEST_URI' in os.environ:
         url = os.environ['REQUEST_URI']
-    elif os.environ.has_key('SCRIPT_NAME') and os.environ.has_key('PATH_INFO'):
+    elif 'SCRIPT_NAME' in os.environ and 'PATH_INFO' in os.environ:
         url = os.environ['SCRIPT_NAME'] + os.environ['PATH_INFO']
     if escape:
         return websafe(url)
@@ -857,13 +858,13 @@ def to_percent(s):
             parts[i+1] = '%(' + parts[i+1] + ')s'
         else:
             parts[i+2] = '%(' + parts[i+2] + ')s'
-    return EMPTYSTRING.join(filter(None, parts))
+    return EMPTYSTRING.join([_f for _f in parts if _f])
 
 
 def dollar_identifiers(s):
     """Return the set (dictionary) of identifiers found in a $-string."""
     d = {}
-    for name in filter(None, [b or c or None for a, b, c in dre.findall(s)]):
+    for name in [_f for _f in [b or c or None for a, b, c in dre.findall(s)] if _f]:
         d[name] = True
     return d
 

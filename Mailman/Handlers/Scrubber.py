@@ -17,8 +17,6 @@
 
 """Cleanse a message for archiving."""
 
-from __future__ import nested_scopes
-
 import os
 import re
 import time
@@ -60,7 +58,7 @@ except ImportError:
         # BAW: sigh, guess_all_extensions() is new in Python 2.3
         all = []
         def check(map):
-            for e, t in map.items():
+            for e, t in list(map.items()):
                 if t == ctype:
                     all.append(e)
         check(mimetypes.types_map)
@@ -144,7 +142,7 @@ def replace_payload_by_text(msg, text, charset):
     # message by a text (scrubbing).
     del msg['content-type']
     del msg['content-transfer-encoding']
-    if isinstance(charset, unicode):
+    if isinstance(charset, str):
         # email 3.0.1 (python 2.4) doesn't like unicode
         charset = charset.encode('us-ascii')
     msg.set_payload(text, charset)
@@ -364,12 +362,12 @@ URL: %(url)s
                 partcharset = part.get_content_charset()
             if partcharset and partcharset != charset:
                 try:
-                    t = unicode(t, partcharset, 'replace')
+                    t = str(t, partcharset, 'replace')
                 except (UnicodeError, LookupError, ValueError,
                         AssertionError):
                     # We can get here if partcharset is bogus in come way.
                     # Replace funny characters.  We use errors='replace'
-                    t = unicode(t, 'ascii', 'replace')
+                    t = str(t, 'ascii', 'replace')
                 try:
                     # Should use HTML-Escape, or try generalizing to UTF-8
                     t = t.encode(charset, 'replace')
@@ -387,7 +385,7 @@ URL: %(url)s
         # The i18n separator is in the list's charset. Coerce it to the
         # message charset.
         try:
-            s = unicode(sep, lcset, 'replace')
+            s = str(sep, lcset, 'replace')
             sep = s.encode(charset, 'replace')
         except (UnicodeError, LookupError, ValueError,
                 AssertionError):

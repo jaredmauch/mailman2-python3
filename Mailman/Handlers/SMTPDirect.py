@@ -26,6 +26,9 @@ Note: This file only handles single threaded delivery.  See SMTPThreaded.py
 for a threaded implementation.
 """
 
+from past.builtins import cmp
+from builtins import str
+from builtins import object
 import copy
 import time
 import socket
@@ -48,7 +51,7 @@ DOT = '.'
 
 
 # Manage a connection to the SMTP server
-class Connection:
+class Connection(object):
     def __init__(self):
         self.__conn = None
 
@@ -137,7 +140,7 @@ def process(mlist, msg, msgdata):
     # SMTP_MAX_RCPTS.  Note that most MTAs have a limit on the number of
     # recipients they'll swallow in a single transaction.
     deliveryfunc = None
-    if (not msgdata.has_key('personalize') or msgdata['personalize']) and (
+    if ('personalize' not in msgdata or msgdata['personalize']) and (
            msgdata.get('verp') or mlist.personalize):
         chunks = [[recip] for recip in recips]
         msgdata['personalize'] = 1
@@ -147,7 +150,7 @@ def process(mlist, msg, msgdata):
     else:
         chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS)
     # See if this is an unshunted message for which some were undelivered
-    if msgdata.has_key('undelivered'):
+    if 'undelivered' in msgdata:
         chunks = msgdata['undelivered']
     # If we're doing bulk delivery, then we can stitch up the message now.
     if deliveryfunc is None:
@@ -228,7 +231,7 @@ def process(mlist, msg, msgdata):
     # Process any failed deliveries.
     tempfailures = []
     permfailures = []
-    for recip, (code, smtpmsg) in refused.items():
+    for recip, (code, smtpmsg) in list(refused.items()):
         # DRUMS is an internet draft, but it says:
         #
         #    [RFC-821] incorrectly listed the error where an SMTP server
@@ -304,7 +307,7 @@ def chunkify(recips, chunksize):
     chunks = []
     currentchunk = []
     chunklen = 0
-    for bin in buckets.values():
+    for bin in list(buckets.values()):
         for r in bin:
             currentchunk.append(r)
             chunklen = chunklen + 1
@@ -373,7 +376,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                 charset = Charset(charset)
                 codec = charset.input_codec or 'ascii'
                 if not isinstance(name, UnicodeType):
-                    name = unicode(name, codec, 'replace')
+                    name = str(name, codec, 'replace')
                 name = Header(name, charset).encode()
                 msgcopy['To'] = formataddr((name, recip))
             else:
@@ -382,7 +385,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # already received this message, as calculated by Message-ID.  See
         # AvoidDuplicates.py for details.
         del msgcopy['x-mailman-copy']
-        if msgdata.get('add-dup-header', {}).has_key(recip):
+        if recip in msgdata.get('add-dup-header', {}):
             msgcopy['X-Mailman-Copy'] = 'yes'
         # If desired, add the RCPT_BASE64_HEADER_NAME header
         if len(mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
