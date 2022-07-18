@@ -22,7 +22,7 @@ which is more convenient for use inside Mailman.
 """
 
 import re
-from cStringIO import StringIO
+from io import StringIO
 
 import email
 import email.Generator

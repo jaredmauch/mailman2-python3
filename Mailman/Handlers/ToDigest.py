@@ -31,7 +31,7 @@ import copy
 import time
 import traceback
 from types import ListType
-from cStringIO import StringIO
+from io import StringIO
 
 from email.Parser import Parser
 from email.Generator import Generator

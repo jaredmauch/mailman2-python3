@@ -19,7 +19,7 @@
 
 import sys
 import email.Utils
-from cStringIO import StringIO
+from io import StringIO
 
 from Mailman import mm_cfg
 from Mailman import Message

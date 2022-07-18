@@ -80,7 +80,7 @@ files can be `-'.
 import sys
 import os
 import getopt
-from cStringIO import StringIO
+from io import StringIO
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked

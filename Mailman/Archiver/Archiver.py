@@ -26,7 +26,7 @@ import os
 import errno
 import traceback
 import re
-from cStringIO import StringIO
+from io import StringIO
 
 from Mailman import mm_cfg
 from Mailman import Mailbox

@@ -21,7 +21,7 @@ import os
 import shutil
 import difflib
 import unittest
-from cStringIO import StringIO
+from io import StringIO
 
 from Mailman import MailList
 from Mailman import Utils

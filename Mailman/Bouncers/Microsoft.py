@@ -17,7 +17,7 @@
 """Microsoft's `SMTPSVC' nears I kin tell."""
 
 import re
-from cStringIO import StringIO
+from io import StringIO
 from types import ListType
 
 scre = re.compile(r'transcript of session follows', re.IGNORECASE)

@@ -20,7 +20,7 @@
 import re
 import socket
 import nntplib
-from cStringIO import StringIO
+from io import StringIO
 
 import email
 from email.Utils import getaddresses

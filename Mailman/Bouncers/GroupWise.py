@@ -23,7 +23,7 @@ X-Mailer: Internet Mail Service (5.5.2653.19)
 
 import re
 from email.Message import Message
-from cStringIO import StringIO
+from io import StringIO
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 

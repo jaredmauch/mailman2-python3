@@ -25,7 +25,7 @@ import time
 import errno
 import binascii
 import tempfile
-from cStringIO import StringIO
+from io import StringIO
 from types import IntType, StringType
 
 from email.Utils import parsedate

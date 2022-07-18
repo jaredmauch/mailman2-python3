@@ -24,7 +24,7 @@ their MTA. :(
 """
 
 import re
-from cStringIO import StringIO
+from io import StringIO
 from email.Utils import getaddresses
 
 scre = re.compile(r'Message not delivered to the following', re.IGNORECASE)

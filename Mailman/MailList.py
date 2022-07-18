@@ -32,7 +32,7 @@ import socket
 import urllib
 import pickle
 
-from cStringIO import StringIO
+from io import StringIO
 from UserDict import UserDict
 from urlparse import urlparse
 from types import *

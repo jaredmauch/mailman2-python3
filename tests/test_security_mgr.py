@@ -27,7 +27,7 @@ try:
 except ImportError:
     crypt = None
 # Don't use cStringIO because we're going to inherit
-from StringIO import StringIO
+from io import StringIO
 try:
     from Mailman import __init__
 except ImportError:

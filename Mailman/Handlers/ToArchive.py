@@ -18,7 +18,7 @@
 """Add the message to the archives."""
 
 import time
-from cStringIO import StringIO
+from io import StringIO
 
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard

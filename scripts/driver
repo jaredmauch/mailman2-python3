@@ -85,7 +85,7 @@ def run_main():
                                immediate=1)
         # Collect stdout in a cStringIO so that if /any/ errors occur during
         # printing it won't mess up our diagnostics page.
-        from cStringIO import StringIO
+        from io import StringIO
         tempstdout = StringIO()
         # The name of the module to run is passed in argv[1].  What we
         # actually do is import the module named by argv[1] that lives in the

@@ -9,7 +9,7 @@ import sys
 import time
 from email.Utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
-from cStringIO import StringIO
+from io import StringIO
 from string import lowercase
 
 # Work around for some misguided Python packages that add iso-8859-1

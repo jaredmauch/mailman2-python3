@@ -28,7 +28,7 @@ import time
 import errno
 import pickle
 import marshal
-from cStringIO import StringIO
+from io import StringIO
 
 import email
 from email.MIMEMessage import MIMEMessage
