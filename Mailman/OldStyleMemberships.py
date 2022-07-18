@@ -193,7 +193,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
             del kws['realname']
         # Assert that no other keywords are present
         if kws:
-            raise ValueError, kws.keys()
+            raise ValueError(kws.keys())
         # If the localpart has uppercase letters in it, then the value in the
         # members (or digest_members) dict is the case preserved address.
         # Otherwise the value is 0.  Note that the case of the domain part is

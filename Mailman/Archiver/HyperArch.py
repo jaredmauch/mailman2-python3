@@ -936,7 +936,7 @@ class HyperArchive(pipermail.T):
                         if monthstr.lower() == monthname.lower():
                             month = monthdict[i]
                             return _("%(month)s %(year)i")
-                    raise ValueError, "%s is not a month!" % monthstr
+                    raise ValueError("%s is not a month!" % monthstr)
                 elif each == 'week':
                     month = monthdict[int(match.group("month"))]
                     day = int(match.group("day"))
@@ -947,7 +947,7 @@ class HyperArchive(pipermail.T):
                     return _("%(day)i %(month)s %(year)i")
                 else:
                     return match.group('year')
-        raise ValueError, "%s is not a valid volname" % volname
+        raise ValueError("%s is not a valid volname" % volname)
 
 # The following two methods should be inverses of each other. -ddm
 
@@ -1240,7 +1240,7 @@ class HyperArchive(pipermail.T):
                     length = len(text)
                     pos = k
                 else: # j==k
-                    raise ValueError, "j==k: This can't happen!"
+                    raise ValueError("j==k: This can't happen!")
                 #length = len(text)
                 #self.message("URL: %s %s %s \n"
                 #             % (CGIescape(L[:pos]), URL, CGIescape(text)))

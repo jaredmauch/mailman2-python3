@@ -660,7 +660,7 @@ def get_item_characteristics(record):
     elif len(record) == 6:
         varname, kind, params, dependancies, descr, elaboration = record
     else:
-        raise ValueError, _('Badly formed options entry:\n %(record)s')
+        raise ValueError('Badly formed options entry:\n %(record)s')
     return varname, kind, params, dependancies, descr, elaboration
 
 

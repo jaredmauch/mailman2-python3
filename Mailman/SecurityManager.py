@@ -213,7 +213,7 @@ class SecurityManager:
             else:
                 # What is this context???
                 syslog('error', 'Bad authcontext: %s', ac)
-                raise Exception(ValueError, 'Bad authcontext: %s' % ac)
+                raise ValueError('Bad authcontext: %s' % ac))
         return mm_cfg.UnAuthorized
 
     def WebAuthenticate(self, authcontexts, response, user=None):
@@ -238,7 +238,7 @@ class SecurityManager:
     def MakeCookie(self, authcontext, user=None):
         key, secret = self.AuthContextInfo(authcontext, user)
         if key is None or secret is None or not isinstance(secret, StringType):
-            raise Exception(ValueError)
+            raise ValueError
         # Timestamp
         issued = int(time.time())
         # Get a digest of the secret, plus other information.

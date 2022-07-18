@@ -386,7 +386,7 @@ def archive_path_fixer(unused_arg, dir, files):
             else:
                 os.chmod(abs, 0o02775)
         elif os.path.isfile(abs):
-            os.chmod(abs, 0664)
+            os.chmod(abs, 0o0664)
 
 def remove_old_sources(module):
     # Also removes old directories.
