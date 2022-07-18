@@ -113,20 +113,20 @@ Here are the entries in the /etc/aliases file that should be removed:
 """)
         outfp = sfp
     else:
-        print C_("""
+        print(C_("""
 To finish removing your mailing list, you must edit your /etc/aliases (or
 equivalent) file by removing the following lines, and possibly running the
 `newaliases' program:
 
-## %(listname)s mailing list""")
+## %(listname)s mailing list"""))
         outfp = sys.stdout
     # Common path
     for k, v in makealiases(listname):
-        print >> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
+        print(k + ':', ((fieldsz - len(k)) * ' '), v, file=outfp)
     # If we're using the command line interface, we're done.  For ttw, we need
     # to actually send the message to mailman-owner now.
     if not cgi:
-        print >> outfp
+        print(file=outfp)
         return
     siteowner = Utils.get_site_email(extra='owner')
     # Should this be sent in the site list's preferred language?
