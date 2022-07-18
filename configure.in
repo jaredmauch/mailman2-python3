@@ -162,7 +162,7 @@ AC_MSG_CHECKING(Japanese codecs)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    unicode('OK', 'iso-2022-jp')
+    str('OK', 'iso-2022-jp')
 except LookupError:
     res = "not ok"
 else:
@@ -191,7 +191,7 @@ AC_MSG_CHECKING(Korean codecs)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    unicode('OK', 'euc-kr')
+    str('OK', 'euc-kr')
 except LookupError:
     res = "not ok"
 else:
@@ -780,7 +780,7 @@ chmod -R +x build
 dnl AC_MSG_CHECKING(for Python Chinese Unicode codecs)
 dnl cat > conftest.py <<EOF
 dnl try:
-dnl   unicode("abc", "big5-tw")
+dnl   str("abc", "big5-tw")
 dnl   print "found"
 dnl except LookupError:
 dnl   print "not found"
