@@ -37,11 +37,11 @@ from stat import *
 try:
     import paths
 except ImportError:
-    print '''Could not import paths!
+    print('''Could not import paths!
 
 This probably means that you are trying to run check_perms from the source
 directory.  You must run this from the installation directory instead.
-'''
+''')
     raise
 from Mailman import mm_cfg
 from Mailman.mm_cfg import MAILMAN_USER, MAILMAN_GROUP
@@ -100,10 +100,10 @@ def checkwalk(arg, dirname, names):
     for name in names:
         path = os.path.join(dirname, name)
         if arg.VERBOSE:
-            print C_('    checking gid and mode for %(path)s')
+            print(C_('    checking gid and mode for %(path)s'))
         try:
             mode, gid = statgidmode(path)
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
             continue
         if gid != MAILMAN_GID:
@@ -112,13 +112,13 @@ def checkwalk(arg, dirname, names):
             except KeyError:
                 groupname = '<anon gid %d>' % gid
             arg.ERRORS += 1
-            print C_('%(path)s bad group (has: %(groupname)s, '
-                     'expected %(MAILMAN_GROUP)s)'),
+            print(C_('%(path)s bad group (has: %(groupname)s, '
+                     'expected %(MAILMAN_GROUP)s)'),)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chown(path, -1, MAILMAN_GID)
             else:
-                print
+                print()
         # Most directories must be at least rwxrwsr-x.
         # The private archive directory  and database directory must be at
         # least rwxrws---.  Their 'other' permissions are checked in
@@ -141,39 +141,39 @@ def checkwalk(arg, dirname, names):
         octperms = oct(targetperms)
         if S_ISDIR(mode) and (mode & targetperms) != targetperms:
             arg.ERRORS += 1
-            print C_('directory permissions must be %(octperms)s: %(path)s'),
+            print(C_('directory permissions must be %(octperms)s: %(path)s'),)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(path, mode | targetperms)
             else:
-                print
+                print()
         elif os.path.splitext(path)[1] in ('.py', '.pyc', '.pyo'):
             octperms = oct(PYFILEPERMS)
             if mode & PYFILEPERMS != PYFILEPERMS:
-                print C_('source perms must be %(octperms)s: %(path)s'),
+                print(C_('source perms must be %(octperms)s: %(path)s'),)
                 arg.ERRORS += 1
                 if STATE.FIX:
-                    print C_('(fixing)')
+                    print(C_('(fixing)'))
                     os.chmod(path, mode | PYFILEPERMS)
                 else:
-                    print
+                    print()
         elif path.endswith('-article'):
             # Article files must be group writeable
             octperms = oct(ARTICLEFILEPERMS)
             if mode & ARTICLEFILEPERMS != ARTICLEFILEPERMS:
-                print C_('article db files must be %(octperms)s: %(path)s'),
+                print(C_('article db files must be %(octperms)s: %(path)s'),)
                 arg.ERRORS += 1
                 if STATE.FIX:
-                    print C_('(fixing)')
+                    print(C_('(fixing)'))
                     os.chmod(path, mode | ARTICLEFILEPERMS)
                 else:
-                    print
+                    print()
 
 def checkall():
     # first check PREFIX
     if STATE.VERBOSE:
         prefix = mm_cfg.PREFIX
-        print C_('checking mode for %(prefix)s')
+        print(C_('checking mode for %(prefix)s'))
     dirs = {}
     for d in (mm_cfg.PREFIX, mm_cfg.EXEC_PREFIX, mm_cfg.VAR_PREFIX,
               mm_cfg.LOG_DIR):
@@ -181,43 +181,43 @@ def checkall():
     for d in dirs.keys():
         try:
             mode = statmode(d)
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
-            print C_('WARNING: directory does not exist: %(d)s')
+            print(C_('WARNING: directory does not exist: %(d)s'))
             continue
         if (mode & DIRPERMS) != DIRPERMS:
             STATE.ERRORS += 1
-            print C_('directory must be at least 02775: %(d)s'),
+            print(C_('directory must be at least 02775: %(d)s'),)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(d, mode | DIRPERMS)
             else:
-                print
+                print()
         # check all subdirs
         os.path.walk(d, checkwalk, STATE)
 
 def checkarchives():
     private = mm_cfg.PRIVATE_ARCHIVE_FILE_DIR
     if STATE.VERBOSE:
-        print C_('checking perms on %(private)s')
+        print(C_('checking perms on %(private)s'))
     # private archives must not be other readable
     mode = statmode(private)
     if mode & S_IROTH:
         STATE.ERRORS += 1
-        print C_('%(private)s must not be other-readable'),
+        print(C_('%(private)s must not be other-readable'),)
         if STATE.FIX:
-            print C_('(fixing)')
+            print(C_('(fixing)'))
             os.chmod(private, mode & ~S_IROTH)
         else:
-            print
+            print()
     # In addition, on a multiuser system you may want to hide the private
     # archives so other users can't read them.
     if mode & S_IXOTH:
-        print C_("""\
+        print(C_("""\
 Warning: Private archive directory is other-executable (o+x).
          This could allow other users on your system to read private archives.
          If you're on a shared multiuser system, you should consult the
-         installation manual on how to fix this.""")
+         installation manual on how to fix this."""))
 
 MBOXPERMS = S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR
 
@@ -230,12 +230,12 @@ def checkmboxfile(mboxdir):
         mode = statmode(mboxfile)
         if (mode & MBOXPERMS) != MBOXPERMS:
             STATE.ERRORS = STATE.ERRORS + 1
-            print C_('mbox file must be at least 0660:'), mboxfile
+            print(C_('mbox file must be at least 0660:'), mboxfile)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(mboxfile, mode | MBOXPERMS)
             else:
-                print
+                print()
 
 def checkarchivedbs():
     # The archives/private/listname/database file must not be other readable
@@ -248,47 +248,47 @@ def checkarchivedbs():
         dbdir = os.path.join(mm_cfg.PRIVATE_ARCHIVE_FILE_DIR, dir, 'database')
         try:
             mode = statmode(dbdir)
-        except OSError, e:
+        except OSError as e:
             if e.errno not in (errno.ENOENT, errno.ENOTDIR): raise
             continue
         if mode & S_IRWXO:
             STATE.ERRORS += 1
-            print C_('%(dbdir)s "other" perms must be 000'),
+            print(C_('%(dbdir)s "other" perms must be 000'),)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(dbdir, mode & ~S_IRWXO)
             else:
-                print
+                print()
 
 def checkcgi():
     cgidir = os.path.join(mm_cfg.EXEC_PREFIX, 'cgi-bin')
     if STATE.VERBOSE:
-        print C_('checking cgi-bin permissions')
+        print(C_('checking cgi-bin permissions'))
     exes = os.listdir(cgidir)
     for f in exes:
         path = os.path.join(cgidir, f)
         if STATE.VERBOSE:
-            print C_('    checking set-gid for %(path)s')
+            print(C_('    checking set-gid for %(path)s'))
         mode = statmode(path)
         if mode & S_IXGRP and not mode & S_ISGID:
             STATE.ERRORS += 1
-            print C_('%(path)s must be set-gid'),
+            print(C_('%(path)s must be set-gid'),)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(path, mode | S_ISGID)
             else:
-                print
+                print()
 
 def checkmail():
     wrapper = os.path.join(mm_cfg.WRAPPER_DIR, 'mailman')
     if STATE.VERBOSE:
-        print C_('checking set-gid for %(wrapper)s')
+        print(C_('checking set-gid for %(wrapper)s'))
     mode = statmode(wrapper)
     if not mode & S_ISGID:
         STATE.ERRORS += 1
-        print C_('%(wrapper)s must be set-gid'),
+        print(C_('%(wrapper)s must be set-gid'),)
         if STATE.FIX:
-            print C_('(fixing)')
+            print(C_('(fixing)'))
             os.chmod(wrapper, mode | S_ISGID)
 
 def checkadminpw():
@@ -296,22 +296,22 @@ def checkadminpw():
                    os.path.join(mm_cfg.DATA_DIR, 'creator.pw')):
         targetmode = S_IFREG | S_IRUSR | S_IWUSR | S_IRGRP
         if STATE.VERBOSE:
-            print C_('checking permissions on %(pwfile)s')
+            print(C_('checking permissions on %(pwfile)s'))
         try:
             mode = statmode(pwfile)
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
             return
         if mode != targetmode:
             STATE.ERRORS += 1
             octmode = oct(mode)
-            print C_('%(pwfile)s permissions must be exactly 0640 '
-                     '(got %(octmode)s)'),
+            print(C_('%(pwfile)s permissions must be exactly 0640 '
+                     '(got %(octmode)s)'),)
             if STATE.FIX:
-                print C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(pwfile, targetmode)
             else:
-                print
+                print()
 
 def checkmta():
     if mm_cfg.MTA:
@@ -330,7 +330,7 @@ def checkdata():
                   'digest.mbox', 'pending.pck',
                   'request.db', 'request.db.tmp')
     if STATE.VERBOSE:
-        print C_('checking permissions on list data')
+        print(C_('checking permissions on list data'))
     # BAW: This needs to be converted to the Site module abstraction
     for dir in os.listdir(mm_cfg.LIST_DATA_DIR):
         if not os.path.isdir(os.path.join(mm_cfg.LIST_DATA_DIR, dir)):
@@ -338,20 +338,20 @@ def checkdata():
         for file in checkfiles:
             path = os.path.join(mm_cfg.LIST_DATA_DIR, dir, file)
             if STATE.VERBOSE:
-                print C_('    checking permissions on: %(path)s')
+                print(C_('    checking permissions on: %(path)s'))
             try:
                 mode = statmode(path)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.ENOENT: raise
                 continue
             if (mode & targetmode) != targetmode:
                 STATE.ERRORS += 1
-                print C_('file permissions must be at least 660: %(path)s'),
+                print(C_('file permissions must be at least 660: %(path)s'),)
                 if STATE.FIX:
-                    print C_('(fixing)')
+                    print(C_('(fixing)'))
                     os.chmod(path, mode | targetmode)
                 else:
-                    print
+                    print()
 
 
 
@@ -360,9 +360,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -370,7 +370,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'fvh',
                                    ['fix', 'verbose', 'help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:
@@ -391,7 +391,7 @@ if __name__ == '__main__':
     checkmta()
 
     if not STATE.ERRORS:
-        print C_('No problems found')
+        print(C_('No problems found'))
     else:
-        print C_('Problems found:'), STATE.ERRORS
-        print C_('Re-run as %(MAILMAN_USER)s (or root) with -f flag to fix')
+        print(C_('Problems found:'), STATE.ERRORS)
+        print(C_('Re-run as %(MAILMAN_USER)s (or root) with -f flag to fix'))
