@@ -4504,8 +4504,8 @@ cat > conftest.py <<EOF
 from socket import *
 fqdn = getfqdn()
 fp = open('conftest.out', 'w')
-print >> fp, fqdn
-print >> fp, fqdn
+print(fqdn, file=fp)
+print(fqdn, file=fp)
 fp.close()
 EOF
 $PYTHON conftest.py
