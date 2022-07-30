@@ -36,6 +36,7 @@ Options:
 
 If password is not given on the command line, it will be prompted for.
 """
+from __future__ import unicode_literals
 
 import sys
 import getpass
