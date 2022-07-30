@@ -21,8 +21,6 @@
 Mixes in many task-specific classes.
 """
 
-from past.builtins import execfile
-from builtins import str
 import sys
 import os
 import time

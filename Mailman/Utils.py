@@ -24,9 +24,6 @@ the mailing lists, and whatever else doesn't belong elsewhere.
 
 """
 
-from future import standard_library
-standard_library.install_aliases()
-
 import os
 import sys
 import re

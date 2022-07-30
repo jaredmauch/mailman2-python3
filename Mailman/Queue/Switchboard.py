@@ -17,7 +17,6 @@
 
 """Reading and writing message objects and message metadata.
 """
-from __future__ import division
 
 # enqueue() and dequeue() are not symmetric.  enqueue() takes a Message
 # object.  dequeue() returns a email.Message object tree.
@@ -35,9 +34,6 @@ from __future__ import division
 # 2), and rfc822 style plain text.  You can write your own if you have other
 # needs.
 
-from builtins import str
-from builtins import object
-from past.utils import old_div
 import os
 import time
 import email
