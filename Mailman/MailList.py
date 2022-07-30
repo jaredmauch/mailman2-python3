@@ -646,7 +646,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if mtime < self.__timestamp:
                 # File is not newer
                 return None, None
-            fp = open(dbfile)
+            fp = open(dbfile, mode='rb')
         except EnvironmentError as e:
             if e.errno != errno.ENOENT: raise
             # The file doesn't exist yet
@@ -654,8 +654,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         now = int(time.time())
         try:
             try:
-                dict = loadfunc(fp)
-                if type(dict) != DictType:
+                dict_retval = loadfunc(fp)
+                if type(dict_retval) != DictType:
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,
                     pickle.PicklingError, pickle.UnpicklingError) as e:
@@ -666,7 +666,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # so the test above might succeed the next time.  And we get the time
         # before unpickling in case it takes more than a second.  (LP: #266464)
         self.__timestamp = now
-        return dict, None
+        return dict_retval, None
 
     def Load(self, check_version=True):
         if not Utils.list_exists(self.internal_name()):
