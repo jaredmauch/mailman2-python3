@@ -655,7 +655,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             try:
                 dict_retval = loadfunc(fp)
-                if type(dict_retval) != DictType:
+                if isinstance(dict_retval, dict):
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,
                     pickle.PicklingError, pickle.UnpicklingError) as e:

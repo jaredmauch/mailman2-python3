@@ -77,7 +77,7 @@ def calcversions():
     lastversion = None
     thisversion = mm_cfg.HEX_VERSION
     try:
-        fp = open(LMVFILE)
+        fp = open(LMVFILE, 'rb')
         data = fp.read()
         fp.close()
         lastversion = int(data, 16)
@@ -126,7 +126,7 @@ def move_language_templates(mlist):
         # BAW: get rid of old templates, e.g. admlogin.txt and
         # handle_opts.html
         try:
-            fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
+            fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate), 'rb')
         except IOError as e:
             if e.errno not in (errno.ENOENT, errno.EISDIR): raise
             # No global template or maybe a VCS directory
@@ -136,7 +136,7 @@ def move_language_templates(mlist):
         fp.close()
         # Match against the lists/<list>/* template
         try:
-            fp = open(os.path.join(mlist.fullpath(), gtemplate))
+            fp = open(os.path.join(mlist.fullpath(), gtemplate), 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
@@ -146,7 +146,7 @@ def move_language_templates(mlist):
                 os.unlink(os.path.join(mlist.fullpath(), gtemplate))
         # Match against the lists/<list>/*.prev template
         try:
-            fp = open(os.path.join(mlist.fullpath(), gtemplate + '.prev'))
+            fp = open(os.path.join(mlist.fullpath(), gtemplate + '.prev'), 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
@@ -156,7 +156,7 @@ def move_language_templates(mlist):
                 os.unlink(os.path.join(mlist.fullpath(), gtemplate + '.prev'))
         # Match against the lists/<list>/en/* templates
         try:
-            fp = open(os.path.join(mlist.fullpath(), 'en', gtemplate))
+            fp = open(os.path.join(mlist.fullpath(), 'en', gtemplate), 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
@@ -166,7 +166,7 @@ def move_language_templates(mlist):
                 os.unlink(os.path.join(mlist.fullpath(), 'en', gtemplate))
         # Match against the templates/* template
         try:
-            fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
+            fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate), 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
@@ -176,7 +176,7 @@ def move_language_templates(mlist):
                 os.unlink(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
         # Match against the templates/*.prev template
         try:
-            fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate + '.prev'))
+            fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate + '.prev'), 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
@@ -459,7 +459,7 @@ def update_qfiles():
 
 # Implementations taken from the pre-2.1.5 Switchboard
 def ext_read(filename):
-    fp = open(filename)
+    fp = open(filename, 'rb')
     d = marshal.load(fp)
     # Update from version 2 files
     if d.get('version', 0) == 2:
@@ -506,7 +506,7 @@ def dequeue(filebase):
     msgfp = None
     try:
         try:
-            msgfp = open(pckfile)
+            msgfp = open(pckfile, 'rb')
             msg = pickle.load(msgfp)
             if not data:
                 # There was no .db file. Is this a post 2.1.5 .pck?
@@ -519,7 +519,7 @@ def dequeue(filebase):
             if e.errno != errno.ENOENT: raise
             msgfp = None
             try:
-                msgfp = open(msgfile)
+                msgfp = open(msgfile, 'rb')
                 msg = email.message_from_file(msgfp, Message.Message)
                 os.unlink(msgfile)
             except EnvironmentError as e:
@@ -557,7 +557,7 @@ def update_pending():
     db = None
     # Try to load the Mailman 2.0 file
     try:
-        fp = open(file20)
+        fp = open(file20, 'rb')
     except IOError as e:
         if e.errno != errno.ENOENT: raise
     else:
@@ -568,7 +568,7 @@ def update_pending():
     if db is None:
         # Try to load the Mailman 2.1.x where x < 5, file
         try:
-            fp = open(file214)
+            fp = open(file214, 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
         else:
@@ -695,7 +695,7 @@ If your archives are big, this could take a minute or two..."""))
     print('Updating Usenet watermarks')
     wmfile = os.path.join(mm_cfg.DATA_DIR, 'gate_watermarks')
     try:
-        fp = open(wmfile)
+        fp = open(wmfile, 'rb')
     except IOError:
         print('- nothing to update here')
     else:

@@ -1,4 +1,4 @@
-#! @PYTHON@
+#! /usr/bin/python3
 #
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
@@ -117,7 +117,7 @@ def main():
     else:
         load = pickle.load
         typename = 'pickle'
-    fp = open(filename)
+    fp = open(filename, 'rb')
     m = []
     try:
         cnt = 1
@@ -132,7 +132,7 @@ def main():
                 break
             if doprint:
                 print(C_('<----- start object %(cnt)s ----->'))
-                if isinstance(obj, StringType):
+                if isinstance(obj, str):
                     print(obj)
                 else:
                     pp.pprint(obj)

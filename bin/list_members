@@ -77,7 +77,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
-from types import UnicodeType
 
 import paths
 from Mailman import mm_cfg
