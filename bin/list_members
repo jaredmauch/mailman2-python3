@@ -71,10 +71,13 @@ Where:
 Note that if neither -r or -d is supplied, regular members are printed first,
 followed by digest members, but no indication is given as to address status.
 """
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
-from builtins import str
 import sys
+from types import UnicodeType
 
 import paths
 from Mailman import mm_cfg
