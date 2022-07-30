@@ -38,8 +38,14 @@ Options:
         after the options.  If there are no listnames provided, the owners of
         all the lists will be displayed.
 """
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import sys
 import getopt
 
@@ -94,17 +100,17 @@ def main():
             unique = {}
             for addr in bylist[listname]:
                 unique[addr] = 1
-            keys = unique.keys()
+            keys = list(unique.keys())
             keys.sort()
             print(listname)
             for k in keys:
-                print(('\t', k))
+                print('\t', k)
     else:
         unique = {}
         for listname in listnames:
             for addr in bylist[listname]:
                 unique[addr] = 1
-        keys = unique.keys()
+        keys = list(unique.keys())
         keys.sort()
         for k in keys:
             print(k)
