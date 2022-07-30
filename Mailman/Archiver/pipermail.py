@@ -5,7 +5,6 @@ from builtins import map
 from builtins import filter
 from builtins import str
 from builtins import object
-from __future__ import nested_scopes
 
 import mailbox
 import os
