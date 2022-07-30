@@ -24,7 +24,7 @@
         quotes!)
 """
 
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import Errors
 from Mailman.i18n import _

@@ -22,7 +22,7 @@ been audited for differences between the two.
 """
 
 from email.Iterators import typed_subpart_iterator
-from email.Utils import parseaddr
+from email.utils import parseaddr
 from io import StringIO
 
 from Mailman.Bouncers.BouncerAPI import Stop

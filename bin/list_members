@@ -84,7 +84,7 @@ from Mailman import Errors
 from Mailman import MemberAdaptor
 from Mailman.i18n import C_
 
-from email.Utils import formataddr
+from email.utils import formataddr
 
 PROGRAM = sys.argv[0]
 ENC = sys.getdefaultencoding()

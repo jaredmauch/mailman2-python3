@@ -22,7 +22,7 @@ has already received a copy, we either drop the message, add a duplicate
 warning header, or pass it through, depending on the user's preferences.
 """
 
-from email.Utils import getaddresses, formataddr
+from email.utils import getaddresses, formataddr
 from Mailman import mm_cfg
 from Mailman.Handlers.CookHeaders import change_header
 

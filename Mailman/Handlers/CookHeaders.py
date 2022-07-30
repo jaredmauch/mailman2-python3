@@ -20,13 +20,12 @@ Also do other manipulations of From:, Reply-To: and Cc: depending on
 list configuration.
 """
 
-from builtins import str
 from __future__ import nested_scopes
 import re
 
 from email.Charset import Charset
 from email.Header import Header, decode_header, make_header
-from email.Utils import parseaddr, formataddr, getaddresses
+from email.utils import parseaddr, formataddr, getaddresses
 from email.Errors import HeaderParseError
 
 from Mailman import i18n

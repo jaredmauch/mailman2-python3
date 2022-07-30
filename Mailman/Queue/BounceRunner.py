@@ -25,7 +25,7 @@ import pickle
 
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils

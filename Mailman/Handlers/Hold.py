@@ -31,7 +31,7 @@ message handling should stop.
 import email
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
-import email.Utils
+import email.utils
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -146,7 +146,7 @@ def process(mlist, msg, msgdata):
     # Are there too many recipients to the message?
     if mlist.max_num_recipients > 0:
         # figure out how many recipients there are
-        recips = email.Utils.getaddresses(msg.get_all('to', []) +
+        recips = email.utils.getaddresses(msg.get_all('to', []) +
                                           msg.get_all('cc', []))
         if len(recips) >= mlist.max_num_recipients:
             hold_for_approval(mlist, msg, msgdata, TooManyRecipients)
@@ -284,7 +284,7 @@ also appear in the first line of the body of the reply.""")),
             dmsg['Subject'] = 'confirm ' + cookie
             dmsg['Sender'] = requestaddr
             dmsg['From'] = requestaddr
-            dmsg['Date'] = email.Utils.formatdate(localtime=True)
+            dmsg['Date'] = email.utils.formatdate(localtime=True)
             dmsg['Message-ID'] = Utils.unique_message_id(mlist)
             nmsg.attach(text)
             nmsg.attach(MIMEMessage(msg))

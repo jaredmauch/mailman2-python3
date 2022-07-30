@@ -12,7 +12,7 @@ import os
 import re
 import sys
 import time
-from email.Utils import parseaddr, parsedate_tz, mktime_tz, formatdate
+from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
 from string import lowercase

@@ -19,7 +19,7 @@
 
 import re
 import email
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 tcre = (re.compile(r'message\s+from\s+yahoo\.\S+', re.IGNORECASE),
         re.compile(r'Sorry, we were unable to deliver your message to '

@@ -27,7 +27,6 @@ for a threaded implementation.
 """
 
 from past.builtins import cmp
-from builtins import str
 from builtins import object
 import copy
 import time
@@ -43,7 +42,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.SafeDict import MsgSafeDict
 
 import email
-from email.Utils import formataddr
+from email.utils import formataddr
 from email.Header import Header
 from email.Charset import Charset
 

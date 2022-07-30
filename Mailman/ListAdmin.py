@@ -288,7 +288,7 @@ class ListAdmin(object):
             # Queue the file for delivery by qrunner.  Trying to deliver the
             # message directly here can lead to a huge delay in web
             # turnaround.  Log the moderation and add a header.
-            msg['X-Mailman-Approved-At'] = email.Utils.formatdate(localtime=1)
+            msg['X-Mailman-Approved-At'] = email.utils.formatdate(localtime=1)
             syslog('vette', '%s: held message approved, message-id: %s',
                    self.internal_name(),
                    msg.get('message-id', 'n/a'))

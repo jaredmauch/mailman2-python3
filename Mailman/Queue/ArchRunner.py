@@ -17,7 +17,7 @@
 """Archive queue runner."""
 
 import time
-from email.Utils import parsedate_tz, mktime_tz, formatdate
+from email.utils import parsedate_tz, mktime_tz, formatdate
 
 from Mailman import i18n
 from Mailman import mm_cfg

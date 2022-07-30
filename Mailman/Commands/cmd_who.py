@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import i18n

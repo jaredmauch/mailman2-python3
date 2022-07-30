@@ -210,7 +210,7 @@ class Message(email.message.Message):
                     # getaddresses() and multi-line headers
                     fieldvals = [''.join(fv.splitlines())
                                  for fv in fieldvals]
-                    pairs.extend(email.Utils.getaddresses(fieldvals))
+                    pairs.extend(email.utils.getaddresses(fieldvals))
         authors = []
         for pair in pairs:
             address = pair[1]
@@ -279,7 +279,7 @@ class UserNotification(Message):
             self['Message-ID'] = Utils.unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
         if 'date' not in self:
-            self['Date'] = email.Utils.formatdate(localtime=1)
+            self['Date'] = email.utils.formatdate(localtime=1)
         # UserNotifications are typically for admin messages, and for messages
         # other than list explosions.  Send these out as Precedence: bulk, but
         # don't override an existing Precedence: header.

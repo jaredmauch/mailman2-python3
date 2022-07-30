@@ -24,7 +24,7 @@ import nntplib
 from io import StringIO
 
 import email
-from email.Utils import getaddresses
+from email.utils import getaddresses
 
 COMMASPACE = ', '
 

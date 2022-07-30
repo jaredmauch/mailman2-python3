@@ -27,7 +27,7 @@
         around the email address, and no quotes!)
 """
 
-from email.Utils import parseaddr
+from email.utils import parseaddr
 from email.Header import decode_header, make_header
 
 from Mailman import Utils

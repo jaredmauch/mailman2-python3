@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 from builtins import object
-from email.Utils import parseaddr, formatdate
+from email.utils import parseaddr, formatdate
 
 from Mailman import mm_cfg
 from Mailman import Errors

@@ -26,7 +26,7 @@ their MTA. :(
 from builtins import zip
 import re
 from io import StringIO
-from email.Utils import getaddresses
+from email.utils import getaddresses
 
 scre = re.compile(r'Message not delivered to the following', re.IGNORECASE)
 ecre = re.compile(r'Error Detail', re.IGNORECASE)

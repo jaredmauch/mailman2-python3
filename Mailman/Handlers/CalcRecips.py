@@ -23,7 +23,7 @@ on the `recips' attribute of the message.  This attribute is used by the
 SendmailDeliver and BulkDeliver modules.
 """
 
-import email.Utils
+import email.utils
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Message
@@ -158,7 +158,7 @@ def do_exclude(mlist, msg, msgdata, recips):
     if not mlist.regular_exclude_lists:
         return recips
     recips = set(recips)
-    destinations = email.Utils.getaddresses(msg.get_all('to', []) +
+    destinations = email.utils.getaddresses(msg.get_all('to', []) +
                                             msg.get_all('cc', []))
     destinations = [y.lower() for x,y in destinations]
     for listname in mlist.regular_exclude_lists:
@@ -206,7 +206,7 @@ def do_include(mlist, msg, msgdata, recips):
     if not mlist.regular_include_lists:
         return recips
     recips = set(recips)
-    destinations = email.Utils.getaddresses(msg.get_all('to', []) +
+    destinations = email.utils.getaddresses(msg.get_all('to', []) +
                                             msg.get_all('cc', []))
     destinations = [y.lower() for x,y in destinations]
     for listname in mlist.regular_include_lists:

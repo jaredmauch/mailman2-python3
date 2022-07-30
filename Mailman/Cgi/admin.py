@@ -25,12 +25,6 @@ from __future__ import print_function
 from past.builtins import cmp
 from future import standard_library
 standard_library.install_aliases()
-from builtins import chr
-from builtins import str
-from builtins import zip
-from builtins import map
-from builtins import range
-from past.utils import old_div
 import sys
 import os
 import re
@@ -38,7 +32,7 @@ import cgi
 import urllib.request, urllib.parse, urllib.error
 import signal
 
-from email.Utils import unquote, parseaddr, formataddr
+from email.utils import unquote, parseaddr, formataddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -1721,7 +1715,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     mlist.ApprovedDeleteMember(entry, 0, 0)
                 except Errors.NotAMemberError:
                     # This can happen if the address is illegal (i.e. can't be
-                    # parsed by email.Utils.parseaddr()) but for legacy
+                    # parsed by email.utils.parseaddr()) but for legacy
                     # reasons is in the database.  Use a lower level remove to
                     # get rid of this member's entry
                     mlist.removeMember(entry)

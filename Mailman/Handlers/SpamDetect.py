@@ -31,7 +31,7 @@ import re
 from unicodedata import normalize
 from email.Errors import HeaderParseError
 from email.Header import decode_header
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Errors

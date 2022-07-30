@@ -21,7 +21,7 @@
 import re
 from email.MIMEMessage import MIMEMessage
 from email.MIMEText import MIMEText
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
