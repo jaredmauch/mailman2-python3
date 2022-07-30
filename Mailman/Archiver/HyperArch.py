@@ -31,7 +31,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from past.utils import old_div
 import sys
 import re
 import errno
@@ -129,9 +128,9 @@ def sizeof(filename, lang):
             i18n.set_translation(otrans)
         return out
     elif size < 1000000:
-        return ' %d KB ' % (old_div(size, 1000))
+        return ' %d KiB ' % (size / 1024)
     # GB?? :-)
-    return ' %d MB ' % (old_div(size, 1000000))
+    return ' %d MiB ' % (size/  (1024*1024))
 
 
 html_charset = '<META http-equiv="Content-Type" ' \

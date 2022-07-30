@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import print_function
 
 from builtins import range
-from past.utils import old_div
 from builtins import object
 import re
 import sys
@@ -892,7 +891,7 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
     replacements['<mm-global-nodupes-button>'] = (
         CheckBox('nodupes-globally', 1, checked=0).Format())
 
-    days = int(old_div(mm_cfg.PENDING_REQUEST_LIFE, mm_cfg.days(1)))
+    days = int(mm_cfg.PENDING_REQUEST_LIFE / mm_cfg.days(1))
     if days > 1:
         units = _('days')
     else:

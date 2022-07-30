@@ -19,7 +19,6 @@
 
 # For Python 2.1.x compatibility
 from __future__ import nested_scopes
-from __future__ import division
 from __future__ import print_function
 
 from past.builtins import cmp
@@ -487,7 +486,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
     categorylinks_1 = categorylinks = UnorderedList()
     categorylinks_2 = ''
     categorykeys = list(categories.keys())
-    half = old_div(len(categorykeys), 2)
+    half = len(categorykeys) / 2
     counter = 0
     subcat = None
     for k in categorykeys:

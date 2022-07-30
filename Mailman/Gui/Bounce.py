@@ -202,4 +202,4 @@ class Bounce(GUIBase):
         if varname not in ('bounce_info_stale_after',
                            'bounce_you_are_disabled_warnings_interval'):
             return None
-        return int(old_div(getattr(mlist, varname), days(1)))
+        return int(getattr(mlist, varname) / days(1))

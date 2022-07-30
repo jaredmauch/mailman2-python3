@@ -82,8 +82,8 @@ class Switchboard:
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
         if numslices != 1:
-            self.__lower = old_div(((shamax+1) * slice), numslices)
-            self.__upper = (old_div(((shamax+1) * (slice+1)), numslices)) - 1
+            self.__lower = (((shamax+1) * slice) / numslices)
+            self.__upper = ((((shamax+1) * (slice+1)) / numslices)) - 1
         if recover:
             self.recover_backup_files()
 

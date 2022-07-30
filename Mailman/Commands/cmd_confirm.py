@@ -22,7 +22,6 @@
 """
 from __future__ import division
 
-from past.utils import old_div
 from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import Pending
@@ -48,7 +47,7 @@ def process(res, args):
         results = mlist.ProcessConfirmation(cookie, res.msg)
     except Errors.MMBadConfirmation as e:
         # Express in approximate days
-        days = int(old_div(mm_cfg.PENDING_REQUEST_LIFE, mm_cfg.days(1)) + 0.5)
+        days = int(mm_cfg.PENDING_REQUEST_LIFE / mm_cfg.days(1) + 0.5)
         res.results.append(_("""\
 Invalid confirmation string.  Note that confirmation strings expire
 approximately %(days)s days after the initial request.  They also expire if
