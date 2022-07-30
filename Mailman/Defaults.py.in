@@ -18,6 +18,7 @@
 # USA.
 
 """Distributed default settings for significant Mailman config variables."""
+from __future__ import absolute_import
 
 # NEVER make site configuration changes to this file.  ALWAYS make them in
 # mm_cfg.py instead, in the designated area.  See the comments in that file
@@ -1780,7 +1781,7 @@ SITE_PW_FILE = os.path.join(DATA_DIR, 'adm.pw')
 LISTCREATOR_PW_FILE = os.path.join(DATA_DIR, 'creator.pw')
 
 # Import a bunch of version numbers
-from Version import *
+from .Version import *
 
 # Vgg: Language descriptions and charsets dictionary, any new supported
 # language must have a corresponding entry here. Key is the name of the

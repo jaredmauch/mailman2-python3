@@ -25,6 +25,7 @@ alias would deliver to this script.
 Stdin is the mail message, and argv[1] is the name of the target mailing list.
 
 """
+from __future__ import print_function
 
 import sys
 
@@ -47,11 +48,11 @@ def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print >> sys.stderr, _('post script got no listname.')
+        print(_('post script got no listname.'), file=sys.stderr)
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print >> sys.stderr, _('post script, list not found: %(listname)s')
+        print(_('post script, list not found: %(listname)s'), file=sys.stderr)
         sys.exit(1)
     # Immediately queue the message for the incoming qrunner to process.  The
     # advantage to this approach is that messages should never get lost --

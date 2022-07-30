@@ -41,7 +41,7 @@ AC_MSG_RESULT($ans)
 
 if test -z "$with_python"
 then
-        AC_PATH_PROG(with_python, python, /usr/local/bin/python)
+        AC_PATH_PROG(with_python, python3, /usr/local/bin/python3)
 fi
 
 AC_MSG_CHECKING(Python interpreter)
