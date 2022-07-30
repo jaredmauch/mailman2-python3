@@ -18,9 +18,6 @@
 """Process subscription or roster requests from listinfo form."""
 from __future__ import print_function
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
 import sys
 import os
 import cgi
