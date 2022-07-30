@@ -107,7 +107,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         filename = os.path.join(self.fullpath(), 'extend.py')
         dict = {}
         try:
-            execfile(filename, dict)
+            exec(compile(open(filename, "rb").read(), filename, 'exec'), dict)
         except IOError as e:
             # Ignore missing files, but log other errors
             if e.errno == errno.ENOENT:
