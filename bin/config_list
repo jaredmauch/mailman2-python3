@@ -87,9 +87,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -114,12 +114,12 @@ def do_output(listname, outfile):
         if not charset:
             charset = 'us-ascii'
         when = time.ctime(time.time())
-        print >> outfp, C_('''\
+        print(C_('''\
 # -*- python -*-
 # -*- coding: %(charset)s -*-
 ## "%(listname)s" mailing list configuration settings
 ## captured on %(when)s
-''')
+'''), file=outfp)
         # get all the list config info.  all this stuff is accessible via the
         # web interface
         for k in mm_cfg.ADMIN_CATEGORIES:
@@ -140,8 +140,8 @@ def do_list_categories(mlist, k, subcat, outfp):
     if info is None:
         return
     charset = Utils.GetCharSet(mlist.preferred_language)
-    print >> outfp, '##', k.capitalize(), C_('options')
-    print >> outfp, '#'
+    print('##', k.capitalize(), C_('options'), file=outfp)
+    print('#', file=outfp)
     # First, massage the descripton text, which could have obnoxious
     # leading whitespace on second and subsequent lines due to
     # triple-quoted string nonsense in the source code.
@@ -149,8 +149,8 @@ def do_list_categories(mlist, k, subcat, outfp):
     # Print out the category description
     desc = Utils.wrap(desc)
     for line in desc.split('\n'):
-        print >> outfp, '#', line
-    print >> outfp
+        print('#', line, file=outfp)
+    print(file=outfp)
     for data in info[1:]:
         if not isinstance(data, TupleType):
             continue
@@ -171,7 +171,7 @@ def do_list_categories(mlist, k, subcat, outfp):
         # Print out the variable description.
         desc = Utils.wrap(desc)
         for line in desc.split('\n'):
-            print >> outfp, '#', line
+            print('#', line, file=outfp)
         # munge the value based on its type
         value = None
         if hasattr(gui, 'getValue'):
@@ -179,27 +179,27 @@ def do_list_categories(mlist, k, subcat, outfp):
         if value is None and not varname.startswith('_'):
             value = getattr(mlist, varname)
         if vtype in (mm_cfg.String, mm_cfg.Text, mm_cfg.FileUpload):
-            print >> outfp, varname, '=',
+            print(varname, '=', end=' ', file=outfp)
             lines = value.splitlines()
             if not lines:
-                print >> outfp, "''"
+                print("''", file=outfp)
             elif len(lines) == 1:
                 if charset != 'us-ascii' and nonasciipat.search(lines[0]):
                     # This is more readable for non-english list.
-                    print >> outfp, '"' + lines[0].replace('"', '\\"') + '"'
+                    print('"' + lines[0].replace('"', '\\"') + '"', file=outfp)
                 else:
-                    print >> outfp, repr(lines[0])
+                    print(repr(lines[0]), file=outfp)
             else:
                 if charset == 'us-ascii' and nonasciipat.search(value):
                     # Normally, an english list should not have non-ascii char.
-                    print >> outfp, repr(NL.join(lines))
+                    print(repr(NL.join(lines)), file=outfp)
                 else:
                     outfp.write(' """')
                     outfp.write(NL.join(lines).replace('"', '\\"'))
                     outfp.write('"""\n')
         elif vtype in (mm_cfg.Radio, mm_cfg.Toggle):
-            print >> outfp, '#'
-            print >> outfp, '#', C_('legal values are:')
+            print('#', file=outfp)
+            print('#', C_('legal values are:'), file=outfp)
             # TBD: This is disgusting, but it's special cased
             # everywhere else anyway...
             if varname == 'subscribe_policy' and \
@@ -208,19 +208,19 @@ def do_list_categories(mlist, k, subcat, outfp):
             else:
                 i = 0
             for choice in data[2]:
-                print >> outfp, '#   ', i, '= "%s"' % choice
+                print('#   ', i, '= "%s"' % choice, file=outfp)
                 i += 1
-            print >> outfp, varname, '=', repr(value)
+            print(varname, '=', repr(value), file=outfp)
         else:
-            print >> outfp, varname, '=', repr(value)
-        print >> outfp
+            print(varname, '=', repr(value), file=outfp)
+        print(file=outfp)
 
 
 
 def getPropertyMap(mlist):
     guibyprop = {}
     categories = mlist.GetConfigCategories()
-    for category, (label, gui) in categories.items():
+    for category, (label, gui) in list(categories.items()):
         if not hasattr(gui, 'GetConfigInfo'):
             continue
         subcats = mlist.GetConfigSubCategories(category)
@@ -236,7 +236,7 @@ def getPropertyMap(mlist):
     return guibyprop
 
 
-class FakeDoc:
+class FakeDoc(object):
     # Fake the error reporting API for the htmlformat.Document class
     def addError(self, s, tag=None, *args):
         if tag:
@@ -262,7 +262,7 @@ def do_input(listname, infile, checkonly, verbose):
         # be saved, but any other problems are not save-fatal.
         execfile(infile, globals)
         savelist = 1
-        for k, v in globals.items():
+        for k, v in list(globals.items()):
             if k in ('mlist', '__builtins__'):
                 continue
             if not hasattr(mlist, k):
@@ -306,7 +306,7 @@ def do_input(listname, infile, checkonly, verbose):
                         # transforms the value into a list of one item.
                         validval = validval[0]
                         validval = [bitfield for bitfield, bitval
-                                    in mm_cfg.OPTINFO.items()
+                                    in list(mm_cfg.OPTINFO.items())
                                     if validval & bitval]
                     gui._setValue(mlist, k, validval, fakedoc)
             # BAW: when to do gui._postValidate()???

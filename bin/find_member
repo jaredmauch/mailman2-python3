@@ -55,8 +55,7 @@ Address matches are case-insensitive, but case-preserved addresses are
 displayed.
 
 """
-from __future__ import print_function
-
+from builtins import *
 from builtins import object
 import sys
 import re
@@ -96,7 +95,7 @@ def scanlists(options):
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError:
-            print( C_('No such list: %(listname)s'))
+            print(C_('No such list: %(listname)s'))
             continue
         if options.owners:
             owners = mlist.owner
@@ -163,7 +162,7 @@ def main():
     options.regexps = args
 
     if not options.listnames:
-        print('No lists to search')
+        print(C_('No lists to search'))
         return
 
     matches = scanlists(options)
@@ -172,13 +171,13 @@ def main():
     for k in addrs:
         hits = matches[k]
         lists = list(hits.keys())
-        print((k, C_('found in:')))
+        print(k, C_('found in:'))
         for name in lists:
             aswhat = hits[name]
             if aswhat & AS_MEMBER:
-                print(('    ', name))
+                print('    ', name)
             if aswhat & AS_OWNER:
-                print(('    ', name, C_('(as owner)')))
+                print('    ', name, C_('(as owner)'))
 
 
 
