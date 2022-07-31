@@ -205,7 +205,7 @@ def dolist(listname):
     if isinstance(mlist._memberadaptor, OldStyleMemberships):
         noinfo = {}
         for addr, (reason, when) in mlist.delivery_status.items():
-            if reason == BYBOUNCE and not mlist.bounce_info.has_key(addr):
+            if reason == BYBOUNCE and mlist.bounce_info.get(addr, None) is None:
                 noinfo[addr] = reason, when
         # What to do about these folks with a BYBOUNCE delivery status and no
         # bounce info?  This number should be very small, and I think it's
@@ -500,7 +500,7 @@ def dequeue(filebase):
     # Between 2.1b4 and 2.1b5, the `rejection-notice' key in the metadata
     # was renamed to `rejection_notice', since dashes in the keys are not
     # supported in METAFMT_ASCII.
-    if data.has_key('rejection-notice'):
+    if data.get('rejection-notice', None) is not None:
         data['rejection_notice'] = data['rejection-notice']
         del data['rejection-notice']
     msgfp = None
@@ -611,7 +611,7 @@ def update_pending():
         elif op == Pending.HELD_MESSAGE:
             # data[0] is the hold id.  There better only be one entry per id
             id = data[0]
-            if holds_by_id.has_key(id):
+            if holds_by_id.get(id, None) is not None:
                 print(C_('WARNING: Ignoring duplicate pending ID: %(id)s.'))
             else:
                 holds_by_id[id] = (key, val)

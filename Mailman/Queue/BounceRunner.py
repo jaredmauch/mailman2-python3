@@ -106,7 +106,7 @@ class BounceMixin:
         self._bounce_events_fp.seek(0)
         while True:
             try:
-                listname, addr, day, msg = pickle.load(self._bounce_events_fp)
+                listname, addr, day, msg = pickle.load(self._bounce_events_fp, fix_import=True, encoding='latin1')
             except ValueError as e:
                 syslog('bounce', 'Error reading bounce events: %s', e)
             except EOFError:

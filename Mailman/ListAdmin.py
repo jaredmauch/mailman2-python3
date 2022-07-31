@@ -78,9 +78,9 @@ class ListAdmin(object):
         if self.__db is None:
             assert self.Locked()
             try:
-                fp = open(self.__filename)
+                fp = open(self.__filename, 'rb')
                 try:
-                    self.__db = pickle.load(fp)
+                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
                 finally:
                     fp.close()
             except IOError as e:
@@ -100,7 +100,7 @@ class ListAdmin(object):
             tmpfile = self.__filename + '.tmp'
             omask = os.umask(0o007)
             try:
-                fp = open(tmpfile, 'w')
+                fp = open(tmpfile, 'wb')
                 try:
                     pickle.dump(self.__db, fp, 1)
                     fp.flush()
@@ -193,7 +193,7 @@ class ListAdmin(object):
         filename = 'heldmsg-%s-%d.%s' % (self.internal_name(), id, ext)
         omask = os.umask(0o007)
         try:
-            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'w')
+            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'wb')
             try:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
                     pickle.dump(msg, fp, 1)
@@ -235,13 +235,13 @@ class ListAdmin(object):
             spamfile = DASH.join(parts)
             # Preserve the message as plain text, not as a pickle
             try:
-                fp = open(path)
+                fp = open(path, 'rb')
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             try:
                 if path.endswith('.pck'):
-                    msg = pickle.load(fp)
+                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
                 else:
                     assert path.endswith('.txt'), '%s not .pck or .txt' % path
                     msg = fp.read()
@@ -251,7 +251,7 @@ class ListAdmin(object):
             outpath = os.path.join(mm_cfg.SPAM_DIR, spamfile)
             head, ext = os.path.splitext(outpath)
             outpath = head + '.msg'
-            outfp = open(outpath, 'w')
+            outfp = open(outpath, 'wb')
             try:
                 if path.endswith('.pck'):
                     g = Generator(outfp)
@@ -542,7 +542,7 @@ class ListAdmin(object):
         # In Mailman 2.1.5 we converted these files to pickles.
         filename = os.path.join(self.fullpath(), 'request.db')
         try:
-            fp = open(filename)
+            fp = open(filename, 'rb')
             try:
                 self.__db = marshal.load(fp)
             finally:
@@ -552,9 +552,9 @@ class ListAdmin(object):
             if e.errno != errno.ENOENT: raise
             filename = os.path.join(self.fullpath(), 'request.pck')
             try:
-                fp = open(filename)
+                fp = open(filename, 'rb')
                 try:
-                    self.__db = pickle.load(fp)
+                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
                 finally:
                     fp.close()
             except IOError as e:
@@ -610,13 +610,13 @@ def readMessage(path):
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
     ext = os.path.splitext(path)[1]
-    fp = open(path)
+    fp = open(path, 'rb')
     try:
         if ext == '.txt':
             msg = email.message_from_file(fp, Message.Message)
         else:
             assert ext == '.pck'
-            msg = pickle.load(fp)
+            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
     finally:
         fp.close()
     return msg

@@ -286,7 +286,7 @@ class HyperDatabase(pipermail.Database):
         if msgid not in self.__cache:
             # get the pickled object out of the DumbBTree
             buf = self.articleIndex[msgid]
-            article = self.__cache[msgid] = pickle.loads(buf)
+            article = self.__cache[msgid] = pickle.loads(buf, fix_import=True, encoding='latin1')
             # For upgrading older archives
             article.setListIfUnset(self._mlist)
         else:

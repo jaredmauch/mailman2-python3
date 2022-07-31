@@ -35,6 +35,7 @@ import pickle
 from io import StringIO
 from collections import UserDict
 from urllib.parse import urlparse
+from types import *
 
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr
@@ -559,7 +560,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         fname_last = fname + '.last'
         fp = None
         try:
-            fp = open(fname_tmp, 'w')
+            fp = open(fname_tmp, 'wb')
             # Use a binary format... it's more efficient.
             pickle.dump(dict, fp, 1)
             fp.flush()

@@ -151,8 +151,8 @@ class Switchboard:
         # the .pck file in order to try again.
         os.rename(filename, backfile)
         try:
-            msg = pickle.load(fp)
-            data = pickle.load(fp)
+            msg = pickle.load(fp, fix_import=True, encoding='latin1')
+            data = pickle.load(fp, fix_import=True, encoding='latin1')
         finally:
             fp.close()
         if data.get('_parsemsg'):
@@ -218,9 +218,9 @@ class Switchboard:
             fp = open(src, 'rb+')
             try:
                 try:
-                    msg = pickle.load(fp)
+                    msg = pickle.load(fp, fix_import=True, encoding='latin1')
                     data_pos = fp.tell()
-                    data = pickle.load(fp)
+                    data = pickle.load(fp, fix_import=True, encoding='latin1')
                 except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry

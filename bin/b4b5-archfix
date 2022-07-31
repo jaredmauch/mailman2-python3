@@ -81,7 +81,7 @@ def main():
         fp.close()
         newd = {}
         for key, pckstr in d.items():
-            article = pickle.loads(pckstr)
+            article = pickle.loads(pckstr, fix_import=True, encoding='latin1')
             newd[key] = pickle.dumps(article)
         fp = open(filename + '.tmp', 'wb')
         marshal.dump(newd, fp)
