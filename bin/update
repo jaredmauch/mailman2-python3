@@ -195,7 +195,7 @@ def dolist(listname):
         mlist.Lock(0.5)
     except TimeOutError:
         print(C_('WARNING: could not acquire lock for list: '
-                                '%(listname)s', file=sys.stderr))
+                                '%(listname)s'), file=sys.stderr)
         return 1
 
     # Sanity check the invariant that every BYBOUNCE disabled member must have
@@ -507,11 +507,11 @@ def dequeue(filebase):
     try:
         try:
             msgfp = open(pckfile, 'rb')
-            msg = pickle.load(msgfp)
+            msg = pickle.load(msgfp, fix_import=True, encoding='latin1')
             if not data:
                 # There was no .db file. Is this a post 2.1.5 .pck?
                 try:
-                    data = pickle.load(msgfp)
+                    data = pickle.load(msgfp, fix_import=True, encoding='latin1')
                 except EOFError:
                     pass
             os.unlink(pckfile)
@@ -573,7 +573,7 @@ def update_pending():
             if e.errno != errno.ENOENT: raise
         else:
             print('Updating Mailman 2.1.4 pending.pck database')
-            db = pickle.load(fp)
+            db = pickle.load(fp, fix_import=True, encoding='latin1')
     if db is None:
         print('Nothing to do.')
         return
