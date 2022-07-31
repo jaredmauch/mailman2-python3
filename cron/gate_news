@@ -37,8 +37,8 @@ import nntplib
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-import email.Errors
-from email.Parser import Parser
+import email.errors
+from email.parser import Parser
 
 from Mailman import mm_cfg
 from Mailman import MailList
@@ -157,7 +157,7 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                 p = Parser(Message.Message)
                 try:
                     msg = p.parsestr(NL.join(lines))
-                except email.Errors.MessageError as e:
+                except email.errors.MessageError as e:
                     syslog('fromusenet',
                            'email package exception for %s:%d\n%s',
                            mlist.linked_newsgroup, num, e)

@@ -26,11 +26,6 @@
        (probably in the 'update_dirty_archives' method).
 """
 
-from __future__ import nested_scopes
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-
 import sys
 import re
 import errno
@@ -43,9 +38,9 @@ from . import pipermail
 import weakref
 import binascii
 
-from email.Header import decode_header, make_header
-from email.Errors import HeaderParseError
-from email.Charset import Charset
+from email.header import decode_header, make_header
+from email.errors import HeaderParseError
+from email.charset import Charset
 
 from Mailman import mm_cfg
 from Mailman import Utils

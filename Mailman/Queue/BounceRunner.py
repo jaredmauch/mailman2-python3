@@ -23,8 +23,8 @@ import re
 import time
 import pickle
 
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from email.mime.MIMEText import MIMEText
+from email.mime.MIMEMessage import MIMEMessage
 from email.utils import parseaddr
 
 from Mailman import mm_cfg

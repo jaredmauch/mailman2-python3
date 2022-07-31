@@ -19,11 +19,11 @@
 
 import re
 import email
-import email.Errors
-import email.Iterators
-import email.Parser
+import email.errors
+import email.iterators
+import email.parser
 
-from email.Header import decode_header
+from email.header import decode_header
 
 from Mailman import Utils
 from Mailman.Logging.Syslog import syslog

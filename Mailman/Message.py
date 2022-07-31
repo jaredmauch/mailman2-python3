@@ -25,6 +25,7 @@ import re
 from io import StringIO
 
 import email
+import email.generator
 import email.utils
 from email.charset import Charset
 from email.header import Header

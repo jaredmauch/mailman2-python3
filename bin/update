@@ -45,6 +45,7 @@ import marshal
 
 import paths
 import email
+import email.errors
 
 sys.path.append("@VAR_PREFIX@/Mailman")
 from Mailman import mm_cfg
@@ -524,7 +525,7 @@ def dequeue(filebase):
                 os.unlink(msgfile)
             except EnvironmentError as e:
                 if e.errno != errno.ENOENT: raise
-            except (email.Errors.MessageParseError, ValueError) as e:
+            except (email.errors.MessageParseError, ValueError) as e:
                 # This message was unparsable, most likely because its
                 # MIME encapsulation was broken.  For now, there's not
                 # much we can do about it.

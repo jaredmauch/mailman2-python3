@@ -29,8 +29,8 @@ from builtins import str
 import re
 
 from unicodedata import normalize
-from email.Errors import HeaderParseError
-from email.Header import decode_header
+from email.errors import HeaderParseError
+from email.header import decode_header
 from email.utils import parseaddr
 
 from Mailman import mm_cfg

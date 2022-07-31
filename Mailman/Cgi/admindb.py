@@ -26,6 +26,7 @@ import cgi
 import errno
 import signal
 import email
+import email.errors
 import time
 from urllib.parse import quote_plus, unquote_plus
 
@@ -702,7 +703,7 @@ def show_post_requests(mlist, id, info, total, count, form):
         except Errors.LostHeldMessage:
             pass
         return
-    except email.Errors.MessageParseError:
+    except email.errors.MessageParseError:
         form.AddItem(_('<em>Message with id #%(id)d is corrupted.'))
         # BAW: Should we really delete this, or shuttle it off for site admin
         # to look more closely at?

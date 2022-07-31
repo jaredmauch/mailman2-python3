@@ -38,11 +38,11 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
 from Mailman import LockFile
 
-from email.Header import decode_header, make_header, Header
-from email.Errors import HeaderParseError
-from email.Iterators import typed_subpart_iterator
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from email.header import decode_header, make_header, Header
+from email.errors import HeaderParseError
+from email.iterators import typed_subpart_iterator
+from email.mime.MIMEText import MIMEText
+from email.mime.MIMEMessage import MIMEMessage
 
 NL = '\n'
 CONTINUE = 0

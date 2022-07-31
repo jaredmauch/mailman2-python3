@@ -23,10 +23,10 @@ list configuration.
 from __future__ import nested_scopes
 import re
 
-from email.Charset import Charset
-from email.Header import Header, decode_header, make_header
+from email.charset import Charset
+from email.header import Header, decode_header, make_header
 from email.utils import parseaddr, formataddr, getaddresses
-from email.Errors import HeaderParseError
+from email.errors import HeaderParseError
 
 from Mailman import i18n
 from Mailman import mm_cfg

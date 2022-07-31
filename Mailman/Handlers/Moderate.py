@@ -19,8 +19,8 @@
 """
 
 import re
-from email.MIMEMessage import MIMEMessage
-from email.MIMEText import MIMEText
+from email.mime.MIMEMessage import MIMEMessage
+from email.mime.MIMEText import MIMEText
 from email.utils import parseaddr
 
 from Mailman import mm_cfg

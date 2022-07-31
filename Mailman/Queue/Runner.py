@@ -32,7 +32,7 @@ from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
-import email.Errors
+import email.errors
 
 
 class Runner:
