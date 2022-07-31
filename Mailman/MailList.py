@@ -654,8 +654,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         now = int(time.time())
         try:
             try:
-                dict_retval = loadfunc(fp)
-                if isinstance(dict_retval, dict):
+                if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
+                    dict_retval = marshal.load(fp)
+                elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
+                    dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
+#                dict_retval = loadfunc(fp)
+
+                if not isinstance(dict_retval, dict):
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,
                     pickle.PicklingError, pickle.UnpicklingError) as e:
@@ -683,8 +688,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         dfile = os.path.join(self.fullpath(), 'config.db')
         dlast = dfile + '.last'
         for file in (pfile, plast, dfile, dlast):
-            dict, e = self.__load(file)
-            if dict is None:
+            dict_retval, e = self.__load(file)
+            if dict_retval is None:
                 if e is not None:
                     # Had problems with this file; log it and try the next one.
                     syslog('error', "couldn't load config file %s\n%s",
@@ -717,9 +722,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     self.__lock.unlock()
         # Copy the loaded dictionary into the attributes of the current
         # mailing list object, then run sanity check on the data.
-        self.__dict__.update(dict)
+        self.__dict__.update(dict_retval)
         if check_version:
-            self.CheckVersion(dict)
+            self.CheckVersion(dict_retval)
             self.CheckValues()
 
     def __fix_corrupt_pckfile(self, file, pfile, plast, dfile, dlast):
