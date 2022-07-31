@@ -257,7 +257,7 @@ def start_runner(qrname, slice, count):
     # must be given as argv[0] due to Python's library search algorithm.
     os.execl(mm_cfg.PYTHON, mm_cfg.PYTHON, exe, rswitch, '-s')
     # Should never get here
-    raise RuntimeError, 'os.execl() failed'
+    raise RuntimeError('os.execl() failed')
 
 
 def start_all_runners():
@@ -341,7 +341,7 @@ def main():
     if checkprivs:
         check_privs()
     else:
-        print('Warning!  You may encounter permission problems.')
+        print(C_('Warning!  You may encounter permission problems.'))
 
     # Handle the commands
     command = args[0].lower()
@@ -350,18 +350,18 @@ def main():
         # giving cron/qrunner a ctrl-c or KeyboardInterrupt.  This will
         # effectively shut everything down.
         if not quiet:
-            print("Shutting down Mailman's master qrunner")
+            print(C_("Shutting down Mailman's master qrunner"))
         kill_watcher(signal.SIGTERM)
     elif command == 'restart':
         # Sent the master qrunner process a SIGHUP.  This will cause the
         # master qrunner to kill and restart all the worker qrunners, and to
         # close and re-open its log files.
         if not quiet:
-            print("Restarting Mailman's master qrunner")
+            print(C_("Restarting Mailman's master qrunner"))
         kill_watcher(signal.SIGINT)
     elif command == 'reopen':
         if not quiet:
-            print('Re-opening all log files')
+            print(C_('Re-opening all log files'))
         kill_watcher(signal.SIGHUP)
     elif command == 'start':
         # First, complain loudly if there's no site list.
@@ -397,7 +397,7 @@ def main():
         if pid:
             # parent
             if not quiet:
-                print("Starting Mailman's master qrunner.")
+                print(C_("Starting Mailman's master qrunner."))
             # Give up the lock "ownership".  This just means the foreground
             # process won't close/unlock the lock when it finalizes this lock
             # instance.  We'll let the mater watcher subproc own the lock.
@@ -428,7 +428,7 @@ def main():
         # Instead of cd'ing to root, cd to the Mailman installation home
         os.chdir(mm_cfg.PREFIX)
         # Set our file mode creation umask
-        os.umask(0o007)
+        os.umask(0o07)
         # I don't think we have any unneeded file descriptors.
         #
         # Now start all the qrunners.  This returns a dictionary where the
@@ -450,7 +450,7 @@ def main():
             # Closing our syslog will cause it to be re-opened at the next log
             # print output.
             syslog.close()
-            for pid in kids.keys():
+            for pid in list(kids.keys()):
                 os.kill(pid, signal.SIGHUP)
             # And just to tweak things...
             syslog('qrunner',
@@ -459,7 +459,7 @@ def main():
         # We also need to install a SIGTERM handler because that's what init
         # will kill this process with when changing run levels.
         def sigterm_handler(signum, frame, kids=kids):
-            for pid in kids.keys():
+            for pid in list(kids.keys()):
                 try:
                     os.kill(pid, signal.SIGTERM)
                 except OSError as e:
@@ -470,7 +470,7 @@ def main():
         # to exit, but the master will restart SIGINT'd sub-processes unless
         # the -n flag was given.
         def sigint_handler(signum, frame, kids=kids):
-            for pid in kids.keys():
+            for pid in list(kids.keys()):
                 os.kill(pid, signal.SIGINT)
             syslog('qrunner', 'Master watcher caught SIGINT.  Restarting.')
         signal.signal(signal.SIGINT, sigint_handler)
@@ -528,7 +528,7 @@ Qrunner %s reached maximum restart limit of %d, not restarting.""",
             # Should we leave the main loop for any reason, we want to be sure
             # all of our children are exited cleanly.  Send SIGTERMs to all
             # the child processes and wait for them all to exit.
-            for pid in kids.keys():
+            for pid in list(kids.keys()):
                 try:
                     os.kill(pid, signal.SIGTERM)
                 except OSError as e:

@@ -194,7 +194,7 @@ def checkall():
             else:
                 print()
         # check all subdirs
-        os.path.walk(d, checkwalk, STATE)
+        os.walk(d, checkwalk, STATE)
 
 def checkarchives():
     private = mm_cfg.PRIVATE_ARCHIVE_FILE_DIR

@@ -1,11 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import print_function
-from builtins import map
-from builtins import filter
-from builtins import str
-from builtins import object
-
 import mailbox
 import os
 import re
@@ -14,7 +8,6 @@ import time
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
-from string import lowercase
 
 # Work around for some misguided Python packages that add iso-8859-1
 # accented characters to string.lowercase.
