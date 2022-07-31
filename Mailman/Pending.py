@@ -89,7 +89,7 @@ class Pending(object):
             if e.errno != errno.ENOENT: raise
             return {'evictions': {}}
         try:
-            return pickle.load(fp, fix_import=True, encoding='latin1')
+            return pickle.load(fp, fix_imports=True, encoding='latin1')
         finally:
             fp.close()
 

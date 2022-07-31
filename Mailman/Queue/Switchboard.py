@@ -145,14 +145,14 @@ class Switchboard:
         filename = os.path.join(self.__whichq, filebase + '.pck')
         backfile = os.path.join(self.__whichq, filebase + '.bak')
         # Read the message object and metadata.
-        fp = open(filename)
+        fp = open(filename, 'rb')
         # Move the file to the backup file name for processing.  If this
         # process crashes uncleanly the .bak file will be used to re-instate
         # the .pck file in order to try again.
         os.rename(filename, backfile)
         try:
-            msg = pickle.load(fp, fix_import=True, encoding='latin1')
-            data = pickle.load(fp, fix_import=True, encoding='latin1')
+            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            data = pickle.load(fp, fix_imports=True, encoding='latin1')
         finally:
             fp.close()
         if data.get('_parsemsg'):
@@ -218,9 +218,9 @@ class Switchboard:
             fp = open(src, 'rb+')
             try:
                 try:
-                    msg = pickle.load(fp, fix_import=True, encoding='latin1')
+                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
                     data_pos = fp.tell()
-                    data = pickle.load(fp, fix_import=True, encoding='latin1')
+                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
                 except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry

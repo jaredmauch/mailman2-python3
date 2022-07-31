@@ -507,11 +507,11 @@ def dequeue(filebase):
     try:
         try:
             msgfp = open(pckfile, 'rb')
-            msg = pickle.load(msgfp, fix_import=True, encoding='latin1')
+            msg = pickle.load(msgfp, fix_imports=True, encoding='latin1')
             if not data:
                 # There was no .db file. Is this a post 2.1.5 .pck?
                 try:
-                    data = pickle.load(msgfp, fix_import=True, encoding='latin1')
+                    data = pickle.load(msgfp, fix_imports=True, encoding='latin1')
                 except EOFError:
                     pass
             os.unlink(pckfile)
@@ -573,7 +573,7 @@ def update_pending():
             if e.errno != errno.ENOENT: raise
         else:
             print('Updating Mailman 2.1.4 pending.pck database')
-            db = pickle.load(fp, fix_import=True, encoding='latin1')
+            db = pickle.load(fp, fix_imports=True, encoding='latin1')
     if db is None:
         print('Nothing to do.')
         return

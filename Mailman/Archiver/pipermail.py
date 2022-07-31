@@ -309,7 +309,7 @@ class T(object):
                 raise IOError
             f = open(os.path.join(self.basedir, 'pipermail.pck'), 'r')
             self.message(C_('Reloading pickled archive state'))
-            d = pickle.load(f, fix_import=True, encoding='latin1')
+            d = pickle.load(f, fix_imports=True, encoding='latin1')
             f.close()
             for key, value in list(d.items()):
                 setattr(self, key, value)
@@ -848,7 +848,7 @@ class BSDDBdatabase(Database):
                                         self.__cachekeys[1:])
             del self.__cachedict[delkey]
         s = self.articleIndex[msgid]
-        article = pickle.loads(s, fix_import=True, encoding='latin1')
+        article = pickle.loads(s, fix_imports=True, encoding='latin1')
         self.__cachekeys.append(msgid)
         self.__cachedict[msgid] = article
         return article
