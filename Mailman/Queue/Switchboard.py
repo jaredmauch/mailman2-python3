@@ -101,11 +101,11 @@ class Switchboard:
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
             protocol = 1
-            msgsave = pickle.dumps(_msg, protocol)
+            msgsave = pickle.dumps(_msg, protocol, fix_imports=True)
         else:
             protocol = 0
-            msgsave = pickle.dumps(str(_msg), protocol)
-        hashfood = msgsave + listname + repr(now)
+            msgsave = pickle.dumps(str(_msg), protocol, fix_imports=True)
+        hashfood = msgsave + listname.encode() + repr(now).encode()
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
         # the received time for this message (i.e. when it first showed up on
@@ -127,7 +127,7 @@ class Switchboard:
         # Write to the pickle file the message object and metadata.
         omask = os.umask(0o007)                     # -rw-rw----
         try:
-            fp = open(tmpfile, 'w')
+            fp = open(tmpfile, 'wb')
             try:
                 fp.write(msgsave)
                 pickle.dump(data, fp, protocol)
