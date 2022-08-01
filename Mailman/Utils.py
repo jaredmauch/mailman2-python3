@@ -34,6 +34,7 @@ import base64
 import random
 import urllib.request, urllib.parse, urllib.error
 import html.entities
+import html
 import email.header
 import email.iterators
 from email.errors import HeaderParseError
@@ -495,10 +496,10 @@ def websafe(s, doubleescape=False):
             for k in mm_cfg.BROKEN_BROWSER_REPLACEMENTS:
                 s = s.replace(k, mm_cfg.BROKEN_BROWSER_REPLACEMENTS[k])
     if doubleescape:
-        return cgi.escape(s, quote=True)
+        return html.escape(s, quote=True)
     else:
         # Don't double escape html entities
-        return _ampre.sub(r'&\1', cgi.escape(s, quote=True))
+        return _ampre.sub(r'&\1', html.escape(s, quote=True))
 
 
 def nntpsplit(s):
