@@ -50,7 +50,8 @@ def csrf_token(mlist, contexts, user=None):
     else:
         return None     # not authenticated
     issued = int(time.time())
-    mac = sha_new(secret + repr(issued)).hexdigest()
+    needs_hash = (secret + repr(issued)).encode('utf-8')
+    mac = sha_new(needs_hash).hexdigest()
     keymac = '%s:%s' % (key, mac)
     token = binascii.hexlify(marshal.dumps((issued, keymac)))
     return token

@@ -139,6 +139,8 @@ class SecurityManager(object):
         if not response:
             # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
+        # python3
+        response = response.encode('UTF-8')
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
                 ok = Utils.check_global_password(response, siteadmin=0)
@@ -238,12 +240,13 @@ class SecurityManager(object):
 
     def MakeCookie(self, authcontext, user=None):
         key, secret = self.AuthContextInfo(authcontext, user)
-        if key is None or secret is None or not isinstance(secret, StringType):
+        if key is None or secret is None or not (type(secret) is str):
             raise ValueError
         # Timestamp
         issued = int(time.time())
         # Get a digest of the secret, plus other information.
-        mac = sha_new(secret + repr(issued)).hexdigest()
+        needs_hashing = (secret + repr(issued)).encode('utf-8')
+        mac = sha_new(needs_hashing).hexdigest()
         # Create the cookie object.
         c = http.cookies.SimpleCookie()
         c[key] = binascii.hexlify(marshal.dumps((issued, mac)))
@@ -351,7 +354,8 @@ class SecurityManager(object):
             return False
         # Calculate what the mac ought to be based on the cookie's timestamp
         # and the shared secret.
-        mac = sha_new(secret + repr(issued)).hexdigest()
+        needs_hashing = (secret + repr(issued)).encode('utf-8')
+        mac = sha_new(needs_hashing).hexdigest()
         if mac != received_mac:
             return False
         # Authenticated!

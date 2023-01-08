@@ -942,7 +942,7 @@ def uncanonstr(s, lang=None):
     # set.  If so, return it unchanged, except for coercing it to a byte
     # string.
     try:
-        if isinstance(s, UnicodeType):
+        if type(s) is str:
             return s.encode(charset)
         else:
             u = str(s, charset)

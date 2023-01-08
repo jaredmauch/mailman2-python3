@@ -242,7 +242,7 @@ def list_listinfo(mlist, lang):
                           captcha_idx + ":" +
                           mlist.internal_name() + ":" +
                           remote
-                          ).hexdigest()
+                          ).encode('utf-8').hexdigest()
                     )
                 )
     # Roster form substitutions
