@@ -74,6 +74,8 @@ from Mailman import Utils
 from Mailman import Errors
 from Mailman import i18n
 
+from typing import Tuple
+
 _ = i18n._
 C_ = i18n.C_
 
@@ -152,7 +154,7 @@ def do_list_categories(mlist, k, subcat, outfp):
         print('#', line, file=outfp)
     print(file=outfp)
     for data in info[1:]:
-        if not isinstance(data, TupleType):
+        if not isinstance(data, Tuple):
             continue
         varname = data[0]
         # Variable could be volatile
@@ -228,7 +230,7 @@ def getPropertyMap(mlist):
             subcats = [(None, None)]
         for subcat, sclabel in subcats:
             for element in gui.GetConfigInfo(mlist, category, subcat):
-                if not isinstance(element, TupleType):
+                if not isinstance(element, Tuple):
                     continue
                 propname = element[0]
                 wtype = element[1]
