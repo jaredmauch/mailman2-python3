@@ -329,7 +329,7 @@ class SecurityManager(object):
             key, secret = self.AuthContextInfo(authcontext, user)
         except Errors.NotAMemberError:
             return False
-        if key not in c or not isinstance(secret, StringType):
+        if key not in c or not type(secret) is str:
             return False
         # Undo the encoding we performed in MakeCookie() above.  BAW: I
         # believe this is safe from exploit because marshal can't be forced to

@@ -31,7 +31,7 @@ class SafeDict(UserDict):
         try:
             return self.data[key]
         except KeyError:
-            if isinstance(key, StringType):
+            if isinstance(key, str):
                 return '%('+key+')s'
             else:
                 return '<Missing key: %s>' % repr(key)

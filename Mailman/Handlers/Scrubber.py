@@ -376,7 +376,7 @@ URL: %(url)s
                     # if the message charset is bogus, use the list's.
                     t = t.encode(lcset, 'replace')
             # Separation is useful
-            if isinstance(t, StringType):
+            if isinstance(t, str):
                 if not t.endswith('\n'):
                     t += '\n'
                 text.append(t)

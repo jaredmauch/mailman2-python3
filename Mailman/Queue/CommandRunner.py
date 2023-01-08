@@ -97,7 +97,7 @@ class Results:
                            Utils.GetCharSet(self.msgdata['lang']),
                            errors='replace')
         # text/plain parts better have string payloads
-        assert isinstance(body, StringType) or isinstance(body, UnicodeType)
+        assert isinstance(body, str) or isinstance(body, bytes)
         lines = body.splitlines()
         # Use no more lines than specified
         self.commands.extend(lines[:mm_cfg.DEFAULT_MAIL_COMMANDS_MAX_LINES])

@@ -100,7 +100,7 @@ class Message(email.message.Message):
                 chunks = []
                 cchanged = 0
                 for s, charset in v._chunks:
-                    if isinstance(charset, StringType):
+                    if type(charset) == str:
                         charset = Charset(charset)
                         cchanged = 1
                     chunks.append((s, charset))

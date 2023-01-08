@@ -141,7 +141,7 @@ def ctime(date):
         ]
 
     tzname = _('Server Local Time')
-    if isinstance(date, StringType):
+    if isinstance(date, str):
         try:
             year, mon, day, hh, mm, ss, wday, ydat, dst = time.strptime(date)
             if dst in (0,1):

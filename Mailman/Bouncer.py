@@ -254,7 +254,7 @@ class Bouncer(object):
         umsg.set_type('multipart/mixed')
         umsg.attach(
             MIMEText(text, _charset=Utils.GetCharSet(self.preferred_language)))
-        if isinstance(msg, StringType):
+        if isinstance(msg, str):
             umsg.attach(MIMEText(msg))
         else:
             umsg.attach(MIMEMessage(msg))

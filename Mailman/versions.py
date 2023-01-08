@@ -374,7 +374,7 @@ def UpdateOldVars(l, stored_state):
         if k.lower() != k:
             l.members[k.lower()] = Utils.LCDomain(k)
             del l.members[k]
-        elif type(l.members[k]) == StringType and k == l.members[k].lower():
+        elif type(l.members[k]) == str and k == l.members[k].lower():
             # already converted
             pass
         else:
@@ -383,7 +383,7 @@ def UpdateOldVars(l, stored_state):
         if k.lower() != k:
             l.digest_members[k.lower()] = Utils.LCDomain(k)
             del l.digest_members[k]
-        elif type(l.digest_members[k]) == StringType and \
+        elif type(l.digest_members[k]) == str and \
                  k == l.digest_members[k].lower():
             # already converted
             pass
