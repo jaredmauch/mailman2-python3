@@ -139,12 +139,14 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Check reCAPTCHA submission, if enabled
     if mm_cfg.RECAPTCHA_SECRET_KEY:
-        request = urllib.request.Request(
-            url = 'https://www.google.com/recaptcha/api/siteverify',
-            data = urllib.parse.urlencode({
+        request_data = urllib.parse.urlencode({
                 'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
                 'response': cgidata.getvalue('g-recaptcha-response', ''),
-                'remoteip': remote}))
+                'remoteip': remote})
+        request_data = request_data.encode('utf-8')
+        request = urllib.request.Request(
+            url = 'https://www.google.com/recaptcha/api/siteverify',
+            data = request_data)
         try:
             httpresp = urllib.request.urlopen(request)
             captcha_response = json.load(httpresp)
@@ -175,11 +177,8 @@ def process_form(mlist, doc, cgidata, lang):
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
             then = 0
-        token = Utils.sha_new(mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
-                              ftime + ":" +
-                              fcaptcha_idx + ":" +
-                              mlist.internal_name() + ":" +
-                              remote1).hexdigest()
+        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx + ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
+        token = Utils.sha_new(needs_hashing).hexdigest()
         if ftime and now - then > mm_cfg.FORM_LIFETIME:
             results.append(_('The form is too old.  Please GET it again.'))
         if ftime and now - then < mm_cfg.SUBSCRIBE_FORM_MIN_TIME:

@@ -32,13 +32,15 @@ import time
 import errno
 import base64
 import random
-import urllib.request, urllib.parse, urllib.error
+import urllib
+import urllib.request, urllib.error
 import html.entities
 import html
 import email.header
 import email.iterators
 from email.errors import HeaderParseError
 from string import whitespace, digits
+from urllib.parse import urlparse
 try:
     # Python 2.2
     from string import ascii_letters
@@ -320,7 +322,7 @@ def ScriptURL(target, web_page_url=None, absolute=False):
     if fullpath is None:
         fullpath = os.environ.get('SCRIPT_NAME', '') + \
                    os.environ.get('PATH_INFO', '')
-    baseurl = urlparse.urlparse(web_page_url)[2]
+    baseurl = urlparse(web_page_url)[2]
     if not absolute and fullpath.startswith(baseurl):
         # Use relative addressing
         fullpath = fullpath[len(baseurl):]
@@ -498,8 +500,12 @@ def websafe(s, doubleescape=False):
     if doubleescape:
         return html.escape(s, quote=True)
     else:
+        if type(s) is bytes:
+            s = s.decode(errors='ignore')
+        re.sub('&', '&amp', s)
         # Don't double escape html entities
-        return _ampre.sub(r'&\1', html.escape(s, quote=True))
+        #return _ampre.sub(r'&\1', html.escape(s, quote=True))
+        return html.escape(s, quote=True)
 
 
 def nntpsplit(s):
@@ -785,7 +791,7 @@ def get_domain():
         # See the note in Defaults.py concerning DEFAULT_URL
         # vs. DEFAULT_URL_HOST.
         hostname = ((mm_cfg.DEFAULT_URL
-                     and urlparse.urlparse(mm_cfg.DEFAULT_URL)[1])
+                     and urllib.parse(mm_cfg.DEFAULT_URL)[1])
                      or mm_cfg.DEFAULT_URL_HOST)
         return hostname.lower()
 

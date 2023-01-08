@@ -374,6 +374,8 @@ class HTMLFormatter(object):
                 repl = replacements[tag]
                 if isinstance(repl, type(u'')):
                     repl = repl.encode(charset, 'replace')
+                if type(repl) is bytes:
+                    repl = repl.decode()
                 parts[i] = repl
             else:
                 parts[i] = ''

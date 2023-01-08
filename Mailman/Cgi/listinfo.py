@@ -88,7 +88,7 @@ def listinfo_overview(msg=''):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    legend = _("%(hostname)s Mailing Lists")
+    legend = (hostname + "s Mailing Lists")
     doc.SetTitle(legend)
 
     table = Table(border=0, width="100%")
