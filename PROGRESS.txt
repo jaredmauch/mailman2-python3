@@ -1,0 +1,18 @@
+BACKGROUND:
+  Many people are not ready or able to migrate easily from MM2 -> MM3
+  so this is a port of MM2 -> python3.  Expect things like localization
+  and international language support to not work as expected.  MM2
+  had it's own binary version of unicode support while python3 supports
+  this natively.  As e-mail is a lot of text so this means a lot of
+  minor touches.
+
+* Progress update - 20230109
+- I have it successfully reading and operating the user-inteface
+  for login, including the majority of the CLI based tools with
+  an existing set of lists.
+- It still will not properly update configuration files and state
+- There are many places where variables are used inline that may need
+  attention, i'm not very familar with the C_ methods, so someone
+  who knows more would be helpful here.
+
+NOTES: PULL REQUESTS WELCOME :-)
