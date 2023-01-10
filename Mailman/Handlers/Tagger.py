@@ -116,7 +116,7 @@ def scanbody(msg, numlines=None):
 
 
 
-class _ForgivingParser(email.Parser.HeaderParser):
+class _ForgivingParser(email.parser.HeaderParser):
     # Be a little more forgiving about non-header/continuation lines, since
     # we'll just read as much as we can from "header-like" lines in the body.
     #
