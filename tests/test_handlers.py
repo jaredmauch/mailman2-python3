@@ -27,7 +27,7 @@ import email
 import errno
 import pickle
 import unittest
-from email.Generator import Generator
+from email.generator import Generator
 try:
     from Mailman import __init__
 except ImportError:
