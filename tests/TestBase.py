@@ -16,9 +16,7 @@
 
 """Test base class which handles creating and deleting a test list.
 """
-from __future__ import print_function
 
-from future.utils import raise_
 import os
 import shutil
 import difflib
@@ -38,13 +36,13 @@ class TestBase(unittest.TestCase):
         # Python 2.2 and beyond
         def ndiffAssertEqual(self, first, second):
             """Like failUnlessEqual except use ndiff for readable output."""
-            if first != second:
+            if first <> second:
                 sfirst = str(first)
                 ssecond = str(second)
                 diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())
                 fp = StringIO()
-                print(NL, NL.join(diff), file=fp)
-raise_(self.failureException, fp.getvalue())
+                print >> fp, NL, NL.join(diff)
+                raise self.failureException, fp.getvalue()
     else:
         # Python 2.1
         ndiffAssertEqual = unittest.TestCase.assertEqual
