@@ -34,7 +34,7 @@ import getopt
 import paths
 
 # Import this after paths so we get Mailman's copy of the email package
-from email.Charset import Charset
+from email.charset import Charset
 
 from Mailman import mm_cfg
 from Mailman import Utils

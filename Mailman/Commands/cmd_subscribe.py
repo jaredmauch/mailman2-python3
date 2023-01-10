@@ -28,7 +28,7 @@
 """
 
 from email.utils import parseaddr
-from email.Header import decode_header, make_header
+from email.header import decode_header, make_header
 
 from Mailman import Utils
 from Mailman import Errors

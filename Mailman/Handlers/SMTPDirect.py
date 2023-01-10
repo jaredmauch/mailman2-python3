@@ -42,8 +42,8 @@ from Mailman.SafeDict import MsgSafeDict
 
 import email
 from email.utils import formataddr
-from email.Header import Header
-from email.Charset import Charset
+from email.header import Header
+from email.charset import Charset
 
 DOT = '.'
 
