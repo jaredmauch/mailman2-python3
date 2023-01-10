@@ -29,7 +29,7 @@ import errno
 import tempfile
 from os.path import splitext
 
-from email.Iterators import typed_subpart_iterator
+from email.iterators import typed_subpart_iterator
 
 from Mailman import mm_cfg
 from Mailman import Errors
