@@ -26,7 +26,6 @@ Note: This file only handles single threaded delivery.  See SMTPThreaded.py
 for a threaded implementation.
 """
 
-from past.builtins import cmp
 from builtins import object
 import copy
 import time
