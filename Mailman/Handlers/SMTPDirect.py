@@ -259,19 +259,6 @@ def process(mlist, msg, msgdata):
 
 
 
-def domsort(uida, uidb):
-	## sort by domain
-	## usage foo.sort(domsort)
-        i = uida.rfind('@')
-        if i >= 0:
-            doma = uida[i+1:]
-
-        i = uidb.rfind('@')
-        if i >= 0:
-            domb = uidb[i+1:]
-
-        return cmp(doma, domb)
-
 def chunkify(recips, chunksize):
     # First do a simple sort on top level domain.  It probably doesn't buy us
     # much to try to sort on MX record -- that's the MTA's job.  We're just
@@ -291,7 +278,6 @@ def chunkify(recips, chunksize):
     # Need to sort by domain name.  if we split to chunks it is possible
     # some well-known domains will be interspersed as we sort by
     # userid by default instead of by domain.  (jared mauch)
-    recips.sort(domsort)
     buckets = {}
     for r in recips:
         tld = None
