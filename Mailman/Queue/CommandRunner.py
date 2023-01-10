@@ -41,8 +41,8 @@ from Mailman import LockFile
 from email.header import decode_header, make_header, Header
 from email.errors import HeaderParseError
 from email.iterators import typed_subpart_iterator
-from email.mime.MIMEText import MIMEText
-from email.mime.MIMEMessage import MIMEMessage
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 
 NL = '\n'
 CONTINUE = 0

@@ -24,8 +24,8 @@ original message.
 
 import copy
 
-from email.mime.MIMEMessage import MIMEMessage
-from email.mime.MIMEText import MIMEText
+from email.mime.message import MIMEMessage
+from email.mime.text import MIMEText
 
 from Mailman import Utils
 
