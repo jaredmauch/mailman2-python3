@@ -29,8 +29,8 @@ message handling should stop.
 """
 
 import email
-from email.mime.MIMEText import MIMEText
-from email.mime.MIMEMessage import MIMEMessage
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 import email.utils
 
 from Mailman import mm_cfg
