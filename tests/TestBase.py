@@ -42,7 +42,7 @@ class TestBase(unittest.TestCase):
                 diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())
                 fp = StringIO()
                 print(NL, NL.join(diff), file=fp)
-                raise self.failureException, fp.getvalue()
+                raise (self.failureException, fp.getvalue())
     else:
         # Python 2.1
         ndiffAssertEqual = unittest.TestCase.assertEqual

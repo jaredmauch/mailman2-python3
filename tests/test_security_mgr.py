@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import unittest
 import errno
-import Cookie
+import http.cookies
 try:
     import crypt
 except ImportError:
