@@ -19,6 +19,8 @@
 """
 from __future__ import print_function
 
+from builtins import str
+from builtins import range
 import os
 import time
 import email
@@ -854,7 +856,7 @@ From: aperson@dom.ain
 
 """, Message.Message)
         CookHeaders.process(self._mlist, msg, {})
-        eq(unicode(msg['list-id']), 'A Test List <_xtest.dom.ain>')
+        eq(str(msg['list-id']), 'A Test List <_xtest.dom.ain>')
         eq(msg['list-help'], '<mailto:_xtest-request@dom.ain?subject=help>')
         eq(msg['list-unsubscribe'],
            '<http://www.dom.ain/mailman/options/_xtest>,'
@@ -1259,7 +1261,7 @@ From: aperson@dom.ain
             qfiles[to] = qmsg, qdata
         # BAW: We could be testing many other attributes of either the
         # messages or the metadata files...
-        keys = qfiles.keys()
+        keys = list(qfiles.keys())
         keys.sort()
         eq(keys, ['_xtest-owner@dom.ain', 'aperson@dom.ain'])
         # Get the pending cookie from the message to the sender
