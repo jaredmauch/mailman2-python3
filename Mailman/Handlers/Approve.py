@@ -27,7 +27,7 @@ from builtins import zip
 from builtins import range
 import re
 
-from email.Iterators import typed_subpart_iterator
+from email.iterators import typed_subpart_iterator
 
 from Mailman import mm_cfg
 from Mailman import Errors
