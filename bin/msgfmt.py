@@ -1,6 +1,7 @@
 #! /usr/bin/env python
+
 # -*- coding: iso-8859-1 -*-
-# Written by Martin v. Löwis <loewis@informatik.hu-berlin.de>
+# Written by Martin v. Loewis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
 
@@ -56,10 +57,12 @@ def add(id, str, fuzzy):
 def generate():
     "Return the generated output."
     global MESSAGES
+    keys = list(MESSAGES.keys())
     # the keys are sorted in the .mo file
+    keys.sort()
     offsets = []
     ids = strs = ''
-    for id in MESSAGES.keys():
+    for id in keys:
         # For each string, we need size and file offset.  Each string is NUL
         # terminated; the NUL does not count into the size.
         offsets.append((len(ids), len(id), len(strs), len(MESSAGES[id])))
@@ -87,9 +90,9 @@ def generate():
                          7*4,               # start of key index
                          7*4+len(keys)*8,   # start of value index
                          0, 0)              # size and offset of hash table
-    output += array.array("i", offsets).tostring()
-    output += ids
-    output += strs
+    output += array.array("i", offsets).tobytes()
+    output += bytes(ids, 'latin-1')
+    output += bytes(strs, 'latin-1')
     return output
 
 
