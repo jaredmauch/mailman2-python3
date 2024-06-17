@@ -2709,7 +2709,7 @@ printf %s "checking Japanese codecs... " >&6; }
 
 cat > conftest.py <<EOF
 try:
-    str('OK', 'iso-2022-jp')
+    str('OK').encode('iso-2022-jp')
 except LookupError:
     res = "not ok"
 else:
@@ -2740,7 +2740,7 @@ printf %s "checking Korean codecs... " >&6; }
 
 cat > conftest.py <<EOF
 try:
-    str('OK', 'euc-kr')
+    str('OK').encode('euc-kr')
 except LookupError:
     res = "not ok"
 else:
