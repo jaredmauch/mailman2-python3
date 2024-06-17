@@ -164,7 +164,7 @@ def main():
     if len(args) > 0:
         listname = args[0]
     else:
-        listname = raw_input('Enter the name of the list: ')
+        listname = input('Enter the name of the list: ')
     listname = listname.lower()
 
     if '@' in listname:
@@ -184,7 +184,7 @@ def main():
     if len(args) > 1:
         owner_mail = args[1]
     else:
-        owner_mail = raw_input(
+        owner_mail = input(
             C_('Enter the email of the person running the list: '))
 
     if len(args) > 2:
