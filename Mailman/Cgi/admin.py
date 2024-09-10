@@ -17,11 +17,10 @@
 
 """Process and produce the list-administration options forms."""
 
-# For Python 2.1.x compatibility
-from __future__ import nested_scopes
-from __future__ import print_function
+def cmp(a, b):
+    return (a > b) - (a < b)
 
-from past.builtins import cmp
+#from future.builtins import cmp
 import sys
 import os
 import re
