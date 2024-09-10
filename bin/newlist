@@ -198,7 +198,7 @@ def main():
 
     mlist = MailList.MailList()
     try:
-        pw = Utils.sha_new(listpasswd).hexdigest()
+        pw = Utils.sha_new(listpasswd.encode()).hexdigest()
         # Guarantee that all newly created files have the proper permission.
         # proper group ownership should be assured by the autoconf script
         # enforcing that all directories have the group sticky bit set
