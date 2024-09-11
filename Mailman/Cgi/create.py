@@ -113,14 +113,14 @@ def process_request(doc, cgidata):
     safelistname = Utils.websafe(listname)
     if '@' in listname:
         request_creation(doc, cgidata,
-                         _('List name must not include "@": %(safelistname)s'))
+                         _('List name must not include "@": {safelistname}'))
         return
     if Utils.list_exists(listname):
         # BAW: should we tell them the list already exists?  This could be
         # used to mine/guess the existance of non-advertised lists.  Then
         # again, that can be done in other ways already, so oh well.
         request_creation(doc, cgidata,
-                         _('List already exists: %(safelistname)s'))
+                         _('List already exists: {safelistname}'))
         return
     if not listname:
         request_creation(doc, cgidata,
@@ -135,7 +135,7 @@ def process_request(doc, cgidata):
         if password or confirm:
             request_creation(
                 doc, cgidata,
-                _('''Leave the initial password (and confirmation) fields
+                _(f'''Leave the initial password (and confirmation) fields
                 blank if you want Mailman to autogenerate the list
                 passwords.'''))
             return
@@ -180,7 +180,7 @@ def process_request(doc, cgidata):
            hostname not in mm_cfg.VIRTUAL_HOSTS:
         safehostname = Utils.websafe(hostname)
         request_creation(doc, cgidata,
-                         _('Unknown virtual host: %(safehostname)s'))
+                         _('Unknown virtual host: {safehostname}'))
         return
     emailhost = mm_cfg.VIRTUAL_HOSTS.get(hostname, mm_cfg.DEFAULT_EMAIL_HOST)
     # We've got all the data we need, so go ahead and try to create the list
@@ -216,12 +216,12 @@ def process_request(doc, cgidata):
             else:
                 s = Utils.websafe(owner)
             request_creation(doc, cgidata,
-                             _('Bad owner email address: %(s)s'))
+                             _('Bad owner email address: {s}'))
             return
         except Errors.MMListAlreadyExistsError:
             # MAS: List already exists so we don't need to websafe it.
             request_creation(doc, cgidata,
-                             _('List already exists: %(listname)s'))
+                             _('List already exists: {listname}'))
             return
         except Errors.BadListNameError as e:
             if e.args:
@@ -229,12 +229,12 @@ def process_request(doc, cgidata):
             else:
                 s = Utils.websafe(listname)
             request_creation(doc, cgidata,
-                             _('Illegal list name: %(s)s'))
+                             _('Illegal list name: {s}'))
             return
         except Errors.MMListError:
             request_creation(
                 doc, cgidata,
-                _('''Some unknown error occurred while creating the list.
+                _(f'''Some unknown error occurred while creating the list.
                 Please contact the site administrator for assistance.'''))
             return
 
@@ -271,7 +271,7 @@ def process_request(doc, cgidata):
              }, mlist=mlist)
         msg = Message.UserNotification(
             owner, siteowner,
-            _('Your new mailing list: %(listname)s'),
+            _('Your new mailing list: {listname}'),
             text, mlist.preferred_language)
         msg.send(mlist)
 
@@ -286,9 +286,9 @@ def process_request(doc, cgidata):
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
-    table.AddRow([_('''You have successfully created the mailing list
-    <b>%(listname)s</b> and notification has been sent to the list owner
-    <b>%(owner)s</b>.  You can now:''')])
+    table.AddRow([_(f'''You have successfully created the mailing list
+    <b>{listname}</b> and notification has been sent to the list owner
+    <b>{owner}</b>.  You can now:''')])
     ullist = UnorderedList()
     ullist.AddItem(Link(listinfo_url, _("Visit the list's info page")))
     ullist.AddItem(Link(admin_url, _("Visit the list's admin page")))
@@ -310,7 +310,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
     # Set up the document
-    title = _('Create a %(hostname)s Mailing List')
+    title = _('Create a {hostname} Mailing List')
     doc.SetTitle(title)
     table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
@@ -321,7 +321,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
         table.AddRow([Header(3, Bold(
             FontAttr(_('Error: '), color='#ff0000', size='+2').Format() +
             Italic(errmsg).Format()))])
-    table.AddRow([_("""You can create a new mailing list by entering the
+    table.AddRow([_(f"""You can create a new mailing list by entering the
     relevant information into the form below.  The name of the mailing list
     will be used as the primary address for posting messages to the list, so
     it should be lowercased.  You will not be able to change this once the
@@ -401,7 +401,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
 
     ftable.AddRow([
-        Label(_("""Should new members be quarantined before they
+        Label(_(f"""Should new members be quarantined before they
     are allowed to post unmoderated to this list?  Answer <em>Yes</em> to hold
     new member postings for moderator approval by default.""")),
         RadioButtonArray('moderate', (_('No'), _('Yes')),
@@ -433,7 +433,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddRow([Label(_(
         '''Initial list of supported languages.  <p>Note that if you do not
         select at least one initial language, the list will use the server
-        default language of %(deflang)s''')),
+        default language of {deflang}''')),
                    CheckBoxArray('langs',
                                  [_(Utils.GetLanguageDescr(L)) for L in langs],
                                  checked=checked,

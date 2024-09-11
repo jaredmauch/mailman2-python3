@@ -54,7 +54,7 @@ def main():
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        listinfo_overview(_('No such list <em>%(safelistname)s</em>'))
+        listinfo_overview(_('No such list <em>{safelistname}</em>'))
         syslog('error', 'listinfo: No such list "%s": %s', listname, e)
         return
 
@@ -126,12 +126,12 @@ def listinfo_overview(msg=''):
     mailmanlink = Link(mm_cfg.MAILMAN_URL, _('Mailman')).Format()
     if not advertised:
         welcome.extend(
-            _('''<p>There currently are no publicly-advertised
-            %(mailmanlink)s mailing lists on %(hostname)s.'''))
+            _(f'''<p>There currently are no publicly-advertised
+            {mailmanlink} mailing lists on {hostname}.'''))
     else:
         welcome.append(
-            _('''<p>Below is a listing of all the public mailing lists on
-            %(hostname)s.  Click on a list name to get more information about
+            _(f'''<p>Below is a listing of all the public mailing lists on
+            {hostname}.  Click on a list name to get more information about
             the list, or to subscribe, unsubscribe, and change the preferences
             on your subscription.'''))
 
@@ -139,13 +139,13 @@ def listinfo_overview(msg=''):
     adj = msg and _('right') or ''
     siteowner = Utils.get_site_email()
     welcome.extend(
-        (_(''' To visit the general information page for an unadvertised list,
-        open a URL similar to this one, but with a '/' and the %(adj)s
+        (_(f''' To visit the general information page for an unadvertised list,
+        open a URL similar to this one, but with a '/' and the {adj}
         list name appended.
         <p>List administrators, you can visit '''),
          Link(Utils.ScriptURL('admin'),
               _('the list admin overview page')),
-         _(''' to find the management interface for your list.
+         _(f''' to find the management interface for your list.
          <p>If you are having trouble using the lists, please contact '''),
          Link('mailto:' + siteowner, siteowner),
          '.<p>'))

@@ -62,7 +62,7 @@ def main():
         title = _('CGI script error')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.addError(_('Invalid request method: %(method)s'))
+        doc.addError(_('Invalid request method: {method}'))
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
         print('Status: 405 Method Not Allowed')
@@ -92,7 +92,7 @@ def main():
         title = _('CGI script error')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.addError(_('No such list <em>%(safelistname)s</em>'))
+        doc.addError(_('No such list <em>{safelistname}</em>'))
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
         # Send this with a 404 status.
@@ -165,7 +165,7 @@ def main():
     # using public rosters, otherwise, we'll leak membership information.
     if not mlist.isMember(user):
         if mlist.private_roster == 0:
-            doc.addError(_('No such member: %(safeuser)s.'))
+            doc.addError(_('No such member: {safeuser}.'))
             loginpage(mlist, doc, None, language)
             print(doc.Format())
         return
@@ -203,7 +203,7 @@ def main():
     # Are we processing an unsubscription request from the login screen?
     msgc = _('If you are a list member, a confirmation email has been sent.')
     msgb = _('You already have a subscription pending confirmation')
-    msga = _("""If you are a list member, your unsubscription request has been
+    msga = _(f"""If you are a list member, your unsubscription request has been
              forwarded to the list administrator for approval.""")
     if 'login-unsub' in cgidata:
         # Because they can't supply a password for unsubscribing, we'll need
@@ -233,7 +233,7 @@ def main():
             # Not a member
             if mlist.private_roster == 0:
                 # Public rosters
-                doc.addError(_('No such member: %(safeuser)s.'))
+                doc.addError(_('No such member: {safeuser}.'))
             else:
                 syslog('mischief',
                        'Unsub attempt of non-member w/ private rosters: %s',
@@ -247,7 +247,7 @@ def main():
         return
 
     # Are we processing a password reminder from the login screen?
-    msg = _("""If you are a list member,
+    msg = _(f"""If you are a list member,
             your password has been emailed to you.""")
     if 'login-remind' in cgidata:
         if mlist.isMember(user):
@@ -257,7 +257,7 @@ def main():
             # Not a member
             if mlist.private_roster == 0:
                 # Public rosters
-                doc.addError(_('No such member: %(safeuser)s.'))
+                doc.addError(_('No such member: {safeuser}.'))
             else:
                 syslog('mischief',
                        'Reminder attempt of non-member w/ private rosters: %s',
@@ -367,16 +367,16 @@ def main():
     if 'othersubs' in cgidata:
         # Only the user or site administrator can view all subscriptions.
         if not is_user_or_siteadmin:
-            doc.addError(_("""The list administrator may not view the other
+            doc.addError(_(f"""The list administrator may not view the other
             subscriptions for this user."""), _('Note: '))
             options_page(mlist, doc, user, cpuser, userlang)
             print(doc.Format())
             return
         hostname = mlist.host_name
-        title = _('List subscriptions for %(safeuser)s on %(hostname)s')
+        title = _('List subscriptions for {safeuser} on {hostname}')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.AddItem(_('''Click on a link to visit your options page for the
+        doc.AddItem(_(f'''Click on a link to visit your options page for the
         requested mailing list.'''))
 
         # Troll through all the mailing lists that match host_name and see if
@@ -414,7 +414,7 @@ def main():
         # list admin is /not/ allowed to make global changes.
         globally = cgidata.getfirst('changeaddr-globally')
         if globally and not is_user_or_siteadmin:
-            doc.addError(_("""The list administrator may not change the names
+            doc.addError(_(f"""The list administrator may not change the names
             or addresses for this user's other subscriptions.  However, the
             subscription for this mailing list has been changed."""),
                          _('Note: '))
@@ -454,16 +454,16 @@ def main():
                 safenewaddr = Utils.websafe(newaddr)
                 if globally:
                     listname = mlist.real_name
-                    msg += _("""\
-The new address you requested %(newaddr)s is already a member of the
-%(listname)s mailing list, however you have also requested a global change of
+                    msg += _(f"""\
+The new address you requested {newaddr} is already a member of the
+{listname} mailing list, however you have also requested a global change of
 address.  Upon confirmation, any other mailing list containing the address
-%(safeuser)s will be changed. """)
+{safeuser} will be changed. """)
                     # Don't return
                 else:
                     options_page(
                         mlist, doc, user, cpuser, userlang,
-                        _('The new address is already a member: %(newaddr)s'))
+                        _('The new address is already a member: {newaddr}'))
                     print(doc.Format())
                     return
             set_address = 1
@@ -483,7 +483,7 @@ address.  Upon confirmation, any other mailing list containing the address
             if cpuser is None:
                 cpuser = user
             # Register the pending change after the list is locked
-            msg += _('A confirmation message has been sent to %(newaddr)s. ')
+            msg += _('A confirmation message has been sent to {newaddr}. ')
             mlist.Lock()
             try:
                 try:
@@ -496,12 +496,12 @@ address.  Upon confirmation, any other mailing list containing the address
             except Errors.MMHostileAddress:
                 msg = _('Illegal email address provided')
             except Errors.MMAlreadyAMember:
-                msg = _('%(newaddr)s is already a member of the list.')
+                msg = _('{newaddr} is already a member of the list.')
             except Errors.MembershipIsBanned:
                 owneraddr = mlist.GetOwnerEmail()
-                msg = _("""%(newaddr)s is banned from this list.  If you
+                msg = _(f"""{newaddr} is banned from this list.  If you
                       think this restriction is erroneous, please contact
-                      the list owners at %(owneraddr)s.""")
+                      the list owners at {owneraddr}.""")
 
         if set_membername:
             mlist.Lock()
@@ -520,7 +520,7 @@ address.  Upon confirmation, any other mailing list containing the address
         # Is this list admin and is list admin allowed to change passwords.
         if not (is_user_or_siteadmin
                 or mm_cfg.OWNERS_CAN_CHANGE_MEMBER_PASSWORDS):
-            doc.addError(_("""The list administrator may not change the
+            doc.addError(_(f"""The list administrator may not change the
                     password for a user."""))
             options_page(mlist, doc, user, cpuser, userlang)
             print(doc.Format())
@@ -542,7 +542,7 @@ address.  Upon confirmation, any other mailing list containing the address
         # the list admin is /not/ allowed to change passwords globally.
         pw_globally = cgidata.getfirst('pw-globally')
         if pw_globally and not is_user_or_siteadmin:
-            doc.addError(_("""The list administrator may not change the
+            doc.addError(_(f"""The list administrator may not change the
             password for this user's other subscriptions.  However, the
             password for this mailing list has been changed."""),
                          _('Note: '))
@@ -568,7 +568,7 @@ address.  Upon confirmation, any other mailing list containing the address
         if not cgidata.getfirst('unsubconfirm'):
             options_page(
                 mlist, doc, user, cpuser, userlang,
-                _('''You must confirm your unsubscription request by turning
+                _(f'''You must confirm your unsubscription request by turning
                 on the checkbox below the <em>Unsubscribe</em> button.  You
                 have not been unsubscribed!'''))
             print(doc.Format())
@@ -613,16 +613,16 @@ address.  Upon confirmation, any other mailing list containing the address
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
         if needapproval:
-            doc.AddItem(_("""Your unsubscription request has been received and
+            doc.AddItem(_(f"""Your unsubscription request has been received and
             forwarded on to the list moderators for approval.  You will
             receive notification once the list moderators have made their
             decision."""))
         else:
-            doc.AddItem(_("""You have been successfully unsubscribed from the
-            mailing list %(fqdn_listname)s.  If you were receiving digest
+            doc.AddItem(_(f"""You have been successfully unsubscribed from the
+            mailing list {fqdn_listname}.  If you were receiving digest
             deliveries you may get one more digest.  If you have any questions
             about your unsubscription, please contact the list owners at
-            %(owneraddr)s."""))
+            {owneraddr}."""))
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
         return
@@ -767,7 +767,7 @@ address.  Upon confirmation, any other mailing list containing the address
         # /not/ if this is the list admin.
         if globalopts:
             if not is_user_or_siteadmin:
-                doc.addError(_("""The list administrator may not change the
+                doc.addError(_(f"""The list administrator may not change the
                 options for this user's other subscriptions.  However the
                 options for this mailing list subscription has been
                 changed."""), _('Note: '))
@@ -777,11 +777,11 @@ address.  Upon confirmation, any other mailing list containing the address
 
         # Now print the results
         if cantdigest:
-            msg = _('''The list administrator has disabled digest delivery for
+            msg = _(f'''The list administrator has disabled digest delivery for
             this list, so your delivery option has not been set.  However your
             other options have been set successfully.''')
         elif mustdigest:
-            msg = _('''The list administrator has disabled non-digest delivery
+            msg = _(f'''The list administrator has disabled non-digest delivery
             for this list, so your delivery option has not been set.  However
             your other options have been set successfully.''')
         else:
@@ -896,7 +896,7 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
         units = _('days')
     else:
         units = _('day')
-    replacements['<mm-pending-days>'] = _('%(days)d %(units)s')
+    replacements['<mm-pending-days>'] = _('%(days)d {units}')
 
     replacements['<mm-new-address-box>'] = mlist.FormatBox('new-address')
     replacements['<mm-confirm-address-box>'] = mlist.FormatBox(
@@ -936,9 +936,9 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
         mlist.FormatOptionButton(mm_cfg.ReceiveNonmatchingTopics, 1, user))
 
     if cpuser is not None:
-        replacements['<mm-case-preserved-user>'] = _('''
+        replacements['<mm-case-preserved-user>'] = _(f'''
 You are subscribed to this list with the case-preserved address
-<em>%(cpuser)s</em>.''')
+<em>{cpuser}</em>.''')
     else:
         replacements['<mm-case-preserved-user>'] = ''
 
@@ -952,11 +952,11 @@ def loginpage(mlist, doc, user, lang):
     realname = mlist.real_name
     actionurl = mlist.GetScriptURL('options')
     if user is None:
-        title = _('%(realname)s list: member options login page')
+        title = _('{realname} list: member options login page')
         extra = _('email address and ')
     else:
         safeuser = Utils.websafe(user)
-        title = _('%(realname)s list: member options for user %(safeuser)s')
+        title = _('{realname} list: member options for user {safeuser}')
         obuser = Utils.ObscureEmail(user)
         extra = ''
     # Set up the title
@@ -982,8 +982,8 @@ def loginpage(mlist, doc, user, lang):
     form = Form(actionurl)
     form.AddItem(Hidden('language', lang))
     table = Table(width='100%', border=0, cellspacing=4, cellpadding=5)
-    table.AddRow([_("""In order to change your membership option, you must
-    first log in by giving your %(extra)smembership password in the section
+    table.AddRow([_(f"""In order to change your membership option, you must
+    first log in by giving your {extra}membership password in the section
     below.  If you don't remember your membership password, you can have it
     emailed to you by clicking on the button below.  If you just want to
     unsubscribe from this list, click on the <em>Unsubscribe</em> button and a
@@ -1010,7 +1010,7 @@ def loginpage(mlist, doc, user, lang):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
 
-    table.AddRow([_("""By clicking on the <em>Unsubscribe</em> button, a
+    table.AddRow([_(f"""By clicking on the <em>Unsubscribe</em> button, a
     confirmation message will be emailed to you.  This message will have a
     link that you should click on to complete the removal process (you can
     also confirm by email; see the instructions in the confirmation
@@ -1022,7 +1022,7 @@ def loginpage(mlist, doc, user, lang):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
 
-    table.AddRow([_("""By clicking on the <em>Remind</em> button, your
+    table.AddRow([_(f"""By clicking on the <em>Remind</em> button, your
     password will be emailed to you.""")])
 
     table.AddRow([Center(SubmitButton('login-remind', _('Remind')))])
@@ -1136,7 +1136,7 @@ def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
 
     if not name:
         options_page(mlist, doc, user, cpuser, userlang,
-                     _('Requested topic is not valid: %(topicname)s'))
+                     _('Requested topic is not valid: {topicname}'))
         print(doc.Format())
         return
 
