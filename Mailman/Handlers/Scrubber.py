@@ -206,7 +206,7 @@ An embedded and charset-unspecified text was scrubbed...
 Name: %(filename)s
 URL: %(url)s
 """), lcset)
-        elif ctype == 'text/html' and isinstance(sanitize, IntType):
+        elif ctype == 'text/html' and isinstance(sanitize, int):
             if sanitize == 0:
                 if outer:
                     raise DiscardMessage

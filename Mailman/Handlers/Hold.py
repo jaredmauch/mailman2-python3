@@ -29,6 +29,7 @@ message handling should stop.
 """
 
 import email
+from email.parser import Parser
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 import email.utils
@@ -173,7 +174,7 @@ def process(mlist, msg, msgdata):
     # Is the message too big?
     if mlist.max_message_size > 0:
         bodylen = 0
-        for line in email.Iterators.body_line_iterator(msg):
+        for line in msg.get_payload(decode=True).splitlines():
             bodylen += len(line)
         for part in msg.walk():
             if part.preamble:

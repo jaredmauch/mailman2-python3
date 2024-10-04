@@ -48,7 +48,7 @@ class HTMLFormatter(object):
         hostname = self.host_name
         listinfo_link  = Link(self.GetScriptURL('listinfo'), realname).Format()
         owner_link = Link('mailto:' + self.GetOwnerEmail(), ownertext).Format()
-        innertext = _('%(listinfo_link)s list run by %(owner_link)s')
+        innertext = _(f'{listinfo_link} list run by {owner_link}')
         return Container(
             '<hr>',
             Address(
@@ -56,11 +56,11 @@ class HTMLFormatter(object):
                    innertext,
                     '<br>',
                     Link(self.GetScriptURL('admin'),
-                         _('%(realname)s administrative interface')),
+                        _(f'{realname} administrative interface')),
                     _(' (requires authorization)'),
                     '<br>',
                     Link(Utils.ScriptURL('listinfo'),
-                         _('Overview of all %(hostname)s mailing lists')),
+                        _(f'Overview of all {hostname} mailing lists')),
                     '<p>', MailmanLogo()))).Format()
 
     def FormatUsers(self, digest, lang=None, list_hidden=False):
@@ -207,13 +207,13 @@ class HTMLFormatter(object):
         if msg:
             msg += ' '
         if self.private_roster == 1:
-            msg += _('''This is %(also)sa private list, which means that the
+            msg += _(f'''This is {also}a private list, which means that the
             list of members is not available to non-members.''')
         elif self.private_roster:
-            msg += _('''This is %(also)sa hidden list, which means that the
+            msg += _(f'''This is {also}a hidden list, which means that the
             list of members is available only to the list administrator.''')
         else:
-            msg += _('''This is %(also)sa public list, which means that the
+            msg += _(f'''This is {also}a public list, which means that the
             list of members list is available to everyone.''')
             if self.obscure_addresses:
                 msg += _(''' (but we obscure the addresses so they are not
@@ -221,10 +221,10 @@ class HTMLFormatter(object):
 
         if self.umbrella_list:
             sfx = self.umbrella_member_suffix
-            msg += _("""<p>(Note that this is an umbrella list, intended to
+            msg += _(f"""<p>(Note that this is an umbrella list, intended to
             have only other mailing lists as members.  Among other things,
             this means that your confirmation request will be sent to the
-            `%(sfx)s' account for your address.)""")
+            `{sfx}' account for your address.)""")
         return msg
 
     def FormatUndigestButton(self):
@@ -255,8 +255,8 @@ class HTMLFormatter(object):
             either = ''
         realname = self.real_name
 
-        text = (_('''To unsubscribe from %(realname)s, get a password reminder,
-        or change your subscription options %(either)senter your subscription
+        text = (_(f'''To unsubscribe from {realname}, get a password reminder,
+        or change your subscription options {either}enter your subscription
         email address:
         <p><center> ''')
                 + TextBox('email', size=30).Format()
@@ -277,10 +277,10 @@ class HTMLFormatter(object):
             return ''
         elif restriction == 1:
             return _(
-                '''(<i>%(which)s is only available to the list
+                f'''(<i>{which} is only available to the list
                 members.</i>)''')
         else:
-            return _('''(<i>%(which)s is only available to the list
+            return _(f'''(<i>{which} is only available to the list
             administrator.</i>)''')
 
     def FormatRosterOptionForUser(self, lang):

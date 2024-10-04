@@ -69,7 +69,7 @@ class Pending(object):
         while True:
             now = time.time()
             x = random.random() + now % 1.0 + time.clock() % 1.0
-            cookie = sha_new(repr(x)).hexdigest()
+            cookie = sha_new(repr(x).encode()).hexdigest()
             # We'll never get a duplicate, but we'll be anal about checking
             # anyway.
             if cookie not in db:
@@ -84,7 +84,7 @@ class Pending(object):
 
     def __load(self):
         try:
-            fp = open(self.__pendfile)
+            fp = open(self.__pendfile, 'rb')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             return {'evictions': {}}
@@ -112,7 +112,7 @@ class Pending(object):
         tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
         omask = os.umask(0o007)
         try:
-            fp = open(tmpfile, 'w')
+            fp = open(tmpfile, 'wb')
             try:
                 pickle.dump(db, fp)
                 fp.flush()

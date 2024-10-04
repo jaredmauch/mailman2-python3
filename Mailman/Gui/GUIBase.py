@@ -61,7 +61,7 @@ class GUIBase:
         if wtype in (mm_cfg.EmailList, mm_cfg.EmailListEx):
             # BAW: value might already be a list, if this is coming from
             # config_list input.  Sigh.
-            if isinstance(val, ListType):
+            if isinstance(val, list):
                 return val
             addrs = []
             bad_addrs = []
@@ -124,7 +124,7 @@ class GUIBase:
         # Checkboxes return a list of the selected items, even if only one is
         # selected.
         if wtype == mm_cfg.Checkbox:
-            if isinstance(val, ListType):
+            if isinstance(val, list):
                 return val
             return [val]
         if wtype == mm_cfg.FileUpload:
@@ -162,7 +162,7 @@ class GUIBase:
                 val = cgidata[uploadprop].value
             elif property not in cgidata:
                 continue
-            elif isinstance(cgidata[property], ListType):
+            elif isinstance(cgidata[property], list):
                 val = [x.value for x in cgidata[property]]
             else:
                 val = cgidata[property].value

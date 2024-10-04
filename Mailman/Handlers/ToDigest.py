@@ -79,37 +79,36 @@ def process(mlist, msg, msgdata):
     mboxfile = os.path.join(mlist.fullpath(), 'digest.mbox')
     omask = os.umask(0o007)
     try:
-        mboxfp = open(mboxfile, 'a+')
+        with open(mboxfile, 'a+b') as mboxfp:
+            mbox = Mailbox(mboxfp.name)
+            mbox.AppendMessage(msg)
+            # Calculate the current size of the accumulation file.  This will not tell
+            # us exactly how big the MIME, rfc1153, or any other generated digest
+            # message will be, but it's the most easily available metric to decide
+            # whether the size threshold has been reached.
+            mboxfp.flush()
+            size = os.path.getsize(mboxfile)
+            if (mlist.digest_size_threshhold > 0 and
+                size / 1024.0 >= mlist.digest_size_threshhold):
+                # This is a bit of a kludge to get the mbox file moved to the digest
+                # queue directory.
+                try:
+                    # Enclose in try/except here because a error in send_digest() can
+                    # silently stop regular delivery.  Unsuccessful digest delivery
+                    # should be tried again by cron and the site administrator will be
+                    # notified of any error explicitly by the cron error message.
+                    mboxfp.seek(0)
+                    send_digests(mlist, mboxfp)
+                    os.unlink(mboxfile)
+                except Exception as errmsg:
+                    # Bare except is generally prohibited in Mailman, but we can't
+                    # forecast what exceptions can occur here.
+                    syslog('error', 'send_digests() failed: %s', errmsg)
+                    s = StringIO()
+                    traceback.print_exc(file=s)
+                    syslog('error', s.getvalue())
     finally:
         os.umask(omask)
-    mbox = Mailbox(mboxfp)
-    mbox.AppendMessage(msg)
-    # Calculate the current size of the accumulation file.  This will not tell
-    # us exactly how big the MIME, rfc1153, or any other generated digest
-    # message will be, but it's the most easily available metric to decide
-    # whether the size threshold has been reached.
-    mboxfp.flush()
-    size = os.path.getsize(mboxfile)
-    if (mlist.digest_size_threshhold > 0 and
-        size / 1024.0 >= mlist.digest_size_threshhold):
-        # This is a bit of a kludge to get the mbox file moved to the digest
-        # queue directory.
-        try:
-            # Enclose in try/except here because a error in send_digest() can
-            # silently stop regular delivery.  Unsuccessful digest delivery
-            # should be tried again by cron and the site administrator will be
-            # notified of any error explicitly by the cron error message.
-            mboxfp.seek(0)
-            send_digests(mlist, mboxfp)
-            os.unlink(mboxfile)
-        except Exception as errmsg:
-            # Bare except is generally prohibited in Mailman, but we can't
-            # forecast what exceptions can occur here.
-            syslog('error', 'send_digests() failed: %s', errmsg)
-            s = StringIO()
-            traceback.print_exc(file=s)
-            syslog('error', s.getvalue())
-    mboxfp.close()
 
 
 
@@ -251,7 +250,7 @@ def send_i18n_digests(mlist, mboxfp):
         username = ''
         addresses = getaddresses([Utils.oneline(msg.get('from', ''), lcset)])
         # Take only the first author we find
-        if isinstance(addresses, ListType) and addresses:
+        if isinstance(addresses, list) and addresses:
             username = addresses[0][0]
             if not username:
                 username = addresses[0][1]

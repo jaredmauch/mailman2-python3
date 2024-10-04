@@ -47,24 +47,8 @@ class Mailbox(mailbox.mbox):
     def AppendMessage(self, msg):
         # Check the last character of the file and write a newline if it isn't
         # a newline (but not at the beginning of an empty file).
-        try:
-            self.fp.seek(-1, 2)
-        except IOError as e:
-            # Assume the file is empty.  We can't portably test the error code
-            # returned, since it differs per platform.
-            pass
-        else:
-            if self.fp.read(1) != '\n':
-                self.fp.write('\n')
-        # Seek to the last char of the mailbox
-        self.fp.seek(0, 2)
-        # Create a Generator instance to write the message to the file
-        g = Generator(self.fp)
-        g.flatten(msg, unixfrom=True)
-        # Add one more trailing newline for separation with the next message
-        # to be appended to the mbox.
-        print(file=self.fp)
-
+        self.add(msg)
+        self.flush()
 
 
 # This stuff is used by pipermail.py:processUnixMailbox().  It provides an

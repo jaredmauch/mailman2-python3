@@ -50,7 +50,7 @@ def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     # us-ascii then we use iso-8859-1 instead. If the string is ascii only
     # we use 'us-ascii' if another charset is specified.
     charset = Utils.GetCharSet(mlist.preferred_language)
-    if nonascii.search(s):
+    if nonascii.search(s.decode()):
         # use list charset but ...
         if charset == 'us-ascii':
             charset = 'iso-8859-1'
@@ -392,7 +392,7 @@ def prefix_subject(mlist, msg, msgdata):
     # range.  It is safe to use unicode string when manupilating header
     # contents with re module.  It would be best to return unicode in
     # ch_oneline() but here is temporary solution.
-    subject = str(subject, cset)
+    subject = subject.__str__() #TODO will this break some encodings?
     # If the subject_prefix contains '%d', it is replaced with the
     # mailing list sequential number.  Sequential number format allows
     # '%d' or '%05d' like pattern.
@@ -498,9 +498,8 @@ def ch_oneline(headerstr):
                 cset = x[1]
                 break
         h = make_header(d)
-        ustr = h.__unicode__()
-        oneline = u''.join(ustr.splitlines())
-        return oneline.encode(cset, 'replace'), cset
+        ustr = h
+        return ustr, cset
     except (LookupError, UnicodeError, ValueError, HeaderParseError):
         # possibly charset problem. return with undecoded string in one line.
         return ''.join(headerstr.splitlines()), 'us-ascii'

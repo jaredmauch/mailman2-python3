@@ -841,6 +841,8 @@ def midnight(date=None):
 
 def to_dollar(s):
     """Convert from %-strings to $-strings."""
+    if isinstance(s, bytes):
+        s = s.decode()
     s = s.replace('$', '$$').replace('%%', '%')
     parts = cre.split(s)
     for i in range(1, len(parts), 2):
@@ -876,6 +878,8 @@ def dollar_identifiers(s):
 def percent_identifiers(s):
     """Return the set (dictionary) of identifiers found in a %-string."""
     d = {}
+    if isinstance(s, bytes):
+        s = s.decode()
     for name in cre.findall(s):
         d[name] = True
     return d
@@ -1517,7 +1521,7 @@ def xml_to_unicode(s, cset):
     similar to canonstr above except for replacing invalid refs with the
     unicode replace character and recognizing \\u escapes.
     """
-    if isinstance(s, str):
+    if isinstance(s, bytes):
         us = s.decode(cset, 'replace')
         us = re.sub(u'&(#[0-9]+);', _invert_xml, us)
         us = re.sub(u'(?i)\\\\(u[a-f0-9]{4})', _invert_xml, us)
