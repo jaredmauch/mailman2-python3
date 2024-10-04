@@ -38,7 +38,7 @@ COMMASPACE = ', '
 if hasattr(email, '__version__'):
     mo = re.match(r'([\d.]+)', email.__version__)
 else:
-    mo = re.match(r'([\d.]+)', '2.1.39') # XXX should use @@MM_VERSION@@ perhaps?
+    mo = re.match(r'([\d.]+)', '2.2.0') # XXX should use @@MM_VERSION@@ perhaps?
 VERSION = tuple([int(s) for s in mo.group().split('.')])
 
 
