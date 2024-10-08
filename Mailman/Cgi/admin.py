@@ -260,7 +260,7 @@ def admin_overview(msg=''):
     # This page should be displayed in the server's default language, which
     # should have already been set.
     hostname = Utils.get_domain()
-    legend = _(f'{hostname} mailing lists - Admin Links')
+    legend = _(f"{hostname} mailing lists - Admin Links")
     # The html `document'
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)

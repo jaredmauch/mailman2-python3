@@ -310,7 +310,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
     # Set up the document
-    title = _('Create a {hostname} Mailing List')
+    title = _(f"Create a {hostname} Mailing List")
     doc.SetTitle(title)
     table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])

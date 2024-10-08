@@ -17,9 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Create a new, unpopulated mailing list.
+f"""Create a new, unpopulated mailing list.
 
-Usage: %(PROGRAM)s [options] [listname [listadmin-addr [admin-password]]]
+Usage: %(PROGRAM) [options] [listname [listadmin-addr [admin-password]]]
 
 Options:
 
@@ -159,7 +159,7 @@ def main():
 
     # Is the language known?
     if lang not in mm_cfg.LC_DESCRIPTIONS.keys():
-        usage(1, C_('Unknown language: %(lang)s'))
+        usage(1, C_(f'Unknown language: {lang}'))
 
     if len(args) > 0:
         listname = args[0]
@@ -179,7 +179,7 @@ def main():
     web_page_url = mm_cfg.DEFAULT_URL_PATTERN % urlhost
 
     if Utils.list_exists(listname):
-        usage(1, C_('List already exists: %(listname)s'))
+        usage(1, C_(f"List already exists: {listname}"))
 
     if len(args) > 1:
         owner_mail = args[1]
@@ -190,7 +190,7 @@ def main():
     if len(args) > 2:
         listpasswd = args[2]
     else:
-        listpasswd = getpass.getpass(C_('Initial %(listname)s password: '))
+        listpasswd = getpass.getpass(C_(f'Initial {listname} password: '))
     # List passwords cannot be empty
     listpasswd = listpasswd.strip()
     if not listpasswd:
@@ -214,13 +214,13 @@ def main():
             finally:
                 os.umask(oldmask)
         except Errors.BadListNameError as s:
-            usage(1, C_('Illegal list name: %(s)s'))
+            usage(1, C_(f'Illegal list name: %(s)s'))
         except Errors.EmailAddressError as s:
-            usage(1, C_('Bad owner email address: %(s)s') +
+            usage(1, C_(f'Bad owner email address: %(s)s') +
                      C_(' - owner addresses need to be fully-qualified names'
                         ' like "owner@example.com", not just "owner".'))
         except Errors.MMListAlreadyExistsError:
-            usage(1, C_('List already exists: %(listname)s'))
+            usage(1, C_(f"List already exists: {listname}"))
 
         # Assign domain-specific attributes
         mlist.host_name = host_name
@@ -241,7 +241,7 @@ def main():
 
     # And send the notice to the list owner
     if not quiet and not automate:
-        print('Hit enter to notify %(listname)s owner...'),
+        print(f"Hit enter to notify {listname} owner..."),
         sys.stdin.readline()
     if not quiet:
         siteowner = Utils.get_site_email(mlist.host_name, 'owner')
@@ -262,7 +262,7 @@ def main():
         try:
             msg = Message.UserNotification(
                 owner_mail, siteowner,
-                _('Your new mailing list: %(listname)s'),
+                _(f'Your new mailing list: {listname}'),
                 text, mlist.preferred_language)
             msg.send(mlist)
         finally:

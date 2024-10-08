@@ -373,7 +373,7 @@ def main():
             print(doc.Format())
             return
         hostname = mlist.host_name
-        title = _('List subscriptions for {safeuser} on {hostname}')
+        title = _(f'List subscriptions for {safeuser} on {hostname}')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
         doc.AddItem(_(f'''Click on a link to visit your options page for the
