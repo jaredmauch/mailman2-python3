@@ -198,11 +198,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     # that the message can be approved or denied via email as well as the
     # web.
     #
-    # XXX We use the weird type(type) construct below because in Python 2.1,
-    # type is a function not a type and so can't be used as the second
-    # argument in isinstance().  However, in Python 2.5, exceptions are
-    # new-style classes and so are not of ClassType.
-    if isinstance(exc, ClassType) or isinstance(exc, type(type)):
+    if isinstance(exc, type):
         # Go ahead and instantiate it now.
         exc = exc()
     listname = mlist.real_name
