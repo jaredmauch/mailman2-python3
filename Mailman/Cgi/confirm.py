@@ -54,7 +54,7 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        bad_confirmation(doc, _('No such list <em>{safelistname}</em>'))
+        bad_confirmation(doc, _(f'No such list <em>{safelistname}</em>'))
         doc.AddItem(MailmanLogo())
         # Send this with a 404 status.
         print('Status: 404 Not Found')
@@ -170,7 +170,7 @@ def main():
             else:
                 reenable_prompt(mlist, doc, cookie, *content[1:])
         else:
-            bad_confirmation(doc, _('System error, bad content: {content}'))
+            bad_confirmation(doc, _(f'System error, bad content: {content}'))
     except Errors.MMBadConfirmation:
         bad_confirmation(doc, badconfirmstr)
 
@@ -309,7 +309,7 @@ def subscription_prompt(mlist, doc, cookie, userdesc):
     table.AddRow([Hidden('cookie', cookie)])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
     table.AddRow([
-        Label(SubmitButton('submit', _('Subscribe to list {listname}'))),
+        Label(SubmitButton('submit', _(f'Subscribe to list {listname}'))),
         SubmitButton('cancel', _('Cancel my subscription request'))
         ])
     form.AddItem(table)

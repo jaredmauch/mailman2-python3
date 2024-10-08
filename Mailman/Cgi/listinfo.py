@@ -54,7 +54,7 @@ def main():
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        listinfo_overview(_('No such list <em>{safelistname}</em>'))
+        listinfo_overview(_(f'No such list <em>{safelistname}</em>'))
         syslog('error', 'listinfo: No such list "%s": %s', listname, e)
         return
 

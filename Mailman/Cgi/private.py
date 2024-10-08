@@ -106,8 +106,8 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        msg = _('No such list <em>{safelistname}</em>')
-        doc.SetTitle(_("Private Archive Error - {msg}"))
+        msg = _(f'No such list <em>{safelistname}</em>')
+        doc.SetTitle(_(f"Private Archive Error - {msg}"))
         doc.AddItem(Header(2, msg))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
