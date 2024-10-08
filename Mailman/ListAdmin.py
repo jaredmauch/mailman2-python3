@@ -34,6 +34,7 @@ from io import StringIO
 
 import email
 from email.mime.message import MIMEMessage
+from email.generator import BytesGenerator
 from email.generator import Generator
 from email.utils import getaddresses
 
@@ -254,7 +255,7 @@ class ListAdmin(object):
             outfp = open(outpath, 'wb')
             try:
                 if path.endswith('.pck'):
-                    g = Generator(outfp)
+                    g = BytesGenerator(outfp)
                     g.flatten(msg, 1)
                 else:
                     outfp.write(msg)
@@ -301,7 +302,7 @@ class ListAdmin(object):
             rejection = 'Refused'
             lang = self.getMemberLanguage(sender)
             subject = Utils.oneline(subject, Utils.GetCharSet(lang))
-            self.__refuse(_('Posting of your message titled "%(subject)s"'),
+            self.__refuse(_(f'Posting of your message titled "{subject}"'),
                           sender, comment or _('[No reason given]'),
                           lang=lang)
         else:
@@ -349,14 +350,10 @@ class ListAdmin(object):
             fmsg.send(self)
         # Log the rejection
         if rejection:
-            note = '''%(listname)s: %(rejection)s posting:
-\tFrom: %(sender)s
-\tSubject: %(subject)s''' % {
-                'listname' : self.internal_name(),
-                'rejection': rejection,
-                'sender'   : str(sender).replace('%', '%%'),
-                'subject'  : str(subject).replace('%', '%%'),
-                }
+            subject = subject.decode()
+            note = '''{}: {} posting:
+\tFrom: {}
+\tSubject: {}'''.format(self.real_name, rejection, sender.replace('%', '%%'), subject.replace('%', '%%'))
             if comment:
                 note += '\n\tReason: ' + comment.replace('%', '%%')
             syslog('vette', note)

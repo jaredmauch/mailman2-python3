@@ -41,6 +41,8 @@ def _safeparser(fp):
 
 class Mailbox(mailbox.mbox):
     def __init__(self, fp):
+        if not isinstance( fp, str ):
+            fp = fp.name
         mailbox.mbox.__init__(self, fp, _safeparser)
 
     # msg should be an rfc822 message or a subclass.
