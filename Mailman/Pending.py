@@ -69,7 +69,7 @@ class Pending(object):
         while True:
             now = time.time()
             x = random.random() + now % 1.0
-            cookie = sha_new(repr(x)).hexdigest()
+            cookie = sha_new(repr(x).encode()).hexdigest()
             # We'll never get a duplicate, but we'll be anal about checking
             # anyway.
             if cookie not in db:
