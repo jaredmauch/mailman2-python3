@@ -112,7 +112,7 @@ class Pending(object):
         tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
         omask = os.umask(0o007)
         try:
-            fp = open(tmpfile, 'w')
+            fp = open(tmpfile, 'wb')
             try:
                 pickle.dump(db, fp)
                 fp.flush()
