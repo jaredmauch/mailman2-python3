@@ -68,8 +68,8 @@ class Pending(object):
         # are discarded because they're the most predictable bits.
         while True:
             now = time.time()
-            x = random.random() + now % 1.0 + time.clock() % 1.0
-            cookie = sha_new(repr(x)).hexdigest()
+            x = random.random() + now % 1.0
+            cookie = sha_new(repr(x).encode()).hexdigest()
             # We'll never get a duplicate, but we'll be anal about checking
             # anyway.
             if cookie not in db:
@@ -112,7 +112,7 @@ class Pending(object):
         tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
         omask = os.umask(0o007)
         try:
-            fp = open(tmpfile, 'w')
+            fp = open(tmpfile, 'wb')
             try:
                 pickle.dump(db, fp)
                 fp.flush()

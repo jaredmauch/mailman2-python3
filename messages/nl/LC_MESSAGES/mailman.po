@@ -68,10 +68,12 @@ msgid "<P>Currently, there are no archives. </P>"
 msgstr "<p>Er zijn momenteel geen archieven. </P>"
 
 #: Mailman/Archiver/HyperArch.py:821
+#, fuzzy
 msgid "Gzip'd Text%(sz)s"
 msgstr "Gezipte tekst%(sz)s"
 
 #: Mailman/Archiver/HyperArch.py:826
+#, fuzzy
 msgid "Text%(sz)s"
 msgstr "Tekst %(sz)s"
 
@@ -144,18 +146,22 @@ msgid "Third"
 msgstr "Derde"
 
 #: Mailman/Archiver/HyperArch.py:938
+#, fuzzy
 msgid "%(ord)s quarter %(year)i"
 msgstr "%(ord)s kwartaal %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:945
+#, fuzzy
 msgid "%(month)s %(year)i"
 msgstr "%(month)s %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:950
+#, fuzzy
 msgid "The Week Of Monday %(day)i %(month)s %(year)i"
 msgstr "De week van maandag %(day)i %(month)s %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:954
+#, fuzzy
 msgid "%(day)i %(month)s %(year)i"
 msgstr "%(day)i %(month)s %(year)i"
 
@@ -164,10 +170,12 @@ msgid "Computing threaded index\n"
 msgstr "Berekenen van draadindex\n"
 
 #: Mailman/Archiver/HyperArch.py:1319
+#, fuzzy
 msgid "Updating HTML for article %(seq)s"
 msgstr "Updaten van HTML voor artikel %(seq)s"
 
 #: Mailman/Archiver/HyperArch.py:1326
+#, fuzzy
 msgid "article file %(filename)s is missing!"
 msgstr "artikelbestand %(filename)s is niet gevonden!"
 
@@ -184,6 +192,7 @@ msgid "Pickling archive state into "
 msgstr "Opslaan van archiefstatus in "
 
 #: Mailman/Archiver/pipermail.py:453
+#, fuzzy
 msgid "Updating index files for archive [%(archive)s]"
 msgstr "Updaten van indexbestanden voor archief [%(archive)s]"
 
@@ -192,6 +201,7 @@ msgid "  Thread"
 msgstr "  Draad"
 
 #: Mailman/Archiver/pipermail.py:597
+#, fuzzy
 msgid "#%(counter)05d %(msgid)s"
 msgstr "#%(counter)05d %(msgid)s"
 
@@ -229,6 +239,7 @@ msgid "disabled address"
 msgstr "uitgezet"
 
 #: Mailman/Bouncer.py:304
+#, fuzzy
 msgid " The last bounce received from you was dated %(date)s"
 msgstr " De laatste bounce ontvangen van u was gedateerd %(date)s"
 
@@ -256,6 +267,7 @@ msgstr "Beheerder"
 #: Mailman/Cgi/options.py:101 Mailman/Cgi/private.py:108
 #: Mailman/Cgi/rmlist.py:75 Mailman/Cgi/roster.py:59
 #: Mailman/Cgi/subscribe.py:67
+#, fuzzy
 msgid "No such list <em>%(safelistname)s</em>"
 msgstr "Er is geen lijst met de naam <em>%(safelistname)s</em>"
 
@@ -329,6 +341,7 @@ msgstr ""
 "             ontvangen totdat u het probleem heeft opgelost.%(rm)r"
 
 #: Mailman/Cgi/admin.py:268
+#, fuzzy
 msgid "%(hostname)s mailing lists - Admin Links"
 msgstr "Beheerlinks van %(hostname)s maillijsten"
 
@@ -341,6 +354,7 @@ msgid "Mailman"
 msgstr "Mailman"
 
 #: Mailman/Cgi/admin.py:310
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised %(mailmanlink)s\n"
 "            mailing lists on %(hostname)s."
@@ -349,6 +363,7 @@ msgstr ""
 "            maillijsten op %(hostname)s."
 
 #: Mailman/Cgi/admin.py:316
+#, fuzzy
 msgid ""
 "<p>Below is the collection of publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s.  Click on a list\n"
@@ -363,6 +378,7 @@ msgid "right "
 msgstr "rechts "
 
 #: Mailman/Cgi/admin.py:325
+#, fuzzy
 msgid ""
 "To visit the administrators configuration page for an\n"
 "        unadvertised list, open a URL similar to this one, but with a '/' "
@@ -408,6 +424,7 @@ msgid "No valid variable name found."
 msgstr "Geen geldige variabelenaam gevonden."
 
 #: Mailman/Cgi/admin.py:395
+#, fuzzy
 msgid ""
 "%(realname)s Mailing list Configuration Help\n"
 "    <br><em>%(varname)s</em> Option"
@@ -416,6 +433,7 @@ msgstr ""
 "    <br>Hulp bij de configuratie van de <em>%(varname)s</em> instelling"
 
 #: Mailman/Cgi/admin.py:402
+#, fuzzy
 msgid "Mailman %(varname)s List Option Help"
 msgstr "Hulp bij de Mailman %(varname)s lijstoptie"
 
@@ -436,14 +454,17 @@ msgstr ""
 "    "
 
 #: Mailman/Cgi/admin.py:431
+#, fuzzy
 msgid "return to the %(categoryname)s options page."
 msgstr "terug naar de %(categoryname)spagina."
 
 #: Mailman/Cgi/admin.py:446
+#, fuzzy
 msgid "%(realname)s Administration (%(label)s)"
 msgstr "%(realname)s Beheer (%(label)s)"
 
 #: Mailman/Cgi/admin.py:447
+#, fuzzy
 msgid "%(realname)s mailing list administration<br>%(label)s Section"
 msgstr "%(realname)s maillijstbeheer<br><i>%(label)s</i>"
 
@@ -525,6 +546,7 @@ msgid "Value"
 msgstr "Waarde"
 
 #: Mailman/Cgi/admin.py:668
+#, fuzzy
 msgid ""
 "Badly formed options entry:\n"
 " %(record)s"
@@ -625,10 +647,12 @@ msgid "Move rule down"
 msgstr "Verplaats regel naar beneden"
 
 #: Mailman/Cgi/admin.py:870
+#, fuzzy
 msgid "<br>(Edit <b>%(varname)s</b>)"
 msgstr "<br>(Wijzig <b>%(varname)s</b>)"
 
 #: Mailman/Cgi/admin.py:872
+#, fuzzy
 msgid "<br>(Details for <b>%(varname)s</b>)"
 msgstr "<br>(Details voor <b>%(varname)s</b>)"
 
@@ -669,6 +693,7 @@ msgid "(help)"
 msgstr "(help)"
 
 #: Mailman/Cgi/admin.py:930
+#, fuzzy
 msgid "Find member %(link)s:"
 msgstr "Zoek een lid %(link)s:"
 
@@ -681,10 +706,12 @@ msgid "Bad regular expression: "
 msgstr "Foute uitdrukking: "
 
 #: Mailman/Cgi/admin.py:1013
+#, fuzzy
 msgid "%(allcnt)s members total, %(membercnt)s shown"
 msgstr "%(allcnt)s leden in totaal, %(membercnt)s zichtbaar"
 
 #: Mailman/Cgi/admin.py:1016
+#, fuzzy
 msgid "%(allcnt)s members total"
 msgstr "%(allcnt)s leden in totaal"
 
@@ -873,6 +900,7 @@ msgstr ""
 "        betreffende reeks-indicatie:</em>"
 
 #: Mailman/Cgi/admin.py:1221
+#, fuzzy
 msgid "from %(start)s to %(end)s"
 msgstr "van %(start)s tot %(end)s"
 
@@ -1010,6 +1038,7 @@ msgid "Change list ownership passwords"
 msgstr "Verander de lijstbeheerderswachtwoorden"
 
 #: Mailman/Cgi/admin.py:1364
+#, fuzzy
 msgid ""
 "The <em>list administrators</em> are the people who have ultimate control "
 "over\n"
@@ -1121,6 +1150,7 @@ msgstr "Verdacht adres (niet toegestane lettertekens)"
 
 #: Mailman/Cgi/admin.py:1529 Mailman/Cgi/admin.py:1703 bin/add_members:175
 #: bin/clone_member:136 bin/sync_members:268
+#, fuzzy
 msgid "Banned address (matched %(pattern)s)"
 msgstr "Verboden adres (komt overeen met %(pattern)s)"
 
@@ -1222,6 +1252,7 @@ msgid "Not subscribed"
 msgstr "Niet aangemeld"
 
 #: Mailman/Cgi/admin.py:1773
+#, fuzzy
 msgid "Ignoring changes to deleted member: %(user)s"
 msgstr "Negeer wijzigingen voor verwijderd lid: %(user)s"
 
@@ -1234,10 +1265,12 @@ msgid "Error Unsubscribing:"
 msgstr "Fout bij afmelden:"
 
 #: Mailman/Cgi/admindb.py:235 Mailman/Cgi/admindb.py:248
+#, fuzzy
 msgid "%(realname)s Administrative Database"
 msgstr "%(realname)s Beheerdatabase"
 
 #: Mailman/Cgi/admindb.py:238
+#, fuzzy
 msgid "%(realname)s Administrative Database Results"
 msgstr "%(realname)s Beheerdatabaseresultaten"
 
@@ -1266,6 +1299,7 @@ msgid "Discard all messages marked <em>Defer</em>"
 msgstr "Negeer alle berichten die gemarkeerd zijn met <em>Uitstellen</em>"
 
 #: Mailman/Cgi/admindb.py:298
+#, fuzzy
 msgid "all of %(esender)s's held messages."
 msgstr "alle vastgehouden berichten van %(esender)s."
 
@@ -1286,6 +1320,7 @@ msgid "list of available mailing lists."
 msgstr "lijst van beschikbare maillijsten."
 
 #: Mailman/Cgi/admindb.py:362
+#, fuzzy
 msgid "You must specify a list name.  Here is the %(link)s"
 msgstr "U moet een lijstnaam specificeren.  Hier is de %(link)s"
 
@@ -1367,6 +1402,7 @@ msgid "<em>The sender is now a member of this list</em>"
 msgstr "<em>De afzender is nu lid van deze lijst</em>"
 
 #: Mailman/Cgi/admindb.py:568
+#, fuzzy
 msgid "Add <b>%(esender)s</b> to one of these sender filters:"
 msgstr "Voeg <b>%(esender)s</b> toe aan een van deze afzenderfilters:"
 
@@ -1387,6 +1423,7 @@ msgid "Rejects"
 msgstr "Weigeren"
 
 #: Mailman/Cgi/admindb.py:584
+#, fuzzy
 msgid ""
 "Ban <b>%(esender)s</b> from ever subscribing to this\n"
 "                    mailing list"
@@ -1403,6 +1440,7 @@ msgstr ""
 "            of u kunt "
 
 #: Mailman/Cgi/admindb.py:591
+#, fuzzy
 msgid "view all messages from %(esender)s"
 msgstr "alle berichten bekijken van %(esender)s"
 
@@ -1481,6 +1519,7 @@ msgid " is already a member"
 msgstr " is al lid"
 
 #: Mailman/Cgi/admindb.py:973
+#, fuzzy
 msgid "%(addr)s is banned (matched: %(patt)s)"
 msgstr "%(addr)s is verboden (komt overeen met: %(patt)s)"
 
@@ -1531,6 +1570,7 @@ msgstr ""
 "                    Dit wijzigingsverzoek is derhalve geannuleerd."
 
 #: Mailman/Cgi/confirm.py:178
+#, fuzzy
 msgid "System error, bad content: %(content)s"
 msgstr "Systeemfout, verkeerde inhoud: %(content)s"
 
@@ -1567,6 +1607,7 @@ msgid "Confirm subscription request"
 msgstr "Bevestig het aanmeldingsverzoek"
 
 #: Mailman/Cgi/confirm.py:259
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    subscription request to the mailing list <em>%(listname)s</em>.  Your\n"
@@ -1599,6 +1640,7 @@ msgstr ""
 "    <p>Als u geen lid wil worden, klik op <em>Aanmelding annuleren</em>."
 
 #: Mailman/Cgi/confirm.py:275
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to continue with\n"
 "        the subscription request to the mailing list <em>%(listname)s</em>.\n"
@@ -1654,6 +1696,7 @@ msgid "Preferred language:"
 msgstr "Taalvoorkeur:"
 
 #: Mailman/Cgi/confirm.py:317
+#, fuzzy
 msgid "Subscribe to list %(listname)s"
 msgstr "Aanmelden op maillijst %(listname)s"
 
@@ -1670,6 +1713,7 @@ msgid "Awaiting moderator approval"
 msgstr "Wachtend op moderatorgoedkeuring."
 
 #: Mailman/Cgi/confirm.py:386
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request to "
 "the\n"
@@ -1702,6 +1746,7 @@ msgid "You are already a member of this mailing list!"
 msgstr "U bent al lid van deze maillijst!"
 
 #: Mailman/Cgi/confirm.py:400
+#, fuzzy
 msgid ""
 "You are currently banned from subscribing to\n"
 "            this list.  If you think this restriction is erroneous, please\n"
@@ -1727,6 +1772,7 @@ msgid "Subscription request confirmed"
 msgstr "Aanmeldingsverzoek bevestigd"
 
 #: Mailman/Cgi/confirm.py:418
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request for\n"
 "            \"%(addr)s\" to the %(listname)s mailing list.  A separate\n"
@@ -1755,6 +1801,7 @@ msgid "Unsubscription request confirmed"
 msgstr "Afmeldingsverzoek is bevestigd"
 
 #: Mailman/Cgi/confirm.py:469
+#, fuzzy
 msgid ""
 "            You have successfully unsubscribed from the %(listname)s "
 "mailing\n"
@@ -1776,6 +1823,7 @@ msgid "<em>Not available</em>"
 msgstr "<em>Niet beschikbaar</em>"
 
 #: Mailman/Cgi/confirm.py:498
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    unsubscription request from the mailing list <em>%(listname)s</em>.  "
@@ -1820,6 +1868,7 @@ msgid "You have canceled your change of address request."
 msgstr "U hebt uw adreswijzigingsverzoek geannuleerd."
 
 #: Mailman/Cgi/confirm.py:555
+#, fuzzy
 msgid ""
 "%(newaddr)s is banned from subscribing to the\n"
 "            %(realname)s list.  If you think this restriction is erroneous,\n"
@@ -1831,6 +1880,7 @@ msgstr ""
 "        %(owneraddr)s."
 
 #: Mailman/Cgi/confirm.py:560
+#, fuzzy
 msgid ""
 "%(newaddr)s is already a member of\n"
 "            the %(realname)s list.  It is possible that you are attempting\n"
@@ -1847,6 +1897,7 @@ msgid "Change of address request confirmed"
 msgstr "Adreswijzigingsverzoek bevestigd"
 
 #: Mailman/Cgi/confirm.py:571
+#, fuzzy
 msgid ""
 "            You have successfully changed your address on the %(listname)s\n"
 "            mailing list from <b>%(oldaddr)s</b> to <b>%(newaddr)s</b>.  "
@@ -1868,6 +1919,7 @@ msgid "globally"
 msgstr "in alle lijsten"
 
 #: Mailman/Cgi/confirm.py:605
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    change of address request for the mailing list <em>%(listname)s</em>.  "
@@ -1931,6 +1983,7 @@ msgid "Sender discarded message via web."
 msgstr "Afzender heeft bericht geannuleerd via het web."
 
 #: Mailman/Cgi/confirm.py:674
+#, fuzzy
 msgid ""
 "The held message with the Subject:\n"
 "            header <em>%(subject)s</em> could not be found.  The most "
@@ -1951,6 +2004,7 @@ msgid "Posted message canceled"
 msgstr "Geposte bericht geannuleerd"
 
 #: Mailman/Cgi/confirm.py:685
+#, fuzzy
 msgid ""
 "            You have successfully canceled the posting of your message with\n"
 "            the Subject: header <em>%(subject)s</em> to the mailing list\n"
@@ -1973,6 +2027,7 @@ msgstr ""
 "        verwerkt door de lijstbeheerder."
 
 #: Mailman/Cgi/confirm.py:735
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to cancel the\n"
 "    posting of your message to the mailing list <em>%(listname)s</em>:\n"
@@ -2021,6 +2076,7 @@ msgid "Membership re-enabled."
 msgstr "Lidmaatschap gereactiveerd."
 
 #: Mailman/Cgi/confirm.py:798
+#, fuzzy
 msgid ""
 "            You have successfully re-enabled your membership in the\n"
 "            %(listname)s mailing list.  You can now <a\n"
@@ -2038,6 +2094,7 @@ msgid "Re-enable mailing list membership"
 msgstr "Reactiveer lidmaatschap"
 
 #: Mailman/Cgi/confirm.py:827
+#, fuzzy
 msgid ""
 "We're sorry, but you have already been unsubscribed\n"
 "        from this mailing list.  To re-subscribe, please visit the\n"
@@ -2052,6 +2109,7 @@ msgid "<em>not available</em>"
 msgstr "<em>niet beschikbaar</em>"
 
 #: Mailman/Cgi/confirm.py:846
+#, fuzzy
 msgid ""
 "Your membership in the %(realname)s mailing list is\n"
 "    currently disabled due to excessive bounces.  Your confirmation is\n"
@@ -2119,10 +2177,12 @@ msgid "administrative list overview"
 msgstr "lijstbeheerdersoverzicht"
 
 #: Mailman/Cgi/create.py:115
+#, fuzzy
 msgid "List name must not include \"@\": %(safelistname)s"
 msgstr "Lijstnaam mag niet \"@\": %(safelistname)s bevatten"
 
 #: Mailman/Cgi/create.py:122
+#, fuzzy
 msgid "List already exists: %(safelistname)s"
 msgstr "Lijst bestaat reeds: %(safelistname)s"
 
@@ -2156,18 +2216,22 @@ msgid "You are not authorized to create new mailing lists"
 msgstr "U bent niet geautoriseerd om nieuwe maillijsten aan te maken"
 
 #: Mailman/Cgi/create.py:182
+#, fuzzy
 msgid "Unknown virtual host: %(safehostname)s"
 msgstr "Onbekende virtual host: %(safehostname)s"
 
 #: Mailman/Cgi/create.py:218 bin/newlist:219
+#, fuzzy
 msgid "Bad owner email address: %(s)s"
 msgstr "Foutief e-mailadres van lijsteigenaar: %(s)s"
 
 #: Mailman/Cgi/create.py:223 bin/newlist:182 bin/newlist:223
+#, fuzzy
 msgid "List already exists: %(listname)s"
 msgstr "Lijst bestaat reeds: %(listname)s"
 
 #: Mailman/Cgi/create.py:231 bin/newlist:217
+#, fuzzy
 msgid "Illegal list name: %(s)s"
 msgstr "Ongeldige lijstnaam: %(s)s"
 
@@ -2180,6 +2244,7 @@ msgstr ""
 "                Neem contact op met de sitebeheerder voor assistentie."
 
 #: Mailman/Cgi/create.py:273 bin/newlist:265
+#, fuzzy
 msgid "Your new mailing list: %(listname)s"
 msgstr "Uw nieuwe maillijst: %(listname)s"
 
@@ -2188,6 +2253,7 @@ msgid "Mailing list creation results"
 msgstr "Maillijst aanmaakresultaten:"
 
 #: Mailman/Cgi/create.py:288
+#, fuzzy
 msgid ""
 "You have successfully created the mailing list\n"
 "    <b>%(listname)s</b> and notification has been sent to the list owner\n"
@@ -2210,6 +2276,7 @@ msgid "Create another list"
 msgstr "Nog een maillijst aanmaken"
 
 #: Mailman/Cgi/create.py:312
+#, fuzzy
 msgid "Create a %(hostname)s Mailing List"
 msgstr "Een %(hostname)s maillijst aanmaken"
 
@@ -2313,6 +2380,7 @@ msgstr ""
 "    goedkeuring door de moderator als standaard in te stellen."
 
 #: Mailman/Cgi/create.py:432
+#, fuzzy
 msgid ""
 "Initial list of supported languages.  <p>Note that if you do not\n"
 "        select at least one initial language, the list will use the server\n"
@@ -2417,6 +2485,7 @@ msgid "List name is required."
 msgstr "Lijstnaam is vereist."
 
 #: Mailman/Cgi/edithtml.py:154
+#, fuzzy
 msgid "%(realname)s -- Edit html for %(template_info)s"
 msgstr "%(realname)s -- Bewerken html voor %(template_info)s"
 
@@ -2425,10 +2494,12 @@ msgid "Edit HTML : Error"
 msgstr "Bewerk HTML : Fout"
 
 #: Mailman/Cgi/edithtml.py:161
+#, fuzzy
 msgid "%(safetemplatename)s: Invalid template"
 msgstr "%(safetemplatename)s: Geen geldige template"
 
 #: Mailman/Cgi/edithtml.py:166 Mailman/Cgi/edithtml.py:167
+#, fuzzy
 msgid "%(realname)s -- HTML Page Editing"
 msgstr "%(realname)s -- HTML-pagina Bewerken"
 
@@ -2491,10 +2562,12 @@ msgid "HTML successfully updated."
 msgstr "HTML met succes bijgewerkt."
 
 #: Mailman/Cgi/listinfo.py:89
+#, fuzzy
 msgid "%(hostname)s Mailing Lists"
 msgstr "Maillijsten op %(hostname)s"
 
 #: Mailman/Cgi/listinfo.py:127
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s."
@@ -2503,6 +2576,7 @@ msgstr ""
 "            %(mailmanlink)s maillijsten op %(hostname)s."
 
 #: Mailman/Cgi/listinfo.py:131
+#, fuzzy
 msgid ""
 "<p>Below is a listing of all the public mailing lists on\n"
 "            %(hostname)s.  Click on a list name to get more information "
@@ -2521,6 +2595,7 @@ msgid "right"
 msgstr "rechts"
 
 #: Mailman/Cgi/listinfo.py:140
+#, fuzzy
 msgid ""
 " To visit the general information page for an unadvertised list,\n"
 "        open a URL similar to this one, but with a '/' and the %(adj)s\n"
@@ -2582,6 +2657,7 @@ msgstr "Ongeldig e-mailadres"
 
 #: Mailman/Cgi/options.py:183 Mailman/Cgi/options.py:240
 #: Mailman/Cgi/options.py:264
+#, fuzzy
 msgid "No such member: %(safeuser)s."
 msgstr "Niet bestaand lid: %(safeuser)s."
 
@@ -2636,6 +2712,7 @@ msgid "Note: "
 msgstr "Opmerking:"
 
 #: Mailman/Cgi/options.py:378
+#, fuzzy
 msgid "List subscriptions for %(safeuser)s on %(hostname)s"
 msgstr "Aanmeldingen voor %(safeuser)s op %(hostname)s"
 
@@ -2666,6 +2743,7 @@ msgid "You are already using that email address"
 msgstr "U gebruikt reeds dat e-mailadres"
 
 #: Mailman/Cgi/options.py:459
+#, fuzzy
 msgid ""
 "The new address you requested %(newaddr)s is already a member of the\n"
 "%(listname)s mailing list, however you have also requested a global change "
@@ -2680,6 +2758,7 @@ msgstr ""
 "%(safeuser)s in alle maillijsten worden gewijzigd. "
 
 #: Mailman/Cgi/options.py:468
+#, fuzzy
 msgid "The new address is already a member: %(newaddr)s"
 msgstr "Het nieuwe adres %(newaddr)s is reeds lid."
 
@@ -2688,6 +2767,7 @@ msgid "Addresses may not be blank"
 msgstr "E-mailadressen dienen ingevuld te worden"
 
 #: Mailman/Cgi/options.py:488
+#, fuzzy
 msgid "A confirmation message has been sent to %(newaddr)s. "
 msgstr "Een bevestigingsbericht is verzonden naar %(newaddr)s."
 
@@ -2700,10 +2780,12 @@ msgid "Illegal email address provided"
 msgstr "Ongeldig e-mailadres opgegeven"
 
 #: Mailman/Cgi/options.py:501
+#, fuzzy
 msgid "%(newaddr)s is already a member of the list."
 msgstr "%(newaddr)s is al lid van de lijst."
 
 #: Mailman/Cgi/options.py:504
+#, fuzzy
 msgid ""
 "%(newaddr)s is banned from this list.  If you\n"
 "                      think this restriction is erroneous, please contact\n"
@@ -2781,6 +2863,7 @@ msgstr ""
 "            genomen."
 
 #: Mailman/Cgi/options.py:623
+#, fuzzy
 msgid ""
 "You have been successfully unsubscribed from the\n"
 "            mailing list %(fqdn_listname)s.  If you were receiving digest\n"
@@ -2876,6 +2959,7 @@ msgid "day"
 msgstr "dag"
 
 #: Mailman/Cgi/options.py:900
+#, fuzzy
 msgid "%(days)d %(units)s"
 msgstr "%(days)d %(units)s"
 
@@ -2888,6 +2972,7 @@ msgid "<em>No topics defined</em>"
 msgstr "<em>Geen onderwerpen gedefinieerd</em>"
 
 #: Mailman/Cgi/options.py:940
+#, fuzzy
 msgid ""
 "\n"
 "You are subscribed to this list with the case-preserved address\n"
@@ -2898,6 +2983,7 @@ msgstr ""
 "<em>%(cpuser)s</em>."
 
 #: Mailman/Cgi/options.py:956
+#, fuzzy
 msgid "%(realname)s list: member options login page"
 msgstr "%(realname)s lijst: inlogpagina voor lidmaatschapsinstellingen"
 
@@ -2906,11 +2992,13 @@ msgid "email address and "
 msgstr "e-mailadres en "
 
 #: Mailman/Cgi/options.py:960
+#, fuzzy
 msgid "%(realname)s list: member options for user %(safeuser)s"
 msgstr ""
 "%(realname)s lijst: lidmaatschapsinstellingen voor gebruiker %(safeuser)s"
 
 #: Mailman/Cgi/options.py:986
+#, fuzzy
 msgid ""
 "In order to change your membership option, you must\n"
 "    first log in by giving your %(extra)smembership password in the section\n"
@@ -2985,6 +3073,7 @@ msgid "<missing>"
 msgstr "<onvolledig>"
 
 #: Mailman/Cgi/options.py:1140
+#, fuzzy
 msgid "Requested topic is not valid: %(topicname)s"
 msgstr "Vermelde onderwerp is niet geldig: %(topicname)s"
 
@@ -3013,6 +3102,7 @@ msgid "Private archive - \"./\" and \"../\" not allowed in URL."
 msgstr "Besloten archief - \"./\" en \"../\" niet toegestaan in URL."
 
 #: Mailman/Cgi/private.py:109
+#, fuzzy
 msgid "Private Archive Error - %(msg)s"
 msgstr "Fout in besloten archief - %(msg)s"
 
@@ -3050,6 +3140,7 @@ msgid "Mailing list deletion results"
 msgstr "Maillijst verwijderresultaten"
 
 #: Mailman/Cgi/rmlist.py:187
+#, fuzzy
 msgid ""
 "You have successfully deleted the mailing list\n"
 "    <b>%(listname)s</b>."
@@ -3058,6 +3149,7 @@ msgstr ""
 "    verwijderd."
 
 #: Mailman/Cgi/rmlist.py:191
+#, fuzzy
 msgid ""
 "There were some problems deleting the mailing list\n"
 "        <b>%(listname)s</b>.  Contact your site administrator at "
@@ -3069,6 +3161,7 @@ msgstr ""
 "op         %(sitelist)s voor details."
 
 #: Mailman/Cgi/rmlist.py:208
+#, fuzzy
 msgid "Permanently remove mailing list <em>%(realname)s</em>"
 msgstr "Permanent verwijderen van maillijst <em>%(realname)s</em>"
 
@@ -3141,6 +3234,7 @@ msgid "Invalid options to CGI script"
 msgstr "Ongeldige opties voor het CGI-script"
 
 #: Mailman/Cgi/roster.py:118
+#, fuzzy
 msgid "%(realname)s roster authentication failed."
 msgstr "%(realname)s lijstauthentificatie mislukt."
 
@@ -3208,6 +3302,7 @@ msgstr ""
 "is zult u spoedig een e-mail ontvangen met verdere instructies"
 
 #: Mailman/Cgi/subscribe.py:262
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this\n"
 "        mailing list.  If you think this restriction is erroneous, please\n"
@@ -3235,6 +3330,7 @@ msgstr ""
 "onveilig is."
 
 #: Mailman/Cgi/subscribe.py:278
+#, fuzzy
 msgid ""
 "Confirmation from your email address is required, to prevent anyone from\n"
 "subscribing you without permission.  Instructions are being sent to you at\n"
@@ -3247,6 +3343,7 @@ msgstr ""
 "start nadat u uw aanmelding heeft bevestigd."
 
 #: Mailman/Cgi/subscribe.py:290
+#, fuzzy
 msgid ""
 "Your subscription request was deferred because %(x)s.  Your request has "
 "been\n"
@@ -3267,6 +3364,7 @@ msgid "Mailman privacy alert"
 msgstr "Mailman privacywaarschuwing"
 
 #: Mailman/Cgi/subscribe.py:316
+#, fuzzy
 msgid ""
 "An attempt was made to subscribe your address to the mailing list\n"
 "%(listaddr)s.  You are already subscribed to this mailing list.\n"
@@ -3308,6 +3406,7 @@ msgid "This list only supports digest delivery."
 msgstr "Deze lijst ondersteunt alleen de bezorging van verzamelmails."
 
 #: Mailman/Cgi/subscribe.py:344
+#, fuzzy
 msgid "You have been successfully subscribed to the %(realname)s mailing list."
 msgstr "U bent met succes aangemeld bij de %(realname)s maillijst."
 
@@ -3356,6 +3455,7 @@ msgstr ""
 "hebt u uw e-mailadres veranderd?"
 
 #: Mailman/Commands/cmd_confirm.py:69
+#, fuzzy
 msgid ""
 "You are currently banned from subscribing to this list.  If you think this\n"
 "restriction is erroneous, please contact the list owners at\n"
@@ -3438,26 +3538,32 @@ msgid "n/a"
 msgstr "n/b"
 
 #: Mailman/Commands/cmd_info.py:44
+#, fuzzy
 msgid "List name:    %(listname)s"
 msgstr "Lijstnaam:    %(listname)s"
 
 #: Mailman/Commands/cmd_info.py:45
+#, fuzzy
 msgid "Description:  %(description)s"
 msgstr "Omschrijving:  %(description)s"
 
 #: Mailman/Commands/cmd_info.py:46
+#, fuzzy
 msgid "Postings to:  %(postaddr)s"
 msgstr "Berichten richten aan:  %(postaddr)s"
 
 #: Mailman/Commands/cmd_info.py:47
+#, fuzzy
 msgid "List Helpbot: %(requestaddr)s"
 msgstr "Lijst helpbot: %(requestaddr)s"
 
 #: Mailman/Commands/cmd_info.py:48
+#, fuzzy
 msgid "List Owners:  %(owneraddr)s"
 msgstr "Lijstbeheerders:  %(owneraddr)s"
 
 #: Mailman/Commands/cmd_info.py:49
+#, fuzzy
 msgid "More information: %(listurl)s"
 msgstr "Meer informatie: %(listurl)s"
 
@@ -3481,18 +3587,22 @@ msgstr ""
 "server.\n"
 
 #: Mailman/Commands/cmd_lists.py:44
+#, fuzzy
 msgid "Public mailing lists at %(hostname)s:"
 msgstr "Publieke maillijsten op %(hostname)s:"
 
 #: Mailman/Commands/cmd_lists.py:66
+#, fuzzy
 msgid "%(i)3d. List name:   %(realname)s"
 msgstr "%(i)3d. Lijstnaam:   %(realname)s"
 
 #: Mailman/Commands/cmd_lists.py:67
+#, fuzzy
 msgid "     Description: %(description)s"
 msgstr "     Beschrijving: %(description)s"
 
 #: Mailman/Commands/cmd_lists.py:68
+#, fuzzy
 msgid "     Requests to: %(requestaddr)s"
 msgstr "     Verzoeken naar: %(requestaddr)s"
 
@@ -3528,12 +3638,14 @@ msgstr ""
 "        de bevestiging altijd naar het aangemelde adres wordt verstuurd.\n"
 
 #: Mailman/Commands/cmd_password.py:51 Mailman/Commands/cmd_password.py:66
+#, fuzzy
 msgid "Your password is: %(password)s"
 msgstr "Uw wachtwoord is: %(password)s"
 
 #: Mailman/Commands/cmd_password.py:57 Mailman/Commands/cmd_password.py:72
 #: Mailman/Commands/cmd_password.py:95 Mailman/Commands/cmd_password.py:121
 #: Mailman/Commands/cmd_set.py:149 Mailman/Commands/cmd_set.py:219
+#, fuzzy
 msgid "You are not a member of the %(listname)s mailing list"
 msgstr "U bent geen lid van de %(listname)s maillijst"
 
@@ -3734,6 +3846,7 @@ msgstr ""
 "        van deze maillijst wilt uitschakelen.\n"
 
 #: Mailman/Commands/cmd_set.py:122
+#, fuzzy
 msgid "Bad set command: %(subcmd)s"
 msgstr "Ongeldige opdracht: %(subcmd)s"
 
@@ -3754,6 +3867,7 @@ msgid "on"
 msgstr "aan"
 
 #: Mailman/Commands/cmd_set.py:154
+#, fuzzy
 msgid "    ack %(onoff)s"
 msgstr "    ontvangstbevestiging %(onoff)s"
 
@@ -3791,22 +3905,27 @@ msgid "due to bounces"
 msgstr "vanwege bounces"
 
 #: Mailman/Commands/cmd_set.py:186
+#, fuzzy
 msgid "    %(status)s (%(how)s on %(date)s)"
 msgstr "    %(status)s (%(how)s op %(date)s)"
 
 #: Mailman/Commands/cmd_set.py:192
+#, fuzzy
 msgid "    myposts %(onoff)s"
 msgstr "    eigen berichten %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:195
+#, fuzzy
 msgid "    hide %(onoff)s"
 msgstr "    onzichtbaar %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:199
+#, fuzzy
 msgid "    duplicates %(onoff)s"
 msgstr "    dubbele berichten %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:203
+#, fuzzy
 msgid "    reminders %(onoff)s"
 msgstr "    herinneringen %(onoff)s"
 
@@ -3815,6 +3934,7 @@ msgid "You did not give the correct password"
 msgstr "U hebt niet het juiste wachtwoord opgegeven"
 
 #: Mailman/Commands/cmd_set.py:236 Mailman/Commands/cmd_set.py:283
+#, fuzzy
 msgid "Bad argument: %(arg)s"
 msgstr "Fout argument: %(arg)s"
 
@@ -3890,6 +4010,7 @@ msgstr ""
 "        e-mailadres, en zonder aanhalingstekens!) specificeren.\n"
 
 #: Mailman/Commands/cmd_subscribe.py:62
+#, fuzzy
 msgid "Bad digest specifier: %(arg)s"
 msgstr "Ongeldige verzamelmailspecificatie: %(arg)s"
 
@@ -3898,6 +4019,7 @@ msgid "No valid address found to subscribe"
 msgstr "Er is geen geldig adres gevonden om aan te melden"
 
 #: Mailman/Commands/cmd_subscribe.py:113
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this mailing list.\n"
 "If you think this restriction is erroneous, please contact the list\n"
@@ -3936,6 +4058,7 @@ msgid "This list only supports digest subscriptions!"
 msgstr "Op deze lijst kunt u zich alleen aanmelden voor verzamelmail!"
 
 #: Mailman/Commands/cmd_subscribe.py:146
+#, fuzzy
 msgid ""
 "Your subscription request has been forwarded to the list administrator\n"
 "at %(listowner)s for review."
@@ -3971,6 +4094,7 @@ msgstr ""
 "        en zonder aanhalingstekens!) het af te melden adres.\n"
 
 #: Mailman/Commands/cmd_unsubscribe.py:62
+#, fuzzy
 msgid "%(address)s is not a member of the %(listname)s mailing list"
 msgstr "%(address)s is geen lid van de %(listname)s maillijst"
 
@@ -4224,6 +4348,7 @@ msgid "Chinese (Taiwan)"
 msgstr "Chinees (Taiwan)"
 
 #: Mailman/Deliverer.py:53
+#, fuzzy
 msgid ""
 "Note: Since this is a list of mailing lists, administrative\n"
 "notices like the password reminder will be sent to\n"
@@ -4238,14 +4363,17 @@ msgid " (Digest mode)"
 msgstr " (Verzamelmail modus)"
 
 #: Mailman/Deliverer.py:79
+#, fuzzy
 msgid "Welcome to the \"%(realname)s\" mailing list%(digmode)s"
 msgstr "Welkom op de \"%(realname)s\" maillijst%(digmode)s"
 
 #: Mailman/Deliverer.py:89
+#, fuzzy
 msgid "You have been unsubscribed from the %(realname)s mailing list"
 msgstr "U bent afgemeld van de %(realname)s maillijst"
 
 #: Mailman/Deliverer.py:116
+#, fuzzy
 msgid "%(listfullname)s mailing list reminder"
 msgstr "%(listfullname)s maillijstherinnering"
 
@@ -4258,6 +4386,7 @@ msgid "Hostile subscription attempt detected"
 msgstr "Kwaadwillige aanmeldingspoging ontdekt"
 
 #: Mailman/Deliverer.py:169
+#, fuzzy
 msgid ""
 "%(address)s was invited to a different mailing\n"
 "list, but in a deliberate malicious attempt they tried to confirm the\n"
@@ -4270,6 +4399,7 @@ msgstr ""
 "van uw kant."
 
 #: Mailman/Deliverer.py:188
+#, fuzzy
 msgid ""
 "You invited %(address)s to your list, but in a\n"
 "deliberate malicious attempt, they tried to confirm the invitation to a\n"
@@ -4284,6 +4414,7 @@ msgstr ""
 "van uw kant."
 
 #: Mailman/Deliverer.py:221
+#, fuzzy
 msgid "%(listname)s mailing list probe message"
 msgstr "%(listname)s onderzoeksbericht"
 
@@ -4496,8 +4627,8 @@ msgid ""
 "            membership.\n"
 "\n"
 "            <p>You can control both the\n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">number\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">number\n"
 "            of reminders</a> the member will receive and the\n"
 "            <a href=\"?VARHELP=bounce/"
 "bounce_you_are_disabled_warnings_interval\"\n"
@@ -4559,8 +4690,8 @@ msgstr ""
 "weer kan aanzetten.\n"
 "\n"
 "            <p>U kunt zowel het \n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">aantal\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">aantal\n"
 "            herinneringen</a> instellen dat het lid ontvangt als de \n"
 "            <a href=\"?VARHELP=bounce/"
 "bounce_you_are_disabled_warnings_interval\"\n"
@@ -4729,8 +4860,8 @@ msgid ""
 "             <em>No</em> those messages too will get discarded.  You may "
 "want\n"
 "             to set up an\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">autoresponse\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">autoresponse\n"
 "             message</a> for email to the -owner and -admin address."
 msgstr ""
 "Ondanks het feit dat de bouncedetector tamelijk robuust is, is het\n"
@@ -4757,8 +4888,8 @@ msgstr ""
 "             en deze variabele is op <em>Nee</em> gezet, dan zullen ook "
 "deze\n"
 "             berichten worden genegeerd. U kunt besluiten om een\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">automatisch\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">automatisch\n"
 "             antwoord</a> in te stellen voor e-mail gericht aan het -owner "
 "en -admin adres."
 
@@ -4830,6 +4961,7 @@ msgstr ""
 "stellen."
 
 #: Mailman/Gui/Bounce.py:194
+#, fuzzy
 msgid ""
 "Bad value for <a href=\"?VARHELP=bounce/%(property)s\"\n"
 "                >%(property)s</a>: %(val)s"
@@ -4923,8 +5055,8 @@ msgstr ""
 "            <p>Tenslotte zullen alle <tt>text/html</tt> delen die zijn\n"
 "            overgebleven in het bericht worden omgezet naar <tt>text/plain</"
 "tt>\n"
-"            als <a href=\"?VARHELP=contentfilter/convert_html_to_plaintext"
-"\"\n"
+"            als <a href=\"?VARHELP=contentfilter/"
+"convert_html_to_plaintext\"\n"
 "            >convert_html_to_plaintext</a> is aangezet en de site dusdanig "
 "is\n"
 "            geconfigureerd dat deze omzettingen zijn toegestaan."
@@ -4988,8 +5120,8 @@ msgid ""
 "Use this option to remove each message attachment that does\n"
 "             not have a matching content type.  Requirements and formats "
 "are\n"
-"             exactly like <a href=\"?VARHELP=contentfilter/filter_mime_types"
-"\"\n"
+"             exactly like <a href=\"?VARHELP=contentfilter/"
+"filter_mime_types\"\n"
 "             >filter_mime_types</a>.\n"
 "\n"
 "             <p><b>Note:</b> if you add entries to this list but don't add\n"
@@ -5116,6 +5248,7 @@ msgstr ""
 "             beschikbaar indien geactiveeerd door de sitebeheerder."
 
 #: Mailman/Gui/ContentFilter.py:171
+#, fuzzy
 msgid "Bad MIME type ignored: %(spectype)s"
 msgstr "Ongeldig MIME type genegeerd: %(spectype)s"
 
@@ -5231,6 +5364,7 @@ msgstr ""
 "           niet leeg is?"
 
 #: Mailman/Gui/Digest.py:145
+#, fuzzy
 msgid ""
 "The next digest will be sent as volume\n"
 "            %(volume)s, number %(number)s"
@@ -5247,14 +5381,17 @@ msgid "There was no digest to send."
 msgstr "Er was geen verzamelmail om te verzenden."
 
 #: Mailman/Gui/GUIBase.py:173
+#, fuzzy
 msgid "Invalid value for variable: %(property)s"
 msgstr "Ongeldige waarde voor variabele: %(property)s"
 
 #: Mailman/Gui/GUIBase.py:178
+#, fuzzy
 msgid "Bad email address for option %(property)s: %(error)s"
 msgstr "Ongeldig e-mailadres voor instelling %(property)s: %(error)s"
 
 #: Mailman/Gui/GUIBase.py:204
+#, fuzzy
 msgid ""
 "The following illegal substitution variables were\n"
 "                found in the <code>%(property)s</code> string:\n"
@@ -5271,6 +5408,7 @@ msgstr ""
 "                totdat u dit probleem heeft gecorrigeerd."
 
 #: Mailman/Gui/GUIBase.py:218
+#, fuzzy
 msgid ""
 "Your <code>%(property)s</code> string appeared to\n"
 "                    have some correctable problems in its new value.\n"
@@ -5375,8 +5513,8 @@ msgid ""
 "             <p>In order to split the list ownership duties into\n"
 "             administrators and moderators, you must\n"
 "             <a href=\"passwords\">set a separate moderator password</a>,\n"
-"             and also provide the <a href=\"?VARHELP=general/moderator"
-"\">email\n"
+"             and also provide the <a href=\"?VARHELP=general/"
+"moderator\">email\n"
 "             addresses of the list moderators</a>.  Note that the field you\n"
 "             are changing here specifies the list administrators."
 msgstr ""
@@ -5711,13 +5849,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5759,13 +5897,13 @@ msgstr ""
 "tt> adres\n"
 "             het veel moeilijker maakt om priv�-antwoorden te versturen. Zie "
 "<a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> voor een algemene bespreking van "
 "dit\n"
 "             onderwerp. Zie <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">Reply-To\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">Reply-To\n"
 "             Munging Considered Useful</a> voor een tegengestelde visie.\n"
 "\n"
 "             <p>Sommige maillijsten hebben beperkte verzendprivileges,\n"
@@ -5786,8 +5924,8 @@ msgstr "Expliciet <tt>Reply-To:</tt> adres."
 msgid ""
 "This is the address set in the <tt>Reply-To:</tt> header\n"
 "             when the <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             option is set to <em>Explicit address</em>.\n"
 "\n"
 "             <p>There are many reasons not to introduce or override the\n"
@@ -5795,13 +5933,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5823,8 +5961,8 @@ msgid ""
 "             <tt>Reply-To:</tt> header, it will not be changed."
 msgstr ""
 "Dit is het in te stellen <tt>Reply-To:</tt> adres als de <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             optie is ingesteld op <em>Expliciet adres</em>.\n"
 "\n"
 "             <p>Er zijn vele redenen om geen <tt>Reply-To:</tt>\n"
@@ -5835,13 +5973,13 @@ msgstr ""
 "tt> adres\n"
 "             het veel moeilijker maakt om priv�-antwoorden te versturen. Zie "
 "<a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">'Reply-To\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">'Reply-To\n"
 "             Munging' Considered Harmful</a> voor een algemene bespreking "
 "van dit\n"
 "             onderwerp. Zie <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">Reply-To\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">Reply-To\n"
 "             Munging Considered Useful</a> voor een tegengestelde visie.\n"
 "\n"
 "             <p>Sommige maillijsten hebben beperkte verzendprivileges,\n"
@@ -5906,8 +6044,8 @@ msgid ""
 "             member list addresses, but rather to the owner of those member\n"
 "             lists.  In that case, the value of this setting is appended to\n"
 "             the member's account name for such notices.  `-owner' is the\n"
-"             typical choice.  This setting has no effect when \"umbrella_list"
-"\"\n"
+"             typical choice.  This setting has no effect when "
+"\"umbrella_list\"\n"
 "             is \"No\"."
 msgstr ""
 "Als \"umbrella_list\" zodanig is ingesteld dat deze lijst uitsluitend\n"
@@ -6944,6 +7082,7 @@ msgstr ""
 "                           en valse aanmeldingen zouden kunnen indienen."
 
 #: Mailman/Gui/Privacy.py:104
+#, fuzzy
 msgid ""
 "This section allows you to configure subscription and\n"
 "            membership exposure policy.  You can also control whether this\n"
@@ -7142,8 +7281,8 @@ msgid ""
 "            either individually or as a group.  Any\n"
 "            posting from a non-member who is not explicitly accepted,\n"
 "            rejected, or discarded, will have their posting filtered by the\n"
-"            <a href=\"?VARHELP=privacy/sender/generic_nonmember_action"
-"\">general\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"generic_nonmember_action\">general\n"
 "            non-member rules</a>.\n"
 "\n"
 "            <p>In the text boxes below, add one address per line; start the\n"
@@ -7206,6 +7345,7 @@ msgstr ""
 "            worden gemodereerd?"
 
 #: Mailman/Gui/Privacy.py:218
+#, fuzzy
 msgid ""
 "Each list member has a <em>moderation flag</em> which says\n"
 "             whether messages from the list member can be posted directly "
@@ -7258,8 +7398,8 @@ msgid ""
 "If a member posts this many times, within a period of time\n"
 "               the member is automatically moderated.  Use 0 to disable.  "
 "See\n"
-"               <a href=\"?VARHELP=privacy/sender/member_verbosity_interval"
-"\"\n"
+"               <a href=\"?VARHELP=privacy/sender/"
+"member_verbosity_interval\"\n"
 "               >member_verbosity_interval</a> for details on the time "
 "period.\n"
 "\n"
@@ -7704,8 +7844,8 @@ msgstr ""
 "             van het bericht vergeleken met de lijst van expliciet\n"
 "             <a href=\"?VARHELP=privacy/sender/accept_these_nonmembers\"\n"
 "             >geaccepteerde</a>,\n"
-"             <a href=\"?VARHELP=privacy/sender/hold_these_nonmembers"
-"\">vastgehouden</a>,\n"
+"             <a href=\"?VARHELP=privacy/sender/"
+"hold_these_nonmembers\">vastgehouden</a>,\n"
 "             <a href=\"?VARHELP=privacy/sender/reject_these_nonmembers\"\n"
 "             >geweigerde</a> en\n"
 "             <a href=\"?VARHELP=privacy/sender/discard_these_nonmembers\"\n"
@@ -7722,6 +7862,7 @@ msgstr ""
 "             worden doorgestuurd naar de lijstmoderator?"
 
 #: Mailman/Gui/Privacy.py:494
+#, fuzzy
 msgid ""
 "Text to include in any rejection notice to be sent to\n"
 "             non-members who post to this list. This notice can include\n"
@@ -7981,6 +8122,7 @@ msgstr ""
 "                Incomplete filterregels worden genegeerd."
 
 #: Mailman/Gui/Privacy.py:693
+#, fuzzy
 msgid ""
 "The header filter rule pattern\n"
 "                '%(safepattern)s' is not a legal regular expression.  This\n"
@@ -8032,8 +8174,8 @@ msgid ""
 "             <p>The body of the message can also be optionally scanned for\n"
 "             <code>Subject:</code> and <code>Keywords:</code> headers, as\n"
 "             specified by the <a\n"
-"       href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a>\n"
+"       href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a>\n"
 "             configuration variable."
 msgstr ""
 "De onderwerpfilter categoriseert elk binnengekomen e-mailbericht\n"
@@ -8054,8 +8196,8 @@ msgstr ""
 "             <p>De bodytekst van het bericht kan eventueel ook worden\n"
 "             gecontroleerd op de aanwezigheid van <code>Subject:</code>\n"
 "             en <code>Keywords:</code> headers; dit is nader toegelicht\n"
-"             bij de <a href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a> instelling."
+"             bij de <a href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a> instelling."
 
 #: Mailman/Gui/Topics.py:72
 msgid "How many body lines should the topic matcher scan?"
@@ -8129,6 +8271,7 @@ msgstr ""
 "                patroon. Incomplete onderwerpen worden genegeerd."
 
 #: Mailman/Gui/Topics.py:135
+#, fuzzy
 msgid ""
 "The topic pattern '%(safepattern)s' is not a\n"
 "                legal regular expression.  It will be discarded."
@@ -8357,6 +8500,7 @@ msgid "%(listinfo_link)s list run by %(owner_link)s"
 msgstr "%(listinfo_link)s wordt beheerd door %(owner_link)s"
 
 #: Mailman/HTMLFormatter.py:57
+#, fuzzy
 msgid "%(realname)s administrative interface"
 msgstr "%(realname)s beheerdersinstellingen"
 
@@ -8365,6 +8509,7 @@ msgid " (requires authorization)"
 msgstr " (alleen toegang met authorisatie)"
 
 #: Mailman/HTMLFormatter.py:61
+#, fuzzy
 msgid "Overview of all %(hostname)s mailing lists"
 msgstr "Overzicht van alle maillijsten op %(hostname)s"
 
@@ -8385,6 +8530,7 @@ msgid "; it was disabled by the list administrator"
 msgstr "; het is uitgeschakeld door de lijstbeheerder"
 
 #: Mailman/HTMLFormatter.py:146
+#, fuzzy
 msgid ""
 "; it was disabled due to excessive bounces.  The\n"
 "            last bounce was received on %(date)s"
@@ -8397,6 +8543,7 @@ msgid "; it was disabled for unknown reasons"
 msgstr "; het is uitgeschakeld om onbekende redenen"
 
 #: Mailman/HTMLFormatter.py:151
+#, fuzzy
 msgid "Note: your list delivery is currently disabled%(reason)s."
 msgstr "Opmerking: uw mailontvangst is momenteel uitgeschakeld%(reason)s."
 
@@ -8409,6 +8556,7 @@ msgid "the list administrator"
 msgstr "de lijstbeheerder"
 
 #: Mailman/HTMLFormatter.py:157
+#, fuzzy
 msgid ""
 "<p>%(note)s\n"
 "\n"
@@ -8428,6 +8576,7 @@ msgstr ""
 "            heeft of hulp nodig hebt."
 
 #: Mailman/HTMLFormatter.py:169
+#, fuzzy
 msgid ""
 "<p>We have received some recent bounces from your\n"
 "            address.  Your current <em>bounce score</em> is %(score)s out of "
@@ -8450,6 +8599,7 @@ msgstr ""
 "            worden opgelost."
 
 #: Mailman/HTMLFormatter.py:181
+#, fuzzy
 msgid ""
 "(Note - you are subscribing to a list of mailing lists, so the %(type)s "
 "notice will be sent to the admin address for your membership, %(addr)s.)<p>"
@@ -8497,6 +8647,7 @@ msgstr ""
 "            moderator krijgt u per e-mail toegestuurd."
 
 #: Mailman/HTMLFormatter.py:208
+#, fuzzy
 msgid ""
 "This is %(also)sa private list, which means that the\n"
 "            list of members is not available to non-members."
@@ -8505,6 +8656,7 @@ msgstr ""
 "            dat de ledenlijst niet toegankelijk is voor niet-leden."
 
 #: Mailman/HTMLFormatter.py:211
+#, fuzzy
 msgid ""
 "This is %(also)sa hidden list, which means that the\n"
 "            list of members is available only to the list administrator."
@@ -8513,6 +8665,7 @@ msgstr ""
 "            dat de ledenlijst alleen toegankelijk is voor de lijstbeheerder."
 
 #: Mailman/HTMLFormatter.py:214
+#, fuzzy
 msgid ""
 "This is %(also)sa public list, which means that the\n"
 "            list of members list is available to everyone."
@@ -8529,6 +8682,7 @@ msgstr ""
 "                gemakkelijk herkenbaar zijn voor spammers)."
 
 #: Mailman/HTMLFormatter.py:222
+#, fuzzy
 msgid ""
 "<p>(Note that this is an umbrella list, intended to\n"
 "            have only other mailing lists as members.  Among other things,\n"
@@ -8545,6 +8699,7 @@ msgid "<b><i>either</i></b> "
 msgstr "<b><i>of</i></b> "
 
 #: Mailman/HTMLFormatter.py:256
+#, fuzzy
 msgid ""
 "To unsubscribe from %(realname)s, get a password reminder,\n"
 "        or change your subscription options %(either)senter your "
@@ -8578,6 +8733,7 @@ msgstr ""
 "        uw e-mailadres"
 
 #: Mailman/HTMLFormatter.py:277
+#, fuzzy
 msgid ""
 "(<i>%(which)s is only available to the list\n"
 "                members.</i>)"
@@ -8586,6 +8742,7 @@ msgstr ""
 "                leden van de lijst.</i>)"
 
 #: Mailman/HTMLFormatter.py:281
+#, fuzzy
 msgid ""
 "(<i>%(which)s is only available to the list\n"
 "            administrator.</i>)"
@@ -8646,6 +8803,7 @@ msgid "The current archive"
 msgstr "Het huidige archief"
 
 #: Mailman/Handlers/Acknowledge.py:59
+#, fuzzy
 msgid "%(realname)s post acknowledgement"
 msgstr "%(realname)s ontvangstbevestiging"
 
@@ -8658,6 +8816,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Handlers/CalcRecips.py:79
+#, fuzzy
 msgid ""
 "Your urgent message to the %(realname)s mailing list was not authorized for\n"
 "delivery.  The original message as received by Mailman is attached.\n"
@@ -8736,6 +8895,7 @@ msgid "Message may contain administrivia"
 msgstr "Bericht bevat wellicht administratieve opdrachten"
 
 #: Mailman/Handlers/Hold.py:84
+#, fuzzy
 msgid ""
 "Please do *not* post administrative requests to the mailing\n"
 "list.  If you wish to subscribe, visit %(listurl)s or send a message with "
@@ -8776,10 +8936,12 @@ msgid "Posting to a moderated newsgroup"
 msgstr "Berichten naar een gemodereerde nieuwsgroep"
 
 #: Mailman/Handlers/Hold.py:252
+#, fuzzy
 msgid "Your message to %(listname)s awaits moderator approval"
 msgstr "Uw bericht aan %(listname)s wacht op goedkeuring door de moderator"
 
 #: Mailman/Handlers/Hold.py:271
+#, fuzzy
 msgid "%(listname)s post from %(sender)s requires approval"
 msgstr "Voor berichten van %(sender)s aan %(listname)s is uw goedkeuring nodig"
 
@@ -8822,6 +8984,7 @@ msgid "After content filtering, the message was empty"
 msgstr "Na controle door de inhoudsfilter, was het bericht leeg"
 
 #: Mailman/Handlers/MimeDel.py:269
+#, fuzzy
 msgid ""
 "The attached message matched the %(listname)s mailing list's content "
 "filtering\n"
@@ -8864,6 +9027,7 @@ msgid "The attached message has been automatically discarded."
 msgstr "Het bijgevoegde bericht is automatisch genegeerd."
 
 #: Mailman/Handlers/Replybot.py:75
+#, fuzzy
 msgid "Auto-response for your message to the \"%(realname)s\" mailing list"
 msgstr ""
 "Automatische beantwoording van uw bericht aan de \"%(realname)s\" maillijst"
@@ -8873,6 +9037,7 @@ msgid "The Mailman Replybot"
 msgstr "De automatische beantwoorder van Mailman"
 
 #: Mailman/Handlers/Scrubber.py:208
+#, fuzzy
 msgid ""
 "An embedded and charset-unspecified text was scrubbed...\n"
 "Name: %(filename)s\n"
@@ -8887,6 +9052,7 @@ msgid "HTML attachment scrubbed and removed"
 msgstr "HTML-bijlage gescrubt en verwijderd"
 
 #: Mailman/Handlers/Scrubber.py:234 Mailman/Handlers/Scrubber.py:259
+#, fuzzy
 msgid ""
 "An HTML attachment was scrubbed...\n"
 "URL: %(url)s\n"
@@ -8907,6 +9073,7 @@ msgid "unknown sender"
 msgstr "onbekende afzender"
 
 #: Mailman/Handlers/Scrubber.py:276
+#, fuzzy
 msgid ""
 "An embedded message was scrubbed...\n"
 "From: %(who)s\n"
@@ -8923,6 +9090,7 @@ msgstr ""
 "URL: %(url)s\n"
 
 #: Mailman/Handlers/Scrubber.py:308
+#, fuzzy
 msgid ""
 "A non-text attachment was scrubbed...\n"
 "Name: %(filename)s\n"
@@ -8939,6 +9107,7 @@ msgstr ""
 "URL : %(url)s\n"
 
 #: Mailman/Handlers/Scrubber.py:347
+#, fuzzy
 msgid "Skipped content of type %(partctype)s\n"
 msgstr "Verwijderde inhoud van type %(partctype)s\n"
 
@@ -8969,6 +9138,7 @@ msgid "Message rejected by filter rule match"
 msgstr "Bericht geweigerd vanwege overeenkomst met spamfilterregel"
 
 #: Mailman/Handlers/ToDigest.py:173
+#, fuzzy
 msgid "%(realname)s Digest, Vol %(volume)d, Issue %(issue)d"
 msgstr "%(realname)s Verzamelmail, Volume %(volume)d, Nummer %(issue)d"
 
@@ -9005,6 +9175,7 @@ msgid "End of "
 msgstr "Eind van "
 
 #: Mailman/ListAdmin.py:309
+#, fuzzy
 msgid "Posting of your message titled \"%(subject)s\""
 msgstr "Verzending van uw bericht met de titel \"%(subject)s\""
 
@@ -9017,6 +9188,7 @@ msgid "Forward of moderated message"
 msgstr "Doorsturen van gemodereerd bericht"
 
 #: Mailman/ListAdmin.py:405
+#, fuzzy
 msgid "New subscription request to list %(realname)s from %(addr)s"
 msgstr "Nieuw aanmeldingsverzoek aan lijst %(realname)s van %(addr)s"
 
@@ -9030,6 +9202,7 @@ msgid "via admin approval"
 msgstr "Continueer goedkeuring"
 
 #: Mailman/ListAdmin.py:466
+#, fuzzy
 msgid "New unsubscription request from %(realname)s by %(addr)s"
 msgstr "Nieuw afmeldingsverzoek van %(realname)s door %(addr)s"
 
@@ -9042,6 +9215,7 @@ msgid "Original Message"
 msgstr "Oorspronkelijk bericht"
 
 #: Mailman/ListAdmin.py:526
+#, fuzzy
 msgid "Request to mailing list %(realname)s rejected"
 msgstr "Verzoek aan maillijst %(realname)s geweigerd"
 
@@ -9063,12 +9237,14 @@ msgid ""
 msgstr ""
 
 #: Mailman/MTA/Manual.py:82
+#, fuzzy
 msgid "## %(listname)s mailing list"
-msgstr ""
+msgstr "Maillijsten op %(hostname)s"
 
 #: Mailman/MTA/Manual.py:99
+#, fuzzy
 msgid "Mailing list creation request for list %(listname)s"
-msgstr ""
+msgstr "Maillijst aanmaakresultaten:"
 
 #: Mailman/MTA/Manual.py:113
 msgid ""
@@ -9092,8 +9268,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/MTA/Manual.py:142
+#, fuzzy
 msgid "Mailing list removal request for list %(listname)s"
-msgstr ""
+msgstr "Maillijst aanmaakresultaten:"
 
 #: Mailman/MTA/Postfix.py:442
 msgid "checking permissions on %(file)s"
@@ -9125,23 +9302,28 @@ msgid "%(dbfile)s permissions must be 0664 (got %(octmode)s)"
 msgstr ""
 
 #: Mailman/MailList.py:219
+#, fuzzy
 msgid "Your confirmation is required to join the %(listname)s mailing list"
 msgstr ""
 "Uw bevesting is vereist om deel te kunnen nemen aan de %(listname)s maillijst"
 
 #: Mailman/MailList.py:230
+#, fuzzy
 msgid "Your confirmation is required to leave the %(listname)s mailing list"
 msgstr "Uw bevestiging is vereist voor afmelding van de %(listname)s maillijst"
 
 #: Mailman/MailList.py:999 Mailman/MailList.py:1492
+#, fuzzy
 msgid " from %(remote)s"
 msgstr " van %(remote)s"
 
 #: Mailman/MailList.py:1043
+#, fuzzy
 msgid "subscriptions to %(realname)s require moderator approval"
 msgstr "aanmeldingen bij %(realname)s vereisen goedkeuring door moderator"
 
 #: Mailman/MailList.py:1125 bin/add_members:299
+#, fuzzy
 msgid "%(realname)s subscription notification"
 msgstr "%(realname)s aanmeldingsbericht"
 
@@ -9150,6 +9332,7 @@ msgid "unsubscriptions require moderator approval"
 msgstr "afmeldingen vereisen goedkeuring door moderator"
 
 #: Mailman/MailList.py:1166
+#, fuzzy
 msgid "%(realname)s unsubscribe notification"
 msgstr "%(realname)s afmeldingsbericht"
 
@@ -9169,6 +9352,7 @@ msgid "via web confirmation"
 msgstr "Verkeerde bevestigingscode"
 
 #: Mailman/MailList.py:1396
+#, fuzzy
 msgid "subscriptions to %(name)s require administrator approval"
 msgstr "aanmeldingen bij %(name)s vereisen goedkeuring door beheerder"
 
@@ -9187,6 +9371,7 @@ msgid "Last autoresponse notification for today"
 msgstr "Laatste automatisch bericht voor vandaag"
 
 #: Mailman/Queue/BounceRunner.py:360
+#, fuzzy
 msgid ""
 "The attached message was received as a bounce, but either the bounce format\n"
 "was not recognized, or no member addresses could be extracted from it.  "
@@ -9276,6 +9461,7 @@ msgid "Original message suppressed by Mailman site configuration\n"
 msgstr ""
 
 #: Mailman/htmlformat.py:675
+#, fuzzy
 msgid "Delivered by Mailman<br>version %(version)s"
 msgstr "Bezorgd door Mailman<br>versie %(version)s"
 
@@ -9364,6 +9550,7 @@ msgid "Server Local Time"
 msgstr "Lokale tijd server"
 
 #: Mailman/i18n.py:180
+#, fuzzy
 msgid ""
 "%(wday)s %(mon)s %(day)2i %(hh)02i:%(mm)02i:%(ss)02i %(tzname)s %(year)04i"
 msgstr ""
@@ -9433,20 +9620,23 @@ msgid ""
 msgstr ""
 
 #: bin/add_members:162 bin/add_members:172
+#, fuzzy
 msgid "Already a member: %(member)s"
-msgstr ""
+msgstr "Is al lid"
 
 #: bin/add_members:178
 msgid "Bad/Invalid email address: blank line"
 msgstr ""
 
 #: bin/add_members:180
+#, fuzzy
 msgid "Bad/Invalid email address: %(member)s"
-msgstr ""
+msgstr "Ongeldig e-mailadres"
 
 #: bin/add_members:182
+#, fuzzy
 msgid "Hostile address (illegal characters): %(member)s"
-msgstr ""
+msgstr "Verdacht adres (niet toegestane lettertekens)"
 
 #: bin/add_members:185
 #, fuzzy
@@ -9454,16 +9644,19 @@ msgid "Invited: %(member)s"
 msgstr "Leden van de lijst"
 
 #: bin/add_members:187
+#, fuzzy
 msgid "Subscribed: %(member)s"
-msgstr ""
+msgstr "Leden van de lijst"
 
 #: bin/add_members:237
+#, fuzzy
 msgid "Bad argument to -w/--welcome-msg: %(arg)s"
-msgstr ""
+msgstr "Fout argument: %(arg)s"
 
 #: bin/add_members:244
+#, fuzzy
 msgid "Bad argument to -a/--admin-notify: %(arg)s"
-msgstr ""
+msgstr "Fout argument: %(arg)s"
 
 #: bin/add_members:252
 msgid "Cannot read both digest and normal members from standard input."
@@ -9476,8 +9669,9 @@ msgstr ""
 #: bin/add_members:261 bin/config_list:110 bin/export.py:271 bin/find_member:97
 #: bin/inject:91 bin/list_admins:90 bin/list_members:252 bin/sync_members:222
 #: cron/bumpdigests:86
+#, fuzzy
 msgid "No such list: %(listname)s"
-msgstr ""
+msgstr "Er is geen lijst met de naam <em>%(safelistname)s</em>"
 
 #: bin/add_members:285 bin/change_pw:159 bin/check_db:114 bin/discard:83
 #: bin/sync_members:244 bin/update:302 bin/update:323 bin/update:577
@@ -9539,10 +9733,11 @@ msgid "listname is required"
 msgstr ""
 
 #: bin/arch:143 bin/change_pw:107 bin/config_list:257
+#, fuzzy
 msgid ""
 "No such list \"%(listname)s\"\n"
 "%(e)s"
-msgstr ""
+msgstr "Er is geen lijst met de naam <em>%(safelistname)s</em>"
 
 #: bin/arch:168
 msgid "Cannot open mbox file %(mbox)s: %(msg)s"
@@ -9626,20 +9821,23 @@ msgid ""
 msgstr ""
 
 #: bin/change_pw:145
+#, fuzzy
 msgid "Bad arguments: %(strargs)s"
-msgstr ""
+msgstr "Fout argument: %(arg)s"
 
 #: bin/change_pw:149
 msgid "Empty list passwords are not allowed"
 msgstr ""
 
 #: bin/change_pw:181
+#, fuzzy
 msgid "New %(listname)s password: %(notifypassword)s"
-msgstr ""
+msgstr "Wachtwoord lijstbeheerder:"
 
 #: bin/change_pw:190
+#, fuzzy
 msgid "Your new %(listname)s list password"
-msgstr ""
+msgstr "Wachtwoord lijstbeheerder:"
 
 #: bin/change_pw:191
 msgid ""
@@ -9864,8 +10062,9 @@ msgid "Unix-From line changed: %(lineno)d"
 msgstr ""
 
 #: bin/cleanarch:111
+#, fuzzy
 msgid "Bad status number: %(arg)s"
-msgstr ""
+msgstr "Fout argument: %(arg)s"
 
 #: bin/cleanarch:167
 msgid "%(messages)d messages found"
@@ -9962,14 +10161,16 @@ msgid "    original address removed:"
 msgstr ""
 
 #: bin/clone_member:202
+#, fuzzy
 msgid "Not a valid email address: %(toaddr)s"
-msgstr ""
+msgstr "Ongeldig e-mailadres"
 
 #: bin/clone_member:215
+#, fuzzy
 msgid ""
 "Error opening list \"%(listname)s\", skipping.\n"
 "%(e)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/config_list:20
 msgid ""
@@ -10054,12 +10255,14 @@ msgid "Non-standard property restored: %(k)s"
 msgstr ""
 
 #: bin/config_list:288
+#, fuzzy
 msgid "Invalid value for property: %(k)s"
-msgstr ""
+msgstr "Ongeldige waarde voor variabele: %(property)s"
 
 #: bin/config_list:291
+#, fuzzy
 msgid "Bad email address for option %(k)s: %(v)s"
-msgstr ""
+msgstr "Ongeldig e-mailadres voor instelling %(property)s: %(error)s"
 
 #: bin/config_list:348
 msgid "Only one of -i or -o is allowed"
@@ -10106,16 +10309,19 @@ msgid ""
 msgstr ""
 
 #: bin/discard:94
+#, fuzzy
 msgid "Ignoring non-held message: %(f)s"
-msgstr ""
+msgstr "Negeer wijzigingen voor verwijderd lid: %(user)s"
 
 #: bin/discard:100
+#, fuzzy
 msgid "Ignoring held msg w/bad id: %(f)s"
-msgstr ""
+msgstr "Negeer wijzigingen voor verwijderd lid: %(user)s"
 
 #: bin/discard:112
+#, fuzzy
 msgid "Discarded held msg #%(id)s for list %(listname)s"
-msgstr ""
+msgstr "Aanmelden op maillijst %(listname)s"
 
 #: bin/dumpdb:19
 msgid ""
@@ -10159,8 +10365,9 @@ msgid "No filename given."
 msgstr ""
 
 #: bin/dumpdb:108
+#, fuzzy
 msgid "Bad arguments: %(pargs)s"
-msgstr ""
+msgstr "Fout argument: %(arg)s"
 
 #: bin/dumpdb:118
 msgid "Please specify either -p or -m."
@@ -10408,8 +10615,9 @@ msgid ""
 msgstr ""
 
 #: bin/list_admins:97
+#, fuzzy
 msgid "List: %(listname)s, \tOwners: %(owners)s"
-msgstr ""
+msgstr "Lijstbeheerders:  %(owneraddr)s"
 
 #: bin/list_lists:19
 msgid ""
@@ -10514,12 +10722,14 @@ msgid ""
 msgstr ""
 
 #: bin/list_members:198
+#, fuzzy
 msgid "Bad --nomail option: %(why)s"
-msgstr ""
+msgstr "Ongeldige verzamelmailspecificatie: %(arg)s"
 
 #: bin/list_members:209
+#, fuzzy
 msgid "Bad --digest option: %(kind)s"
-msgstr ""
+msgstr "Ongeldige verzamelmailspecificatie: %(arg)s"
 
 #: bin/list_members:213 bin/list_members:217 bin/list_members:221
 #: bin/list_members:225
@@ -10703,8 +10913,9 @@ msgid ""
 msgstr ""
 
 #: bin/mailmanctl:280 cron/mailpasswds:119
+#, fuzzy
 msgid "Site list is missing: %(sitelistname)s"
-msgstr ""
+msgstr "Lijst bestaat reeds: %(safelistname)s"
 
 #: bin/mailmanctl:305
 msgid "Run this program as root or as the %(name)s user, or use -u."
@@ -10715,8 +10926,9 @@ msgid "No command given."
 msgstr ""
 
 #: bin/mailmanctl:339
+#, fuzzy
 msgid "Bad command: %(command)s"
-msgstr ""
+msgstr "Ongeldige opdracht: %(subcmd)s"
 
 #: bin/mailmanctl:344
 msgid "Warning!  You may encounter permission problems."
@@ -10930,8 +11142,9 @@ msgid ""
 msgstr ""
 
 #: bin/newlist:162
+#, fuzzy
 msgid "Unknown language: %(lang)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/newlist:167
 msgid "Enter the name of the list: "
@@ -10942,8 +11155,9 @@ msgid "Enter the email of the person running the list: "
 msgstr ""
 
 #: bin/newlist:193
+#, fuzzy
 msgid "Initial %(listname)s password: "
-msgstr ""
+msgstr "Wachtwoord lijstbeheerder:"
 
 #: bin/newlist:197
 msgid "The list password cannot be empty"
@@ -10951,8 +11165,8 @@ msgstr ""
 
 #: bin/newlist:220
 msgid ""
-" - owner addresses need to be fully-qualified names like \"owner@example.com"
-"\", not just \"owner\"."
+" - owner addresses need to be fully-qualified names like \"owner@example."
+"com\", not just \"owner\"."
 msgstr ""
 
 #: bin/newlist:244
@@ -11120,12 +11334,14 @@ msgid "Could not open file for reading: %(filename)s."
 msgstr ""
 
 #: bin/remove_members:163
+#, fuzzy
 msgid "Error opening list %(listname)s... skipping."
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/remove_members:173
+#, fuzzy
 msgid "No such member: %(addr)s"
-msgstr ""
+msgstr "Niet bestaand lid: %(safeuser)s."
 
 #: bin/remove_members:178
 msgid "User `%(addr)s' removed from list: %(listname)s."
@@ -11152,8 +11368,9 @@ msgid ""
 msgstr ""
 
 #: bin/reset_pw.py:77
+#, fuzzy
 msgid "Changing passwords for list: %(listname)s"
-msgstr ""
+msgstr "Maillijst aanmaakresultaten:"
 
 #: bin/reset_pw.py:83
 msgid "New password for member %(member)40s: %(randompw)s"
@@ -11190,8 +11407,9 @@ msgid "%(listname)s %(msg)s not found as %(filename)s"
 msgstr ""
 
 #: bin/rmlist:105
+#, fuzzy
 msgid "No such list (or list already deleted): %(listname)s"
-msgstr ""
+msgstr "Er is geen lijst met de naam <em>%(safelistname)s</em>"
 
 #: bin/rmlist:108
 msgid "No such list: %(listname)s.  Removing its residual archives."
@@ -11324,8 +11542,9 @@ msgid "No argument to -f given"
 msgstr ""
 
 #: bin/sync_members:172
+#, fuzzy
 msgid "Illegal option: %(opt)s"
-msgstr ""
+msgstr "Ongeldige lijstnaam: %(s)s"
 
 #: bin/sync_members:178
 msgid "No listname given"
@@ -11460,8 +11679,9 @@ msgid ""
 msgstr ""
 
 #: bin/update:107
+#, fuzzy
 msgid "Fixing language templates: %(listname)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/update:196 bin/update:711
 msgid "WARNING: could not acquire lock for list: %(listname)s"
@@ -11615,8 +11835,9 @@ msgid "done"
 msgstr ""
 
 #: bin/update:691
+#, fuzzy
 msgid "Updating mailing list: %(listname)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/update:694
 msgid "Updating Usenet watermarks"
@@ -11821,16 +12042,18 @@ msgid ""
 msgstr ""
 
 #: bin/withlist:175
+#, fuzzy
 msgid "Unlocking (but not saving) list: %(listname)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/withlist:179
 msgid "Finalizing"
 msgstr ""
 
 #: bin/withlist:188
+#, fuzzy
 msgid "Loading list %(listname)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/withlist:190
 msgid "(locked)"
@@ -11841,8 +12064,9 @@ msgid "(unlocked)"
 msgstr ""
 
 #: bin/withlist:197
+#, fuzzy
 msgid "Unknown list: %(listname)s"
-msgstr ""
+msgstr "Uw nieuwe maillijst: %(listname)s"
 
 #: bin/withlist:237
 msgid "No list name supplied."
@@ -12048,8 +12272,9 @@ msgid "Password // URL"
 msgstr ""
 
 #: cron/mailpasswds:222
+#, fuzzy
 msgid "%(host)s mailing list memberships reminder"
-msgstr ""
+msgstr "%(listfullname)s maillijstherinnering"
 
 #: cron/nightly_gzip:19
 msgid ""
@@ -12135,8 +12360,8 @@ msgstr ""
 #~ "             applied"
 #~ msgstr ""
 #~ "Tekst op te nemen in elke\n"
-#~ "             <a href=\"?VARHELP/privacy/sender/member_moderation_action"
-#~ "\"\n"
+#~ "             <a href=\"?VARHELP/privacy/sender/"
+#~ "member_moderation_action\"\n"
 #~ "             >weigeringsmelding</a>\n"
 #~ "             naar gemodereerde leden als deze berichten naar de lijst "
 #~ "sturen."

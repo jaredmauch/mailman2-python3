@@ -65,7 +65,7 @@ def main():
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
@@ -153,10 +153,10 @@ def process_form(mlist, doc, cgidata, lang):
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
-                results.append(_('reCAPTCHA validation failed: %(e_codes)s'))
+                results.append(_('reCAPTCHA validation failed: {e_codes}'))
         except urllib.error.URLError as e:
             e_reason = e.reason
-            results.append(_('reCAPTCHA could not be validated: %(e_reason)s'))
+            results.append(_('reCAPTCHA could not be validated: {e_reason}'))
 
     # Are we checking the hidden data?
     if mm_cfg.SUBSCRIBE_FORM_SECRET:
@@ -245,7 +245,7 @@ def process_form(mlist, doc, cgidata, lang):
         # Public rosters
         privacy_results = ''
     else:
-        privacy_results = _("""\
+        privacy_results = _(f"""\
 Your subscription request has been received, and will soon be acted upon.
 Depending on the configuration of this mailing list, your subscription request
 may have to be first confirmed by you via email, or approved by the list
@@ -259,15 +259,15 @@ email which contains further instructions.""")
     # Check for all the errors that mlist.AddMember can throw options on the
     # web page for this cgi
     except Errors.MembershipIsBanned:
-        results = _("""The email address you supplied is banned from this
+        results = _(f"""The email address you supplied is banned from this
         mailing list.  If you think this restriction is erroneous, please
-        contact the list owners at %(listowner)s.""")
+        contact the list owners at {listowner}.""")
     except Errors.MMBadEmailError:
-        results = _("""\
+        results = _(f"""\
 The email address you supplied is not valid.  (E.g. it must contain an
 `@'.)""")
     except Errors.MMHostileAddress:
-        results = _("""\
+        results = _(f"""\
 Your subscription is not allowed because the email address you gave is
 insecure.""")
     except Errors.MMSubscribeNeedsConfirmation:
@@ -275,10 +275,10 @@ insecure.""")
         if privacy_results:
             results = privacy_results
         else:
-            results = _("""\
+            results = _(f"""\
 Confirmation from your email address is required, to prevent anyone from
 subscribing you without permission.  Instructions are being sent to you at
-%(email)s.  Please note your subscription will not start until you confirm
+{email}.  Please note your subscription will not start until you confirm
 your subscription.""")
     except Errors.MMNeedApproval as x:
         # Results string depends on whether we have private rosters or not
@@ -287,8 +287,8 @@ your subscription.""")
         else:
             # We need to interpolate into x.__str__()
             x = _(str(x))
-            results = _("""\
-Your subscription request was deferred because %(x)s.  Your request has been
+            results = _(f"""\
+Your subscription request was deferred because {x}.  Your request has been
 forwarded to the list moderator.  You will receive email informing you of the
 moderator's decision when they get to your request.""")
     except Errors.MMAlreadyPending:
@@ -313,9 +313,9 @@ moderator's decision when they get to your request.""")
                     mlist.getMemberCPAddress(email),
                     mlist.GetBouncesEmail(),
                     _('Mailman privacy alert'),
-                    _("""\
+                    _(f"""\
 An attempt was made to subscribe your address to the mailing list
-%(listaddr)s.  You are already subscribed to this mailing list.
+{listaddr}.  You are already subscribed to this mailing list.
 
 Note that the list membership is not public, so it is possible that a bad
 person was trying to probe the list for its membership.  This would be a
@@ -325,7 +325,7 @@ If you submitted the subscription request and forgot that you were already
 subscribed to the list, then you can ignore this message.  If you suspect that
 an attempt is being made to covertly discover whether you are a member of this
 list, and you are worried about your privacy, then feel free to send a message
-to the list administrator at %(listowner)s.
+to the list administrator at {listowner}.
 """), lang=mlang)
             finally:
                 i18n.set_translation(otrans)
@@ -341,8 +341,8 @@ to the list administrator at %(listowner)s.
         if privacy_results:
             results = privacy_results
         else:
-            results = _("""\
-You have been successfully subscribed to the %(realname)s mailing list.""")
+            results = _(f"""\
+You have been successfully subscribed to the {realname} mailing list.""")
     # Show the results
     print_results(mlist, results, doc, lang)
 

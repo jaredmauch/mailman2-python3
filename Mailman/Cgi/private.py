@@ -106,8 +106,8 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        msg = _('No such list <em>%(safelistname)s</em>')
-        doc.SetTitle(_("Private Archive Error - %(msg)s"))
+        msg = _('No such list <em>{safelistname}</em>')
+        doc.SetTitle(_("Private Archive Error - {msg}"))
         doc.AddItem(Header(2, msg))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
@@ -155,7 +155,7 @@ def main():
         # Are we processing a password reminder from the login screen?
         if 'login-remind' in cgidata:
             if username:
-                message = Bold(FontSize('+1', _("""If you are a list member,
+                message = Bold(FontSize('+1', _(f"""If you are a list member,
                           your password has been emailed to you."""))).Format()
             else:
                 message = Bold(FontSize('+1',

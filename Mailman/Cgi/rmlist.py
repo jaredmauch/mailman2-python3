@@ -73,8 +73,8 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        title = _('No such list <em>%(safelistname)s</em>')
-        doc.SetTitle(_('No such list %(safelistname)s'))
+        title = _('No such list <em>{safelistname}</em>')
+        doc.SetTitle(_('No such list {safelistname}'))
         doc.AddItem(
             Header(3,
                    Bold(FontAttr(title, color='#ff0000', size='+2'))))
@@ -185,12 +185,12 @@ def process_request(doc, cgidata, mlist):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
     if not problems:
-        table.AddRow([_('''You have successfully deleted the mailing list
-    <b>%(listname)s</b>.''')])
+        table.AddRow([_(f'''You have successfully deleted the mailing list
+    <b>{listname}</b>.''')])
     else:
         sitelist = Utils.get_site_email(mlist.host_name)
-        table.AddRow([_('''There were some problems deleting the mailing list
-        <b>%(listname)s</b>.  Contact your site administrator at %(sitelist)s
+        table.AddRow([_(f'''There were some problems deleting the mailing list
+        <b>{listname}</b>.  Contact your site administrator at {sitelist}
         for details.''')])
     doc.AddItem(table)
     doc.AddItem('<hr>')
@@ -206,8 +206,8 @@ def process_request(doc, cgidata, mlist):
 
 def request_deletion(doc, mlist, errmsg=None):
     realname = mlist.real_name
-    title = _('Permanently remove mailing list <em>%(realname)s</em>')
-    doc.SetTitle(_('Permanently remove mailing list %(realname)s'))
+    title = _('Permanently remove mailing list <em>{realname}</em>')
+    doc.SetTitle(_('Permanently remove mailing list {realname}'))
 
     table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
@@ -220,7 +220,7 @@ def request_deletion(doc, mlist, errmsg=None):
             FontAttr(_('Error: '), color='#ff0000', size='+2').Format() +
             Italic(errmsg).Format()))])
 
-    table.AddRow([_("""This page allows you as the list owner, to permanently
+    table.AddRow([_(f"""This page allows you as the list owner, to permanently
     remove this mailing list from the system.  <strong>This action is not
     undoable</strong> so you should undertake it only if you are absolutely
     sure this mailing list has served its purpose and is no longer necessary.
