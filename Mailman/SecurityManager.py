@@ -139,8 +139,7 @@ class SecurityManager(object):
         if not response:
             # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
-        # python3
-        response = response.encode('UTF-8')
+
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
                 ok = Utils.check_global_password(response, siteadmin=0)
