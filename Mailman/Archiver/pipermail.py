@@ -9,10 +9,6 @@ from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
 
-# Work around for some misguided Python packages that add iso-8859-1
-# accented characters to string.lowercase.
-lowercase = lowercase[:26]
-
 __version__ = '0.09 (Mailman edition)'
 VERSION = __version__
 CACHESIZE = 100    # Number of slots in the cache

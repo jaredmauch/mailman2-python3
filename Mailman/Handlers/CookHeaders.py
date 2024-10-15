@@ -50,7 +50,12 @@ def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     # us-ascii then we use iso-8859-1 instead. If the string is ascii only
     # we use 'us-ascii' if another charset is specified.
     charset = Utils.GetCharSet(mlist.preferred_language)
-    if nonascii.search(s.decode()):
+    if isinstance(s, bytes):
+        search_string = s.decode()
+    else:
+        search_string = s
+
+    if nonascii.search(search_string):
         # use list charset but ...
         if charset == 'us-ascii':
             charset = 'iso-8859-1'
@@ -160,7 +165,12 @@ def process(mlist, msg, msgdata):
         # likewise, the list's real_name which should be ascii, but use the
         # charset of the list's preferred_language which should be a superset.
         lcs = Utils.GetCharSet(mlist.preferred_language)
-        ulrn = str(mlist.real_name, lcs, errors='replace')
+
+        if isinstance(mlist.real_name, str):
+            ulrn = mlist.real_name
+        else:
+            ulrn = str(mlist.real_name, lcs, errors='replace')
+
         # get translated 'via' with dummy replacements
         realname = '%(realname)s'
         lrn = '%(lrn)s'
@@ -170,7 +180,12 @@ def process(mlist, msg, msgdata):
         i18n.set_language(mlist.preferred_language)
         via = _('%(realname)s via %(lrn)s')
         i18n.set_translation(otrans)
-        uvia = str(via, lcs, errors='replace')
+
+        if isinstance(via, str):
+            uvia = via
+        else:
+            uvia = str(via, lcs, errors='replace')
+
         # Replace the dummy replacements.
         uvia = re.sub(u'%\(lrn\)s', ulrn, re.sub(u'%\(realname\)s', urn, uvia))
         # And get an RFC 2047 encoded header string.

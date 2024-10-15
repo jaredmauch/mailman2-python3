@@ -82,7 +82,7 @@ class ArchiverMailbox(Mailbox):
         else:
             self._scrubber = None
         self._mlist = mlist
-        mailbox.PortableUnixMailbox.__init__(self, fp, _archfactory(self))
+        mailbox.mbox.__init__(self, fp, _archfactory(self))
 
     def scrub(self, msg):
         if self._scrubber:
