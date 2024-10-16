@@ -444,7 +444,7 @@ class Form(Container):
             spaces, self.action, self.method, encoding)
         if self.mlist:
             output = output + \
-                '<input type="hidden" name="csrf_token" value="{}">\n'.format( csrf_token(self.mlist, self.contexts, self.user).decode())
+                '<input type="hidden" name="csrf_token" value="{}">\n'.format( csrf_token(self.mlist, self.contexts, self.user))
         output = output + Container.Format(self, indent+2)
         output = '%s\n%s</FORM>\n' % (output, spaces)
         return output

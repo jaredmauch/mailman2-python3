@@ -53,14 +53,13 @@ def csrf_token(mlist, contexts, user=None):
     needs_hash = (secret + repr(issued)).encode('utf-8')
     mac = sha_new(needs_hash).hexdigest()
     keymac = '%s:%s' % (key, mac)
-    token = binascii.hexlify(marshal.dumps((issued, keymac)))
+    token = marshal.dumps((issued, keymac)).hex()
+
     return token
 
 def csrf_check(mlist, token, cgi_user=None):
     """ check token by mailman cookie validation algorithm """
     try:
-        if isinstance(token, str):
-            token = token.encode()
         issued, keymac = marshal.loads(binascii.unhexlify(token))
         key, received_mac = keymac.split(':', 1)
         if not key.startswith(mlist.internal_name() + '+'):
