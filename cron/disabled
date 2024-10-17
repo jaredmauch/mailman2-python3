@@ -158,7 +158,7 @@ def main():
             # from the member.
             disables = []
             for member in mlist.getBouncingMembers():
-                if mlist.getDeliveryStatus(member) <> MemberAdaptor.ENABLED:
+                if mlist.getDeliveryStatus(member) != MemberAdaptor.ENABLED:
                     continue
                 info = mlist.getBounceInfo(member)
                 if (Utils.midnight(info.date) + mlist.bounce_info_stale_after
