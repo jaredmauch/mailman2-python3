@@ -1123,8 +1123,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 subject = _('%(realname)s subscription notification')
             finally:
                 i18n.set_translation(otrans)
-            if isinstance(name, UnicodeType):
-                name = name.encode(Utils.GetCharSet(lang), 'replace')
+            name = name.encode(Utils.GetCharSet(lang), 'replace')
             text = Utils.maketext(
                 "adminsubscribeack.txt",
                 {"listname" : realname,
@@ -1328,8 +1327,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             name = self.getMemberName(newaddr)
             if name is None:
                 name = ''
-            if isinstance(name, UnicodeType):
-                name = name.encode(Utils.GetCharSet(lang), 'replace')
+            name = name.encode(Utils.GetCharSet(lang), 'replace')
             text = Utils.maketext(
                 'adminaddrchgack.txt',
                 {'name'    : name,

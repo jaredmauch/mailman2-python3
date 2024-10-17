@@ -359,8 +359,6 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                     charset = 'iso-8859-1'
                 charset = Charset(charset)
                 codec = charset.input_codec or 'ascii'
-                if not isinstance(name, UnicodeType):
-                    name = str(name, codec, 'replace')
                 name = Header(name, charset).encode()
                 msgcopy['To'] = formataddr((name, recip))
             else:

@@ -198,8 +198,7 @@ To obtain instructions, send a message containing just the word "help".
         charset = Utils.GetCharSet(self.msgdata['lang'])
         encoded_resp = []
         for item in resp:
-            if isinstance(item, UnicodeType):
-                item = item.encode(charset, 'replace')
+            item = item.encode(charset, 'replace')
             encoded_resp.append(item)
         results = MIMEText(NL.join(encoded_resp), _charset=charset)
         # Safety valve for mail loops with misconfigured email 'bots.  We

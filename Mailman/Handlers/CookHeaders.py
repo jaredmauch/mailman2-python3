@@ -38,10 +38,6 @@ CONTINUATION = ',\n '
 COMMASPACE = ', '
 MAXLINELEN = 78
 
-
-def _isunicode(s):
-    return isinstance(s, UnicodeType)
-
 nonascii = re.compile('[^\s!-~]')
 
 def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):

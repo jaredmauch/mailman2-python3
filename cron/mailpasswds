@@ -78,13 +78,6 @@ def usage(code, msg=''):
 
 
 
-def tounicode(s, enc):
-    if isinstance(s, UnicodeType):
-        return s
-    return unicode(s, enc, 'replace')
-
-
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'l:h',
@@ -204,8 +197,8 @@ def main():
                  'owner'   : siteowner,
                  }, lang=poplang)
             # Coerce everything to Unicode
-            text = tounicode(text, enc)
-            table = [tounicode(_t, enc) for _t in table]
+            text = text.encode(enc)
+            table = [_t.encode(enc) for _t in table]
             # Translate the message and headers to user's suggested lang
             otrans = i18n.get_translation()
             try:
@@ -213,7 +206,7 @@ def main():
                 # Craft table header after language was set
                 header = '%-40s %-10s\n%-40s %-10s' % (
                          _('List'), _('Password // URL'), '----', '--------')
-                header = tounicode(header, enc)
+                header = header.encode(enc)
                 # Add the table to the end so it doesn't get wrapped/filled
                 text += (header + '\n' + NL.join(table))
                 msg = Message.UserNotification(

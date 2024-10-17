@@ -144,8 +144,7 @@ def pending_requests(mlist):
             first = 0
         when, addr, fullname, passwd, digest, lang = mlist.GetRecord(id)
         if fullname:
-            if isinstance(fullname, UnicodeType):
-                fullname = fullname.encode(lcset, 'replace')
+            fullname = fullname.encode(lcset, 'replace')
             fullname = ' (%s)' % fullname
         pending.append('    %s%s %s' % (addr, fullname, time.ctime(when)))
     first = 1
@@ -174,10 +173,7 @@ Cause: %(reason)s"""))
     upending = []
     charset = Utils.GetCharSet(mlist.preferred_language)
     for s in pending:
-        if isinstance(s, UnicodeType):
-            upending.append(s)
-        else:
-            upending.append(unicode(s, charset, 'replace'))
+        upending.append(s.encode(charset, 'replace'))
     # Make sure that the text we return from here can be encoded to a byte
     # string in the charset of the list's language.  This could fail if for
     # example, the request was pended while the list's language was French,
@@ -186,11 +182,8 @@ Cause: %(reason)s"""))
     charset = Charset(Utils.GetCharSet(mlist.preferred_language))
     incodec = charset.input_codec or 'ascii'
     outcodec = charset.output_codec or 'ascii'
-    if isinstance(text, UnicodeType):
-        return text.encode(outcodec, 'replace')
-    # Be sure this is a byte string encodeable in the list's charset
-    utext = unicode(text, incodec, 'replace')
-    return utext.encode(outcodec, 'replace')
+
+    return text.encode(outcodec, 'replace')
 
 def auto_discard(mlist):
     # Discard old held messages
