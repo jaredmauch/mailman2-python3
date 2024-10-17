@@ -262,7 +262,7 @@ def do_input(listname, infile, checkonly, verbose):
         globals = {'mlist': mlist}
         # Any exception that occurs in execfile() will cause the list to not
         # be saved, but any other problems are not save-fatal.
-        execfile(infile, globals)
+        exec(open(infile).read(), globals)
         savelist = 1
         for k, v in list(globals.items()):
             if k in ('mlist', '__builtins__'):
