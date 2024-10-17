@@ -23,7 +23,7 @@ from Mailman.Queue.Switchboard import Switchboard
 
 class RetryRunner(Runner):
     QDIR = mm_cfg.RETRYQUEUE_DIR
-    SLEEPTIME = mm_cfg.minutes(15)
+    SLEEPTIME = mm_cfg.seconds(1)
 
     def __init__(self, slice=None, numslices=1):
         Runner.__init__(self, slice, numslices)
