@@ -127,7 +127,7 @@ def main():
             print('Processing list:', name)
         files = []
         for f in allfiles:
-            if f[-4:] <> '.txt':
+            if f[-4:] != '.txt':
                 continue
             # stat both the .txt and .txt.gz files and append them only if 
             # the former is newer than the latter.
