@@ -115,6 +115,8 @@ def usage(code, msg=''):
 def safe(s):
     if not s:
         return ''
+    if isinstance(s, str):
+        return s.encode(ENC, 'replace')
     return str(s.encode(ENC, 'replace'), ENC, 'replace')
 
 

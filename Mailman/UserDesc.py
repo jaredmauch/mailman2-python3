@@ -57,7 +57,9 @@ class UserDesc:
             digest = 'yes'
         language = getattr(self, 'language', 'n/a')
         # Make sure fullname and password are encoded if they're strings
-        fullname = fullname.encode('ascii', 'replace')
-        password = password.encode('ascii', 'replace')
+        if isinstance(fullname, str):
+            fullname = fullname.encode('ascii', 'replace')
+        if isinstance(password, str):
+            password = password.encode('ascii', 'replace')
         return '<UserDesc %s (%s) [%s] [digest? %s] [%s]>' % (
             address, fullname, password, digest, language)
