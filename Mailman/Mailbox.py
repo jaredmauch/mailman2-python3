@@ -24,9 +24,9 @@ import mailbox
 import email
 from email.parser import Parser
 from email.errors import MessageParseError
+from email.generator import Generator
 
 from Mailman import mm_cfg
-from Mailman.Message import Generator
 from Mailman.Message import Message
 
 
@@ -43,14 +43,24 @@ class Mailbox(mailbox.mbox):
     def __init__(self, fp):
         if not isinstance( fp, str ):
             fp = fp.name
+        self.filepath = fp
         mailbox.mbox.__init__(self, fp, _safeparser)
 
     # msg should be an rfc822 message or a subclass.
     def AppendMessage(self, msg):
         # Check the last character of the file and write a newline if it isn't
         # a newline (but not at the beginning of an empty file).
-        self.add(msg)
-        self.flush()
+        with open(self.filepath, 'r+') as fileh:
+            content = fileh.read()
+            if content:
+                if content[-1] != '\n':
+                    fileh.write('\n')
+            # Create a Generator instance to write the message to the file
+            g = Generator(fileh)
+            g.flatten(msg, unixfrom=True)
+            # Add one more trailing newline for separation with the next message
+            # to be appended to the mbox.
+            print('\n', fileh)
 
 
 # This stuff is used by pipermail.py:processUnixMailbox().  It provides an
