@@ -93,6 +93,8 @@ class Connection(object):
         if self.__conn is None:
             self.__connect()
         try:
+            if isinstance( msgtext, str ):
+                msgtext = msgtext.encode('utf-8', errors='ignore')
             results = self.__conn.sendmail(envsender, recips, msgtext)
         except smtplib.SMTPException:
             # For safety, close this connection.  The next send attempt will
