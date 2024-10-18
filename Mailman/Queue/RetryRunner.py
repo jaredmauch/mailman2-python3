@@ -23,7 +23,7 @@ from Mailman.Queue.Switchboard import Switchboard
 
 class RetryRunner(Runner):
     QDIR = mm_cfg.RETRYQUEUE_DIR
-    SLEEPTIME = mm_cfg.seconds(1)
+    SLEEPTIME = mm_cfg.minutes(15)
 
     def __init__(self, slice=None, numslices=1):
         Runner.__init__(self, slice, numslices)
@@ -38,5 +38,8 @@ class RetryRunner(Runner):
         return False
 
     def _snooze(self, filecnt):
-        # We always want to snooze
-        time.sleep(self.SLEEPTIME)
+        # We always want to snooze. Sleep in 1 second iterations to ensure that the sigterm handler can respond promptly and set _stop.
+        for sec in range(1, self.SLEEPTIME):
+            if self._stop:
+                break
+            time.sleep(1)
