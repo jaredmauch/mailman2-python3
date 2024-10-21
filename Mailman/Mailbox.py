@@ -32,7 +32,7 @@ from Mailman.Message import Message
 
 def _safeparser(fp):
     try:
-        return email.message_from_file(fp, Message)
+        return email.message_from_binary_file(fp, Message)
     except MessageParseError:
         # Don't return None since that will stop a mailbox iterator
         return ''

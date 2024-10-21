@@ -132,6 +132,8 @@ def calculate_attachments_dir(mlist, msg, msgdata):
     msgid = msg['message-id']
     if msgid is None:
         msgid = msg['Message-ID'] = Utils.unique_message_id(mlist)
+
+    msgid = msgid.encode()
     # We assume that the message id actually /is/ unique!
     digest = sha_new(msgid).hexdigest()
     return os.path.join('attachments', datedir, digest[:4] + digest[-4:])
