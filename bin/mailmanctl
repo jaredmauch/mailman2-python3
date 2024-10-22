@@ -310,8 +310,8 @@ def check_privs():
 def main():
     global quiet
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hnusq',
-                                   ['help', 'no-restart', 'run-as-user',
+        opts, args = getopt.getopt(sys.argv[1:], 'hnu:sq',
+                                   ['help', 'no-restart', 'run-as-user=',
                                     'stale-lock-cleanup', 'quiet'])
     except getopt.error as msg:
         usage(1, msg)
