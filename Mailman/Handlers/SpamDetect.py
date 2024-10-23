@@ -73,7 +73,7 @@ def getDecodedHeaders(msg, cset='utf-8'):
     for h, v in list(msg.items()):
         uvalue = u''
         try:
-            v = decode_header(re.sub('\n\s', ' ', v))
+            v = decode_header(re.sub(r'\n\s', ' ', v))
         except HeaderParseError:
             v = [(v, 'us-ascii')]
         for frag, cs in v:

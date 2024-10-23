@@ -42,7 +42,7 @@ MAXLINELEN = 78
 def _isunicode(s):
     return isinstance(s, UnicodeType)
 
-nonascii = re.compile('[^\s!-~]')
+nonascii = re.compile(r'[^\s!-~]')
 
 def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     # Get the charset to encode the string in. Then search if there is any
@@ -172,7 +172,7 @@ def process(mlist, msg, msgdata):
         i18n.set_translation(otrans)
         uvia = str(via, lcs, errors='replace')
         # Replace the dummy replacements.
-        uvia = re.sub(u'%\(lrn\)s', ulrn, re.sub(u'%\(realname\)s', urn, uvia))
+        uvia = re.sub(r'%\(lrn\)s', ulrn, re.sub(r'%\(realname\)s', urn, uvia))
         # And get an RFC 2047 encoded header string.
         dn = str(Header(uvia, lcs))
         change_header('From',
@@ -399,7 +399,7 @@ def prefix_subject(mlist, msg, msgdata):
     prefix_pattern = re.escape(prefix)
     # unescape '%' :-<
     prefix_pattern = '%'.join(prefix_pattern.split(r'\%'))
-    p = re.compile('%\d*d')
+    p = re.compile(r'%\d*d')
     if p.search(prefix, 1):
         # prefix have number, so we should search prefix w/number in subject.
         # Also, force new style.
@@ -413,7 +413,7 @@ def prefix_subject(mlist, msg, msgdata):
     # leading space after stripping the prefix. It is not known what MUA would
     # create such a Subject:, but the issue was reported.
     rematch = re.match(
-                       '(\s*(RE|AW|SV|VS)\s*(\[\d+\])?\s*:\s*)+',
+                       r'(\s*(RE|AW|SV|VS)\s*(\[\d+\])?\s*:\s*)+',
                         subject, re.I)
     if rematch:
         subject = subject[rematch.end():]

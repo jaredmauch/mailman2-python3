@@ -128,7 +128,7 @@ def main():
 
     # Remove any held messages for this list
     for filename in os.listdir(mm_cfg.DATA_DIR):
-        cre = re.compile('^heldmsg-%s-\d+\.(pck|txt)$' % re.escape(listname),
+        cre = re.compile(r'^heldmsg-%s-\d+\.(pck|txt)$' % re.escape(listname),
                          re.IGNORECASE)
         if cre.match(filename):
             REMOVABLES.append((os.path.join(mm_cfg.DATA_DIR, filename),
