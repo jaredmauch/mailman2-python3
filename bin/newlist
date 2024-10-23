@@ -17,9 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-f"""Create a new, unpopulated mailing list.
+"""Create a new, unpopulated mailing list.
 
-Usage: %(PROGRAM) [options] [listname [listadmin-addr [admin-password]]]
+Usage: {PROGRAM} [options] [listname [listadmin-addr [admin-password]]]
 
 Options:
 
@@ -123,7 +123,7 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print(C_(__doc__.format( PROGRAM = PROGRAM )), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
