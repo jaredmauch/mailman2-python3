@@ -231,11 +231,12 @@ def send_i18n_digests(mlist, mboxfp):
     # accumulate Subject: headers and authors for the table-of-contents.
     messages = []
     msgcount = 0
-    msg = next(mbox)
+    mbox = mbox.itervalues()
+    msg = next(mbox, None)
     while msg is not None:
         if msg == '':
             # It was an unparseable message
-            msg = next(mbox)
+            msg = next(mbox, None)
             continue
         msgcount += 1
         messages.append(msg)
@@ -296,7 +297,7 @@ def send_i18n_digests(mlist, mboxfp):
         # And a bit of extra stuff
         msg['Message'] = repr(msgcount)
         # Get the next message in the digest mailbox
-        msg = next(mbox)
+        msg = next(mbox, None)
     # Now we're finished with all the messages in the digest.  First do some
     # sanity checking and then on to adding the toc.
     if msgcount == 0:
@@ -355,7 +356,7 @@ def send_i18n_digests(mlist, mboxfp):
                 payload = str(payload, lcset_out, 'replace'
                           ).encode(lcset, 'replace')
         print(payload, file=plainmsg)
-        if not payload.endswith('\n'):
+        if not payload.endswith(b'\n'):
             print(file=plainmsg)
     # Now add the footer but only if more than whitespace.
     if re.sub('\s', '', mlist.digest_footer):
