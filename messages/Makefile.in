@@ -73,7 +73,7 @@ PROG=		@PYTHON@ build/bin/pygettext.py
 
 # Rules
 
-all: mofiles
+all: convertpofiles mofiles
 
 catalogs: $(TARGETS)
 
@@ -111,6 +111,9 @@ doinstall: mofiles
 	    $(INSTALL) -m $(FILEMODE) $$po $$dir; \
  	    $(INSTALL) -m $(FILEMODE) $$mo $$dir; \
 	done
+
+convertpofiles:
+	../scripts/convert_to_utf8 -d .
 
 mofiles: $(MOFILES)
 
