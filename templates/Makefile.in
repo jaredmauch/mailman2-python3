@@ -60,6 +60,7 @@ INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 all:
 
 install:
+	../scripts/convert_to_utf8 -d .
 	for d in $(LANGUAGES); \
 	do \
 	    $(srcdir)/../mkinstalldirs $(DESTDIR)$(TEMPLATEDIR)/$$d; \
