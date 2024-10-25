@@ -100,8 +100,8 @@ def _(s, frame=1):
     if not charset:
         charset = 'us-ascii'
     for k, v in list(dict.items()):
-        if isinstance(v, str):
-            dict[k] = v.encode(charset, 'replace')
+        if isinstance(v, bytes):
+            dict[k] = v.decode('utf-8', 'replace')
     try:
         return tns % dict
     except (ValueError, TypeError):

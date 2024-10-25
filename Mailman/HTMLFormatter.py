@@ -341,10 +341,9 @@ class HTMLFormatter(object):
         return '</FORM>'
 
     def FormatBox(self, name, size=20, value=''):
-        if isinstance(value, str):
-            safevalue = Utils.websafe(value)
-        else:
-            safevalue = value
+        if isinstance(value, bytes):
+            value = value.decode('utf-8')
+        safevalue = Utils.websafe(value)
         return '<INPUT type="Text" name="%s" size="%d" value="%s">' % (
             name, size, safevalue)
 
