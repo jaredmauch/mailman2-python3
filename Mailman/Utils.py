@@ -973,8 +973,7 @@ def oneline(s, cset):
     try:
         h = email.header.make_header(email.header.decode_header(s))
         ustr = h.__str__()
-        line = UEMPTYSTRING.join(ustr.splitlines())
-        return line.encode(cset, 'replace')
+        return UEMPTYSTRING.join(ustr.splitlines())
     except (LookupError, UnicodeError, ValueError, HeaderParseError):
         # possibly charset problem. return with undecoded string in one line.
         return EMPTYSTRING.join(s.splitlines())
