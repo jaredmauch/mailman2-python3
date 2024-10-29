@@ -97,7 +97,7 @@ class SecurityManager(object):
         if authcontext == mm_cfg.AuthUser:
             if user is None:
                 # A bad system error
-                raise Exception(TypeError, 'No user supplied for AuthUser context')
+                raise TypeError('No user supplied for AuthUser context')
             user = Utils.UnobscureEmail(urllib.parse.unquote(user))
             secret = self.getMemberPassword(user)
             userdata = urllib.parse.quote(Utils.ObscureEmail(user), safe='')
