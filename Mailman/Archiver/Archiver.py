@@ -29,7 +29,7 @@ import os
 import errno
 import traceback
 import re
-from io import StringIO
+import tempfile
 
 from Mailman import mm_cfg
 from Mailman import Mailbox
@@ -206,7 +206,10 @@ class Archiver:
             self.ExternalArchive(mm_cfg.PRIVATE_EXTERNAL_ARCHIVER, txt)
         else:
             # use the internal archiver
-            f = StringIO(txt)
+            f = tempfile.NamedTemporaryFile()
+            if isinstance(txt, str):
+                txt = txt.encode('utf-8')
+            print(txt, file=f)
             from . import HyperArch
             h = HyperArch.HyperArchive(self)
             h.processUnixMailbox(f)
