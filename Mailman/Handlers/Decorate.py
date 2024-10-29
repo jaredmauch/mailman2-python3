@@ -102,7 +102,9 @@ def process(mlist, msg, msgdata):
         else:
             ufooter = str(footer, lcset, 'ignore')
         try:
-            oldpayload = str(msg.get_payload(decode=True), mcset)
+            oldpayload = msg.get_payload()
+            if isinstance(oldpayload, bytes):
+                oldpayload.decode()
             frontsep = endsep = u''
             if header and not header.endswith('\n'):
                 frontsep = u'\n'
