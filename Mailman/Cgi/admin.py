@@ -1550,7 +1550,10 @@ def change_options(mlist, category, subcat, cgidata, doc):
         removals += cgidata['unsubscribees'].value
     if 'unsubscribees_upload' in cgidata and \
            cgidata['unsubscribees_upload'].value:
-        removals += cgidata['unsubscribees_upload'].value
+        unsub_upload = cgidata['unsubscribees_upload'].value
+        if isinstance(unsub_upload, bytes):
+            unsub_upload = unsub_upload.decode()
+        removals += unsub_upload
     if removals:
         names = [_f for _f in [n.strip() for n in removals.splitlines()] if _f]
         send_unsub_notifications = safeint(
@@ -1655,7 +1658,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # sync operation
     memberlist = ''
     memberlist += cgidata.getvalue('memberlist', '')
-        upload = cgidata.getvalue('memberlist_upload', '')
+    upload = cgidata.getvalue('memberlist_upload', '')
     if isinstance(upload, bytes):
         upload = upload.decode()
     memberlist += upload

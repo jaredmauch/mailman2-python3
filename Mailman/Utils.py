@@ -249,20 +249,20 @@ def ValidateEmail(s):
             s = s[-1]
     # Pretty minimal, cheesy check.  We could do better...
     if not s or s.count(' ') > 0:
-        raise Exception(Errors.MMBadEmailError)
+        raise Errors.MMBadEmailError
     if _badchars.search(s):
-        raise Exception(Errors.MMHostileAddress, s)
+        raise Errors.MMHostileAddress(s)
     user, domain_parts = ParseEmail(s)
     # This means local, unqualified addresses, are not allowed
     if not domain_parts:
-        raise Exception(Errors.MMBadEmailError, s)
+        raise Errors.MMBadEmailError(s)
     if len(domain_parts) < 2:
-        raise Exception(Errors.MMBadEmailError, s)
+        raise Errors.MMBadEmailError(s)
     # domain parts may only contain ascii letters, digits and hyphen
     # and must not begin with hyphen.
     for p in domain_parts:
         if len(p) == 0 or p[0] == '-' or len(_valid_domain.sub('', p)) > 0:
-            raise Exception(Errors.MMHostileAddress, s)
+            raise Errors.MMHostileAddress(s)
 
 
 
@@ -632,7 +632,7 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
-            raise Exception(IOError(errno.ENOENT, 'No template file found', templatefile))
+            raise IOError(errno.ENOENT, 'No template file found', templatefile)
     template = fp.read()
     fp.close()
     text = template
