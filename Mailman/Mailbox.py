@@ -92,6 +92,8 @@ class ArchiverMailbox(Mailbox):
         else:
             self._scrubber = None
         self._mlist = mlist
+        if not isinstance(fp, str):
+            fp = fp.name
         mailbox.mbox.__init__(self, fp, _archfactory(self))
 
     def scrub(self, msg):

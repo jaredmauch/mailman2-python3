@@ -169,7 +169,7 @@ class DumbBTree(object):
 
     def load(self):
         try:
-            fp = open(self.path)
+            fp = open(self.path, mode='rb')
             try:
                 self.dict = marshal.load(fp)
             finally:
@@ -185,7 +185,7 @@ class DumbBTree(object):
     def close(self):
         omask = os.umask(0o007)
         try:
-            fp = open(self.path, 'w')
+            fp = open(self.path, 'wb')
         finally:
             os.umask(omask)
         fp.write(marshal.dumps(self.dict))
@@ -275,7 +275,7 @@ class HyperDatabase(pipermail.Database):
 
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return msgid in self.articleIndex
+        return self.articleIndex.has_key(msgid)
 
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
