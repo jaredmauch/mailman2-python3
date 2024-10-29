@@ -1655,7 +1655,10 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # sync operation
     memberlist = ''
     memberlist += cgidata.getvalue('memberlist', '')
-    memberlist += cgidata.getvalue('memberlist_upload', '')
+        upload = cgidata.getvalue('memberlist_upload', '')
+    if isinstance(upload, bytes):
+        upload = upload.decode()
+    memberlist += upload
     if memberlist:
         # Browsers will convert special characters in the text box to HTML
         # entities. We need to fix those.
