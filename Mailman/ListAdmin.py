@@ -350,7 +350,8 @@ class ListAdmin(object):
             fmsg.send(self)
         # Log the rejection
         if rejection:
-            subject = subject.decode()
+            if isinstance(subject, bytes):
+                subject = subject.decode()
             note = '''{}: {} posting:
 \tFrom: {}
 \tSubject: {}'''.format(self.real_name, rejection, sender.replace('%', '%%'), subject.replace('%', '%%'))
