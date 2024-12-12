@@ -339,7 +339,7 @@ def main():
     elif os.environ.get('QUERY_STRING'):
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
-        qs = cgi.parse_qs(os.environ['QUERY_STRING']).get('VARHELP')
+        qs = urllib.parse.parse_qs(os.environ['QUERY_STRING']).get('VARHELP')
         if qs and type(qs) == list:
             varhelp = qs[0]
     if varhelp:

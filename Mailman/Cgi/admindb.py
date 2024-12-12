@@ -28,7 +28,7 @@ import signal
 import email
 import email.errors
 import time
-from urllib.parse import quote_plus, unquote_plus
+from urllib.parse import quote_plus, unquote_plus, parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -201,13 +201,13 @@ def main():
     if envar:
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
-        qs = cgi.parse_qs(envar).get('sender')
+        qs = parse_qs(envar).get('sender')
         if qs and type(qs) == list:
             sender = qs[0]
-        qs = cgi.parse_qs(envar).get('msgid')
+        qs = parse_qs(envar).get('msgid')
         if qs and type(qs) == list:
             msgid = qs[0]
-        qs = cgi.parse_qs(envar).get('details')
+        qs = parse_qs(envar).get('details')
         if qs and type(qs) == list:
             details = qs[0]
 
@@ -719,14 +719,30 @@ def show_post_requests(mlist, id, info, total, count, form):
     chars = 0
     # A negative value means, include the entire message regardless of size
     limit = mm_cfg.ADMINDB_PAGE_TEXT_LIMIT
-    for line in email.Iterators.body_line_iterator(msg, decode=True):
-        lines.append(line)
-        chars += len(line)
-        if chars >= limit > 0:
-            break
-    # We may have gone over the limit on the last line, but keep the full line
-    # anyway to avoid losing part of a multibyte character.
-    body = EMPTYSTRING.join(lines)
+
+    # Use the new email package API to extract and iterate over message lines
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == 'text/plain':
+                payload = part.get_payload(decode=True)
+                if payload:
+                    for line in payload.decode(part.get_content_charset() or 'utf-8', errors='replace').splitlines():
+                        lines.append(line)
+                        chars += len(line)
+                        if chars >= limit > 0:
+                            break
+                break
+    else:
+        payload = msg.get_payload(decode=True)
+        if payload:
+            for line in payload.decode(msg.get_content_charset() or 'utf-8', errors='replace').splitlines():
+                lines.append(line)
+                chars += len(line)
+                if chars >= limit > 0:
+                    break
+
+    # Ensure the full last line is included to avoid splitting multibyte characters
+    body = ''.join(lines)
     # Get message charset and try encode in list charset
     # We get it from the first text part.
     # We need to replace invalid characters here or we can throw an uncaught
@@ -740,10 +756,15 @@ def show_post_requests(mlist, id, info, total, count, form):
         mcset = 'us-ascii'
     lcset = Utils.GetCharSet(mlist.preferred_language)
     if mcset != lcset:
+    # Ensure the body is in the list's preferred charset
         try:
-            body = str(body, mcset, 'replace').encode(lcset, 'replace')
-        except (LookupError, UnicodeError, ValueError):
-            pass
+            # If body is a str, encode to bytes using the source charset (mcset)
+            body_bytes = body.encode(mcset, 'replace') if isinstance(body, str) else body
+            # Then decode bytes to str using the list's charset (lcset)
+            body = body_bytes.decode(lcset, 'replace')
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            # Fallback in case of encoding/decoding issues
+            body = body.encode('ascii', 'replace').decode('ascii', 'replace')
     hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
     hdrtxt = Utils.websafe(hdrtxt)
     # Okay, we've reconstituted the message just fine.  Now for the fun part!
