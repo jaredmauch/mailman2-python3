@@ -206,7 +206,7 @@ class Archiver:
             self.ExternalArchive(mm_cfg.PRIVATE_EXTERNAL_ARCHIVER, txt)
         else:
             # use the internal archiver
-            f = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8")
+            f = tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8")
             if isinstance(txt, str):
                 txt = txt.encode('utf-8')
             print(txt, file=f)
