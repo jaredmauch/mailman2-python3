@@ -125,7 +125,7 @@ def main():
             print(C_('[----- start %(typename)s file -----]'))
         while True:
             try:
-                obj = load(fp)
+                obj = load(fp, encoding='latin1')
             except EOFError:
                 if doprint:
                     print(C_('[----- end %(typename)s file -----]'))
