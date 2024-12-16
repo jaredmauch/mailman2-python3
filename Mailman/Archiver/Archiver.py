@@ -197,7 +197,7 @@ class Archiver:
             if mm_cfg.ARCHIVE_TO_MBOX == 1:
                 # Archive to mbox only.
                 return
-        txt = str(msg)
+        txt = msg.as_bytes(unixfrom=True)
         # should we use the internal or external archiver?
         private_p = self.archive_private
         if mm_cfg.PUBLIC_EXTERNAL_ARCHIVER and not private_p:
@@ -206,10 +206,11 @@ class Archiver:
             self.ExternalArchive(mm_cfg.PRIVATE_EXTERNAL_ARCHIVER, txt)
         else:
             # use the internal archiver
-            f = tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8")
+            f = tempfile.NamedTemporaryFile()
             if isinstance(txt, str):
                 txt = txt.encode('utf-8')
-            print(txt, file=f)
+            f.write(txt)
+            f.flush()
             from . import HyperArch
             h = HyperArch.HyperArchive(self)
             h.processUnixMailbox(f)
