@@ -197,7 +197,12 @@ class Archiver:
             if mm_cfg.ARCHIVE_TO_MBOX == 1:
                 # Archive to mbox only.
                 return
-        txt = msg.as_bytes(unixfrom=True)
+
+        txt = msg.as_string()
+        unixfrom = msg.get_unixfrom()
+        if not txt.startswith(unixfrom):
+            txt = unixfrom + '\n' + txt
+
         # should we use the internal or external archiver?
         private_p = self.archive_private
         if mm_cfg.PUBLIC_EXTERNAL_ARCHIVER and not private_p:
