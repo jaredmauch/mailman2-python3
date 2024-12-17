@@ -318,7 +318,7 @@ class Article(pipermail.Article):
                 except (UnicodeError, LookupError):
                     body = None
             if body:
-                self.body = [l.decode() if isinstance(l, bytes) else l + "\n" for l in body.splitlines()]
+                self.body = [l.decode() + "\n" if isinstance(l, bytes) else l + "\n" for l in body.splitlines()]
 
         self.decode_headers()
 
