@@ -430,7 +430,7 @@ class Article(pipermail.Article):
         if prefix:
             prefix_pat = re.escape(prefix)
             prefix_pat = '%'.join(prefix_pat.split(r'\%'))
-            prefix_pat = re.sub(r'%\d*d', r'\s*\d+\s*', prefix_pat)
+            prefix_pat = re.sub(r'%\d*d', r'\\\\s*\\\\d+\\\\s*', prefix_pat)
             subject = re.sub(prefix_pat, '', subject)
         subject = subject.lstrip()
         # MAS Should we strip FW and FWD too?
