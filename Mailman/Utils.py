@@ -633,8 +633,31 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
             if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
             raise IOError(errno.ENOENT, 'No template file found', templatefile)
-    template = fp.read()
-    fp.close()
+    try:
+        template = fp.read()
+    except UnicodeDecodeError as e:
+        # failed to read the template as utf-8, so lets determine the current encoding
+        # then save the file back to disk as utf-8.
+        filename = fp.name
+        fp.close()
+
+        current_encoding = get_current_encoding(filename)
+
+        with open(filename, 'rb') as f:
+            raw = f.read()
+
+        decoded_template = raw.decode(current_encoding)
+
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(decoded_template)
+
+        template = decoded_template
+    except Exception as e:
+        # catch any other non-unicode exceptions...
+        syslog('error', 'Failed to read template %s: %s', fp.name, e)
+    finally:
+        fp.close()
+
     text = template
     if dict is not None:
         try:
@@ -1609,3 +1632,15 @@ def captcha_verify(idx, given_answer, captchas):
     # We append a `$` to emulate `re.fullmatch`.
     correct_answer_pattern = captchas[idx][1] + "$"
     return re.match(correct_answer_pattern, given_answer)
+
+def get_current_encoding(filename):
+    encodings = [ 'utf-8', 'iso-8859-1', 'iso-8859-2', 'iso-8859-15', 'iso-8859-7', 'iso-8859-13', 'euc-jp', 'euc-kr', 'iso-8859-9', 'us-ascii' ]
+    for encoding in encodings:
+        try:
+            with open(filename, 'r', encoding=encoding) as f:
+                f.read()
+            return encoding
+        except UnicodeDecodeError as e:
+            continue
+    # if everything fails, send utf-8 and hope for the best...
+    return 'utf-8'
