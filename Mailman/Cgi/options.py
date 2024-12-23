@@ -168,7 +168,7 @@ def main():
             doc.addError(_(f'No such member: {safeuser}.'))
             loginpage(mlist, doc, None, language)
             print(doc.Format())
-        return
+            return
 
     # Avoid cross-site scripting attacks
     if set(params) - set(safe_params):
