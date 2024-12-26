@@ -173,7 +173,9 @@ class SecurityManager(object):
                 key, secret = self.AuthContextInfo(ac)
                 if secret is None:
                     continue
-                response = response.encode('utf-8')
+                if isinstance(response, str):
+                    response = response.encode('utf-8')
+
                 sharesponse = sha_new(response).hexdigest()
                 upgrade = ok = False
                 if sharesponse == secret:

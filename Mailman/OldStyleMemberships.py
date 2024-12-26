@@ -104,6 +104,8 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
 
     def authenticateMember(self, member, response):
         secret = self.getMemberPassword(member)
+        if isinstance(response, bytes):
+            response = response.decode('utf-8')
         if secret == response:
             return secret
         return 0
