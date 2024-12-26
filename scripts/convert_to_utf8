@@ -61,7 +61,7 @@ def convert_files(directory):
                 _print(f"!!! Skipping file {filename}, not " + ', '.join(target_extensions))
                 continue
 
-            _print(f"*** Working on locale: {locale_name} file: {file_path}")
+            _print(f"*** Working on locale: {locale_name} file: {file_path} known encoding: {old_encoding_map[locale_name]}")
             try:
                 current_encoding = subprocess.check_output(
                     ["file", "-bi", file_path]
