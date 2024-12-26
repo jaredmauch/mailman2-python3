@@ -71,6 +71,8 @@ PROG=		@PYTHON@ build/bin/pygettext.py
 .po.mo:
 	-$(MSGFMT) -o $@ $<
 
+.NOTPARALLEL:
+
 # Rules
 
 all: convertpofiles mofiles
