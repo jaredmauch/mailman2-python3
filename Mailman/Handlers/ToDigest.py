@@ -209,7 +209,10 @@ def send_i18n_digests(mlist, mboxfp):
     print(file=plainmsg)
     # Now add the optional digest header but only if more than whitespace.
     if re.sub('\s', '', mlist.digest_header):
-        headertxt = decorate(mlist, mlist.digest_header, _('digest header'))
+        lc_digest_header_msg = _('digest header')
+        if isinstance(lc_digest_header_msg, bytes):
+            lc_digest_header_msg = str(lc_digest_header_msg)
+        headertxt = decorate(mlist, mlist.digest_header, lc_digest_header_msg)
         # MIME
         header = MIMEText(headertxt, _charset=lcset)
         header['Content-Description'] = _('Digest Header')
@@ -225,7 +228,10 @@ def send_i18n_digests(mlist, mboxfp):
     #
     # Meanwhile prepare things for the table of contents
     toc = StringIO()
-    print(_("Today's Topics:\n"), file=toc)
+    start_toc = _("Today's Topics:\n")
+    if isinstance(start_toc, bytes):
+        start_toc = str(start_toc)
+    print(start_toc, file=toc)
     # Now cruise through all the messages in the mailbox of digest messages,
     # building the MIME payload and core of the RFC 1153 digest.  We'll also
     # accumulate Subject: headers and authors for the table-of-contents.
@@ -241,7 +247,10 @@ def send_i18n_digests(mlist, mboxfp):
         msgcount += 1
         messages.append(msg)
         # Get the Subject header
-        msgsubj = msg.get('subject', _('(no subject)'))
+        no_subject_locale = _('(no subject)')
+        if isinstance(no_subject_locale, bytes):
+            no_subject_locale = str(no_subject_locale)
+        msgsubj = msg.get('subject', no_subject_locale)
         subject = Utils.oneline(msgsubj, lcset)
         # Don't include the redundant subject prefix in the toc
         mo = re.match('(re:? *)?(%s)' % re.escape(mlist.subject_prefix),
@@ -258,6 +267,8 @@ def send_i18n_digests(mlist, mboxfp):
         if username:
             username = ' (%s)' % username
         # Put count and Wrap the toc subject line
+        if isinstance(subject, bytes):
+            subject = str(subject)
         wrapped = Utils.wrap('%2d. %s' % (msgcount, subject), 65)
         slines = wrapped.split('\n')
         # See if the user's name can fit on the last line
@@ -303,7 +314,8 @@ def send_i18n_digests(mlist, mboxfp):
     if msgcount == 0:
         # Why did we even get here?
         return
-    toctext = to_cset_out(toc.getvalue(), lcset)
+    toctext = toc.getvalue()
+    toctext_encoded = to_cset_out(toctext, lcset)
     # MIME
     tocpart = MIMEText(toctext, _charset=lcset)
     tocpart['Content-Description']= _("Today's Topics (%(msgcount)d messages)")
@@ -332,7 +344,10 @@ def send_i18n_digests(mlist, mboxfp):
         try:
             msg = scrubber(mlist, msg)
         except Errors.DiscardMessage:
-            print(_('[Message discarded by content filter]'), file=plainmsg)
+            discard_msg = _('[Message discarded by content filter]')
+            if isinstance(discard_msg, bytes):
+                discard_msg = str(discard_msg)
+            print(discard_msg, file=plainmsg)
             continue
         # Honor the default setting
         for h in mm_cfg.PLAIN_DIGEST_KEEP_HEADERS:
@@ -343,27 +358,21 @@ def send_i18n_digests(mlist, mboxfp):
         print(file=plainmsg)
         # If decoded payload is empty, this may be multipart message.
         # -- just stringfy it.
-        payload = msg.get_payload(decode=True) \
-                  or msg.as_string().split('\n\n',1)[1]
-        mcset = msg.get_content_charset('')
-        if mcset and mcset != lcset and mcset != lcset_out:
-            try:
-                payload = str(payload, mcset, 'replace'
-                          ).encode(lcset, 'replace')
-            except (UnicodeError, LookupError):
-                # TK: Message has something unknown charset.
-                #     _out means charset in 'outer world'.
-                payload = str(payload, lcset_out, 'replace'
-                          ).encode(lcset, 'replace')
+        payload = msg.get_payload(decode=True)
+        if payload == None:
+            payload = msg.as_string().split('\n\n',1)[1]
+        else:
+            payload = str(payload, 'utf-8')
 
-        if isinstance(payload, bytes):
-            payload = str(payload)
         print(payload, file=plainmsg)
         if not payload.endswith('\n'):
             print(file=plainmsg)
     # Now add the footer but only if more than whitespace.
     if re.sub('\s', '', mlist.digest_footer):
-        footertxt = decorate(mlist, mlist.digest_footer, _('digest footer'))
+        lc_digest_footer_msg = _('digest footer')
+        if isinstance(lc_digest_footer_msg, bytes):
+            lc_digest_footer_msg = str(lc_digest_footer_msg)
+        footertxt = decorate(mlist, mlist.digest_footer, lc_digest_footer_msg)
         # MIME
         footer = MIMEText(footertxt, _charset=lcset)
         footer['Content-Description'] = _('Digest Footer')
@@ -374,7 +383,11 @@ def send_i18n_digests(mlist, mboxfp):
         # Subject: Digest Footer
         print(separator30, file=plainmsg)
         print(file=plainmsg)
-        print('Subject: ' + _('Digest Footer'), file=plainmsg)
+
+        digest_footer_msg = _('Digest Footer')
+        if isinstance(digest_footer_msg, bytes):
+            digest_footer_msg = str(digest_footer_msg)
+        print('Subject: ' + digest_footer_msg, file=plainmsg)
         print(file=plainmsg)
         print(footertxt, file=plainmsg)
         print(file=plainmsg)
@@ -419,7 +432,7 @@ def send_i18n_digests(mlist, mboxfp):
                     listname=mlist.internal_name(),
                     isdigest=True)
     # RFC 1153
-    rfc1153msg.set_payload(to_cset_out(plainmsg.getvalue(), lcset), lcset)
+    rfc1153msg.set_payload(plainmsg.getvalue(), 'utf-8')
     virginq.enqueue(rfc1153msg,
                     recips=plainrecips,
                     listname=mlist.internal_name(),
