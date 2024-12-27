@@ -79,7 +79,7 @@ def process(mlist, msg, msgdata):
     mboxfile = os.path.join(mlist.fullpath(), 'digest.mbox')
     omask = os.umask(0o007)
     try:
-        with open(mboxfile, 'a+') as mboxfp:
+        with open(mboxfile, 'a+b') as mboxfp:
             mbox = Mailbox(mboxfp.name)
             mbox.AppendMessage(msg)
             # Calculate the current size of the accumulation file.  This will not tell
@@ -365,8 +365,11 @@ def send_i18n_digests(mlist, mboxfp):
             payload = str(payload, 'utf-8')
 
         print(payload, file=plainmsg)
-        if not payload.endswith('\n'):
+        if isinstance(payload, str):
+            payload = payload.encode('utf-8')
+        if not payload.endswith(b'\n'):
             print(file=plainmsg)
+
     # Now add the footer but only if more than whitespace.
     if re.sub('\s', '', mlist.digest_footer):
         lc_digest_footer_msg = _('digest footer')

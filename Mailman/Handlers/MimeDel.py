@@ -27,6 +27,7 @@ contents.
 import os
 import errno
 import tempfile
+import html2text
 from os.path import splitext
 
 from email.iterators import typed_subpart_iterator
@@ -35,7 +36,6 @@ from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman.Message import UserNotification
 from Mailman.Queue.sbcache import get_switchboard
-from Mailman.Logging.Syslog import syslog
 from Mailman.Version import VERSION
 from Mailman.i18n import _
 from Mailman.Utils import oneline
@@ -230,28 +230,27 @@ def recast_multipart(msg):
 
 def to_plaintext(msg):
     changedp = 0
-    for subpart in typed_subpart_iterator(msg, 'text', 'html'):
-        filename = tempfile.mktemp('.html')
-        fp = open(filename, 'w')
-        try:
-            fp.write(subpart.get_payload(decode=1))
-            fp.close()
-            cmd = os.popen(mm_cfg.HTML_TO_PLAIN_TEXT_COMMAND %
-                           {'filename': filename})
-            plaintext = cmd.read()
-            rtn = cmd.close()
-            if rtn:
-                syslog('error', 'HTML->text/plain error: %s', rtn)
-        finally:
-            try:
-                os.unlink(filename)
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
+    # Get the subparts (ensure you're iterating through them)
+    subparts = list(typed_subpart_iterator(msg, 'text', 'html'))
+
+    # Iterate through the subparts
+    for subpart in subparts:
+
+        # Get the HTML content (ensure it's decoded if it's in bytes)
+        html_content = subpart.get_payload(decode=1)  # Get the payload as bytes
+
+        if isinstance(html_content, bytes):
+            html_content = html_content.decode('utf-8')  # Decode bytes to string
+
+        # Now convert HTML to plain text
+        plaintext = html2text.html2text(html_content)
+
         # Now replace the payload of the subpart and twiddle the Content-Type:
-        del subpart['content-transfer-encoding']
-        subpart.set_payload(plaintext)
-        subpart.set_type('text/plain')
+        del subpart['content-transfer-encoding']  # Remove encoding if necessary
+        subpart.set_payload(plaintext)  # Set the new plaintext payload
+        subpart.set_type('text/plain')  # Change the content type to 'text/plain'
         changedp = 1
+
     return changedp
 
 
