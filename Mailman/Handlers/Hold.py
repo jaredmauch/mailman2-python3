@@ -174,17 +174,20 @@ def process(mlist, msg, msgdata):
     # Is the message too big?
     if mlist.max_message_size > 0:
         bodylen = 0
-        for line in msg.get_payload(decode=True).splitlines():
-            bodylen += len(line)
-        for part in msg.walk():
-            if part.preamble:
-                bodylen += len(part.preamble)
-            if part.epilogue:
-                bodylen += len(part.epilogue)
-        if bodylen/1024.0 > mlist.max_message_size:
-            hold_for_approval(mlist, msg, msgdata,
-                              MessageTooBig(bodylen, mlist.max_message_size))
-            # no return
+        payload = msg.get_payload(decode=True)
+        if payload:
+            for line in payload.splitlines():
+                bodylen += len(line)
+            for part in msg.walk():
+                if part.preamble:
+                    bodylen += len(part.preamble)
+                if part.epilogue:
+                    bodylen += len(part.epilogue)
+            if bodylen/1024.0 > mlist.max_message_size:
+                hold_for_approval(mlist, msg, msgdata, MessageTooBig(bodylen, mlist.max_message_size))
+                # no return
+        else:
+            pass
     #
     # Are we gatewaying to a moderated newsgroup and is this list the
     # moderator's address for the group?

@@ -387,10 +387,14 @@ URL: %(url)s
         # The i18n separator is in the list's charset. Coerce it to the
         # message charset.
         try:
-            s = str(sep, lcset, 'replace')
-            sep = s.encode(charset, 'replace')
-        except (UnicodeError, LookupError, ValueError,
-                AssertionError):
+            if isinstance(sep, bytes):
+                # Only decode if it's a bytes object
+                s = sep.decode(lcset, 'replace')
+                sep = s.encode(charset, 'replace')
+            else:
+                # If it's already a str, no need to decode
+                sep = sep.encode(charset, 'replace')
+        except (UnicodeError, LookupError, ValueError, AssertionError):
             pass
         replace_payload_by_text(msg, sep.join(text), charset)
         if format:
@@ -399,7 +403,6 @@ URL: %(url)s
             msg.set_param('DelSp', delsp)
     return msg
 
-
 
 def makedirs(dir):
     # Create all the directories to store this attachment in
@@ -407,12 +410,17 @@ def makedirs(dir):
         os.makedirs(dir, 0o02775)
         # Unfortunately, FreeBSD seems to be broken in that it doesn't honor
         # the mode arg of mkdir().
-        def twiddle(arg, dirname, names):
-            os.chmod(dirname, 0o02775)
-        os.path.walk(dir, twiddle, None)
-    except OSError as e:
-        if e.errno != errno.EEXIST: raise
+        def twiddle(arg, dirpath, dirnames):
+            for dirname in dirnames:
+                # Construct the full path for each directory
+                full_path = os.path.join(dirpath, dirname)
+                os.chmod(full_path, 0o02775)
 
+        for dirpath, dirnames, filenames in os.walk(dir):
+            twiddle(None, dirpath, dirnames)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
 
 def save_attachment(mlist, msg, dir, filter_html=True):
@@ -420,6 +428,8 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     makedirs(fsdir)
     # Figure out the attachment type and get the decoded data
     decodedpayload = msg.get_payload(decode=True)
+    if isinstance(decodedpayload, bytes):
+        decodedpayload = decodedpayload.decode('utf-8', errors='replace')
     # BAW: mimetypes ought to handle non-standard, but commonly found types,
     # e.g. image/jpg (should be image/jpeg).  For now we just store such
     # things as application/octet-streams since that seems the safest.
