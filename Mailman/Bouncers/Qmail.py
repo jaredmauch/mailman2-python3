@@ -27,7 +27,7 @@ This module should be conformant.
 """
 
 import re
-import email.Iterators
+import email.iterators
 
 # Other (non-standard?) intros have been observed in the wild.
 introtags = [
@@ -50,7 +50,7 @@ def process(msg):
     #    1 = intro paragraph seen
     #    2 = recip paragraphs seen
     state = 0
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         line = line.strip()
         if state == 0:
             for introtag in introtags:

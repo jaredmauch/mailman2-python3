@@ -18,13 +18,14 @@
 
 import re
 import email
+import email.iterators
 
 acre = re.compile(r',\s*(?P<addr>\S+@[^,]+),', re.IGNORECASE)
 
 
 
 def process(msg):
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         mo = acre.search(line)
         if mo:
             return [mo.group('addr')]

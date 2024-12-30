@@ -97,7 +97,7 @@ def scanbody(msg, numlines=None):
     # the first numlines of body text.
     lines = []
     lineno = 0
-    reader = list(email.Iterators.body_line_iterator(msg, decode=True))
+    reader = list(email.iterators.body_line_iterator(msg, decode=True))
     while numlines is None or lineno < numlines:
         try:
             line = reader.pop(0)
