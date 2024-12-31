@@ -381,7 +381,10 @@ URL: %(url)s
             if isinstance(t, str):
                 if not t.endswith('\n'):
                     t += '\n'
-                text.append(t)
+            elif isinstance(t, bytes):
+                if not t.endswith(b'\n'):
+                    t += b'\n'
+            text.append(t)
         # Now join the text and set the payload
         sep = _('-------------- next part --------------\n')
         # The i18n separator is in the list's charset. Coerce it to the
