@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+import errno
 import mailbox
 import os
 import re
@@ -282,10 +283,9 @@ class T(object):
         # message in the HTML archive now -- Marc
         try:
             os.stat(self.basedir)
-        except os.error as errdata:
-            errno, errmsg = errdata
-            if errno != 2:
-                raise os.error(errdata)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
             else:
                 self.message(C_('Creating archive directory ') + self.basedir)
                 omask = os.umask(0)
@@ -598,15 +598,15 @@ class T(object):
         # If the archive directory doesn't exist, create it
         try:
             os.stat(archivedir)
-        except os.error as errdata:
-            if errdata.errno == 2:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            else:
                 omask = os.umask(0)
                 try:
                     os.mkdir(archivedir, self.DIRMODE)
                 finally:
                     os.umask(omask)
-            else:
-                raise os.error(errdata)
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
