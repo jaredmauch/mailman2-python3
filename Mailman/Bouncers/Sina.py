@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import re
-from email import Iterators
+from email import iterators
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
@@ -41,7 +41,7 @@ def process(msg):
         print('out 3')
         return []
     addrs = {}
-    for line in Iterators.body_line_iterator(part):
+    for line in iterators.body_line_iterator(part):
         mo = acre.match(line)
         if mo:
             addrs[mo.group('addr')] = 1

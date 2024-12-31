@@ -17,7 +17,7 @@
 """Recognizes (some) Microsoft Exchange formats."""
 
 import re
-import email.Iterators
+import email.iterators
 
 scre = re.compile('did not reach the following recipient')
 ecre = re.compile('MSEXCH:')
@@ -28,7 +28,7 @@ a2cre = re.compile('(?P<addr>[^ ]+) on ')
 
 def process(msg):
     addrs = {}
-    it = email.Iterators.body_line_iterator(msg)
+    it = email.iterators.body_line_iterator(msg)
     # Find the start line
     for line in it:
         if scre.search(line):
