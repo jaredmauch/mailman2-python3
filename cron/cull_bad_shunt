@@ -88,7 +88,6 @@ def main():
         return
     now = time.time()
     old = now - float(mm_cfg.BAD_SHUNT_STALE_AFTER)
-    os.stat_float_times(True)
     adir = mm_cfg.BAD_SHUNT_ARCHIVE_DIRECTORY
     if (adir and os.access(adir, os.W_OK | os.X_OK)
              and stat.S_ISDIR(os.stat(adir).st_mode)):

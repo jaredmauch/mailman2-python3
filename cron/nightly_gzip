@@ -81,7 +81,7 @@ def usage(code, msg=''):
 def compress(txtfile):
     if VERBOSE:
         print("gzip'ing:", txtfile)
-    infp = open(txtfile)
+    infp = open(txtfile, 'rb')
     outfp = gzip.open(txtfile+'.gz', 'wb', 6)
     outfp.write(infp.read())
     outfp.close()
