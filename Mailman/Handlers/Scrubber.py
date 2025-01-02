@@ -431,8 +431,6 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     makedirs(fsdir)
     # Figure out the attachment type and get the decoded data
     decodedpayload = msg.get_payload(decode=True)
-    if isinstance(decodedpayload, bytes):
-        decodedpayload = decodedpayload.decode('utf-8', errors='replace')
     # BAW: mimetypes ought to handle non-standard, but commonly found types,
     # e.g. image/jpg (should be image/jpeg).  For now we just store such
     # things as application/octet-streams since that seems the safest.
@@ -535,7 +533,7 @@ def save_attachment(mlist, msg, dir, filter_html=True):
         submsg = msg.get_payload()
         # BAW: I'm sure we can eventually do better than this. :(
         decodedpayload = Utils.websafe(str(submsg))
-    fp = open(path, 'w')
+    fp = open(path, 'wb')
     fp.write(decodedpayload)
     fp.close()
     # Now calculate the url

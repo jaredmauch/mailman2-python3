@@ -214,7 +214,7 @@ def main():
             import gzip
             f = gzip.open(true_filename, 'r')
         else:
-            f = open(true_filename, 'r')
+            f = open(true_filename, 'rb')
     except IOError:
         msg = _('Private archive file not found')
         doc.SetTitle(msg)
@@ -223,6 +223,12 @@ def main():
         print(doc.Format())
         syslog('error', 'Private archive file not found: %s', true_filename)
     else:
-        print('Content-type: %s\n' % ctype)
-        sys.stdout.write(f.read())
+        content = f.read()
         f.close()
+        orig_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
+        print('Content-type: %s\n' % ctype)
+        sys.stdout.flush()
+        sys.stdout.buffer.write(content)
+        sys.stdout.flush()
+        sys.stdout = orig_stdout
