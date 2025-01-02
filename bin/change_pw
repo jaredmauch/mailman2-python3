@@ -167,7 +167,7 @@ def main():
             if password is None:
                 randompw = Utils.MakeRandomPassword(
                     mm_cfg.ADMIN_PASSWORD_LENGTH)
-                shapassword = Utils.sha_new(randompw).hexdigest()
+                shapassword = Utils.sha_new(randompw.encode('utf-8')).hexdigest()
                 notifypassword = randompw
             else:
                 notifypassword = password

@@ -72,7 +72,7 @@ def main():
     for filename in args:
         if not quiet:
             print(('====================>', filename))
-        fp = open(filename)
+        fp = open(filename,'rb')
         if filename.endswith(".pck"):
             msg = load(fp)
             data = load(fp)

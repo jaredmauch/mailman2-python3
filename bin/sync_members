@@ -80,7 +80,7 @@ import sys
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-import email.Utils
+import email.utils
 
 from Mailman import MailList
 from Mailman import Errors
@@ -203,7 +203,7 @@ def main():
             print(C_('Ignore  :  %(addr)30s'))
 
     # first filter out any invalid addresses
-    filemembers = email.Utils.getaddresses(filemembers)
+    filemembers = email.utils.getaddresses(filemembers)
     invalid = 0
     for name, addr in filemembers:
         try:
@@ -234,7 +234,7 @@ def main():
             # Any address found in the file that is also in the list can be
             # ignored.  If not found in the list, it must be added later.
             laddr = addr.lower()
-            if addrs.has_key(laddr):
+            if laddr in addrs:
                 del addrs[laddr]
                 matches[laddr] = 1
             elif not matches.has_key(laddr):
@@ -256,11 +256,8 @@ def main():
             try:
                 if not dryrun:
                     mlist.ApprovedAddMember(userdesc, welcome, notifyadmin)
-                # Avoid UnicodeError if name can't be decoded
-                if isinstance(name, str):
-                    name = unicode(name, errors='replace')
                 name = name.encode(enc, 'replace')
-                s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
+                s = email.utils.formataddr((name, addr)).encode(enc, 'replace')
                 print(C_('Added  : %(s)s'))
             except Errors.MMAlreadyAMember:
                 pass
@@ -277,15 +274,12 @@ def main():
                                                userack=goodbye)
                 except Errors.NotAMemberError:
                     # This can happen if the address is illegal (i.e. can't be
-                    # parsed by email.Utils.parseaddr()) but for legacy
+                    # parsed by email.utils.parseaddr()) but for legacy
                     # reasons is in the database.  Use a lower level remove to
                     # get rid of this member's entry
                     mlist.removeMember(addr)
-            # Avoid UnicodeError if name can't be decoded
-            if isinstance(name, str):
-                name = unicode(name, errors='replace')
             name = name.encode(enc, 'replace')
-            s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
+            s = email.utils.formataddr((name, addr)).encode(enc, 'replace')
             print(C_('Removed: %(s)s'))
 
         mlist.Save()

@@ -22,7 +22,7 @@ The site password can be used in most if not all places that the list
 administrator's password can be used, which in turn can be used in most places
 that a list users password can be used.
 
-Usage: %(PROGRAM)s [options] [password]
+Usage: mmsitepass [options] [password]
 
 Options:
 
@@ -83,7 +83,7 @@ def main():
         pw1 = args[0]
     else:
         try:
-            pw1 = getpass.getpass('New %(pwdesc)s password: ')
+            pw1 = getpass.getpass(f'New {pwdesc} password: ')
             pw2 = getpass.getpass('Again to confirm password: ')
             if pw1 != pw2:
                 print('Passwords do not match; no changes made.')

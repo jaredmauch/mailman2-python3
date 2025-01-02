@@ -56,7 +56,13 @@ import mailbox
 import paths
 from Mailman.i18n import C_
 
-cre = re.compile(mailbox.UnixMailbox._fromlinepattern)
+# Taken from legacy module
+og_fromlinepattern = (r"From \s*[^\s]+\s+\w\w\w\s+\w\w\w\s+\d?\d\s+"
+                      r"\d?\d:\d\d(:\d\d)?(\s+[^\s]+)?\s+\d\d\d\d\s*"
+                      r"[^\s]*\s*"
+                      "$")
+
+cre = re.compile(og_fromlinepattern)
 
 # From RFC 2822, a header field name must contain only characters from 33-126
 # inclusive, excluding colon.  I.e. from oct 41 to oct 176 less oct 072.  Must

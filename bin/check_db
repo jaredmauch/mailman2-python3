@@ -84,7 +84,7 @@ def testfile(dbfile):
         loadfunc = pickle.load
     else:
         assert 0
-    fp = open(dbfile)
+    fp = open(dbfile,'rb')
     try:
         loadfunc(fp)
     finally:

@@ -451,7 +451,10 @@ def set_global_password(pw, siteadmin=True):
     omask = os.umask(0o026)
     try:
         fp = open(filename, 'w')
-        fp.write(sha_new(pw).hexdigest() + '\n')
+        if isinstance(pw, bytes):
+            fp.write(sha_new(pw).hexdigest() + '\n')
+        else:
+            fp.write(sha_new(pw.encode()).hexdigest() + '\n')
         fp.close()
     finally:
         os.umask(omask)
@@ -477,7 +480,10 @@ def check_global_password(response, siteadmin=True):
     challenge = get_global_password(siteadmin)
     if challenge is None:
         return None
-    return challenge == sha_new(response).hexdigest()
+    if isinstance(response, bytes):
+        return challenge == sha_new(response).hexdigest()
+    else:
+        return challenge == sha_new(response.encode()).hexdigest()
 
 
 
