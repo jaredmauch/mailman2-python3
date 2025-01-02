@@ -40,6 +40,7 @@ from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import C_
 
+PROGRAM = sys.argv[0]
 
 
 def usage(code, msg=''):
@@ -47,7 +48,7 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(fd, C_(__doc__, file=fd))
+    print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
@@ -82,8 +83,7 @@ def main():
         except Exception as e:
             # If there are any unshunting errors, log them and continue trying
             # other shunted messages.
-            print(C_(
-                'Cannot unshunt message %(filebase)s, skipping:\n%(e)s'), file=sys.stderr)
+            print(C_('Cannot unshunt message %(filebase)s, skipping:\n%(e)s'), file=sys.stderr)
         else:
             # Unlink the .bak file left by dequeue()
             sb.finish(filebase)
