@@ -116,9 +116,10 @@ def safe(s):
     if not s:
         return ''
     if isinstance(s, str):
-        return s.encode(ENC, 'replace')
-    return str(s.encode(ENC, 'replace'), ENC, 'replace')
-
+        return s
+    elif isinstance(s, bytes):
+        return s.decode(ENC, 'replace') 
+    return str(s)
 
 def isinvalid(addr):
     try:
