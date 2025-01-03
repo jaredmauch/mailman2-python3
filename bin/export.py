@@ -146,7 +146,7 @@ class XMLDumper(object):
         if _value is None:
             print('<%s%s/>' % (_name, attrs), file=self._fp)
         else:
-            value = escape(unicode(_value))
+            value = escape(str(_value))
             print('<%s%s>%s</%s>' % (_name, attrs, value, _name), file=self._fp)
 
     def _do_list_categories(self, mlist, k, subcat=None):
@@ -289,15 +289,19 @@ def plaintext_password(password):
 
 
 def sha_password(password):
+    if isinstance(password, str):
+        password = password.encode()
     h = Utils.sha_new(password)
-    return '{SHA}' + base64.b64encode(h.digest())
+    return '{SHA}' + base64.b64encode(h.digest()).decode('utf-8')
 
 
 def ssha_password(password):
+    if isinstance(password, str):
+        password = password.encode()
     salt = os.urandom(SALT_LENGTH)
     h = Utils.sha_new(password)
     h.update(salt)
-    return '{SSHA}' + base64.b64encode(h.digest() + salt)
+    return '{SSHA}' + base64.b64encode(h.digest() + salt).decode('utf-8')
 
 
 SCHEMES = {
