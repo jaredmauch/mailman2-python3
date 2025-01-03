@@ -39,9 +39,9 @@ MESSAGES = {}
 
 
 def usage(code, msg=''):
-    print >> sys.stderr, __doc__
+    sys.stderr.write(str(__doc__) + "\n")
     if msg:
-        print >> sys.stderr, msg
+        sys.stderr.write(str(msg) + "\n")
     sys.exit(code)
 
 
