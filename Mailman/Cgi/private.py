@@ -225,8 +225,12 @@ def main():
     else:
         content = f.read()
         f.close()
+        buffered = sys.stdout.getvalue()
+        sys.stdout.truncate(0)
+        sys.stdout.seek(0)
         orig_stdout = sys.stdout
         sys.stdout = sys.__stdout__
+        sys.stdout.write(buffered)
         print('Content-type: %s\n' % ctype)
         sys.stdout.flush()
         sys.stdout.buffer.write(content)
