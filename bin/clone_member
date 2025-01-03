@@ -110,6 +110,7 @@ def dolist(mlist, options):
         if foundp:
             newowners[options.toaddr] = 1 
         newowners = newowners.keys()
+        newowners = list(newowners)
         newowners.sort()
         if options.modify:
             mlist.owner = newowners
