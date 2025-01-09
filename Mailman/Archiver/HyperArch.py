@@ -416,7 +416,7 @@ class Article(pipermail.Article):
                     i18n.set_language(self._lang)
                     atmark = str(_(' at '), Utils.GetCharSet(self._lang))
                     subject = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
-                              '\g<1>' + atmark + '\g<2>', subject)
+                              r'\g<1>' + atmark + r'\g<2>', subject)
                 finally:
                     i18n.set_translation(otrans)
             self.decoded['subject'] = subject
@@ -433,10 +433,10 @@ class Article(pipermail.Article):
             subject = re.sub(prefix_pat, '', subject)
         subject = subject.lstrip()
         # MAS Should we strip FW and FWD too?
-        strip_pat = re.compile('^((RE|AW|SV|VS)(\[\d+\])?:\s*)+', re.I)
+        strip_pat = re.compile(r'^((RE|AW|SV|VS)(\[\d+\])?:\s*)+', re.I)
         stripped = strip_pat.sub('', subject)
         # Also remove whitespace to avoid folding/unfolding differences
-        stripped = re.sub('\s', '', stripped)
+        stripped = re.sub(r'\s', '', stripped)
         return stripped
 
     def decode_charset(self, field):
@@ -583,7 +583,7 @@ class Article(pipermail.Article):
                 i18n.set_language(self._lang)
                 atmark = str(_(' at '), cset)
                 body = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
-                              '\g<1>' + atmark + '\g<2>', body)
+                              r'\g<1>' + atmark + r'\g<2>', body)
             finally:
                 i18n.set_translation(otrans)
         # Return body to character set of article.

@@ -365,7 +365,7 @@ class SecurityManager(object):
 
 
 
-splitter = re.compile(';\s*')
+splitter = re.compile(r';\s*')
 
 def parsecookie(s):
     c = {}
