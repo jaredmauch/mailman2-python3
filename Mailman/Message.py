@@ -261,7 +261,7 @@ class UserNotification(Message):
         self['Subject'] = Header(subject, charset, header_name='Subject',
                                  errors='replace')
         self['From'] = sender
-        if isinstance(recip, ListType):
+        if isinstance(recip, list):
             self['To'] = COMMASPACE.join(recip)
             self.recips = recip
         else:
