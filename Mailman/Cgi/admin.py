@@ -1007,7 +1007,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     if bucket:
         membercnt = len(members)
         usertable.AddRow([Center(Italic(_(
-            '{allcnt} members total, {membercnt} shown')))])
+            f'{allcnt} members total, {membercnt} shown')))])
     else:
         usertable.AddRow([Center(Italic(_(f'{allcnt} members total')))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
@@ -1022,9 +1022,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             if regexp:
                 findfrag = '&findmember=' + urllib.parse.quote(regexp)
             url = adminurl + '/members?letter=' + letter + findfrag
-            if type(url) is str:
-                url = url.encode(Utils.GetCharSet(mlist.preferred_language),
-                                 errors='ignore')
             if letter == bucket:
                 show = Bold('[%s]' % letter.upper()).Format()
             else:
@@ -1210,10 +1207,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             start = chunkmembers[i*chunksz]
             end = chunkmembers[min((i+1)*chunksz, last)-1]
             thisurl = url + 'chunk=%d' % i + findfrag
-            if type(thisurl) is str:
-                thisurl = thisurl.encode(
-                                 Utils.GetCharSet(mlist.preferred_language),
-                                 errors='ignore')
             link = Link(thisurl, _(f'from {start} to {end}'))
             buttons.append(link)
         buttons = UnorderedList(*buttons)
