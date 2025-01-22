@@ -164,6 +164,12 @@ def main():
     except getopt.error as msg:
         usage(1, msg)
 
+    def silent_unraisable_hook(unraisable):
+        pass
+
+    if hasattr(sys, 'unraisablehook'):
+        sys.unraisablehook = silent_unraisable_hook
+
     once = 0
     runners = []
     verbose = 0
