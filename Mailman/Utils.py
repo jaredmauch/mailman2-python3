@@ -1381,7 +1381,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
             if txt_rec.rdtype != dns.rdatatype.TXT:
                 continue
             results_by_name.setdefault(name, []).append(
-                "".join(txt_rec.items[0].strings))
+                "".join( [ record.decode() if isinstance(record, bytes) else record for record in txt_rec.items[0].strings ] ))
         expands = list(want_names)
         seen = set(expands)
         while expands:
