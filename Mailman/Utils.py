@@ -1263,6 +1263,10 @@ def get_suffixes(url):
                url, e)
         return
     for line in d.readlines():
+        if not line:
+            continue
+        if isinstance(line, bytes):
+            line = line.decode()
         if not line.strip() or line.startswith(' ') or line.startswith('//'):
             continue
         line = re.sub(' .*', '', line.strip())
