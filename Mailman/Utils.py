@@ -1654,3 +1654,10 @@ def get_current_encoding(filename):
             continue
     # if everything fails, send utf-8 and hope for the best...
     return 'utf-8'
+
+def set_cte_if_missing(msg):
+    if 'content-transfer-encoding' not in msg:
+        msg['Content-Transfer-Encoding'] = '7bit'
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            set_cte_if_missing(part)
