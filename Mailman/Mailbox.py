@@ -28,6 +28,7 @@ from email.generator import Generator
 
 from Mailman import mm_cfg
 from Mailman.Message import Message
+from Mailman import Utils
 
 
 def _safeparser(fp):
@@ -51,12 +52,20 @@ class Mailbox(mailbox.mbox):
         # Check the last character of the file and write a newline if it isn't
         # a newline (but not at the beginning of an empty file).
         with open(self.filepath, 'r+') as fileh:
-            content = fileh.read()
-            if content:
-                if content[-1] != '\n':
+            try:
+                fileh.seek(-1, 2)
+            except IOError as e:
+                # Assume the file is empty.  We can't portably test the error code
+                # returned, since it differs per platform.
+                pass
+            else:
+                if fileh.read(1) != '\n':
                     fileh.write('\n')
+            # Seek to the last char of the mailbox
+            fileh.seek(0, 2)
             # Create a Generator instance to write the message to the file
             g = Generator(fileh)
+            Utils.set_cte_if_missing(msg)
             g.flatten(msg, unixfrom=True)
             # Add one more trailing newline for separation with the next message
             # to be appended to the mbox.

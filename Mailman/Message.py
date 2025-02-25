@@ -241,9 +241,9 @@ class Message(email.message.Message):
         """
         fp = StringIO()
         g = Generator(fp, mangle_from_=mangle_from_)
+        Utils.set_cte_if_missing(self)
         g.flatten(self, unixfrom=unixfrom)
         return fp.getvalue()
-
 
 
 class UserNotification(Message):

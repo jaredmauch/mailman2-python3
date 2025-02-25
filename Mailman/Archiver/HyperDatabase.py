@@ -68,9 +68,20 @@ class DumbBTree(object):
 
     def __sort(self, dirty=None):
         if self.__dirty == 1 or dirty:
-            self.sorted = list(self.dict.keys())
-            self.sorted.sort()
+            self.sorted = self.__fix_for_sort(list(self.dict.keys()))
+            if hasattr(self.sorted, 'sort'):
+                self.sorted.sort()
             self.__dirty = 0
+
+    def __fix_for_sort(self, items):
+        if isinstance(items, bytes):
+            return items.decode()
+        elif isinstance(items, list):
+            return [ self.__fix_for_sort(item) for item in items ]
+        elif isinstance(items, tuple):
+            return tuple( self.__fix_for_sort(item) for item in items )
+        else:
+            return items
 
     def lock(self):
         self.lockfile.lock()
