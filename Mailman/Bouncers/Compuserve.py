@@ -18,7 +18,7 @@
 
 import re
 import email
-import iterators
+import email.iterators
 
 dcre = re.compile(r'your message could not be delivered', re.IGNORECASE)
 acre = re.compile(r'Invalid receiver address: (?P<addr>.*)')
