@@ -615,6 +615,8 @@ def readMessage(path):
         else:
             assert ext == '.pck'
             msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            if not hasattr(msg, 'policy'):
+                msg.policy = email._policybase.compat32
     finally:
         fp.close()
     return msg
