@@ -1377,6 +1377,10 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         cnames = {}
         want_names = set([dmarc_domain + '.'])
         for txt_rec in txt_recs.response.answer:
+            if not isinstance(txt_rec.items, list):
+                continue
+            if not txt_rec.items[0]:
+                continue
             # Don't be fooled by an answer with uppercase in the name.
             name = txt_rec.name.to_text().lower()
             if txt_rec.rdtype == dns.rdatatype.CNAME:
