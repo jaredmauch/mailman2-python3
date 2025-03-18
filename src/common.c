@@ -22,7 +22,7 @@
 
 /* Passed in by configure. */
 #define SCRIPTDIR PREFIX "/scripts/"         /* trailing slash */
-#define MODULEDIR PREFIX                     /* no trailing slash */
+#define MODULEDIR PREFIX "/Mailman"          /* no trailing slash */
 
 const char* scriptdir = SCRIPTDIR;
 const char* moduledir = MODULEDIR;
