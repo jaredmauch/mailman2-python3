@@ -251,7 +251,7 @@ def send_i18n_digests(mlist, mboxfp):
         username = ''
         addresses = getaddresses([Utils.oneline(msg.get('from', ''), lcset)])
         # Take only the first author we find
-        if isinstance(addresses, ListType) and addresses:
+        if isinstance(addresses, list) and addresses:
             username = addresses[0][0]
             if not username:
                 username = addresses[0][1]

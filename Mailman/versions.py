@@ -349,12 +349,12 @@ def UpdateOldVars(l, stored_state):
     # transfer the list data type for holding members and digest members
     # to the dict data type starting file format version 11
     #
-    if type(l.members) is ListType:
+    if type(l.members) is list:
         members = {}
         for m in l.members:
             members[m] = 1
         l.members = members
-    if type(l.digest_members) is ListType:
+    if type(l.digest_members) is list:
         dmembers = {}
         for dm in l.digest_members:
             dmembers[dm] = 1

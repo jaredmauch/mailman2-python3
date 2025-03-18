@@ -1743,7 +1743,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # do the user options for members category
     if 'setmemberopts_btn' in cgidata and 'user' in cgidata:
         user = cgidata['user']
-        if type(user) is ListType:
+        if type(user) is list:
             users = []
             for ui in range(len(user)):
                 users.append(urllib.parse.unquote(user[ui].value))

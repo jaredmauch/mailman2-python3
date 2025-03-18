@@ -107,7 +107,7 @@ def process_request(doc, cgidata):
     auth     = cgidata.getfirst('auth', '').strip()
     langs    = cgidata.getvalue('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
 
-    if not isinstance(langs, ListType):
+    if not isinstance(langs, list):
         langs = [langs]
     # Sanity check
     safelistname = Utils.websafe(listname)
