@@ -764,7 +764,7 @@ AC_CONFIG_FILES([misc/paths.py Mailman/Defaults.py Mailman/mm_cfg.py.dist
            Mailman/Queue/Makefile Mailman/MTA/Makefile Mailman/Gui/Makefile
            templates/Makefile cron/Makefile scripts/Makefile messages/Makefile
            cron/crontab.in misc/mailman Makefile
-           tests/Makefile tests/bounces/Makefile tests/msgs/Makefile
+           tests/Makefile tests/bounces/Makefile tests/msgs/Makefile Mailman/__init__.py
            $SCRIPTS])
 AC_CONFIG_COMMANDS([default],[echo "configuration completed at" `date`],[])
 AC_OUTPUT
