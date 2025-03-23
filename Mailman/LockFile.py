@@ -58,6 +58,11 @@ tempfile.mktemp()).
 # requiring file locking.  See the __main__ section at the bottom of the file
 # for unit testing.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import socket
 import time
@@ -88,12 +93,12 @@ def _get_logfile():
             dir = os.path.split(tempfile.mktemp())[0]
             path = os.path.join(dir, 'LockFile.log')
             # open in line-buffered mode
-            class SimpleUserFile:
+            class SimpleUserFile(object):
                 def __init__(self, path):
                     self.__fp = open(path, 'a', 1)
-                    self.__prefix = '({d) ' }{ os.getpid()
+                    self.__prefix = '({0}) '.format(os.getpid())
                 def write(self, msg):
-                    now = '}{.3f' }{ time.time()
+                    now = '{0:.3f}'.format(time.time())
                     self.__fp.write(self.__prefix + now + ' ' + msg)
             _logfile = SimpleUserFile(path)
     return _logfile
@@ -113,7 +118,7 @@ class TimeOutError(LockError):
     """The timeout interval elapsed before the lock succeeded."""
 
 
-class LockFile:
+class LockFile(object):
     """A portable way to lock resources by way of the file system.
 
     This class supports the following methods:
@@ -180,7 +185,7 @@ class LockFile:
         # This works because we know we're single threaded
         self.__counter = LockFile.COUNTER
         LockFile.COUNTER += 1
-        self.__tmpfname = '}{s.}{s.}{d.}{d' }{ (
+        self.__tmpfname = '{0}.{1}.{2}.{3}'.format(
             lockfile, socket.gethostname(), os.getpid(), self.__counter)
         self.__withlogging = withlogging
         self.__logprefix = os.path.split(self.__lockfile)[1]
@@ -188,7 +193,7 @@ class LockFile:
         self.__owned = True
 
     def __repr__(self):
-        return '<LockFile }{s: }{s [}{s: }{ssec] pid=}{s>' }{ (
+        return '<LockFile {0}: {1} [{2}: {3}sec] pid={4}>'.format(
             id(self), self.__lockfile,
             self.locked() and 'locked' or 'unlocked',
             self.__lifetime, os.getpid())
@@ -217,7 +222,7 @@ class LockFile:
             self.set_lifetime(newlifetime)
         # Do we have the lock?  As a side effect, this refreshes the lock!
         if not self.locked() and not unconditionally:
-            raise NotLockedError, '}{s: }{s' }{ (repr(self), self.__read())
+            raise NotLockedError('{0}: {1}'.format(repr(self), self.__read()))
 
     def lock(self, timeout=0):
         """Acquire the lock.
@@ -366,7 +371,7 @@ class LockFile:
         # Find out current claim's temp filename
         winner = self.__read()
         # Now twiddle ours to the given pid
-        self.__tmpfname = '}{s.}{s.}{d' }{ (
+        self.__tmpfname = '{0}.{1}.{2}'.format(
             self.__lockfile, socket.gethostname(), pid)
         # Create a hard link from the global lock file to the temp file.  This
         # actually does things in reverse order of normal operation because we
@@ -385,7 +390,7 @@ class LockFile:
         self.__writelog('transferred the lock')
 
     def _take_possession(self):
-        self.__tmpfname = tmpfname = '}{s.}{s.}{d' }{ (
+        self.__tmpfname = tmpfname = '{0}.{1}.{2}'.format(
             self.__lockfile, socket.gethostname(), os.getpid())
         # Wait until the linkcount is 2, indicating the parent has completed
         # the transfer.

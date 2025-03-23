@@ -18,19 +18,23 @@
 """Extend mailbox.UnixMailbox.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import mailbox
 
 import email
-from email.Parser import Parser
-from email.Errors import MessageParseError
+from email.parser import Parser
+from email.errors import MessageParseError
 
 from Mailman import mm_cfg
 from Mailman.Message import Generator
 from Mailman.Message import Message
 
 
-
 def _safeparser(fp):
     try:
         return email.message_from_file(fp, Message)
@@ -39,7 +43,6 @@ def _safeparser(fp):
         return ''
 
 
-
 class Mailbox(mailbox.PortableUnixMailbox):
     def __init__(self, fp):
         mailbox.PortableUnixMailbox.__init__(self, fp, _safeparser)
@@ -64,51 +67,49 @@ class Mailbox(mailbox.PortableUnixMailbox):
         g.flatten(msg, unixfrom=True)
         # Add one more trailing newline for separation with the next message
         # to be appended to the mbox.
-        print(>, end=\'\')> self.fp
+        print('', file=self.fp)
 
 
-
 # This stuff is used by pipermail.py:processUnixMailbox().  It provides an
 # opportunity for the built-in archiver to scrub archived messages of nasty
 # things like attachments and such...
-def _archfactory(mailbox):
-    # The factory gets a file object, but it also needs to have a MailList
-    # object, so the clearest <wink> way to do this is to build a factory
-    # function that has a reference to the mailbox object, which in turn holds
-    # a reference to the mailing list.  Nested scopes would help here, BTW,
-    # but we can't rely on them being around (e.g. Python 2.0).
-    def scrubber(fp, mailbox=mailbox):
-        msg = _safeparser(fp)
-        if msg == '':
-            return msg
-        return mailbox.scrub(msg)
-    return scrubber
+def _archfactory(fp):
+    """Create a scrubber for archiving messages."""
+    return ArchiverMailbox(fp)
 
 
 class ArchiverMailbox(Mailbox):
-    # This is a derived class which is instantiated with a reference to the
-    # MailList object.  It is build such that the factory calls back into its
-    # scrub() method, giving the scrubber module a chance to do its thing
-    # before the message is archived.
-    def __init__(self, fp, mlist):
-        if mm_cfg.ARCHIVE_SCRUBBER:
-            __import__(mm_cfg.ARCHIVE_SCRUBBER)
-            self._scrubber = sys.modules[mm_cfg.ARCHIVE_SCRUBBER].process
-        else:
-            self._scrubber = None
-        self._mlist = mlist
-        mailbox.PortableUnixMailbox.__init__(self, fp, _archfactory(self))
+    """A mailbox class that scrubs messages for archiving."""
 
-    def scrub(self, msg):
-        if self._scrubber:
-            return self._scrubber(self._mlist, msg)
-        else:
-            return msg
+    def __init__(self, fp):
+        Mailbox.__init__(self, fp)
+        self._scrubber = None
 
-    def skipping(self, flag):
-        """ This method allows the archiver to skip over messages without
-        scrubbing attachments into the attachments directory."""
-        if flag:
-            self.factory = _safeparser
-        else:
-            self.factory = _archfactory(self)
+    def _scrub(self, msg):
+        """Scrub the message of attachments and other unnecessary parts."""
+        if self._scrubber is None:
+            from Mailman.Archiver import Scrubber
+            self._scrubber = Scrubber(convert_html_to_plaintext=1)
+        return self._scrubber.scrub(msg)
+
+    def AppendMessage(self, msg):
+        """Append a scrubbed message to the mailbox."""
+        # First scrub the message
+        msg = self._scrub(msg)
+        # Then append it using the parent class's method
+        Mailbox.AppendMessage(self, msg)
+
+    def SkipAttachment(self, msg, part):
+        """Return true if the attachment should be skipped."""
+        # Skip attachments with content-disposition: attachment
+        if part.get('content-disposition', '').lower().startswith('attachment'):
+            return True
+        # Skip base64 encoded parts larger than 40KB
+        if part.get('content-transfer-encoding', '').lower() == 'base64':
+            try:
+                size = int(part.get('content-length', 0))
+                if size > 40 * 1024:  # 40KB
+                    return True
+            except (ValueError, TypeError):
+                pass
+        return False
