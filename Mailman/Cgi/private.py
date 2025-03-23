@@ -121,7 +121,7 @@ def main():
             content_type = os.environ.get('CONTENT_TYPE', '')
             if content_type.startswith('application/x-www-form-urlencoded'):
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                form_data = sys.stdin.read(content_length)
+                form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
                 cgidata = parse_qs(form_data, keep_blank_values=1)
             else:
                 raise ValueError('Invalid content type')
