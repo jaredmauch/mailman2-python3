@@ -48,6 +48,8 @@ NL = '\n'
 # Format an arbitrary object.
 def HTMLFormatObject(item, indent):
     "Return a presentation of an object, invoking their Format method if any."
+    if isinstance(item, bytes):
+        item = item.decode('latin-1', errors='ignore')
     if type(item) == type(''):
         return item
     elif not hasattr(item, "Format"):
@@ -92,9 +94,18 @@ class Table(object):
         self.cells[-1].append('')
 
     def AddRow(self, row):
-        self.cells.append(row)
+        # Convert any bytes objects in the row to strings
+        processed_row = []
+        for cell in row:
+            if isinstance(cell, bytes):
+                cell = cell.decode('latin-1', errors='ignore')
+            processed_row.append(cell)
+        self.cells.append(processed_row)
 
     def AddCell(self, cell):
+        # Convert bytes object to string if needed
+        if isinstance(cell, bytes):
+            cell = cell.decode('latin-1', errors='ignore')
         self.cells[-1].append(cell)
 
     def AddCellInfo(self, row, col, **kws):
@@ -175,6 +186,9 @@ class Table(object):
         if my_info:
             output = output + self.ExtractCellInfo(my_info)
         item = self.cells[row][col]
+        # Handle bytes objects before passing to HTMLFormatObject
+        if isinstance(item, bytes):
+            item = item.decode('latin-1', errors='ignore')
         item_format = HTMLFormatObject(item, indent+4)
         output = '%s>%s</td>' % (output, item_format)
         return output

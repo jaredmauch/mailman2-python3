@@ -517,8 +517,14 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     # Is it a message/rfc822 attachment?
     elif ctype == 'message/rfc822':
         submsg = msg.get_payload()
-        # BAW: I'm sure we can eventually do better than this. :(
-        decodedpayload = Utils.websafe(str(submsg))
+        # Ensure proper string conversion
+        if isinstance(submsg, bytes):
+            decodedpayload = Utils.websafe(submsg.decode('latin-1', errors='ignore'))
+        else:
+            decodedpayload = Utils.websafe(str(submsg))
+    # Ensure decodedpayload is a string before writing
+    if isinstance(decodedpayload, bytes):
+        decodedpayload = decodedpayload.decode('latin-1', errors='ignore')
     fp = open(path, 'w')
     fp.write(decodedpayload)
     fp.close()

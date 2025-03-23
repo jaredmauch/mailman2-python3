@@ -58,7 +58,10 @@ def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     try:
         # Handle both string and bytes input
         if isinstance(s, bytes):
-            s = s.decode('us-ascii', 'replace')
+            try:
+                s = s.decode('us-ascii', 'replace')
+            except UnicodeError:
+                s = s.decode('latin-1', 'replace')
         return Header(s, charset, maxlinelen, header_name, continuation_ws)
     except (UnicodeError, LookupError) as e:
         syslog('error', 'list: %s: can\'t decode "%s" as %s: %s',

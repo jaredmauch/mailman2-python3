@@ -485,13 +485,18 @@ def websafe(s, doubleescape=False):
         if isinstance(s, str):
             for k in mm_cfg.BROKEN_BROWSER_REPLACEMENTS:
                 s = s.replace(k, mm_cfg.BROKEN_BROWSER_REPLACEMENTS[k])
-    if doubleescape:
-        if isinstance(s, bytes):
+    # Handle bytes objects first
+    if isinstance(s, bytes):
+        try:
             s = s.decode('latin-1', errors='ignore')
+        except (UnicodeError, LookupError):
+            s = str(s)
+    # Convert non-string types to strings
+    if not isinstance(s, str):
+        s = str(s)
+    if doubleescape:
         return html.escape(s, quote=True)
     else:
-        if isinstance(s, bytes):
-            s = s.decode('latin-1', errors='ignore')
         return html.escape(s, quote=True)
 
 
