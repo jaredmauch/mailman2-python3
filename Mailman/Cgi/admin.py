@@ -21,6 +21,7 @@ from __future__ import print_function
 import os
 import sys
 import time
+import signal
 from urllib.parse import parse_qs
 
 from Mailman import mm_cfg
