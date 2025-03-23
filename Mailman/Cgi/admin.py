@@ -31,6 +31,7 @@ from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
 from Mailman.CSRFcheck import csrf_check
+from Mailman.Cgi.Auth import Auth
 
 # Set up i18n
 _ = i18n._
