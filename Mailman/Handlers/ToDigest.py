@@ -66,9 +66,15 @@ def to_cset_out(text, lcset):
     # Convert text from unicode or lcset to output cset.
     ocset = Charset(lcset).get_output_charset() or lcset
     if isinstance(text, str):
-        return text.encode(ocset, 'replace')
+        try:
+            return text.encode(ocset, 'replace')
+        except (UnicodeError, LookupError):
+            return text.encode('us-ascii', 'replace')
     else:
-        return text.decode(lcset, 'replace').encode(ocset, 'replace')
+        try:
+            return text.decode(lcset, 'replace').encode(ocset, 'replace')
+        except (UnicodeError, LookupError):
+            return text.decode('us-ascii', 'replace').encode(ocset, 'replace')
 
 
 
@@ -343,18 +349,22 @@ def send_i18n_digests(mlist, mboxfp):
         print(file=plainmsg)
         # If decoded payload is empty, this may be multipart message.
         # -- just stringfy it.
-        payload = msg.get_payload(decode=True) \
-                  or msg.as_string().split('\n\n',1)[1]
+        payload = msg.get_payload(decode=True) or msg.as_string().split('\n\n',1)[1]
         mcset = msg.get_content_charset('')
         if mcset and mcset != lcset and mcset != lcset_out:
             try:
-                payload = str(payload, mcset, 'replace'
-                          ).encode(lcset, 'replace')
+                if isinstance(payload, bytes):
+                    payload = payload.decode(mcset, 'replace').encode(lcset, 'replace')
+                else:
+                    payload = payload.encode(lcset, 'replace')
             except (UnicodeError, LookupError):
-                # TK: Message has something unknown charset.
-                #     _out means charset in 'outer world'.
-                payload = str(payload, lcset_out, 'replace'
-                          ).encode(lcset, 'replace')
+                try:
+                    if isinstance(payload, bytes):
+                        payload = payload.decode(lcset_out, 'replace').encode(lcset, 'replace')
+                    else:
+                        payload = payload.encode(lcset, 'replace')
+                except (UnicodeError, LookupError):
+                    payload = payload.encode('us-ascii', 'replace')
         print(payload, file=plainmsg)
         if not payload.endswith('\n'):
             print(file=plainmsg)

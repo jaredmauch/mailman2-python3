@@ -68,7 +68,6 @@ except ImportError:
         return all
 
 
-
 def guess_extension(ctype, ext):
     # mimetypes maps multiple extensions to the same type, e.g. .doc, .dot,
     # and .wiz are all mapped to application/msword.  This sucks for finding
@@ -138,17 +137,17 @@ def calculate_attachments_dir(mlist, msg, msgdata):
 
 
 def replace_payload_by_text(msg, text, charset):
-    # TK: This is a common function in replacing the attachment and the main
-    # message by a text (scrubbing).
+    # Handle charset encoding properly
     del msg['content-type']
     del msg['content-transfer-encoding']
     if isinstance(charset, str):
-        # email 3.0.1 (python 2.4) doesn't like unicode
-        charset = charset.encode('us-ascii')
+        try:
+            charset = charset.encode('us-ascii').decode('us-ascii')
+        except (UnicodeError, LookupError):
+            charset = 'us-ascii'
     msg.set_payload(text, charset)
 
 
-
 def process(mlist, msg, msgdata=None):
     sanitize = mm_cfg.ARCHIVE_HTML_SANITIZER
     outer = True
@@ -362,18 +361,21 @@ URL: %(url)s
                 partcharset = part.get_content_charset()
             if partcharset and partcharset != charset:
                 try:
-                    t = str(t, partcharset, 'replace')
-                except (UnicodeError, LookupError, ValueError,
-                        AssertionError):
-                    # We can get here if partcharset is bogus in come way.
-                    # Replace funny characters.  We use errors='replace'
-                    t = str(t, 'ascii', 'replace')
+                    if isinstance(t, bytes):
+                        t = t.decode(partcharset, 'replace')
+                    else:
+                        t = t.encode(partcharset, 'replace').decode(partcharset, 'replace')
+                except (UnicodeError, LookupError, ValueError, AssertionError):
+                    try:
+                        if isinstance(t, bytes):
+                            t = t.decode('ascii', 'replace')
+                        else:
+                            t = t.encode('ascii', 'replace').decode('ascii', 'replace')
+                    except (UnicodeError, LookupError, ValueError, AssertionError):
+                        t = ''
                 try:
-                    # Should use HTML-Escape, or try generalizing to UTF-8
                     t = t.encode(charset, 'replace')
-                except (UnicodeError, LookupError, ValueError,
-                        AssertionError):
-                    # if the message charset is bogus, use the list's.
+                except (UnicodeError, LookupError, ValueError, AssertionError):
                     t = t.encode(lcset, 'replace')
             # Separation is useful
             if isinstance(t, str):
@@ -387,8 +389,7 @@ URL: %(url)s
         try:
             s = str(sep, lcset, 'replace')
             sep = s.encode(charset, 'replace')
-        except (UnicodeError, LookupError, ValueError,
-                AssertionError):
+        except (UnicodeError, LookupError, ValueError, AssertionError):
             pass
         replace_payload_by_text(msg, sep.join(text), charset)
         if format:
@@ -398,7 +399,6 @@ URL: %(url)s
     return msg
 
 
-
 def makedirs(dir):
     # Create all the directories to store this attachment in
     try:
@@ -412,7 +412,6 @@ def makedirs(dir):
         if e.errno != errno.EEXIST: raise
 
 
-
 def save_attachment(mlist, msg, dir, filter_html=True):
     fsdir = os.path.join(mlist.archive_dir(), dir)
     makedirs(fsdir)

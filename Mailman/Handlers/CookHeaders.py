@@ -45,23 +45,24 @@ def _isunicode(s):
 nonascii = re.compile(r'[^\s!-~]')
 
 def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
-    # Get the charset to encode the string in. Then search if there is any
-    # non-ascii character is in the string. If there is and the charset is
-    # us-ascii then we use iso-8859-1 instead. If the string is ascii only
-    # we use 'us-ascii' if another charset is specified.
+    # Get the charset to encode the string in
     charset = Utils.GetCharSet(mlist.preferred_language)
+    
+    # Handle non-ASCII characters
     if nonascii.search(s):
-        # use list charset but ...
         if charset == 'us-ascii':
             charset = 'iso-8859-1'
     else:
-        # there is no nonascii so ...
         charset = 'us-ascii'
+    
     try:
+        # Handle both string and bytes input
+        if isinstance(s, bytes):
+            s = s.decode('us-ascii', 'replace')
         return Header(s, charset, maxlinelen, header_name, continuation_ws)
-    except UnicodeError:
-        syslog('error', 'list: %s: can\'t decode "%s" as %s',
-               mlist.internal_name(), s, charset)
+    except (UnicodeError, LookupError) as e:
+        syslog('error', 'list: %s: can\'t decode "%s" as %s: %s',
+               mlist.internal_name(), s, charset, str(e))
         return Header('', charset, maxlinelen, header_name, continuation_ws)
 
 def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
@@ -483,24 +484,30 @@ def prefix_subject(mlist, msg, msgdata):
 
 def ch_oneline(headerstr):
     # Decode header string in one line and convert into single charset
-    # copied and modified from ToDigest.py and Utils.py
-    # return (string, cset) tuple as check for failure
     try:
         d = decode_header(headerstr)
-        # at this point, we should rstrip() every string because some
-        # MUA deliberately add trailing spaces when composing return
-        # message.
+        # Strip trailing spaces from each string
         d = [(s.rstrip(), c) for (s,c) in d]
+        
+        # Find first non-None charset
         cset = 'us-ascii'
-        for x in d:
-            # search for no-None charset
-            if x[1]:
-                cset = x[1]
+        for _, cs in d:
+            if cs:
+                cset = cs
                 break
+        
         h = make_header(d)
         ustr = h.__unicode__()
         oneline = u''.join(ustr.splitlines())
-        return oneline.encode(cset, 'replace'), cset
-    except (LookupError, UnicodeError, ValueError, HeaderParseError):
-        # possibly charset problem. return with undecoded string in one line.
-        return ''.join(headerstr.splitlines()), 'us-ascii'
+        
+        try:
+            return oneline.encode(cset, 'replace'), cset
+        except (UnicodeError, LookupError):
+            return oneline.encode('us-ascii', 'replace'), 'us-ascii'
+            
+    except (LookupError, UnicodeError, ValueError, HeaderParseError) as e:
+        # Handle failure gracefully
+        try:
+            return ''.join(headerstr.splitlines()), 'us-ascii'
+        except:
+            return '', 'us-ascii'

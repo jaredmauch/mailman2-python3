@@ -29,10 +29,13 @@ _translation = None
 
 
 def _get_ctype_charset():
-    old = locale.setlocale(locale.LC_CTYPE, '')
-    charset = locale.nl_langinfo(locale.CODESET)
-    locale.setlocale(locale.LC_CTYPE, old)
-    return charset
+    try:
+        old = locale.setlocale(locale.LC_CTYPE, '')
+        charset = locale.nl_langinfo(locale.CODESET)
+        locale.setlocale(locale.LC_CTYPE, old)
+        return charset
+    except (locale.Error, AttributeError):
+        return 'us-ascii'
 
 if not mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     _ctype_charset = _get_ctype_charset()
@@ -69,55 +72,47 @@ if _translation is None:
 
 
 def _(s, frame=1):
-    if s == '':
+    if not s:
         return s
     assert s
-    # Do translation of the given string into the current language, and do
-    # Ping-string interpolation into the resulting string.
-    #
-    # This lets you write something like:
-    #
-    #     now = time.ctime(time.time())
-    #     print _('The current time is: %(now)s')
-    #
-    # and have it Just Work.  Note that the lookup order for keys in the
-    # original string is 1) locals dictionary, 2) globals dictionary.
-    #
-    # First, get the frame of the caller
+    # Get the frame of the caller
     frame = sys._getframe(frame)
     # A `safe' dictionary is used so we won't get an exception if there's a
     # missing key in the dictionary.
     dict = SafeDict(frame.f_globals.copy())
     dict.update(frame.f_locals)
-    # Translating the string returns an encoded 8-bit string.  Rather than
-    # turn that into a Unicode, we turn any Unicodes in the dictionary values
-    # into encoded 8-bit strings.  BAW: Returning a Unicode here broke too
-    # much other stuff and _() has many tentacles.  Eventually I think we want
-    # to use Unicode everywhere.
-    # XXX python3 str does not require encode/decode
+    
+    # Get the translation
     tns = _translation.gettext(s)
-    charset = _translation.charset()
-    if not charset:
-        charset = 'us-ascii'
+    charset = _translation.charset() or 'us-ascii'
+    
+    # Handle dictionary values
     for k, v in list(dict.items()):
         if isinstance(v, str):
-            dict[k] = v.encode(charset, 'replace')
+            try:
+                dict[k] = v.encode(charset, 'replace')
+            except (UnicodeError, LookupError):
+                dict[k] = v.encode('us-ascii', 'replace')
+    
     try:
         return tns % dict
     except (ValueError, TypeError):
-        # Bad interpolation format. Punt.
         return tns
 
 
 
 def tolocale(s):
-    global _ctype_charset
-    if isinstance(s, str) or _ctype_charset is None:
+    if not isinstance(s, (str, bytes)):
         return s
-    source = _translation.charset ()
-    if not source:
+    if _ctype_charset is None:
         return s
-    return str(s, source, 'replace').encode(_ctype_charset, 'replace')
+    source = _translation.charset() or 'us-ascii'
+    try:
+        if isinstance(s, bytes):
+            return s.decode(source, 'replace').encode(_ctype_charset, 'replace')
+        return s.encode(_ctype_charset, 'replace')
+    except (UnicodeError, LookupError):
+        return s
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
