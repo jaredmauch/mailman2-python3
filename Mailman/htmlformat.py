@@ -489,7 +489,7 @@ class TextBox(InputObj):
         elif isinstance(value, str):
             safevalue = Utils.websafe(value)
         else:
-            safevalue = str(value)
+            safevalue = Utils.websafe(str(value))
         InputObj.__init__(self, name, "TEXT", safevalue, checked=0, size=size)
 
 class Hidden(InputObj):

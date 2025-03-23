@@ -486,13 +486,12 @@ def websafe(s, doubleescape=False):
             for k in mm_cfg.BROKEN_BROWSER_REPLACEMENTS:
                 s = s.replace(k, mm_cfg.BROKEN_BROWSER_REPLACEMENTS[k])
     if doubleescape:
+        if isinstance(s, bytes):
+            s = s.decode('latin-1', errors='ignore')
         return html.escape(s, quote=True)
     else:
-        if type(s) is bytes:
-            s = s.decode(errors='ignore')
-        re.sub('&', '&amp', s)
-        # Don't double escape html entities
-        #return _ampre.sub(r'&\1', html.escape(s, quote=True))
+        if isinstance(s, bytes):
+            s = s.decode('latin-1', errors='ignore')
         return html.escape(s, quote=True)
 
 

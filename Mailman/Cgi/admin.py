@@ -52,13 +52,16 @@ def main():
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
                 cgidata = parse_qs(form_data, keep_blank_values=1)
-                # Ensure CSRF token is properly encoded if present
-                if 'csrf_token' in cgidata:
-                    cgidata['csrf_token'] = [cgidata['csrf_token'][0].encode('latin-1')]
+                # Ensure all form values are properly decoded
+                for key in cgidata:
+                    cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
             else:
                 raise ValueError('Invalid content type')
         else:
             cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
+            # Ensure all query string values are properly decoded
+            for key in cgidata:
+                cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
