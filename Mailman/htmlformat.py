@@ -1360,82 +1360,130 @@ class DefinitionList(Container):
 # points at the gnu.org site instead of the www.list.org mirror.
 #
 from mm_cfg import MAILMAN_URL
-PYTHON_URL  = 'http://www.python.org/'
-GNU_URL     = 'http://www.gnu.org/'
+PYTHON_URL: str = 'http://www.python.org/'
+GNU_URL: str = 'http://www.gnu.org/'
 
-# The names of the image logo files.  These are concatentated onto
+# The names of the image logo files.  These are concatenated onto
 # mm_cfg.IMAGE_LOGOS (not urljoined).
-DELIVERED_BY = 'mailman.jpg'
-PYTHON_POWERED = 'PythonPowered.png'
-GNU_HEAD = 'gnu-head-tiny.jpg'
+DELIVERED_BY: str = 'mailman.jpg'
+PYTHON_POWERED: str = 'PythonPowered.png'
+GNU_HEAD: str = 'gnu-head-tiny.jpg'
 
 
-def MailmanLogo():
-    t = Table(border=0, width='100}{')
+def MailmanLogo() -> Table:
+    """Create a table containing the Mailman, Python, and GNU logos.
+    
+    Returns:
+        A Table instance containing the logos and version information
+    """
+    t = Table(border=0, width='100%')
     if mm_cfg.IMAGE_LOGOS:
-        def logo(file):
+        def logo(file: str) -> str:
+            """Generate the full URL for a logo file.
+            
+            Args:
+                file: The logo filename
+                
+            Returns:
+                The full URL for the logo
+            """
             return mm_cfg.IMAGE_LOGOS + file
-        mmlink = '<img src="}{s" alt="Delivered by Mailman" border=0>' \
-                 '<br>version }{s' }{ (logo(DELIVERED_BY), mm_cfg.VERSION)
-        pylink = '<img src="}{s" alt="Python Powered" border=0>' }{ \
-                 logo(PYTHON_POWERED)
-        gnulink = '<img src="}{s" alt="GNU\'s Not Unix" border=0>' }{ \
-                  logo(GNU_HEAD)
+            
+        mmlink = '<img src="{0}" alt="Delivered by Mailman" border=0><br>version {1}'.format(
+            logo(DELIVERED_BY), mm_cfg.VERSION)
+        pylink = '<img src="{0}" alt="Python Powered" border=0>'.format(
+            logo(PYTHON_POWERED))
+        gnulink = '<img src="{0}" alt="GNU\'s Not Unix" border=0>'.format(
+            logo(GNU_HEAD))
         t.AddRow([mmlink, pylink, gnulink])
     else:
         # use only textual links
         version = mm_cfg.VERSION
         mmlink = Link(MAILMAN_URL,
-                      _('Delivered by Mailman<br>version }{(version)s'))
+                     _('Delivered by Mailman<br>version {0}').format(version))
         pylink = Link(PYTHON_URL, _('Python Powered'))
-        gnulink = Link(GNU_URL, _("Gns Not Unix))
+        gnulink = Link(GNU_URL, _("GNU's Not Unix"))
         t.AddRow([mmlink, pylink, gnulink])
     return t
 
 
 class SelectOptions:
-   def __init__(self, varname, values, legend,
-                selected=0, size=1, multiple=None):
-      self.varname  = varname
-      self.values   = values
-      self.legend   = legend
-      self.size     = size
-      self.multiple = multiple
-      # we convert any type to tuple, commas are needed
-      if not multiple:
-         if type(selected) == types.IntType:
-             self.selected = (selected,)
-         elif type(selected) == types.TupleType:
-             self.selected = (selected[0],)
-         elif type(selected) == types.ListType:
-             self.selected = (selected[0],)
-         else:
-             self.selected = (0,)
+    """A class for HTML select elements.
+    
+    This class provides methods for creating HTML select elements with
+    support for multiple selection and option groups.
+    
+    Attributes:
+        varname: The select element name
+        values: List of option values
+        legend: List of option labels
+        size: The number of visible options
+        multiple: Whether multiple selection is allowed
+        selected: Tuple of selected option indices
+    """
+    
+    def __init__(self, varname: str, values: List[str], legend: List[str],
+                 selected: Union[int, List[int], Tuple[int, ...]] = 0,
+                 size: int = 1, multiple: Optional[bool] = None) -> None:
+        """Initialize a new SelectOptions instance.
+        
+        Args:
+            varname: The select element name
+            values: List of option values
+            legend: List of option labels
+            selected: Index or indices of selected options
+            size: The number of visible options
+            multiple: Whether multiple selection is allowed
+        """
+        self.varname = varname
+        self.values = values
+        self.legend = legend
+        self.size = size
+        self.multiple = multiple
+        
+        # Convert selected to a tuple of indices
+        if not multiple:
+            if isinstance(selected, int):
+                self.selected = (selected,)
+            elif isinstance(selected, tuple):
+                self.selected = (selected[0],)
+            elif isinstance(selected, list):
+                self.selected = (selected[0],)
+            else:
+                self.selected = (0,)
 
-   def Format(self, indent=0):
-      spaces = " " * indent
-      items  = min( len(self.values), len(self.legend) )
+    def Format(self, indent: int = 0) -> str:
+        """Format the select element as HTML.
+        
+        Args:
+            indent: The indentation level
+            
+        Returns:
+            HTML string for the select element
+        """
+        spaces = ' ' * indent
+        items = min(len(self.values), len(self.legend))
 
-      # jcrey: If there is no argument, we return nothing to avoid errors
-      if items == 0:
-          return ""
+        # If there are no arguments, we return nothing to avoid errors
+        if items == 0:
+            return ''
 
-      text = "\n" + spaces + "<Select name=\"}{s\"" }{ self.varname
-      if self.size > 1:
-          text = text + " size=}{d" }{ self.size
-      if self.multiple:
-          text = text + " multiple"
-      text = text + ">\n"
+        text = '\n{0}<select name="{1}"'.format(spaces, self.varname)
+        if self.size > 1:
+            text = text + ' size="{0}"'.format(self.size)
+        if self.multiple:
+            text = text + ' multiple'
+        text = text + '>\n'
 
-      for i in range(items):
-          if i in self.selected:
-              checked = " Selected"
-          else:
-              checked = ""
+        for i in range(items):
+            if i in self.selected:
+                checked = ' selected'
+            else:
+                checked = ''
 
-          opt = " <option value=\"}{s\"}{s> }{s </option>" }{ (
-              self.values[i], checked, self.legend[i])
-          text = text + spaces + opt + "\n"
+            opt = ' <option value="{0}"{1}>{2}</option>'.format(
+                self.values[i], checked, self.legend[i])
+            text = text + spaces + opt + '\n'
 
-      return text + spaces + '</Select>'
+        return text + spaces + '</select>'
 }
