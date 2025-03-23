@@ -476,7 +476,12 @@ class InputObj(object):
                   (safe_name, self.type, safe_value)]
         # Ensure all keyword arguments are properly escaped
         for item in list(self.kws.items()):
-            output.append('%s="%s"' % (item[0], Utils.websafe(item[1])))
+            # Convert non-string values to strings before escaping
+            if not isinstance(item[1], str):
+                item_value = str(item[1])
+            else:
+                item_value = item[1]
+            output.append('%s="%s"' % (item[0], Utils.websafe(item_value)))
         if self.checked:
             output.append('CHECKED')
         output.append('>')
