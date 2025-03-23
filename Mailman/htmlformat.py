@@ -484,10 +484,12 @@ class PasswordBox(InputObj):
 
 class TextBox(InputObj):
     def __init__(self, name, value='', size=mm_cfg.TEXTFIELDWIDTH):
-        if isinstance(value, str):
+        if isinstance(value, bytes):
+            safevalue = Utils.websafe(value.decode('latin-1'))
+        elif isinstance(value, str):
             safevalue = Utils.websafe(value)
         else:
-            safevalue = value
+            safevalue = str(value)
         InputObj.__init__(self, name, "TEXT", safevalue, checked=0, size=size)
 
 class Hidden(InputObj):
