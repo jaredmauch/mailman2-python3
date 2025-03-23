@@ -21,6 +21,7 @@ from __future__ import print_function
 import os
 import errno
 import re
+from urllib.parse import parse_qs
 
 from Mailman import Utils
 from Mailman import MailList
@@ -94,10 +95,18 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
-    # Must be authenticated to get any farther
+    # Get form data using parse_qs
     try:
-        form_data = get_form_data(keep_blank_values=1)
-        get_form_value(form_data, 'adminpw', '')
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -109,22 +118,22 @@ def main():
 
     # CSRF check
     safe_params = ['VARHELP', 'adminpw', 'admlogin']
-    params = get_form_keys(form_data)
+    params = get_form_keys(cgidata)
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, get_form_value(form_data, 'csrf_token'),
+        csrf_checked = csrf_check(mlist, get_form_value(cgidata, 'csrf_token'),
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if get_form_value(form_data, 'adminpw'):
+    if get_form_value(cgidata, 'adminpw'):
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     # Editing the html for a list is limited to the list admin and site admin.
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 get_form_value(form_data, 'adminpw', '')):
-        if has_form_key(form_data, 'admlogin'):
+                                 get_form_value(cgidata, 'adminpw', '')):
+        if has_form_key(cgidata, 'admlogin'):
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -140,7 +149,7 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    language = get_form_value(form_data, 'language', '')
+    language = get_form_value(cgidata, 'language', '')
     if language not in mlist.GetAvailableLanguages():
         language = mlist.preferred_language
     i18n.set_language(language)
@@ -177,9 +186,9 @@ def main():
         return
 
     try:
-        if get_form_keys(form_data) and not has_form_key(form_data, 'langform'):
+        if get_form_keys(cgidata) and not has_form_key(cgidata, 'langform'):
             if csrf_checked:
-                ChangeHTML(mlist, form_data, template_name, doc, lang=language)
+                ChangeHTML(mlist, cgidata, template_name, doc, lang=language)
             else:
                 doc.addError(
                   _('The form lifetime has expired. (request forgery check)'))

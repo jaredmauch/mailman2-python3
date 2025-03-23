@@ -21,6 +21,7 @@ from __future__ import print_function
 import os
 import sys
 import mimetypes
+from urllib.parse import parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -29,7 +30,6 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
-from Mailman.Cgi.form_utils import get_form_data, get_form_value, has_form_key
 
 # Set up i18n.  Until we know which list is being requested, we use the
 # server's default.
@@ -115,9 +115,18 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
+    # Get form data using parse_qs
     try:
-        form_data = get_form_data(keep_blank_values=1)
-        username = get_form_value(form_data, 'username', '').strip()
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -126,7 +135,9 @@ def main():
         print('Status: 400 Bad Request')
         print(doc.Format())
         return
-    password = get_form_value(form_data, 'password', '')
+
+    username = cgidata.get('username', [None])[0]
+    password = cgidata.get('password', [None])[0]
 
     is_auth = 0
     realname = mlist.real_name
@@ -137,9 +148,9 @@ def main():
                                   mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
                                  password, username):
-        if has_form_key(form_data, 'submit'):
-            # This is a re-authorization attempt
-            message = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+        if username:
+            message = Bold(FontSize('+1', _(f"""Authorization failed. 
+                      Please try again."""))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
                      os.environ.get('HTTP_X_FORWARDED_FOR',
                      os.environ.get('REMOTE_ADDR',
@@ -150,13 +161,9 @@ def main():
             # give an HTTP 401 for authentication failure
             print('Status: 401 Unauthorized')
         # Are we processing a password reminder from the login screen?
-        if has_form_key(form_data, 'login-remind'):
-            if username:
-                message = Bold(FontSize('+1', _(f"""If you are a list member,
-                          your password has been emailed to you."""))).Format()
-            else:
-                message = Bold(FontSize('+1',
-                                _('Please enter your email address'))).Format()
+        if username:
+            message = Bold(FontSize('+1', _(f"""If you are a list member,
+                      your password has been emailed to you."""))).Format()
             if mlist.isMember(username):
                 mlist.MailUserPassword(username)
             elif username:

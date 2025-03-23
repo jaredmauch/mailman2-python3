@@ -16,77 +16,45 @@
 # USA.
 
 """Process and produce the list-administration options forms."""
+from __future__ import print_function
 
-def cmp(a, b):
-    return (a > b) - (a < b)
-
-#from future.builtins import cmp
-import sys
 import os
-import re
-import urllib.request, urllib.parse, urllib.error
-import signal
-
-from email.utils import unquote, parseaddr, formataddr
+import sys
+import time
+from urllib.parse import parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
 from Mailman import MailList
 from Mailman import Errors
-from Mailman import MemberAdaptor
 from Mailman import i18n
-from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
-from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new
 from Mailman.CSRFcheck import csrf_check
-from Mailman.Cgi.form_utils import get_form_data, get_form_value, get_form_keys, has_form_key
 
 # Set up i18n
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-def D_(s):
-    return s
-
-NL = '\n'
-OPTCOLUMNS = 11
-
-AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
 def main():
-    # Try to find out which list is being administered
-    parts = Utils.GetPathPieces()
-    if not parts:
-        # None, so just do the admin overview and be done with it
-        admin_overview()
-        return
-    # Get the list object
-    listname = parts[0].lower()
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+
+    # Get form data using parse_qs
     try:
-        mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
-        # Avoid cross-site scripting attacks
-        safelistname = Utils.websafe(listname)
-        # Send this with a 404 status.
-        print('Status: 404 Not Found')
-        admin_overview(_(f'No such list <em>{safelistname}</em>'))
-        syslog('error', 'admin: No such list "%s": %s\n',
-               listname, e)
-        return
-    # Now that we know what list has been requested, all subsequent admin
-    # pages are shown in that list's preferred language.
-    i18n.set_language(mlist.preferred_language)
-    # If the user is not authenticated, we're done.
-    try:
-        form_data = get_form_data(keep_blank_values=1)
-        get_form_value(form_data, 'csrf_token', '')
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
@@ -98,21 +66,21 @@ def main():
     safe_params = ['VARHELP', 'adminpw', 'admlogin',
                    'letter', 'chunk', 'findmember',
                    'legend']
-    params = get_form_keys(form_data)
+    params = cgidata.keys()
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, get_form_value(form_data, 'csrf_token'),
+        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', ''),
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if get_form_value(form_data, 'adminpw'):
+    if cgidata.get('adminpw'):
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 get_form_value(form_data, 'adminpw', '')):
-        if has_form_key(form_data, 'adminpw'):
+                                 cgidata.get('adminpw', '')):
+        if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -157,8 +125,8 @@ def main():
     parsedqs = None
     if qsenviron:
         parsedqs = parse_qs(qsenviron)
-    if has_form_key(form_data, 'VARHELP'):
-        varhelp = get_form_value(form_data, 'VARHELP')
+    if 'VARHELP' in cgidata:
+        varhelp = cgidata['VARHELP'][0]
     elif parsedqs:
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
@@ -206,10 +174,10 @@ def main():
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        if get_form_keys(form_data):
+        if cgidata:
             if csrf_checked:
                 # There are options to change
-                change_options(mlist, category, subcat, form_data, doc)
+                change_options(mlist, category, subcat, cgidata, doc)
             else:
                 doc.addError(
                   _('The form lifetime has expired. (request forgery check)'))
@@ -239,7 +207,7 @@ def main():
                 fix this problem. Affected member(s) %(rm)r.'''),
                 tag=_('Warning: '))
         # Glom up the results page and print it out
-        show_results(mlist, doc, category, subcat, form_data)
+        show_results(mlist, doc, category, subcat, cgidata)
         print(doc.Format())
         mlist.Save()
     finally:

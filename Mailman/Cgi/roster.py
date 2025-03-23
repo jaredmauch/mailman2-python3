@@ -26,7 +26,7 @@ from __future__ import print_function
 
 import sys
 import os
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -35,7 +35,6 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
-from Mailman.Cgi.form_utils import get_form_data, get_form_value
 
 # Set up i18n
 _ = i18n._
@@ -43,6 +42,30 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
 def main():
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+
+    # Get form data using parse_qs
+    try:
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
     parts = Utils.GetPathPieces()
     if not parts:
         error_page(_('Invalid options to CGI script'))
@@ -61,12 +84,9 @@ def main():
         return
 
     try:
-        form_data = get_form_data(keep_blank_values=1)
-        lang = get_form_value(form_data, 'language')
+        lang = cgidata.get('language', [None])[0]
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
@@ -83,8 +103,8 @@ def main():
     # "admin"-only, then we try to cookie authenticate the user, and failing
     # that, we check roster-email and roster-pw fields for a valid password.
     # (also allowed: the list moderator, the list admin, and the site admin).
-    password = get_form_value(form_data, 'roster-pw', '').strip()
-    addr = get_form_value(form_data, 'roster-email', '').strip()
+    password = cgidata.get('roster-pw', [None])[0]
+    addr = cgidata.get('roster-email', [None])[0]
     list_hidden = (not mlist.WebAuthenticate((mm_cfg.AuthUser,),
                                              password, addr)
                    and mlist.WebAuthenticate((mm_cfg.AuthListModerator,
@@ -109,11 +129,10 @@ def main():
                                    password)
     if not ok:
         realname = mlist.real_name
-        doc = Document()
-        doc.set_language(lang)
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('{realname} roster authentication failed.')))
         # Send this with a 401 status.
         print('Status: 401 Unauthorized')
-        error_page_doc(doc, _('{realname} roster authentication failed.'))
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
         remote = os.environ.get('HTTP_FORWARDED_FOR',

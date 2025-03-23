@@ -23,7 +23,9 @@ from __future__ import print_function
 
 from builtins import str
 import os
+import sys
 import time
+from urllib.parse import parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -32,7 +34,6 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
-from Mailman.Cgi.form_utils import get_form_data, get_form_value
 
 # Set up i18n
 _ = i18n._
@@ -40,6 +41,38 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
 def main():
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+
+    # Get form data using parse_qs
+    try:
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # See if the form data has a preferred language set, in which case, use it
+    # for the results.  If not, use the list's preferred language.
+    language = cgidata.get('language', [''])[0]
+    if not Utils.IsLanguage(language):
+        language = mm_cfg.DEFAULT_SERVER_LANGUAGE
+    i18n.set_language(language)
+    doc.set_language(language)
+
     parts = Utils.GetPathPieces()
     if not parts:
         listinfo_overview()
@@ -57,24 +90,6 @@ def main():
         syslog('error', 'listinfo: No such list "%s": %s', listname, e)
         return
 
-    # See if the user want to see this page in other language
-    try:
-        form_data = get_form_data(keep_blank_values=1)
-        language = get_form_value(form_data, 'language')
-    except Exception:
-        # Someone crafted a POST with a bad Content-Type:.
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('Invalid options to CGI script.')))
-        # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
-        return
-
-    if not Utils.IsLanguage(language):
-        language = mlist.preferred_language
-    i18n.set_language(language)
     list_listinfo(mlist, language)
 
 
