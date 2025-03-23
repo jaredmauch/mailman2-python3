@@ -24,7 +24,6 @@ def cmp(a, b):
 import sys
 import os
 import re
-import cgi
 import urllib.request, urllib.parse, urllib.error
 import signal
 
@@ -43,6 +42,7 @@ from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
 from Mailman.CSRFcheck import csrf_check
+from Mailman.Cgi.CGIHandler import FieldStorage, parse_qs
 
 # Set up i18n
 _ = i18n._
@@ -56,7 +56,6 @@ OPTCOLUMNS = 11
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
-
 def main():
     # Try to find out which list is being administered
     parts = Utils.GetPathPieces()
@@ -81,7 +80,7 @@ def main():
     # pages are shown in that list's preferred language.
     i18n.set_language(mlist.preferred_language)
     # If the user is not authenticated, we're done.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
         cgidata.getfirst('csrf_token', '')
     except TypeError:
@@ -157,7 +156,7 @@ def main():
     qsenviron = os.environ.get('QUERY_STRING')
     parsedqs = None
     if qsenviron:
-        parsedqs = cgi.parse_qs(qsenviron)
+        parsedqs = parse_qs(qsenviron)
     if 'VARHELP' in cgidata:
         varhelp = cgidata.getfirst('VARHELP')
     elif parsedqs:
@@ -251,7 +250,6 @@ def main():
         mlist.Unlock()
 
 
-
 def admin_overview(msg=''):
     # Show the administrative overview page, with the list of all the lists on
     # this host.  msg is an optional error message to display at the top of
@@ -355,7 +353,6 @@ def admin_overview(msg=''):
     print(doc.Format())
 
 
-
 def option_help(mlist, varhelp):
     # The html page document
     doc = Document()
@@ -429,7 +426,6 @@ def option_help(mlist, varhelp):
     print(doc.Format())
 
 
-
 def show_results(mlist, doc, category, subcat, cgidata):
     # Produce the results page
     adminurl = mlist.GetScriptURL('admin')
@@ -578,7 +574,6 @@ def show_results(mlist, doc, category, subcat, cgidata):
     doc.AddItem(mlist.GetMailmanFooter())
 
 
-
 def show_variables(mlist, category, subcat, cgidata, doc):
     options = mlist.GetConfigInfo(category, subcat)
 
@@ -626,7 +621,6 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     return table
 
 
-
 def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
     # Add a row to an options table with the item description and value.
     varname, kind, params, extra, descr, elaboration = \
@@ -643,7 +637,6 @@ def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
                       bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
 
 
-
 def get_item_characteristics(record):
     # Break out the components of an item description from its description
     # record:
@@ -664,7 +657,6 @@ def get_item_characteristics(record):
     return varname, kind, params, dependancies, descr, elaboration
 
 
-
 def get_item_gui_value(mlist, category, kind, varname, params, extra):
     """Return a representation of an item's settings."""
     # Give the category a chance to return the value for the variable
@@ -849,7 +841,6 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         assert 0, 'Bad gui widget type: %s' % kind
 
 
-
 def get_item_gui_description(mlist, category, subcat,
                              varname, descr, elaboration, detailsp):
     # Return the item's description, with link to details.
@@ -877,7 +868,6 @@ def get_item_gui_description(mlist, category, subcat,
     return text
 
 
-
 def membership_options(mlist, subcat, cgidata, doc, form):
     # Show the main stuff
     adminurl = mlist.GetScriptURL('admin', absolute=1)
@@ -976,7 +966,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         # put into FieldStorage's keys :-(
         qsenviron = os.environ.get('QUERY_STRING')
         if qsenviron:
-            qs = cgi.parse_qs(qsenviron)
+            qs = parse_qs(qsenviron)
             bucket = qs.get('letter', '0')[0].lower()
         keys = list(buckets.keys())
         keys.sort()
@@ -1179,7 +1169,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     parsedqs = 0
     qsenviron = os.environ.get('QUERY_STRING')
     if qsenviron:
-        qs = cgi.parse_qs(qsenviron).get('legend')
+        qs = parse_qs(qsenviron).get('legend')
         if qs and type(qs) is list:
             qs = qs[0]
         if qs == 'yes':
@@ -1220,7 +1210,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     return container
 
 
-
 def mass_subscribe(mlist, container):
     # MASS SUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1271,7 +1260,6 @@ def mass_subscribe(mlist, container):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
 
 
-
 def mass_remove(mlist, container):
     # MASS UNSUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1303,7 +1291,6 @@ def mass_remove(mlist, container):
     container.AddItem(Center(table))
 
 
-
 def address_change(mlist, container):
     # ADDRESS CHANGE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1335,7 +1322,6 @@ def address_change(mlist, container):
     container.AddItem(Center(table))
 
 
-
 def mass_sync(mlist, container):
     # MASS SYNC
     table = Table(width='90%')
@@ -1349,7 +1335,6 @@ def mass_sync(mlist, container):
     container.AddItem(Center(table))
 
 
-
 def password_inputs(mlist):
     adminurl = mlist.GetScriptURL('admin', absolute=1)
     table = Table(cellspacing=3, cellpadding=4)
@@ -1407,7 +1392,6 @@ no other.""")])
     return table
 
 
-
 def submit_button(name='submit'):
     table = Table(border=0, cellspacing=0, cellpadding=2)
     table.AddRow([Bold(SubmitButton(name, _('Submit Your Changes')))])
@@ -1415,7 +1399,6 @@ def submit_button(name='submit'):
     return table
 
 
-
 def change_options(mlist, category, subcat, cgidata, doc):
     global _
     def safeint(formvar, defaultval=None):
