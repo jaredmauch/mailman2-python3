@@ -23,17 +23,18 @@ which is more convenient for use inside Mailman.
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
+
 from __future__ import unicode_literals
 
 import re
 from io import StringIO
+
 import email
-from email import generator
-from email import message
-from email import utils
-from email.charset import Charset
-from email.header import Header
+import email.Generator
+import email.Message
+import email.Utils
+from email.Charset import Charset
+from email.Header import Header
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -44,14 +45,14 @@ mo = re.match(r'([\d.]+)', email.__version__)
 VERSION = tuple([int(s) for s in mo.group().split('.')])
 
 
-class Generator(generator.Generator):
+class Generator(email.Generator.Generator):
     """Generates output from a Message object tree, keeping signatures.
 
        Headers will by default _not_ be folded in attachments.
     """
     def __init__(self, outfp, mangle_from_=True,
                  maxheaderlen=78, children_maxheaderlen=0):
-        super(Generator, self).__init__(outfp,
+        email.Generator.Generator.__init__(self, outfp,
                 mangle_from_=mangle_from_, maxheaderlen=maxheaderlen)
         self.__children_maxheaderlen = children_maxheaderlen
 
@@ -61,13 +62,13 @@ class Generator(generator.Generator):
                 self.__children_maxheaderlen, self.__children_maxheaderlen)
 
 
-class Message(message.Message):
+class Message(email.Message.Message):
     def __init__(self):
         # We need a version number so that we can optimize __setstate__()
         self.__version__ = VERSION
-        super(Message, self).__init__()
+        email.Message.Message.__init__(self)
 
-    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint(u, end='')ses repr.
+    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint(u, end=\'\')ses repr.
     def __repr__(self):
         return self.__str__()
 
@@ -111,6 +112,7 @@ class Message(message.Message):
         if hchanged:
             self._headers = headers
 
+    # I think this method ought to eventually be deprecated
     def get_sender(self, use_envelope=None, preserve_case=0):
         """Return the address considered to be the author of the email.
 
@@ -153,7 +155,7 @@ class Message(message.Message):
             # decoded before parsing since the decoded header may contain
             # an unquoted comma or other delimiter in a real name.
             fieldval = ''.join(fieldval.splitlines())
-            addrs = utils.getaddresses([fieldval])
+            addrs = email.Utils.getaddresses([fieldval])
             try:
                 realname, address = addrs[0]
             except IndexError:
@@ -210,7 +212,7 @@ class Message(message.Message):
                     # getaddresses() and multi-line headers
                     fieldvals = [''.join(fv.splitlines())
                                  for fv in fieldvals]
-                    pairs.extend(utils.getaddresses(fieldvals))
+                    pairs.extend(email.Utils.getaddresses(fieldvals))
         authors = []
         for pair in pairs:
             address = pair[1]
@@ -224,7 +226,7 @@ class Message(message.Message):
         Mailman to stop delivery in Scrubber.py (called from ToDigest.py).
         """
         try:
-            filename = super(Message, self).get_filename(failobj)
+            filename = email.Message.Message.get_filename(self, failobj)
             return filename
         except (UnicodeError, LookupError, ValueError):
             return failobj
@@ -247,7 +249,7 @@ class UserNotification(Message):
     """Class for internally crafted messages."""
 
     def __init__(self, recip, sender, subject=None, text=None, lang=None):
-        super(UserNotification, self).__init__()
+        Message.__init__(self)
         charset = None
         if lang is not None:
             charset = Charset(Utils.GetCharSet(lang))
@@ -277,7 +279,7 @@ class UserNotification(Message):
             self['Message-ID'] = Utils.unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
         if 'date' not in self:
-            self['Date'] = utils.formatdate(localtime=1)
+            self['Date'] = email.Utils.formatdate(localtime=1)
         # UserNotifications are typically for admin messages, and for messages
         # other than list explosions.  Send these out as Precedence: bulk, but
         # don't override an existing Precedence: header.
@@ -314,7 +316,7 @@ class OwnerNotification(UserNotification):
         # we'll get a mail loop if an owner's address bounces.
         sender = Utils.get_site_email(mlist.host_name, 'bounces')
         lang = mlist.preferred_language
-        super(OwnerNotification, self).__init__(recips, sender, subject, text, lang)
+        UserNotification.__init__(self, recips, sender, subject, text, lang)
         # Hack the To header to look like it's going to the -owner address
         del self['to']
         self['To'] = mlist.GetOwnerEmail()
@@ -339,17 +341,16 @@ class OwnerNotification(UserNotification):
                         envsender = self._sender,
                         **_kws)
 
-
 def _invert_xml(mo):
     # This is used with re.sub below to convert XML char refs and textual \u
     # escapes to unicodes.
     try:
         if mo.group(1)[:1] == '#':
             return chr(int(mo.group(1)[1:]))
-        elif mo.group(1)[:1].lower() == 'x':
+        elif mo.group(1)[:1].lower() == ':
             return chr(int(mo.group(1)[1:], 16))
         else:
-            return '\ufffd'
+            return \ufffd'
     except ValueError:
         # Value is out of range.  Return the unicode replace character.
         return '\ufffd'
