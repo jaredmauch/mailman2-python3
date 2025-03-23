@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import signal
-import cgi
+from Mailman.Cgi.CGIHandler import FieldStorage
 import time
 
 from Mailman import mm_cfg
@@ -67,7 +67,7 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Get the form data to see if this is a second-step confirmation
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
         cookie = cgidata.getfirst('cookie')
     except TypeError:

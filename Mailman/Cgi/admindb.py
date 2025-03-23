@@ -22,7 +22,7 @@ from builtins import zip
 from builtins import str
 import sys
 import os
-import cgi
+from Mailman.Cgi.CGIHandler import FieldStorage, parse_qs
 import errno
 import signal
 import email
@@ -66,7 +66,6 @@ AUTH_CONTEXTS = (mm_cfg.AuthListModerator, mm_cfg.AuthListAdmin,
                  mm_cfg.AuthSiteAdmin)
 
 
-
 def helds_by_skey(mlist, ssort=SSENDER):
     heldmsgs = mlist.GetHeldMessageIds()
     byskey = {}
@@ -104,7 +103,6 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
     return btns
 
 
-
 def main():
     global ssort
     # Figure out which list is being requested
@@ -129,7 +127,7 @@ def main():
     i18n.set_language(mlist.preferred_language)
 
     # Make sure the user is authorized to see this page.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
         cgidata.getfirst('adminpw', '')
     except TypeError:
@@ -201,13 +199,13 @@ def main():
     if envar:
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
-        qs = cgi.parse_qs(envar).get('sender')
+        qs = parse_qs(envar).get('sender')
         if qs and type(qs) == ListType:
             sender = qs[0]
-        qs = cgi.parse_qs(envar).get('msgid')
+        qs = parse_qs(envar).get('msgid')
         if qs and type(qs) == ListType:
             msgid = qs[0]
-        qs = cgi.parse_qs(envar).get('details')
+        qs = parse_qs(envar).get('details')
         if qs and type(qs) == ListType:
             details = qs[0]
 
@@ -351,7 +349,6 @@ def main():
         mlist.Unlock()
 
 
-
 def handle_no_list(msg=''):
     # Print something useful if no list was given.
     doc = Document()
@@ -369,7 +366,6 @@ def handle_no_list(msg=''):
     print(doc.Format())
 
 
-
 def show_pending_subs(mlist, form):
     # Add the subscription request section
     pendingsubs = mlist.GetSubscriptionIds()
@@ -427,7 +423,6 @@ def show_pending_subs(mlist, form):
     return num
 
 
-
 def show_pending_unsubs(mlist, form):
     # Add the pending unsubscription request section
     lang = mlist.preferred_language
@@ -481,7 +476,6 @@ def show_pending_unsubs(mlist, form):
     return num
 
 
-
 def show_helds_overview(mlist, form, ssort=SSENDER):
     # Sort the held messages.
     byskey = helds_by_skey(mlist, ssort)
@@ -636,7 +630,6 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
     return 1
 
 
-
 def show_sender_requests(mlist, form, sender):
     byskey = helds_by_skey(mlist, SSENDER)
     if not byskey:
@@ -654,7 +647,6 @@ def show_sender_requests(mlist, form, sender):
         count += 1
 
 
-
 def show_message_requests(mlist, form, id):
     try:
         id = int(id)
@@ -665,7 +657,6 @@ def show_message_requests(mlist, form, id):
     show_post_requests(mlist, id, info, 1, 1, form)
 
 
-
 def show_detailed_requests(mlist, form):
     all = mlist.GetHeldMessageIds()
     total = len(all)
@@ -676,7 +667,6 @@ def show_detailed_requests(mlist, form):
         count += 1
 
 
-
 def show_post_requests(mlist, id, info, total, count, form):
     # Mailman.ListAdmin.__handlepost no longer tests for pre 2.0beta3
     ptime, sender, subject, reason, filename, msgdata = info
@@ -802,7 +792,6 @@ def show_post_requests(mlist, id, info, total, count, form):
     form.AddItem('<p>')
 
 
-
 def process_form(mlist, doc, cgidata):
     global ssort
     senderactions = {}

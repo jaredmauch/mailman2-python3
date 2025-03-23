@@ -26,7 +26,7 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
+from Mailman.Cgi.CGIHandler import FieldStorage
 import urllib.request, urllib.parse, urllib.error
 
 from Mailman import mm_cfg
@@ -42,7 +42,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
@@ -61,7 +60,7 @@ def main():
         syslog('error', 'roster: No such list "%s": %s', listname, e)
         return
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
 
     # messages in form should go in selected language (if any...)
     try:
@@ -141,7 +140,6 @@ def main():
     print(doc.Format())
 
 
-
 def error_page(errmsg):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)

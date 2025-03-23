@@ -22,7 +22,7 @@ from builtins import object
 import sys
 import os
 import signal
-import cgi
+from Mailman.Cgi.CGIHandler import FieldStorage
 
 from Mailman import mm_cfg
 from Mailman import MailList
@@ -38,12 +38,11 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('doit', '')
     except TypeError:
@@ -83,7 +82,6 @@ def main():
     print(doc.Format())
 
 
-
 def process_request(doc, cgidata):
     # Lowercase the listname since this is treated as the "internal" name.
     listname = cgidata.getfirst('listname', '').strip().lower()
@@ -297,7 +295,6 @@ def process_request(doc, cgidata):
     doc.AddItem(table)
 
 
-
 # Because the cgi module blows
 class Dummy(object):
     def getfirst(self, name, default):
@@ -305,7 +302,6 @@ class Dummy(object):
 dummy = Dummy()
 
 
-
 def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()

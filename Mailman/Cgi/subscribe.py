@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
+from Mailman.Cgi.CGIHandler import FieldStorage
 import time
 import signal
 import urllib.request, urllib.parse, urllib.error
@@ -46,7 +46,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -74,7 +73,7 @@ def main():
 
     # See if the form data has a preferred language set, in which case, use it
     # for the results.  If not, use the list's preferred language.
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         language = cgidata.getfirst('language', '')
     except TypeError:
@@ -117,7 +116,6 @@ def main():
         mlist.Unlock()
 
 
-
 def process_form(mlist, doc, cgidata, lang):
     listowner = mlist.GetOwnerEmail()
     realname = mlist.real_name
@@ -347,7 +345,6 @@ You have been successfully subscribed to the {realname} mailing list.""")
     print_results(mlist, results, doc, lang)
 
 
-
 def print_results(mlist, results, doc, lang):
     # The bulk of the document will come from the options.html template, which
     # includes its own html armor (head tags, etc.).  Suppress the head that

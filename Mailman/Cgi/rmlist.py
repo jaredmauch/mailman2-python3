@@ -18,7 +18,6 @@
 from __future__ import print_function
 
 import os
-import cgi
 import sys
 import errno
 import shutil
@@ -30,18 +29,18 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Cgi.CGIHandler import FieldStorage
 
 # Set up i18n
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('password', '')
     except TypeError:
@@ -112,7 +111,6 @@ def main():
     print(doc.Format())
 
 
-
 def process_request(doc, cgidata, mlist):
     password = cgidata.getfirst('password', '').strip()
     try:
@@ -203,7 +201,6 @@ def process_request(doc, cgidata, mlist):
     doc.AddItem(MailmanLogo())
 
 
-
 def request_deletion(doc, mlist, errmsg=None):
     realname = mlist.real_name
     title = _('Permanently remove mailing list <em>{realname}</em>')

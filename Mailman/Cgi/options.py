@@ -24,7 +24,6 @@ from builtins import object
 import re
 import sys
 import os
-import cgi
 import signal
 import urllib.request, urllib.parse, urllib.error
 
@@ -37,6 +36,7 @@ from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
 from Mailman.CSRFcheck import csrf_check
+from Mailman.Cgi.CGIHandler import FieldStorage
 
 OR = '|'
 SLASH = '/'
@@ -51,7 +51,7 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 def D_(s):
     return s
 
-
+
 def main():
     global _
     doc = Document()
@@ -102,7 +102,7 @@ def main():
         return
 
     # The total contents of the user's response
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
 
     # CSRF check
     safe_params = ['displang-button', 'language', 'email', 'password', 'login',
@@ -801,7 +801,6 @@ address.  Upon confirmation, any other mailing list containing the address
     print(doc.Format())
 
 
-
 def options_page(mlist, doc, user, cpuser, userlang, message=''):
     # The bulk of the document will come from the options.html template, which
     # includes it's own html armor (head tags, etc.).  Suppress the head that
@@ -947,7 +946,7 @@ You are subscribed to this list with the case-preserved address
         page_text = DIGRE.sub('', page_text)
     doc.AddItem(page_text)
 
-
+
 def loginpage(mlist, doc, user, lang):
     realname = mlist.real_name
     actionurl = mlist.GetScriptURL('options')
@@ -1032,7 +1031,6 @@ def loginpage(mlist, doc, user, lang):
     doc.AddItem(mlist.GetMailmanFooter())
 
 
-
 def lists_of_member(mlist, user):
     hostname = mlist.host_name
     onlists = []
@@ -1049,7 +1047,6 @@ def lists_of_member(mlist, user):
     return onlists
 
 
-
 def change_password(mlist, user, newpw, confirmpw):
     # This operation requires the list lock, so let's set up the signal
     # handling so the list lock will get released when the user hits the
@@ -1076,7 +1073,6 @@ def change_password(mlist, user, newpw, confirmpw):
         mlist.Unlock()
 
 
-
 def global_options(mlist, user, globalopts):
     # Is there anything to do?
     for attr in dir(globalopts):
@@ -1120,7 +1116,6 @@ def global_options(mlist, user, globalopts):
         mlist.Unlock()
 
 
-
 def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
     # Find out which topic the user wants to get details of
     reflist = varhelp.split('/')

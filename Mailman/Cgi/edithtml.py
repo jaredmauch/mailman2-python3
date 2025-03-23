@@ -19,7 +19,6 @@
 from __future__ import print_function
 
 import os
-import cgi
 import errno
 import re
 
@@ -32,13 +31,13 @@ from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
 from Mailman import i18n
 from Mailman.CSRFcheck import csrf_check
+from Mailman.Cgi.CGIHandler import FieldStorage
 
 _ = i18n._
 
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
-
 def main():
     # Trick out pygettext since we want to mark template_data as translatable,
     # but we don't want to actually translate it here.
@@ -96,7 +95,7 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Must be authenticated to get any farther
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
     except TypeError:
@@ -190,7 +189,6 @@ def main():
         print(doc.Format())
 
 
-
 def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language
@@ -231,7 +229,6 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     doc.AddItem(form)
 
 
-
 def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language

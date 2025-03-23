@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import os
 import sys
-import cgi
+from Mailman.Cgi.CGIHandler import FieldStorage
 import mimetypes
 
 from Mailman import mm_cfg
@@ -39,7 +39,6 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 SLASH = '/'
 
 
-
 def true_path(path):
     "Ensure that the path is safe by removing .."
     # Workaround for path traverse vulnerability.  Unsuccessful attempts will
@@ -48,14 +47,12 @@ def true_path(path):
     return SLASH.join(parts)[1:]
 
 
-
 def guess_type(url, strict):
     if hasattr(mimetypes, 'common_types'):
         return mimetypes.guess_type(url, strict)
     return mimetypes.guess_type(url)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -118,7 +115,7 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         username = cgidata.getfirst('username', '').strip()
     except TypeError:
