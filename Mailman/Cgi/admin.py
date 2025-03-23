@@ -38,6 +38,7 @@ from Mailman.Cgi.Auth import loginpage
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
+AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 def main():
     doc = Document()
