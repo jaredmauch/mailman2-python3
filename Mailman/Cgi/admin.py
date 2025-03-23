@@ -432,8 +432,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
     # Set up the document's headers
     realname = mlist.real_name
     doc.SetTitle(_(f'{realname} Administration ({label})'))
-    doc.AddItem(Center(Header(2, _(
-        '{realname} mailing list administration<br>{label} Section'))))
+    doc.AddItem(Center(Header(2, _(f'{realname} mailing list administration<br>{label} Section'))))
     doc.AddItem('<hr>')
     # Now we need to craft the form that will be submitted, which will contain
     # all the variable settings, etc.  This is a bit of a kludge because we
