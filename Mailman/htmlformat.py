@@ -329,6 +329,7 @@ class Document(Container):
             kws.setdefault('bgcolor', self.bgcolor)
             tab = ' ' * indent
             output.extend([tab,
+                           '<!DOCTYPE html>',
                            '<HTML>',
                            '<HEAD>'
                            ])

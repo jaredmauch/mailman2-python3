@@ -738,7 +738,10 @@ def show_post_requests(mlist, id, info, total, count, form):
     lcset = Utils.GetCharSet(mlist.preferred_language)
     if mcset != lcset:
         try:
-            body = str(body, mcset, 'replace').encode(lcset, 'replace')
+            if isinstance(body, bytes):
+                body = body.decode(mcset, 'replace').encode(lcset, 'replace')
+            else:
+                body = str(body, mcset, 'replace').encode(lcset, 'replace')
         except (LookupError, UnicodeError, ValueError):
             pass
     hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])

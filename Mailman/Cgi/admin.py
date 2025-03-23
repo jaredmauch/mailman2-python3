@@ -471,11 +471,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
                                 _('Delete this mailing list')).Format() +
                            _(' (requires confirmation)<br>&nbsp;<br>'))
     otherlinks.AddItem(Link('%s/logout' % adminurl,
-                            # BAW: What I really want is a blank line, but
-                            # adding an &nbsp; won't do it because of the
-                            # bullet added to the list item.
-                            '<FONT SIZE="+2"><b>%s</b></FONT>' %
-                            _('Logout')))
+                            FontAttr(_('Logout'), size='+2', style='font-weight: bold')))
     # These are links to other categories and live in the left column
     categorylinks_1 = categorylinks = UnorderedList()
     categorylinks_2 = ''

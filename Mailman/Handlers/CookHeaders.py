@@ -488,6 +488,8 @@ def prefix_subject(mlist, msg, msgdata):
 def ch_oneline(headerstr):
     # Decode header string in one line and convert into single charset
     try:
+        if isinstance(headerstr, bytes):
+            headerstr = headerstr.decode('latin-1', errors='ignore')
         d = decode_header(headerstr)
         # Strip trailing spaces from each string
         d = [(s.rstrip(), c) for (s,c) in d]
