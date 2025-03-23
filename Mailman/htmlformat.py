@@ -575,8 +575,9 @@ class WidgetArray(object):
         self.button_names = button_names
         self.checked = checked
         self.horizontal = horizontal
-        self.values = values
-        assert len(values) == len(button_names)
+        # Convert all values to strings to ensure proper escaping
+        self.values = [str(v) for v in values]
+        assert len(self.values) == len(button_names)
         # Don't assert `checked' because for RadioButtons it is a scalar while
         # for CheckedBoxes it is a vector.  Subclasses will assert length.
 
