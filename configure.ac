@@ -120,16 +120,22 @@ cat > conftest.py <<EOF
 import sys
 try:
     import email
-    from email import __version__ as email_version
+    import email.mime.text
+    import email.mime.multipart
+    import email.utils
+    # Verify basic email functionality works
+    msg = email.mime.text.MIMEText('test')
+    msg['Subject'] = 'test'
+    msg['From'] = 'test@example.com'
     res = "ok"
     with open("conftest.out", "w", encoding='utf-8') as fp:
         fp.write("%s\n" % res)
-        fp.write("%s\n" % email_version)
-except ImportError:
+        fp.write("%s\n" % sys.version.split()[0])
+except (ImportError, AttributeError) as e:
     res = "not ok"
     with open("conftest.out", "w", encoding='utf-8') as fp:
         fp.write("%s\n" % res)
-        fp.write("0.0.0\n")
+        fp.write("error: %s\n" % str(e))
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -137,6 +143,20 @@ needemailpkg=`sed -n '1p' conftest.out`
 emailversion=`sed -n '2p' conftest.out`
 rm -f conftest.out conftest.py
 
+# Should we rely on Python's own email package or use the pre-packaged version?
+AC_SUBST(EMAILPKG)
+if test "$needemailpkg" = "ok"
+then
+    EMAILPKG=""
+    AC_MSG_RESULT([ok (Python $emailversion)])
+else
+    AC_MSG_ERROR([
+***** Python's email package is not working correctly: $emailversion
+***** Python 3's built-in email package is required.
+***** Please ensure you have a working Python 3 installation.])
+fi
+
+# Get Mailman version
 cat > getver.py <<EOF
 from Mailman.Version import VERSION
 with open("getver.out", "w", encoding='utf-8') as fp:
@@ -146,16 +166,6 @@ $PYTHON getver.py
 MM_VERSION=`cat getver.out`
 rm -f getver.out getver.py
 AC_SUBST(MM_VERSION)
-
-# Should we rely on Python's own email package or use the pre-packaged version?
-AC_SUBST(EMAILPKG)
-if test "$needemailpkg" = "ok"
-then
-    EMAILPKG=""
-else
-    EMAILPKG=email-2.5.8
-fi
-AC_MSG_RESULT($needemailpkg)
 
 # Check Japanese codecs.
 AC_MSG_CHECKING(Japanese codecs)

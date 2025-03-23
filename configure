@@ -669,8 +669,8 @@ INSTALL_SCRIPT
 INSTALL_PROGRAM
 KOCODECSPKG
 JACODECSPKG
-EMAILPKG
 MM_VERSION
+EMAILPKG
 PYTHON
 with_python
 BUILD_DATE
@@ -2658,16 +2658,22 @@ cat > conftest.py <<EOF
 import sys
 try:
     import email
-    from email import __version__ as email_version
+    import email.mime.text
+    import email.mime.multipart
+    import email.utils
+    # Verify basic email functionality works
+    msg = email.mime.text.MIMEText('test')
+    msg['Subject'] = 'test'
+    msg['From'] = 'test@example.com'
     res = "ok"
     with open("conftest.out", "w", encoding='utf-8') as fp:
         fp.write("%s\n" % res)
-        fp.write("%s\n" % email_version)
-except ImportError:
+        fp.write("%s\n" % sys.version.split()[0])
+except (ImportError, AttributeError) as e:
     res = "not ok"
     with open("conftest.out", "w", encoding='utf-8') as fp:
         fp.write("%s\n" % res)
-        fp.write("0.0.0\n")
+        fp.write("error: %s\n" % str(e))
 EOF
 
 $PYTHON conftest.py
@@ -2675,6 +2681,21 @@ needemailpkg=`sed -n '1p' conftest.out`
 emailversion=`sed -n '2p' conftest.out`
 rm -f conftest.out conftest.py
 
+# Should we rely on Python's own email package or use the pre-packaged version?
+
+if test "$needemailpkg" = "ok"
+then
+    EMAILPKG=""
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ok (Python $emailversion)" >&5
+printf "%s\n" "ok (Python $emailversion)" >&6; }
+else
+    as_fn_error $? "
+***** Python's email package is not working correctly: $emailversion
+***** Python 3's built-in email package is required.
+***** Please ensure you have a working Python 3 installation." "$LINENO" 5
+fi
+
+# Get Mailman version
 cat > getver.py <<EOF
 from Mailman.Version import VERSION
 with open("getver.out", "w", encoding='utf-8') as fp:
@@ -2684,17 +2705,6 @@ $PYTHON getver.py
 MM_VERSION=`cat getver.out`
 rm -f getver.out getver.py
 
-
-# Should we rely on Python's own email package or use the pre-packaged version?
-
-if test "$needemailpkg" = "ok"
-then
-    EMAILPKG=""
-else
-    EMAILPKG=email-2.5.8
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $needemailpkg" >&5
-printf "%s\n" "$needemailpkg" >&6; }
 
 # Check Japanese codecs.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking Japanese codecs" >&5
