@@ -31,7 +31,7 @@ from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
 from Mailman.CSRFcheck import csrf_check
-from Mailman.Cgi.Auth import Auth
+from Mailman.Cgi.Auth import loginpage
 
 # Set up i18n
 _ = i18n._
@@ -116,7 +116,7 @@ def main():
                    listname, remote)
         else:
             msg = ''
-        Auth.loginpage(mlist, 'admin', msg=msg)
+        loginpage(mlist, 'admin', msg=msg)
         return
 
     # Which subcategory was requested?  Default is `general'
@@ -136,7 +136,7 @@ def main():
         if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
             print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
         print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
-        Auth.loginpage(mlist, 'admin', frontpage=1)
+        loginpage(mlist, 'admin', frontpage=1)
         return
 
     # Sanity check
