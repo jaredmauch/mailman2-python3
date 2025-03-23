@@ -374,16 +374,13 @@ def subscription_confirm(mlist, doc, cookie, cgidata):
         try:
             # Some pending values may be overridden in the form.  email of
             # course is hardcoded. ;)
-            lang = cgidata.getfirst('language')
+            lang = cgidata.get('language', [''])[0]
             if not Utils.IsLanguage(lang):
                 lang = mlist.preferred_language
             i18n.set_language(lang)
             doc.set_language(lang)
             if 'digests' in cgidata:
-                try:
-                    digest = int(cgidata.getfirst('digests'))
-                except ValueError:
-                    digest = None
+                digest = int(cgidata.get('digests', ['0'])[0])
             else:
                 digest = None
             userdesc = mlist.pend_confirm(cookie, expunge=False)[1]
@@ -391,7 +388,7 @@ def subscription_confirm(mlist, doc, cookie, cgidata):
             # to confirm the same token simultaneously.  If they both succeed in
             # retrieving the data above, when the second gets here, the cookie
             # is gone and TypeError is thrown.  Catch it below.
-            fullname = cgidata.getfirst('realname', None)
+            fullname = cgidata.get('realname', [None])[0]
             if fullname is not None:
                 fullname = Utils.canonstr(fullname, lang)
             overrides = UserDesc(fullname=fullname, digest=digest, lang=lang)

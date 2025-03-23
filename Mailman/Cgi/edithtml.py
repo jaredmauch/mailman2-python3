@@ -32,7 +32,6 @@ from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
 from Mailman import i18n
 from Mailman.CSRFcheck import csrf_check
-from Mailman.Cgi.form_utils import get_form_data, get_form_value, get_form_keys, has_form_key
 
 _ = i18n._
 
@@ -278,3 +277,15 @@ must have shell access to your Mailman server.
         fp.close()
     doc.AddItem(Header(3, _('HTML successfully updated.')))
     doc.AddItem('<hr>')
+
+def get_form_value(cgidata, key, default=None):
+    """Get the first value for a key from form data."""
+    return cgidata.get(key, [default])[0]
+
+def get_form_keys(cgidata):
+    """Get all keys from form data."""
+    return list(cgidata.keys())
+
+def has_form_key(cgidata, key):
+    """Check if a key exists in form data."""
+    return key in cgidata
