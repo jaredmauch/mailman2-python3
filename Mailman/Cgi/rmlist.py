@@ -21,6 +21,7 @@ import os
 import sys
 import errno
 import shutil
+from urllib.parse import parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -29,7 +30,6 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
-from Mailman.Cgi.CGIHandler import FieldStorage
 
 # Set up i18n
 _ = i18n._
@@ -40,10 +40,19 @@ def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = FieldStorage()
+    # Get form data using parse_qs
     try:
-        cgidata.getfirst('password', '')
-    except TypeError:
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -112,9 +121,9 @@ def main():
 
 
 def process_request(doc, cgidata, mlist):
-    password = cgidata.getfirst('password', '').strip()
+    password = cgidata.get('password', [''])[0].strip()
     try:
-        delarchives = int(cgidata.getfirst('delarchives', '0'))
+        delarchives = int(cgidata.get('delarchives', ['0'])[0])
     except ValueError:
         delarchives = 0
 

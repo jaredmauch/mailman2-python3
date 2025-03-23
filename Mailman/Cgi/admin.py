@@ -42,7 +42,7 @@ from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
 from Mailman.CSRFcheck import csrf_check
-from Mailman.Cgi.CGIHandler import FieldStorage, parse_qs
+from Mailman.Cgi.form_utils import get_form_data, get_form_value, get_form_keys, has_form_key
 
 # Set up i18n
 _ = i18n._
@@ -80,10 +80,10 @@ def main():
     # pages are shown in that list's preferred language.
     i18n.set_language(mlist.preferred_language)
     # If the user is not authenticated, we're done.
-    cgidata = FieldStorage(keep_blank_values=1)
     try:
-        cgidata.getfirst('csrf_token', '')
-    except TypeError:
+        form_data = get_form_data(keep_blank_values=1)
+        get_form_value(form_data, 'csrf_token', '')
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -98,21 +98,21 @@ def main():
     safe_params = ['VARHELP', 'adminpw', 'admlogin',
                    'letter', 'chunk', 'findmember',
                    'legend']
-    params = list(cgidata.keys())
+    params = get_form_keys(form_data)
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+        csrf_checked = csrf_check(mlist, get_form_value(form_data, 'csrf_token'),
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
+    if get_form_value(form_data, 'adminpw'):
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
-        if 'adminpw' in cgidata:
+                                 get_form_value(form_data, 'adminpw', '')):
+        if has_form_key(form_data, 'adminpw'):
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -157,8 +157,8 @@ def main():
     parsedqs = None
     if qsenviron:
         parsedqs = parse_qs(qsenviron)
-    if 'VARHELP' in cgidata:
-        varhelp = cgidata.getfirst('VARHELP')
+    if has_form_key(form_data, 'VARHELP'):
+        varhelp = get_form_value(form_data, 'VARHELP')
     elif parsedqs:
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
@@ -206,10 +206,10 @@ def main():
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        if list(cgidata.keys()):
+        if get_form_keys(form_data):
             if csrf_checked:
                 # There are options to change
-                change_options(mlist, category, subcat, cgidata, doc)
+                change_options(mlist, category, subcat, form_data, doc)
             else:
                 doc.addError(
                   _('The form lifetime has expired. (request forgery check)'))
@@ -239,7 +239,7 @@ def main():
                 fix this problem. Affected member(s) %(rm)r.'''),
                 tag=_('Warning: '))
         # Glom up the results page and print it out
-        show_results(mlist, doc, category, subcat, cgidata)
+        show_results(mlist, doc, category, subcat, form_data)
         print(doc.Format())
         mlist.Save()
     finally:

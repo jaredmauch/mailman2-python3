@@ -22,13 +22,12 @@ from builtins import zip
 from builtins import str
 import sys
 import os
-from Mailman.Cgi.CGIHandler import FieldStorage, parse_qs
+from urllib.parse import parse_qs, quote_plus, unquote_plus
 import errno
 import signal
 import email
 import email.errors
 import time
-from urllib.parse import quote_plus, unquote_plus
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -127,10 +126,18 @@ def main():
     i18n.set_language(mlist.preferred_language)
 
     # Make sure the user is authorized to see this page.
-    cgidata = FieldStorage(keep_blank_values=1)
     try:
-        cgidata.getfirst('adminpw', '')
-    except TypeError:
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.read(content_length)
+                cgidata = parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -145,19 +152,19 @@ def main():
     safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
     params = list(cgidata.keys())
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
                                   'admindb')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
+    if cgidata.get('adminpw', [''])[0]:
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthListModerator,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
+                                 cgidata.get('adminpw', [''])[0]):
         if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
@@ -200,13 +207,13 @@ def main():
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
         qs = parse_qs(envar).get('sender')
-        if qs and type(qs) == ListType:
+        if qs and isinstance(qs, list):
             sender = qs[0]
         qs = parse_qs(envar).get('msgid')
-        if qs and type(qs) == ListType:
+        if qs and isinstance(qs, list):
             msgid = qs[0]
         qs = parse_qs(envar).get('details')
-        if qs and type(qs) == ListType:
+        if qs and isinstance(qs, list):
             details = qs[0]
 
     # We need a signal handler to catch the SIGTERM that can come from Apache
@@ -805,18 +812,18 @@ def process_form(mlist, doc, cgidata):
                 action = k[:len(prefix)-1]
                 qsender = k[len(prefix):]
                 sender = unquote_plus(qsender)
-                value = cgidata.getfirst(k)
+                value = cgidata.get(k, [''])[0]
                 senderactions.setdefault(sender, {})[action] = value
                 for id in cgidata.getlist(qsender):
                     senderactions[sender].setdefault('message_ids',
                                                      []).append(int(id))
     # discard-all-defers
     try:
-        discardalldefersp = cgidata.getfirst('discardalldefersp', 0)
+        discardalldefersp = cgidata.get('discardalldefersp', ['0'])[0]
     except ValueError:
-        discardalldefersp = 0
+        discardalldefersp = '0'
     # Get the summary sequence
-    ssort = int(cgidata.getfirst('summary_sort', SSENDER))
+    ssort = int(cgidata.get('summary_sort', SSENDER))
     for sender in list(senderactions.keys()):
         actions = senderactions[sender]
         # Handle what to do about all this sender's held messages
@@ -824,12 +831,12 @@ def process_form(mlist, doc, cgidata):
             action = int(actions.get('senderaction', mm_cfg.DEFER))
         except ValueError:
             action = mm_cfg.DEFER
-        if action == mm_cfg.DEFER and discardalldefersp:
+        if action == mm_cfg.DEFER and discardalldefersp == '1':
             action = mm_cfg.DISCARD
         if action in (mm_cfg.DEFER, mm_cfg.APPROVE,
                       mm_cfg.REJECT, mm_cfg.DISCARD):
-            preserve = actions.get('senderpreserve', 0)
-            forward = actions.get('senderforward', 0)
+            preserve = actions.get('senderpreserve', '0')
+            forward = actions.get('senderforward', '0')
             forwardaddr = actions.get('senderforwardto', '')
             byskey = helds_by_skey(mlist, SSENDER)
             for ptime, id in byskey.get((0, sender), []):
@@ -849,7 +856,7 @@ def process_form(mlist, doc, cgidata):
                     continue
         # Now see if this sender should be added to one of the nonmember
         # sender filters.
-        if actions.get('senderfilterp', 0):
+        if actions.get('senderfilterp', '0') == '1':
             # Check for an invalid sender address.
             try:
                 Utils.ValidateEmail(sender)
@@ -872,14 +879,14 @@ def process_form(mlist, doc, cgidata):
                     mlist.discard_these_nonmembers.append(sender)
                 # Otherwise, it's a bogus form, so ignore it
         # And now see if we're to clear the member's moderation flag.
-        if actions.get('senderclearmodp', 0):
+        if actions.get('senderclearmodp', '0') == '1':
             try:
                 mlist.setMemberOption(sender, mm_cfg.Moderate, 0)
             except Errors.NotAMemberError:
                 # This person's not a member any more.  Oh well.
                 pass
         # And should this address be banned?
-        if actions.get('senderbanp', 0):
+        if actions.get('senderbanp', '0') == '1':
             # Check for an invalid sender address.
             try:
                 Utils.ValidateEmail(sender)
@@ -894,10 +901,10 @@ def process_form(mlist, doc, cgidata):
     erroraddrs = []
     for k in list(cgidata.keys()):
         formv = cgidata[k]
-        if type(formv) == ListType:
+        if isinstance(formv, list):
             continue
         try:
-            v = int(formv.value)
+            v = int(formv[0])
             request_id = int(k)
         except ValueError:
             continue
@@ -926,16 +933,16 @@ def process_form(mlist, doc, cgidata):
         forward = 0
         forwardaddr = ''
         if commentkey in cgidata:
-            comment = cgidata[commentkey].value
+            comment = cgidata[commentkey][0]
         if preservekey in cgidata:
-            preserve = cgidata[preservekey].value
+            preserve = cgidata[preservekey][0]
         if forwardkey in cgidata:
-            forward = cgidata[forwardkey].value
+            forward = cgidata[forwardkey][0]
         if forwardaddrkey in cgidata:
-            forwardaddr = cgidata[forwardaddrkey].value
+            forwardaddr = cgidata[forwardaddrkey][0]
         # Should we ban this address?  Do this check before handling the
         # request id because that will evict the record.
-        if cgidata.getfirst(bankey):
+        if cgidata.get(bankey, ['0'])[0] == '1':
             sender = mlist.GetRecord(request_id)[1]
             if sender not in mlist.ban_list:
                 # We don't need to validate the sender.  An invalid address
