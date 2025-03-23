@@ -499,12 +499,15 @@ class Hidden(InputObj):
 class TextArea(object):
     def __init__(self, name, text='', rows=None, cols=None, wrap='soft',
                  readonly=0):
+        if isinstance(text, bytes):
+            # Decode bytes to string first
+            text = text.decode('latin-1', errors='ignore')
         if isinstance(text, str):
             # Double escape HTML entities in non-readonly areas.
             doubleescape = not readonly
             safetext = Utils.websafe(text, doubleescape)
         else:
-            safetext = text
+            safetext = Utils.websafe(str(text))
         self.name = name
         self.text = safetext
         self.rows = rows

@@ -694,12 +694,22 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             r, c = params
         else:
             r, c = None, None
-        return TextArea(varname, value or '', r, c)
+        # Ensure value is properly converted to string
+        if value is None:
+            value = ''
+        elif isinstance(value, bytes):
+            value = value.decode('latin-1', errors='ignore')
+        return TextArea(varname, value, r, c)
     elif kind in (mm_cfg.EmailList, mm_cfg.EmailListEx):
         if params:
             r, c = params
         else:
             r, c = None, None
+        # Ensure value is properly converted to string
+        if value is None:
+            value = []
+        elif isinstance(value, bytes):
+            value = value.decode('latin-1', errors='ignore').split('\n')
         res = NL.join(value)
         return TextArea(varname, res, r, c, wrap='off')
     elif kind == mm_cfg.FileUpload:
