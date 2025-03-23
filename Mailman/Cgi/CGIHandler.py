@@ -114,16 +114,16 @@ class FieldStorage:
         return [v for k, v in self.list if k == key]
     
     def keys(self):
-        """Return list of keys."""
-        return list(self.fields.keys())
+        """Get all keys."""
+        return list(set(k for k, v in self.list))
 
     def __contains__(self, key):
         """Support the 'in' operator."""
-        return key in self.fields
+        return any(k == key for k, v in self.list)
 
     def __iter__(self):
         """Support iteration over keys."""
-        return iter(self.fields)
+        return iter(set(k for k, v in self.list))
 
 def parse_qs(qs, keep_blank_values=0):
     """Parse a query string into a dictionary."""
