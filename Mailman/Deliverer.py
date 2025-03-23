@@ -27,10 +27,11 @@ import sys
 import os
 import time
 import getopt
+from typing import Optional, Dict, Any, Union
 
 import paths
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -45,7 +46,13 @@ from Mailman.i18n import C_
 _ = i18n._
 
 
-def usage(code, msg=''):
+def usage(code: int, msg: str = '') -> None:
+    """Print usage information and exit.
+    
+    Args:
+        code: Exit code to use
+        msg: Optional message to print before exiting
+    """
     if code:
         fd = sys.stderr
     else:
@@ -57,8 +64,21 @@ def usage(code, msg=''):
 
 
 class Deliverer:
-    def SendSubscribeAck(self, name, password, digest, text=''):
-        """Send subscription acknowledgment to new member."""
+    """Mixin class for handling message delivery operations.
+    
+    This class provides methods for sending various types of messages
+    including subscription acknowledgments, password reminders, and probes.
+    """
+
+    def SendSubscribeAck(self, name: str, password: str, digest: bool, text: str = '') -> None:
+        """Send subscription acknowledgment to new member.
+        
+        Args:
+            name: Real name of the subscriber
+            password: Password for the subscription
+            digest: Whether the subscriber is digest mode
+            text: Optional custom text for the message
+        """
         if not text:
             text = Utils.maketext('subscribeack.txt',
                                 {'realname': name,
@@ -77,25 +97,35 @@ class Deliverer:
             mlist=self)
         msg.send(self)
 
-    def SendUnsubscribeAck(self, addr, lang):
+    def SendUnsubscribeAck(self, addr: str, lang: str) -> None:
+        """Send unsubscribe acknowledgment to member.
+        
+        Args:
+            addr: Email address of the unsubscribed member
+            lang: Language code for the message
+        """
         realname = self.real_name
         i18n.set_language(lang)
         msg = Message.UserNotification(
             self.GetMemberAdminEmail(addr), self.GetBouncesEmail(),
-            _('You have been unsubscribed from the }{(realname)s mailing list'),
+            _('You have been unsubscribed from the %(realname)s mailing list'),
             Utils.wrap(self.goodbye_msg), lang)
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
 
-    def MailUserPassword(self, user):
-        listfullname = '}{s@}{s' }{ (self.real_name, self.host_name)
+    def MailUserPassword(self, user: str) -> None:
+        """Send password reminder to a user.
+        
+        Args:
+            user: Email address of the user
+        """
+        listfullname = '%s@%s' % (self.real_name, self.host_name)
         requestaddr = self.GetRequestEmail()
-        # find the lowercased version of the user's address
         adminaddr = self.GetBouncesEmail()
         assert self.isMember(user)
         if not self.getMemberPassword(user):
-            # The user's password somehow got corrupted.  Generate a new one
+            # The user's password somehow got corrupted. Generate a new one
             # for him, after logging this bogosity.
-            syslog('error', 'User }{s had a false password for list }{s',
+            syslog('error', 'User %s had a false password for list %s',
                    user, self.internal_name())
             waslocked = self.Locked()
             if not waslocked:
@@ -109,7 +139,7 @@ class Deliverer:
         # Now send the user his password
         cpuser = self.getMemberCPAddress(user)
         recipient = self.GetMemberAdminEmail(cpuser)
-        subject = _('}{(listfullname)s mailing list reminder')
+        subject = _('%(listfullname)s mailing list reminder')
         # Get user's language and charset
         lang = self.getMemberLanguage(user)
         cset = Utils.GetCharSet(lang)
@@ -121,27 +151,36 @@ class Deliverer:
         # get the text from the template
         text = Utils.maketext(
             'userpass.txt',
-            {'user'       : cpuser,
-             'listname'   : self.real_name,
-             'fqdn_lname' : self.GetListEmail(),
-             'password'   : password,
+            {'user': cpuser,
+             'listname': self.real_name,
+             'fqdn_lname': self.GetListEmail(),
+             'password': password,
              'options_url': self.GetOptionsURL(user, absolute=True),
              'requestaddr': requestaddr,
-             'owneraddr'  : self.GetOwnerEmail(),
+             'owneraddr': self.GetOwnerEmail(),
             }, lang=lang, mlist=self)
         msg = Message.UserNotification(recipient, adminaddr, subject, text,
-                                       lang)
+                                     lang)
         msg['X-No-Archive'] = 'yes'
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
 
-    def ForwardMessage(self, msg, text=None, subject=None, tomoderators=True):
+    def ForwardMessage(self, msg: Message.Message, text: Optional[str] = None,
+                      subject: Optional[str] = None, tomoderators: bool = True) -> None:
+        """Forward a message to moderators or owners.
+        
+        Args:
+            msg: The message to forward
+            text: Optional reason for forwarding
+            subject: Optional subject line
+            tomoderators: Whether to send to moderators (True) or owners (False)
+        """
         # Wrap the message as an attachment
         if text is None:
             text = _('No reason given')
         if subject is None:
-            text = _('(no subject)')
+            subject = _('(no subject)')
         text = MIMEText(Utils.wrap(text),
-                        _charset=Utils.GetCharSet(self.preferred_language))
+                       _charset=Utils.GetCharSet(self.preferred_language))
         attachment = MIMEMessage(msg)
         notice = Message.OwnerNotification(
             self, subject, tomoderators=tomoderators)
@@ -151,21 +190,27 @@ class Deliverer:
         notice.attach(attachment)
         notice.send(self)
 
-    def SendHostileSubscriptionNotice(self, listname, address):
+    def SendHostileSubscriptionNotice(self, listname: str, address: str) -> None:
+        """Send notice of hostile subscription attempt.
+        
+        Args:
+            listname: Name of the list that was targeted
+            address: Email address of the attacker
+        """
         # Some one was invited to one list but tried to confirm to a different
-        # list.  We inform both list owners of the bogosity, but be careful
+        # list. We inform both list owners of the bogosity, but be careful
         # not to reveal too much information.
         selfname = self.internal_name()
-        syslog('mischief', '}{s was invited to }{s but confirmed to }{s',
+        syslog('mischief', '%s was invited to %s but confirmed to %s',
                address, listname, selfname)
         # First send a notice to the attacked list
         msg = Message.OwnerNotification(
             self,
             _('Hostile subscription attempt detected'),
-            Utils.wrap(_("""}{(address)s was invited to a different mailing
+            Utils.wrap(_("""%(address)s was invited to a different mailing
 list, but in a deliberate malicious attempt they tried to confirm the
-invitation to your list.  We just thought yod like to know.  No further
-action by you is required."")))
+invitation to your list. We just thought you'd like to know. No further
+action by you is required.""")))
         msg.send(self)
         # Now send a notice to the invitee list
         try:
@@ -181,15 +226,21 @@ action by you is required."")))
             msg = Message.OwnerNotification(
                 mlist,
                 _('Hostile subscription attempt detected'),
-                Utils.wrap(_("""You invited }{(address)s to your list, but in a
+                Utils.wrap(_("""You invited %(address)s to your list, but in a
 deliberate malicious attempt, they tried to confirm the invitation to a
-different list.  We just thought yod like to know.  No further action by you
-is required."")))
+different list. We just thought you'd like to know. No further action by you
+is required.""")))
             msg.send(mlist)
         finally:
             i18n.set_translation(otrans)
 
-    def sendProbe(self, member, msg):
+    def sendProbe(self, member: str, msg: Message.Message) -> None:
+        """Send a probe message to a member.
+        
+        Args:
+            member: Email address of the member to probe
+            msg: The message to attach to the probe
+        """
         listname = self.real_name
         # Put together the substitution dictionary.
         d = {'listname': listname,
@@ -198,8 +249,8 @@ is required."")))
              'owneraddr': self.GetOwnerEmail(),
              }
         text = Utils.maketext('probe.txt', d,
-                              lang=self.getMemberLanguage(member),
-                              mlist=self)
+                            lang=self.getMemberLanguage(member),
+                            mlist=self)
         # Calculate the VERP'd sender address for bounce processing of the
         # probe message.
         token = self.pend_new(Pending.PROBE_BOUNCE, member, msg)
@@ -207,24 +258,23 @@ is required."")))
             'bounces': self.internal_name() + '-bounces',
             'token': token,
             }
-        probeaddr = '}{s@}{s' }{ ((mm_cfg.VERP_PROBE_FORMAT }{ probedict),
-                               self.host_name)
+        probeaddr = '%s@%s' % ((mm_cfg.VERP_PROBE_FORMAT % probedict),
+                              self.host_name)
         # Calculate the Subject header, in the member's preferred language
         ulang = self.getMemberLanguage(member)
         otrans = i18n.get_translation()
         i18n.set_language(ulang)
         try:
-            subject = _('}{(listname)s mailing list probe message')
+            subject = _('%(listname)s mailing list probe message')
         finally:
             i18n.set_translation(otrans)
         outer = Message.UserNotification(member, probeaddr, subject,
-                                         lang=ulang)
+                                       lang=ulang)
         outer.set_type('multipart/mixed')
         text = MIMEText(text, _charset=Utils.GetCharSet(ulang))
         outer.attach(text)
         outer.attach(MIMEMessage(msg))
-        # Turn off further VERP'ing in the final delivery step.  We set
+        # Turn off further VERP'ing in the final delivery step. We set
         # probe_token for the OutgoingRunner to more easily handling local
         # rejects of probe messages.
         outer.send(self, envsender=probeaddr, verp=False, probe_token=token)
-}

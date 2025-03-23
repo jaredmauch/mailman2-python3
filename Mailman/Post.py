@@ -16,35 +16,51 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+"""Message posting functionality for Mailman."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
+from typing import List, Optional, Union
 
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
 
 
-
-def inject(listname, msg, recips=None, qdir=None):
+def inject(listname: str, msg: str, recips: Optional[List[str]] = None,
+          qdir: Optional[str] = None) -> None:
+    """Inject a message into the specified queue.
+    
+    Args:
+        listname: Internal name of the mailing list
+        msg: The message to inject
+        recips: Optional list of explicit recipients
+        qdir: Optional queue directory to use
+    """
     if qdir is None:
         qdir = mm_cfg.INQUEUE_DIR
     queue = get_switchboard(qdir)
-    kws = {'listname'  : listname,
-           'tolist'    : 1,
-           '_plaintext': 1,
-           }
+    kws = {
+        'listname': listname,
+        'tolist': 1,
+        '_plaintext': 1,
+    }
     if recips:
         kws['recips'] = recips
     queue.enqueue(msg, **kws)
 
 
-
 if __name__ == '__main__':
     # When called as a command line script, standard input is read to get the
     # list that this message is destined to, the list of explicit recipients,
-    # and the message to send (in its entirety).  stdin must have the
+    # and the message to send (in its entirety). stdin must have the
     # following format:
     #
     # line 1: the internal name of the mailing list
-    # line 2: the number of explicit recipients to follow.  0 means to use the
+    # line 2: the number of explicit recipients to follow. 0 means to use the
     #         list's membership to calculate recipients.
     # line 3 - 3+recipnum: explicit recipients, one per line
     # line 4+recipnum - end of file: the message in RFC 822 format (may

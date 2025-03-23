@@ -26,9 +26,8 @@ import sys
 import os
 import time
 import getopt
-import urllib
-import marshal
-import binascii
+from typing import Dict, List, Optional, Union
+from urllib.parse import quote, unquote
 
 import paths
 from Mailman import mm_cfg
@@ -40,7 +39,8 @@ from Mailman.i18n import C_
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import UnobscureEmail, sha_new
 
-keydict = {
+# Dictionary mapping user roles to their authentication levels
+keydict: Dict[str, str] = {
     'user':      mm_cfg.AuthUser,
     'poster':    mm_cfg.AuthListPoster,
     'moderator': mm_cfg.AuthListModerator,
@@ -48,7 +48,13 @@ keydict = {
     'site':      mm_cfg.AuthSiteAdmin,
 }
 
-def usage(code, msg=''):
+def usage(code: int, msg: str = '') -> None:
+    """Print usage information and exit.
+    
+    Args:
+        code: Exit code to use
+        msg: Optional message to print before exiting
+    """
     if code:
         fd = sys.stderr
     else:
@@ -58,8 +64,17 @@ def usage(code, msg=''):
         print(msg, file=fd)
     sys.exit(code)
 
-def csrf_token(mlist, contexts, user=None):
-    """ create token by mailman cookie generation algorithm """
+def csrf_token(mlist: MailList.MailList, contexts: List[str], user: Optional[str] = None) -> str:
+    """Create a CSRF token using the mailman cookie generation algorithm.
+    
+    Args:
+        mlist: The mailing list object
+        contexts: List of contexts for the token
+        user: Optional user name to include in the token
+        
+    Returns:
+        A hexdigest of the SHA hash of the token
+    """
     if user is None:
         user = mlist.GetMemberName(user)
     if user is None:
@@ -69,8 +84,19 @@ def csrf_token(mlist, contexts, user=None):
     # Hash the token with the site password
     return sha_new(token + mm_cfg.SITE_PASSWORD).hexdigest()
 
-def csrf_check(mlist, contexts, token, user=None):
-    """ check if the token is valid for the given list, contexts and user """
+def csrf_check(mlist: MailList.MailList, contexts: List[str], token: Optional[str], 
+               user: Optional[str] = None) -> bool:
+    """Check if the token is valid for the given list, contexts and user.
+    
+    Args:
+        mlist: The mailing list object
+        contexts: List of contexts to check against
+        token: The token to validate
+        user: Optional user name to check against
+        
+    Returns:
+        True if the token is valid, False otherwise
+    """
     if token is None:
         return False
     expected = csrf_token(mlist, contexts, user)
