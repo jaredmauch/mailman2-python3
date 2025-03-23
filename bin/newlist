@@ -17,9 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Create a new, unpopulated mailing list.
+f"""Create a new, unpopulated mailing list.
 
-Usage: %(PROGRAM)s [options] [listname [listadmin-addr [admin-password]]]
+Usage: %(PROGRAM) [options] [listname [listadmin-addr [admin-password]]]
 
 Options:
 
