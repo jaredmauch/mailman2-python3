@@ -23,7 +23,6 @@ from __future__ import print_function
 
 from builtins import str
 import os
-from Mailman.Cgi.CGIHandler import FieldStorage
 import time
 
 from Mailman import mm_cfg
@@ -33,13 +32,13 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Cgi.form_utils import get_form_data, get_form_value
 
 # Set up i18n
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
@@ -59,10 +58,10 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    cgidata = FieldStorage()
     try:
-        language = cgidata.getfirst('language')
-    except TypeError:
+        form_data = get_form_data(keep_blank_values=1)
+        language = get_form_value(form_data, 'language')
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -79,7 +78,6 @@ def main():
     list_listinfo(mlist, language)
 
 
-
 def listinfo_overview(msg=''):
     # Present the general listinfo overview
     hostname = Utils.get_domain()
@@ -174,7 +172,6 @@ def listinfo_overview(msg=''):
     print(doc.Format())
 
 
-
 def list_listinfo(mlist, lang):
     # Generate list specific listinfo
     doc = HeadlessDocument()
@@ -281,6 +278,5 @@ def list_listinfo(mlist, lang):
     print(doc.Format())
 
 
-
 if __name__ == "__main__":
     main()

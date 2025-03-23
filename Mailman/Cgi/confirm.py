@@ -20,7 +20,8 @@ from __future__ import division
 from __future__ import print_function
 
 import signal
-from Mailman.Cgi.CGIHandler import FieldStorage
+import os
+from urllib.parse import parse_qsl
 import time
 
 from Mailman import mm_cfg
@@ -36,7 +37,35 @@ from Mailman.Logging.Syslog import syslog
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-
+def get_form_data(keep_blank_values=1):
+    """Get form data from both POST and query string."""
+    form_data = []
+    
+    # Get POST data if present
+    content_type = os.environ.get('CONTENT_TYPE', '')
+    content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+    
+    if content_type and content_length > 0:
+        # Read POST data
+        post_data = os.environ.get('wsgi.input', sys.stdin.buffer).read(content_length)
+        if content_type == 'application/x-www-form-urlencoded':
+            form_data.extend(parse_qsl(post_data.decode('latin-1'), 
+                                     keep_blank_values=keep_blank_values))
+    
+    # Get query string data
+    qs = os.environ.get('QUERY_STRING', '')
+    if qs:
+        form_data.extend(parse_qsl(qs, keep_blank_values=keep_blank_values))
+        
+    return form_data
+
+def get_form_value(form_data, key, default=None):
+    """Get the first value for a key from form data."""
+    for k, v in form_data:
+        if k == key:
+            return v
+    return default
+
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -67,10 +96,10 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Get the form data to see if this is a second-step confirmation
-    cgidata = FieldStorage(keep_blank_values=1)
     try:
-        cookie = cgidata.getfirst('cookie')
-    except TypeError:
+        form_data = get_form_data(keep_blank_values=1)
+        cookie = get_form_value(form_data, 'cookie')
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -119,17 +148,17 @@ def main():
 
     try:
         if content[0] == Pending.SUBSCRIPTION:
-            if cgidata.getfirst('cancel'):
+            if get_form_value(form_data, 'cancel'):
                 subscription_cancel(mlist, doc, cookie)
-            elif cgidata.getfirst('submit'):
-                subscription_confirm(mlist, doc, cookie, cgidata)
+            elif get_form_value(form_data, 'submit'):
+                subscription_confirm(mlist, doc, cookie, form_data)
             else:
                 subscription_prompt(mlist, doc, cookie, content[1])
         elif content[0] == Pending.UNSUBSCRIPTION:
             try:
-                if cgidata.getfirst('cancel'):
+                if get_form_value(form_data, 'cancel'):
                     unsubscription_cancel(mlist, doc, cookie)
-                elif cgidata.getfirst('submit'):
+                elif get_form_value(form_data, 'submit'):
                     unsubscription_confirm(mlist, doc, cookie)
                 else:
                     unsubscription_prompt(mlist, doc, cookie, *content[1:])
@@ -140,9 +169,9 @@ def main():
                 # Expunge this record from the pending database.
                 expunge(mlist, cookie)
         elif content[0] == Pending.CHANGE_OF_ADDRESS:
-            if cgidata.getfirst('cancel'):
+            if get_form_value(form_data, 'cancel'):
                 addrchange_cancel(mlist, doc, cookie)
-            elif cgidata.getfirst('submit'):
+            elif get_form_value(form_data, 'submit'):
                 addrchange_confirm(mlist, doc, cookie)
             else:
                 # Watch out for users who have unsubscribed themselves in the
@@ -156,16 +185,16 @@ def main():
                     # Expunge this record from the pending database.
                     expunge(mlist, cookie)
         elif content[0] == Pending.HELD_MESSAGE:
-            if cgidata.getfirst('cancel'):
+            if get_form_value(form_data, 'cancel'):
                 heldmsg_cancel(mlist, doc, cookie)
-            elif cgidata.getfirst('submit'):
+            elif get_form_value(form_data, 'submit'):
                 heldmsg_confirm(mlist, doc, cookie)
             else:
                 heldmsg_prompt(mlist, doc, cookie, *content[1:])
         elif content[0] == Pending.RE_ENABLE:
-            if cgidata.getfirst('cancel'):
+            if get_form_value(form_data, 'cancel'):
                 reenable_cancel(mlist, doc, cookie)
-            elif cgidata.getfirst('submit'):
+            elif get_form_value(form_data, 'submit'):
                 reenable_confirm(mlist, doc, cookie)
             else:
                 reenable_prompt(mlist, doc, cookie, *content[1:])
@@ -178,7 +207,6 @@ def main():
     print(doc.Format())
 
 
-
 def bad_confirmation(doc, extra=''):
     title = _('Bad confirmation string')
     doc.SetTitle(title)
@@ -197,7 +225,6 @@ def expunge(mlist, cookie):
         mlist.Unlock()
 
 
-
 def ask_for_cookie(mlist, doc, extra=''):
     title = _('Enter confirmation cookie')
     doc.SetTitle(title)
@@ -227,7 +254,6 @@ def ask_for_cookie(mlist, doc, extra=''):
     print(doc.Format())
 
 
-
 def subscription_prompt(mlist, doc, cookie, userdesc):
     email = userdesc.address
     password = userdesc.password
@@ -316,7 +342,6 @@ def subscription_prompt(mlist, doc, cookie, userdesc):
     doc.AddItem(form)
 
 
-
 def subscription_cancel(mlist, doc, cookie):
     mlist.Lock()
     try:
@@ -336,7 +361,6 @@ def subscription_cancel(mlist, doc, cookie):
     doc.AddItem(_('You have canceled your subscription request.'))
 
 
-
 def subscription_confirm(mlist, doc, cookie, cgidata):
     # See the comment in admin.py about the need for the signal
     # handler.
@@ -424,14 +448,12 @@ def subscription_confirm(mlist, doc, cookie, cgidata):
         mlist.Unlock()
 
 
-
 def unsubscription_cancel(mlist, doc, cookie):
     # Expunge this record from the pending database
     expunge(mlist, cookie)
     doc.AddItem(_('You have canceled your unsubscription request.'))
 
 
-
 def unsubscription_confirm(mlist, doc, cookie):
     # See the comment in admin.py about the need for the signal
     # handler.
@@ -470,7 +492,6 @@ def unsubscription_confirm(mlist, doc, cookie):
         mlist.Unlock()
 
 
-
 def unsubscription_prompt(mlist, doc, cookie, addr):
     title = _('Confirm unsubscription request')
     doc.SetTitle(title)
@@ -513,14 +534,12 @@ def unsubscription_prompt(mlist, doc, cookie, addr):
     doc.AddItem(form)
 
 
-
 def addrchange_cancel(mlist, doc, cookie):
     # Expunge this record from the pending database
     expunge(mlist, cookie)
     doc.AddItem(_('You have canceled your change of address request.'))
 
 
-
 def addrchange_confirm(mlist, doc, cookie):
     # See the comment in admin.py about the need for the signal
     # handler.
@@ -573,7 +592,6 @@ def addrchange_confirm(mlist, doc, cookie):
         mlist.Unlock()
 
 
-
 def addrchange_prompt(mlist, doc, cookie, oldaddr, newaddr, globally):
     title = _('Confirm change of address request')
     doc.SetTitle(title)
@@ -625,7 +643,6 @@ def addrchange_prompt(mlist, doc, cookie, oldaddr, newaddr, globally):
     doc.AddItem(form)
 
 
-
 def heldmsg_cancel(mlist, doc, cookie):
     title = _('Continue awaiting approval')
     doc.SetTitle(title)
@@ -640,7 +657,6 @@ def heldmsg_cancel(mlist, doc, cookie):
     doc.AddItem(table)
 
 
-
 def heldmsg_confirm(mlist, doc, cookie):
     # See the comment in admin.py about the need for the signal
     # handler.
@@ -686,7 +702,6 @@ def heldmsg_confirm(mlist, doc, cookie):
         mlist.Unlock()
 
 
-
 def heldmsg_prompt(mlist, doc, cookie, id):
     title = _('Cancel held message posting')
     doc.SetTitle(title)
@@ -750,7 +765,6 @@ def heldmsg_prompt(mlist, doc, cookie, id):
     doc.AddItem(form)
 
 
-
 def reenable_cancel(mlist, doc, cookie):
     # Don't actually discard this cookie, since the user may decide to
     # re-enable their membership at a future time, and we may be sending out
@@ -760,7 +774,6 @@ def reenable_cancel(mlist, doc, cookie):
     this mailing list."""))
 
 
-
 def reenable_confirm(mlist, doc, cookie):
     # See the comment in admin.py about the need for the signal
     # handler.
@@ -800,7 +813,6 @@ def reenable_confirm(mlist, doc, cookie):
         mlist.Unlock()
 
 
-
 def reenable_prompt(mlist, doc, cookie, list, member):
     title = _('Re-enable mailing list membership')
     doc.SetTitle(title)

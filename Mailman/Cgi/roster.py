@@ -26,8 +26,7 @@ from __future__ import print_function
 
 import sys
 import os
-from Mailman.Cgi.CGIHandler import FieldStorage
-import urllib.request, urllib.parse, urllib.error
+from urllib.parse import parse_qsl
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -36,6 +35,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Cgi.form_utils import get_form_data, get_form_value
 
 # Set up i18n
 _ = i18n._
@@ -60,12 +60,10 @@ def main():
         syslog('error', 'roster: No such list "%s": %s', listname, e)
         return
 
-    cgidata = FieldStorage()
-
-    # messages in form should go in selected language (if any...)
     try:
-        lang = cgidata.getfirst('language')
-    except TypeError:
+        form_data = get_form_data(keep_blank_values=1)
+        lang = get_form_value(form_data, 'language')
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -85,8 +83,8 @@ def main():
     # "admin"-only, then we try to cookie authenticate the user, and failing
     # that, we check roster-email and roster-pw fields for a valid password.
     # (also allowed: the list moderator, the list admin, and the site admin).
-    password = cgidata.getfirst('roster-pw', '').strip()
-    addr = cgidata.getfirst('roster-email', '').strip()
+    password = get_form_value(form_data, 'roster-pw', '').strip()
+    addr = get_form_value(form_data, 'roster-email', '').strip()
     list_hidden = (not mlist.WebAuthenticate((mm_cfg.AuthUser,),
                                              password, addr)
                    and mlist.WebAuthenticate((mm_cfg.AuthListModerator,

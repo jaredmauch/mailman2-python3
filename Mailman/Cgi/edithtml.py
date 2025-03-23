@@ -31,7 +31,7 @@ from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
 from Mailman import i18n
 from Mailman.CSRFcheck import csrf_check
-from Mailman.Cgi.CGIHandler import FieldStorage
+from Mailman.Cgi.form_utils import get_form_data, get_form_value, get_form_keys, has_form_key
 
 _ = i18n._
 
@@ -95,10 +95,10 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Must be authenticated to get any farther
-    cgidata = FieldStorage()
     try:
-        cgidata.getfirst('adminpw', '')
-    except TypeError:
+        form_data = get_form_data(keep_blank_values=1)
+        get_form_value(form_data, 'adminpw', '')
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -109,22 +109,22 @@ def main():
 
     # CSRF check
     safe_params = ['VARHELP', 'adminpw', 'admlogin']
-    params = list(cgidata.keys())
+    params = get_form_keys(form_data)
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+        csrf_checked = csrf_check(mlist, get_form_value(form_data, 'csrf_token'),
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
+    if get_form_value(form_data, 'adminpw'):
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     # Editing the html for a list is limited to the list admin and site admin.
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
-        if 'admlogin' in cgidata:
+                                 get_form_value(form_data, 'adminpw', '')):
+        if has_form_key(form_data, 'admlogin'):
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -140,7 +140,7 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    language = cgidata.getfirst('language', '')
+    language = get_form_value(form_data, 'language', '')
     if language not in mlist.GetAvailableLanguages():
         language = mlist.preferred_language
     i18n.set_language(language)
@@ -177,9 +177,9 @@ def main():
         return
 
     try:
-        if list(cgidata.keys()) and 'langform' not in cgidata:
+        if get_form_keys(form_data) and not has_form_key(form_data, 'langform'):
             if csrf_checked:
-                ChangeHTML(mlist, cgidata, template_name, doc, lang=language)
+                ChangeHTML(mlist, form_data, template_name, doc, lang=language)
             else:
                 doc.addError(
                   _('The form lifetime has expired. (request forgery check)'))
@@ -229,15 +229,15 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     doc.AddItem(form)
 
 
-def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
+def ChangeHTML(mlist, form_data, template_name, doc, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language
-    if 'html_code' not in cgi_info:
+    if not has_form_key(form_data, 'html_code'):
         doc.AddItem(Header(3,_("Can't have empty html page.")))
         doc.AddItem(Header(3,_("HTML Unchanged.")))
         doc.AddItem('<hr>')
         return
-    code = cgi_info['html_code'].value
+    code = get_form_value(form_data, 'html_code')
     if Utils.suspiciousHTML(code):
         doc.AddItem(Header(3,
            _(f"""The page you saved contains suspicious HTML that could

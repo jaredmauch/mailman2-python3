@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import os
 import sys
-from Mailman.Cgi.CGIHandler import FieldStorage
 import mimetypes
 
 from Mailman import mm_cfg
@@ -30,6 +29,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Cgi.form_utils import get_form_data, get_form_value, has_form_key
 
 # Set up i18n.  Until we know which list is being requested, we use the
 # server's default.
@@ -115,10 +115,10 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
-    cgidata = FieldStorage()
     try:
-        username = cgidata.getfirst('username', '').strip()
-    except TypeError:
+        form_data = get_form_data(keep_blank_values=1)
+        username = get_form_value(form_data, 'username', '').strip()
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -126,7 +126,7 @@ def main():
         print('Status: 400 Bad Request')
         print(doc.Format())
         return
-    password = cgidata.getfirst('password', '')
+    password = get_form_value(form_data, 'password', '')
 
     is_auth = 0
     realname = mlist.real_name
@@ -137,7 +137,7 @@ def main():
                                   mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
                                  password, username):
-        if 'submit' in cgidata:
+        if has_form_key(form_data, 'submit'):
             # This is a re-authorization attempt
             message = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -150,7 +150,7 @@ def main():
             # give an HTTP 401 for authentication failure
             print('Status: 401 Unauthorized')
         # Are we processing a password reminder from the login screen?
-        if 'login-remind' in cgidata:
+        if has_form_key(form_data, 'login-remind'):
             if username:
                 message = Bold(FontSize('+1', _(f"""If you are a list member,
                           your password has been emailed to you."""))).Format()
