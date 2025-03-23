@@ -62,24 +62,47 @@ def main():
         print(doc.Format())
         return
 
+    # Try to find out which list is being administered
+    parts = Utils.GetPathPieces()
+    if not parts:
+        # None, so just do the admin overview and be done with it
+        admin_overview()
+        return
+    # Get the list object
+    listname = parts[0].lower()
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        # Send this with a 404 status.
+        print('Status: 404 Not Found')
+        admin_overview(_(f'No such list <em>{safelistname}</em>'))
+        syslog('error', 'admin: No such list "%s": %s\n',
+               listname, e)
+        return
+
+    # Now that we know what list has been requested, all subsequent admin
+    # pages are shown in that list's preferred language.
+    i18n.set_language(mlist.preferred_language)
+
     # CSRF check
-    safe_params = ['VARHELP', 'adminpw', 'admlogin',
-                   'letter', 'chunk', 'findmember',
-                   'legend']
-    params = cgidata.keys()
+    safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
+    params = list(cgidata.keys())
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', ''),
+        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.get('adminpw'):
+    if cgidata.get('adminpw', [''])[0]:
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
+    # If the user is not authenticated, we're done.
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.get('adminpw', '')):
+                                 cgidata.get('adminpw', [''])[0]):
         if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
