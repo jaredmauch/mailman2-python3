@@ -613,8 +613,8 @@ cat > conftest.py <<EOF
 from socket import *
 fqdn = getfqdn()
 with open('conftest.out', 'w') as fp:
-    print >> fp, fqdn
-    print >> fp, fqdn
+    print(fqdn, file=fp)
+    print(fqdn, file=fp)
 EOF
 $PYTHON conftest.py
 changequote([, ])
