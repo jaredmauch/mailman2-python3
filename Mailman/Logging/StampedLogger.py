@@ -14,77 +14,81 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-import os
+"""Logger that stamps each line with the time and label."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import sys
 import time
+from typing import Dict, List, Optional, Union, Any, TextIO
 
 from Mailman.Logging.Logger import Logger
 
 
-
 class StampedLogger(Logger):
-    """Record messages in log files, including date stamp and optional label.
+    """A logger that stamps each line with the time and label.
+    
+    Attributes:
+        label: The label to stamp each line with.
+        manual_reprime: Whether to manually reprime the logger.
+        _last_line: The last line written.
+        _last_time: The time of the last write.
+    """
 
-    If manual_reprime is on (off by default), then timestamp prefix will
-    included only on first .write() and on any write immediately following a
-    call to the .reprime() method.  This is useful for when StampedLogger is
-    substituting for sys.stderr, where yod like to see the grouping of
-    multiple writes under a single timestamp (and there is often is one group,
-    for uncaught exceptions where a script is bombing).
-
-    In any case, the identifying prefix will only follow writes that start on
-    a new line.
-
-    Nofail (by default) says to fallback to sys.stderr if write fails to
-    category file.  A message is emitted, but the IOError is caught.
-    Initialize with nofail=0 if you want to handle the error in your code,
-    instead.
-
-    ""
-    def __init__(self, category, label=None, manual_reprime=0, nofail=1,
-                 immediate=1):
-        """If specified, optional label is included after timestamp.
-        Other options are passed to the Logger class initializer.
+    def __init__(self, filename: str, label: str = '', manual_reprime: bool = True,
+                 nofail: bool = True) -> None:
+        """Initialize the logger.
+        
+        Args:
+            filename: The name of the log file.
+            label: The label to stamp each line with (default: '').
+            manual_reprime: Whether to manually reprime the logger (default: True).
+            nofail: Whether to fail silently (default: True).
         """
-        self.__label = label
-        self.__manual_reprime = manual_reprime
-        self.__primed = 1
-        self.__bol = 1
-        Logger.__init__(self, category, nofail, immediate)
+        super().__init__(filename, nofail=nofail)
+        self.label = label
+        self.manual_reprime = manual_reprime
+        self._last_line = ''
+        self._last_time = 0
 
-    def reprime(self):
-        """Reset so timestamp will be included with next write."""
-        self.__primed = 1
+    def write(self, line: str) -> None:
+        """Write a line to the log file.
+        
+        Args:
+            line: The line to write.
+        """
+        if not line:
+            return
+        now = time.time()
+        stamp = time.strftime('%b %d %H:%M:%S %Y', time.localtime(now))
+        
+        # Prepend the stamp to any line that doesn't begin with it
+        if not line.startswith(stamp):
+            line = '{0} ({1}): {2}'.format(stamp, self.label, line)
+        
+        # Don't write the same line twice in a row
+        if line != self._last_line or now - self._last_time > 3600:
+            super().write(line)
+            self._last_line = line
+            self._last_time = now
 
-    def write(self, msg):
-        if not self.__bol:
-            prefix = ""
-        else:
-            if not self.__manual_reprime or self.__primed:
-                stamp = time.strftime("{b }{d }{H:}{M:}{S }{Y ",
-                                      time.localtime(time.time()))
-                self.__primed = 0
-            else:
-                stamp = ""
-            if self.__label is None:
-                label = "(}{d)" }{ os.getpid()
-            else:
-                label = "}{s(}{d):" }{ (self.__label, os.getpid())
-            prefix = stamp + label
-        Logger.write(self, "}{s }{s" }{ (prefix, msg))
-        if msg and msg[-1] == '\n':
-            self.__bol = 1
-        else:
-            self.__bol = 0
+    def writelines(self, lines: List[str]) -> None:
+        """Write multiple lines to the log file.
+        
+        Args:
+            lines: The lines to write.
+        """
+        for line in lines:
+            self.write(line)
 
-    def writelines(self, lines):
-        first = 1
-        for l in lines:
-            if first:
-                self.write(l)
-                first = 0
-            else:
-                if l and l[0] not in [' ', '\t', '\n']:
-                    Logger.write(self, ' ' + l)
-                else:
-                    Logger.write(self, l)
-}
+    def __repr__(self) -> str:
+        """Return a string representation of the logger.
+        
+        Returns:
+            A string representation of the logger.
+        """
+        return '<{0} {1} to {2}>'.format(
+            self.__class__.__name__, self.label, self.filename)

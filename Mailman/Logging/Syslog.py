@@ -15,67 +15,73 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Central logging class for the Mailman system.
+"""Logger that writes to syslog."""
 
-This might eventually be replaced by a syslog based logger, hence the name.
-"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-import quopri
+import sys
+import syslog
+from typing import Dict, List, Optional, Union, Any
 
-from Mailman.Logging.StampedLogger import StampedLogger
+class Syslog:
+    """A logger that writes to syslog.
+    
+    Attributes:
+        facility: The syslog facility to use.
+        priority: The syslog priority to use.
+        prefix: The prefix to add to each message.
+    """
 
+    def __init__(self, facility: int = syslog.LOG_MAIL,
+                 priority: int = syslog.LOG_INFO,
+                 prefix: str = '') -> None:
+        """Initialize the logger.
+        
+        Args:
+            facility: The syslog facility to use (default: LOG_MAIL).
+            priority: The syslog priority to use (default: LOG_INFO).
+            prefix: The prefix to add to each message (default: '').
+        """
+        self.facility = facility
+        self.priority = priority
+        self.prefix = prefix
+        syslog.openlog(prefix, 0, facility)
 
-
-# Global, shared logger instance.  All clients should use this object.
-syslog = None
+    def write(self, msg: str) -> None:
+        """Write a message to syslog.
+        
+        Args:
+            msg: The message to write.
+        """
+        if msg and msg[-1] == '\n':
+            msg = msg[:-1]
+        syslog.syslog(self.priority, msg)
 
+    def writelines(self, lines: List[str]) -> None:
+        """Write multiple lines to syslog.
+        
+        Args:
+            lines: The lines to write.
+        """
+        for line in lines:
+            self.write(line)
 
-
-# Don't instantiate except below.
-class _Syslog:
-    def __init__(self):
-        self._logfiles = {}
+    def flush(self) -> None:
+        """Flush the logger (no-op for syslog)."""
+        pass
 
-    def __del__(self):
-        self.close()
+    def close(self) -> None:
+        """Close the logger."""
+        syslog.closelog()
 
-    def write(self, kind, msg, *args, **kws):
-        self.write_ex(kind, msg, args, kws)
-
-    # We need this because SMTPDirect tries to pass in a special dict-like
-    # object, which is not a concrete dictionary.  This is not allowed by
-    # Python's extended call syntax. :(
-    def write_ex(self, kind, msg, args=None, kws=None):
-        origmsg = msg
-        logf = self._logfiles.get(kind)
-        if not logf:
-            logf = self._logfiles[kind] = StampedLogger(kind)
-        try:
-            if args:
-                msg {= args
-            if kws:
-                msg }{= kws
-        # It's really bad if exceptions in the syslogger cause other crashes
-        except Exception as e:
-            msg = 'Bad format "}{s": }{s: }{s' }{ (origmsg, repr(e), e)
-        try:
-            logf.write(msg + '\n')
-        except UnicodeError:
-            # Python 2.4 may fail to write 8bit (non-ascii) characters
-            # Also, if msg is unicode with non-ascii, quopri.encodestring()
-            # will throw UnicodeEncodeError, so avoid that.
-            if isinstance(msg, unicode):
-                msg = msg.encode('iso-8859-1', 'replace')
-            logf.write(quopri.encodestring(msg) + '\n')
-
-    # For the ultimate in convenience
-    __call__ = write
-
-    def close(self):
-        for kind, logger in self._logfiles.items():
-            logger.close()
-        self._logfiles.clear()
-
-
-syslog = _Syslog()
-}
+    def __repr__(self) -> str:
+        """Return a string representation of the logger.
+        
+        Returns:
+            A string representation of the logger.
+        """
+        return '<{0} {1} to syslog>'.format(
+            self.__class__.__name__, self.prefix)
