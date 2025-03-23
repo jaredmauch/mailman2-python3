@@ -23,7 +23,7 @@ X-Mailer: Internet Mail Service (5.5.2653.19)
 
 import re
 from email.Message import Message
-from io import StringIO
+from cStringIO import StringIO
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
@@ -69,4 +69,4 @@ def process(msg):
                 addrs[line] = 1
             else:
                 addrs[line[:i]] = 1
-    return list(addrs.keys())
+    return addrs.keys()

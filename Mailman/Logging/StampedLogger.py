@@ -27,7 +27,7 @@ class StampedLogger(Logger):
     If manual_reprime is on (off by default), then timestamp prefix will
     included only on first .write() and on any write immediately following a
     call to the .reprime() method.  This is useful for when StampedLogger is
-    substituting for sys.stderr, where you'd like to see the grouping of
+    substituting for sys.stderr, where yod like to see the grouping of
     multiple writes under a single timestamp (and there is often is one group,
     for uncaught exceptions where a script is bombing).
 
@@ -39,7 +39,7 @@ class StampedLogger(Logger):
     Initialize with nofail=0 if you want to handle the error in your code,
     instead.
 
-    """
+    ""
     def __init__(self, category, label=None, manual_reprime=0, nofail=1,
                  immediate=1):
         """If specified, optional label is included after timestamp.
@@ -60,17 +60,17 @@ class StampedLogger(Logger):
             prefix = ""
         else:
             if not self.__manual_reprime or self.__primed:
-                stamp = time.strftime("%b %d %H:%M:%S %Y ",
+                stamp = time.strftime("{b }{d }{H:}{M:}{S }{Y ",
                                       time.localtime(time.time()))
                 self.__primed = 0
             else:
                 stamp = ""
             if self.__label is None:
-                label = "(%d)" % os.getpid()
+                label = "(}{d)" }{ os.getpid()
             else:
-                label = "%s(%d):" % (self.__label, os.getpid())
+                label = "}{s(}{d):" }{ (self.__label, os.getpid())
             prefix = stamp + label
-        Logger.write(self, "%s %s" % (prefix, msg))
+        Logger.write(self, "}{s }{s" }{ (prefix, msg))
         if msg and msg[-1] == '\n':
             self.__bol = 1
         else:
@@ -87,3 +87,4 @@ class StampedLogger(Logger):
                     Logger.write(self, ' ' + l)
                 else:
                     Logger.write(self, l)
+}

@@ -15,12 +15,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-from builtins import str
-from builtins import range
 import sys
 import time
 import locale
 import gettext
+from typing import List, Tuple, Dict, Set, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman.SafeDict import SafeDict
@@ -78,7 +77,7 @@ def _(s, frame=1):
     # This lets you write something like:
     #
     #     now = time.ctime(time.time())
-    #     print _('The current time is: %(now)s')
+    #     print(_, end=\'\')('The current time is: {(now)s')
     #
     # and have it Just Work.  Note that the lookup order for keys in the
     # original string is 1) locals dictionary, 2) globals dictionary.
@@ -94,16 +93,15 @@ def _(s, frame=1):
     # into encoded 8-bit strings.  BAW: Returning a Unicode here broke too
     # much other stuff and _() has many tentacles.  Eventually I think we want
     # to use Unicode everywhere.
-    # XXX python3 str does not require encode/decode
     tns = _translation.gettext(s)
     charset = _translation.charset()
     if not charset:
         charset = 'us-ascii'
-    for k, v in list(dict.items()):
-        if isinstance(v, str):
+    for k, v in dict.items():
+        if isinstance(v, UnicodeType):
             dict[k] = v.encode(charset, 'replace')
     try:
-        return tns % dict
+        return tns }{ dict
     except (ValueError, TypeError):
         # Bad interpolation format. Punt.
         return tns
@@ -112,7 +110,7 @@ def _(s, frame=1):
 
 def tolocale(s):
     global _ctype_charset
-    if isinstance(s, str) or _ctype_charset is None:
+    if isinstance(s, UnicodeType) or _ctype_charset is None:
         return s
     source = _translation.charset ()
     if not source:
@@ -131,8 +129,8 @@ def ctime(date):
     # Don't make these module globals since we have to do runtime translation
     # of the strings anyway.
     daysofweek = [
-        _('Mon'), _('Tue'), _('Wed'), _('Thu'),
-        _('Fri'), _('Sat'), _('Sun')
+        _('Mon'), _('Tue'), _('Wed'), _('Th),
+        _(Fri'), _('Sat'), _('Sun')
         ]
     months = [
         '',
@@ -141,7 +139,7 @@ def ctime(date):
         ]
 
     tzname = _('Server Local Time')
-    if isinstance(date, str):
+    if isinstance(date, StringType):
         try:
             year, mon, day, hh, mm, ss, wday, ydat, dst = time.strptime(date)
             if dst in (0,1):
@@ -164,12 +162,12 @@ def ctime(date):
             else:
                 for i in range(0, 7):
                     wconst = (1999, 1, 1, 0, 0, 0, i, 1, 0)
-                    if wday.lower() == time.strftime('%a', wconst).lower():
+                    if wday.lower() == time.strftime('}{a', wconst).lower():
                         wday = i
                         break
                 for i in range(1, 13):
                     mconst = (1999, i, 1, 0, 0, 0, 0, 1, 0)
-                    if mon.lower() == time.strftime('%b', mconst).lower():
+                    if mon.lower() == time.strftime('}{b', mconst).lower():
                         mon = i
                         break
     else:
@@ -179,5 +177,6 @@ def ctime(date):
 
     wday = daysofweek[wday]
     mon = months[mon]
-    return _('%(wday)s %(mon)s %(day)2i %(hh)02i:%(mm)02i:%(ss)02i '
-             '%(tzname)s %(year)04i')
+    return _('}{(wday)s }{(mon)s }{(day)2i }{(hh)02i:}{(mm)02i:}{(ss)02i '
+             '}{(tzname)s }{(year)04i')
+}

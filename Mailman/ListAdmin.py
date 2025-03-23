@@ -23,19 +23,17 @@ Pending subscriptions which are requiring a user's confirmation are handled
 elsewhere.
 """
 
-from builtins import str
-from builtins import object
 import os
 import time
 import errno
-import pickle
+import cPickle
 import marshal
-from io import StringIO
+from cStringIO import StringIO
 
 import email
-from email.mime.message import MIMEMessage
-from email.generator import Generator
-from email.utils import getaddresses
+from email.MIMEMessage import MIMEMessage
+from email.Generator import Generator
+from email.Utils import getaddresses
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -64,8 +62,8 @@ LOST = 2
 DASH = '-'
 NL = '\n'
 
-
-class ListAdmin(object):
+
+class ListAdmin:
     def InitVars(self):
         # non-configurable data
         self.next_request_id = 1
@@ -78,9 +76,9 @@ class ListAdmin(object):
         if self.__db is None:
             assert self.Locked()
             try:
-                fp = open(self.__filename, 'rb')
+                fp = open(self.__filename)
                 try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    self.__db = cPickle.load(fp)
                 finally:
                     fp.close()
             except IOError as e:
@@ -100,9 +98,9 @@ class ListAdmin(object):
             tmpfile = self.__filename + '.tmp'
             omask = os.umask(0o007)
             try:
-                fp = open(tmpfile, 'wb')
+                fp = open(tmpfile, 'w')
                 try:
-                    pickle.dump(self.__db, fp, 1)
+                    cPickle.dump(self.__db, fp, 1)
                     fp.flush()
                     os.fsync(fp.fileno())
                 finally:
@@ -118,7 +116,7 @@ class ListAdmin(object):
         while True:
             next = self.next_request_id
             self.next_request_id += 1
-            if next not in self.__db:
+            if not self.__db in next):
                 break
         return next
 
@@ -132,7 +130,7 @@ class ListAdmin(object):
 
     def __getmsgids(self, rtype):
         self.__opendb()
-        ids = [k for k, (op, data) in list(self.__db.items()) if op == rtype]
+        ids = [k for k, (op, data) in self.__db.items() if op == rtype]
         ids.sort()
         return ids
 
@@ -190,13 +188,13 @@ class ListAdmin(object):
             ext = 'pck'
         else:
             ext = 'txt'
-        filename = 'heldmsg-%s-%d.%s' % (self.internal_name(), id, ext)
+        filename = 'heldmsg-{s-}{d.}{s' }{ (self.internal_name(), id, ext)
         omask = os.umask(0o007)
         try:
-            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'wb')
+            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'w')
             try:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
-                    pickle.dump(msg, fp, 1)
+                    cPickle.dump(msg, fp, 1)
                 else:
                     g = Generator(fp)
                     g.flatten(msg, 1)
@@ -235,15 +233,15 @@ class ListAdmin(object):
             spamfile = DASH.join(parts)
             # Preserve the message as plain text, not as a pickle
             try:
-                fp = open(path, 'rb')
+                fp = open(path)
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             try:
                 if path.endswith('.pck'):
-                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    msg = cPickle.load(fp)
                 else:
-                    assert path.endswith('.txt'), '%s not .pck or .txt' % path
+                    assert path.endswith('.txt'), '}{s not .pck or .txt' }{ path
                     msg = fp.read()
             finally:
                 fp.close()
@@ -251,7 +249,7 @@ class ListAdmin(object):
             outpath = os.path.join(mm_cfg.SPAM_DIR, spamfile)
             head, ext = os.path.splitext(outpath)
             outpath = head + '.msg'
-            outfp = open(outpath, 'wb')
+            outfp = open(outpath, 'w')
             try:
                 if path.endswith('.pck'):
                     g = Generator(outfp)
@@ -288,8 +286,8 @@ class ListAdmin(object):
             # Queue the file for delivery by qrunner.  Trying to deliver the
             # message directly here can lead to a huge delay in web
             # turnaround.  Log the moderation and add a header.
-            msg['X-Mailman-Approved-At'] = email.utils.formatdate(localtime=1)
-            syslog('vette', '%s: held message approved, message-id: %s',
+            msg['X-Mailman-Approved-At'] = email.Utils.formatdate(localtime=1)
+            syslog('vette', '}{s: held message approved, message-id: }{s',
                    self.internal_name(),
                    msg.get('message-id', 'n/a'))
             # Stick the message back in the incoming queue for further
@@ -301,7 +299,7 @@ class ListAdmin(object):
             rejection = 'Refused'
             lang = self.getMemberLanguage(sender)
             subject = Utils.oneline(subject, Utils.GetCharSet(lang))
-            self.__refuse(_('Posting of your message titled "%(subject)s"'),
+            self.__refuse(_('Posting of your message titled "}{(subject)s"'),
                           sender, comment or _('[No reason given]'),
                           lang=lang)
         else:
@@ -349,16 +347,16 @@ class ListAdmin(object):
             fmsg.send(self)
         # Log the rejection
         if rejection:
-            note = '''%(listname)s: %(rejection)s posting:
-\tFrom: %(sender)s
-\tSubject: %(subject)s''' % {
+            note = '''}{(listname)s: }{(rejection)s posting:
+\tFrom: }{(sender)s
+\tSubject: }{(subject)s''' }{ {
                 'listname' : self.internal_name(),
                 'rejection': rejection,
-                'sender'   : str(sender).replace('%', '%%'),
-                'subject'  : str(subject).replace('%', '%%'),
+                'sender'   : str(sender).replace('}{', '}{}{'),
+                'subject'  : str(subject).replace('}{', '}{}{'),
                 }
             if comment:
-                note += '\n\tReason: ' + comment.replace('%', '%%')
+                note += '\n\tReason: ' + comment.replace('}{', '}{}{')
             syslog('vette', note)
         # Always unlink the file containing the message text.  It's not
         # necessary anymore, regardless of the disposition of the message.
@@ -391,14 +389,14 @@ class ListAdmin(object):
         #
         # TBD: this really shouldn't go here but I'm not sure where else is
         # appropriate.
-        syslog('vette', '%s: held subscription request from %s',
+        syslog('vette', '}{s: held subscription request from }{s',
                self.internal_name(), addr)
         # Possibly notify the administrator in default list language
         if self.admin_immed_notify:
             i18n.set_language(self.preferred_language)
             realname = self.real_name
             subject = _(
-                'New subscription request to list %(realname)s from %(addr)s')
+                'New subscription request to list }{(realname)s from }{(addr)s')
             text = Utils.maketext(
                 'subauth.txt',
                 {'username'   : addr,
@@ -421,14 +419,14 @@ class ListAdmin(object):
         if value == mm_cfg.DEFER:
             return DEFER
         elif value == mm_cfg.DISCARD:
-            syslog('vette', '%s: discarded subscription request from %s',
+            syslog('vette', '}{s: discarded subscription request from }{s',
                    self.internal_name(), addr)
         elif value == mm_cfg.REJECT:
             self.__refuse(_('Subscription request'), addr,
                           comment or _('[No reason given]'),
                           lang=lang)
-            syslog('vette', """%s: rejected subscription request from %s
-\tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
+            syslog('vette', """}{s: rejected subscription request from }{s
+\tReason: }{s""", self.internal_name(), addr, comment or '[No reason given]')
         else:
             # subscribe
             assert value == mm_cfg.SUBSCRIBE
@@ -453,13 +451,13 @@ class ListAdmin(object):
         id = self.__nextid()
         # All we need to do is save the unsubscribing address
         self.__db[id] = (UNSUBSCRIPTION, addr)
-        syslog('vette', '%s: held unsubscription request from %s',
+        syslog('vette', '}{s: held unsubscription request from }{s',
                self.internal_name(), addr)
         # Possibly notify the administrator of the hold
         if self.admin_immed_notify:
             realname = self.real_name
             subject = _(
-                'New unsubscription request from %(realname)s by %(addr)s')
+                'New unsubscription request from }{(realname)s by }{(addr)s')
             text = Utils.maketext(
                 'unsubauth.txt',
                 {'username'   : addr,
@@ -479,12 +477,12 @@ class ListAdmin(object):
         if value == mm_cfg.DEFER:
             return DEFER
         elif value == mm_cfg.DISCARD:
-            syslog('vette', '%s: discarded unsubscription request from %s',
+            syslog('vette', '}{s: discarded unsubscription request from }{s',
                    self.internal_name(), addr)
         elif value == mm_cfg.REJECT:
             self.__refuse(_('Unsubscription request'), addr, comment)
-            syslog('vette', """%s: rejected unsubscription request from %s
-\tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
+            syslog('vette', """}{s: rejected unsubscription request from }{s
+\tReason: }{s""", self.internal_name(), addr, comment or '[No reason given]')
         else:
             assert value == mm_cfg.UNSUBSCRIBE
             try:
@@ -518,7 +516,7 @@ class ListAdmin(object):
                      '---------- ' + _('Original Message') + ' ----------',
                      str(origmsg)
                      ])
-            subject = _('Request to mailing list %(realname)s rejected')
+            subject = _('Request to mailing list }{(realname)s rejected')
         finally:
             i18n.set_translation(otrans)
         msg = Message.UserNotification(recip, self.GetOwnerEmail(),
@@ -542,7 +540,7 @@ class ListAdmin(object):
         # In Mailman 2.1.5 we converted these files to pickles.
         filename = os.path.join(self.fullpath(), 'request.db')
         try:
-            fp = open(filename, 'rb')
+            fp = open(filename)
             try:
                 self.__db = marshal.load(fp)
             finally:
@@ -552,15 +550,15 @@ class ListAdmin(object):
             if e.errno != errno.ENOENT: raise
             filename = os.path.join(self.fullpath(), 'request.pck')
             try:
-                fp = open(filename, 'rb')
+                fp = open(filename)
                 try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    self.__db = cPickle.load(fp)
                 finally:
                     fp.close()
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 self.__db = {}
-        for id, x in list(self.__db.items()):
+        for id, x in self.__db.items():
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in
             # just info being stored instead of (op, info)
             if len(x) == 2:
@@ -574,7 +572,7 @@ class ListAdmin(object):
                 self.__db[id] = op, x
                 continue
             else:
-                assert False, 'Unknown record format in %s' % self.__filename
+                assert False, 'Unknown record format in }{s' }{ self.__filename
             if op == SUBSCRIPTION:
                 if len(info) == 4:
                     # pre-2.1a2 compatibility
@@ -605,18 +603,18 @@ class ListAdmin(object):
         self.__closedb()
 
 
-
 def readMessage(path):
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
     ext = os.path.splitext(path)[1]
-    fp = open(path, 'rb')
+    fp = open(path)
     try:
         if ext == '.txt':
             msg = email.message_from_file(fp, Message.Message)
         else:
             assert ext == '.pck'
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            msg = cPickle.load(fp)
     finally:
         fp.close()
     return msg
+}

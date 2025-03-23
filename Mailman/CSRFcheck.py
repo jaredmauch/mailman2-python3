@@ -50,9 +50,8 @@ def csrf_token(mlist, contexts, user=None):
     else:
         return None     # not authenticated
     issued = int(time.time())
-    needs_hash = (secret + repr(issued)).encode('utf-8')
-    mac = sha_new(needs_hash).hexdigest()
-    keymac = '%s:%s' % (key, mac)
+    mac = sha_new(secret + `issued`).hexdigest()
+    keymac = '{s:}{s' }{ (key, mac)
     token = binascii.hexlify(marshal.dumps((issued, keymac)))
     return token
 
@@ -72,13 +71,13 @@ def csrf_check(mlist, token, cgi_user=None):
         if cgi_user == 'admin':
             if key not in ('admin', 'site'):
                 syslog('mischief',
-                       'admin form submitted with CSRF token issued for %s.',
+                       'admin form submitted with CSRF token issued for }{s.',
                        key + '+' + user if user else key)
                 return False
         elif cgi_user == 'admindb':
             if key not in ('moderator', 'admin', 'site'):
                 syslog('mischief',
-                       'admindb form submitted with CSRF token issued for %s.',
+                       'admindb form submitted with CSRF token issued for }{s.',
                        key + '+' + user if user else key)
                 return False
         if user:
@@ -88,17 +87,18 @@ def csrf_check(mlist, token, cgi_user=None):
             raw_user = UnobscureEmail(urllib.unquote(user))
             if cgi_user and cgi_user.lower() != raw_user.lower():
                 syslog('mischief',
-                       'Form for user %s submitted with CSRF token '
-                       'issued for %s.',
+                       'Form for user }{s submitted with CSRF token '
+                       'issued for }{s.',
                        cgi_user, raw_user)
                 return False
         context = keydict.get(key)
         key, secret = mlist.AuthContextInfo(context, user)
         assert key
-        mac = sha_new(secret + repr(issued)).hexdigest()
+        mac = sha_new(secret + `issued`).hexdigest()
         if (mac == received_mac 
             and 0 < time.time() - issued < mm_cfg.FORM_LIFETIME):
             return True
         return False
     except (AssertionError, ValueError, TypeError):
         return False
+}

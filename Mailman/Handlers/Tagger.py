@@ -19,11 +19,11 @@
 
 import re
 import email
-import email.errors
-import email.iterators
-import email.parser
+import email.Errors
+import email.Iterators
+import email.Parser
 
-from email.header import decode_header
+from email.Header import decode_header
 
 from Mailman import Utils
 from Mailman.Logging.Syslog import syslog
@@ -58,7 +58,7 @@ def process(mlist, msg, msgdata):
     else:
         # Scan just some of the body lines
         matchlines.extend(scanbody(msg, mlist.topics_bodylines_limit))
-    matchlines = [_f for _f in matchlines if _f]
+    matchlines = filter(None, matchlines)
     # For each regular expression in the topics list, see if any of the lines
     # of interest from the message match the regexp.  If so, the message gets
     # added to the specific topics bucket.
@@ -71,8 +71,8 @@ def process(mlist, msg, msgdata):
                 hits[name] = 1
                 break
     if hits:
-        msgdata['topichits'] = list(hits.keys())
-        change_header('X-Topics', NLTAB.join(list(hits.keys())),
+        msgdata['topichits'] = hits.keys()
+        change_header('X-Topics', NLTAB.join(hits.keys()),
                       mlist, msg, msgdata, delete=False)
 
 
@@ -116,7 +116,7 @@ def scanbody(msg, numlines=None):
 
 
 
-class _ForgivingParser(email.parser.HeaderParser):
+class _ForgivingParser(email.Parser.HeaderParser):
     # Be a little more forgiving about non-header/continuation lines, since
     # we'll just read as much as we can from "header-like" lines in the body.
     #

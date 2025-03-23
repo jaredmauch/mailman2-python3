@@ -22,13 +22,17 @@ has already received a copy, we either drop the message, add a duplicate
 warning header, or pass it through, depending on the user's preferences.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 from email.utils import getaddresses, formataddr
 from Mailman import mm_cfg
 from Mailman.Handlers.CookHeaders import change_header
 
 COMMASPACE = ', '
 
-
 def process(mlist, msg, msgdata):
     recips = msgdata['recips']
     # Short circuit
@@ -95,7 +99,7 @@ def process(mlist, msg, msgdata):
         # There are remaining Ccs and we've dropped one or more and the list
         # allows changing.
         change_header('Cc',
-        COMMASPACE.join([formataddr(i) for i in list(ccaddrs.values())]),
+        COMMASPACE.join([formataddr(i) for i in ccaddrs.values()]),
         mlist, msg, msgdata)
     elif not ccaddrs and mlist.drop_cc:
         # The list allows changing and there are no remaining Ccs

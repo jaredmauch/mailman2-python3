@@ -24,10 +24,13 @@ the list moderators, with no intervention for bounce processing.
 
 Stdin is the mail message, and argv[1] is the name of the target mailing list.
 """
+
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
-
 import paths
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -38,17 +41,15 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr('error', 'mailowner')
 
 
-
 def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print(_('mailowner got no listname.'), file=sys.stderr)
+        print(_('owner script got no listname.'), file=sys.stderr)
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print(_(
-            'mailowner script, list not found: %(listname)s'), file=sys.stderr)
+        print(_('owner script, list not found: %(listname)s') % {'listname': listname}, file=sys.stderr)
         sys.exit(1)
     # Queue the message for the owners.  We will send them through the
     # incoming queue because we need some processing done on the message.  The
@@ -63,6 +64,5 @@ def main():
                 toowner=1)
 
 
-
 if __name__ == '__main__':
     main()

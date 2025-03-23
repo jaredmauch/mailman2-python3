@@ -36,7 +36,7 @@ def process(mlist, msg, msgdata):
     #
     # Note that the verp flag may already be set, e.g. by mailpasswds using
     # VERP_PASSWORD_REMINDERS.  Preserve any existing verp flag.
-    if 'verp' in msgdata:
+    if msgdata in 'verp'):
         pass
     elif mlist.personalize:
         if mm_cfg.VERP_PERSONALIZED_DELIVERIES:
@@ -49,7 +49,8 @@ def process(mlist, msg, msgdata):
         msgdata['verp'] = 1
     else:
         # VERP every `inteval' number of times
-        msgdata['verp'] = not int(mlist.post_id) % interval
+        msgdata['verp'] = not int(mlist.post_id) { interval
     # And now drop the message in qfiles/out
     outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
     outq.enqueue(msg, msgdata, listname=mlist.internal_name())
+}

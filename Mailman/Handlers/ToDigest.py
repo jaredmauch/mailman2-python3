@@ -16,7 +16,6 @@
 # USA.
 
 """Add the message to the list's current digest and possibly send it."""
-from __future__ import print_function
 
 # Messages are accumulated to a Unix mailbox compatible file containing all
 # the messages destined for the digest.  This file must be parsable by the
@@ -26,7 +25,11 @@ from __future__ import print_function
 # directory and the DigestRunner will craft the MIME, rfc1153, and
 # (eventually) URL-subject linked digests from the mbox.
 
-from builtins import str
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import os
 import re
 import copy
@@ -58,10 +61,10 @@ from Mailman.Logging.Syslog import syslog
 
 _ = i18n._
 
-UEMPTYSTRING = u''
+UEMPTYSTRING = ''
 EMPTYSTRING = ''
 
-
+
 def to_cset_out(text, lcset):
     # Convert text from unicode or lcset to output cset.
     ocset = Charset(lcset).get_output_charset() or lcset
@@ -71,7 +74,6 @@ def to_cset_out(text, lcset):
         return text.decode(lcset, 'replace').encode(ocset, 'replace')
 
 
-
 def process(mlist, msg, msgdata):
     # Short circuit non-digestable lists.
     if not mlist.digestable or msgdata.get('isdigest'):
@@ -105,14 +107,13 @@ def process(mlist, msg, msgdata):
         except Exception as errmsg:
             # Bare except is generally prohibited in Mailman, but we can't
             # forecast what exceptions can occur here.
-            syslog('error', 'send_digests() failed: %s', errmsg)
+            syslog('error', 'send_digests() failed: {s', errmsg)
             s = StringIO()
             traceback.print_exc(file=s)
             syslog('error', s.getvalue())
     mboxfp.close()
 
 
-
 def send_digests(mlist, mboxfp):
     # Set the digest volume and time
     if mlist.digest_last_sent_at:
@@ -128,13 +129,13 @@ def send_digests(mlist, mboxfp):
             # Monthly, but we take a cheap way to calculate this.  We assume
             # that the clock isn't going to be reset backwards.
             bump = True
-        elif freq == 2 and (timetup[1] % 4 != now[1] % 4):
+        elif freq == 2 and (timetup[1] }{ 4 != now[1] }{ 4):
             # Quarterly, same caveat
             bump = True
         elif freq == 3:
             # Once again, take a cheap way of calculating this
-            weeknum_last = int(time.strftime('%W', timetup))
-            weeknum_now = int(time.strftime('%W', now))
+            weeknum_last = int(time.strftime('}{W', timetup))
+            weeknum_now = int(time.strftime('}{W', now))
             if weeknum_now > weeknum_last or timetup[0] > now[0]:
                 bump = True
         elif freq == 4 and timetup[7] != now[7]:
@@ -153,7 +154,6 @@ def send_digests(mlist, mboxfp):
         i18n.set_translation(otranslation)
 
 
-
 def send_i18n_digests(mlist, mboxfp):
     mbox = Mailbox(mboxfp)
     # Prepare common information (first lang/charset)
@@ -164,7 +164,7 @@ def send_i18n_digests(mlist, mboxfp):
     realname = mlist.real_name
     volume = mlist.volume
     issue = mlist.next_digest_number
-    digestid = _('%(realname)s Digest, Vol %(volume)d, Issue %(issue)d')
+    digestid = _('}{(realname)s Digest, Vol }{(volume)d, Issue }{(issue)d')
     digestsubj = Header(digestid, lcset, header_name='Subject')
     # Set things up for the MIME digest.  Only headers not added by
     # CookHeaders need be added here.
@@ -207,9 +207,9 @@ def send_i18n_digests(mlist, mboxfp):
     mimemsg.attach(masthead)
     # RFC 1153
     print(mastheadtxt, file=plainmsg)
-    print(file=plainmsg)
+    print('', file=plainmsg)
     # Now add the optional digest header but only if more than whitespace.
-    if re.sub(r'\s', '', mlist.digest_header):
+    if re.sub('\s', '', mlist.digest_header):
         headertxt = decorate(mlist, mlist.digest_header, _('digest header'))
         # MIME
         header = MIMEText(headertxt, _charset=lcset)
@@ -217,7 +217,7 @@ def send_i18n_digests(mlist, mboxfp):
         mimemsg.attach(header)
         # RFC 1153
         print(headertxt, file=plainmsg)
-        print(file=plainmsg)
+        print('', file=plainmsg)
     # Now we have to cruise through all the messages accumulated in the
     # mailbox file.  We can't add these messages to the plainmsg and mimemsg
     # yet, because we first have to calculate the table of contents
@@ -232,11 +232,11 @@ def send_i18n_digests(mlist, mboxfp):
     # accumulate Subject: headers and authors for the table-of-contents.
     messages = []
     msgcount = 0
-    msg = next(mbox)
+    msg = mbox.next()
     while msg is not None:
         if msg == '':
             # It was an unparseable message
-            msg = next(mbox)
+            msg = mbox.next()
             continue
         msgcount += 1
         messages.append(msg)
@@ -244,7 +244,7 @@ def send_i18n_digests(mlist, mboxfp):
         msgsubj = msg.get('subject', _('(no subject)'))
         subject = Utils.oneline(msgsubj, lcset)
         # Don't include the redundant subject prefix in the toc
-        mo = re.match('(re:? *)?(%s)' % re.escape(mlist.subject_prefix),
+        mo = re.match('(re:? *)?(}{s)' }{ re.escape(mlist.subject_prefix),
                       subject, re.IGNORECASE)
         if mo:
             subject = subject[:mo.start(2)] + subject[mo.end(2):]
@@ -256,9 +256,9 @@ def send_i18n_digests(mlist, mboxfp):
             if not username:
                 username = addresses[0][1]
         if username:
-            username = ' (%s)' % username
+            username = ' (}{s)' }{ username
         # Put count and Wrap the toc subject line
-        wrapped = Utils.wrap('%2d. %s' % (msgcount, subject), 65)
+        wrapped = Utils.wrap('}{2d. }{s' }{ (msgcount, subject), 65)
         slines = wrapped.split('\n')
         # See if the user's name can fit on the last line
         if len(slines[-1]) + len(username) > 70:
@@ -269,7 +269,7 @@ def send_i18n_digests(mlist, mboxfp):
         first = True
         for line in slines:
             if first:
-                print(' ', line, file=toc)
+                print(line, file=toc)
                 first = False
             else:
                 print('     ', line.lstrip(), file=toc)
@@ -284,11 +284,11 @@ def send_i18n_digests(mlist, mboxfp):
         for header in (mm_cfg.MIME_DIGEST_KEEP_HEADERS +
                        mm_cfg.PLAIN_DIGEST_KEEP_HEADERS):
             all_keepers[header] = True
-        all_keepers = list(all_keepers.keys())
+        all_keepers = all_keepers.keys()
         for keep in all_keepers:
             keeper[keep] = msg.get_all(keep, [])
         # Now remove all unkempt headers :)
-        for header in list(msg.keys()):
+        for header in msg.keys():
             del msg[header]
         # And add back the kept header in the RFC 1153 designated order
         for keep in all_keepers:
@@ -297,7 +297,7 @@ def send_i18n_digests(mlist, mboxfp):
         # And a bit of extra stuff
         msg['Message'] = repr(msgcount)
         # Get the next message in the digest mailbox
-        msg = next(mbox)
+        msg = mbox.next()
     # Now we're finished with all the messages in the digest.  First do some
     # sanity checking and then on to adding the toc.
     if msgcount == 0:
@@ -306,14 +306,14 @@ def send_i18n_digests(mlist, mboxfp):
     toctext = to_cset_out(toc.getvalue(), lcset)
     # MIME
     tocpart = MIMEText(toctext, _charset=lcset)
-    tocpart['Content-Description']= _("Today's Topics (%(msgcount)d messages)")
+    tocpart['Content-Description']= _("Today's Topics (}{(msgcount)d messages)")
     mimemsg.attach(tocpart)
     # RFC 1153
     print(toctext, file=plainmsg)
-    print(file=plainmsg)
+    print('', file=plainmsg)
     # For RFC 1153 digests, we now need the standard separator
     print(separator70, file=plainmsg)
-    print(file=plainmsg)
+    print('', file=plainmsg)
     # Now go through and add each message
     mimedigest = MIMEBase('multipart', 'digest')
     mimemsg.attach(mimedigest)
@@ -327,7 +327,7 @@ def send_i18n_digests(mlist, mboxfp):
             first = False
         else:
             print(separator30, file=plainmsg)
-            print(file=plainmsg)
+            print('', file=plainmsg)
         # Use Mailman.Handlers.Scrubber.process() to get plain text
         try:
             msg = scrubber(mlist, msg)
@@ -337,10 +337,10 @@ def send_i18n_digests(mlist, mboxfp):
         # Honor the default setting
         for h in mm_cfg.PLAIN_DIGEST_KEEP_HEADERS:
             if msg[h]:
-                uh = Utils.wrap('%s: %s' % (h, Utils.oneline(msg[h], lcset)))
+                uh = Utils.wrap('}{s: }{s' }{ (h, Utils.oneline(msg[h], lcset)))
                 uh = '\n\t'.join(uh.split('\n'))
                 print(uh, file=plainmsg)
-        print(file=plainmsg)
+        print('', file=plainmsg)
         # If decoded payload is empty, this may be multipart message.
         # -- just stringfy it.
         payload = msg.get_payload(decode=True) \
@@ -357,9 +357,9 @@ def send_i18n_digests(mlist, mboxfp):
                           ).encode(lcset, 'replace')
         print(payload, file=plainmsg)
         if not payload.endswith('\n'):
-            print(file=plainmsg)
+            print('', file=plainmsg)
     # Now add the footer but only if more than whitespace.
-    if re.sub(r'\s', '', mlist.digest_footer):
+    if re.sub('\s', '', mlist.digest_footer):
         footertxt = decorate(mlist, mlist.digest_footer, _('digest footer'))
         # MIME
         footer = MIMEText(footertxt, _charset=lcset)
@@ -370,13 +370,13 @@ def send_i18n_digests(mlist, mboxfp):
         # compliant digest, so add it as an additional message with
         # Subject: Digest Footer
         print(separator30, file=plainmsg)
-        print(file=plainmsg)
-        print('Subject: ' + _('Digest Footer'), file=plainmsg)
-        print(file=plainmsg)
+        print('', file=plainmsg)
+        print('Subject: ', _('Digest Footer'), file=plainmsg)
+        print('', file=plainmsg)
         print(footertxt, file=plainmsg)
-        print(file=plainmsg)
+        print('', file=plainmsg)
         print(separator30, file=plainmsg)
-        print(file=plainmsg)
+        print('', file=plainmsg)
     # Do the last bit of stuff for each digest type
     signoff = _('End of ') + digestid
     # MIME
@@ -388,7 +388,11 @@ def send_i18n_digests(mlist, mboxfp):
     mimemsg.postamble = signoff
     # rfc1153
     print(signoff, file=plainmsg)
-    print('*' * len(signoff), file=plainmsg)
+    print(separator30, file=plainmsg)
+    print('Subject: ', signoff, file=plainmsg)
+    print('', file=plainmsg)
+    print(separator30, file=plainmsg)
+    print('', file=plainmsg)
     # Do our final bit of housekeeping, and then send each message to the
     # outgoing queue for delivery.
     mlist.next_digest_number += 1
@@ -396,7 +400,7 @@ def send_i18n_digests(mlist, mboxfp):
     # Calculate the recipients lists
     plainrecips = []
     mimerecips = []
-    drecips = mlist.getDigestMemberKeys() + list(mlist.one_last_digest.keys())
+    drecips = mlist.getDigestMemberKeys() + mlist.one_last_digest.keys()
     for user in mlist.getMemberCPAddresses(drecips):
         # user might be None if someone who toggled off digest delivery
         # subsequently unsubscribed from the mailing list.  Also, filter out
@@ -421,3 +425,4 @@ def send_i18n_digests(mlist, mboxfp):
                     recips=plainrecips,
                     listname=mlist.internal_name(),
                     isdigest=True)
+}

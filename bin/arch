@@ -56,6 +56,11 @@ be some path in the archives/private directory.  For example:
 <mbox> is optional.  If it is missing, it is calculated.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 import getopt
@@ -76,7 +81,6 @@ PROGRAM = sys.argv[0]
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -88,7 +92,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
     # get command line arguments
     try:
@@ -163,39 +166,38 @@ def main():
         lock.lock()
         # Try to open mbox before wiping old archive.
         try:
-            fp = open(mbox)
+            with open(mbox) as fp:
+                # Maybe wipe the old archives
+                if wipe:
+                    if mlist.scrub_nondigest:
+                        # TK: save the attachments dir because they are not in mbox
+                        saved = 0
+                        try:
+                            atchdir = os.path.join(mlist.archive_dir(), 'attachments')
+                            savedir = os.path.join(mlist.archive_dir() + '.mbox',
+                                                 'attachments')
+                            os.rename(atchdir, savedir)
+                            saved = 1
+                        except:
+                            pass
+                    shutil.rmtree(mlist.archive_dir())
+                    if mlist.scrub_nondigest and saved:
+                        os.renames(savedir, atchdir)
+
+                archiver = HyperArchive(mlist)
+                archiver.VERBOSE = verbose
+                try:
+                    archiver.processUnixMailbox(fp, start, end)
+                finally:
+                    archiver.close()
         except IOError as msg:
             usage(3, C_('Cannot open mbox file %(mbox)s: %(msg)s'))
-        # Maybe wipe the old archives
-        if wipe:
-            if mlist.scrub_nondigest:
-                # TK: save the attachments dir because they are not in mbox
-                saved = 0
-                try:
-                    atchdir = os.path.join(mlist.archive_dir(), 'attachments')
-                    savedir = os.path.join(mlist.archive_dir() + '.mbox',
-                                           'attachments')
-                    os.rename(atchdir, savedir)
-                    saved = 1
-                except:
-                    pass
-            shutil.rmtree(mlist.archive_dir())
-            if mlist.scrub_nondigest and saved:
-                os.renames(savedir, atchdir)
-
-        archiver = HyperArchive(mlist)
-        archiver.VERBOSE = verbose
-        try:
-            archiver.processUnixMailbox(fp, start, end)
-        finally:
-            archiver.close()
-        fp.close()
     finally:
         if lock:
             lock.unlock()
         if mlist:
             mlist.Unlock()
 
-
+
 if __name__ == '__main__':
     main()

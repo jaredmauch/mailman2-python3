@@ -16,6 +16,10 @@
 
 """PyUnit-based test harness for Mailman."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 import unittest
 
 MODULES = ('bounces', 'handlers', 'membership', 'safedict',
@@ -26,7 +30,7 @@ MODULES = ('bounces', 'handlers', 'membership', 'safedict',
 # can't be run when the other tests are run, 'cause it'll clobber qfiles.
 # This means you have to run test_message.py manually. :(
 
-
+
 def suite():
     alltests = unittest.TestSuite()
     for modname in MODULES:
@@ -35,6 +39,5 @@ def suite():
     return alltests
 
 
-
 if __name__ == '__main__':
     unittest.main(defaultTest='suite')

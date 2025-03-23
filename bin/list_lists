@@ -42,6 +42,11 @@ Where:
 
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
 import sys
 import getopt
@@ -66,7 +71,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'apbV:h',
@@ -131,6 +135,5 @@ def main():
             print('   ', format % (mlist.real_name, description))
 
 
-
 if __name__ == '__main__':
     main()

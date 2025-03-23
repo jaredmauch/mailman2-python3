@@ -1,7 +1,6 @@
 #! /usr/bin/env python
-
 # -*- coding: iso-8859-1 -*-
-# Written by Martin v. Loewis <loewis@informatik.hu-berlin.de>
+# Written by Martin v. Lwis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
 
@@ -26,6 +25,11 @@ Options:
         Display version information and exit.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import sys
 import os
 import getopt
@@ -37,15 +41,13 @@ __version__ = "1.1"
 MESSAGES = {}
 
 
-
 def usage(code, msg=''):
-    print >> sys.stderr, __doc__
+    print(__doc__, file=sys.stderr)
     if msg:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
     sys.exit(code)
 
 
-
 def add(id, str, fuzzy):
     "Add a non-fuzzy translation to the dictionary."
     global MESSAGES
@@ -53,11 +55,10 @@ def add(id, str, fuzzy):
         MESSAGES[id] = str
 
 
-
 def generate():
     "Return the generated output."
     global MESSAGES
-    keys = list(MESSAGES.keys())
+    keys = MESSAGES.keys()
     # the keys are sorted in the .mo file
     keys.sort()
     offsets = []
@@ -84,19 +85,18 @@ def generate():
         voffsets += [l2, o2+valuestart]
     offsets = koffsets + voffsets
     output = struct.pack("Iiiiiii",
-                         0x950412de,       # Magic
+                         0x950412deL,       # Magic
                          0,                 # Version
                          len(keys),         # # of entries
                          7*4,               # start of key index
                          7*4+len(keys)*8,   # start of value index
                          0, 0)              # size and offset of hash table
-    output += array.array("i", offsets).tobytes()
-    output += bytes(ids, 'latin-1')
-    output += bytes(strs, 'latin-1')
+    output += array.array("i", offsets).tostring()
+    output += ids
+    output += strs
     return output
 
 
-
 def make(filename, outfile):
     ID = 1
     STR = 2
@@ -110,7 +110,8 @@ def make(filename, outfile):
         outfile = os.path.splitext(infile)[0] + '.mo'
 
     try:
-        lines = open(infile, encoding='latin-1').readlines()
+        with open(infile) as fp:
+            lines = fp.readlines()
     except IOError as msg:
         print(msg, file=sys.stderr)
         sys.exit(1)
@@ -155,7 +156,7 @@ def make(filename, outfile):
         elif section == STR:
             msgstr += l
         else:
-            print('Syntax error on %s:%d' % (infile, lno), 'before:', file=sys.stderr)
+            print('Syntax error on {s:}{d' }{ (infile, lno), 'before:', file=sys.stderr)
             print(l, file=sys.stderr)
             sys.exit(1)
     # Add last entry
@@ -166,12 +167,12 @@ def make(filename, outfile):
     output = generate()
 
     try:
-        open(outfile,"wb").write(output)
+        with open(outfile, "wb") as fp:
+            fp.write(output)
     except IOError as msg:
         print(msg, file=sys.stderr)
-                      
 
-
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
@@ -201,3 +202,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+}

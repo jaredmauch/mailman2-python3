@@ -16,9 +16,8 @@
 
 dnl Process this file with autoconf to produce a configure script.
 AC_REVISION($Revision: 8122 $)
-AC_PREREQ([2.71])
-AC_INIT
-AC_CONFIG_SRCDIR([src/common.h])
+AC_PREREQ(2.0)
+AC_INIT(src/common.h)
 
 
 # /usr/local/mailman is the default installation directory
@@ -41,7 +40,7 @@ AC_MSG_RESULT($ans)
 
 if test -z "$with_python"
 then
-        AC_PATH_PROG(with_python, python3, /usr/local/bin/python3)
+        AC_PATH_PROG(with_python, python, /usr/local/bin/python)
 fi
 
 AC_MSG_CHECKING(Python interpreter)
@@ -66,13 +65,12 @@ try:
     v = sys.hexversion
 except AttributeError:
     v = 0
-if v >= 0x2040000:
+if v >= 0x3000000:  # Python 3.0 or newer
     s = sys.version.split()[0]
 else:
     s = ""
-fp = open("conftest.out", "w")
-fp.write("%s\n" % s)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % s)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -83,7 +81,7 @@ then
     AC_MSG_ERROR([
 
 ***** $PYTHON is too old (or broken)
-***** Python 2.4 or newer is required])
+***** Python 3.0 or newer is required])
 fi
 AC_MSG_RESULT($version)
 
@@ -96,9 +94,8 @@ try:
     res = 'ok'
 except ImportError:
     res = 'no'
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -123,13 +120,11 @@ cat > conftest.py <<EOF
 import sys
 try:
     import email
+    res = "ok"  # In Python 3, we don't check version since email is built-in
 except ImportError:
     res = "not ok"
-else:
-    res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -138,9 +133,8 @@ rm -f conftest.out conftest.py
 
 cat > getver.py <<EOF
 from Mailman.Version import VERSION
-fp = open("getver.out", "w")
-fp.write("%s\n" % VERSION)
-fp.close()
+with open("getver.out", "w") as fp:
+    fp.write("%s\n" % VERSION)
 EOF
 $PYTHON getver.py
 MM_VERSION=`cat getver.out`
@@ -162,14 +156,12 @@ AC_MSG_CHECKING(Japanese codecs)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    str('OK').encode('iso-2022-jp')
+    "OK".encode('iso-2022-jp').decode('iso-2022-jp')
+    res = "ok"
 except LookupError:
     res = "not ok"
-else:
-    res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -191,14 +183,12 @@ AC_MSG_CHECKING(Korean codecs)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    str('OK').encode('euc-kr')
+    "OK".encode('euc-kr').decode('euc-kr')
+    res = "ok"
 except LookupError:
     res = "not ok"
-else:
-    res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -239,9 +229,8 @@ else:
             res = "yes"
         else:
             res = "no"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -280,7 +269,7 @@ AC_MSG_RESULT($without_gcc)
 # If the user switches compilers, we can't believe the cache
 if test ! -z "$ac_cv_prog_CC" -a ! -z "$CC" -a "$CC" != "$ac_cv_prog_CC"
 then
-  AC_MSG_ERROR(cached CC is different -- throw away $cache_file
+  AC_ERROR(cached CC is different -- throw away $cache_file
 (it is also a good idea to do 'make clean' before compiling))
 fi
 
@@ -355,7 +344,7 @@ if test -z "$$1"
 then
     cat > conftest.py <<EOF
 import grp
-gid = ''
+gname = ''
 for group in "$2".split():
     try:
         try:
@@ -366,9 +355,8 @@ for group in "$2".split():
             break
     except KeyError:
         gname = ''
-fp = open("conftest.out", "w")
-fp.write("%s\n" % gname)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % gname)
 EOF
     $PYTHON conftest.py
     $1=`cat conftest.out`
@@ -387,7 +375,7 @@ if test -z "$$1"
 then
     cat > conftest.py <<EOF
 import pwd
-uid = ''
+uname = ''
 for user in "$2".split():
     try:
         try:
@@ -398,9 +386,8 @@ for user in "$2".split():
             break
     except KeyError:
         uname = ''
-fp = open("conftest.out", "w")
-fp.write("%s\n" % uname)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % uname)
 EOF
     $PYTHON conftest.py
     $1=`cat conftest.out`
@@ -482,16 +469,17 @@ try:
 except KeyError:
     mailmangid = -1
 problems = []
-try: statdata = os.stat(prefix)
+try:
+    statdata = os.stat(prefix)
 except OSError:
     problems.append("Directory doesn't exist: " + prefix)
 else:
     mode = statdata[ST_MODE]
     gid = statdata[ST_GID]
-    if mailmangid != gid:
+    if mailmangid != gid:  # Changed <> to !=
         problems.append("Directory must be owned by group " +
                         groupname + ": " + prefix)
-    if (mode & S_ISGID) != S_ISGID:
+    if (mode & S_ISGID) != S_ISGID:  # Changed <> to !=
         problems.append("Set-gid bit must be set for directory: " + prefix)
     perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
     if (mode & perms) != perms:
@@ -500,9 +488,8 @@ if not problems:
     msg = "okay\n"
 else:
     msg = '***** ' + '\n***** '.join(problems) + '\n'
-fp = open("conftest.out", "w")
-fp.write(msg)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write(msg)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -625,10 +612,9 @@ cat > conftest.py <<EOF
 # python
 from socket import *
 fqdn = getfqdn()
-fp = open('conftest.out', 'w')
-print(fqdn, file=fp)
-print(fqdn, file=fp)
-fp.close()
+with open('conftest.out', 'w') as fp:
+    print >> fp, fqdn
+    print >> fp, fqdn
 EOF
 $PYTHON conftest.py
 changequote([, ])
@@ -656,24 +642,19 @@ if test $ac_cv_func_syslog = no; then
   for lib in bsd socket inet; do
     AC_MSG_CHECKING(for syslog in -l$lib)
     Mailman_LIBS_save="$LIBS"; LIBS="$LIBS -l$lib"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <syslog.h>]], [[syslog(LOG_DEBUG, "Just a test...");]])],[AC_MSG_RESULT(yes)
+    AC_TRY_LINK([#include <syslog.h>],
+                [syslog(LOG_DEBUG, "Just a test...");],
+                [AC_MSG_RESULT(yes)
       AC_DEFINE(HAVE_SYSLOG)
-      break],[AC_MSG_RESULT(no)
+      break],
+                [AC_MSG_RESULT(no)
       LIBS="$Mailman_LIBS_save"])
     unset Mailman_LIBS_save
   done
 fi
 
 # Checks for header files.
-m4_warn([obsolete],
-[The preprocessor macro `STDC_HEADERS' is obsolete.
-  Except in unusual embedded environments, you can safely include all
-  ISO C90 headers unconditionally.])dnl
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
-AC_CHECK_INCLUDES_DEFAULT
-AC_PROG_EGREP
-
+AC_HEADER_STDC
 AC_CHECK_HEADERS(syslog.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -709,7 +690,6 @@ bin/list_owners \
 bin/mailmanctl \
 bin/mmsitepass \
 bin/msgfmt.py \
-bin/msgfmt-python2.py \
 bin/newlist \
 bin/pygettext.py \
 bin/qrunner \
@@ -760,7 +740,7 @@ AC_SUBST(SCRIPTS)
 mkdir -p build/bin build/contrib build/cron
 
 dnl Output everything
-AC_CONFIG_FILES([misc/paths.py Mailman/Defaults.py Mailman/mm_cfg.py.dist
+AC_OUTPUT([misc/paths.py Mailman/Defaults.py Mailman/mm_cfg.py.dist
            src/Makefile misc/Makefile bin/Makefile
            Mailman/Makefile Mailman/Cgi/Makefile Mailman/Logging/Makefile
            Mailman/Archiver/Makefile Mailman/Commands/Makefile
@@ -769,9 +749,8 @@ AC_CONFIG_FILES([misc/paths.py Mailman/Defaults.py Mailman/mm_cfg.py.dist
            templates/Makefile cron/Makefile scripts/Makefile messages/Makefile
            cron/crontab.in misc/mailman Makefile
            tests/Makefile tests/bounces/Makefile tests/msgs/Makefile
-           $SCRIPTS])
-AC_CONFIG_COMMANDS([default],[echo "configuration completed at" `date`],[])
-AC_OUTPUT
+           $SCRIPTS],
+        echo "configuration completed at" `date`)
 
 # Make sure all the build scripts are executable.
 chmod -R +x build
@@ -780,7 +759,7 @@ chmod -R +x build
 dnl AC_MSG_CHECKING(for Python Chinese Unicode codecs)
 dnl cat > conftest.py <<EOF
 dnl try:
-dnl   str("abc", "big5-tw")
+dnl   unicode("abc", "big5-tw")
 dnl   print "found"
 dnl except LookupError:
 dnl   print "not found"

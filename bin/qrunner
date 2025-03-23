@@ -72,6 +72,11 @@ Note also that this script should be started up from mailmanctl as a normal
 operation.  It is only useful for debugging if it is run separately.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import getopt
 import signal
@@ -90,7 +95,6 @@ COMMASPACE = ', '
 AS_SUBPROC = 0
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -102,7 +106,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def make_qrunner(name, slice, range, once=0):
     modulename = 'Mailman.Queue.' + name
     try:
@@ -127,7 +130,6 @@ def make_qrunner(name, slice, range, once=0):
     return qrunner
 
 
-
 def set_signals(loop):
     # Set up the SIGTERM handler for stopping the loop
     def sigterm_handler(signum, frame, loop=loop):
@@ -154,7 +156,6 @@ def set_signals(loop):
     signal.signal(signal.SIGHUP, sighup_handler)
 
 
-
 def main():
     global AS_SUBPROC
     try:
@@ -248,34 +249,25 @@ def main():
         class Loop:
             status = 0
             def __init__(self):
-                self.__isdone = 0
+                self.__qrunners = qrunners
             def name(self):
-                return 'Main loop'
+                return 'RoundRobin'
             def stop(self):
-                self.__isdone = 1
-            def isdone(self):
-                return self.__isdone
+                for qrunner in self.__qrunners:
+                    qrunner.stop()
         loop = Loop()
         set_signals(loop)
-        syslog('qrunner', 'Main qrunner loop started.')
-        while not loop.isdone():
+        # Now start up the main loop
+        syslog('qrunner', 'RoundRobin qrunner started.')
+        while not loop.status:
             for qrunner in qrunners:
-                # In case the SIGTERM came in the middle of this iteration
-                if loop.isdone():
+                if loop.status:
                     break
-                if verbose:
-                    syslog('qrunner', 'Now doing a %s qrunner iteration',
-                           qrunner.__class__.__bases__[0].__name__)
                 qrunner.run()
-            if once:
-                break
-            if mm_cfg.QRUNNER_SLEEP_TIME > 0:
-                time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
-        syslog('qrunner', 'Main qrunner loop exiting.')
-    # All done
+        syslog('qrunner', 'RoundRobin qrunner exiting.')
+
     sys.exit(loop.status)
 
 
-
 if __name__ == '__main__':
     main()

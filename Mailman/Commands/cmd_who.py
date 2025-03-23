@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-from email.utils import parseaddr
+from email.Utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import i18n
@@ -36,9 +36,9 @@ MEMBERSONLYHELP = _("""
     who password [address=<address>]
         See the non-hidden members of this mailing list.  The roster is
         limited to list members only, and you must supply your membership
-        password to retrieve it.  If you're posting from an address other
+        password to retrieve it.  If yore posting from an address other
         than your membership address, specify your membership address with
-        `address=<address>' (no brackets around the email address, and no
+        `address=<address> (no brackets around the email address, and no
         quotes!). If you provide the list's admin or moderator password,
         hidden members will be included.
 """)
@@ -141,12 +141,13 @@ def process(res, args):
                 continue
             realname = mlist.getMemberName(member)
             if realname:
-                res.results.append('    %s (%s)' % (member, realname))
+                res.results.append('    {s (}{s)' }{ (member, realname))
             else:
-                res.results.append('    %s' % member)
+                res.results.append('    }{s' }{ member)
     if rmembers:
         res.results.append(_('Non-digest (regular) members:'))
         addmembers(rmembers)
     if dmembers:
         res.results.append(_('Digest members:'))
         addmembers(dmembers)
+}

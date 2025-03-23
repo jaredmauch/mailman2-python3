@@ -17,11 +17,14 @@
 
 """Produce listinfo page, primary web entry-point to mailing lists.
 """
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 # No lock needed in this script, because we don't change data.
 
-from builtins import str
 import os
 import cgi
 import time
@@ -39,7 +42,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
@@ -54,8 +56,8 @@ def main():
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        listinfo_overview(_(f'No such list <em>{safelistname}</em>'))
-        syslog('error', 'listinfo: No such list "%s": %s', listname, e)
+        listinfo_overview(_('No such list <em>{(safelistname)s</em>'))
+        syslog('error', 'listinfo: No such list "}{s": }{s', listname, e)
         return
 
     # See if the user want to see this page in other language
@@ -79,7 +81,6 @@ def main():
     list_listinfo(mlist, language)
 
 
-
 def listinfo_overview(msg=''):
     # Present the general listinfo overview
     hostname = Utils.get_domain()
@@ -88,10 +89,10 @@ def listinfo_overview(msg=''):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    legend = (hostname + "'s Mailing Lists")
+    legend = _("}{(hostname)s Mailing Lists")
     doc.SetTitle(legend)
 
-    table = Table(border=0, width="100%")
+    table = Table(border=0, width="100}{")
     table.AddRow([Center(Header(2, legend))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
@@ -109,8 +110,8 @@ def listinfo_overview(msg=''):
             continue
         if mlist.advertised:
             if mm_cfg.VIRTUAL_HOST_OVERVIEW and (
-                   mlist.web_page_url.find('/%s/' % hostname) == -1 and
-                   mlist.web_page_url.find('/%s:' % hostname) == -1):
+                   mlist.web_page_url.find('/}{s/' }{ hostname) == -1 and
+                   mlist.web_page_url.find('/}{s:' }{ hostname) == -1):
                 # List is for different identity of this host - skip it.
                 continue
             else:
@@ -126,12 +127,12 @@ def listinfo_overview(msg=''):
     mailmanlink = Link(mm_cfg.MAILMAN_URL, _('Mailman')).Format()
     if not advertised:
         welcome.extend(
-            _(f'''<p>There currently are no publicly-advertised
-            {mailmanlink} mailing lists on {hostname}.'''))
+            _('''<p>There currently are no publicly-advertised
+            }{(mailmanlink)s mailing lists on }{(hostname)s.'''))
     else:
         welcome.append(
-            _(f'''<p>Below is a listing of all the public mailing lists on
-            {hostname}.  Click on a list name to get more information about
+            _('''<p>Below is a listing of all the public mailing lists on
+            }{(hostname)s.  Click on a list name to get more information about
             the list, or to subscribe, unsubscribe, and change the preferences
             on your subscription.'''))
 
@@ -139,13 +140,13 @@ def listinfo_overview(msg=''):
     adj = msg and _('right') or ''
     siteowner = Utils.get_site_email()
     welcome.extend(
-        (_(f''' To visit the general information page for an unadvertised list,
-        open a URL similar to this one, but with a '/' and the {adj}
+        (_(''' To visit the general information page for an unadvertised list,
+        open a URL similar to this one, but with a '/' and the }{(adj)s
         list name appended.
         <p>List administrators, you can visit '''),
          Link(Utils.ScriptURL('admin'),
               _('the list admin overview page')),
-         _(f''' to find the management interface for your list.
+         _(''' to find the management interface for your list.
          <p>If you are having trouble using the lists, please contact '''),
          Link('mailto:' + siteowner, siteowner),
          '.<p>'))
@@ -174,7 +175,6 @@ def listinfo_overview(msg=''):
     print(doc.Format())
 
 
-
 def list_listinfo(mlist, lang):
     # Generate list specific listinfo
     doc = HeadlessDocument()
@@ -227,22 +227,22 @@ def list_listinfo(mlist, lang):
                     you are not a bot:"""
                 )
             replacements['<mm-captcha-ui>'] = (
-                """<tr><td BGCOLOR="#dddddd">%s<br>%s</td><td>%s</td></tr>"""
-                % (pre_question, captcha_question, captcha_box))
+                """<tr><td BGCOLOR="#dddddd">}{s<br>}{s</td><td>}{s</td></tr>"""
+                }{ (pre_question, captcha_question, captcha_box))
         else:
             # just to have something to include in the hash below
             captcha_idx = ''
         # fill form
         replacements['<mm-subscribe-form-start>'] += (
                 '<input type="hidden" name="sub_form_token"'
-                ' value="%s:%s:%s">\n'
-                % (now, captcha_idx,
+                ' value="}{s:}{s:}{s">\n'
+                }{ (now, captcha_idx,
                           Utils.sha_new(mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
                           now + ":" +
                           captcha_idx + ":" +
                           mlist.internal_name() + ":" +
                           remote
-                          ).encode('utf-8').hexdigest()
+                          ).hexdigest()
                     )
                 )
     # Roster form substitutions
@@ -268,12 +268,12 @@ def list_listinfo(mlist, lang):
         noscript = _('This form requires JavaScript.')
         replacements['<mm-recaptcha-ui>'] = (
             """<tr><td>&nbsp;</td><td>
-            <noscript>%s</noscript>
-            <script src="https://www.google.com/recaptcha/api.js?hl=%s">
+            <noscript>}{s</noscript>
+            <script src="https://www.google.com/recaptcha/api.js?hl=}{s">
             </script>
-            <div class="g-recaptcha" data-sitekey="%s"></div>
+            <div class="g-recaptcha" data-sitekey="}{s"></div>
             </td></tr>"""
-            % (noscript, lang, mm_cfg.RECAPTCHA_SITE_KEY))
+            }{ (noscript, lang, mm_cfg.RECAPTCHA_SITE_KEY))
     else:
         replacements['<mm-recaptcha-ui>'] = ''
 
@@ -282,6 +282,6 @@ def list_listinfo(mlist, lang):
     print(doc.Format())
 
 
-
 if __name__ == "__main__":
     main()
+}

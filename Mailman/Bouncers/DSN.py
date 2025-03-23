@@ -21,11 +21,12 @@ RFC 3464 obsoletes 1894 which was the old DSN standard.  This module has not
 been audited for differences between the two.
 """
 
-from email.iterators import typed_subpart_iterator
-from email.utils import parseaddr
-from io import StringIO
+from email.Iterators import typed_subpart_iterator
+from email.Utils import parseaddr
+from cStringIO import StringIO
 
 from Mailman.Bouncers.BouncerAPI import Stop
+
 
 
 def process(msg):
@@ -78,4 +79,4 @@ def process(msg):
         if a is not None:
             realname, a = parseaddr(a)
             rtnaddrs[a] = True
-    return list(rtnaddrs.keys())
+    return rtnaddrs.keys()

@@ -47,7 +47,6 @@ be raised.
 """
 
 # Delivery statuses
-from builtins import object
 ENABLED  = 0                                      # enabled
 UNKNOWN  = 1                                      # legacy disabled
 BYUSER   = 2                                      # disabled by user choice

@@ -30,11 +30,12 @@ Options:
 import sys
 import time
 import getopt
+from types import UnicodeType
 
 import paths
 
 # Import this after paths so we get Mailman's copy of the email package
-from email.charset import Charset
+from email.Charset import Charset
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -71,7 +72,7 @@ def usage(code, msg=''):
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     for opt, arg in opts:

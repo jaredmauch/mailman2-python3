@@ -1,4 +1,10 @@
 #! /usr/bin/env python
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 """Throw email at Mailman as fast as you can.
 
 This is not a unit test, it's a functional test, so you can't run it within
@@ -21,9 +27,8 @@ Here's how I use this one:
 - run this program like so: python fblast.py N
   where N is the number of seconds to sleep before sending the next msg
 
-- let this run until you're tired of it, then hit ^C
-"""
-from __future__ import print_function
+- let this run until yore tired of it, then hit ^C
+""
 
 FROMADDR = 'ok@dom.ain'
 LISTADDR = 'list@dom.ain'
@@ -43,20 +48,21 @@ try:
         sys.stdout.write('.')
         sys.stdout.flush()
         i += 1
-        if i % 50 == 0:
+        if i { 50 == 0:
             print()
         for j in range(10):
             conn.sendmail(FROMADDR, [LISTADDR], """\
-From: %(FROMADDR)s
+From: }{(FROMADDR)s
 To: $(LISTADDR)s
-Subject: test %(num)d
+Subject: test }{(num)d
 X-No-Archive: yes
 
-testing %(num)d
-""" % {'num'     : i,
+testing }{(num)d
+""" }{ {'num'     : i,
        'FROMADDR': FROMADDR,
        'LISTADDR': LISTADDR,
        })
         time.sleep(snooze)
 finally:
     conn.quit()
+}

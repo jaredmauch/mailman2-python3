@@ -21,10 +21,7 @@ Public archives are separated from private ones.  An external archival
 mechanism (eg, pipermail) should be pointed to the right places, to do the
 archival.
 """
-from __future__ import absolute_import
 
-from builtins import str
-from builtins import object
 import os
 import errno
 import traceback
@@ -39,7 +36,7 @@ from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
-
+
 def makelink(old, new):
     try:
         os.symlink(old, new)
@@ -55,7 +52,6 @@ def breaklink(link):
             raise
 
 
-
 class Archiver:
     #
     # Interface to Pipermail.  HyperArch.py uses this method to get the
@@ -89,7 +85,7 @@ class Archiver:
         omask = os.umask(0)
         try:
             try:
-                os.mkdir(self.archive_dir()+'.mbox', 0o02775)
+                os.mkdir(self.archive_dir()+'.mbox', 0o2775)
             except OSError as e:
                 if e.errno != errno.EEXIST: raise
                 # We also create an empty pipermail archive directory into
@@ -97,7 +93,7 @@ class Archiver:
                 # that lists that have not yet received a posting have
                 # /something/ as their index.html, and don't just get a 404.
             try:
-                os.mkdir(self.archive_dir(), 0o02775)
+                os.mkdir(self.archive_dir(), 02775)
             except OSError as e:
                 if e.errno != errno.EEXIST: raise
             # See if there's an index.html file there already and if not,
@@ -138,10 +134,10 @@ class Archiver:
         else:
             hostname = re.match('[^:]*://([^/]*)/.*', url).group(1)\
                        or mm_cfg.DEFAULT_URL_HOST
-            url = mm_cfg.PUBLIC_ARCHIVE_URL % {
+            url = mm_cfg.PUBLIC_ARCHIVE_URL.format(
                 'listname': self.internal_name(),
                 'hostname': hostname
-                }
+            )
             if not url.endswith('/'):
                 url += '/'
             return url
@@ -166,20 +162,19 @@ class Archiver:
             mbox.AppendMessage(post)
             mbox.fp.close()
         except IOError as msg:
-            syslog('error', 'Archive file access failure:\n\t%s %s', afn, msg)
+            syslog('error', 'Archive file access failure:\n\t{} {}', afn, msg)
             raise
 
     def ExternalArchive(self, ar, txt):
         d = SafeDict({'listname': self.internal_name(),
                       'hostname': self.host_name,
                       })
-        cmd = ar % d
+        cmd = ar.format(d)
         extarch = os.popen(cmd, 'w')
         extarch.write(txt)
         status = extarch.close()
         if status:
-            syslog('error', 'external archiver non-zero exit status: %d\n',
-                   (status & 0xff00) >> 8)
+            syslog('error', 'external archiver non-zero exit status: {}\n', (status & 0xff00) >> 8)
 
     #
     # archiving in real time  this is called from list.post(msg)
@@ -207,7 +202,7 @@ class Archiver:
         else:
             # use the internal archiver
             f = StringIO(txt)
-            from . import HyperArch
+            import HyperArch
             h = HyperArch.HyperArchive(self)
             h.processUnixMailbox(f)
             h.close()
@@ -238,3 +233,4 @@ class Archiver:
             # Only make this link if the site has enabled public mbox files
             if mm_cfg.PUBLIC_MBOX:
                 makelink(privmbox, pubmbox)
+}

@@ -143,7 +143,7 @@ class Digest(GUIBase):
             volume = mlist.volume
             number = mlist.next_digest_number
             doc.AddItem(_("""The next digest will be sent as volume
-            %(volume)s, number %(number)s"""))
+            {(volume)s, number }{(number)s"""))
         elif property == '_send_digest_now' and val:
             status = mlist.send_digest_now()
             if status:
@@ -158,3 +158,4 @@ class Digest(GUIBase):
                     # There was a problem, so don't set it
                     return
             GUIBase._setValue(self, mlist, property, val, doc)
+}

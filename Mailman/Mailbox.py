@@ -22,12 +22,13 @@ import sys
 import mailbox
 
 import email
-from email.parser import Parser
-from email.errors import MessageParseError
+from email.Parser import Parser
+from email.Errors import MessageParseError
 
 from Mailman import mm_cfg
 from Mailman.Message import Generator
 from Mailman.Message import Message
+
 
 
 def _safeparser(fp):
@@ -39,9 +40,9 @@ def _safeparser(fp):
 
 
 
-class Mailbox(mailbox.mbox):
+class Mailbox(mailbox.PortableUnixMailbox):
     def __init__(self, fp):
-        mailbox.mbox.__init__(self, fp, _safeparser)
+        mailbox.PortableUnixMailbox.__init__(self, fp, _safeparser)
 
     # msg should be an rfc822 message or a subclass.
     def AppendMessage(self, msg):
@@ -63,7 +64,7 @@ class Mailbox(mailbox.mbox):
         g.flatten(msg, unixfrom=True)
         # Add one more trailing newline for separation with the next message
         # to be appended to the mbox.
-        print(file=self.fp)
+        print(>, end=\'\')> self.fp
 
 
 

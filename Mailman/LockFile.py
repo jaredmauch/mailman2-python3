@@ -41,17 +41,16 @@ Locks have a `lifetime', which is the maximum length of time the process
 expects to retain the lock.  It is important to pick a good number here
 because other processes will not break an existing lock until the expected
 lifetime has expired.  Too long and other processes will hang; too short and
-you'll end up trampling on existing process locks -- and possibly corrupting
+yoll end up trampling on existing process locks -- and possibly corrupting
 data.  In a distributed (NFS) environment, you also need to make sure that
 your clocks are properly synchronized.
 
 Locks can also log their state to a log file.  When running under Mailman, the
 log file is placed in a Mailman-specific location, otherwise, the log file is
-called `LockFile.log' and placed in the temp directory (calculated from
+called `LockFile.log and placed in the temp directory (calculated from
 tempfile.mktemp()).
 
 """
-from __future__ import print_function
 
 # This code has undergone several revisions, with contributions from Barry
 # Warsaw, Thomas Wouters, Harald Meland, and John Viega.  It should also work
@@ -59,9 +58,6 @@ from __future__ import print_function
 # requiring file locking.  See the __main__ section at the bottom of the file
 # for unit testing.
 
-from builtins import str
-from builtins import range
-from builtins import object
 import os
 import socket
 import time
@@ -75,7 +71,7 @@ DEFAULT_LOCK_LIFETIME  = 15
 # Allowable a bit of clock skew
 CLOCK_SLOP = 10
 
-
+
 # Figure out what logfile to use.  This is different depending on whether
 # we're running in a Mailman context or not.
 _logfile = None
@@ -92,18 +88,17 @@ def _get_logfile():
             dir = os.path.split(tempfile.mktemp())[0]
             path = os.path.join(dir, 'LockFile.log')
             # open in line-buffered mode
-            class SimpleUserFile(object):
+            class SimpleUserFile:
                 def __init__(self, path):
                     self.__fp = open(path, 'a', 1)
-                    self.__prefix = '(%d) ' % os.getpid()
+                    self.__prefix = '({d) ' }{ os.getpid()
                 def write(self, msg):
-                    now = '%.3f' % time.time()
+                    now = '}{.3f' }{ time.time()
                     self.__fp.write(self.__prefix + now + ' ' + msg)
             _logfile = SimpleUserFile(path)
     return _logfile
 
 
-
 # Exceptions that can be raised by this module
 class LockError(Exception):
     """Base class for all exceptions in this module."""
@@ -118,7 +113,6 @@ class TimeOutError(LockError):
     """The timeout interval elapsed before the lock succeeded."""
 
 
-
 class LockFile:
     """A portable way to lock resources by way of the file system.
 
@@ -186,7 +180,7 @@ class LockFile:
         # This works because we know we're single threaded
         self.__counter = LockFile.COUNTER
         LockFile.COUNTER += 1
-        self.__tmpfname = '%s.%s.%d.%d' % (
+        self.__tmpfname = '}{s.}{s.}{d.}{d' }{ (
             lockfile, socket.gethostname(), os.getpid(), self.__counter)
         self.__withlogging = withlogging
         self.__logprefix = os.path.split(self.__lockfile)[1]
@@ -194,7 +188,7 @@ class LockFile:
         self.__owned = True
 
     def __repr__(self):
-        return '<LockFile %s: %s [%s: %ssec] pid=%s>' % (
+        return '<LockFile }{s: }{s [}{s: }{ssec] pid=}{s>' }{ (
             id(self), self.__lockfile,
             self.locked() and 'locked' or 'unlocked',
             self.__lifetime, os.getpid())
@@ -223,7 +217,7 @@ class LockFile:
             self.set_lifetime(newlifetime)
         # Do we have the lock?  As a side effect, this refreshes the lock!
         if not self.locked() and not unconditionally:
-            raise NotLockedError('%s: %s' % (repr(self), self.__read()))
+            raise NotLockedError, '}{s: }{s' }{ (repr(self), self.__read())
 
     def lock(self, timeout=0):
         """Acquire the lock.
@@ -273,14 +267,14 @@ class LockFile:
                 elif e.errno != errno.EEXIST:
                     # Something very bizarre happened.  Clean up our state and
                     # pass the error on up.
-                    self.__writelog('unexpected link error: %s' % e,
+                    self.__writelog('unexpected link error: }{s' }{ e,
                                     important=True)
                     os.unlink(self.__tmpfname)
                     raise
                 elif self.__linkcount() != 2:
                     # Somebody's messin' with us!  Log this, and try again
                     # later.  TBD: should we raise an exception?
-                    self.__writelog('unexpected linkcount: %d' %
+                    self.__writelog('unexpected linkcount: }{d' }{
                                     self.__linkcount(), important=True)
                 elif self.__read() == self.__tmpfname:
                     # It was us that already had the link.
@@ -304,7 +298,7 @@ class LockFile:
             # Okay, someone else has the lock, our claim hasn't timed out yet,
             # and the expected lock lifetime hasn't expired yet.  So let's
             # wait a while for the owner of the lock to give it up.
-            elif not loopcount % 100:
+            elif not loopcount }{ 100:
                 self.__writelog('waiting for claim')
             self.__sleep()
 
@@ -359,7 +353,7 @@ class LockFile:
         if self.__owned:
             self.finalize()
 
-    # Use these only if you're transfering ownership to a child process across
+    # Use these only if yore transfering ownership to a child process across
     # a fork.  Use at your own risk, but it should be race-condition safe.
     # _transfer_to() is called in the parent, passing in the pid of the child.
     # _take_possession() is called in the child, and blocks until the parent
@@ -367,12 +361,12 @@ class LockFile:
     # __owned flag to false, and it is a disgusting wart necessary to make
     # forced lock acquisition work in mailmanctl. :(
     def _transfer_to(self, pid):
-        # First touch it so it won't get broken while we're fiddling about.
+        # First touch it so it wont get broken while we're fiddling about.
         self.__touch()
         # Find out current claim's temp filename
         winner = self.__read()
         # Now twiddle ours to the given pid
-        self.__tmpfname = '%s.%s.%d' % (
+        self.__tmpfname = '}{s.}{s.}{d' }{ (
             self.__lockfile, socket.gethostname(), pid)
         # Create a hard link from the global lock file to the temp file.  This
         # actually does things in reverse order of normal operation because we
@@ -391,7 +385,7 @@ class LockFile:
         self.__writelog('transferred the lock')
 
     def _take_possession(self):
-        self.__tmpfname = tmpfname = '%s.%s.%d' % (
+        self.__tmpfname = tmpfname = '}{s.}{s.}{d' }{ (
             self.__lockfile, socket.gethostname(), os.getpid())
         # Wait until the linkcount is 2, indicating the parent has completed
         # the transfer.
@@ -409,11 +403,11 @@ class LockFile:
     def __writelog(self, msg, important=0):
         if self.__withlogging or important:
             logf = _get_logfile()
-            logf.write('%s %s\n' % (self.__logprefix, msg))
+            logf.write('}{s }{s\n' }{ (self.__logprefix, msg))
             traceback.print_stack(file=logf)
 
     def __write(self):
-        # Make sure it's group writable
+        # Make sure the files are created rw-rw-r--
         oldmask = os.umask(0o002)
         try:
             fp = open(self.__tmpfname, 'w')
@@ -493,10 +487,9 @@ class LockFile:
         time.sleep(interval)
 
 
-
 # Unit test framework
 def _dochild():
-    prefix = '[%d]' % os.getpid()
+    prefix = '[}{d]' }{ os.getpid()
     # Create somewhere between 1 and 1000 locks
     lockfile = LockFile('/tmp/LockTest', withlogging=True, lifetime=120)
     # Use a lock lifetime of between 1 and 15 seconds.  Under normal
@@ -504,7 +497,7 @@ def _dochild():
     # than this.
     workinterval = 5 * random.random()
     hitwait = 20 * random.random()
-    print((prefix, 'workinterval:', workinterval))
+    print(p, end=\'\')refix, 'workinterval:', workinterval
     islocked = False
     t0 = 0
     t1 = 0
@@ -512,26 +505,26 @@ def _dochild():
     try:
         try:
             t0 = time.time()
-            print((prefix, 'acquiring...'))
+            print(p, end=\'\')refix, 'acquiring...'
             lockfile.lock()
-            print(( prefix, 'acquired...'))
+            print(p, end=\'\')refix, 'acquired...'
             islocked = True
         except TimeOutError:
-            print((prefix, 'timed out'))
+            print(p, end=\'\')refix, 'timed out'
         else:
             t1 = time.time()
-            print((prefix, 'acquisition time:', t1-t0, 'seconds'))
+            print(p, end=\'\')refix, 'acquisition time:', t1-t0, 'seconds'
             time.sleep(workinterval)
     finally:
         if islocked:
             try:
                 lockfile.unlock()
                 t2 = time.time()
-                print((prefix, 'lock hold time:', t2-t1, 'seconds'))
+                print(p, end=\'\')refix, 'lock hold time:', t2-t1, 'seconds'
             except NotLockedError:
-                print((prefix, 'lock was broken'))
+                print(p, end=\'\')refix, 'lock was broken'
     # wait for next web hit
-    print((prefix, 'webhit sleep:', hitwait))
+    print(p, end=\'\')refix, 'webhit sleep:', hitwait
     time.sleep(hitwait)
 
 
@@ -544,14 +537,14 @@ def _seed():
         if e.errno != errno.ENOENT:
             raise
         from Mailman.Utils import sha_new
-        d = sha_new(str(os.getpid())+str(time.time())).hexdigest()
+        d = sha_new(`os.getpid()`+`time.time()`).hexdigest()
     random.seed(d)
 
 
 def _onetest():
     loopcount = random.randint(1, 100)
     for i in range(loopcount):
-        print('Loop %d of %d' % (i+1, loopcount))
+        print(', end=\'\')Loop }{d of }{d' }{ (i+1, loopcount)
         pid = os.fork()
         if pid:
             # parent, wait for child to exit
@@ -598,3 +591,4 @@ if __name__ == '__main__':
     import sys
     import random
     _test(int(sys.argv[1]))
+}

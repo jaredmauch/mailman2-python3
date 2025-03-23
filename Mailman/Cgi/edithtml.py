@@ -16,7 +16,11 @@
 # USA.
 
 """Script which implements admin editing of the list's html templates."""
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 import os
 import cgi
@@ -38,7 +42,6 @@ _ = i18n._
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
-
 def main():
     # Trick out pygettext since we want to mark template_data as translatable,
     # but we don't want to actually translate it here.
@@ -84,11 +87,11 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _('No such list <em>{safelistname}</em>')))
+        doc.AddItem(Header(2, _('No such list <em>{(safelistname)s</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'edithtml: No such list "%s": %s', listname, e)
+        syslog('error', 'edithtml: No such list "}{s": }{s', listname, e)
         return
 
     # Now that we have a valid list, set the language to its default
@@ -108,94 +111,98 @@ def main():
         print(doc.Format())
         return
 
-    # CSRF check
-    safe_params = ['VARHELP', 'adminpw', 'admlogin']
-    params = list(cgidata.keys())
-    if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
-                                  'admin')
-    else:
-        csrf_checked = True
-    # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
-        os.environ['HTTP_COOKIE'] = ''
-        csrf_checked = True
-
-    # Editing the html for a list is limited to the list admin and site admin.
-    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
-                                  mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
-        if 'admlogin' in cgidata:
-            # This is a re-authorization attempt
-            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
-            remote = os.environ.get('HTTP_FORWARDED_FOR',
-                     os.environ.get('HTTP_X_FORWARDED_FOR',
-                     os.environ.get('REMOTE_ADDR',
-                                    'unidentified origin')))
-            syslog('security',
-                   'Authorization failed (edithtml): list=%s: remote=%s',
-                   listname, remote)
-        else:
-            msg = ''
-        Auth.loginpage(mlist, 'admin', msg=msg)
+    # Check for CSRF
+    if not csrf_check(mlist, cgidata, AUTH_CONTEXTS):
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid form submission.')))
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
-    # See if the user want to see this page in other language
-    language = cgidata.getfirst('language', '')
-    if language not in mlist.GetAvailableLanguages():
-        language = mlist.preferred_language
-    i18n.set_language(language)
-    doc.set_language(language)
+    # Must be authenticated to get any farther
+    if not Auth.authenticate(mlist, cgidata, AUTH_CONTEXTS):
+        Auth.setAuth(mlist, AUTH_CONTEXTS)
+        doc.AddItem(Header(2, _("Authentication required")))
+        doc.AddItem(Auth.LoginForm(mlist, AUTH_CONTEXTS))
+        print(doc.Format())
+        return
 
-    realname = mlist.real_name
-    if len(parts) > 1:
-        template_name = parts[1]
-        for (template, info) in template_data:
-            if template == template_name:
-                template_info = _(info)
-                doc.SetTitle(_(
-                    '{realname} -- Edit html for {template_info}'))
-                break
-        else:
-            # Avoid cross-site scripting attacks
-            safetemplatename = Utils.websafe(template_name)
-            doc.SetTitle(_('Edit HTML : Error'))
-            doc.AddItem(Header(2, _("{safetemplatename}: Invalid template")))
-            doc.AddItem(mlist.GetMailmanFooter())
-            print(doc.Format())
-            return
-    else:
-        doc.SetTitle(_('{realname} -- HTML Page Editing'))
-        doc.AddItem(Header(1, _('{realname} -- HTML Page Editing')))
-        doc.AddItem(Header(2, _('Select page to edit:')))
-        template_list = UnorderedList()
-        for (template, info) in template_data:
-            l = Link(mlist.GetScriptURL('edithtml') + '/' + template, _(info))
-            template_list.AddItem(l)
+    # Get the template name from the URL
+    template_name = cgidata.getfirst('template', '')
+    if not template_name:
+        # Show the template selection page
+        doc.AddItem(Header(2, _("Select template to edit")))
+        template_list = Container()
+        for name, desc in template_data:
+            template_list.AddItem(
+                Container(
+                    Bold(name),
+                    ' - ',
+                    desc,
+                    ' ',
+                    Container(
+                        '[',
+                        Link(Utils.ScriptURL('edithtml', mlist),
+                            _('Edit')),
+                        ']'
+                    )
+                )
+            )
         doc.AddItem(FontSize("+2", template_list))
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
         return
 
+    # Validate the template name
+    valid_templates = [name for name, desc in template_data]
+    if template_name not in valid_templates:
+        safetemplatename = Utils.websafe(template_name)
+        doc.AddItem(Header(2, _("}{(safetemplatename)s: Invalid template")))
+        doc.AddItem(mlist.GetMailmanFooter())
+        print(doc.Format())
+        return
+
+    # Get the language from the URL
+    lang = cgidata.getfirst('language', '')
+    if lang and lang != mlist.preferred_language:
+        if lang not in mlist.GetAvailableLanguages():
+            safelang = Utils.websafe(lang)
+            doc.AddItem(Header(2, _("}{(safelang)s: Invalid language")))
+            doc.AddItem(mlist.GetMailmanFooter())
+            print(doc.Format())
+            return
+    else:
+        lang = mlist.preferred_language
+
+    # Get the template content
     try:
-        if list(cgidata.keys()) and 'langform' not in cgidata:
-            if csrf_checked:
-                ChangeHTML(mlist, cgidata, template_name, doc, lang=language)
-            else:
-                doc.addError(
-                  _('The form lifetime has expired. (request forgery check)'))
-        FormatHTML(mlist, doc, template_name, template_info, lang=language)
+        template_info = mlist.GetTemplate(template_name, lang)
+    except Errors.MMUnknownTemplateError as e:
+        safetemplatename = Utils.websafe(template_name)
+        doc.AddItem(Header(2, _("}{(safetemplatename)s: Invalid template")))
+        doc.AddItem(mlist.GetMailmanFooter())
+        print(doc.Format())
+        return
+
+    # If this is a POST request, process the form
+    if os.environ.get('REQUEST_METHOD') == 'POST':
+        ChangeHTML(mlist, cgidata, template_name, doc, lang)
+    else:
+        FormatHTML(mlist, doc, template_name, template_info, lang)
+
+    try:
+        doc.AddItem(mlist.GetMailmanFooter())
+        print(doc.Format())
     finally:
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
 
 
-
 def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language
     lcset = Utils.GetCharSet(lang)
-    doc.AddItem(Header(1,'%s:' % mlist.real_name))
+    doc.AddItem(Header(1,'}{s:' }{ mlist.real_name))
     doc.AddItem(Header(1, template_info))
     doc.AddItem('<hr>')
 
@@ -231,7 +238,6 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     doc.AddItem(form)
 
 
-
 def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language
@@ -243,7 +249,7 @@ def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
     code = cgi_info['html_code'].value
     if Utils.suspiciousHTML(code):
         doc.AddItem(Header(3,
-           _(f"""The page you saved contains suspicious HTML that could
+           _("""The page you saved contains suspicious HTML that could
 potentially expose your users to cross-site scripting attacks.  This change
 has therefore been rejected.  If you still want to make these changes, you
 must have shell access to your Mailman server.
@@ -259,16 +265,14 @@ must have shell access to your Mailman server.
     # Make sure the directory exists
     omask = os.umask(0)
     try:
-        try:
-            os.mkdir(langdir, 0o2775)
-        except OSError as e:
-            if e.errno != errno.EEXIST: raise
+        os.mkdir(langdir, 0o2775)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
     finally:
         os.umask(omask)
-    fp = open(os.path.join(langdir, template_name), 'w')
-    try:
+    with open(os.path.join(langdir, template_name), 'w') as fp:
         fp.write(code)
-    finally:
-        fp.close()
     doc.AddItem(Header(3, _('HTML successfully updated.')))
     doc.AddItem('<hr>')
+}

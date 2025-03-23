@@ -39,7 +39,11 @@ Options:
 filename is the name of the plaintext message file to inject.  If omitted,
 standard input is used.
 """
+
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
 import os
@@ -52,7 +56,6 @@ from Mailman import Post
 from Mailman.i18n import C_
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -64,7 +67,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(
@@ -95,15 +97,13 @@ def main():
         # Use standard input
         msgtext = sys.stdin.read()
     elif len(args) == 1:
-        fp = open(args[0])
-        msgtext = fp.read()
-        fp.close()
+        with open(args[0]) as fp:
+            msgtext = fp.read()
     else:
         usage(1)
 
     Post.inject(listname, msgtext, qdir=qdir)
 
 
-
 if __name__ == '__main__':
     main()

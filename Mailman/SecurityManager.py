@@ -17,7 +17,6 @@
 
 
 """Handle passwords and sanitize approved messages."""
-from __future__ import print_function
 
 # There are current 5 roles defined in Mailman, as codified in Defaults.py:
 # user, list-creator, list-moderator, list-admin, site-admin.
@@ -48,15 +47,15 @@ from __future__ import print_function
 # difficulty and expense of retrying the cgi dialog for each attempt.  It
 # also relies on the security of SHA1.
 
-from builtins import object
 import os
 import re
 import time
-import http.cookies
+import Cookie
 import marshal
 import binascii
-import urllib.request, urllib.parse, urllib.error
-from urllib.parse import urlparse
+import urllib
+from typing import List, Tuple, Dict, Set, TupleType
+from urlparse import urlparse
 
 try:
     import crypt
@@ -69,8 +68,9 @@ from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import md5_new, sha_new
 
+
 
-class SecurityManager(object):
+class SecurityManager:
     def InitVars(self):
         # We used to set self.password here, from a crypted_password argument,
         # but that's been removed when we generalized the mixin architecture.
@@ -97,11 +97,11 @@ class SecurityManager(object):
         if authcontext == mm_cfg.AuthUser:
             if user is None:
                 # A bad system error
-                raise Exception(TypeError, 'No user supplied for AuthUser context')
-            user = Utils.UnobscureEmail(urllib.parse.unquote(user))
+                raise TypeError, 'No user supplied for AuthUser context'
+            user = Utils.UnobscureEmail(urllib.unquote(user))
             secret = self.getMemberPassword(user)
-            userdata = urllib.parse.quote(Utils.ObscureEmail(user), safe='')
-            key += 'user+%s' % userdata
+            userdata = urllib.quote(Utils.ObscureEmail(user), safe='')
+            key += 'user+{s' }{ userdata
         elif authcontext == mm_cfg.AuthListPoster:
             secret = self.post_password
             key += 'poster'
@@ -139,8 +139,6 @@ class SecurityManager(object):
         if not response:
             # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
-        # python3
-        response = response.encode('UTF-8')
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
                 ok = Utils.check_global_password(response, siteadmin=0)
@@ -215,8 +213,8 @@ class SecurityManager(object):
                         pass
             else:
                 # What is this context???
-                syslog('error', 'Bad authcontext: %s', ac)
-                raise ValueError('Bad authcontext: %s' % ac)
+                syslog('error', 'Bad authcontext: }{s', ac)
+                raise ValueError, 'Bad authcontext: }{s' }{ ac
         return mm_cfg.UnAuthorized
 
     def WebAuthenticate(self, authcontexts, response, user=None):
@@ -234,21 +232,20 @@ class SecurityManager(object):
         # Check passwords
         ac = self.Authenticate(authcontexts, response, user)
         if ac:
-            print(self.MakeCookie(ac, user))
+            print(s, end=\'\')elf.MakeCookie(ac, user)
             return True
         return False
 
     def MakeCookie(self, authcontext, user=None):
         key, secret = self.AuthContextInfo(authcontext, user)
-        if key is None or secret is None or not (type(secret) is str):
+        if key is None or secret is None or not isinstance(secret, StringType):
             raise ValueError
         # Timestamp
         issued = int(time.time())
         # Get a digest of the secret, plus other information.
-        needs_hashing = (secret + repr(issued)).encode('utf-8')
-        mac = sha_new(needs_hashing).hexdigest()
+        mac = sha_new(secret + `issued`).hexdigest()
         # Create the cookie object.
-        c = http.cookies.SimpleCookie()
+        c = Cookie.SimpleCookie()
         c[key] = binascii.hexlify(marshal.dumps((issued, mac)))
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
@@ -270,7 +267,7 @@ class SecurityManager(object):
         # Logout of the session by zapping the cookie.  For safety both set
         # max-age=0 (as per RFC2109) and set the cookie data to the empty
         # string.
-        c = http.cookies.SimpleCookie()
+        c = Cookie.SimpleCookie()
         c[key] = ''
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
@@ -308,12 +305,12 @@ class SecurityManager(object):
             else:
                 usernames = []
                 prefix = self.internal_name() + '+user+'
-                for k in list(c.keys()):
+                for k in c.keys():
                     if k.startswith(prefix):
                         usernames.append(k[len(prefix):])
             # If any check out, we're golden.  Note: `@'s are no longer legal
             # values in cookie keys.
-            for user in [Utils.UnobscureEmail(urllib.parse.unquote(u))
+            for user in [Utils.UnobscureEmail(urllib.unquote(u))
                          for u in usernames]:
                 ok = self.__checkone(c, authcontext, user)
                 if ok:
@@ -329,7 +326,7 @@ class SecurityManager(object):
             key, secret = self.AuthContextInfo(authcontext, user)
         except Errors.NotAMemberError:
             return False
-        if key not in c or not type(secret) is str:
+        if not c in key) or not isinstance(secret, StringType):
             return False
         # Undo the encoding we performed in MakeCookie() above.  BAW: I
         # believe this is safe from exploit because marshal can't be forced to
@@ -354,18 +351,17 @@ class SecurityManager(object):
             return False
         # Calculate what the mac ought to be based on the cookie's timestamp
         # and the shared secret.
-        needs_hashing = (secret + repr(issued)).encode('utf-8')
-        mac = sha_new(needs_hashing).hexdigest()
+        mac = sha_new(secret + `issued`).hexdigest()
         if mac != received_mac:
             return False
         # Authenticated!
         # Refresh the cookie
-        print(self.MakeCookie(authcontext, user))
+        print(s, end=\'\')elf.MakeCookie(authcontext, user)
         return True
 
 
 
-splitter = re.compile(r';\s*')
+splitter = re.compile(';\s*')
 
 def parsecookie(s):
     c = {}
@@ -378,3 +374,4 @@ def parsecookie(s):
             else:
                 c[k] = v
     return c
+}

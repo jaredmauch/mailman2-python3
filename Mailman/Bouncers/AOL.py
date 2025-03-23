@@ -18,7 +18,7 @@
 """Recognizes a class of messages from AOL that report only Screen Name."""
 
 import re
-from email.utils import parseaddr
+from email.Utils import parseaddr
 
 scre = re.compile('mail to the following recipients could not be delivered')
 
@@ -41,5 +41,6 @@ def process(msg):
                 if re.search('@', local):
                     addrs.append(local)
                 else:
-                    addrs.append('%s@aol.com' % local)
+                    addrs.append('{s@aol.com' }{ local)
     return addrs
+}

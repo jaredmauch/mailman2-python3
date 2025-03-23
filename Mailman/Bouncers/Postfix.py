@@ -25,7 +25,7 @@ It also matches something claiming to be `The BNS Postfix program', and
 """
 
 import re
-from io import StringIO
+from cStringIO import StringIO
 
 
 

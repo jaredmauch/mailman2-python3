@@ -22,6 +22,11 @@ to send acks only after successful delivery.
 
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Message
@@ -29,7 +34,6 @@ from Mailman import Errors
 from Mailman.i18n import _
 
 
-
 def process(mlist, msg, msgdata):
     # Extract the sender's address and find them in the user database
     sender = msgdata.get('original_sender', msg.get_sender())
@@ -39,8 +43,7 @@ def process(mlist, msg, msgdata):
             return
     except Errors.NotAMemberError:
         return
-    # Okay, they want acknowledgement of their post.  Give them their original
-    # subject.  BAW: do we want to use the decoded header?
+    # Okay, they want acknowledgement of their post.  Get their original subject.
     origsubj = msgdata.get('origsubj', msg.get('subject', _('(no subject)')))
     # Get the user's preferred language
     lang = msgdata.get('lang', mlist.getMemberLanguage(sender))
@@ -56,7 +59,8 @@ def process(mlist, msg, msgdata):
     # Craft the outgoing message, with all headers and attributes
     # necessary for general delivery.  Then enqueue it to the outgoing
     # queue.
-    subject = _('%(realname)s post acknowledgement')
+    subject = _('{(realname)s post acknowledgement')
     usermsg = Message.UserNotification(sender, mlist.GetBouncesEmail(),
                                        subject, text, lang)
     usermsg.send(mlist)
+}

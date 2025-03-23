@@ -17,18 +17,17 @@
 
 """Unit tests for Mailman/SecurityManager.py
 """
-from __future__ import print_function
 
 import os
 import unittest
 import errno
-import http.cookies
+import Cookie
 try:
     import crypt
 except ImportError:
     crypt = None
 # Don't use cStringIO because we're going to inherit
-from io import StringIO
+from StringIO import StringIO
 try:
     from Mailman import __init__
 except ImportError:
@@ -218,11 +217,11 @@ class TestWebAuthenticate(TestBase):
         mlist.addNewMember('aperson@dom.ain', password='qqQQqq')
         # Set up the cookie data
         sfp = StripperIO()
-        print(mlist.MakeCookie(mm_cfg.AuthSiteAdmin), file=sfp)
+        print(>, end=\'\')> sfp, mlist.MakeCookie(mm_cfg.AuthSiteAdmin)
         # AuthCreator isn't handled in AuthContextInfo()
-        print(mlist.MakeCookie(mm_cfg.AuthListAdmin), file=sfp)
-        print(mlist.MakeCookie(mm_cfg.AuthListModerator), file=sfp)
-        print(mlist.MakeCookie(mm_cfg.AuthUser, 'aperson@dom.ain'), file=sfp)
+        print(>, end=\'\')> sfp, mlist.MakeCookie(mm_cfg.AuthListAdmin)
+        print(>, end=\'\')> sfp, mlist.MakeCookie(mm_cfg.AuthListModerator)
+        print(>, end=\'\')> sfp, mlist.MakeCookie(mm_cfg.AuthUser, 'aperson@dom.ain')
         # Strip off the "Set-Cookie: " prefix
         cookie = sfp.getvalue()
         os.environ['HTTP_COOKIE'] = cookie

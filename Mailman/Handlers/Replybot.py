@@ -73,7 +73,7 @@ def process(mlist, msg, msgdata):
     # message, send it, and update the database.
     realname = mlist.real_name
     subject = _(
-        'Auto-response for your message to the "%(realname)s" mailing list')
+        'Auto-response for your message to the "{(realname)s" mailing list')
     # Do string interpolation
     d = SafeDict({'listname'    : realname,
                   'listurl'     : mlist.GetScriptURL('listinfo'),
@@ -96,9 +96,9 @@ def process(mlist, msg, msgdata):
     if getattr(mlist, 'use_dollar_strings', 0):
         rtext = Utils.to_percent(rtext)
     try:
-        text = rtext % d
+        text = rtext }{ d
     except Exception:
-        syslog('error', 'Bad autoreply text for list: %s\n%s',
+        syslog('error', 'Bad autoreply text for list: }{s\n}{s',
                mlist.internal_name(), rtext)
         text = rtext
     # Wrap the response.
@@ -119,3 +119,4 @@ def process(mlist, msg, msgdata):
             mlist.request_responses[sender] = quiet_until
         else:
             mlist.postings_responses[sender] = quiet_until
+}

@@ -23,8 +23,11 @@ denied.  Situations that could hold a message for approval or confirmation are
 not tested by this module.
 """
 
-from builtins import zip
-from builtins import range
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import re
 
 from email.iterators import typed_subpart_iterator
@@ -44,8 +47,6 @@ HTML it can't be safely removed.
 """)
 del _
 
-
-
 def process(mlist, msg, msgdata):
     # Short circuits
     # Do not short circuit. The problem is SpamDetect comes before Approve.
@@ -54,17 +55,6 @@ def process(mlist, msg, msgdata):
     # by a moderator. When the approved message reaches Approve in the
     # pipeline, we still need to remove the Approved: (pseudo-)header, so
     # we can't short circuit.
-    #if msgdata.get('approved'):
-        # Digests, Usenet postings, and some other messages come pre-approved.
-        # TBD: we may want to further filter Usenet messages, so the test
-        # above may not be entirely correct.
-        #return
-    # See if the message has an Approved or Approve header with a valid
-    # list-moderator, list-admin.  Also look at the first non-whitespace line
-    # in the file to see if it looks like an Approved header.  We are
-    # specifically /not/ allowing the site admins password to work here
-    # because we want to discourage the practice of sending the site admin
-    # password through email in the clear.
     missing = []
     for hdr in ('approved', 'approve', 'x-approved', 'x-approve'):
         passwd = msg.get(hdr, missing)
@@ -81,7 +71,7 @@ def process(mlist, msg, msgdata):
         if part is not None and part.get_payload() is not None:
             lines = part.get_payload(decode=True).splitlines()
             line = ''
-            for lineno, line in zip(list(range(len(lines))), lines):
+            for lineno, line in zip(range(len(lines)), lines):
                 if line.strip():
                     break
             i = line.find(':')
@@ -89,10 +79,10 @@ def process(mlist, msg, msgdata):
                 name = line[:i]
                 value = line[i+1:]
                 if name.lower() in ('approve',
-                                    'approved',
-                                    'x-approve',
-                                    'x-approved',
-                                    ):
+                                  'approved',
+                                  'x-approve',
+                                  'x-approved',
+                                  ):
                     passwd = value.lstrip()
                     # Now strip the first line from the payload so the
                     # password doesn't leak.
@@ -103,25 +93,8 @@ def process(mlist, msg, msgdata):
             # MAS: Bug 1181161 - Now try all the text parts in case it's
             # multipart/alternative with the approved line in HTML or other
             # text part.  We make a pattern from the Approved line and delete
-            # it from all text/* parts in which we find it.  It would be
-            # better to just iterate forward, but email compatability for pre
-            # Python 2.2 returns a list, not a true iterator.  Also, there
-            # are pathological MUAs that put the HTML part first.
-            #
-            # This will process all the multipart/alternative parts in the
-            # message as well as all other text parts.  We shouldn't find the
-            # pattern outside the mp/a parts, but if we do, it is probably
-            # best to delete it anyway as it does contain the password.
-            #
-            # Make a pattern to delete.  We can't just delete a line because
-            # line of HTML or other fancy text may include additional message
-            # text.  This pattern works with HTML.  It may not work with rtf
-            # or whatever else is possible.
-            #
-            # If we don't find the pattern in the decoded part, but we do
-            # find it after stripping HTML tags, we don't know how to remove
-            # it, so we just reject the post.
-            pattern = name + r':(\xA0|\s|&nbsp;)*' + re.escape(passwd)
+            # it from all text/* parts in which we find it.
+            pattern = name + ':(\xA0|\s|&nbsp;)*' + re.escape(passwd)
             for part in typed_subpart_iterator(msg, 'text'):
                 if part is not None and part.get_payload() is not None:
                     lines = part.get_payload(decode=True)
@@ -130,9 +103,9 @@ def process(mlist, msg, msgdata):
                     elif re.search(pattern, re.sub('(?s)<.*?>', '', lines)):
                         raise Errors.RejectMessage(REJECT)
     if passwd is not missing and mlist.Authenticate((mm_cfg.AuthListPoster,
-                                                     mm_cfg.AuthListModerator,
-                                                     mm_cfg.AuthListAdmin),
-                                                    passwd):
+                                                   mm_cfg.AuthListModerator,
+                                                   mm_cfg.AuthListAdmin),
+                                                  passwd):
         # BAW: should we definitely deny if the password exists but does not
         # match?  For now we'll let it percolate up for further determination.
         msgdata['approved'] = 1
@@ -141,12 +114,10 @@ def process(mlist, msg, msgdata):
     # has this message already been posted to this list?
     beentheres = [s.strip().lower() for s in msg.get_all('x-beenthere', [])]
     if mlist.GetListEmail().lower() in beentheres:
-        raise Errors.LoopError
+        raise Errors.LoopError()
 
 def reset_payload(part, payload):
     # Set decoded payload maintaining content-type, format and delsp.
-    # TK: Message with 'charset=' cause trouble. So, instead of
-    #     part.get_content_charset('us-ascii') ...
     cset = part.get_content_charset() or 'us-ascii'
     ctype = part.get_content_type()
     format = part.get_param('format')

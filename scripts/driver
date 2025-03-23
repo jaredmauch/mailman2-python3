@@ -1,4 +1,3 @@
-from __future__ import print_function
 # -*- python -*-
 
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
@@ -86,7 +85,7 @@ def run_main():
                                immediate=1)
         # Collect stdout in a cStringIO so that if /any/ errors occur during
         # printing it won't mess up our diagnostics page.
-        from io import StringIO
+        from cStringIO import StringIO
         tempstdout = StringIO()
         # The name of the module to run is passed in argv[1].  What we
         # actually do is import the module named by argv[1] that lives in the
@@ -165,7 +164,7 @@ Content-type: text/html
 <head><title>Bug in Mailman version %(VERSION)s</title></head>
 <body bgcolor=#ffffff><h2>Bug in Mailman version %(VERSION)s</h2>
 <p><h3>We're sorry, we hit a bug!</h3>
-""" % locals())
+""")
     if not STEALTH_MODE:
         print('''<p>If you would like to help us identify the problem,
 please email a copy of this page to the webmaster for this site with
@@ -175,7 +174,7 @@ a description of what happened.  Thanks!
         exc_info = sys.exc_info()
         if traceback:
             for line in traceback.format_exception(*exc_info):
-                print(websafe(line), end=' ')
+                print(websafe(line), end='')
         else:
             print('[failed to import module traceback]')
             print('[exc: %s, var: %s]' % [websafe(x) for x in exc_info[0:2]])
@@ -187,7 +186,6 @@ explicitly inhibited, but the webmaster can find this information in the
 Mailman error logs or the web server logs.''')
 
 
-
 def print_environment(logfp=None):
     if logfp is None:
         logfp = sys.__stderr__
@@ -231,7 +229,7 @@ def print_environment(logfp=None):
     # Write environment variables to the log file.
     print('[----- Environment Variables -----]', file=logfp)
     if os:
-        for k, v in list(os.environ.items()):
+        for k, v in os.environ.items():
             print('\t%s: %s' % (k, v), file=logfp)
     else:
         print('[failed to import module os]', file=logfp)
@@ -245,7 +243,7 @@ def print_environment(logfp=None):
 <tr><th>Variable</th><th>Value</th></tr>
 ''')
         if os:
-            for k, v in list(os.environ.items()):
+            for k, v in os.environ.items():
                 print('<tr><td><tt>', websafe(k), \
                       '</tt></td><td>', websafe(v), \
                       '</td></tr>')
@@ -254,7 +252,6 @@ def print_environment(logfp=None):
             print('<p><hr>[failed to import module os]')
 
 
-
 try:
     run_main()
 except:
@@ -275,6 +272,5 @@ Content-type: text/html
 
 Mailman experienced a very low level failure and could not even generate a
 useful traceback for you.  Please report this to the Mailman administrator at
-this site.
-""")
+this site.""")
         print('[Mailman: low level unrecoverable exception]', file=sys.__stderr__)

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -19,7 +18,6 @@ from __future__ import absolute_import
 #
 # site modules
 #
-from builtins import object
 import os
 import marshal
 import time
@@ -28,12 +26,16 @@ import errno
 #
 # package/project modules
 #
-from . import pipermail
+import pipermail
 from Mailman import LockFile
 
 CACHESIZE = pipermail.CACHESIZE
 
-import pickle
+try:
+    import cPickle
+    pickle = cPickle
+except ImportError:
+    import pickle
 
 #
 # we're using a python dict in place of
@@ -41,7 +43,7 @@ import pickle
 # the parts of the interface used by class HyperDatabase
 # only one thing can access this at a time.
 #
-class DumbBTree(object):
+class DumbBTree:
     """Stores pickles of Article objects
 
     This dictionary-like object stores pickles of all the Article
@@ -64,11 +66,11 @@ class DumbBTree(object):
         self.load()
 
     def __repr__(self):
-        return "DumbBTree(%s)" % self.path
+        return "DumbBTree({})".format(self.path)
 
     def __sort(self, dirty=None):
         if self.__dirty == 1 or dirty:
-            self.sorted = list(self.dict.keys())
+            self.sorted = self.dict.keys()
             self.sorted.sort()
             self.__dirty = 0
 
@@ -125,7 +127,7 @@ class DumbBTree(object):
             self.current_index = len(self.sorted) - 1
             return key, self.dict[key]
 
-    def __next__(self):
+    def next(self):
         try:
             key = self.sorted[self.current_index]
         except IndexError:
@@ -192,7 +194,6 @@ class DumbBTree(object):
         fp.close()
         self.unlock()
 
-
 # this is lifted straight out of pipermail with
 # the bsddb.btree replaced with above class.
 # didn't use inheritance because of all the
@@ -246,7 +247,7 @@ class HyperDatabase(pipermail.Database):
         omask = os.umask(0)
         try:
             try:
-                os.mkdir(arcdir, 0o02770)
+                os.mkdir(arcdir, 0o2770)
             except OSError as e:
                 if e.errno != errno.EEXIST: raise
         finally:
@@ -275,7 +276,7 @@ class HyperDatabase(pipermail.Database):
 
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return msgid in self.articleIndex
+        return self.articleIndex in msgid
 
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
@@ -283,10 +284,10 @@ class HyperDatabase(pipermail.Database):
 
     def getArticle(self, archive, msgid):
         self.__openIndices(archive)
-        if msgid not in self.__cache:
+        if not self.__cache in msgid:
             # get the pickled object out of the DumbBTree
             buf = self.articleIndex[msgid]
-            article = self.__cache[msgid] = pickle.loads(buf, fix_imports=True, encoding='latin1')
+            article = self.__cache[msgid] = pickle.loads(buf)
             # For upgrading older archives
             article.setListIfUnset(self._mlist)
         else:
@@ -306,7 +307,7 @@ class HyperDatabase(pipermail.Database):
         self.__openIndices(archive)
         index = getattr(self, index + 'Index')
         try:
-            key, msgid = next(index)
+            key, msgid = index.next()
             return msgid
         except KeyError:
             return None
@@ -316,7 +317,7 @@ class HyperDatabase(pipermail.Database):
         subject = subject.lower()
         try:
             self.subjectIndex.set_location(subject)
-            key, tempid = next(self.subjectIndex)
+            key, tempid = self.subjectIndex.next()
             [subject2, date]= key[:2]
             if subject!=subject2: return None
             return tempid
@@ -330,7 +331,9 @@ class HyperDatabase(pipermail.Database):
         self.__openIndices(archive)
         if hasattr(self.threadIndex, 'clear'):
             self.threadIndex.clear()
-            return
+        else:
+            # For Python 3 compatibility
+            self.threadIndex = {}
         finished=0
         try:
             key, msgid=self.threadIndex.first()
@@ -338,5 +341,5 @@ class HyperDatabase(pipermail.Database):
         while not finished:
             del self.threadIndex[key]
             try:
-                key, msgid=next(self.threadIndex)
+                key, msgid=self.threadIndex.next()
             except KeyError: finished=1

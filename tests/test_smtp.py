@@ -19,7 +19,7 @@
 
 import email
 import unittest
-import _thread
+import thread
 try:
     from Mailman import __init__
 except ImportError:

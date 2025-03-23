@@ -71,12 +71,14 @@ Where:
 Note that if neither -r or -d is supplied, regular members are printed first,
 followed by digest members, but no indication is given as to address status.
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
+from types import UnicodeType
 
 import paths
 from Mailman import mm_cfg
@@ -86,11 +88,18 @@ from Mailman import Errors
 from Mailman import MemberAdaptor
 from Mailman.i18n import C_
 
-from email.utils import formataddr
+from email.Utils import formataddr
 
 PROGRAM = sys.argv[0]
 ENC = sys.getdefaultencoding()
 COMMASPACE = ', '
+
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
 
 WHYCHOICES = {'enabled' : MemberAdaptor.ENABLED,
               'unknown' : MemberAdaptor.UNKNOWN,
@@ -111,13 +120,12 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def safe(s):
     if not s:
         return ''
     if isinstance(s, UnicodeType):
         return s.encode(ENC, 'replace')
-    return str(s, ENC, 'replace').encode(ENC, 'replace')
+    return str(s).encode(ENC, 'replace')
 
 
 def isinvalid(addr):
@@ -131,7 +139,6 @@ def isunicode(addr):
     return isinstance(addr, UnicodeType)
 
 
-
 def whymatches(mlist, addr, why):
     # Return true if the `why' matches the reason the address is enabled, or
     # in the case of why is None, that they are disabled for any reason
@@ -142,7 +149,6 @@ def whymatches(mlist, addr, why):
     return status == WHYCHOICES[why]
 
 
-
 def main():
     # Because of the optional arguments, we can't use getopt. :(
     outfile = None
@@ -183,14 +189,14 @@ def main():
                 usage(1)
         elif opt == '-n':
             nomail = True
-            if args and args[0] in list(WHYCHOICES.keys()):
+            if args and args[0] in WHYCHOICES:
                 why = args.pop(0)
         elif opt.startswith('--nomail'):
             nomail = True
             i = opt.find('=')
             if i >= 0:
                 why = opt[i+1:]
-                if why not in list(WHYCHOICES.keys()):
+                if why not in WHYCHOICES:
                     usage(1, C_('Bad --nomail option: %(why)s'))
         elif opt == '-d':
             digest = True
@@ -236,8 +242,7 @@ def main():
         try:
             fp = open(outfile, 'w')
         except IOError:
-            print(C_(
-                                 'Could not open file for writing:'), outfile, file=sys.stderr)
+            print(C_('Could not open file for writing:'), outfile, file=sys.stderr)
             sys.exit(1)
     else:
         fp = sys.stdout
@@ -302,6 +307,5 @@ def main():
             print(formataddr((safe(name), addr)), file=fp)
 
 
-
 if __name__ == '__main__':
     main()

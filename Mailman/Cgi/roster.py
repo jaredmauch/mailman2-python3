@@ -18,8 +18,11 @@
 
 Takes listname in PATH_INFO.
 """
-from __future__ import print_function
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 # We don't need to lock in this script, because we're never going to change
 # data.
@@ -27,7 +30,7 @@ from __future__ import print_function
 import sys
 import os
 import cgi
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -42,7 +45,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
@@ -57,8 +59,8 @@ def main():
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        error_page(_('No such list <em>{safelistname}</em>'))
-        syslog('error', 'roster: No such list "%s": %s', listname, e)
+        error_page(_('No such list <em>{(safelistname)s</em>'))
+        syslog('error', 'roster: No such list "}{s": }{s', listname, e)
         return
 
     cgidata = cgi.FieldStorage()
@@ -116,7 +118,7 @@ def main():
         doc.set_language(lang)
         # Send this with a 401 status.
         print('Status: 401 Unauthorized')
-        error_page_doc(doc, _('{realname} roster authentication failed.'))
+        error_page_doc(doc, _('}{(realname)s roster authentication failed.'))
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
         remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -124,7 +126,7 @@ def main():
                  os.environ.get('REMOTE_ADDR',
                                 'unidentified origin')))
         syslog('security',
-               'Authorization failed (roster): user=%s: list=%s: remote=%s',
+               'Authorization failed (roster): user=}{s: list=}{s: remote=}{s',
                addr, listname, remote)
         return
 
@@ -141,7 +143,6 @@ def main():
     print(doc.Format())
 
 
-
 def error_page(errmsg):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -154,3 +155,4 @@ def error_page_doc(doc, errmsg):
     doc.SetTitle(_("Error"))
     doc.AddItem(Header(2, _("Error")))
     doc.AddItem(Bold(errmsg))
+}

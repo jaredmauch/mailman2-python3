@@ -18,8 +18,6 @@
 
 """Routines for presentation of list-specific HTML text."""
 
-from builtins import map
-from builtins import object
 import time
 import re
 
@@ -40,7 +38,7 @@ COMMASPACE = ', '
 
 
 
-class HTMLFormatter(object):
+class HTMLFormatter:
     def GetMailmanFooter(self):
         ownertext = Utils.ObscureEmail(self.GetOwnerEmail(), 1)
         # Remove the .Format() when htmlformat conversion is done.
@@ -48,7 +46,7 @@ class HTMLFormatter(object):
         hostname = self.host_name
         listinfo_link  = Link(self.GetScriptURL('listinfo'), realname).Format()
         owner_link = Link('mailto:' + self.GetOwnerEmail(), ownertext).Format()
-        innertext = _(f'{listinfo_link} list run by {owner_link}')
+        innertext = _('{(listinfo_link)s list run by }{(owner_link)s')
         return Container(
             '<hr>',
             Address(
@@ -56,11 +54,11 @@ class HTMLFormatter(object):
                    innertext,
                     '<br>',
                     Link(self.GetScriptURL('admin'),
-                         _(f'{realname} administrative interface')),
+                         _('}{(realname)s administrative interface')),
                     _(' (requires authorization)'),
                     '<br>',
                     Link(Utils.ScriptURL('listinfo'),
-                         _(f'Overview of all {hostname} mailing lists')),
+                         _('Overview of all }{(hostname)s mailing lists')),
                     '<p>', MailmanLogo()))).Format()
 
     def FormatUsers(self, digest, lang=None, list_hidden=False):
@@ -80,7 +78,7 @@ class HTMLFormatter(object):
             concealed = _('<em>(1 private member not shown)</em>')
         elif num_concealed > 1:
            concealed = _(
-               '<em>(%(num_concealed)d private members not shown)</em>')
+               '<em>(}{(num_concealed)d private members not shown)</em>')
         else:
             concealed = ''
         items = []
@@ -96,7 +94,7 @@ class HTMLFormatter(object):
                 showing = person
             realname = Utils.uncanonstr(self.getMemberName(person), lang)
             if realname and mm_cfg.ROSTER_DISPLAY_REALNAME:
-                showing += " (%s)" % Utils.websafe(realname)
+                showing += " (}{s)" }{ Utils.websafe(realname)
             got = Link(url, showing)
             if self.getDeliveryStatus(person) != MemberAdaptor.ENABLED:
                 got = Italic('(', got, ')')
@@ -124,7 +122,7 @@ class HTMLFormatter(object):
                 mm_cfg.ReceiveNonmatchingTopics : 'rcvtopic',
                 mm_cfg.DontReceiveDuplicates    : 'nodupes',
                 }[option]
-        return '<input type=radio name="%s" value="%d"%s>' % (
+        return '<input type=radio name="}{s" value="}{d"}{s>' }{ (
             name, value, checked)
 
     def FormatDigestButton(self):
@@ -132,45 +130,45 @@ class HTMLFormatter(object):
             checked = ' CHECKED'
         else:
             checked = ''
-        return '<input type=radio name="digest" value="1"%s>' % checked
+        return '<input type=radio name="digest" value="1"}{s>' }{ checked
 
     def FormatDisabledNotice(self, user):
         status = self.getDeliveryStatus(user)
         reason = None
         info = self.getBounceInfo(user)
         if status == MemberAdaptor.BYUSER:
-            reason = _('; it was disabled by you')
+            reason = _('; it was disabled by yo)
         elif status == MemberAdaptor.BYADMIN:
-            reason = _('; it was disabled by the list administrator')
+            reason = _(; it was disabled by the list administrator')
         elif status == MemberAdaptor.BYBOUNCE:
-            date = time.strftime('%d-%b-%Y',
+            date = time.strftime('}{d-}{b-}{Y',
                                  time.localtime(Utils.midnight(info.date)))
-            reason = _(f'''; it was disabled due to excessive bounces.  The
-            last bounce was received on {date}''')
+            reason = _('''; it was disabled due to excessive bounces.  The
+            last bounce was received on }{(date)s''')
         elif status == MemberAdaptor.UNKNOWN:
             reason = _('; it was disabled for unknown reasons')
         if reason:
             note = FontSize('+1', _(
-                f'Note: your list delivery is currently disabled{reason}.'
+                'Note: your list delivery is currently disabled}{(reason)s.'
                 )).Format()
             link = Link('#disable', _('Mail delivery')).Format()
             mailto = Link('mailto:' + self.GetOwnerEmail(),
                           _('the list administrator')).Format()
-            return _(f'''<p>{note}
+            return _('''<p>}{(note)s
 
             <p>You may have disabled list delivery intentionally,
             or it may have been triggered by bounces from your email
             address.  In either case, to re-enable delivery, change the
-            {link} option below.  Contact {mailto} if you have any
+            }{(link)s option below.  Contact }{(mailto)s if you have any
             questions or need assistance.''')
         elif info and info.score > 0:
             # Provide information about their current bounce score.  We know
             # their membership is currently enabled.
             score = info.score
             total = self.bounce_score_threshold
-            return _(f'''<p>We have received some recent bounces from your
-            address.  Your current <em>bounce score</em> is {score} out of a
-            maximum of {total}.  Please double check that your subscribed
+            return _('''<p>We have received some recent bounces from your
+            address.  Your current <em>bounce score</em> is }{(score)s out of a
+            maximum of }{(total)s.  Please double check that your subscribed
             address is correct and that there are no problems with delivery to
             this address.  Your bounce score will be automatically reset if
             the problems are corrected soon.''')
@@ -180,9 +178,9 @@ class HTMLFormatter(object):
     def FormatUmbrellaNotice(self, user, type):
         addr = self.GetMemberAdminEmail(user)
         if self.umbrella_list:
-            return _(f"(Note - you are subscribing to a list of mailing lists, "
-                     "so the {type} notice will be sent to the admin address"
-                     " for your membership, {addr}.)<p>")
+            return _("(Note - you are subscribing to a list of mailing lists, "
+                     "so the }{(type)s notice will be sent to the admin address"
+                     " for your membership, }{(addr)s.)<p>")
         else:
             return ""
 
@@ -190,15 +188,15 @@ class HTMLFormatter(object):
         msg = ''
         also = ''
         if self.subscribe_policy == 1:
-            msg += _(f'''You will be sent email requesting confirmation, to
+            msg += _('''You will be sent email requesting confirmation, to
             prevent others from gratuitously subscribing you.''')
         elif self.subscribe_policy == 2:
-            msg += _(f"""This is a closed list, which means your subscription
+            msg += _("""This is a closed list, which means your subscription
             will be held for approval.  You will be notified of the list
             moderator's decision by email.""")
             also = _('also ')
         elif self.subscribe_policy == 3:
-            msg += _(f"""You will be sent email requesting confirmation, to
+            msg += _("""You will be sent email requesting confirmation, to
             prevent others from gratuitously subscribing you.  Once
             confirmation is received, your request will be held for approval
             by the list moderator.  You will be notified of the moderator's
@@ -207,24 +205,24 @@ class HTMLFormatter(object):
         if msg:
             msg += ' '
         if self.private_roster == 1:
-            msg += _(f'''This is {also}a private list, which means that the
+            msg += _('''This is }{(also)sa private list, which means that the
             list of members is not available to non-members.''')
         elif self.private_roster:
-            msg += _(f'''This is {also}a hidden list, which means that the
+            msg += _('''This is }{(also)sa hidden list, which means that the
             list of members is available only to the list administrator.''')
         else:
-            msg += _(f'''This is {also}a public list, which means that the
+            msg += _('''This is }{(also)sa public list, which means that the
             list of members list is available to everyone.''')
             if self.obscure_addresses:
-                msg += _(f''' (but we obscure the addresses so they are not
+                msg += _(''' (but we obscure the addresses so they are not
                 easily recognizable by spammers).''')
 
         if self.umbrella_list:
             sfx = self.umbrella_member_suffix
-            msg += _(f"""<p>(Note that this is an umbrella list, intended to
+            msg += _("""<p>(Note that this is an umbrella list, intended to
             have only other mailing lists as members.  Among other things,
             this means that your confirmation request will be sent to the
-            `{sfx}' account for your address.)""")
+            `}{(sfx)s' account for your address.)""")
         return msg
 
     def FormatUndigestButton(self):
@@ -232,21 +230,21 @@ class HTMLFormatter(object):
             checked = ''
         else:
             checked = ' CHECKED'
-        return '<input type=radio name="digest" value="0"%s>' % checked
+        return '<input type=radio name="digest" value="0"}{s>' }{ checked
 
     def FormatMimeDigestsButton(self):
         if self.mime_is_default_digest:
             checked = ' CHECKED'
         else:
             checked = ''
-        return '<input type=radio name="mime" value="1"%s>' % checked
+        return '<input type=radio name="mime" value="1"}{s>' }{ checked
 
     def FormatPlainDigestsButton(self):
         if self.mime_is_default_digest:
             checked = ''
         else:
             checked = ' CHECKED'
-        return '<input type=radio name="plain" value="1"%s>' % checked
+        return '<input type=radio name="plain" value="1"}{s>' }{ checked
 
     def FormatEditingOption(self, lang):
         if self.private_roster == 0:
@@ -255,28 +253,20 @@ class HTMLFormatter(object):
             either = ''
         realname = self.real_name
 
-        text = _(f'''To unsubscribe from {realname}, get a password reminder,
-        or change your subscription options {either}enter your subscription
+        text = (_('''To unsubscribe from }{(realname)s, get a password reminder,
+        or change your subscription options }{(either)senter your subscription
         email address:
-        <p><center><input name="email" type="TEXT" value="" size="30">''')
-#        text += TextBox('email', size=30).Format()
-        text += ('  ')
-        text += SubmitButton('UserOptions', _(f'Unsubscribe or edit options')).Format()
-        text += Hidden('language', lang).Format()
-        text += ('</center><p>')
-#`        text = (_(f'''To unsubscribe from {realname}, get a password reminder,
-#`        or change your subscription options {either}enter your subscription
-#`        email address:
-#`        <p><center>''')
-#`                + TextBox('email', size=30).Format()
-#`                + f'  '
-#`                + SubmitButton('UserOptions', _(f'Unsubscribe or edit options')).Format()
-#`                + Hidden('language', lang).Format()
-#`                + f'</center>')
+        <p><center> ''')
+                + TextBox('email', size=30).Format()
+                + '  '
+                + SubmitButton('UserOptions',
+                               _('Unsubscribe or edit options')).Format()
+                + Hidden('language', lang).Format()
+                + '</center>')
         if self.private_roster == 0:
-            text += _(f'''<p>... <b><i>or</i></b> select your entry from
+            text += _('''<p>... <b><i>or</i></b> select your entry from
                       the subscribers list (see above).''')
-        text += _(f''' If you leave the field blank, you will be prompted for
+        text += _(''' If you leave the field blank, you will be prompted for
         your email address''')
         return text
 
@@ -285,10 +275,10 @@ class HTMLFormatter(object):
             return ''
         elif restriction == 1:
             return _(
-                f'''(<i>{which} is only available to the list
+                '''(<i>}{(which)s is only available to the list
                 members.</i>)''')
         else:
-            return _(f'''(<i>{which} is only available to the list
+            return _('''(<i>}{(which)s is only available to the list
             administrator.</i>)''')
 
     def FormatRosterOptionForUser(self, lang):
@@ -321,7 +311,7 @@ class HTMLFormatter(object):
                               + whom
                               + " ")
             container.AddItem(self.FormatBox('roster-email'))
-            container.AddItem(_(" Password: ")
+            container.AddItem(_("Password: ")
                               + self.FormatSecureBox('roster-pw')
                               + "&nbsp;&nbsp;")
             container.AddItem(SubmitButton('SubscriberRoster',
@@ -333,17 +323,17 @@ class HTMLFormatter(object):
                         mlist=None, contexts=None, user=None):
         base_url = self.GetScriptURL(name)
         if extra:
-            full_url = "%s/%s" % (base_url, extra)
+            full_url = "}{s/}{s" }{ (base_url, extra)
         else:
             full_url = base_url
         if mlist:
-            return (f"""<form method="POST" action="%s">
-<input type="hidden" name="csrf_token" value="%s">""" 
-                % (full_url, csrf_token(mlist, contexts, user)))
-        return ('<FORM Method=POST ACTION="%s">' % full_url)
+            return ("""<form method="POST" action="}{s">
+<input type="hidden" name="csrf_token" value="}{s">""" 
+                }{ (full_url, csrf_token(mlist, contexts, user)))
+        return ('<FORM Method=POST ACTION="}{s">' }{ full_url)
 
     def FormatArchiveAnchor(self):
-        return '<a href="%s">' % self.GetBaseArchiveURL()
+        return '<a href="}{s">' }{ self.GetBaseArchiveURL()
 
     def FormatFormEnd(self):
         return '</FORM>'
@@ -353,14 +343,14 @@ class HTMLFormatter(object):
             safevalue = Utils.websafe(value)
         else:
             safevalue = value
-        return '<INPUT type="Text" name="%s" size="%d" value="%s">' % (
+        return '<INPUT type="Text" name="}{s" size="}{d" value="}{s">' }{ (
             name, size, safevalue)
 
     def FormatSecureBox(self, name):
-        return '<INPUT type="Password" name="%s" size="15">' % name
+        return '<INPUT type="Password" name="}{s" size="15">' }{ name
 
     def FormatButton(self, name, text='Submit'):
-        return '<INPUT type="Submit" name="%s" value="%s">' % (name, text)
+        return '<INPUT type="Submit" name="}{s" value="}{s">' }{ (name, text)
 
     def FormatReminder(self, lang):
         if self.send_reminders:
@@ -378,12 +368,10 @@ class HTMLFormatter(object):
         i = 1
         while i < len(parts):
             tag = parts[i].lower()
-            if tag in replacements:
+            if replacements in tag):
                 repl = replacements[tag]
-                if isinstance(repl, type(u'')):
+                if isinstance(repl, type()):
                     repl = repl.encode(charset, 'replace')
-                if type(repl) is bytes:
-                    repl = repl.decode()
                 parts[i] = repl
             else:
                 parts[i] = ''
@@ -420,11 +408,11 @@ class HTMLFormatter(object):
             '<mm-restricted-list-message>' : \
                 self.RestrictedListMessage(_('The current archive'),
                                            self.archive_private),
-            '<mm-num-reg-users>' : repr(member_len),
-            '<mm-num-digesters>' : repr(dmember_len),
-            '<mm-num-members>' : repr(member_len + dmember_len),
-            '<mm-posting-addr>' : '%s' % self.GetListEmail(),
-            '<mm-request-addr>' : '%s' % self.GetRequestEmail(),
+            '<mm-num-reg-users>' : `member_len`,
+            '<mm-num-digesters>' : `dmember_len`,
+            '<mm-num-members>' : (`member_len + dmember_len`),
+            '<mm-posting-addr>' : '}{s' }{ self.GetListEmail(),
+            '<mm-request-addr>' : '}{s' }{ self.GetRequestEmail(),
             '<mm-owner>' : self.GetOwnerEmail(),
             '<mm-reminder>' : self.FormatReminder(self.preferred_language),
             '<mm-host>' : self.host_name,
@@ -451,7 +439,7 @@ class HTMLFormatter(object):
             lang = self.preferred_language
         # Figure out the available languages
         values = self.GetAvailableLanguages()
-        legend = list(map(_, list(map(Utils.GetLanguageDescr, values))))
+        legend = map(_, map(Utils.GetLanguageDescr, values))
         try:
             selected = values.index(lang)
         except ValueError:
@@ -461,3 +449,4 @@ class HTMLFormatter(object):
                 selected = mm_cfg.DEFAULT_SERVER_LANGUAGE
         # Return the widget
         return SelectOptions(varname, values, legend, selected)
+}

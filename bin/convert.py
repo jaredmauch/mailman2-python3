@@ -16,13 +16,17 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-"""Convert a list's interpolation strings from %-strings to $-strings.
+"""Convert a list's interpolation strings from {-strings to $-strings.
 
 This script is intended to be run as a bin/withlist script, i.e.
 
-% bin/withlist -l -r convert <mylist>
+}{ bin/withlist -l -r convert <mylist>
 """
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 import paths
 from Mailman import Utils
@@ -40,6 +44,6 @@ def convert(mlist):
     mlist.Save()
 
 
-
 if __name__ == '__main__':
-    print(C_(__doc__.replace('%', '%%')))
+    print(C_(__doc__.replace('}{', '}{}{')))
+}

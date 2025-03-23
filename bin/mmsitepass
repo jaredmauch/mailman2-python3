@@ -36,7 +36,6 @@ Options:
 
 If password is not given on the command line, it will be prompted for.
 """
-from __future__ import unicode_literals
 
 import sys
 import getpass
@@ -44,6 +43,7 @@ import getopt
 
 import paths
 from Mailman import Utils
+from Mailman.i18n import C_
 
 PROGRAM = sys.argv[0]
 
@@ -54,9 +54,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(__doc__, file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
@@ -65,39 +65,39 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ch',
                                    ['listcreator', 'help'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     # Defaults
     siteadmin = 1
-    pwdesc = 'site'
+    pwdesc = C_('site')
 
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-c', '--listcreator'):
             siteadmin = 0
-            pwdesc = 'list creator'
+            pwdesc = C_('list creator')
 
     if len(args) == 1:
         pw1 = args[0]
     else:
         try:
-            pw1 = getpass.getpass('New %(pwdesc)s password: ')
-            pw2 = getpass.getpass('Again to confirm password: ')
-            if pw1 != pw2:
-                print('Passwords do not match; no changes made.')
+            pw1 = getpass.getpass(C_('New %(pwdesc)s password: '))
+            pw2 = getpass.getpass(C_('Again to confirm password: '))
+            if pw1 <> pw2:
+                print C_('Passwords do not match; no changes made.')
                 sys.exit(1)
         except KeyboardInterrupt:
-            print('Interrupted...')
+            print C_('Interrupted...')
             sys.exit(0)
     # Set the site password by writing it to a local file.  Make sure the
     # permissions don't allow other+read.
     Utils.set_global_password(pw1, siteadmin)
     if Utils.check_global_password(pw1, siteadmin):
-        print('Password changed.')
+        print C_('Password changed.')
     else:
-        print('Password change failed.')
+        print C_('Password change failed.')
 
 
 

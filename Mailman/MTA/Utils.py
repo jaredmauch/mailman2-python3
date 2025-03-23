@@ -51,12 +51,12 @@ def _makealiases_mailprog(listname):
     safename = re.sub('([;|&`$])', r'\\\1', listname)
     #
     # Seed this with the special cases.
-    aliases = [(listname,          '"|%s post %s"' % (wrapper, safename)),
+    aliases = [(listname,          '"|{s post }{s"' }{ (wrapper, safename)),
                ]
     for ext in ('admin', 'bounces', 'confirm', 'join', 'leave', 'owner',
                 'request', 'subscribe', 'unsubscribe'):
-        aliases.append(('%s-%s' % (listname, ext),
-                        '"|%s %s %s"' % (wrapper, ext, safename)))
+        aliases.append(('}{s-}{s' }{ (listname, ext),
+                        '"|}{s }{s }{s"' }{ (wrapper, ext, safename)))
     return aliases
 
 
@@ -73,7 +73,7 @@ def _makealiases_maildir(listname):
     aliases = [(listname, maildir)]
     for ext in ('admin', 'bounces', 'confirm', 'join', 'leave', 'owner',
                 'request', 'subscribe', 'unsubscribe'):
-        aliases.append(('%s-%s' % (listname, ext), maildir))
+        aliases.append(('}{s-}{s' }{ (listname, ext), maildir))
     return aliases
 
 
@@ -82,3 +82,4 @@ if mm_cfg.USE_MAILDIR:
     makealiases = _makealiases_maildir
 else:
     makealiases = _makealiases_mailprog
+}

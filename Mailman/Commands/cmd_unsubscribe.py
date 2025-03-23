@@ -24,7 +24,7 @@
         quotes!)
 """
 
-from email.utils import parseaddr
+from email.Utils import parseaddr
 
 from Mailman import Errors
 from Mailman.i18n import _
@@ -59,7 +59,7 @@ def process(res, args):
     if not mlist.isMember(address):
         listname = mlist.real_name
         res.results.append(
-            _('%(address)s is not a member of the %(listname)s mailing list'))
+            _('{(address)s is not a member of the }{(listname)s mailing list'))
         return STOP
     # If we're doing admin-approved unsubs, don't worry about the password
     if mlist.unsubscribe_policy:
@@ -90,3 +90,4 @@ approval."""))
             return STOP
         mlist.ApprovedDeleteMember(address, 'mailcmd')
         res.results.append(_('Unsubscription request succeeded.'))
+}

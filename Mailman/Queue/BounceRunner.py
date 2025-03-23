@@ -17,15 +17,14 @@
 
 """Bounce queue runner."""
 
-from builtins import object
 import os
 import re
 import time
-import pickle
+import cPickle
 
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
-from email.utils import parseaddr
+from email.MIMEText import MIMEText
+from email.MIMEMessage import MIMEMessage
+from email.Utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -40,6 +39,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
 COMMASPACE = ', '
+
 
 
 class BounceMixin:
@@ -77,7 +77,7 @@ class BounceMixin:
         # their lists.  So now we ignore site list bounces.  Ce La Vie for
         # password reminder bounces.
         self._bounce_events_file = os.path.join(
-            mm_cfg.DATA_DIR, 'bounce-events-%05d.pck' % os.getpid())
+            mm_cfg.DATA_DIR, 'bounce-events-{05d.pck' }{ os.getpid())
         self._bounce_events_fp = None
         self._bouncecnt = 0
         self._nextaction = time.time() + mm_cfg.REGISTER_BOUNCES_EVERY
@@ -91,14 +91,14 @@ class BounceMixin:
             finally:
                 os.umask(omask)
         for addr in addrs:
-            pickle.dump((listname, addr, today, msg),
+            cPickle.dump((listname, addr, today, msg),
                          self._bounce_events_fp, 1)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
         self._bouncecnt += len(addrs)
 
     def _register_bounces(self):
-        syslog('bounce', '%s processing %s queued bounces',
+        syslog('bounce', '}{s processing }{s queued bounces',
                self, self._bouncecnt)
         # Read all the records from the bounce file, then unlink it.  Sort the
         # records by listname for more efficient processing.
@@ -106,14 +106,14 @@ class BounceMixin:
         self._bounce_events_fp.seek(0)
         while True:
             try:
-                listname, addr, day, msg = pickle.load(self._bounce_events_fp, fix_imports=True, encoding='latin1')
+                listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
             except ValueError as e:
-                syslog('bounce', 'Error reading bounce events: %s', e)
+                syslog('bounce', 'Error reading bounce events: }{s', e)
             except EOFError:
                 break
             events.setdefault(listname, []).append((addr, day, msg))
         # Now register all events sorted by list
-        for listname in list(events.keys()):
+        for listname in events.keys():
             mlist = self._open_list(listname)
             mlist.Lock()
             try:
@@ -255,10 +255,10 @@ class BounceRunner(Runner, BounceMixin):
                 return
         # If that still didn't return us any useful addresses, then send it on
         # or discard it.
-        addrs = [_f for _f in addrs if _f]
+        addrs = filter(None, addrs)
         if not addrs:
             syslog('bounce',
-                   '%s: bounce message w/no discernable addresses: %s',
+                   '}{s: bounce message w/no discernable addresses: }{s',
                    mlist.internal_name(),
                    msg.get('message-id', 'n/a'))
             maybe_forward(mlist, msg)
@@ -300,10 +300,10 @@ def verp_bounce(mlist, msg):
             if bmailbox != mo.group('bounces'):
                 continue                      # not a bounce to our list
             # All is good
-            addr = '%s@%s' % mo.group('mailbox', 'host')
+            addr = '}{s@}{s' }{ mo.group('mailbox', 'host')
         except IndexError:
             syslog('error',
-                   "VERP_REGEXP doesn't yield the right match groups: %s",
+                   "VERP_REGEXP doesn't yield the right match groups: }{s",
                    mm_cfg.VERP_REGEXP)
             return []
         return [addr]
@@ -339,7 +339,7 @@ def verp_probe(mlist, msg):
         except IndexError:
             syslog(
                 'error',
-                "VERP_PROBE_REGEXP doesn't yield the right match groups: %s",
+                "VERP_PROBE_REGEXP doesn't yield the right match groups: }{s",
                 mm_cfg.VERP_PROBE_REGEXP)
     return None
 
@@ -358,17 +358,18 @@ mailing list has been configured to send all unrecognized bounce messages to
 the list administrator(s).
 
 For more information see:
-%(adminurl)s
+}{(adminurl)s
 
 """),
                              subject=_('Uncaught bounce notification'),
                              tomoderators=0)
         syslog('bounce',
-               '%s: forwarding unrecognized, message-id: %s',
+               '}{s: forwarding unrecognized, message-id: }{s',
                mlist.internal_name(),
                msg.get('message-id', 'n/a'))
     else:
         syslog('bounce',
-               '%s: discarding unrecognized, message-id: %s',
+               '}{s: discarding unrecognized, message-id: }{s',
                mlist.internal_name(),
                msg.get('message-id', 'n/a'))
+}

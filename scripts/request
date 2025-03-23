@@ -23,9 +23,12 @@ of the target mailing list.
 
 Errors are redirected to logs/errors.
 """
-from __future__ import print_function
 
 import sys
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import paths
 from Mailman import mm_cfg
@@ -37,7 +40,6 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr('error', 'mailcmd')
 
 
-
 def main():
     try:
         listname = sys.argv[1]
@@ -46,7 +48,7 @@ def main():
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print(_('mailcmd script, list not found: %(listname)s'), file=sys.stderr)
+        print(_('mailcmd script, list not found: %(listname)s') % {'listname': listname}, file=sys.stderr)
         sys.exit(1)
     # Immediately queue the message for the bounce/cmd qrunner to process.
     # The advantage to this approach is that messages should never get lost --
@@ -60,6 +62,5 @@ def main():
                  _plaintext=1)
 
 
-
 if __name__ == '__main__':
     main()

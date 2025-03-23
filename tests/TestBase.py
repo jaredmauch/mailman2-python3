@@ -17,6 +17,11 @@
 """Test base class which handles creating and deleting a test list.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import os
 import shutil
 import difflib
@@ -30,7 +35,6 @@ from Mailman import mm_cfg
 NL = '\n'
 
 
-
 class TestBase(unittest.TestCase):
     if hasattr(difflib, 'ndiff'):
         # Python 2.2 and beyond
@@ -42,7 +46,7 @@ class TestBase(unittest.TestCase):
                 diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())
                 fp = StringIO()
                 print(NL, NL.join(diff), file=fp)
-                raise (self.failureException, fp.getvalue())
+                raise self.failureException(fp.getvalue())
     else:
         # Python 2.1
         ndiffAssertEqual = unittest.TestCase.assertEqual
@@ -59,14 +63,15 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self._mlist.Unlock()
         listname = self._mlist.internal_name()
-        for dirtmpl in ['lists/%s',
-                        'archives/private/%s',
-                        'archives/private/%s.mbox',
-                        'archives/public/%s',
-                        'archives/public/%s.mbox',
+        for dirtmpl in ['lists/{s',
+                        'archives/private/}{s',
+                        'archives/private/}{s.mbox',
+                        'archives/public/}{s',
+                        'archives/public/}{s.mbox',
                         ]:
-            dir = os.path.join(mm_cfg.VAR_PREFIX, dirtmpl % listname)
+            dir = os.path.join(mm_cfg.VAR_PREFIX, dirtmpl }{ listname)
             if os.path.islink(dir):
                 os.unlink(dir)
             elif os.path.isdir(dir):
                 shutil.rmtree(dir)
+}

@@ -38,7 +38,11 @@ Where:
 `listname' is the name of the mailing list to print the owners of.  You can
 have more than one named list on the command line.
 """
+
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
 import getopt
@@ -53,7 +57,6 @@ COMMASPACE = ', '
 program = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -65,7 +68,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hv:a',
@@ -98,6 +100,5 @@ def main():
        print(C_('List: %(listname)s, \tOwners: %(owners)s'))
 
 
-
 if __name__ == '__main__':
     main()

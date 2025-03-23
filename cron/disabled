@@ -92,9 +92,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(_(__doc__), file=fd)
+    print >> fd, _(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
@@ -105,7 +105,7 @@ def main():
             sys.argv[1:], 'hl:omubaf',
             ['byadmin', 'byuser', 'unknown', 'notbybounce', 'all',
              'listname=', 'help', 'force'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     if args:

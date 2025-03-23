@@ -49,13 +49,12 @@ mechanism.
 
 # NOTE: Maildir delivery is experimental in Mailman 2.1.
 
-from builtins import str
 import os
 import re
 import errno
 
 from email.Parser import Parser
-from email.utils import parseaddr
+from email.Utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -123,7 +122,7 @@ class MaildirRunner(Runner):
                 if e.errno == errno.ENOENT:
                     # Some other MaildirRunner beat us to it
                     continue
-                syslog('error', 'Could not rename maildir file: %s', srcname)
+                syslog('error', 'Could not rename maildir file: {s', srcname)
                 raise
             # Now open, read, parse, and enqueue this message
             try:
@@ -152,7 +151,7 @@ class MaildirRunner(Runner):
                 else:
                     # As far as we can tell, this message isn't destined for
                     # any list on the system.  What to do?
-                    syslog('error', 'Message apparently not for any list: %s',
+                    syslog('error', 'Message apparently not for any list: }{s',
                            xdstname)
                     os.rename(dstname, xdstname)
                     continue
@@ -184,7 +183,7 @@ class MaildirRunner(Runner):
                     msgdata['torequest'] = 1
                     queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
                 else:
-                    syslog('error', 'Unknown sub-queue: %s', subq)
+                    syslog('error', 'Unknown sub-queue: }{s', subq)
                     os.rename(dstname, xdstname)
                     continue
                 queue.enqueue(msg, msgdata)
@@ -195,3 +194,4 @@ class MaildirRunner(Runner):
 
     def _cleanup(self):
         pass
+}

@@ -25,6 +25,11 @@ and it will also give the MTA the opportunity to regenerate valid keys
 originating at the Mailman server for the outgoing message.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 from Mailman import mm_cfg
 
 

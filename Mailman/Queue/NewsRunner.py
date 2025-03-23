@@ -17,14 +17,13 @@
 
 """NNTP queue runner."""
 
-from builtins import str
 import re
 import socket
 import nntplib
-from io import StringIO
+from cStringIO import StringIO
 
 import email
-from email.utils import getaddresses
+from email.Utils import getaddresses
 
 COMMASPACE = ', '
 
@@ -45,6 +44,7 @@ mcre = re.compile(r"""
     (?P<hostname>[^>]+)                           # list's host_name
     >                                             # trailer
     """, re.VERBOSE)
+
 
 
 
@@ -68,13 +68,13 @@ class NewsRunner(Runner):
                                         user=mm_cfg.NNTP_USERNAME,
                                         password=mm_cfg.NNTP_PASSWORD)
                     conn.post(fp)
-                except nntplib.error_temp as e:
+                except nntplib.error_temp, e:
                     syslog('error',
-                           '(NNTPDirect) NNTP error for list "%s": %s',
+                           '(NNTPDirect) NNTP error for list "{s": }{s',
                            mlist.internal_name(), e)
-                except socket.error as e:
+                except socket.error, e:
                     syslog('error',
-                           '(NNTPDirect) socket error for list "%s": %s',
+                           '(NNTPDirect) socket error for list "}{s": }{s',
                            mlist.internal_name(), e)
             finally:
                 if conn:
@@ -174,3 +174,4 @@ def prepare_message(mlist, msg, msgdata):
             msg[rewrite] = v
     # Mark this message as prepared in case it has to be requeued
     msgdata['prepped'] = True
+}

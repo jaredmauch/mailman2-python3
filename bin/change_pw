@@ -65,6 +65,11 @@ Options:
         Print this help message and exit.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import getopt
 
@@ -82,7 +87,6 @@ C_ = i18n.C_
 SPACE = ' '
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -94,7 +98,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 _listcache = {}
 
 def openlist(listname):
@@ -109,7 +112,6 @@ def openlist(listname):
     return mlist
 
 
-
 def main():
     # Parse options
     try:
@@ -152,7 +154,7 @@ def main():
     if domains:
         for name in Utils.list_names():
             mlist = openlist(name)
-            if domains.has_key(mlist.host_name):
+            if mlist.host_name in domains:
                 listnames[name] = 1
 
     if not listnames:
@@ -160,7 +162,7 @@ def main():
         sys.exit(0)
 
     # Set the password on the lists
-    for listname in listnames.keys():
+    for listname in listnames:
         mlist = openlist(listname)
         mlist.Lock()
         try:
@@ -206,6 +208,5 @@ liking.  Visit your list admin page at
             msg.send(mlist)
 
 
-
 if __name__ == '__main__':
     main()

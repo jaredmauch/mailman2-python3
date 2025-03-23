@@ -25,9 +25,11 @@ import errno
 
 from Mailman import mm_cfg
 
+
 
 def _makedir(path):
     try:
+        # Make sure the files are created with proper permissions
         omask = os.umask(0)
         try:
             os.makedirs(path, 0o2775)
@@ -40,7 +42,7 @@ def _makedir(path):
 
 
 
-# BAW: We don't really support domain<>None yet.  This will be added in a
+# BAW: We don't really support domain!=None yet.  This will be added in a
 # future version.  By default, Mailman will never pass in a domain argument.
 def get_listpath(listname, domain=None, create=0):
     """Return the file system path to the list directory for the named list.
@@ -60,7 +62,7 @@ def get_listpath(listname, domain=None, create=0):
 
 
 
-# BAW: We don't really support domain<>None yet.  This will be added in a
+# BAW: We don't really support domain!=None yet.  This will be added in a
 # future version.  By default, Mailman will never pass in a domain argument.
 def get_archpath(listname, domain=None, create=False, public=False):
     """Return the file system path to the list's archive directory for the
@@ -88,7 +90,7 @@ def get_archpath(listname, domain=None, create=False, public=False):
 
 
 
-# BAW: We don't really support domain<>None yet.  This will be added in a
+# BAW: We don't really support domain!=None yet.  This will be added in a
 # future version.  By default, Mailman will never pass in a domain argument.
 def get_listnames(domain=None):
     """Return the names of all the known lists for the given domain.

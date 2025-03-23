@@ -20,7 +20,6 @@
         Confirm an action.  The confirmation-string is required and should be
         supplied by a mailback confirmation notice.
 """
-from __future__ import division
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -45,12 +44,12 @@ def process(res, args):
     cookie = args[0]
     try:
         results = mlist.ProcessConfirmation(cookie, res.msg)
-    except Errors.MMBadConfirmation as e:
+    except Errors.MMBadConfirmation, e:
         # Express in approximate days
         days = int(mm_cfg.PENDING_REQUEST_LIFE / mm_cfg.days(1) + 0.5)
         res.results.append(_("""\
 Invalid confirmation string.  Note that confirmation strings expire
-approximately %(days)s days after the initial request.  They also expire if
+approximately {(days)s days after the initial request.  They also expire if
 the request has already been handled in some way.  If your confirmation has
 expired, please try to re-submit your original request or message."""))
     except Errors.MMNeedApproval:
@@ -70,7 +69,7 @@ your email address?"""))
         res.results.append(_("""\
 You are currently banned from subscribing to this list.  If you think this
 restriction is erroneous, please contact the list owners at
-%(owneraddr)s."""))
+}{(owneraddr)s."""))
     except Errors.HostileSubscriptionError:
         res.results.append(_("""\
 You were not invited to this mailing list.  The invitation has been discarded,
@@ -111,3 +110,4 @@ Bad approval password given.  Held message is still being held."""))
             res.commands = unprocessed
     # Process just one confirmation string per message
     return STOP
+}

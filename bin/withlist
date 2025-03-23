@@ -80,10 +80,10 @@ Mailman installation directory called `listaddr.py', with the following
 two functions:
 
 def listaddr(mlist):
-    print(mlist.GetListEmail())
+    print mlist.GetListEmail()
 
 def requestaddr(mlist):
-    print(mlist.GetRequestEmail())
+    print mlist.GetRequestEmail()
 
 Now, from the command line you can print the list's posting address by running
 the following from the command line:
@@ -113,7 +113,7 @@ def changepw(mlist, addr, newpasswd):
         mlist.setMemberPassword(addr, newpasswd)
         mlist.Save()
     except NotAMemberError:
-        print('No address matched:', addr)
+        print 'No address matched:', addr
 
 and run this from the command line:
  %% bin/withlist -l -r changepw mylist somebody@somewhere.org foobar
@@ -129,6 +129,13 @@ from Mailman import Errors
 from Mailman import MailList
 from Mailman import Utils
 from Mailman.i18n import C_
+
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
 
 # `m' will be the MailList object and `r' will be the results of the callable
 m = None
@@ -147,9 +154,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
@@ -165,11 +172,11 @@ def atexit():
     if m.Locked():
         if VERBOSE:
             listname = m.internal_name()
-            print(C_(
-                'Unlocking (but not saving) list: %(listname)s'), file=sys.stderr)
+            print >> sys.stderr, C_(
+                'Unlocking (but not saving) list: %(listname)s')
         m.Unlock()
     if VERBOSE:
-        print(C_('Finalizing'), file=sys.stderr)
+        print >> sys.stderr, C_('Finalizing')
     del m
 
 
@@ -178,16 +185,16 @@ def do_list(listname, args, func):
     global m
     # first try to open mailing list
     if VERBOSE:
-        print(C_('Loading list %(listname)s'), file=sys.stderr)
+        print >> sys.stderr, C_('Loading list %(listname)s'),
         if LOCK:
-            print(C_('(locked)'), file=sys.stderr)
+            print >> sys.stderr, C_('(locked)')
         else:
-            print(C_('(unlocked)'), file=sys.stderr)
+            print >> sys.stderr, C_('(unlocked)')
 
     try:
         m = MailList.MailList(listname, lock=LOCK)
     except Errors.MMUnknownListError:
-        print(C_('Unknown list: %(listname)s'), file=sys.stderr)
+        print >> sys.stderr, C_('Unknown list: %(listname)s')
         m = None
 
     # try to import the module and run the callable
@@ -205,7 +212,7 @@ def main():
         opts, args = getopt.getopt(
             sys.argv[1:], 'hlr:qia',
             ['help', 'lock', 'run=', 'quiet', 'interactive', 'all'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     run = None
@@ -230,7 +237,7 @@ def main():
         warning = C_('No list name supplied.')
         if interact:
             # Let them keep going
-            print(warning)
+            print warning
             dolist = False
         else:
             usage(1, warning)
@@ -256,11 +263,11 @@ def main():
             module = run[:i]
             callable = run[i+1:]
         if VERBOSE:
-            print(C_('Importing %(module)s...'), file=sys.stderr)
+            print >> sys.stderr, C_('Importing %(module)s...')
         __import__(module)
         mod = sys.modules[module]
         if VERBOSE:
-            print(C_('Running %(module)s.%(callable)s()...'), file=sys.stderr)
+            print >> sys.stderr, C_('Running %(module)s.%(callable)s()...')
         func = getattr(mod, callable)
 
     if all:

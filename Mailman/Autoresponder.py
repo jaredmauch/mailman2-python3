@@ -17,13 +17,12 @@
 """MailList mixin class managing the autoresponder.
 """
 
-from builtins import object
 from Mailman import mm_cfg
 from Mailman.i18n import _
 
 
 
-class Autoresponder(object):
+class Autoresponder:
     def InitVars(self):
         # configurable
         self.autorespond_postings = 0

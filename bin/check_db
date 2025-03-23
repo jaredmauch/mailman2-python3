@@ -53,7 +53,7 @@ import os
 import errno
 import getopt
 import marshal
-import pickle
+import cPickle
 
 import paths
 from Mailman import mm_cfg
@@ -70,9 +70,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
@@ -81,7 +81,7 @@ def testfile(dbfile):
     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
         loadfunc = marshal.load
     elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-        loadfunc = pickle.load
+        loadfunc = cPickle.load
     else:
         assert 0
     fp = open(dbfile)
@@ -95,7 +95,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ahv',
                                    ['all', 'verbose', 'help'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     verbose = 0
@@ -111,12 +111,12 @@ def main():
 
     listnames = [n.lower().strip() for n in listnames]
     if not listnames:
-        print(C_('Nothing to do.'))
+        print C_('Nothing to do.')
         sys.exit(0)
 
     for listname in listnames:
         if not Utils.list_exists(listname):
-            print(C_('No list named:'), listname)
+            print C_('No list named:'), listname
             continue
         mlist = MailList(listname, lock=0)
         pfile = os.path.join(mlist.fullpath(), 'config.pck')
@@ -125,27 +125,27 @@ def main():
         dlast = dfile + '.last'
 
         if verbose:
-            print(C_('List:'), listname)
+            print C_('List:'), listname
 
         for file in (pfile, plast, dfile, dlast):
             status = 0
             try:
                 testfile(file)
-            except IOError as e:
+            except IOError, e:
                 # Don't report ENOENT unless we're in verbose mode
-                if verbose or e.errno != errno.ENOENT:
+                if verbose or e.errno <> errno.ENOENT:
                     status = e
-            except Exception as e:
+            except Exception, e:
                 status = e
             # Report errors
             if status:
                 if isinstance(status, EnvironmentError):
                     # This already includes the file name
-                    print('   ', status)
+                    print '   ', status
                 else:
-                    print('    %s: %s' % (file, status))
+                    print '    %s: %s' % (file, status)
             elif verbose:
-                print(C_('   %(file)s: okay'))
+                print C_('   %(file)s: okay')
 
 
 

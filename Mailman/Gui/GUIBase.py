@@ -17,9 +17,8 @@
 
 """Base class for all web GUI components."""
 
-from builtins import str
-from builtins import object
 import re
+from typing import Tuple, List
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -30,7 +29,6 @@ NL = '\n'
 BADJOINER = '</code>, <code>'
 
 
-
 class GUIBase:
     # Providing a common interface for GUI component form processing.  Most
     # GUI components won't need to override anything, but some may want to
@@ -49,19 +47,22 @@ class GUIBase:
         # This widget contains a single email address
         if wtype == mm_cfg.Email:
             # BAW: We must allow blank values otherwise reply_to_address can't
-            # be cleared.  This is currently the only mm_cfg.Email type widget
-            # in the interface, so watch out if we ever add any new ones.
-            if val:
-                # Let MMBadEmailError and MMHostileAddress propagate
-                Utils.ValidateEmail(val)
-            return val
+            # be cleared.  We should probably have a separate widget type for
+            # required email addresses.
+            if not val:
+                return val
+            try:
+                return Utils.ValidateEmail(val)
+            except Errors.EmailError as e:
+                doc.AddError(_('Invalid email address: {(addr)s'), {'addr': val})
+                return None
         # These widget types contain lists of email addresses, one per line.
         # The EmailListEx allows each line to contain either an email address
         # or a regular expression
         if wtype in (mm_cfg.EmailList, mm_cfg.EmailListEx):
             # BAW: value might already be a list, if this is coming from
             # config_list input.  Sigh.
-            if isinstance(val, ListType):
+            if isinstance(val, List):
                 return val
             addrs = []
             bad_addrs = []
@@ -97,7 +98,7 @@ class GUIBase:
                         bad_addrs.append(addr)
                 addrs.append(addr)
             if bad_addrs:
-                raise Errors.EmailAddressError(', '.join(bad_addrs))
+                raise Errors.EmailAddressError, ', '.join(bad_addrs)
             return addrs
         # This is a host name, i.e. verbatim
         if wtype == mm_cfg.Host:
@@ -124,7 +125,7 @@ class GUIBase:
         # Checkboxes return a list of the selected items, even if only one is
         # selected.
         if wtype == mm_cfg.Checkbox:
-            if isinstance(val, ListType):
+            if isinstance(val, List):
                 return val
             return [val]
         if wtype == mm_cfg.FileUpload:
@@ -134,7 +135,7 @@ class GUIBase:
         if wtype == mm_cfg.HeaderFilter:
             return val
         # Should never get here
-        assert 0, 'Bad gui widget type: %s' % wtype
+        assert 0, 'Bad gui widget type: }{s' }{ wtype
 
     def _setValue(self, mlist, property, val, doc):
         # Set the value, or override to take special action on the property
@@ -146,42 +147,25 @@ class GUIBase:
         pass
 
     def handleForm(self, mlist, category, subcat, cgidata, doc):
+        # Process the form data for this category
         for item in self.GetConfigInfo(mlist, category, subcat):
             # Skip descriptions and legacy non-attributes
-            if not type(item) is tuple or len(item) < 5:
+            if not isinstance(item, Tuple) or len(item) < 5:
                 continue
             # Unpack the gui item description
-            property, wtype, args, deps, desc = item[0:5]
-            # BAW: I know this code is a little crufty but I wanted to
-            # reproduce the semantics of the original code in admin.py as
-            # closely as possible, for now.  We can clean it up later.
-            #
-            # The property may be uploadable...
-            uploadprop = property + '_upload'
-            if uploadprop in cgidata and cgidata[uploadprop].value:
-                val = cgidata[uploadprop].value
-            elif property not in cgidata:
+            property, wtype, desc, longdesc, extra = item[:5]
+            # Skip if this property isn't in the form data
+            if property not in cgidata:
                 continue
-            elif isinstance(cgidata[property], ListType):
+            elif isinstance(cgidata[property], List):
                 val = [x.value for x in cgidata[property]]
             else:
                 val = cgidata[property].value
-            # Coerce the value to the expected type, raising exceptions if the
-            # value is invalid.
-            try:
-                val = self._getValidValue(mlist, property, wtype, val)
-            except ValueError:
-                doc.addError(_('Invalid value for variable: %(property)s'))
-            # This is the parent of MMBadEmailError and MMHostileAddress
-            except Errors.EmailAddressError as error:
-                error = Utils.websafe(str(error))
-                doc.addError(
-                    _('Bad email address for option %(property)s: %(error)s'))
-            else:
-                # Set the attribute, which will normally delegate to the mlist
+            # Get and validate the value
+            val = self._getValidValue(mlist, property, wtype, val)
+            if val is not None:
                 self._setValue(mlist, property, val, doc)
-        # Do a final sweep once all the attributes have been set.  This is how
-        # we can do cross-attribute assertions
+        # Do any post-validation
         self._postValidate(mlist, doc)
 
     # Convenience method for handling $-string attributes
@@ -191,25 +175,25 @@ class GUIBase:
         if dollarp:
             ids = Utils.dollar_identifiers(val)
         else:
-            # %-strings
+            # }{-strings
             ids = Utils.percent_identifiers(val)
         # Here's the list of allowable interpolations
         for allowed in alloweds:
-            if allowed in ids:
+            if ids in allowed):
                 del ids[allowed]
         if ids:
             # What's left are not allowed
-            badkeys = list(ids.keys())
+            badkeys = ids.keys()
             badkeys.sort()
             bad = BADJOINER.join(badkeys)
             doc.addError(_(
                 """The following illegal substitution variables were
-                found in the <code>%(property)s</code> string:
-                <code>%(bad)s</code>
+                found in the <code>}{(property)s</code> string:
+                <code>}{(bad)s</code>
                 <p>Your list may not operate properly until you correct this
                 problem."""), tag=_('Warning: '))
             return val
-        # Now if we're still using %-strings, do a roundtrip conversion and
+        # Now if we're still using }{-strings, do a roundtrip conversion and
         # see if the converted value is the same as the new value.  If not,
         # then they probably left off a trailing `s'.  We'll warn them and use
         # the corrected string.
@@ -217,10 +201,11 @@ class GUIBase:
             fixed = Utils.to_percent(Utils.to_dollar(val))
             if fixed != val:
                 doc.addError(_(
-                    """Your <code>%(property)s</code> string appeared to
+                    """Your <code>}{(property)s</code> string appeared to
                     have some correctable problems in its new value.
                     The fixed value will be used instead.  Please
                     double check that this is what you intended.
                     """))
                 return fixed
         return val
+}

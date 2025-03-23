@@ -18,6 +18,11 @@
 """Posting moderation filter.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import re
 from email.mime.message import MIMEMessage
 from email.mime.text import MIMEText
@@ -33,7 +38,6 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.MailList import MailList
 
 
-
 class ModeratedMemberPost(Hold.ModeratedPost):
     # BAW: I wanted to use the reason below to differentiate between this
     # situation and normal ModeratedPost reasons.  Greg Ward and Stonewall
@@ -46,7 +50,6 @@ class ModeratedMemberPost(Hold.ModeratedPost):
     pass
 
 
-
 def process(mlist, msg, msgdata):
     if msgdata.get('approved'):
         return
@@ -73,7 +76,7 @@ def process(mlist, msg, msgdata):
                 # to the notice sent back to the sender?
                 msgdata['sender'] = sender
                 Hold.hold_for_approval(mlist, msg, msgdata,
-                                       ModeratedMemberPost)
+                                     ModeratedMemberPost)
             elif mlist.member_moderation_action == 1:
                 # Reject
                 text = mlist.member_moderation_notice
@@ -135,26 +138,25 @@ def process(mlist, msg, msgdata):
         do_discard(mlist, msg)
 
 
-
 def do_reject(mlist):
     listowner = mlist.GetOwnerEmail()
     if mlist.nonmember_rejection_notice:
-        raise Errors.RejectMessage(Utils.wrap(_(mlist.nonmember_rejection_notice)))
+        raise Errors.RejectMessage(
+            Utils.wrap(_(mlist.nonmember_rejection_notice)))
     else:
         raise Errors.RejectMessage(Utils.wrap(_("""\
 Your message has been rejected, probably because you are not subscribed to the
 mailing list and the list's policy is to prohibit non-members from posting to
 it.  If you think that your messages are being rejected in error, contact the
-mailing list owner at %(listowner)s.""")))
+mailing list owner at {(listowner)s.""")))
 
 
-
 def do_discard(mlist, msg):
     sender = msg.get_sender()
     # Do we forward auto-discards to the list owners?
     if mlist.forward_auto_discards:
         lang = mlist.preferred_language
-        varhelp = '%s/?VARHELP=privacy/sender/discard_these_nonmembers' % \
+        varhelp = '}{s/?VARHELP=privacy/sender/discard_these_nonmembers' }{ \
                   mlist.GetScriptURL('admin', absolute=1)
         nmsg = Message.UserNotification(mlist.GetOwnerEmail(),
                                         mlist.GetBouncesEmail(),
@@ -169,3 +171,4 @@ def do_discard(mlist, msg):
         nmsg.send(mlist)
     # Discard this sucker
     raise Errors.DiscardMessage
+}

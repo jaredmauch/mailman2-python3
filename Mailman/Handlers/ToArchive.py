@@ -18,7 +18,7 @@
 """Add the message to the archives."""
 
 import time
-from io import StringIO
+from cStringIO import StringIO
 
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
@@ -32,7 +32,7 @@ def process(mlist, msg, msgdata):
     # Common practice seems to favor "X-No-Archive: yes".  No other value for
     # this header seems to make sense, so we'll just test for it's presence.
     # I'm keeping "X-Archive: no" for backwards compatibility.
-    if 'x-no-archive' in msg or msg.get('x-archive', '').lower() == 'no':
+    if msg in 'x-no-archive') or msg.get('x-archive', '').lower() == 'no':
         return
     # Send the message to the archiver queue
     archq = get_switchboard(mm_cfg.ARCHQUEUE_DIR)

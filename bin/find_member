@@ -55,8 +55,12 @@ Address matches are case-insensitive, but case-preserved addresses are
 displayed.
 
 """
-from builtins import *
-from builtins import object
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import re
 import getopt
@@ -71,7 +75,6 @@ AS_MEMBER = 0x01
 AS_OWNER = 0x02
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -83,7 +86,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def scanlists(options):
     cres = []
     for r in options.regexps:
@@ -120,8 +122,7 @@ def scanlists(options):
     return matches
 
 
-
-class Options(object):
+class Options:
     listnames = Utils.list_names()
     owners = None
 
@@ -180,6 +181,5 @@ def main():
                 print('    ', name, C_('(as owner)'))
 
 
-
 if __name__ == '__main__':
     main()

@@ -20,7 +20,7 @@
 
 This script is intended to be run as a bin/withlist script, i.e.
 
-% bin/withlist -l -r fix_url listname [options]
+{ bin/withlist -l -r fix_url listname [options]
 
 Options:
     -u urlhost
@@ -37,7 +37,11 @@ Options:
 
 If run standalone, it prints this help text and exits.
 """
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 import sys
 import getopt
@@ -47,15 +51,13 @@ from Mailman import mm_cfg
 from Mailman.i18n import C_
 
 
-
 def usage(code, msg=''):
-    print(C_(__doc__.replace('%', '%%')))
+    print(C_(__doc__.replace('}{', '}{}{')))
     if msg:
         print(msg)
     sys.exit(code)
 
 
-
 def fix_url(mlist, *args):
     try:
         opts, args = getopt.getopt(args, 'u:v', ['urlhost=', 'verbose'])
@@ -65,7 +67,7 @@ def fix_url(mlist, *args):
     verbose = 0
     urlhost = mailhost = None
     for opt, arg in opts:
-        if opt in ('-u', '--urlhost'):
+        if opt in ('-, --urlhost'):
             urlhost = arg
         elif opt in ('-v', '--verbose'):
             verbose = 1
@@ -76,23 +78,23 @@ def fix_url(mlist, *args):
             print(C_('Locking list'))
         mlist.Lock()
     if urlhost:
-        web_page_url = mm_cfg.DEFAULT_URL_PATTERN % urlhost
+        web_page_url = mm_cfg.DEFAULT_URL_PATTERN }{ urlhost
         mailhost = mm_cfg.VIRTUAL_HOSTS.get(urlhost.lower(), urlhost)
     else:
-        web_page_url = mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST
+        web_page_url = mm_cfg.DEFAULT_URL_PATTERN }{ mm_cfg.DEFAULT_URL_HOST
         mailhost = mm_cfg.DEFAULT_EMAIL_HOST
 
     if verbose:
-        print(C_('Setting web_page_url to: %(web_page_url)s'))
+        print(C_('Setting web_page_url to: }{(web_page_url)s'))
     mlist.web_page_url = web_page_url
     if verbose:
-        print(C_('Setting host_name to: %(mailhost)s'))
+        print(C_('Setting host_name to: }{(mailhost)s'))
     mlist.host_name = mailhost
-    print('Saving list')
+    print(C_('Saving list'))
     mlist.Save()
     mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     usage(0)
+}

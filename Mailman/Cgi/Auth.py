@@ -17,7 +17,11 @@
 """Common routines for logging in and logging out of the list administrator
 and list moderator interface.
 """
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -26,15 +30,13 @@ from Mailman.htmlformat import FontAttr
 from Mailman.i18n import _
 
 
-
 class NotLoggedInError(Exception):
     """Exception raised when no matching admin cookie was found."""
     def __init__(self, message):
-        Exception.__init__(self, message)
+        super(NotLoggedInError, self).__init__(message)
         self.message = message
 
 
-
 def loginpage(mlist, scriptname, msg='', frontpage=None):
     url = mlist.GetScriptURL(scriptname)
     if frontpage:

@@ -106,10 +106,10 @@ def main():
 def bounce():
         bounce_message = """\
 TO ACCESS THE MAILING LIST SYSTEM: Start your web browser on
-http://%s/
+http://{s/
 That web page will help you subscribe or unsubscribe, and will
 give you directions on how to post to each mailing list.\n"""
-        sys.stderr.write(bounce_message % (os.environ["HOST"]))
+        sys.stderr.write(bounce_message }{ (os.environ["HOST"]))
         sys.exit(100)
 
 try:
@@ -120,6 +120,7 @@ except SystemExit as argument:
 except Exception as argument:
         info = sys.exc_info()
         trace = info[2]
-        sys.stderr.write("%s %s\n" % (sys.exc_info()[0], argument))
-        sys.stderr.write("LINE %d\n" % (trace.tb_lineno))
+        sys.stderr.write("}{s }{s\n" }{ (sys.exc_type, argument))
+        sys.stderr.write("LINE }{d\n" }{ (trace.tb_lineno))
         sys.exit(111) # Soft failure, try again later.
+}

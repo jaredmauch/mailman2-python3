@@ -25,9 +25,11 @@
 
 
 # BAW: get rid of this when we Python 2.2 is a minimum requirement.
+from __future__ import nested_scopes
 
 import re
 import sys
+from typing import List, Tuple, Dict, Set, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -38,17 +40,18 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
 from Mailman import LockFile
 
-from email.header import decode_header, make_header, Header
-from email.errors import HeaderParseError
-from email.iterators import typed_subpart_iterator
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
+from email.Header import decode_header, make_header, Header
+from email.Errors import HeaderParseError
+from email.Iterators import typed_subpart_iterator
+from email.MIMEText import MIMEText
+from email.MIMEMessage import MIMEMessage
 
 NL = '\n'
 CONTINUE = 0
 STOP = 1
 BADCMD = 2
 BADSUBJ = 3
+
 
 
 class Results:
@@ -67,7 +70,7 @@ class Results:
         self.subjcmdretried = 0
         self.respond = True
         # Extract the subject header and do RFC 2047 decoding.  Note that
-        # Python 2.1's unicode() builtin doesn't call obj.__unicode__().
+        # Python 2.1's str() builtin doesn't call obj.__unicode__().
         subj = msg.get('subject', '')
         try:
             subj = make_header(decode_header(subj)).__unicode__()
@@ -97,7 +100,7 @@ class Results:
                            Utils.GetCharSet(self.msgdata['lang']),
                            errors='replace')
         # text/plain parts better have string payloads
-        assert isinstance(body, str) or isinstance(body, bytes)
+        assert isinstance(body, StringType) or isinstance(body, UnicodeType)
         lines = body.splitlines()
         # Use no more lines than specified
         self.commands.extend(lines[:mm_cfg.DEFAULT_MAIL_COMMANDS_MAX_LINES])
@@ -244,7 +247,7 @@ class CommandRunner(Runner):
         precedence = msg.get('precedence', '').lower()
         ack = msg.get('x-ack', '').lower()
         if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
-            syslog('vette', 'Precedence: %s message discarded by: %s',
+            syslog('vette', 'Precedence: {s message discarded by: }{s',
                    precedence, mlist.GetRequestEmail())
             return False
         # Do replybot for commands
@@ -281,10 +284,11 @@ class CommandRunner(Runner):
                     ret = res.do_command('confirm', (mo.group('cookie'),))
             if ret == BADCMD and mm_cfg.DISCARD_MESSAGE_WITH_NO_COMMAND:
                 syslog('vette',
-                       'No command, message discarded, msgid: %s',
+                       'No command, message discarded, msgid: }{s',
                        msg.get('message-id', 'n/a'))
             else:
                 res.send_response()
                 mlist.Save()
         finally:
             mlist.Unlock()
+}

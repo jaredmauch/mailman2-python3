@@ -17,40 +17,42 @@
 
 """Standard Mailman message object.
 
-This is a subclass of email.message but provides a slightly extended interface
+This is a subclass of email.Message but provides a slightly extended interface
 which is more convenient for use inside Mailman.
 """
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 import re
 from io import StringIO
 
 import email
-import email.generator
-import email.utils
-from email.charset import Charset
-from email.header import Header
+import email.Generator
+import email.Message
+import email.Utils
+from email.Charset import Charset
+from email.Header import Header
 
 from Mailman import mm_cfg
 from Mailman import Utils
 
 COMMASPACE = ', '
 
-if hasattr(email, '__version__'):
-    mo = re.match(r'([\d.]+)', email.__version__)
-else:
-    mo = re.match(r'([\d.]+)', '2.1.39') # XXX should use @@MM_VERSION@@ perhaps?
+mo = re.match(r'([\d.]+)', email.__version__)
 VERSION = tuple([int(s) for s in mo.group().split('.')])
 
 
-
-class Generator(email.generator.Generator):
+class Generator(email.Generator.Generator):
     """Generates output from a Message object tree, keeping signatures.
 
        Headers will by default _not_ be folded in attachments.
     """
     def __init__(self, outfp, mangle_from_=True,
                  maxheaderlen=78, children_maxheaderlen=0):
-        email.generator.Generator.__init__(self, outfp,
+        email.Generator.Generator.__init__(self, outfp,
                 mangle_from_=mangle_from_, maxheaderlen=maxheaderlen)
         self.__children_maxheaderlen = children_maxheaderlen
 
@@ -60,14 +62,13 @@ class Generator(email.generator.Generator):
                 self.__children_maxheaderlen, self.__children_maxheaderlen)
 
 
-
-class Message(email.message.Message):
+class Message(email.Message.Message):
     def __init__(self):
         # We need a version number so that we can optimize __setstate__()
         self.__version__ = VERSION
-        email.message.Message.__init__(self)
+        email.Message.Message.__init__(self)
 
-    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
+    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint(u, end=\'\')ses repr.
     def __repr__(self):
         return self.__str__()
 
@@ -100,7 +101,7 @@ class Message(email.message.Message):
                 chunks = []
                 cchanged = 0
                 for s, charset in v._chunks:
-                    if type(charset) == str:
+                    if isinstance(charset, str):
                         charset = Charset(charset)
                         cchanged = 1
                     chunks.append((s, charset))
@@ -154,7 +155,7 @@ class Message(email.message.Message):
             # decoded before parsing since the decoded header may contain
             # an unquoted comma or other delimiter in a real name.
             fieldval = ''.join(fieldval.splitlines())
-            addrs = email.utils.getaddresses([fieldval])
+            addrs = email.Utils.getaddresses([fieldval])
             try:
                 realname, address = addrs[0]
             except IndexError:
@@ -211,7 +212,7 @@ class Message(email.message.Message):
                     # getaddresses() and multi-line headers
                     fieldvals = [''.join(fv.splitlines())
                                  for fv in fieldvals]
-                    pairs.extend(email.utils.getaddresses(fieldvals))
+                    pairs.extend(email.Utils.getaddresses(fieldvals))
         authors = []
         for pair in pairs:
             address = pair[1]
@@ -225,17 +226,16 @@ class Message(email.message.Message):
         Mailman to stop delivery in Scrubber.py (called from ToDigest.py).
         """
         try:
-            filename = email.message.Message.get_filename(self, failobj)
+            filename = email.Message.Message.get_filename(self, failobj)
             return filename
         except (UnicodeError, LookupError, ValueError):
             return failobj
-
 
     def as_string(self, unixfrom=False, mangle_from_=True):
         """Return entire formatted message as a string using
         Mailman.Message.Generator.
 
-        Operates like email.message.Message.as_string, only
+        Operates like email.Message.Message.as_string, only
         using Mailman's Message.Generator class. Only the top headers will
         get folded.
         """
@@ -245,7 +245,6 @@ class Message(email.message.Message):
         return fp.getvalue()
 
 
-
 class UserNotification(Message):
     """Class for internally crafted messages."""
 
@@ -280,7 +279,7 @@ class UserNotification(Message):
             self['Message-ID'] = Utils.unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
         if 'date' not in self:
-            self['Date'] = email.utils.formatdate(localtime=1)
+            self['Date'] = email.Utils.formatdate(localtime=1)
         # UserNotifications are typically for admin messages, and for messages
         # other than list explosions.  Send these out as Precedence: bulk, but
         # don't override an existing Precedence: header.
@@ -306,7 +305,6 @@ class UserNotification(Message):
                         **_kws)
 
 
-
 class OwnerNotification(UserNotification):
     """Like user notifications, but this message goes to the list owners."""
 
@@ -342,3 +340,17 @@ class OwnerNotification(UserNotification):
                         reduced_list_headers = 1,
                         envsender = self._sender,
                         **_kws)
+
+def _invert_xml(mo):
+    # This is used with re.sub below to convert XML char refs and textual \u
+    # escapes to unicodes.
+    try:
+        if mo.group(1)[:1] == '#':
+            return chr(int(mo.group(1)[1:]))
+        elif mo.group(1)[:1].lower() == ':
+            return chr(int(mo.group(1)[1:], 16))
+        else:
+            return \ufffd'
+    except ValueError:
+        # Value is out of range.  Return the unicode replace character.
+        return '\ufffd'

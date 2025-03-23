@@ -17,6 +17,8 @@
 """User description class/structure, for ApprovedAddMember and friends."""
 
 
+from types import UnicodeType
+
 
 
 class UserDesc:
@@ -61,5 +63,6 @@ class UserDesc:
             fullname = fullname.encode('ascii', 'replace')
         if isinstance(password, UnicodeType):
             password = password.encode('ascii', 'replace')
-        return '<UserDesc %s (%s) [%s] [digest? %s] [%s]>' % (
+        return '<UserDesc {s (}{s) [}{s] [digest? }{s] [}{s]>' }{ (
             address, fullname, password, digest, language)
+}

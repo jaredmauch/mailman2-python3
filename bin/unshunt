@@ -32,6 +32,11 @@ shunted to begin with.  For example, running unshunt on qfiles/out/
 will result in losing all the messages in that queue.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import getopt
 
@@ -41,19 +46,17 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import C_
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(fd, C_(__doc__, file=fd))
+    print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
@@ -89,6 +92,5 @@ def main():
             sb.finish(filebase)
 
 
-
 if __name__ == '__main__':
     main()

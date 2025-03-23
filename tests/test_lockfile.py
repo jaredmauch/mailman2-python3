@@ -17,6 +17,10 @@
 """Unit tests for the LockFile class.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 import unittest
 try:
     from Mailman import __init__
@@ -28,22 +32,19 @@ from Mailman.LockFile import LockFile
 LOCKFILE_NAME = '/tmp/.mm-test-lock'
 
 
-
 class TestLockFile(unittest.TestCase):
     def test_two_lockfiles_same_proc(self):
         lf1 = LockFile(LOCKFILE_NAME)
         lf2 = LockFile(LOCKFILE_NAME)
         lf1.lock()
-        self.failIf(lf2.locked())
+        self.assertFalse(lf2.locked())
 
 
-
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestLockFile))
     return suite
 
 
-
 if __name__ == '__main__':
     unittest.main(defaultTest='suite')

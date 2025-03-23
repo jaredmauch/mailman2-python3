@@ -38,12 +38,12 @@ Options:
         after the options.  If there are no listnames provided, the owners of
         all the lists will be displayed.
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from builtins import *
 import sys
 import getopt
 
@@ -54,7 +54,13 @@ from Mailman.i18n import C_
 
 PROGRAM = sys.argv[0]
 
-
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -66,7 +72,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'wmh',
@@ -114,6 +119,5 @@ def main():
             print(k)
 
 
-
 if __name__ == '__main__':
     main()

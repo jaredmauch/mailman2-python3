@@ -20,8 +20,12 @@
 # Send bug reports or suggestions to Lindsay Haisley <fmouse@fmp.com>
 
 """Show basic statistics about, and build options for this
-installation of Mailman. Requires python 2."""
+installation of Mailman."""
+
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 print("""Configuration and build information for Mailman\n""")
 
@@ -35,7 +39,6 @@ print('mailman_group:   %s' % '@MAILMAN_GROUP@')
 print('mail_group:      %s' % '@MAIL_GROUP@')
 print('cgi_group:       %s' % '@CGI_GROUP@')
 print('')
-
 
 print('configure_opts: "%s"' % '@CONFIGURE_OPTS@')
 

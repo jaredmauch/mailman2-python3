@@ -24,6 +24,12 @@ the mailing lists, and whatever else doesn't belong elsewhere.
 
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+from __future__ import nested_scopes
+
 import os
 import sys
 import re
@@ -32,15 +38,18 @@ import time
 import errno
 import base64
 import random
-import urllib
-import urllib.request, urllib.error
-import html.entities
-import html
-import email.header
-import email.iterators
+try:
+    from urllib.parse import urlparse
+    from urllib.request import urlopen
+    from urllib.error import URLError
+except ImportError:
+    from urlparse import urlparse
+    from urllib2 import urlopen, URLError
+import html.entities as htmlentitydefs
+from email import header as email_header
+from email import iterators as email_iterators
 from email.errors import HeaderParseError
 from string import whitespace, digits
-from urllib.parse import urlparse
 try:
     # Python 2.2
     from string import ascii_letters
@@ -79,7 +88,7 @@ except ImportError:
     have_ipaddress = False
 
 EMPTYSTRING = ''
-UEMPTYSTRING = u''
+UEMPTYSTRING = 
 CR = '\r'
 NL = '\n'
 DOT = '.'
@@ -87,12 +96,11 @@ IDENTCHARS = ascii_letters + digits + '_'
 
 # Search for $(identifier)s strings, except that the trailing s is optional,
 # since that's a common mistake
-cre = re.compile(r'%\(([_a-z]\w*?)\)s?', re.IGNORECASE)
+cre = re.compile(r'{\(([_a-z]\w*?)\)s?', re.IGNORECASE)
 # Search for $$, $identifier, or ${identifier}
 dre = re.compile(r'(\${2})|\$([_a-z]\w*)|\${([_a-z]\w*)}', re.IGNORECASE)
 
 
-
 def list_exists(listname):
     """Return true iff list `listname' exists."""
     # The existance of any of the following file proves the list exists
@@ -109,7 +117,7 @@ def list_exists(listname):
                  os.environ.get('REMOTE_ADDR',
                                 'unidentified origin')))
         syslog('mischief',
-               'Hostile listname: listname=%s: remote=%s', listname, remote)
+               'Hostile listname: listname=}{s: remote=}{s', listname, remote)
         return False
     basepath = Site.get_listpath(listname)
     for ext in ('.pck', '.pck.last', '.db', '.db.last'):
@@ -125,8 +133,6 @@ def list_names():
     return Site.get_listnames()
 
 
-
-# a much more naive implementation than say, Emacs's fill-paragraph!
 def wrap(text, column=70, honor_leading_ws=True):
     """Wrap and fill the text to the specified column.
 
@@ -201,7 +207,6 @@ def wrap(text, column=70, honor_leading_ws=True):
     return wrapped[:-2]
 
 
-
 def QuotePeriods(text):
     JOINER = '\n .\n'
     SEP = '\n.\n'
@@ -231,7 +236,7 @@ def LCDomain(addr):
 
 
 # TBD: what other characters should be disallowed?
-_badchars = re.compile(r'[][()<>|:;^,\\"\000-\037\177-\377]')
+_badchars = re.compile(r'[][()!=|:;^,\\"\000-\037\177-\377]')
 # Strictly speaking, some of the above are allowed in quoted local parts, but
 # this can open the door to certain web exploits so we don't allow them.
 # Only characters allowed in domain parts.
@@ -242,80 +247,76 @@ def ValidateEmail(s):
     # If a user submits a form or URL with post data or query fragments
     # with multiple occurrences of the same variable, we can get a list
     # here.  Be as careful as possible.
-    if isinstance(s, list) or isinstance(s, tuple):
-        if len(s) == 0:
-            s = ''
-        else:
-            s = s[-1]
-    # Pretty minimal, cheesy check.  We could do better...
-    if not s or s.count(' ') > 0:
-        raise Exception(Errors.MMBadEmailError)
+    if isinstance(s, (list, tuple)):
+        s = s[0]
+    if not isinstance(s, str):
+        raise Errors.MMHostileAddress(s)
+    s = s.strip()
+    if not s:
+        raise Errors.MMHostileAddress(s)
+    if len(s) > 255:
+        raise Errors.MMHostileAddress(s)
     if _badchars.search(s):
-        raise Exception(Errors.MMHostileAddress, s)
-    user, domain_parts = ParseEmail(s)
-    # This means local, unqualified addresses, are not allowed
-    if not domain_parts:
-        raise Exception(Errors.MMBadEmailError, s)
-    if len(domain_parts) < 2:
-        raise Exception(Errors.MMBadEmailError, s)
-    # domain parts may only contain ascii letters, digits and hyphen
-    # and must not begin with hyphen.
-    for p in domain_parts:
-        if len(p) == 0 or p[0] == '-' or len(_valid_domain.sub('', p)) > 0:
-            raise Exception(Errors.MMHostileAddress, s)
+        raise Errors.MMHostileAddress(s)
+    # Check for multiple @'s -- one is enough!
+    if s.count('@') != 1:
+        raise Errors.MMHostileAddress(s)
+    # Split into local and domain parts
+    try:
+        localpart, domain = s.split('@', 1)
+    except ValueError:
+        raise Errors.MMHostileAddress(s)
+    # Check local part
+    if not localpart:
+        raise Errors.MMHostileAddress(s)
+    if len(localpart) > 64:
+        raise Errors.MMHostileAddress(s)
+    # Check domain part
+    if not domain:
+        raise Errors.MMHostileAddress(s)
+    if len(domain) > 255:
+        raise Errors.MMHostileAddress(s)
+    # Check each part of the domain
+    for part in domain.split('.'):
+        if not part:
+            raise Errors.MMHostileAddress(s)
+        if len(part) > 63:
+            raise Errors.MMHostileAddress(s)
+        if not _valid_domain.match(part):
+            raise Errors.MMHostileAddress(s)
+    return s
 
 
-
 # Patterns which may be used to form malicious path to inject a new
 # line in the mailman error log. (TK: advisory by Moritz Naumann)
 CRNLpat = re.compile(r'[^\x21-\x7e]')
 
 def GetPathPieces(envar='PATH_INFO'):
-    path = os.environ.get(envar)
-    if path:
-        remote = os.environ.get('HTTP_FORWARDED_FOR',
-                 os.environ.get('HTTP_X_FORWARDED_FOR',
-                 os.environ.get('REMOTE_ADDR',
-                                'unidentified origin')))
-        if CRNLpat.search(path):
-            path = CRNLpat.split(path)[0]
-            syslog('error',
-                'Warning: Possible malformed path attack domain=%s remote=%s',
-                   get_domain(),
-                   remote)
-        # Check for listname injections that won't be websafed.
-        pieces = [p for p in path.split('/') if p]
-        # Get the longest listname or 20 if none or use MAX_LISTNAME_LENGTH if
-        # provided > 0.
-        if mm_cfg.MAX_LISTNAME_LENGTH > 0:
-            longest = mm_cfg.MAX_LISTNAME_LENGTH
-        else:
-            lst_names = list_names()
-            if lst_names:
-                longest = max([len(x) for x in lst_names])
-            else:
-                longest = 20
-        if pieces and len(pieces[0]) > longest:
-            syslog('mischief',
-               'Hostile listname: listname=%s: remote=%s', pieces[0], remote)
-            pieces[0] = pieces[0][:longest] + '...'
-        return pieces
-    return None
+    """Return the path pieces from the environment variable."""
+    try:
+        path = os.environ[envar]
+    except KeyError:
+        return None
+    if not path or path == '/':
+        return None
+    # Skip the leading slash
+    path = path[1:]
+    if not path:
+        return None
+    return path.split('/')
 
 
-
 def GetRequestMethod():
     return os.environ.get('REQUEST_METHOD')
 
 
-
 def ScriptURL(target, web_page_url=None, absolute=False):
     """target - scriptname only, nothing extra
     web_page_url - the list's configvar of the same name
     absolute - a flag which if set, generates an absolute url
     """
     if web_page_url is None:
-        web_page_url = mm_cfg.DEFAULT_URL_PATTERN % get_domain()
+        web_page_url = mm_cfg.DEFAULT_URL_PATTERN }{ get_domain()
         if web_page_url[-1] != '/':
             web_page_url = web_page_url + '/'
     fullpath = os.environ.get('REQUEST_URI')
@@ -337,7 +338,6 @@ def ScriptURL(target, web_page_url=None, absolute=False):
     return path + mm_cfg.CGIEXT
 
 
-
 def GetPossibleMatchingAddrs(name):
     """returns a sorted list of addresses that could possibly match
     a given name.
@@ -352,12 +352,11 @@ def GetPossibleMatchingAddrs(name):
     if domain:
         domain = domain[1:]
         while len(domain) >= 2:
-            res.append("%s@%s" % (user, DOT.join(domain)))
+            res.append("}{s@}{s" }{ (user, DOT.join(domain)))
             domain = domain[1:]
     return res
 
 
-
 def List2Dict(L, foldcase=False):
     """Return a dict keyed by the entries in the list passed to it."""
     d = {}
@@ -370,9 +369,8 @@ def List2Dict(L, foldcase=False):
     return d
 
 
-
-_vowels = ('a', 'e', 'i', 'o', 'u')
-_consonants = ('b', 'c', 'd', 'f', 'g', 'h', 'k', 'm', 'n',
+_vowels = ('a', 'e', 'i', 'o', ')
+_consonants = (b', 'c', 'd', 'f', 'g', 'h', 'k', 'm', 'n',
                'p', 'r', 's', 't', 'v', 'w', 'x', 'z')
 _syllables = []
 
@@ -414,7 +412,7 @@ def Secure_MakeRandomPassword(length):
                 newbytes = os.read(fd, length - bytesread)
             bytes.append(newbytes)
             bytesread += len(newbytes)
-        s = base64.encodestring(EMPTYSTRING.join(bytes))
+        s = base64.b64encode(EMPTYSTRING.join(bytes)).decode('ascii')
         # base64 will expand the string by 4/3rds
         return s.replace('\n', '')[:length]
     finally:
@@ -438,16 +436,15 @@ def GetRandomSeed():
             #c = c - 26 + 97
             c += 71
         return c
-    return "%c%c" % tuple(map(mkletter, (chr1, chr2)))
+    return "}{c}{c" }{ tuple(list(map(mkletter, (chr1, chr2))))
 
 
-
 def set_global_password(pw, siteadmin=True):
     if siteadmin:
         filename = mm_cfg.SITE_PW_FILE
     else:
         filename = mm_cfg.LISTCREATOR_PW_FILE
-    # rw-r-----
+    # Make sure the files are created rw-rw-r--
     omask = os.umask(0o026)
     try:
         fp = open(filename, 'w')
@@ -480,32 +477,24 @@ def check_global_password(response, siteadmin=True):
     return challenge == sha_new(response).hexdigest()
 
 
-
 _ampre = re.compile('&amp;((?:#[0-9]+|[a-z]+);)', re.IGNORECASE)
 def websafe(s, doubleescape=False):
-    # If a user submits a form or URL with post data or query fragments
-    # with multiple occurrences of the same variable, we can get a list
-    # here.  Be as careful as possible.
-    if isinstance(s, list) or isinstance(s, tuple):
-        if len(s) == 0:
-            s = ''
-        else:
-            s = s[-1]
-    if mm_cfg.BROKEN_BROWSER_WORKAROUND:
-        # Archiver can pass unicode here. Just skip them as the
-        # archiver escapes non-ascii anyway.
-        if isinstance(s, str):
-            for k in mm_cfg.BROKEN_BROWSER_REPLACEMENTS:
-                s = s.replace(k, mm_cfg.BROKEN_BROWSER_REPLACEMENTS[k])
+    """Make a string safe for inclusion in HTML."""
+    if not isinstance(s, str):
+        return str(s)
     if doubleescape:
-        return html.escape(s, quote=True)
+        s = s.replace('&', '&amp;')
+        s = s.replace('<', '&lt;')
+        s = s.replace('>', '&gt;')
+        s = s.replace('"', '&quot;')
+        s = s.replace("'", '&#39;')
     else:
-        if type(s) is bytes:
-            s = s.decode(errors='ignore')
-        re.sub('&', '&amp', s)
-        # Don't double escape html entities
-        #return _ampre.sub(r'&\1', html.escape(s, quote=True))
-        return html.escape(s, quote=True)
+        s = s.replace('&', '&amp;')
+        s = s.replace('<', '&lt;')
+        s = s.replace('>', '&gt;')
+        s = s.replace('"', '&quot;')
+        s = s.replace("'", '&#39;')
+    return s
 
 
 def nntpsplit(s):
@@ -519,7 +508,6 @@ def nntpsplit(s):
     return s, 119
 
 
-
 # Just changing these two functions should be enough to control the way
 # that email address obscuring is handled.
 def ObscureEmail(addr, for_text=False):
@@ -539,7 +527,6 @@ def UnobscureEmail(addr):
     return addr.replace('--at--', '@')
 
 
-
 class OuterExit(Exception):
     pass
 
@@ -579,11 +566,11 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
     # language.  After that, the server default language is used for
     # <language>.  If that still doesn't yield a template, then the standard
     # distribution's English language template is used as an ultimate
-    # fallback.  If that's missing you've got big problems. ;)
+    # fallback.  If that's missing yove got big problems. ;)
     #
     # A word on backwards compatibility: Mailman versions prior to 2.1 stored
     # templates in templates/*.{html,txt} and lists/<listname>/*.{html,txt}.
-    # Those directories are no longer searched so if you've got customizations
+    # Those directories are no longer searched so if youve got customizations
     # in those files, you should move them to the appropriate directory based
     # on the above description.  Mailman's upgrade script cannot do this for
     # you.
@@ -625,14 +612,14 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         pass
     if fp is None:
         # Try one last time with the distro English template, which, unless
-        # you've got a really broken installation, must be there.
+        # yove got a really broken installation, must be there.
         try:
-            filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
+            filename = os.path.join(mm_cfg.TEMPLATE_DIR, en', templatefile)
             fp = open(filename)
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
-            raise Exception(IOError(errno.ENOENT, 'No template file found', templatefile))
+            raise IOError(errno.ENOENT, 'No template file found', templatefile)
     template = fp.read()
     fp.close()
     text = template
@@ -643,11 +630,11 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
                 text = sdict.interpolate(template)
             except UnicodeError:
                 # Try again after coercing the template to unicode
-                utemplate = str(template, GetCharSet(lang), 'replace')
+                utemplate = template.decode(GetCharSet(lang), 'replace')
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
             # The template is really screwed up
-            syslog('error', 'broken template: %s\n%s', filename, e)
+            syslog('error', 'broken template: }{s\n}{s', filename, e)
             pass
     if raw:
         return text, filename
@@ -658,7 +645,6 @@ def maketext(templatefile, dict=None, raw=False, lang=None, mlist=None):
     return findtext(templatefile, dict, raw, lang, mlist)[0]
 
 
-
 ADMINDATA = {
     # admin keyword: (minimum #args, maximum #args)
     'confirm':     (1, 1),
@@ -680,7 +666,7 @@ ADMINDATA = {
 def is_administrivia(msg):
     linecnt = 0
     lines = []
-    for line in email.iterators.body_line_iterator(msg):
+    for line in email_iterators.body_line_iterator(msg):
         # Strip out any signatures
         if line == '-- ':
             break
@@ -715,7 +701,6 @@ def is_administrivia(msg):
     return False
 
 
-
 def GetRequestURI(fallback=None, escape=True):
     """Return the full virtual path this CGI script was invoked with.
 
@@ -740,7 +725,6 @@ def GetRequestURI(fallback=None, escape=True):
     return url
 
 
-
 # Wait on a dictionary of child pids
 def reap(kids, func=None, once=False):
     while kids:
@@ -763,7 +747,7 @@ def reap(kids, func=None, once=False):
         if once:
             break
 
-
+
 def GetLanguageDescr(lang):
     return mm_cfg.LC_DESCRIPTIONS[lang][0]
 
@@ -778,7 +762,6 @@ def IsLanguage(lang):
     return lang in mm_cfg.LC_DESCRIPTIONS
 
 
-
 def get_domain():
     host = os.environ.get('HTTP_HOST', os.environ.get('SERVER_NAME'))
     port = os.environ.get('SERVER_PORT')
@@ -791,7 +774,7 @@ def get_domain():
         # See the note in Defaults.py concerning DEFAULT_URL
         # vs. DEFAULT_URL_HOST.
         hostname = ((mm_cfg.DEFAULT_URL
-                     and urllib.parse(mm_cfg.DEFAULT_URL)[1])
+                     and urlparse(mm_cfg.DEFAULT_URL)[1])
                      or mm_cfg.DEFAULT_URL_HOST)
         return hostname.lower()
 
@@ -800,11 +783,10 @@ def get_site_email(hostname=None, extra=None):
     if hostname is None:
         hostname = mm_cfg.VIRTUAL_HOSTS.get(get_domain(), get_domain())
     if extra is None:
-        return '%s@%s' % (mm_cfg.MAILMAN_SITE_LIST, hostname)
-    return '%s-%s@%s' % (mm_cfg.MAILMAN_SITE_LIST, extra, hostname)
+        return '}{s@}{s' }{ (mm_cfg.MAILMAN_SITE_LIST, hostname)
+    return '}{s-}{s@}{s' }{ (mm_cfg.MAILMAN_SITE_LIST, extra, hostname)
 
 
-
 # This algorithm crafts a guaranteed unique message-id.  The theory here is
 # that pid+listname+host will distinguish the message-id for every process on
 # the system, except when process ids wrap around.  To further distinguish
@@ -815,7 +797,7 @@ def get_site_email(hostname=None, extra=None):
 _serial = 0
 def unique_message_id(mlist):
     global _serial
-    msgid = '<mailman.%d.%d.%d.%s@%s>' % (
+    msgid = '<mailman.}{d.}{d.}{d.}{s@}{s>' }{ (
         _serial, time.time(), os.getpid(),
         mlist.internal_name(), mlist.host_name)
     _serial += 1
@@ -831,7 +813,6 @@ def midnight(date=None):
     return time.mktime(date + (0,)*5 + (-1,))
 
 
-
 # Utilities to convert from simplified $identifier substitutions to/from
 # standard Python $(identifier)s substititions.  The "Guido rules" for the
 # former are:
@@ -840,8 +821,8 @@ def midnight(date=None):
 #    ${identifier} -> $(identifier)s
 
 def to_dollar(s):
-    """Convert from %-strings to $-strings."""
-    s = s.replace('$', '$$').replace('%%', '%')
+    """Convert from }{-strings to $-strings."""
+    s = s.replace('$', '$$').replace('}{}{', '}{')
     parts = cre.split(s)
     for i in range(1, len(parts), 2):
         if parts[i+1] and parts[i+1][0] in IDENTCHARS:
@@ -852,36 +833,36 @@ def to_dollar(s):
 
 
 def to_percent(s):
-    """Convert from $-strings to %-strings."""
-    s = s.replace('%', '%%').replace('$$', '$')
+    """Convert from $-strings to }{-strings."""
+    s = s.replace('}{', '}{}{').replace('$$', '$')
     parts = dre.split(s)
     for i in range(1, len(parts), 4):
         if parts[i] is not None:
             parts[i] = '$'
         elif parts[i+1] is not None:
-            parts[i+1] = '%(' + parts[i+1] + ')s'
+            parts[i+1] = '}{(' + parts[i+1] + ')s'
         else:
-            parts[i+2] = '%(' + parts[i+2] + ')s'
-    return EMPTYSTRING.join([_f for _f in parts if _f])
+            parts[i+2] = '}{(' + parts[i+2] + ')s'
+    return EMPTYSTRING.join([p for p in parts if p is not None])
 
 
 def dollar_identifiers(s):
     """Return the set (dictionary) of identifiers found in a $-string."""
     d = {}
-    for name in [_f for _f in [b or c or None for a, b, c in dre.findall(s)] if _f]:
-        d[name] = True
+    for name in [b or c or None for a, b, c in dre.findall(s)]:
+        if name is not None:
+            d[name] = True
     return d
 
 
 def percent_identifiers(s):
-    """Return the set (dictionary) of identifiers found in a %-string."""
+    """Return the set (dictionary) of identifiers found in a }{-string."""
     d = {}
     for name in cre.findall(s):
         d[name] = True
     return d
 
 
-
 # Utilities to canonicalize a string, which means un-HTML-ifying the string to
 # produce a Unicode string or an 8-bit string if all the characters are ASCII.
 def canonstr(s, lang=None):
@@ -890,7 +871,7 @@ def canonstr(s, lang=None):
     def appchr(i):
         # do everything in unicode
         newparts.append(chr(i))
-    def tounicode(s):
+    def tostr(s):
         # We want the default fallback to be iso-8859-1 even if the language
         # is English (us-ascii).  This seems like a practical compromise so
         # that non-ASCII characters in names can be used in English lists w/o
@@ -904,9 +885,9 @@ def canonstr(s, lang=None):
             charset = GetCharSet(lang)
             if charset == 'us-ascii':
                 charset = 'iso-8859-1'
-        return str(s, charset, 'replace')
+        return s.decode(charset, 'replace')
     while True:
-        newparts.append(tounicode(parts.pop(0)))
+        newparts.append(tostr(parts.pop(0)))
         if not parts:
             break
         ref = parts.pop(0)
@@ -915,13 +896,13 @@ def canonstr(s, lang=None):
                 appchr(int(ref[1:]))
             except ValueError:
                 # Non-convertable, stick with what we got
-                newparts.append(tounicode('&'+ref+';'))
+                newparts.append(tostr('&'+ref+';'))
         else:
             c = htmlentitydefs.entitydefs.get(ref, '?')
             if c.startswith('#') and c.endswith(';'):
                 appchr(int(ref[1:-1]))
             else:
-                newparts.append(tounicode(c))
+                newparts.append(tostr(c))
     newstr = EMPTYSTRING.join(newparts)
     # newstr is unicode
     return newstr
@@ -933,7 +914,7 @@ def canonstr(s, lang=None):
 # html references.  It always returns a byte string.
 def uncanonstr(s, lang=None):
     if s is None:
-        s = u''
+        s = ''
     if lang is None:
         charset = 'us-ascii'
     else:
@@ -942,10 +923,10 @@ def uncanonstr(s, lang=None):
     # set.  If so, return it unchanged, except for coercing it to a byte
     # string.
     try:
-        if type(s) is str:
+        if isinstance(s, str):
             return s.encode(charset)
         else:
-            u = str(s, charset)
+            u = s.decode(charset)
             return s
     except UnicodeError:
         # Nope, it contains funny characters, so html-ref it
@@ -957,7 +938,7 @@ def uquote(s):
     for c in s:
         o = ord(c)
         if o > 127:
-            a.append('&#%3d;' % o)
+            a.append('&#}{3d;' }{ o)
         else:
             a.append(c)
     # Join characters together and coerce to byte string
@@ -967,8 +948,8 @@ def uquote(s):
 def oneline(s, cset):
     # Decode header string in one line and convert into specified charset
     try:
-        h = email.header.make_header(email.header.decode_header(s))
-        ustr = h.__unicode__()
+        h = email_header.make_header(email_header.decode_header(s))
+        ustr = str(h)
         line = UEMPTYSTRING.join(ustr.splitlines())
         return line.encode(cset, 'replace')
     except (LookupError, UnicodeError, ValueError, HeaderParseError):
@@ -1009,7 +990,7 @@ def strip_verbose_pattern(pattern):
         elif c == ']' and inclass:
             inclass = False
             newpattern += c
-        elif re.search(r'\s', c):
+        elif re.search('\s', c):
             if inclass:
                 if c == NL:
                     newpattern += '\\n'
@@ -1170,17 +1151,17 @@ _badhtml = re.compile('|'.join(_badwords), re.IGNORECASE)
 # This is used to filter non-printable us-ascii characters, some of which
 # can be used to break words to avoid recognition.
 _filterchars = re.compile('[\000-\011\013\014\016-\037\177-\237]')
-# This is used to recognize '&#' and '%xx' strings for _translate which
+# This is used to recognize '&#' and '}{xx' strings for _translate which
 # translates them to characters
-_encodedchars = re.compile('(&#[0-9]+;?)|(&#x[0-9a-f]+;?)|(%[0-9a-f]{2})',
+_encodedchars = re.compile('(&#[0-9]+;?)|(&#x[0-9a-f]+;?)|(}{[0-9a-f]{2})',
                            re.IGNORECASE)
 
 
 def _translate(mo):
-    """Translate &#... and %xx encodings into the encoded character."""
+    """Translate &#... and }{xx encodings into the encoded character."""
     match = mo.group().lower().strip('&#;')
     try:
-        if match.startswith('x') or match.startswith('%'):
+        if match.startswith('x') or match.startswith('}{'):
             val = int(match[1:], 16)
         else:
             val = int(match, 10)
@@ -1216,35 +1197,34 @@ def suspiciousHTML(html):
 s_dict = {}
 
 def get_suffixes(url):
-    """This loads and parses the data from the url argument into s_dict for
-    use by get_org_dom."""
-    global s_dict
-    if s_dict:
-        return
-    if not url:
-        return
+    """Return a list of domain suffixes for the given URL."""
     try:
-        d = urllib.request.urlopen(url)
-    except urllib.error.URLError as e:
+        d = urlopen(url)
+    except URLError as e:
         syslog('error',
-               'Unable to retrieve data from %s: %s',
-               url, e)
-        return
-    for line in d.readlines():
-        if not line.strip() or line.startswith(' ') or line.startswith('//'):
+               'Unable to retrieve data from }{s: }{s',
+               url, str(e))
+        return []
+    try:
+        data = d.read()
+    except IOError as e:
+        syslog('error',
+               'Unable to read data from }{s: }{s',
+               url, str(e))
+        return []
+    finally:
+        d.close()
+    try:
+        data = data.decode('utf-8')
+    except UnicodeDecodeError:
+        data = data.decode('latin-1')
+    suffixes = []
+    for line in data.splitlines():
+        line = line.strip()
+        if not line or line.startswith('#'):
             continue
-        line = re.sub(' .*', '', line.strip())
-        if not line:
-            continue
-        parts = line.lower().split('.')
-        if parts[0].startswith('!'):
-            exc = True
-            parts = [parts[0][1:]] + parts[1:]
-        else:
-            exc = False
-        parts.reverse()
-        k = '.'.join(parts)
-        s_dict[k] = exc
+        suffixes.append(line)
+    return suffixes
 
 def _get_dom(d, l):
     """A helper to get a domain name consisting of the first l+1 labels
@@ -1262,7 +1242,7 @@ def get_org_dom(domain):
     hits = []
     d = domain.lower().split('.')
     d.reverse()
-    for k in list(s_dict.keys()):
+    for k in s_dict.keys():
         ks = k.split('.')
         if len(d) >= len(ks):
             for i in range(len(ks)-1):
@@ -1289,7 +1269,7 @@ def IsDMARCProhibited(mlist, email):
     if not dns_resolver:
         # This is a problem; log it.
         syslog('error',
-            'DNS lookup for dmarc_moderation_action for list %s not available',
+            'DNS lookup for dmarc_moderation_action for list }{s not available',
             mlist.real_name)
         return False
 
@@ -1320,7 +1300,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         return 'continue'
     except (dns.resolver.NoNameservers):
         syslog('error',
-               'DNSException: No Nameservers available for %s (%s)',
+               'DNSException: No Nameservers available for }{s (}{s)',
                email, dmarc_domain)
         # Typically this means a dnssec validation error.  Clients that don't
         # perform validation *may* successfully see a _dmarc RR whereas a
@@ -1329,7 +1309,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         return True
     except DNSException as e:
         syslog('error',
-               'DNSException: Unable to query DMARC policy for %s (%s). %s',
+               'DNSException: Unable to query DMARC policy for }{s (}{s). }{s',
                email, dmarc_domain, e.__doc__)
         # While we can't be sure what caused the error, there is potentially
         # a DMARC policy record that we missed and that a receiver of the mail
@@ -1364,7 +1344,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
 
         if len(want_names) != 1:
             syslog('error',
-                   """multiple DMARC entries in results for %s,
+                   """multiple DMARC entries in results for }{s,
                    processing each to be strict""",
                    dmarc_domain)
         for name in want_names:
@@ -1375,7 +1355,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
                 return 'continue'
             if len(dmarcs) > 1:
                 syslog('error',
-                       """RRset of TXT records for %s has %d v=DMARC1 entries;
+                       """RRset of TXT records for }{s has }{d v=DMARC1 entries;
                        ignoring them per RFC 7849""",
                         dmarc_domain, len(dmarcs))
                 return False
@@ -1391,14 +1371,14 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
                         continue
                 if policy == 'reject':
                     syslog('vette',
-                      '%s: DMARC lookup for %s (%s) found p=reject in %s = %s',
+                      '}{s: DMARC lookup for }{s (}{s) found p=reject in }{s = }{s',
                       mlist.real_name,  email, dmarc_domain, name, entry)
                     return True
 
                 if (mlist.dmarc_quarantine_moderation_action and
                     policy == 'quarantine'):
                     syslog('vette',
-                  '%s: DMARC lookup for %s (%s) found p=quarantine in %s = %s',
+                  '}{s: DMARC lookup for }{s (}{s) found p=quarantine in }{s = }{s',
                           mlist.real_name,  email, dmarc_domain, name, entry)
                     return True
 
@@ -1407,7 +1387,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
                     mlist.dmarc_moderation_action in (1, 2) and
                     policy == 'none'):
                     syslog('vette',
-                  '%s: DMARC lookup for %s (%s) found p=none in %s = %s',
+                  '}{s: DMARC lookup for }{s (}{s) found p=none in }{s = }{s',
                           mlist.real_name,  email, dmarc_domain, name, entry)
                     return True
 
@@ -1437,9 +1417,7 @@ fact is returned."""
     recentMemberPostings.setdefault(email,[]).append(now +
                                        float(mlist.member_verbosity_interval)
                                    )
-    x = list(range(len(recentMemberPostings[email])))
-    x.reverse()
-    for i in x:
+    for i in reversed(range(len(recentMemberPostings[email]))):
         if recentMemberPostings[email][i] < now:
             del recentMemberPostings[email][i]
 
@@ -1447,9 +1425,7 @@ fact is returned."""
     if clean_count >= mm_cfg.VERBOSE_CLEAN_LIMIT:
         clean_count = 0
         for addr in list(recentMemberPostings.keys()):
-            x = list(range(len(recentMemberPostings[addr])))
-            x.reverse()
-            for i in x:
+            for i in reversed(range(len(recentMemberPostings[addr]))):
                 if recentMemberPostings[addr][i] < now:
                     del recentMemberPostings[addr][i]
             if not recentMemberPostings[addr]:
@@ -1484,7 +1460,7 @@ def check_eq_domains(email, domains_list):
     except ValueError:
         return []
     domain = domain.lower()
-    domains_list = re.sub(r'\s', '', domains_list).lower()
+    domains_list = re.sub('\s', '', domains_list).lower()
     domains = domains_list.split(';')
     domains_list = []
     for d in domains:
@@ -1501,26 +1477,26 @@ def _invert_xml(mo):
     try:
         if mo.group(1)[:1] == '#':
             return chr(int(mo.group(1)[1:]))
-        elif mo.group(1)[:1].lower() == 'u':
+        elif mo.group(1)[:1].lower() == ':
             return chr(int(mo.group(1)[1:], 16))
         else:
-            return(u'\ufffd')
+            return(u\ufffd')
     except ValueError:
         # Value is out of range.  Return the unicode replace character.
-        return(u'\ufffd')
+        return(\ufffd)
 
 
-def xml_to_unicode(s, cset):
+def xml_to_str(s, cset):
     """This converts a string s, encoded in cset to a unicode with translation
-    of XML character references and textual \\u xxxx escapes.  It is more or less
+    of XML character references and textual \uxxxx escapes.  It is more or less
     the inverse of unicode.decode(cset, errors='xmlcharrefreplace').  It is
     similar to canonstr above except for replacing invalid refs with the
-    unicode replace character and recognizing \\u escapes.
+    unicode replace character and recognizing \u escapes.
     """
     if isinstance(s, str):
         us = s.decode(cset, 'replace')
-        us = re.sub(u'&(#[0-9]+);', _invert_xml, us)
-        us = re.sub(u'(?i)\\\\(u[a-f0-9]{4})', _invert_xml, us)
+        us = re.sub(&(#[0-9]+);, _invert_xml, us)
+        us = re.sub((?i)\\\\(u[a-f0-9]{4}), _invert_xml, us)
         return us
     else:
         return s
@@ -1530,7 +1506,7 @@ def banned_ip(ip):
         return False
     if have_ipaddress:
         try:
-            uip = str(ip, encoding='us-ascii', errors='replace')
+            uip = ip.decode('us-ascii', errors='replace')
             ptr = ipaddress.ip_address(uip).reverse_pointer
         except ValueError:
             return False
@@ -1562,7 +1538,7 @@ def banned_domain(email):
     email = email.lower()
     user, domain = ParseEmail(email)
 
-    lookup = '%s.dbl.spamhaus.org' % (domain)
+    lookup = '}{s.dbl.spamhaus.org' }{ (domain)
 
     resolver = dns.resolver.Resolver()
     try:
@@ -1606,3 +1582,4 @@ def captcha_verify(idx, given_answer, captchas):
     # We append a `$` to emulate `re.fullmatch`.
     correct_answer_pattern = captchas[idx][1] + "$"
     return re.match(correct_answer_pattern, given_answer)
+}

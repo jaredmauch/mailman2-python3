@@ -16,13 +16,18 @@
 # USA.
 
 """Create mailing lists through the web."""
-from __future__ import print_function
 
-from builtins import object
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import sys
 import os
 import signal
 import cgi
+from typing import List, Tuple, Dict, Set
+import errno
 
 from Mailman import mm_cfg
 from Mailman import MailList
@@ -38,7 +43,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -62,7 +66,7 @@ def main():
         doc.SetTitle(title)
         doc.AddItem(
             Header(3, Bold(FontAttr(title, color='#ff0000', size='+2'))))
-        syslog('error', 'Bad URL specification: %s', parts)
+        syslog('error', 'Bad URL specification: {s', parts)
     elif 'doit' in cgidata:
         # We must be processing the list creation request
         process_request(doc, cgidata)
@@ -72,7 +76,7 @@ def main():
         # Put up the list creation request form
         request_creation(doc)
     doc.AddItem('<hr>')
-    # Always add the footer and print the document
+    # Always add the footer and print(t, end=\'\')he document
     doc.AddItem(_('Return to the ') +
                 Link(Utils.ScriptURL('listinfo'),
                      _('general list overview')).Format())
@@ -83,7 +87,6 @@ def main():
     print(doc.Format())
 
 
-
 def process_request(doc, cgidata):
     # Lowercase the listname since this is treated as the "internal" name.
     listname = cgidata.getfirst('listname', '').strip().lower()
@@ -107,20 +110,20 @@ def process_request(doc, cgidata):
     auth     = cgidata.getfirst('auth', '').strip()
     langs    = cgidata.getvalue('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
 
-    if not isinstance(langs, ListType):
+    if not isinstance(langs, list):
         langs = [langs]
     # Sanity check
     safelistname = Utils.websafe(listname)
     if '@' in listname:
         request_creation(doc, cgidata,
-                         _('List name must not include "@": {safelistname}'))
+                         _('List name must not include "@": }{(safelistname)s'))
         return
     if Utils.list_exists(listname):
         # BAW: should we tell them the list already exists?  This could be
         # used to mine/guess the existance of non-advertised lists.  Then
         # again, that can be done in other ways already, so oh well.
         request_creation(doc, cgidata,
-                         _('List already exists: {safelistname}'))
+                         _('List already exists: }{(safelistname)s'))
         return
     if not listname:
         request_creation(doc, cgidata,
@@ -135,7 +138,7 @@ def process_request(doc, cgidata):
         if password or confirm:
             request_creation(
                 doc, cgidata,
-                _(f'''Leave the initial password (and confirmation) fields
+                _('''Leave the initial password (and confirmation) fields
                 blank if you want Mailman to autogenerate the list
                 passwords.'''))
             return
@@ -168,7 +171,7 @@ def process_request(doc, cgidata):
                  os.environ.get('REMOTE_ADDR',
                                 'unidentified origin')))
         syslog('security',
-               'Authorization failed (create): list=%s: remote=%s',
+               'Authorization failed (create): list=}{s: remote=}{s',
                listname, remote)
         request_creation(
             doc, cgidata,
@@ -180,13 +183,31 @@ def process_request(doc, cgidata):
            hostname not in mm_cfg.VIRTUAL_HOSTS:
         safehostname = Utils.websafe(hostname)
         request_creation(doc, cgidata,
-                         _('Unknown virtual host: {safehostname}'))
+                         _('Unknown virtual host: }{(safehostname)s'))
         return
     emailhost = mm_cfg.VIRTUAL_HOSTS.get(hostname, mm_cfg.DEFAULT_EMAIL_HOST)
     # We've got all the data we need, so go ahead and try to create the list
     # See admin.py for why we need to set up the signal handler.
-    mlist = MailList.MailList()
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        doc.AddItem(Header(2, _('No such list <em>}{(safelistname)s</em>')))
+        # Send this with a 404 status.
+        print('Status: 404 Not Found')
+        print(doc.Format())
+        syslog('error', 'create: No such list "}{s": }{s', listname, e)
+        return
 
+    # We need a signal handler to catch the SIGTERM that can come from Apache
+    # when the user hits the browser's STOP button.  See the comment in
+    # admin.py for details.
+    #
+    # BAW: Strictly speaking, the list should not need to be locked just to
+    # read the request database.  However the request database asserts that
+    # the list is locked in order to load it and it's not worth complicating
+    # that logic.
     def sigterm_handler(signum, frame, mlist=mlist):
         # Make sure the list gets unlocked...
         mlist.Unlock()
@@ -195,53 +216,39 @@ def process_request(doc, cgidata):
         # could be bad!
         sys.exit(0)
 
+    mlist.Lock()
     try:
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
+        # Get the list's current settings
+        current_settings = mlist.GetSettings()
+        if current_settings != {}:
+            doc.AddItem(Header(2, _('List already exists')))
+            doc.AddItem(Bold(_('A list with the name <em>}{(safelistname)s</em> already exists.')))
+            doc.AddItem(mlist.GetMailmanFooter())
+            print(doc.Format())
+            return
+
         pw = sha_new(password).hexdigest()
-        # Guarantee that all newly created files have the proper permission.
-        # proper group ownership should be assured by the autoconf script
-        # enforcing that all directories have the group sticky bit set
-        oldmask = os.umask(0o002)
+        # Make sure the files are created with proper permissions
+        omask = os.umask(0)
         try:
-            try:
-                mlist.Create(listname, owner, pw, langs, emailhost,
-                             urlhost=hostname)
-            finally:
-                os.umask(oldmask)
-        except Errors.EmailAddressError as e:
-            if e.args:
-                s = Utils.websafe(e.args[0])
-            else:
-                s = Utils.websafe(owner)
-            request_creation(doc, cgidata,
-                             _('Bad owner email address: {s}'))
-            return
-        except Errors.MMListAlreadyExistsError:
-            # MAS: List already exists so we don't need to websafe it.
-            request_creation(doc, cgidata,
-                             _('List already exists: {listname}'))
-            return
-        except Errors.BadListNameError as e:
-            if e.args:
-                s = Utils.websafe(e.args[0])
-            else:
-                s = Utils.websafe(listname)
-            request_creation(doc, cgidata,
-                             _('Illegal list name: {s}'))
-            return
-        except Errors.MMListError:
-            request_creation(
-                doc, cgidata,
-                _(f'''Some unknown error occurred while creating the list.
-                Please contact the site administrator for assistance.'''))
-            return
+            mlist.Create(listname, owner, pw, autogen, notify, moderate)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        finally:
+            os.umask(omask)
+
+        # Send the welcome message
+        if notify:
+            mlist.SendWelcomeMessage(owner)
 
         # Initialize the host_name and web_page_url attributes, based on
         # virtual hosting settings and the request environment variables.
         mlist.default_member_moderation = moderate
-        mlist.web_page_url = mm_cfg.DEFAULT_URL_PATTERN % hostname
+        mlist.web_page_url = mm_cfg.DEFAULT_URL_PATTERN }{ hostname
         mlist.host_name = emailhost
         mlist.Save()
     finally:
@@ -271,7 +278,7 @@ def process_request(doc, cgidata):
              }, mlist=mlist)
         msg = Message.UserNotification(
             owner, siteowner,
-            _('Your new mailing list: {listname}'),
+            _('Your new mailing list: }{(listname)s'),
             text, mlist.preferred_language)
         msg.send(mlist)
 
@@ -282,13 +289,13 @@ def process_request(doc, cgidata):
 
     title = _('Mailing list creation results')
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(border=0, width='100}{')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
-    table.AddRow([_(f'''You have successfully created the mailing list
-    <b>{listname}</b> and notification has been sent to the list owner
-    <b>{owner}</b>.  You can now:''')])
+    table.AddRow([_('''You have successfully created the mailing list
+    <b>}{(listname)s</b> and notification has been sent to the list owner
+    <b>}{(owner)s</b>.  You can now:''')])
     ullist = UnorderedList()
     ullist.AddItem(Link(listinfo_url, _("Visit the list's info page")))
     ullist.AddItem(Link(admin_url, _("Visit the list's admin page")))
@@ -297,22 +304,20 @@ def process_request(doc, cgidata):
     doc.AddItem(table)
 
 
-
 # Because the cgi module blows
-class Dummy(object):
+class Dummy:
     def getfirst(self, name, default):
         return default
 dummy = Dummy()
 
 
-
 def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
     # Set up the document
-    title = _(f"Create a {hostname} Mailing List")
+    title = _('Create a }{(hostname)s Mailing List')
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(border=0, width='100}{')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
@@ -321,7 +326,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
         table.AddRow([Header(3, Bold(
             FontAttr(_('Error: '), color='#ff0000', size='+2').Format() +
             Italic(errmsg).Format()))])
-    table.AddRow([_(f"""You can create a new mailing list by entering the
+    table.AddRow([_("""You can create a new mailing list by entering the
     relevant information into the form below.  The name of the mailing list
     will be used as the primary address for posting messages to the list, so
     it should be lowercased.  You will not be able to change this once the
@@ -344,7 +349,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Build the form for the necessary input
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
     form = Form(Utils.ScriptURL('create'))
-    ftable = Table(border=0, cols='2', width='100%',
+    ftable = Table(border=0, cols='2', width='100}{',
                    cellspacing=3, cellpadding=4)
 
     ftable.AddRow([Center(Italic(_('List Identity')))])
@@ -401,7 +406,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
 
     ftable.AddRow([
-        Label(_(f"""Should new members be quarantined before they
+        Label(_("""Should new members be quarantined before they
     are allowed to post unmoderated to this list?  Answer <em>Yes</em> to hold
     new member postings for moderator approval by default.""")),
         RadioButtonArray('moderate', (_('No'), _('Yes')),
@@ -412,7 +417,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Create the table of initially supported languages, sorted on the long
     # name of the language.
     revmap = {}
-    for key, (name, charset, direction) in list(mm_cfg.LC_DESCRIPTIONS.items()):
+    for key, (name, charset, direction) in mm_cfg.LC_DESCRIPTIONS.items():
         revmap[_(name)] = key
     langnames = list(revmap.keys())
     langnames.sort()
@@ -433,7 +438,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddRow([Label(_(
         '''Initial list of supported languages.  <p>Note that if you do not
         select at least one initial language, the list will use the server
-        default language of {deflang}''')),
+        default language of }{(deflang)s''')),
                    CheckBoxArray('langs',
                                  [_(Utils.GetLanguageDescr(L)) for L in langs],
                                  checked=checked,
@@ -460,3 +465,4 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     form.AddItem(ftable)
     table.AddRow([form])
     doc.AddItem(table)
+}

@@ -20,17 +20,20 @@ No notices are sent to either the sender or the list owner for emergency
 holds.  I think they'd be too obnoxious.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 from Mailman import Errors
 from Mailman.i18n import _
 
 
-
 class EmergencyHold(Errors.HoldMessage):
     reason = _('Emergency hold on all list traffic is in effect')
     rejection = _('Your message was deemed inappropriate by the moderator.')
 
 
-
 def process(mlist, msg, msgdata):
     if mlist.emergency and not msgdata.get('adminapproved'):
         mlist.HoldMessage(msg, _(EmergencyHold.reason), msgdata)

@@ -43,6 +43,12 @@ from Mailman import mm_cfg
 from Mailman.MailList import MailList
 from Mailman.i18n import C_
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
 cre = re.compile(r'heldmsg-(?P<listname>.*)-(?P<id>[0-9]+)\.(pck|txt)$')
 
 
@@ -52,9 +58,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
@@ -62,7 +68,7 @@ def usage(code, msg=''):
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hq', ['help', 'quiet'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     quiet = False
@@ -74,7 +80,7 @@ def main():
 
     files = args
     if not files:
-        print(C_('Nothing to do.'))
+        print C_('Nothing to do.')
 
     # Mapping from listnames to sequence of request ids
     discards = {}
@@ -85,13 +91,13 @@ def main():
         basename = os.path.basename(f)
         mo = cre.match(basename)
         if not mo:
-            print(C_('Ignoring non-held message: %(f)s'), file=sys.stderr)
+            print >> sys.stderr, C_('Ignoring non-held message: %(f)s')
             continue
         listname, id = mo.group('listname', 'id')
         try:
             id = int(id)
         except (ValueError, TypeError):
-            print(C_('Ignoring held msg w/bad id: %(f)s'), file=sys.stderr)
+            print >> sys.stderr, C_('Ignoring held msg w/bad id: %(f)s')
             continue
         discards.setdefault(listname, []).append(id)
 
@@ -103,8 +109,8 @@ def main():
                 # No comment, no preserve, no forward, no forwarding address
                 mlist.HandleRequest(id, mm_cfg.DISCARD, '', False, False, '')
                 if not quiet:
-                    print(C_(
-                          'Discarded held msg #%(id)s for list %(listname)s'))
+                    print C_(
+                          'Discarded held msg #%(id)s for list %(listname)s')
             mlist.Save()
         finally:
             mlist.Unlock()

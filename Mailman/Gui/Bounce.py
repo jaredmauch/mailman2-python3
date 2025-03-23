@@ -1,4 +1,3 @@
-from __future__ import division
 # Copyright (C) 2001-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -192,8 +191,8 @@ class Bounce(GUIBase):
                 val = int(val)
         except ValueError:
             doc.addError(
-                _("""Bad value for <a href="?VARHELP=bounce/%(property)s"
-                >%(property)s</a>: %(val)s"""),
+                _("""Bad value for <a href="?VARHELP=bounce/{(property)s"
+                >}{(property)s</a>: }{(val)s"""),
                 tag = _('Error: '))
             return
         GUIBase._setValue(self, mlist, property, val, doc)
@@ -203,3 +202,4 @@ class Bounce(GUIBase):
                            'bounce_you_are_disabled_warnings_interval'):
             return None
         return int(getattr(mlist, varname) / days(1))
+}

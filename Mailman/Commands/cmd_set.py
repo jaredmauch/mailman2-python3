@@ -14,8 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-from builtins import object
-from email.utils import parseaddr, formatdate
+from email.Utils import parseaddr, formatdate
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -40,16 +39,16 @@ DETAILS = _("""
         Show this detailed help.
 
     set show [address=<address>]
-        View your current option settings.  If you're posting from an address
+        View your current option settings.  If yore posting from an address
         other than your membership address, specify your membership address
-        with `address=<address>' (no brackets around the email address, and no
+        with `address=<address> (no brackets around the email address, and no
         quotes!).
 
     set authenticate <password> [address=<address>]
         To set any of your options, you must include this command first, along
-        with your membership password.  If you're posting from an address
+        with your membership password.  If yore posting from an address
         other than your membership address, specify your membership address
-        with `address=<address>' (no brackets around the email address, and no
+        with `address=<address> (no brackets around the email address, and no
         quotes!).
 
     set ack on
@@ -70,17 +69,17 @@ DETAILS = _("""
     set delivery off
         Turn delivery on or off.  This does not unsubscribe you, but instead
         tells Mailman not to deliver messages to you for now.  This is useful
-        if you're going on vacation.  Be sure to use `set delivery on' when
+        if yore going on vacation.  Be sure to use `set delivery on when
         you return from vacation!
 
     set myposts on
     set myposts off
         Use `set myposts off' to not receive copies of messages you post to
-        the list.  This has no effect if you're receiving digests.
+        the list.  This has no effect if yore receiving digests.
 
     set hide on
     set hide off
-        Use `set hide on' to conceal your email address when people request
+        Use `set hide on to conceal your email address when people request
         the membership list.
 
     set duplicates on
@@ -120,7 +119,7 @@ class SetCommands:
         methname = 'set_' + subcmd
         method = getattr(self, methname, None)
         if method is None:
-            res.results.append(_('Bad set command: %(subcmd)s'))
+            res.results.append(_('Bad set command: {(subcmd)s'))
             res.results.append(_(DETAILS))
             return STOP
         return method(res, args)
@@ -147,12 +146,12 @@ class SetCommands:
         if not mlist.isMember(address):
             listname = mlist.real_name
             res.results.append(
-                _('You are not a member of the %(listname)s mailing list'))
+                _('You are not a member of the }{(listname)s mailing list'))
             return STOP
         res.results.append(_('Your current option settings:'))
         opt = mlist.getMemberOption(address, mm_cfg.AcknowledgePosts)
         onoff = opt and _('on') or _('off')
-        res.results.append(_('    ack %(onoff)s'))
+        res.results.append(_('    ack }{(onoff)s'))
         # Digests are a special ternary value
         digestsp = mlist.getMemberOption(address, mm_cfg.Digests)
         if digestsp:
@@ -170,9 +169,9 @@ class SetCommands:
             status = _('delivery on')
         elif status == MemberAdaptor.BYUSER:
             status = _('delivery off')
-            how = _('by you')
+            how = _('by yo)
         elif status == MemberAdaptor.BYADMIN:
-            status = _('delivery off')
+            status = _(delivery off')
             how = _('by the admin')
         elif status == MemberAdaptor.BYBOUNCE:
             status = _('delivery off')
@@ -184,24 +183,24 @@ class SetCommands:
         changetime = mlist.getDeliveryStatusChangeTime(address)
         if how and changetime > 0:
             date = formatdate(changetime)
-            res.results.append(_('    %(status)s (%(how)s on %(date)s)'))
+            res.results.append(_('    }{(status)s (}{(how)s on }{(date)s)'))
         else:
             res.results.append('    ' + status)
         opt = mlist.getMemberOption(address, mm_cfg.DontReceiveOwnPosts)
         # sense is reversed
         onoff = (not opt) and _('on') or _('off')
-        res.results.append(_('    myposts %(onoff)s'))
+        res.results.append(_('    myposts }{(onoff)s'))
         opt = mlist.getMemberOption(address, mm_cfg.ConcealSubscription)
         onoff = opt and _('on') or _('off')
-        res.results.append(_('    hide %(onoff)s'))
+        res.results.append(_('    hide }{(onoff)s'))
         opt = mlist.getMemberOption(address, mm_cfg.DontReceiveDuplicates)
         # sense is reversed
         onoff = (not opt) and _('on') or _('off')
-        res.results.append(_('    duplicates %(onoff)s'))
+        res.results.append(_('    duplicates }{(onoff)s'))
         opt = mlist.getMemberOption(address, mm_cfg.SuppressPasswordReminder)
         # sense is reversed
         onoff = (not opt) and _('on') or _('off')
-        res.results.append(_('    reminders %(onoff)s'))
+        res.results.append(_('    reminders }{(onoff)s'))
 
     def set_authenticate(self, res, args):
         mlist = res.mlist
@@ -217,7 +216,7 @@ class SetCommands:
         if not mlist.isMember(address):
             listname = mlist.real_name
             res.results.append(
-                _('You are not a member of the %(listname)s mailing list'))
+                _('You are not a member of the }{(listname)s mailing list'))
             return STOP
         if not mlist.Authenticate((mm_cfg.AuthUser,
                                    mm_cfg.AuthListAdmin),
@@ -234,7 +233,7 @@ class SetCommands:
         elif status == 'off':
             flag = 0
         else:
-            res.results.append(_('Bad argument: %(arg)s'))
+            res.results.append(_('Bad argument: }{(arg)s'))
             self._usage(res)
             return -1
         # See if we're authenticated
@@ -281,7 +280,7 @@ class SetCommands:
                 pass
             mlist.setMemberOption(self.__address, mm_cfg.DisableMime, 0)
         else:
-            res.results.append(_('Bad argument: %(arg)s'))
+            res.results.append(_('Bad argument: }{(arg)s'))
             self._usage(res)
             return STOP
         res.results.append(_('digest option set'))
@@ -358,3 +357,4 @@ def process(res, args):
     if not getattr(res, 'setstate', None):
         res.setstate = SetCommands()
     res.setstate.process(res, args)
+}

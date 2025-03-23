@@ -38,7 +38,7 @@ import os
 import time
 import email
 import errno
-import pickle
+import cPickle
 import marshal
 
 from Mailman import mm_cfg
@@ -48,7 +48,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
 
 # 20 bytes of all bits set, maximum sha.digest() value
-shamax = 0xffffffffffffffffffffffffffffffffffffffff
+shamax = 0xffffffffffffffffffffffffffffffffffffffffL
 
 # This flag causes messages to be written as pickles (when True) or text files
 # (when False).  Pickles are more efficient because the message doesn't need
@@ -63,7 +63,6 @@ DELTA = .0001
 MAX_BAK_COUNT = 3
 
 
-
 class Switchboard:
     def __init__(self, whichq, slice=None, numslices=1, recover=False):
         self.__whichq = whichq
@@ -72,7 +71,7 @@ class Switchboard:
         omask = os.umask(0)                       # rwxrws---
         try:
             try:
-                os.mkdir(self.__whichq, 0o0770)
+                os.mkdir(self.__whichq, 0o770)
             except OSError as e:
                 if e.errno != errno.EEXIST: raise
         finally:
@@ -82,8 +81,8 @@ class Switchboard:
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
         if numslices != 1:
-            self.__lower = (((shamax+1) * slice) / numslices)
-            self.__upper = ((((shamax+1) * (slice+1)) / numslices)) - 1
+            self.__lower = ((shamax+1) * slice) / numslices
+            self.__upper = (((shamax+1) * (slice+1)) / numslices) - 1
         if recover:
             self.recover_backup_files()
 
@@ -101,24 +100,24 @@ class Switchboard:
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
             protocol = 1
-            msgsave = pickle.dumps(_msg, protocol, fix_imports=True)
+            msgsave = cPickle.dumps(_msg, protocol)
         else:
             protocol = 0
-            msgsave = pickle.dumps(str(_msg), protocol, fix_imports=True)
-        hashfood = msgsave + listname.encode() + repr(now).encode()
+            msgsave = cPickle.dumps(str(_msg), protocol)
+        hashfood = msgsave + listname + `now`
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
         # the received time for this message (i.e. when it first showed up on
         # this system) and the sha hex digest.
         #rcvtime = data.setdefault('received_time', now)
         rcvtime = data.setdefault('received_time', now)
-        filebase = repr(rcvtime) + '+' + sha_new(hashfood).hexdigest()
+        filebase = `rcvtime` + '+' + sha_new(hashfood).hexdigest()
         filename = os.path.join(self.__whichq, filebase + '.pck')
         tmpfile = filename + '.tmp'
         # Always add the metadata schema version number
         data['version'] = mm_cfg.QFILE_SCHEMA_VERSION
         # Filter out volatile entries
-        for k in list(data.keys()):
+        for k in data.keys():
             if k.startswith('_'):
                 del data[k]
         # We have to tell the dequeue() method whether to parse the message
@@ -127,10 +126,10 @@ class Switchboard:
         # Write to the pickle file the message object and metadata.
         omask = os.umask(0o007)                     # -rw-rw----
         try:
-            fp = open(tmpfile, 'wb')
+            fp = open(tmpfile, 'w')
             try:
                 fp.write(msgsave)
-                pickle.dump(data, fp, protocol)
+                cPickle.dump(data, fp, protocol)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:
@@ -145,14 +144,14 @@ class Switchboard:
         filename = os.path.join(self.__whichq, filebase + '.pck')
         backfile = os.path.join(self.__whichq, filebase + '.bak')
         # Read the message object and metadata.
-        fp = open(filename, 'rb')
+        fp = open(filename)
         # Move the file to the backup file name for processing.  If this
         # process crashes uncleanly the .bak file will be used to re-instate
         # the .pck file in order to try again.
         os.rename(filename, backfile)
         try:
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-            data = pickle.load(fp, fix_imports=True, encoding='latin1')
+            msg = cPickle.load(fp)
+            data = cPickle.load(fp)
         finally:
             fp.close()
         if data.get('_parsemsg'):
@@ -169,7 +168,7 @@ class Switchboard:
                 omask = os.umask(0)                       # rwxrws---
                 try:
                     try:
-                        os.mkdir(mm_cfg.BADQUEUE_DIR, 0o0770)
+                        os.mkdir(mm_cfg.BADQUEUE_DIR, 0770)
                     except OSError as e:
                         if e.errno != errno.EEXIST: raise
                 finally:
@@ -178,7 +177,7 @@ class Switchboard:
             else:
                 os.unlink(bakfile)
         except EnvironmentError as e:
-            syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
+            syslog('error', 'Failed to unlink/preserve backup file: {s\n}{s',
                    bakfile, e)
 
     def files(self, extension='.pck'):
@@ -197,11 +196,11 @@ class Switchboard:
             # comparisons need to be <= to get complete range.
             if lower is None or (lower <= int(digest, 16) <= upper):
                 key = float(when)
-                while key in times:
+                while times in key):
                     key += DELTA
                 times[key] = filebase
         # FIFO sort
-        keys = list(times.keys())
+        keys = times.keys()
         keys.sort()
         return [times[k] for k in keys]
 
@@ -218,14 +217,14 @@ class Switchboard:
             fp = open(src, 'rb+')
             try:
                 try:
-                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    msg = cPickle.load(fp)
                     data_pos = fp.tell()
-                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    data = cPickle.load(fp)
                 except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
-                    syslog('error', 'Unpickling .bak exception: %s\n'
-                           + 'preserving file: %s', s, filebase)
+                    syslog('error', 'Unpickling .bak exception: }{s\n'
+                           + 'preserving file: }{s', s, filebase)
                     self.finish(filebase, preserve=True)
                 else:
                     data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
@@ -234,16 +233,17 @@ class Switchboard:
                         protocol = 0
                     else:
                         protocol = 1
-                    pickle.dump(data, fp, protocol)
+                    cPickle.dump(data, fp, protocol)
                     fp.truncate()
                     fp.flush()
                     os.fsync(fp.fileno())
                     if data['_bak_count'] >= MAX_BAK_COUNT:
                         syslog('error',
-                               '.bak file max count, preserving file: %s',
+                               '.bak file max count, preserving file: }{s',
                                filebase)
                         self.finish(filebase, preserve=True)
                     else:
                         os.rename(src, dst)
             finally:
                 fp.close()
+}

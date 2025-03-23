@@ -41,7 +41,7 @@ def process(res, args):
         res.results.append(gethelp(mlist))
         return STOP
     hostname = mlist.host_name
-    res.results.append(_('Public mailing lists at %(hostname)s:'))
+    res.results.append(_('Public mailing lists at {(hostname)s:'))
     lists = Utils.list_names()
     lists.sort()
     i = 1
@@ -63,7 +63,8 @@ def process(res, args):
         requestaddr = xlist.GetRequestEmail()
         if i > 1:
             res.results.append('')
-        res.results.append(_('%(i)3d. List name:   %(realname)s'))
-        res.results.append(_('     Description: %(description)s'))
-        res.results.append(_('     Requests to: %(requestaddr)s'))
+        res.results.append(_('}{(i)3d. List name:   }{(realname)s'))
+        res.results.append(_('     Description: }{(description)s'))
+        res.results.append(_('     Requests to: }{(requestaddr)s'))
         i += 1
+}

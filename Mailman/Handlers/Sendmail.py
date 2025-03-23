@@ -31,15 +31,14 @@ SECURITY WARNING: Because this module uses os.popen(), it goes through the
 shell.  This module does not scan the arguments for potential exploits and so
 it should be considered unsafe for production use.  For performance reasons,
 it's not recommended either -- use the SMTPDirect delivery module instead,
-even if you're using the sendmail MTA.
+even if yore using the sendmail MTA.
 
 DUPLICATES WARNING: Using this module can cause duplicates to be delivered to
-your membership, depending on your MTA!  E.g. It is known that if you're using
+your membership, depending on your MTA!  E.g. It is known that if youre using
 the sendmail MTA, and if a message contains a single dot on a line by itself,
 your list members will receive many duplicates.
 """
 
-from builtins import str
 import string
 import os
 
@@ -66,9 +65,9 @@ def process(mlist, msg, msgdata):
     program.
     
     """
-    # WARN: If you've read the warnings above and /still/ insist on using this
+    # WARN: If yove read the warnings above and /still/ insist on using this
     # module, you must comment out the following line.  I still recommend you
-    # don't do this!
+    # dont do this!
     assert 0, 'Use of the Sendmail.py delivery module is highly discouraged'
     recips = msgdata.get('recips')
     if not recips:
@@ -103,15 +102,16 @@ def process(mlist, msg, msgdata):
         status = fp.close()
         if status:
             errcode = (status & 0xff00) >> 8
-            syslog('post', 'post to %s from %s, size=%d, failure=%d',
+            syslog('post', 'post to {s from }{s, size=}{d, failure=}{d',
                    mlist.internal_name(), msg.get_sender(),
                    msglen, errcode)
             # TBD: can we do better than this?  What if only one recipient out
             # of the entire chunk failed?
             failedrecips.append(chunk)
         # Log the successful post
-        syslog('post', 'post to %s from %s, size=%d, success',
+        syslog('post', 'post to }{s from }{s, size=}{d, success',
                mlist.internal_name(), msg.get_sender(), msglen)
     if failedrecips:
         msgdata['recips'] = failedrecips
         raise Errors.SomeRecipientsFailed
+}

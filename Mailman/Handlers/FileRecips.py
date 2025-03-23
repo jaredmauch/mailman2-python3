@@ -17,27 +17,31 @@
 """Get the normal delivery recipients from a Sendmail style :include: file.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import os
 import errno
 
 from Mailman import Errors
 
 
-
 def process(mlist, msg, msgdata):
     if 'recips' in msgdata:
         return
     filename = os.path.join(mlist.fullpath(), 'members.txt')
     try:
-        fp = open(filename)
+        with open(filename) as fp:
+            # Read all the lines out of the file, and strip them of the trailing nl
+            addrs = [line.strip() for line in fp.readlines()]
     except IOError as e:
         if e.errno != errno.ENOENT:
             raise
         # If the file didn't exist, just set an empty recipients list
         msgdata['recips'] = []
         return
-    # Read all the lines out of the file, and strip them of the trailing nl
-    addrs = [line.strip() for line in fp.readlines()]
     # If the sender is in that list, remove him
     sender = msg.get_sender()
     if mlist.isMember(sender):

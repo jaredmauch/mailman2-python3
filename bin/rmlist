@@ -48,30 +48,37 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+
 
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
 
 def remove_it(listname, filename, msg):
     if os.path.islink(filename):
-        print(C_('Removing %(msg)s'))
+        print C_('Removing %(msg)s')
         os.unlink(filename)
     elif os.path.isdir(filename):
-        print(C_('Removing %(msg)s'))
+        print C_('Removing %(msg)s')
         shutil.rmtree(filename)
     elif os.path.isfile(filename):
         os.unlink(filename)
     else:
-        print(C_('%(listname)s %(msg)s not found as %(filename)s'))
+        print C_('%(listname)s %(msg)s not found as %(filename)s')
 
 
 
@@ -79,10 +86,10 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ah',
                                    ['archives', 'help'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
-    if len(args) != 1:
+    if len(args) <> 1:
         usage(1)
     listname = args[0].lower().strip()
 
@@ -98,11 +105,11 @@ def main():
             usage(1, C_(
                      'No such list (or list already deleted): %(listname)s'))
         else:
-            print(C_(
-                'No such list: %(listname)s.  Removing its residual archives.'))
+            print C_(
+                'No such list: %(listname)s.  Removing its residual archives.')
 
     if not removeArchives:
-        print(C_('Not removing archives.  Reinvoke with -a to remove them.'))
+        print C_('Not removing archives.  Reinvoke with -a to remove them.')
 
 
     REMOVABLES = []
@@ -128,7 +135,7 @@ def main():
 
     # Remove any held messages for this list
     for filename in os.listdir(mm_cfg.DATA_DIR):
-        cre = re.compile(r'^heldmsg-%s-\d+\.(pck|txt)$' % re.escape(listname),
+        cre = re.compile('^heldmsg-%s-\d+\.(pck|txt)$' % re.escape(listname),
                          re.IGNORECASE)
         if cre.match(filename):
             REMOVABLES.append((os.path.join(mm_cfg.DATA_DIR, filename),

@@ -1,4 +1,10 @@
 # -*- python -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 #
 # Copyright (C) 2002-2018 by the Free Software Foundation, Inc.
 #
@@ -23,10 +29,8 @@ of the target mailing list.
 
 Errors are redirected to logs/errors.
 """
-from __future__ import print_function
 
 import sys
-
 import paths
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -37,7 +41,6 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr('error', 'confirm')
 
 
-
 def main():
     try:
         listname = sys.argv[1]
@@ -46,7 +49,7 @@ def main():
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print(_('confirm script, list not found: %(listname)s'), file=sys.stderr)
+        print(_('confirm script, list not found: %(listname)s') % {'listname': listname}, file=sys.stderr)
         sys.exit(1)
     # Immediately queue the message for the bounce/cmd qrunner to process.
     # The advantage to this approach is that messages should never get lost --
@@ -58,6 +61,5 @@ def main():
                  _plaintext=1)
 
 
-
 if __name__ == '__main__':
     main()

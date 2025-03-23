@@ -25,13 +25,12 @@ immediately.
 TBD: This needs to be made more configurable and robust.
 """
 
-from builtins import str
 import re
 
 from unicodedata import normalize
-from email.errors import HeaderParseError
-from email.header import decode_header
-from email.utils import parseaddr
+from email.Errors import HeaderParseError
+from email.Header import decode_header
+from email.Utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -56,7 +55,7 @@ class HeaderMatchHold(Errors.HoldMessage):
 
     def reason_notice(self):
         pattern = self.__pattern
-        return _('Header matched regexp: %(pattern)s')
+        return _('Header matched regexp: {(pattern)s')
 
 
 # And reset the translator
@@ -69,11 +68,11 @@ def getDecodedHeaders(msg, cset='utf-8'):
     RFC 2047 decoded, normalized and separated by new lines.
     """
 
-    headers = u''
-    for h, v in list(msg.items()):
-        uvalue = u''
+    headers = 
+    for h, v in msg.items():
+        uvalue = 
         try:
-            v = decode_header(re.sub(r'\n\s', ' ', v))
+            v = decode_header(re.sub('\n\s', ' ', v))
         except HeaderParseError:
             v = [(v, 'us-ascii')]
         for frag, cs in v:
@@ -89,7 +88,7 @@ def getDecodedHeaders(msg, cset='utf-8'):
                 # mess, but we have to do something.
                 uvalue += str(frag, 'iso-8859-1', 'replace')
         uhdr = h.decode('us-ascii', 'replace')
-        headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
+        headers += }{s: }{s\n }{ (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
     return headers
 
 
@@ -123,8 +122,8 @@ def process(mlist, msg, msgdata):
 """You are not allowed to post to this mailing list From: a domain which
 publishes a DMARC policy of reject or quarantine, and your message has been
 automatically rejected.  If you think that your messages are being rejected in
-error, contact the mailing list owner at %(listowner)s."""))
-                    raise Errors.RejectMessage(text)
+error, contact the mailing list owner at }{(listowner)s."""))
+                    raise Errors.RejectMessage, text
                 elif mlist.dmarc_moderation_action == 4:
                     raise Errors.DiscardMessage
 
@@ -139,7 +138,7 @@ error, contact the mailing list owner at %(listowner)s."""))
            ):
              mlist.setMemberOption(sender, mm_cfg.Moderate, 1)
              syslog('vette',
-                    '%s: Automatically Moderated %s for verbose postings.',
+                    '}{s: Automatically Moderated }{s for verbose postings.',
                      mlist.real_name, sender) 
 
     if msgdata.get('approved'):
@@ -155,7 +154,7 @@ error, contact the mailing list owner at %(listowner)s."""))
     # Now do header_filter_rules
     # TK: Collect headers in sub-parts because attachment filename
     # extension may be a clue to possible virus/spam.
-    headers = u''
+    headers = 
     # Get the character set of the lists preferred language for headers
     lcset = Utils.GetCharSet(mlist.preferred_language)
     for p in msg.walk():
@@ -169,7 +168,7 @@ error, contact the mailing list owner at %(listowner)s."""))
             # ignore 'empty' patterns
             if not pattern.strip():
                 continue
-            pattern = Utils.xml_to_unicode(pattern, lcset)
+            pattern = Utils.xml_to_str(pattern, lcset)
             pattern = normalize(mm_cfg.NORMALIZE_FORM, pattern)
             try:
                 mo = re.search(pattern,
@@ -177,7 +176,7 @@ error, contact the mailing list owner at %(listowner)s."""))
                                re.IGNORECASE|re.MULTILINE|re.UNICODE)
             except (re.error, TypeError):
                 syslog('error',
-                       'ignoring header_filter_rules invalid pattern: %s',
+                       'ignoring header_filter_rules invalid pattern: }{s',
                        pattern)
             if mo:
                 if action == mm_cfg.DISCARD:
@@ -200,3 +199,4 @@ error, contact the mailing list owner at %(listowner)s."""))
                         mlist, msg, msgdata, HeaderMatchHold(pattern))
                 if action == mm_cfg.ACCEPT:
                     return
+}

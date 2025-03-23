@@ -16,7 +16,11 @@
 # USA.
 
 """Provide a password-interface wrapper around private archives."""
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 import os
 import sys
@@ -39,7 +43,6 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 SLASH = '/'
 
 
-
 def true_path(path):
     "Ensure that the path is safe by removing .."
     # Workaround for path traverse vulnerability.  Unsuccessful attempts will
@@ -48,14 +51,12 @@ def true_path(path):
     return SLASH.join(parts)[1:]
 
 
-
 def guess_type(url, strict):
     if hasattr(mimetypes, 'common_types'):
         return mimetypes.guess_type(url, strict)
     return mimetypes.guess_type(url)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -74,7 +75,7 @@ def main():
         doc.SetTitle(msg)
         doc.AddItem(Header(2, msg))
         print(doc.Format())
-        syslog('mischief', 'Private archive hostile path: %s', path)
+        syslog('mischief', 'Private archive hostile path: {s', path)
         return
     # BAW: This needs to be converted to the Site module abstraction
     true_filename = os.path.join(
@@ -106,13 +107,13 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        msg = _('No such list <em>{safelistname}</em>')
-        doc.SetTitle(_("Private Archive Error - {msg}"))
+        msg = _('No such list <em>}{(safelistname)s</em>')
+        doc.SetTitle(_("Private Archive Error - }{(msg)s"))
         doc.AddItem(Header(2, msg))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'private: No such list "%s": %s\n', listname, e)
+        syslog('error', 'private: No such list "}{s": }{s\n', listname, e)
         return
 
     i18n.set_language(mlist.preferred_language)
@@ -148,14 +149,14 @@ def main():
                      os.environ.get('REMOTE_ADDR',
                                     'unidentified origin')))
             syslog('security',
-                 'Authorization failed (private): user=%s: list=%s: remote=%s',
+                 'Authorization failed (private): user=}{s: list=}{s: remote=}{s',
                    username, listname, remote)
             # give an HTTP 401 for authentication failure
             print('Status: 401 Unauthorized')
         # Are we processing a password reminder from the login screen?
         if 'login-remind' in cgidata:
             if username:
-                message = Bold(FontSize('+1', _(f"""If you are a list member,
+                message = Bold(FontSize('+1', _("""If you are a list member,
                           your password has been emailed to you."""))).Format()
             else:
                 message = Bold(FontSize('+1',
@@ -167,7 +168,7 @@ def main():
                 # Content injection. Just log if roster is not public.
                 if mlist.private_roster != 0:
                     syslog('mischief',
-                       'Reminder attempt of non-member w/ private rosters: %s',
+                       'Reminder attempt of non-member w/ private rosters: }{s',
                        username)
         # Output the password form
         charset = Utils.GetCharSet(mlist.preferred_language)
@@ -221,8 +222,9 @@ def main():
         doc.AddItem(Header(2, msg))
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'Private archive file not found: %s', true_filename)
+        syslog('error', 'Private archive file not found: }{s', true_filename)
     else:
-        print('Content-type: %s\n' % ctype)
+        print('Content-type: }{s\n' }{ ctype)
         sys.stdout.write(f.read())
         f.close()
+}

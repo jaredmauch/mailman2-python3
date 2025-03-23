@@ -20,7 +20,6 @@
 
 
 # exceptions for problems related to opening a list
-from builtins import object
 class MMListError(Exception): pass
 class MMUnknownListError(MMListError): pass
 class MMCorruptListDatabaseError(MMListError): pass
@@ -52,21 +51,21 @@ class MMCookieError(MMAuthenticationError): pass
 class MMExpiredCookieError(MMCookieError): pass
 class MMInvalidCookieError(MMCookieError): pass
 
-class MMMustDigestError(object): pass
-class MMCantDigestError(object): pass
-class MMNeedApproval(object):
+class MMMustDigestError: pass
+class MMCantDigestError: pass
+class MMNeedApproval:
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMSubscribeNeedsConfirmation(object): pass
-class MMBadConfirmation(object):
+class MMSubscribeNeedsConfirmation: pass
+class MMBadConfirmation:
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMAlreadyDigested(object): pass
-class MMAlreadyUndigested(object): pass
+class MMAlreadyDigested: pass
+class MMAlreadyUndigested: pass
 
 MODERATED_LIST_MSG    = "Moderated list"
 IMPLICIT_DEST_MSG     = "Implicit destination"

@@ -23,7 +23,6 @@ the filename containing the bounce message.
 
 """
 
-from builtins import object
 import sys
 
 from Mailman.Logging.Syslog import syslog
@@ -32,7 +31,7 @@ from Mailman.Logging.Syslog import syslog
 # An example is warning messages for temporary delivery problems.  These
 # shouldn't trigger a bounce notification, but we also don't want to send them
 # on to the list administrator.
-class _Stop(object):
+class _Stop:
     pass
 Stop = _Stop()
 

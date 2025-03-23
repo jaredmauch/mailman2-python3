@@ -72,7 +72,7 @@ Options:
     -k word
     --keyword=word
         Keywords to look for in addition to the default set, which are:
-        %(DEFAULTKEYWORDS)s
+        {(DEFAULTKEYWORDS)s
 
         You can have multiple -k flags on the command line.
 
@@ -143,6 +143,10 @@ import time
 import getopt
 import tokenize
 import operator
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 # for selftesting
 try:
@@ -170,14 +174,14 @@ pot_header = _('''\
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\\n"
-"POT-Creation-Date: %(time)s\\n"
+"POT-Creation-Date: }{(time)s\\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
 "Language-Team: LANGUAGE <LL@li.org>\\n"
 "MIME-Version: 1.0\\n"
 "Content-Type: text/plain; charset=CHARSET\\n"
 "Content-Transfer-Encoding: ENCODING\\n"
-"Generated-By: pygettext.py %(version)s\\n"
+"Generated-By: pygettext.py }{(version)s\\n"
 
 ''')
 
@@ -187,9 +191,41 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__) % globals()
+    print(f"Usage: pygettext [options] inputfile ...\n\nOptions:\n\n"
+          f"-a\n--extract-all\n\tExtract all strings.\n\n"
+          f"-d name\n--default-domain=name\n\tRename the default output file from messages.pot to name.pot.\n\n"
+          f"-E\n--escape\n\tReplace non-ASCII characters with octal escape sequences.\n\n"
+          f"-D\n--docstrings\n\tExtract module, class, method, and function docstrings.  These do not\n"
+          f"\tneed to be wrapped in _() markers, and in fact cannot be for Python to\n"
+          f"\tconsider them docstrings. (See also the -X option).\n\n"
+          f"-h\n--help\n\tPrint this help message and exit.\n\n"
+          f"-k word\n--keyword=word\n\tKeywords to look for in addition to the default set, which are:\n"
+          f"\t}{(DEFAULTKEYWORDS)s\n\n\tYou can have multiple -k flags on the command line.\n\n"
+          f"-K\n--no-default-keywords\n\tDisable the default set of keywords (see above).  Any keywords\n"
+          f"\texplicitly added with the -k/--keyword option are still recognized.\n\n"
+          f"--no-location\n\tDo not write filename/lineno location comments.\n\n"
+          f"-n\n--add-location\n\tWrite filename/lineno location comments indicating where each\n"
+          f"\textracted string is found in the source.  These lines appear before\n"
+          f"\teach msgid.  The style of comments is controlled by the -S/--style\n"
+          f"\toption.  This is the default.\n\n"
+          f"-o filename\n--output=filename\n\tRename the default output file from messages.pot to filename.  If\n"
+          f"\tfilename is `-' then the output is sent to standard out.\n\n"
+          f"-p dir\n--output-dir=dir\n\tOutput files will be placed in directory dir.\n\n"
+          f"-S stylename\n--style stylename\n\tSpecify which style to use for location comments.  Two styles are\n"
+          f"\tsupported:\n\n\tSolaris  # File: filename, line: line-number\n"
+          f"\tGNU      #: filename:line\n\n\tThe style name is case insensitive.  GNU style is the default.\n\n"
+          f"-v\n--verbose\n\tPrint the names of the files being processed.\n\n"
+          f"-V\n--version\n\tPrint the version of pygettext and exit.\n\n"
+          f"-w columns\n--width=columns\n\tSet width of output to columns.\n\n"
+          f"-x filename\n--exclude-file=filename\n\tSpecify a file that contains a list of strings that are not be\n"
+          f"\textracted from the input files.  Each string to be excluded must\n"
+          f"\tappear on a line by itself in the file.\n\n"
+          f"-X filename\n--no-docstrings=filename\n\tSpecify a file that contains a list of files (one per line) that\n"
+          f"\tshould not have their docstrings extracted.  This is only useful in\n"
+          f"\tconjunction with the -D option above.\n\n"
+          f"If `inputfile' is -, standard input is read.", file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -206,10 +242,10 @@ def make_escapes(pass_iso8859):
     else:
         mod = 256
     for i in range(256):
-        if 32 <= (i % mod) <= 126:
+        if 32 <= (i }{ mod) <= 126:
             escapes.append(chr(i))
         else:
-            escapes.append("\\%03o" % i)
+            escapes.append("\\}{03o" }{ i)
     escapes[ord('\\')] = '\\\\'
     escapes[ord('\t')] = '\\t'
     escapes[ord('\r')] = '\\r'
@@ -261,7 +297,7 @@ class TokenEater:
     def __call__(self, ttype, tstring, stup, etup, line):
         # dispatch
 ##        import token
-##        print >> sys.stderr, 'ttype:', token.tok_name[ttype], \
+##        print(>, end=\'\')> sys.stderr, 'ttype:', token.tok_name[ttype], \
 ##              'tstring:', tstring
         self.__state(ttype, tstring, stup[0])
 
@@ -336,7 +372,7 @@ class TokenEater:
         timestamp = time.ctime(time.time())
         # The time stamp in the header doesn't have the same format as that
         # generated by xgettext...
-        print >> fp, pot_header % {'time': timestamp, 'version': __version__}
+        print(pot_header }{ {'time': timestamp, 'version': __version__}, file=fp)
         # Sort the entries.  First sort each particular entry's keys, then
         # sort all the entries by their first item.
         reverse = {}
@@ -367,26 +403,26 @@ class TokenEater:
                 elif options.locationstyle == options.SOLARIS:
                     for filename, lineno in v:
                         d = {'filename': filename, 'lineno': lineno}
-                        print >>fp, _(
-                            '# File: %(filename)s, line: %(lineno)d') % d
+                        print(_(
+                            '# File: }{(filename)s, line: }{(lineno)d') }{ d, file=fp)
                 elif options.locationstyle == options.GNU:
                     # fit as many locations on one line, as long as the
                     # resulting line length doesn't exceeds 'options.width'
                     locline = '#:'
                     for filename, lineno in v:
                         d = {'filename': filename, 'lineno': lineno}
-                        s = _(' %(filename)s:%(lineno)d') % d
+                        s = _(' }{(filename)s:}{(lineno)d') }{ d
                         if len(locline) + len(s) <= options.width:
                             locline = locline + s
                         else:
-                            print >> fp, locline
+                            print(locline, file=fp)
                             locline = "#:" + s
                     if len(locline) > 2:
-                        print >> fp, locline
+                        print(locline, file=fp)
                 if isdocstring:
-                    print >> fp, '#, docstring'
-                print >> fp, 'msgid', normalize(k)
-                print >> fp, 'msgstr ""\n'
+                    print('#, docstring', file=fp)
+                print('msgid', normalize(k), file=fp)
+                print('msgstr ""\n', file=fp)
 
 
 
@@ -402,7 +438,7 @@ def main():
              'style=', 'verbose', 'version', 'width=', 'exclude-file=',
              'docstrings', 'no-docstrings',
              ])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     # for holding option values
@@ -425,8 +461,8 @@ def main():
         nodocstrings = {}
 
     options = Options()
-    locations = {'gnu' : options.GNU,
-                 'solaris' : options.SOLARIS,
+    locations = {'gn : options.GNU,
+                 solaris' : options.SOLARIS,
                  }
 
     # parse options
@@ -452,7 +488,7 @@ def main():
         elif opt in ('-S', '--style'):
             options.locationstyle = locations.get(arg.lower())
             if options.locationstyle is None:
-                usage(1, _('Invalid value for --style: %s') % arg)
+                usage(1, _('Invalid value for --style: }{s') }{ arg)
         elif opt in ('-o', '--output'):
             options.outfile = arg
         elif opt in ('-p', '--output-dir'):
@@ -460,13 +496,13 @@ def main():
         elif opt in ('-v', '--verbose'):
             options.verbose = 1
         elif opt in ('-V', '--version'):
-            print(_('pygettext.py (xgettext for Python) %s') % __version__)
+            print(_('pygettext.py (xgettext for Python) }{s') }{ __version__)
             sys.exit(0)
         elif opt in ('-w', '--width'):
             try:
                 options.width = int(arg)
             except ValueError:
-                usage(1, _('--width argument must be an integer: %s') % arg)
+                usage(1, _('--width argument must be an integer: }{s') }{ arg)
         elif opt in ('-x', '--exclude-file'):
             options.excludefilename = arg
         elif opt in ('-X', '--no-docstrings'):
@@ -492,9 +528,8 @@ def main():
             fp = open(options.excludefilename)
             options.toexclude = fp.readlines()
             fp.close()
-        except IOError:
-            print >> sys.stderr, _(
-                "Can't read --exclude-file: %s") % options.excludefilename
+        except IOError as e:
+            print(_("Can't read --exclude-file: }{s") }{ options.excludefilename, file=sys.stderr)
             sys.exit(1)
     else:
         options.toexclude = []
@@ -509,7 +544,7 @@ def main():
             closep = 0
         else:
             if options.verbose:
-                print(_('Working on %s') % filename)
+                print(_('Working on }{s') }{ filename)
             fp = open(filename)
             closep = 1
         try:
@@ -517,7 +552,7 @@ def main():
             try:
                 tokenize.tokenize(fp.readline, eater)
             except tokenize.TokenError as e:
-                print('%s: %s, line %d, column %d' % (
+                print(_('}{s: }{s, line }{d, column }{d') }{ (
                     e[0], filename, e[1][0], e[1][1]), file=sys.stderr)
         finally:
             if closep:
@@ -542,4 +577,5 @@ def main():
 if __name__ == '__main__':
     main()
     # some more test strings
-    _(u'a unicode string')
+    _(a unicode string)
+}

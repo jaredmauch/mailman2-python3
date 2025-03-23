@@ -22,5 +22,6 @@
 SPACE = ' '
 
 def process(res, args):
-    res.results.append('echo %s' % SPACE.join(args))
+    res.results.append('echo {s' }{ SPACE.join(args))
     return 1
+}

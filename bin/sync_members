@@ -76,6 +76,11 @@ Where `options' are:
         Required.  This specifies the list to synchronize.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 
 import paths
@@ -88,8 +93,6 @@ from Mailman import Utils
 from Mailman.UserDesc import UserDesc
 from Mailman.i18n import C_
 
-
-
 PROGRAM = sys.argv[0]
 
 def usage(code, msg=''):
@@ -103,7 +106,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def yesno(opt):
     i = opt.find('=')
     yesno = opt[i+1:].lower()
@@ -186,13 +188,10 @@ def main():
         filemembers = sys.stdin.readlines()
     else:
         try:
-            fp = open(filename)
-        except IOError as msg:
-            usage(1, C_('Cannot read address file: %(filename)s: %(msg)s'))
-        try:
-            filemembers = fp.readlines()
-        finally:
-            fp.close()
+            with open(filename) as fp:
+                filemembers = fp.readlines()
+        except IOError as e:
+            usage(1, C_('Cannot read address file: %(filename)s: %(msg)s') % {'filename': filename, 'msg': str(e)})
 
     # strip out lines we don't care about, they are comments (# in first
     # non-whitespace) or are blank
@@ -200,7 +199,7 @@ def main():
         addr = filemembers[i].strip()
         if addr == '' or addr[:1] == '#':
             del filemembers[i]
-            print(C_('Ignore  :  %(addr)30s'))
+            print(C_('Ignore  :  %(addr)30s') % {'addr': addr})
 
     # first filter out any invalid addresses
     filemembers = email.Utils.getaddresses(filemembers)
@@ -209,7 +208,7 @@ def main():
         try:
             Utils.ValidateEmail(addr)
         except Errors.EmailAddressError:
-            print(C_('Invalid :  %(addr)30s'))
+            print(C_('Invalid :  %(addr)30s') % {'addr': addr})
             invalid = 1
     if invalid:
         print(C_('You must fix the preceding invalid addresses first.'))
@@ -219,7 +218,7 @@ def main():
     try:
         mlist = MailList.MailList(listname)
     except Errors.MMListError as e:
-        print(C_('No such list: %(listname)s'))
+        print(C_('No such list: %(listname)s') % {'listname': listname})
         sys.exit(1)
 
     try:
@@ -234,10 +233,10 @@ def main():
             # Any address found in the file that is also in the list can be
             # ignored.  If not found in the list, it must be added later.
             laddr = addr.lower()
-            if addrs.has_key(laddr):
+            if laddr in addrs:
                 del addrs[laddr]
                 matches[laddr] = 1
-            elif not matches.has_key(laddr):
+            elif laddr not in matches:
                 needsadding[laddr] = (name, addr)
 
         if not needsadding and not addrs:
@@ -258,15 +257,14 @@ def main():
                     mlist.ApprovedAddMember(userdesc, welcome, notifyadmin)
                 # Avoid UnicodeError if name can't be decoded
                 if isinstance(name, str):
-                    name = unicode(name, errors='replace')
+                    name = name.encode(enc, 'replace')
                 name = name.encode(enc, 'replace')
                 s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-                print(C_('Added  : %(s)s'))
+                print(C_('Added  : %(s)s') % {'s': s})
             except Errors.MMAlreadyAMember:
                 pass
             except Errors.MembershipIsBanned as pattern:
-                print(('%s:' % addr), C_(
-                                      'Banned address (matched %(pattern)s)'))
+                print('%s:' % addr, C_('Banned address (matched %(pattern)s)') % {'pattern': pattern})
 
         for laddr, addr in addrs.items():
             # Should be a member, otherwise our test above is broken
@@ -283,10 +281,10 @@ def main():
                     mlist.removeMember(addr)
             # Avoid UnicodeError if name can't be decoded
             if isinstance(name, str):
-                name = unicode(name, errors='replace')
+                name = name.encode(enc, 'replace')
             name = name.encode(enc, 'replace')
             s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-            print(C_('Removed: %(s)s'))
+            print(C_('Removed: %(s)s') % {'s': s})
 
         mlist.Save()
     finally:

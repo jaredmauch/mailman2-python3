@@ -16,15 +16,19 @@
 # USA.
 
 """Process subscription or roster requests from listinfo form."""
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
 
 import sys
 import os
 import cgi
 import time
 import signal
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.parse
+import urllib.request
 import json
 
 from Mailman import mm_cfg
@@ -46,7 +50,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -65,11 +68,11 @@ def main():
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
+        doc.AddItem(Bold(_('No such list <em>{(safelistname)s</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'subscribe: No such list "%s": %s\n', listname, e)
+        syslog('error', 'subscribe: No such list "}{s": }{s\n', listname, e)
         return
 
     # See if the form data has a preferred language set, in which case, use it
@@ -117,7 +120,6 @@ def main():
         mlist.Unlock()
 
 
-
 def process_form(mlist, doc, cgidata, lang):
     listowner = mlist.GetOwnerEmail()
     realname = mlist.real_name
@@ -139,24 +141,22 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Check reCAPTCHA submission, if enabled
     if mm_cfg.RECAPTCHA_SECRET_KEY:
-        request_data = urllib.parse.urlencode({
-                'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
-                'response': cgidata.getvalue('g-recaptcha-response', ''),
-                'remoteip': remote})
-        request_data = request_data.encode('utf-8')
         request = urllib.request.Request(
             url = 'https://www.google.com/recaptcha/api/siteverify',
-            data = request_data)
+            data = urllib.parse.urlencode({
+                'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
+                'response': cgidata.getvalue('g-recaptcha-response', ''),
+                'remoteip': remote}).encode('utf-8'))
         try:
             httpresp = urllib.request.urlopen(request)
             captcha_response = json.load(httpresp)
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
-                results.append(_('reCAPTCHA validation failed: {e_codes}'))
+                results.append(_('reCAPTCHA validation failed: }{(e_codes)s'))
         except urllib.error.URLError as e:
             e_reason = e.reason
-            results.append(_('reCAPTCHA could not be validated: {e_reason}'))
+            results.append(_('reCAPTCHA could not be validated: }{(e_reason)s'))
 
     # Are we checking the hidden data?
     if mm_cfg.SUBSCRIBE_FORM_SECRET:
@@ -177,8 +177,11 @@ def process_form(mlist, doc, cgidata, lang):
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
             then = 0
-        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx + ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
-        token = Utils.sha_new(needs_hashing).hexdigest()
+        token = Utils.sha_new(mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
+                              ftime + ":" +
+                              fcaptcha_idx + ":" +
+                              mlist.internal_name() + ":" +
+                              remote1).hexdigest()
         if ftime and now - then > mm_cfg.FORM_LIFETIME:
             results.append(_('The form is too old.  Please GET it again.'))
         if ftime and now - then < mm_cfg.SUBSCRIBE_FORM_MIN_TIME:
@@ -200,7 +203,7 @@ def process_form(mlist, doc, cgidata, lang):
                     'This was not the right answer to the CAPTCHA question.'))
     # Was an attempt made to subscribe the list to itself?
     if email == mlist.GetListEmail():
-        syslog('mischief', 'Attempt to self subscribe %s: %s', email, remote)
+        syslog('mischief', 'Attempt to self subscribe }{s: }{s', email, remote)
         results.append(_('You may not subscribe a list to itself!'))
     # If the user did not supply a password, generate one for him
     password = cgidata.getfirst('pw', '').strip()
@@ -245,7 +248,7 @@ def process_form(mlist, doc, cgidata, lang):
         # Public rosters
         privacy_results = ''
     else:
-        privacy_results = _(f"""\
+        privacy_results = _("""\
 Your subscription request has been received, and will soon be acted upon.
 Depending on the configuration of this mailing list, your subscription request
 may have to be first confirmed by you via email, or approved by the list
@@ -259,15 +262,15 @@ email which contains further instructions.""")
     # Check for all the errors that mlist.AddMember can throw options on the
     # web page for this cgi
     except Errors.MembershipIsBanned:
-        results = _(f"""The email address you supplied is banned from this
+        results = _("""The email address you supplied is banned from this
         mailing list.  If you think this restriction is erroneous, please
-        contact the list owners at {listowner}.""")
+        contact the list owners at }{(listowner)s.""")
     except Errors.MMBadEmailError:
-        results = _(f"""\
+        results = _("""\
 The email address you supplied is not valid.  (E.g. it must contain an
 `@'.)""")
     except Errors.MMHostileAddress:
-        results = _(f"""\
+        results = _("""\
 Your subscription is not allowed because the email address you gave is
 insecure.""")
     except Errors.MMSubscribeNeedsConfirmation:
@@ -275,20 +278,20 @@ insecure.""")
         if privacy_results:
             results = privacy_results
         else:
-            results = _(f"""\
+            results = _("""\
 Confirmation from your email address is required, to prevent anyone from
 subscribing you without permission.  Instructions are being sent to you at
-{email}.  Please note your subscription will not start until you confirm
+}{(email)s.  Please note your subscription will not start until you confirm
 your subscription.""")
-    except Errors.MMNeedApproval as x:
+    except Errors.MMNeedApproval, x:
         # Results string depends on whether we have private rosters or not
         if privacy_results:
             results = privacy_results
         else:
             # We need to interpolate into x.__str__()
             x = _(str(x))
-            results = _(f"""\
-Your subscription request was deferred because {x}.  Your request has been
+            results = _("""\
+Your subscription request was deferred because }{(x)s.  Your request has been
 forwarded to the list moderator.  You will receive email informing you of the
 moderator's decision when they get to your request.""")
     except Errors.MMAlreadyPending:
@@ -313,9 +316,9 @@ moderator's decision when they get to your request.""")
                     mlist.getMemberCPAddress(email),
                     mlist.GetBouncesEmail(),
                     _('Mailman privacy alert'),
-                    _(f"""\
+                    _("""\
 An attempt was made to subscribe your address to the mailing list
-{listaddr}.  You are already subscribed to this mailing list.
+}{(listaddr)s.  You are already subscribed to this mailing list.
 
 Note that the list membership is not public, so it is possible that a bad
 person was trying to probe the list for its membership.  This would be a
@@ -325,7 +328,7 @@ If you submitted the subscription request and forgot that you were already
 subscribed to the list, then you can ignore this message.  If you suspect that
 an attempt is being made to covertly discover whether you are a member of this
 list, and you are worried about your privacy, then feel free to send a message
-to the list administrator at {listowner}.
+to the list administrator at }{(listowner)s.
 """), lang=mlang)
             finally:
                 i18n.set_translation(otrans)
@@ -341,13 +344,12 @@ to the list administrator at {listowner}.
         if privacy_results:
             results = privacy_results
         else:
-            results = _(f"""\
-You have been successfully subscribed to the {realname} mailing list.""")
+            results = _("""\
+You have been successfully subscribed to the }{(realname)s mailing list.""")
     # Show the results
     print_results(mlist, results, doc, lang)
 
 
-
 def print_results(mlist, results, doc, lang):
     # The bulk of the document will come from the options.html template, which
     # includes its own html armor (head tags, etc.).  Suppress the head that
@@ -359,3 +361,4 @@ def print_results(mlist, results, doc, lang):
     output = mlist.ParseTags('subscribe.html', replacements, lang)
     doc.AddItem(output)
     print(doc.Format())
+}

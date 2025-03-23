@@ -28,10 +28,16 @@ Finally an exception is raised to let the pipeline machinery know that further
 message handling should stop.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+
+from __future__ import unicode_literals
+
 import email
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
-import email.utils
+from email.utils import getaddresses
+from email.iterators import body_line_iterator
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -47,7 +53,6 @@ def _(s):
     return s
 
 
-
 class ForbiddenPoster(Errors.HoldMessage):
     reason = _('Sender is explicitly forbidden')
     rejection = _('You are forbidden from posting messages to this list.')
@@ -81,8 +86,8 @@ class Administrivia(Errors.HoldMessage):
         listurl = mlist.GetScriptURL('listinfo', absolute=1)
         request = mlist.GetRequestEmail()
         return _("""Please do *not* post administrative requests to the mailing
-list.  If you wish to subscribe, visit %(listurl)s or send a message with the
-word `help' in it to the request address, %(request)s, for further
+list.  If you wish to subscribe, visit {(listurl)s or send a message with the
+word `help' in it to the request address, }{(request)s, for further
 instructions.""")
 
 class SuspiciousHeaders(Errors.HoldMessage):
@@ -97,13 +102,13 @@ class MessageTooBig(Errors.HoldMessage):
     def reason_notice(self):
         size = self.__msgsize
         limit = self.__limit
-        return _('''Message body is too big: %(size)d bytes with a limit of
-%(limit)d KB''')
+        return _('''Message body is too big: }{(size)d bytes with a limit of
+}{(limit)d KB''')
 
     def rejection_notice(self, mlist):
         kb = self.__limit
         return _('''Your message was too big; please trim it to less than
-%(kb)d KB in size.''')
+}{(kb)d KB in size.''')
 
 class ModeratedNewsgroup(ModeratedPost):
     reason = _('Posting to a moderated newsgroup')
@@ -114,7 +119,6 @@ class ModeratedNewsgroup(ModeratedPost):
 _ = i18n._
 
 
-
 def ackp(msg):
     ack = msg.get('x-ack', '').lower()
     precedence = msg.get('precedence', '').lower()
@@ -123,7 +127,6 @@ def ackp(msg):
     return 1
 
 
-
 def process(mlist, msg, msgdata):
     if msgdata.get('approved'):
         return
@@ -146,8 +149,8 @@ def process(mlist, msg, msgdata):
     # Are there too many recipients to the message?
     if mlist.max_num_recipients > 0:
         # figure out how many recipients there are
-        recips = email.utils.getaddresses(msg.get_all('to', []) +
-                                          msg.get_all('cc', []))
+        recips = getaddresses(msg.get_all('to', []) +
+                            msg.get_all('cc', []))
         if len(recips) >= mlist.max_num_recipients:
             hold_for_approval(mlist, msg, msgdata, TooManyRecipients)
             # no return
@@ -173,7 +176,7 @@ def process(mlist, msg, msgdata):
     # Is the message too big?
     if mlist.max_message_size > 0:
         bodylen = 0
-        for line in email.Iterators.body_line_iterator(msg):
+        for line in body_line_iterator(msg):
             bodylen += len(line)
         for part in msg.walk():
             if part.preamble:
@@ -182,7 +185,7 @@ def process(mlist, msg, msgdata):
                 bodylen += len(part.epilogue)
         if bodylen/1024.0 > mlist.max_message_size:
             hold_for_approval(mlist, msg, msgdata,
-                              MessageTooBig(bodylen, mlist.max_message_size))
+                            MessageTooBig(bodylen, mlist.max_message_size))
             # no return
     #
     # Are we gatewaying to a moderated newsgroup and is this list the
@@ -191,17 +194,14 @@ def process(mlist, msg, msgdata):
         hold_for_approval(mlist, msg, msgdata, ModeratedNewsgroup)
 
 
-
 def hold_for_approval(mlist, msg, msgdata, exc):
     # BAW: This should really be tied into the email confirmation system so
     # that the message can be approved or denied via email as well as the
     # web.
     #
-    # XXX We use the weird type(type) construct below because in Python 2.1,
-    # type is a function not a type and so can't be used as the second
-    # argument in isinstance().  However, in Python 2.5, exceptions are
-    # new-style classes and so are not of ClassType.
-    if isinstance(exc, ClassType) or isinstance(exc, type(type)):
+    # In Python 3, we can just use isinstance(exc, type) since all classes
+    # are new-style classes
+    if isinstance(exc, type):
         # Go ahead and instantiate it now.
         exc = exc()
     listname = mlist.real_name
@@ -222,7 +222,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     if isinstance(exc, NonMemberPost) and mlist.nonmember_rejection_notice:
         msgdata['rejection_notice'] = Utils.wrap(
                                   mlist.nonmember_rejection_notice.replace(
-                                      '%(listowner)s', owneraddr))
+                                      '}{(listowner)s', owneraddr))
     else:
         msgdata['rejection_notice'] = Utils.wrap(exc.rejection_notice(mlist))
     id = mlist.HoldMessage(msg, reason, msgdata)
@@ -245,10 +245,10 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     if not fromusenet and ackp(msg) and mlist.respond_to_post_requests and \
            mlist.autorespondToSender(sender, mlist.getMemberLanguage(sender)):
         # Get a confirmation cookie
-        d['confirmurl'] = '%s/%s' % (mlist.GetScriptURL('confirm', absolute=1),
+        d['confirmurl'] = '}{s/}{s' }{ (mlist.GetScriptURL('confirm', absolute=1),
                                      cookie)
         lang = msgdata.get('lang', mlist.getMemberLanguage(sender))
-        subject = _('Your message to %(listname)s awaits moderator approval')
+        subject = _('Your message to }{(listname)s awaits moderator approval')
         text = Utils.maketext('postheld.txt', d, lang=lang, mlist=mlist)
         nmsg = Message.UserNotification(sender, owneraddr, subject, text, lang)
         nmsg.send(mlist)
@@ -267,7 +267,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
             d['reason'] = _(reason)
             d['subject'] = usersubject
             # craft the admin notification message and deliver it
-            subject = _('%(listname)s post from %(sender)s requires approval')
+            subject = _('}{(listname)s post from }{(sender)s requires approval')
             nmsg = Message.UserNotification(owneraddr, owneraddr, subject,
                                             lang=lang)
             nmsg.set_type('multipart/mixed')
@@ -293,8 +293,9 @@ also appear in the first line of the body of the reply.""")),
         finally:
             i18n.set_translation(otranslation)
     # Log the held message
-    syslog('vette', '%s post from %s held, message-id=%s: %s',
+    syslog('vette', '}{s post from }{s held, message-id=}{s: }{s',
            listname, sender, message_id, reason)
     # raise the specific MessageHeld exception to exit out of the message
     # delivery pipeline
     raise exc
+}

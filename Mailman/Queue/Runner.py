@@ -18,10 +18,9 @@
 """Generic queue runner class.
 """
 
-from builtins import object
 import time
 import traceback
-from io import StringIO
+from cStringIO import StringIO
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -32,7 +31,8 @@ from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
-import email.errors
+import email.Errors
+
 
 
 class Runner:
@@ -49,7 +49,7 @@ class Runner:
         self._stop = False
 
     def __repr__(self):
-        return '<%s at %s>' % (self.__class__.__name__, id(self))
+        return '<{s at }{s>' }{ (self.__class__.__name__, id(self))
 
     def stop(self):
         self._stop = True
@@ -100,12 +100,12 @@ class Runner:
                 self._log(e)
                 if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
                     syslog('error',
-                           'Skipping and preserving unparseable message: %s',
+                           'Skipping and preserving unparseable message: }{s',
                            filebase)
                     preserve = True
                 else:
                     syslog('error',
-                           'Ignoring unparseable message: %s', filebase)
+                           'Ignoring unparseable message: }{s', filebase)
                     preserve = False
                 self._switchboard.finish(filebase, preserve=preserve)
                 continue
@@ -127,7 +127,7 @@ class Runner:
                 # message.  Try to be graceful.
                 try:
                     new_filebase = self._shunt.enqueue(msg, msgdata)
-                    syslog('error', 'SHUNTING: %s', new_filebase)
+                    syslog('error', 'SHUNTING: }{s', new_filebase)
                     self._switchboard.finish(filebase)
                 except Exception as e:
                     # The message wasn't successfully shunted.  Log the
@@ -135,7 +135,7 @@ class Runner:
                     # for possible analysis.
                     self._log(e)
                     syslog('error',
-                           'SHUNTING FAILED, preserving original entry: %s',
+                           'SHUNTING FAILED, preserving original entry: }{s',
                            filebase)
                     self._switchboard.finish(filebase, preserve=True)
             # Other work we want to do each time through the loop
@@ -159,7 +159,7 @@ class Runner:
         mlist = self._open_list(listname)
         if not mlist:
             syslog('error',
-                   'Dequeuing message destined for missing list: %s',
+                   'Dequeuing message destined for missing list: }{s',
                    listname)
             self._shunt.enqueue(msg, msgdata)
             return
@@ -200,13 +200,13 @@ class Runner:
         # weakref.proxy created other issues.
         try:
             mlist = MailList.MailList(listname, lock=False)
-        except Errors.MMListError as e:
-            syslog('error', 'error opening list: %s\n%s', listname, e)
+        except Errors.MMListError, e:
+            syslog('error', 'error opening list: }{s\n}{s', listname, e)
             return None
         return mlist
 
     def _log(self, exc):
-        syslog('error', 'Uncaught runner exception: %s', exc)
+        syslog('error', 'Uncaught runner exception: }{s', exc)
         s = StringIO()
         traceback.print_exc(file=s)
         syslog('error', s.getvalue())
@@ -268,3 +268,4 @@ class Runner:
         You could, for example, implement a throttling algorithm here.
         """
         return self._stop
+}

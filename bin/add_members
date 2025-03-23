@@ -77,6 +77,11 @@ You must supply at least one of -r and -d options.  At most one of the
 files can be `-'.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import os
 import getopt
@@ -99,7 +104,6 @@ _ = i18n._
 C_ = i18n.C_
 
 
-
 def usage(status, msg=''):
     if status:
         fd = sys.stderr
@@ -111,7 +115,6 @@ def usage(status, msg=''):
     sys.exit(status)
 
 
-
 def readfile(filename):
     if filename == '-':
         fp = sys.stdin
@@ -120,19 +123,18 @@ def readfile(filename):
         fp = open(filename)
         closep = 1
     # strip all the lines of whitespace and discard blank lines
-    lines = filter(None, [line.strip() for line in fp.readlines()])
+    lines = [line.strip() for line in fp.readlines()]
+    lines = [line for line in lines if line]
     if closep:
         fp.close()
     return lines
 
 
-
 def readmsgfile(filename):
-    lines = open(filename).read()
-    return lines
+    with open(filename) as fp:
+        return fp.read()
 
 
-
 class Tee:
     def __init__(self, outfp):
         self.__outfp = outfp
@@ -142,7 +144,6 @@ class Tee:
         self.__outfp.write(msg)
 
 
-
 def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
     tee = Tee(outfp)
     for member in members:
@@ -164,15 +165,14 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
                 mlist.InviteNewMember(userdesc, invite_msg)
             else:
                 mlist.ApprovedAddMember(userdesc,
-                                        ack=ack,
-                                        admin_notif=False,
-                                        whence='bin/add_members',
-                                       )
+                                      ack=ack,
+                                      admin_notif=False,
+                                      whence='bin/add_members',
+                                     )
         except Errors.MMAlreadyAMember:
             print(_('Already a member: %(member)s'), file=tee)
         except Errors.MembershipIsBanned as pattern:
-            print(('%s:' %
-                           member), _('Banned address (matched %(pattern)s)'), file=tee)
+            print('%s:' % member, _('Banned address (matched %(pattern)s)'), file=tee)
         except Errors.MMBadEmailError:
             if userdesc.address == '':
                 print(_('Bad/Invalid email address: blank line'), file=tee)
@@ -190,19 +190,18 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
                         userdesc.address.lower(), MemberAdaptor.BYADMIN)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   'a:r:d:w:im:nh',
-                                   ['admin-notify=',
-                                    'regular-members-file=',
-                                    'digest-members-file=',
-                                    'welcome-msg=',
-                                    'invite',
-                                    'invite-msg-file=',
-                                    'nomail',
-                                    'help',])
+                                 'a:r:d:w:im:nh',
+                                 ['admin-notify=',
+                                  'regular-members-file=',
+                                  'digest-members-file=',
+                                  'welcome-msg=',
+                                  'invite',
+                                  'invite-msg-file=',
+                                  'nomail',
+                                  'help',])
     except getopt.error as msg:
         usage(1, msg)
 
@@ -252,7 +251,7 @@ def main():
         usage(1, C_('Cannot read both digest and normal members '
                     'from standard input.'))
 
-    if not invite and invite_msg_file != None:
+    if not invite and invite_msg_file <> None:
         usage(1, C_('Setting invite-msg-file requires --invite.'))
 
     try:
@@ -310,6 +309,6 @@ def main():
         mlist.Unlock()
         i18n.set_translation(otrans)
 
-
+
 if __name__ == '__main__':
     main()
