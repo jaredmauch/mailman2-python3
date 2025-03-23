@@ -666,6 +666,9 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
     # Filter out None, and volatile attributes
     if value is None and not varname.startswith('_'):
         value = getattr(mlist, varname)
+    # Ensure value is properly converted to string if it's bytes
+    if isinstance(value, bytes):
+        value = value.decode('latin-1', errors='ignore')
     # Now create the widget for this value
     if kind == mm_cfg.Radio or kind == mm_cfg.Toggle:
         # If we are returning the option for subscribe policy and this site
@@ -697,8 +700,6 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         # Ensure value is properly converted to string
         if value is None:
             value = ''
-        elif isinstance(value, bytes):
-            value = value.decode('latin-1', errors='ignore')
         return TextArea(varname, value, r, c)
     elif kind in (mm_cfg.EmailList, mm_cfg.EmailListEx):
         if params:
@@ -708,8 +709,8 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         # Ensure value is properly converted to string
         if value is None:
             value = []
-        elif isinstance(value, bytes):
-            value = value.decode('latin-1', errors='ignore').split('\n')
+        elif isinstance(value, str):
+            value = value.split('\n')
         res = NL.join(value)
         return TextArea(varname, res, r, c, wrap='off')
     elif kind == mm_cfg.FileUpload:
@@ -773,6 +774,13 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         i = 1
         data = getattr(mlist, varname)
         for name, pattern, desc, empty in data:
+            # Ensure all values are strings
+            if isinstance(name, bytes):
+                name = name.decode('latin-1', errors='ignore')
+            if isinstance(pattern, bytes):
+                pattern = pattern.decode('latin-1', errors='ignore')
+            if isinstance(desc, bytes):
+                desc = desc.decode('latin-1', errors='ignore')
             makebox(i, name, pattern, desc, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -837,6 +845,9 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         i = 1
         data = getattr(mlist, varname)
         for pattern, action, empty in data:
+            # Ensure pattern is a string
+            if isinstance(pattern, bytes):
+                pattern = pattern.decode('latin-1', errors='ignore')
             makebox(i, pattern, action, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
