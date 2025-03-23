@@ -25,6 +25,12 @@ from __future__ import unicode_literals
 
 import time
 import re
+import os
+import sys
+import errno
+import cgi
+import html
+from typing import Dict, List, Optional, Union, Any
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -41,6 +47,407 @@ BR = '<br>'
 NL = '\n'
 COMMASPACE = ', '
 
+SPACE = ' '
+EMSPACE = '&emsp;'
+USPACE = '\u2003'  # Unicode em space
+
+# Format a URL into an HTML reference
+def maketext(url: str, text: Optional[str] = None) -> str:
+    """Format a URL into an HTML reference.
+
+    Args:
+        url: The URL to format.
+        text: Optional text to use as the link text. If not provided,
+              the URL itself is used.
+
+    Returns:
+        An HTML formatted link.
+    """
+    if text is None:
+        text = url
+    return '<a href="{0}">{1}</a>'.format(html.escape(url), html.escape(text))
+
+def link(url: str, text: Optional[str] = None) -> str:
+    """Create an HTML link.
+
+    Args:
+        url: The URL to link to.
+        text: Optional text to use as the link text. If not provided,
+              the URL itself is used.
+
+    Returns:
+        An HTML formatted link.
+    """
+    if text is None:
+        text = url
+    return '<a href="{0}">{1}</a>'.format(html.escape(url), html.escape(text))
+
+def italic(text: str) -> str:
+    """Format text in italic.
+
+    Args:
+        text: The text to format.
+
+    Returns:
+        The text wrapped in HTML italic tags.
+    """
+    return '<i>{0}</i>'.format(html.escape(text))
+
+def bold(text: str) -> str:
+    """Format text in bold.
+
+    Args:
+        text: The text to format.
+
+    Returns:
+        The text wrapped in HTML bold tags.
+    """
+    return '<b>{0}</b>'.format(html.escape(text))
+
+def header(level: int, text: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML header.
+
+    Args:
+        level: The header level (1-6).
+        text: The header text.
+        **kws: Additional HTML attributes to add to the header tag.
+
+    Returns:
+        An HTML header tag with the specified text and attributes.
+    """
+    if level < 1 or level > 6:
+        raise ValueError('Header level must be between 1 and 6')
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if attrs:
+        attrs = ' ' + ' '.join(attrs)
+    else:
+        attrs = ''
+    return '<h{0}{1}>{2}</h{0}>'.format(level, attrs, html.escape(text))
+
+def container(tag: str, text: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML container tag.
+
+    Args:
+        tag: The HTML tag name.
+        text: The text content.
+        **kws: Additional HTML attributes to add to the tag.
+
+    Returns:
+        An HTML tag with the specified text and attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if attrs:
+        attrs = ' ' + ' '.join(attrs)
+    else:
+        attrs = ''
+    return '<{0}{1}>{2}</{0}>'.format(tag, attrs, html.escape(text))
+
+def div(text: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML div container.
+
+    Args:
+        text: The text content.
+        **kws: Additional HTML attributes to add to the div tag.
+
+    Returns:
+        An HTML div tag with the specified text and attributes.
+    """
+    return container('div', text, **kws)
+
+def span(text: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML span container.
+
+    Args:
+        text: The text content.
+        **kws: Additional HTML attributes to add to the span tag.
+
+    Returns:
+        An HTML span tag with the specified text and attributes.
+    """
+    return container('span', text, **kws)
+
+def pre(text: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML pre container.
+
+    Args:
+        text: The text content.
+        **kws: Additional HTML attributes to add to the pre tag.
+
+    Returns:
+        An HTML pre tag with the specified text and attributes.
+    """
+    return container('pre', text, **kws)
+
+def table(rows: List[List[str]], **kws: Dict[str, str]) -> str:
+    """Create an HTML table.
+
+    Args:
+        rows: List of rows, where each row is a list of cell contents.
+        **kws: Additional HTML attributes to add to the table tag.
+
+    Returns:
+        An HTML table with the specified rows and attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if attrs:
+        attrs = ' ' + ' '.join(attrs)
+    else:
+        attrs = ''
+    
+    result = ['<table{0}>'.format(attrs)]
+    for row in rows:
+        result.append('<tr>')
+        for cell in row:
+            result.append('<td>{0}</td>'.format(html.escape(str(cell))))
+        result.append('</tr>')
+    result.append('</table>')
+    return '\n'.join(result)
+
+def unorderedlist(items: List[str], **kws: Dict[str, str]) -> str:
+    """Create an HTML unordered list.
+
+    Args:
+        items: List of items to include in the list.
+        **kws: Additional HTML attributes to add to the ul tag.
+
+    Returns:
+        An HTML unordered list with the specified items and attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if attrs:
+        attrs = ' ' + ' '.join(attrs)
+    else:
+        attrs = ''
+    
+    result = ['<ul{0}>'.format(attrs)]
+    for item in items:
+        result.append('<li>{0}</li>'.format(html.escape(str(item))))
+    result.append('</ul>')
+    return '\n'.join(result)
+
+def orderedlist(items: List[str], **kws: Dict[str, str]) -> str:
+    """Create an HTML ordered list.
+
+    Args:
+        items: List of items to include in the list.
+        **kws: Additional HTML attributes to add to the ol tag.
+
+    Returns:
+        An HTML ordered list with the specified items and attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if attrs:
+        attrs = ' ' + ' '.join(attrs)
+    else:
+        attrs = ''
+    
+    result = ['<ol{0}>'.format(attrs)]
+    for item in items:
+        result.append('<li>{0}</li>'.format(html.escape(str(item))))
+    result.append('</ol>')
+    return '\n'.join(result)
+
+def form(action: str, method: str = 'POST', encoding: str = None, 
+         **kws: Dict[str, str]) -> str:
+    """Create an HTML form.
+
+    Args:
+        action: The form action URL.
+        method: The form method (GET or POST).
+        encoding: Optional form encoding type.
+        **kws: Additional HTML attributes to add to the form tag.
+
+    Returns:
+        An HTML form tag with the specified attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if encoding:
+        attrs.append('enctype="{0}"'.format(html.escape(encoding)))
+    attrs = ' '.join(['action="{0}"'.format(html.escape(action)),
+                     'method="{0}"'.format(html.escape(method))] + attrs)
+    return '<form {0}>'.format(attrs)
+
+def input(type: str, name: str, value: str = '', 
+         checked: bool = False, **kws: Dict[str, str]) -> str:
+    """Create an HTML input element.
+
+    Args:
+        type: The input type.
+        name: The input name.
+        value: Optional input value.
+        checked: Whether the input is checked (for checkboxes/radios).
+        **kws: Additional HTML attributes to add to the input tag.
+
+    Returns:
+        An HTML input tag with the specified attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    attrs = ' '.join(['type="{0}"'.format(html.escape(type)),
+                     'name="{0}"'.format(html.escape(name)),
+                     'value="{0}"'.format(html.escape(value))] + attrs)
+    if checked:
+        attrs += ' checked'
+    return '<input {0}>'.format(attrs)
+
+def textarea(name: str, value: str = '', rows: int = 5, cols: int = 40,
+            **kws: Dict[str, str]) -> str:
+    """Create an HTML textarea element.
+
+    Args:
+        name: The textarea name.
+        value: Optional textarea value.
+        rows: Number of rows.
+        cols: Number of columns.
+        **kws: Additional HTML attributes to add to the textarea tag.
+
+    Returns:
+        An HTML textarea tag with the specified attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    attrs = ' '.join(['name="{0}"'.format(html.escape(name)),
+                     'rows="{0}"'.format(rows),
+                     'cols="{0}"'.format(cols)] + attrs)
+    return '<textarea {0}>{1}</textarea>'.format(attrs, html.escape(value))
+
+def select(name: str, items: List[Union[str, tuple]], 
+          selected: Optional[str] = None, **kws: Dict[str, str]) -> str:
+    """Create an HTML select element.
+
+    Args:
+        name: The select name.
+        items: List of items (strings) or tuples of (value, label).
+        selected: Optional value to mark as selected.
+        **kws: Additional HTML attributes to add to the select tag.
+
+    Returns:
+        An HTML select tag with the specified options and attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    attrs = ' '.join(['name="{0}"'.format(html.escape(name))] + attrs)
+    
+    result = ['<select {0}>'.format(attrs)]
+    for item in items:
+        if isinstance(item, tuple):
+            value, label = item
+        else:
+            value = label = item
+        if value == selected:
+            sel = ' selected'
+        else:
+            sel = ''
+        result.append('<option value="{0}"{1}>{2}</option>'.format(
+            html.escape(value), sel, html.escape(label)))
+    result.append('</select>')
+    return '\n'.join(result)
+
+def radio(name: str, value: str, checked: bool = False, 
+         **kws: Dict[str, str]) -> str:
+    """Create an HTML radio input element.
+
+    Args:
+        name: The radio button name.
+        value: The radio button value.
+        checked: Whether the radio button is checked.
+        **kws: Additional HTML attributes to add to the input tag.
+
+    Returns:
+        An HTML radio input tag with the specified attributes.
+    """
+    return input('radio', name, value, checked, **kws)
+
+def checkbox(name: str, value: str, checked: bool = False,
+            **kws: Dict[str, str]) -> str:
+    """Create an HTML checkbox input element.
+
+    Args:
+        name: The checkbox name.
+        value: The checkbox value.
+        checked: Whether the checkbox is checked.
+        **kws: Additional HTML attributes to add to the input tag.
+
+    Returns:
+        An HTML checkbox input tag with the specified attributes.
+    """
+    return input('checkbox', name, value, checked, **kws)
+
+def submit(value: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML submit button.
+
+    Args:
+        value: The button label.
+        **kws: Additional HTML attributes to add to the input tag.
+
+    Returns:
+        An HTML submit button with the specified attributes.
+    """
+    return input('submit', 'submit', value, **kws)
+
+def reset(value: str = 'Reset', **kws: Dict[str, str]) -> str:
+    """Create an HTML reset button.
+
+    Args:
+        value: The button label.
+        **kws: Additional HTML attributes to add to the input tag.
+
+    Returns:
+        An HTML reset button with the specified attributes.
+    """
+    return input('reset', 'reset', value, **kws)
+
+def button(value: str, **kws: Dict[str, str]) -> str:
+    """Create an HTML button element.
+
+    Args:
+        value: The button label.
+        **kws: Additional HTML attributes to add to the button tag.
+
+    Returns:
+        An HTML button tag with the specified attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    if attrs:
+        attrs = ' ' + ' '.join(attrs)
+    else:
+        attrs = ''
+    return '<button{0}>{1}</button>'.format(attrs, html.escape(value))
+
+def image(src: str, alt: str = '', **kws: Dict[str, str]) -> str:
+    """Create an HTML image element.
+
+    Args:
+        src: The image source URL.
+        alt: Optional alt text.
+        **kws: Additional HTML attributes to add to the img tag.
+
+    Returns:
+        An HTML img tag with the specified attributes.
+    """
+    attrs = []
+    for key, val in kws.items():
+        attrs.append('{0}="{1}"'.format(html.escape(key), html.escape(val)))
+    attrs = ' '.join(['src="{0}"'.format(html.escape(src)),
+                     'alt="{0}"'.format(html.escape(alt))] + attrs)
+    return '<img {0}>'.format(attrs)
 
 class HTMLFormatter(object):
     def GetMailmanFooter(self):
