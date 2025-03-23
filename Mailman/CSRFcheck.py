@@ -35,7 +35,6 @@ keydict = {
 }
 
 
-
 def csrf_token(mlist, contexts, user=None):
     """ create token by mailman cookie generation algorithm """
 
@@ -59,6 +58,9 @@ def csrf_token(mlist, contexts, user=None):
 def csrf_check(mlist, token, cgi_user=None):
     """ check token by mailman cookie validation algorithm """
     try:
+        # Handle both string and bytes token
+        if isinstance(token, str):
+            token = token.encode('latin-1')
         issued, keymac = marshal.loads(binascii.unhexlify(token))
         key, received_mac = keymac.split(':', 1)
         if not key.startswith(mlist.internal_name() + '+'):
@@ -100,5 +102,6 @@ def csrf_check(mlist, token, cgi_user=None):
             and 0 < time.time() - issued < mm_cfg.FORM_LIFETIME):
             return True
         return False
-    except (AssertionError, ValueError, TypeError):
+    except Exception as e:
+        syslog('error', 'CSRF token validation failed: %s', str(e))
         return False

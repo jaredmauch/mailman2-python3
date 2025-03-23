@@ -52,6 +52,9 @@ def main():
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
                 cgidata = parse_qs(form_data, keep_blank_values=1)
+                # Ensure CSRF token is properly encoded if present
+                if 'csrf_token' in cgidata:
+                    cgidata['csrf_token'] = [cgidata['csrf_token'][0].encode('latin-1')]
             else:
                 raise ValueError('Invalid content type')
         else:
