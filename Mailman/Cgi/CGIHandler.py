@@ -27,16 +27,16 @@ class FieldStorage:
         
         if content_type:
             # Parse the content type
-            ctype, pdict = email.parser.Parser().parsestr(
-                'Content-Type: ' + content_type)
+            msg = email.parser.Parser().parsestr('Content-Type: ' + content_type)
+            ctype = msg.get_content_type()
             
             # Handle multipart form data
-            if ctype.get_content_maintype() == 'multipart':
-                boundary = ctype.get_boundary()
+            if ctype and ctype.startswith('multipart/'):
+                boundary = msg.get_boundary()
                 if boundary:
                     self._parse_multipart(boundary, content_length)
             # Handle URL encoded form data
-            elif ctype.get_content_type() == 'application/x-www-form-urlencoded':
+            elif ctype == 'application/x-www-form-urlencoded':
                 self._parse_urlencoded(content_length)
         
         # Parse query string
