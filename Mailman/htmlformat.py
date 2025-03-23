@@ -219,10 +219,11 @@ class Link(object):
     def Format(self, indent=0):
         texpr = ""
         if self.target != None:
-            texpr = ' target="%s"' % self.target
-        return '<a href="%s"%s>%s</a>' % (HTMLFormatObject(self.href, indent),
-                                          texpr,
-                                          HTMLFormatObject(self.text, indent))
+            texpr = ' target="%s"' % Utils.websafe(self.target)
+        # Ensure href and text are properly escaped
+        safe_href = Utils.websafe(self.href)
+        safe_text = Utils.websafe(self.text)
+        return '<a href="%s"%s>%s</a>' % (safe_href, texpr, safe_text)
 
 class FontSize(object):
     """FontSize is being deprecated - use FontAttr(..., size="...") instead."""
@@ -320,7 +321,9 @@ class Document(Container):
             output.append('<META http-equiv="Content-Type" '
                           'content="text/html; charset=%s">' % charset)
             if self.title:
-                output.append('%s<TITLE>%s</TITLE>' % (tab, self.title))
+                # Ensure title is properly escaped
+                safe_title = Utils.websafe(self.title)
+                output.append('%s<TITLE>%s</TITLE>' % (tab, safe_title))
             # Add CSS to visually hide some labeling text but allow screen
             # readers to read it.
             output.append("""\
@@ -346,7 +349,8 @@ class Document(Container):
             if mm_cfg.WEB_LINK_COLOR:
                 kws.setdefault('link', mm_cfg.WEB_LINK_COLOR)
             for k, v in list(kws.items()):
-                quals.append('%s="%s"' % (k, v))
+                # Ensure all attributes are properly escaped
+                quals.append('%s="%s"' % (k, Utils.websafe(v)))
             output.append('%s<BODY %s' % (tab, SPACE.join(quals)))
             # Language direction
             direction = Utils.GetDirection(self.language)
@@ -445,7 +449,7 @@ class Form(Container):
         if self.mlist:
             output = output + \
                 '<input type="hidden" name="csrf_token" value="%s">\n' \
-                % csrf_token(self.mlist, self.contexts, self.user)
+                % Utils.websafe(csrf_token(self.mlist, self.contexts, self.user))
         output = output + Container.Format(self, indent+2)
         output = '%s\n%s</FORM>\n' % (output, spaces)
         return output
@@ -461,10 +465,14 @@ class InputObj(object):
 
     def Format(self, indent=0):
         charset = get_translation().charset() or 'us-ascii'
+        # Ensure name and value are properly escaped
+        safe_name = Utils.websafe(self.name)
+        safe_value = Utils.websafe(self.value)
         output = ['<INPUT name="%s" type="%s" value="%s"' %
-                  (self.name, self.type, self.value)]
+                  (safe_name, self.type, safe_value)]
+        # Ensure all keyword arguments are properly escaped
         for item in list(self.kws.items()):
-            output.append('%s="%s"' % item)
+            output.append('%s="%s"' % (item[0], Utils.websafe(item[1])))
         if self.checked:
             output.append('CHECKED')
         output.append('>')
@@ -714,7 +722,9 @@ class SelectOptions(object):
       if items == 0:
           return ""
 
-      text = "\n" + spaces + "<Select name=\"%s\"" % self.varname
+      # Ensure varname is properly escaped
+      safe_varname = Utils.websafe(self.varname)
+      text = "\n" + spaces + "<Select name=\"%s\"" % safe_varname
       if self.size > 1:
           text = text + " size=%d" % self.size
       if self.multiple:
@@ -727,8 +737,11 @@ class SelectOptions(object):
           else:
               checked = ""
 
+          # Ensure values and legend text are properly escaped
+          safe_value = Utils.websafe(self.values[i])
+          safe_legend = Utils.websafe(self.legend[i])
           opt = " <option value=\"%s\"%s> %s </option>" % (
-              self.values[i], checked, self.legend[i])
+              safe_value, checked, safe_legend)
           text = text + spaces + opt + "\n"
 
       return text + spaces + '</Select>'
