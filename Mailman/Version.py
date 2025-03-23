@@ -15,35 +15,45 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
+"""Version information for Mailman.
+
+This module defines various version numbers and constants used throughout
+the Mailman system. It includes version information for the core system,
+data file schemas, and various database schemas.
+"""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from typing import Final
+
 # Mailman version
-VERSION = '2.1.39'
+VERSION: Final[str] = '2.1.39'
 
-# And as a hex number in the manner of PY_VERSION_HEX
-ALPHA = 0xa
-BETA  = 0xb
-GAMMA = 0xc
+# Release level constants
+ALPHA: Final[int] = 0xa
+BETA: Final[int] = 0xb
+GAMMA: Final[int] = 0xc
 # release candidates
-RC    = GAMMA
-FINAL = 0xf
+RC: Final[int] = GAMMA
+FINAL: Final[int] = 0xf
 
-MAJOR_REV = 2
-MINOR_REV = 1
-MICRO_REV = 39
-REL_LEVEL = FINAL
+# Version components
+MAJOR_REV: Final[int] = 2
+MINOR_REV: Final[int] = 1
+MICRO_REV: Final[int] = 39
+REL_LEVEL: Final[int] = FINAL
 # at most 15 beta releases!
-REL_SERIAL = 0
+REL_SERIAL: Final[int] = 0
 
-HEX_VERSION = ((MAJOR_REV << 24) | (MINOR_REV << 16) | (MICRO_REV << 8) |
-               (REL_LEVEL << 4)  | (REL_SERIAL << 0))
+# Combined version as a hex number in the manner of PY_VERSION_HEX
+HEX_VERSION: Final[int] = ((MAJOR_REV << 24) | (MINOR_REV << 16) | (MICRO_REV << 8) |
+                          (REL_LEVEL << 4)  | (REL_SERIAL << 0))
 
-# config.pck schema version number
-DATA_FILE_VERSION = 112
-
-# qfile/*.db schema version number
-QFILE_SCHEMA_VERSION = 3
-
-# version number for the lists/<listname>/pending.db file schema
-PENDING_FILE_SCHEMA_VERSION = 2
-
-# version number for the lists/<listname>/request.db file schema
-REQUESTS_FILE_SCHEMA_VERSION = 1
+# Schema version numbers
+DATA_FILE_VERSION: Final[int] = 112  # config.pck schema version number
+QFILE_SCHEMA_VERSION: Final[int] = 3  # qfile/*.db schema version number
+PENDING_FILE_SCHEMA_VERSION: Final[int] = 2  # lists/<listname>/pending.db schema version
+REQUESTS_FILE_SCHEMA_VERSION: Final[int] = 1  # lists/<listname>/request.db schema version
