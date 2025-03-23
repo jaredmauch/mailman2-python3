@@ -18,6 +18,17 @@
 
 """Mixin class with message delivery routines."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import sys
+import os
+import time
+import getopt
+
+import paths
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
 
@@ -28,52 +39,43 @@ from Mailman import Message
 from Mailman import i18n
 from Mailman import Pending
 from Mailman.Logging.Syslog import syslog
+from Mailman import MailList
+from Mailman.i18n import C_
 
 _ = i18n._
 
 
-
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(C_(__doc__), file=fd)
+    if msg:
+        print(msg, file=fd)
+    sys.exit(code)
+
+
 class Deliverer:
     def SendSubscribeAck(self, name, password, digest, text=''):
-        pluser = self.getMemberLanguage(name)
-        # Need to set this here to get the proper l10n of the Subject:
-        i18n.set_language(pluser)
-        if self.welcome_msg:
-            welcome = Utils.wrap(self.welcome_msg) + '\n'
-        else:
-            welcome = ''
-        if self.umbrella_list:
-            addr = self.GetMemberAdminEmail(name)
-            umbrella = Utils.wrap(_('''\
-Note: Since this is a list of mailing lists, administrative
-notices like the password reminder will be sent to
-your membership administrative address, {(addr)s.'''))
-        else:
-            umbrella = ''
-        # get the text from the template
-        text += Utils.maketext(
-            'subscribeack.txt',
-            {'real_name'   : self.real_name,
-             'host_name'   : self.host_name,
-             'welcome'     : welcome,
-             'umbrella'    : umbrella,
-             'emailaddr'   : self.GetListEmail(),
-             'listinfo_url': self.GetScriptURL('listinfo', absolute=True),
-             'optionsurl'  : self.GetOptionsURL(name, absolute=True),
-             'password'    : password,
-             'user'        : self.getMemberCPAddress(name),
-             }, lang=pluser, mlist=self)
-        if digest:
-            digmode = _(' (Digest mode)')
-        else:
-            digmode = ''
-        realname = self.real_name
+        """Send subscription acknowledgment to new member."""
+        if not text:
+            text = Utils.maketext('subscribeack.txt',
+                                {'realname': name,
+                                 'password': password,
+                                 'digest': digest,
+                                 'listname': self.internal_name(),
+                                 'hostname': self.host_name,
+                                 'requestaddr': self.GetRequestEmail(),
+                                 'adminaddr': self.GetAdminEmail()},
+                                mlist=self)
         msg = Message.UserNotification(
-            self.GetMemberAdminEmail(name), self.GetRequestEmail(),
-            _('Welcome to the "}{(realname)s" mailing list}{(digmode)s'),
-            text, pluser)
-        msg['X-No-Archive'] = 'yes'
-        msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
+            name,
+            self.GetRequestEmail(),
+            _('Your subscription to the %(listname)s mailing list'),
+            text,
+            mlist=self)
+        msg.send(self)
 
     def SendUnsubscribeAck(self, addr, lang):
         realname = self.real_name

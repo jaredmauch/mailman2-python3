@@ -44,13 +44,6 @@ from pickle import load
 import paths
 from Mailman.i18n import C_
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr

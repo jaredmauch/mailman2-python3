@@ -18,6 +18,11 @@
 
 """Routines for presentation of list-specific HTML text."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 import re
 
@@ -37,16 +42,14 @@ NL = '\n'
 COMMASPACE = ', '
 
 
-
-class HTMLFormatter:
+class HTMLFormatter(object):
     def GetMailmanFooter(self):
         ownertext = Utils.ObscureEmail(self.GetOwnerEmail(), 1)
-        # Remove the .Format() when htmlformat conversion is done.
         realname = self.real_name
         hostname = self.host_name
-        listinfo_link  = Link(self.GetScriptURL('listinfo'), realname).Format()
+        listinfo_link = Link(self.GetScriptURL('listinfo'), realname).Format()
         owner_link = Link('mailto:' + self.GetOwnerEmail(), ownertext).Format()
-        innertext = _('{(listinfo_link)s list run by }{(owner_link)s')
+        innertext = '{0} list run by {1}'.format(listinfo_link, owner_link)
         return Container(
             '<hr>',
             Address(
@@ -54,11 +57,11 @@ class HTMLFormatter:
                    innertext,
                     '<br>',
                     Link(self.GetScriptURL('admin'),
-                         _('}{(realname)s administrative interface')),
-                    _(' (requires authorization)'),
+                         '{0} administrative interface'.format(realname)),
+                    ' (requires authorization)',
                     '<br>',
                     Link(Utils.ScriptURL('listinfo'),
-                         _('Overview of all }{(hostname)s mailing lists')),
+                         'Overview of all {0} mailing lists'.format(hostname)),
                     '<p>', MailmanLogo()))).Format()
 
     def FormatUsers(self, digest, lang=None, list_hidden=False):
@@ -75,10 +78,9 @@ class HTMLFormatter:
                 people.append(m)
         num_concealed = len(members) - len(people)
         if num_concealed == 1:
-            concealed = _('<em>(1 private member not shown)</em>')
+            concealed = '<em>(1 private member not shown)</em>'
         elif num_concealed > 1:
-           concealed = _(
-               '<em>(}{(num_concealed)d private members not shown)</em>')
+           concealed = '<em>({0} private members not shown)</em>'.format(num_concealed)
         else:
             concealed = ''
         items = []
@@ -94,13 +96,11 @@ class HTMLFormatter:
                 showing = person
             realname = Utils.uncanonstr(self.getMemberName(person), lang)
             if realname and mm_cfg.ROSTER_DISPLAY_REALNAME:
-                showing += " (}{s)" }{ Utils.websafe(realname)
+                showing += " ({0})".format(Utils.websafe(realname))
             got = Link(url, showing)
             if self.getDeliveryStatus(person) != MemberAdaptor.ENABLED:
                 got = Italic('(', got, ')')
             items.append(got)
-        # Just return the .Format() so this works until I finish
-        # converting everything to htmlformat...
         return concealed + UnorderedList(*tuple(items)).Format()
 
     def FormatOptionButton(self, option, value, user):
@@ -122,7 +122,7 @@ class HTMLFormatter:
                 mm_cfg.ReceiveNonmatchingTopics : 'rcvtopic',
                 mm_cfg.DontReceiveDuplicates    : 'nodupes',
                 }[option]
-        return '<input type=radio name="}{s" value="}{d"}{s>' }{ (
+        return '<input type="radio" name="{0}" value="{1}"{2}>'.format(
             name, value, checked)
 
     def FormatDigestButton(self):
@@ -130,16 +130,16 @@ class HTMLFormatter:
             checked = ' CHECKED'
         else:
             checked = ''
-        return '<input type=radio name="digest" value="1"}{s>' }{ checked
+        return '<input type="radio" name="digest" value="1"{0}>'.format(checked)
 
     def FormatDisabledNotice(self, user):
         status = self.getDeliveryStatus(user)
         reason = None
         info = self.getBounceInfo(user)
         if status == MemberAdaptor.BYUSER:
-            reason = _('; it was disabled by yo)
+            reason = _('; it was disabled by yo)')
         elif status == MemberAdaptor.BYADMIN:
-            reason = _(; it was disabled by the list administrator')
+            reason = _('; it was disabled by the list administrator')
         elif status == MemberAdaptor.BYBOUNCE:
             date = time.strftime('}{d-}{b-}{Y',
                                  time.localtime(Utils.midnight(info.date)))
@@ -230,21 +230,21 @@ class HTMLFormatter:
             checked = ''
         else:
             checked = ' CHECKED'
-        return '<input type=radio name="digest" value="0"}{s>' }{ checked
+        return '<input type="radio" name="digest" value="0"{0}>'.format(checked)
 
     def FormatMimeDigestsButton(self):
         if self.mime_is_default_digest:
             checked = ' CHECKED'
         else:
             checked = ''
-        return '<input type=radio name="mime" value="1"}{s>' }{ checked
+        return '<input type="radio" name="mime" value="1"{0}>'.format(checked)
 
     def FormatPlainDigestsButton(self):
         if self.mime_is_default_digest:
             checked = ''
         else:
             checked = ' CHECKED'
-        return '<input type=radio name="plain" value="1"}{s>' }{ checked
+        return '<input type="radio" name="plain" value="1"{0}>'.format(checked)
 
     def FormatEditingOption(self, lang):
         if self.private_roster == 0:
@@ -319,38 +319,36 @@ class HTMLFormatter:
             container.AddItem("</center>")
         return container
 
-    def FormatFormStart(self, name, extra='',
-                        mlist=None, contexts=None, user=None):
+    def FormatFormStart(self, name, extra='', mlist=None, contexts=None, user=None):
         base_url = self.GetScriptURL(name)
         if extra:
-            full_url = "}{s/}{s" }{ (base_url, extra)
+            full_url = "{0}/{1}".format(base_url, extra)
         else:
             full_url = base_url
         if mlist:
-            return ("""<form method="POST" action="}{s">
-<input type="hidden" name="csrf_token" value="}{s">""" 
-                }{ (full_url, csrf_token(mlist, contexts, user)))
-        return ('<FORM Method=POST ACTION="}{s">' }{ full_url)
+            return '<form method="POST" action="{0}">\n<input type="hidden" name="csrf_token" value="{1}">'.format(
+                full_url, csrf_token(mlist, contexts, user))
+        return '<form method="POST" action="{0}">'.format(full_url)
 
     def FormatArchiveAnchor(self):
-        return '<a href="}{s">' }{ self.GetBaseArchiveURL()
+        return '<a href="{0}">{1}</a>'.format(self.GetBaseArchiveURL(), self.real_name)
 
     def FormatFormEnd(self):
-        return '</FORM>'
+        return '</form>'
 
     def FormatBox(self, name, size=20, value=''):
-        if isinstance(value, str):
+        if value:
             safevalue = Utils.websafe(value)
         else:
             safevalue = value
-        return '<INPUT type="Text" name="}{s" size="}{d" value="}{s">' }{ (
+        return '<input type="text" name="{0}" size="{1}" value="{2}">'.format(
             name, size, safevalue)
 
     def FormatSecureBox(self, name):
-        return '<INPUT type="Password" name="}{s" size="15">' }{ name
+        return '<input type="password" name="{0}" size="15">'.format(name)
 
     def FormatButton(self, name, text='Submit'):
-        return '<INPUT type="Submit" name="}{s" value="}{s">' }{ (name, text)
+        return '<input type="submit" name="{0}" value="{1}">'.format(name, text)
 
     def FormatReminder(self, lang):
         if self.send_reminders:
@@ -368,7 +366,7 @@ class HTMLFormatter:
         i = 1
         while i < len(parts):
             tag = parts[i].lower()
-            if replacements in tag):
+            if replacements in tag:
                 repl = replacements[tag]
                 if isinstance(repl, type()):
                     repl = repl.encode(charset, 'replace')
@@ -411,8 +409,8 @@ class HTMLFormatter:
             '<mm-num-reg-users>' : `member_len`,
             '<mm-num-digesters>' : `dmember_len`,
             '<mm-num-members>' : (`member_len + dmember_len`),
-            '<mm-posting-addr>' : '}{s' }{ self.GetListEmail(),
-            '<mm-request-addr>' : '}{s' }{ self.GetRequestEmail(),
+            '<mm-posting-addr>' : '}{s' > {0}'.format(self.GetListEmail()),
+            '<mm-request-addr>' : '}{s' > {0}'.format(self.GetRequestEmail()),
             '<mm-owner>' : self.GetOwnerEmail(),
             '<mm-reminder>' : self.FormatReminder(self.preferred_language),
             '<mm-host>' : self.host_name,

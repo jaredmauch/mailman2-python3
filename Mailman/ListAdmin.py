@@ -23,17 +23,27 @@ Pending subscriptions which are requiring a user's confirmation are handled
 elsewhere.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import time
 import errno
-import cPickle
-import marshal
-from cStringIO import StringIO
+try:
+    import pickle as cPickle
+except ImportError:
+    import cPickle
+try:
+    from io import StringIO
+except ImportError:
+    from cStringIO import StringIO
 
 import email
-from email.MIMEMessage import MIMEMessage
-from email.Generator import Generator
-from email.Utils import getaddresses
+from email.mime.message import MIMEMessage
+from email.generator import Generator
+from email.utils import getaddresses
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -63,7 +73,7 @@ DASH = '-'
 NL = '\n'
 
 
-class ListAdmin:
+class ListAdmin(object):
     def InitVars(self):
         # non-configurable data
         self.next_request_id = 1
@@ -76,13 +86,11 @@ class ListAdmin:
         if self.__db is None:
             assert self.Locked()
             try:
-                fp = open(self.__filename)
-                try:
+                with open(self.__filename, 'rb') as fp:
                     self.__db = cPickle.load(fp)
-                finally:
-                    fp.close()
             except IOError as e:
-                if e.errno != errno.ENOENT: raise
+                if e.errno != errno.ENOENT:
+                    raise
                 self.__db = {}
                 # put version number in new database
                 self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
@@ -92,19 +100,14 @@ class ListAdmin:
             assert self.Locked()
             # Save the version number
             self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
-            # Now save a temp file and do the tmpfile->real file dance.  BAW:
-            # should we be as paranoid as for the config.pck file?  Should we
-            # use pickle?
+            # Now save a temp file and do the tmpfile->real file dance.
             tmpfile = self.__filename + '.tmp'
             omask = os.umask(0o007)
             try:
-                fp = open(tmpfile, 'w')
-                try:
+                with open(tmpfile, 'wb') as fp:
                     cPickle.dump(self.__db, fp, 1)
                     fp.flush()
                     os.fsync(fp.fileno())
-                finally:
-                    fp.close()
             finally:
                 os.umask(omask)
             self.__db = None
@@ -116,7 +119,7 @@ class ListAdmin:
         while True:
             next = self.next_request_id
             self.next_request_id += 1
-            if not self.__db in next):
+            if next not in self.__db:
                 break
         return next
 
@@ -172,11 +175,14 @@ class ListAdmin:
             # id, but we have no way currently of correlating them. :(
             del self.__db[id]
 
-    def HoldMessage(self, msg, reason, msgdata={}):
+    def HoldMessage(self, msg, reason, msgdata=None):
         # Make a copy of msgdata so that subsequent changes won't corrupt the
         # request database.  TBD: remove the `filebase' key since this will
         # not be relevant when the message is resurrected.
-        msgdata = msgdata.copy()
+        if msgdata is None:
+            msgdata = {}
+        else:
+            msgdata = msgdata.copy()
         # assure that the database is open for writing
         self.__opendb()
         # get the next unique id
@@ -188,11 +194,10 @@ class ListAdmin:
             ext = 'pck'
         else:
             ext = 'txt'
-        filename = 'heldmsg-{s-}{d.}{s' }{ (self.internal_name(), id, ext)
+        filename = 'heldmsg-{0}-{1}.{2}'.format(self.internal_name(), id, ext)
         omask = os.umask(0o007)
         try:
-            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'w')
-            try:
+            with open(os.path.join(mm_cfg.DATA_DIR, filename), 'wb') as fp:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
                     cPickle.dump(msg, fp, 1)
                 else:
@@ -200,8 +205,6 @@ class ListAdmin:
                     g.flatten(msg, 1)
                 fp.flush()
                 os.fsync(fp.fileno())
-            finally:
-                fp.close()
         finally:
             os.umask(omask)
         # save the information to the request database.  for held message
@@ -542,7 +545,7 @@ class ListAdmin:
         try:
             fp = open(filename)
             try:
-                self.__db = marshal.load(fp)
+                self.__db = cPickle.load(fp)
             finally:
                 fp.close()
             os.unlink(filename)

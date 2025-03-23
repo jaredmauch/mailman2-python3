@@ -145,8 +145,8 @@ import tokenize
 import operator
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import unicode_literals
+from __future__ import print_function
 
 # for selftesting
 try:
@@ -163,7 +163,6 @@ DEFAULTKEYWORDS = ', '.join(default_keywords)
 EMPTYSTRING = ''
 
 
-
 # The normal pot-file header. msgmerge and Emacs's po-mode work better if it's
 # there.
 pot_header = _('''\
@@ -185,51 +184,18 @@ msgstr ""
 
 ''')
 
-
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(f"Usage: pygettext [options] inputfile ...\n\nOptions:\n\n"
-          f"-a\n--extract-all\n\tExtract all strings.\n\n"
-          f"-d name\n--default-domain=name\n\tRename the default output file from messages.pot to name.pot.\n\n"
-          f"-E\n--escape\n\tReplace non-ASCII characters with octal escape sequences.\n\n"
-          f"-D\n--docstrings\n\tExtract module, class, method, and function docstrings.  These do not\n"
-          f"\tneed to be wrapped in _() markers, and in fact cannot be for Python to\n"
-          f"\tconsider them docstrings. (See also the -X option).\n\n"
-          f"-h\n--help\n\tPrint this help message and exit.\n\n"
-          f"-k word\n--keyword=word\n\tKeywords to look for in addition to the default set, which are:\n"
-          f"\t}{(DEFAULTKEYWORDS)s\n\n\tYou can have multiple -k flags on the command line.\n\n"
-          f"-K\n--no-default-keywords\n\tDisable the default set of keywords (see above).  Any keywords\n"
-          f"\texplicitly added with the -k/--keyword option are still recognized.\n\n"
-          f"--no-location\n\tDo not write filename/lineno location comments.\n\n"
-          f"-n\n--add-location\n\tWrite filename/lineno location comments indicating where each\n"
-          f"\textracted string is found in the source.  These lines appear before\n"
-          f"\teach msgid.  The style of comments is controlled by the -S/--style\n"
-          f"\toption.  This is the default.\n\n"
-          f"-o filename\n--output=filename\n\tRename the default output file from messages.pot to filename.  If\n"
-          f"\tfilename is `-' then the output is sent to standard out.\n\n"
-          f"-p dir\n--output-dir=dir\n\tOutput files will be placed in directory dir.\n\n"
-          f"-S stylename\n--style stylename\n\tSpecify which style to use for location comments.  Two styles are\n"
-          f"\tsupported:\n\n\tSolaris  # File: filename, line: line-number\n"
-          f"\tGNU      #: filename:line\n\n\tThe style name is case insensitive.  GNU style is the default.\n\n"
-          f"-v\n--verbose\n\tPrint the names of the files being processed.\n\n"
-          f"-V\n--version\n\tPrint the version of pygettext and exit.\n\n"
-          f"-w columns\n--width=columns\n\tSet width of output to columns.\n\n"
-          f"-x filename\n--exclude-file=filename\n\tSpecify a file that contains a list of strings that are not be\n"
-          f"\textracted from the input files.  Each string to be excluded must\n"
-          f"\tappear on a line by itself in the file.\n\n"
-          f"-X filename\n--no-docstrings=filename\n\tSpecify a file that contains a list of files (one per line) that\n"
-          f"\tshould not have their docstrings extracted.  This is only useful in\n"
-          f"\tconjunction with the -D option above.\n\n"
-          f"If `inputfile' is -, standard input is read.", file=fd)
+    print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
-
 escapes = []
 
 def make_escapes(pass_iso8859):
@@ -283,7 +249,6 @@ def normalize(s):
     return s
 
 
-
 class TokenEater:
     def __init__(self, options):
         self.__options = options
@@ -425,7 +390,6 @@ class TokenEater:
                 print('msgstr ""\n', file=fp)
 
 
-
 def main():
     global default_keywords
     try:
@@ -436,9 +400,8 @@ def main():
              'keyword=', 'no-default-keywords',
              'add-location', 'no-location', 'output=', 'output-dir=',
              'style=', 'verbose', 'version', 'width=', 'exclude-file=',
-             'docstrings', 'no-docstrings',
-             ])
-    except getopt.error, msg:
+             'docstrings', 'no-docstrings'])
+    except getopt.error as msg:
         usage(1, msg)
 
     # for holding option values
@@ -573,7 +536,7 @@ def main():
         if closep:
             fp.close()
 
-
+
 if __name__ == '__main__':
     main()
     # some more test strings

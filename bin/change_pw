@@ -67,8 +67,8 @@ Options:
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 import getopt
@@ -113,11 +113,9 @@ def openlist(listname):
 
 
 def main():
-    # Parse options
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'ad:l:p:qh',
-            ['all', 'domain=', 'listname=', 'password=', 'quiet', 'help'])
+        opts, args = getopt.getopt(sys.argv[1:], 'l:p:',
+                                 ['list=', 'password=', 'help'])
     except getopt.error as msg:
         usage(1, msg)
 

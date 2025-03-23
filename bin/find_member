@@ -58,8 +58,8 @@ displayed.
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 import re
@@ -130,8 +130,7 @@ class Options:
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'l:x:wh',
-                                   ['listname=', 'exclude=', 'owners',
-                                    'help'])
+                                 ['listname=', 'exclude=', 'owners', 'help'])
     except getopt.error as msg:
         usage(1, msg)
 
@@ -141,7 +140,7 @@ def main():
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage(0)
-        elif opt in ('-l', '--listname'):
+        elif opt in ('-l', '--list'):
             if not loptseen:
                 options.listnames = []
                 loptseen = 1

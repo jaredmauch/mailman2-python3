@@ -21,11 +21,16 @@ gateway and cron/gate_news for the news->mail gateway.
 
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from Mailman import mm_cfg
 from Mailman.i18n import _
 
-
-class GatewayManager:
+
+class GatewayManager(object):
     def InitVars(self):
         # Configurable
         self.nntp_host = mm_cfg.DEFAULT_NNTP_HOST

@@ -26,7 +26,10 @@
        (probably in the 'update_dirty_archives' method).
 """
 
-from __future__ import nested_scopes
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 import re
@@ -221,9 +224,9 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
                                     Utils.GetCharSet(lang),
                                     'replace')
                 text = sdict.interpolate(utemplate)
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
             # The template is really screwed up
-            syslog('error', 'broken template: }{s\n}{s', filepath, e)
+            syslog('error', 'broken template: %s\n%s', filepath, e)
     # Make sure the text is in the given character set, or html-ify any bogus
     # characters.
     return Utils.uncanonstr(text, lang)
@@ -300,9 +303,9 @@ class Article(pipermail.Article):
         cset = Utils.GetCharSet(mlist.preferred_language)
         cset_out = Charset(cset).output_charset or cset
         if isinstance(cset_out, str):
-        if isinstance(cset_out, unicode):
-            # email 3.0.1 (python 2.4) doesn't like unicode
-            cset_out = cset_out.encode('us-ascii')
+            if isinstance(cset_out, unicode):
+                # email 3.0.1 (python 2.4) doesn't like unicode
+                cset_out = cset_out.encode('us-ascii')
         charset = message.get_content_charset(cset_out)
         if charset:
             charset = charset.lower().strip()
@@ -342,8 +345,8 @@ class Article(pipermail.Article):
         if not mlist:
             try:
                 mlist = MailList.MailList(listname, lock=0)
-            except Errors.MMListError, e:
-                syslog('error', 'error opening list: }{s\n}{s', listname, e)
+            except Errors.MMListError as e:
+                syslog('error', 'error opening list: %s\n%s', listname, e)
                 return None
             else:
                 self._listcache[listname] = mlist
@@ -503,12 +506,11 @@ class Article(pipermail.Article):
         """Return the href and subject for the previous message"""
         if self.prev:
             subject = self._get_subject_enc(self.prev)
-            prev = ('<LINK REL="Previous"  HREF="}{s">'
-                    }{ (url_quote(self.prev.filename)))
+            prev = ('<LINK REL="Previous" HREF="%s">' % 
+                    url_quote(self.prev.filename))
             prev_wsubj = ('<LI>' + _('Previous message (by thread):') +
-                          ' <A HREF="}{s">}{s\n</A></li>'
-                          }{ (url_quote(self.prev.filename),
-                             self.quote(subject)))
+                          ' <A HREF="%s">%s\n</A></li>' %
+                          (url_quote(self.prev.filename), self.quote(subject)))
         else:
             prev = prev_wsubj = ""
         return prev, prev_wsubj
@@ -525,12 +527,11 @@ class Article(pipermail.Article):
         """Return the href and subject for the previous message"""
         if self.next:
             subject = self._get_subject_enc(self.next)
-            next = ('<LINK REL="Next"  HREF="}{s">'
-                    }{ (url_quote(self.next.filename)))
+            next = ('<LINK REL="Next" HREF="%s">' % 
+                    url_quote(self.next.filename))
             next_wsubj = ('<LI>' + _('Next message (by thread):') +
-                          ' <A HREF="}{s">}{s\n</A></li>'
-                          }{ (url_quote(self.next.filename),
-                             self.quote(subject)))
+                          ' <A HREF="%s">%s\n</A></li>' %
+                          (url_quote(self.next.filename), self.quote(subject)))
         else:
             next = next_wsubj = ""
         return next, next_wsubj
@@ -711,10 +712,10 @@ class HyperArchive(pipermail.T):
         for t in i.keys():
             cap = t[0].upper() + t[1:]
             if self.type == cap:
-                d["}{s_ref" }{ (t)] = ""
+                d["%s_ref" % t] = ""
             else:
-                d["}{s_ref" }{ (t)] = ('<a href="}{s.html#start">[ }{s ]</a>'
-                                     }{ (t, i[t]))
+                d["%s_ref" % t] = ('<a href="%s.html#start">[ %s ]</a>' %
+                                   (t, i[t]))
         return quick_maketext(
             'archidxfoot.html', d,
             mlist=mlist)
@@ -747,11 +748,11 @@ class HyperArchive(pipermail.T):
         for t in i.keys():
             cap = t[0].upper() + t[1:]
             if self.type == cap:
-                d["}{s_ref" }{ (t)] = ""
+                d["%s_ref" % t] = ""
                 d["archtype"] = i[t]
             else:
-                d["}{s_ref" }{ (t)] = ('<a href="}{s.html#start">[ }{s ]</a>'
-                                     }{ (t, i[t]))
+                d["%s_ref" % t] = ('<a href="%s.html#start">[ %s ]</a>' %
+                                   (t, i[t]))
         if self.charset:
             d["encoding"] = html_charset.format(self.charset)
         else:
@@ -764,12 +765,13 @@ class HyperArchive(pipermail.T):
         mlist = self.maillist
         listname = mlist.internal_name()
         mbox = os.path.join(mlist.archive_dir()+'.mbox', listname+'.mbox')
-        d = {"listname": mlist.real_name,
-             "listinfo": mlist.GetScriptURL('listinfo', absolute=1),
-             "fullarch": '../}{s.mbox/}{s.mbox' }{ (listname, listname),
-             "size": sizeof(mbox, mlist.preferred_language),
-             'meta': '',
-             }
+        d = {
+            "listname": mlist.real_name,
+            "listinfo": mlist.GetScriptURL('listinfo', absolute=1),
+            "fullarch": '../%s.mbox/%s.mbox' % (listname, listname),
+            "size": sizeof(mbox, mlist.preferred_language),
+            'meta': '',
+        }
         # Avoid i18n side-effects
         otrans = i18n.get_translation()
         i18n.set_language(mlist.preferred_language)
@@ -813,21 +815,20 @@ class HyperArchive(pipermail.T):
         if os.path.exists(gzfile):
             file = gzfile
             url = arch + '.txt.gz'
-            templ = '<td><A href="}{(url)s">[ ' + _('Gzip\'d Text}{(sz)s') \
-                    + ']</a></td>'
+            templ = '<td><A href="%s">[ ' + _('Gzip\'d Text') + ' %s]</a></td>'
         elif os.path.exists(txtfile):
             file = txtfile
             url = arch + '.txt'
-            templ = '<td><A href="}{(url)s">[ ' + _('Text}{(sz)s') + ']</a></td>'
+            templ = '<td><A href="%s">[ ' + _('Text') + ' %s]</a></td>'
         else:
             # neither found?
             file = None
         # in Python 1.5.2 we have an easy way to get the size
         if file:
-            textlink = templ }{ {
+            textlink = templ % {
                 'url': url,
-                'sz' : sizeof(file, self.maillist.preferred_language)
-                }
+                'sz': sizeof(file, self.maillist.preferred_language)
+            }
         else:
             # there's no archive file at all... hmmm.
             textlink = ''
@@ -858,33 +859,33 @@ class HyperArchive(pipermail.T):
 
     def processListArch(self):
         name = self.maillist.ArchiveFileName()
-        wname= name+'.working'
-        ename= name+'.err_unarchived'
+        wname = name + '.working'
+        ename = name + '.err_unarchived'
         try:
             os.stat(name)
-        except (IOError,os.error):
-            #no archive file, nothin to do -ddm
+        except (IOError, os.error):
+            # no archive file, nothing to do -ddm
             return
 
-        #see if arch is locked here -ddm
+        # see if arch is locked here -ddm
         if not self.GetArchLock():
-            #another archiver is running, nothing to do. -ddm
+            # another archiver is running, nothing to do. -ddm
             return
 
-        #if the working file is still here, the archiver may have
+        # if the working file is still here, the archiver may have
         # crashed during archiving. Save it, log an error, and move on.
         try:
             wf = open(wname)
             syslog('error',
-                   'Archive working file }{s present.  '
-                   'Check }{s for possibly unarchived msgs',
+                   'Archive working file %s present.  '
+                   'Check %s for possibly unarchived msgs',
                    wname, ename)
             omask = os.umask(0o007)
             try:
                 ef = open(ename, 'a+')
             finally:
                 os.umask(omask)
-            ef.seek(1,2)
+            ef.seek(1, 2)
             if ef.read(1) != '\n':
                 ef.write('\n')
             ef.write(wf.read())
@@ -893,7 +894,7 @@ class HyperArchive(pipermail.T):
             os.unlink(wname)
         except IOError:
             pass
-        os.rename(name,wname)
+        os.rename(name, wname)
         archfile = open(wname)
         self.processUnixMailbox(archfile)
         archfile.close()

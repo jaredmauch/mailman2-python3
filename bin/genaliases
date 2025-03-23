@@ -34,8 +34,8 @@ Options:
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import os
 import sys
@@ -46,13 +46,6 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
-
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 
 def usage(code, msg=''):
     if code:
@@ -69,7 +62,7 @@ def main():
     quiet = False
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hq',
-                                   ['help', 'quiet'])
+                                 ['help', 'quiet'])
     except getopt.error as msg:
         usage(1, msg)
 

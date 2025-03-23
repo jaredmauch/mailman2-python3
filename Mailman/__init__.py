@@ -16,5 +16,57 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
+from __future__ import print_function
 from __future__ import unicode_literals
+
+import sys
+import os
+
+# Add the parent directory to sys.path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import version info
+from Mailman.Version import VERSION, RELEASE_DATE
+
+# Import core modules
+from Mailman import Utils
+from Mailman import Errors
+from Mailman import MailList
+from Mailman import Message
+from Mailman import Pending
+from Mailman import LockFile
+from Mailman import Post
+from Mailman import i18n
+
+# Import default configuration
+from Mailman import Defaults
+
+# Import site configuration if it exists
+try:
+    from Mailman import mm_cfg
+except ImportError:
+    print('Warning: mm_cfg.py not found. Using default configuration.', file=sys.stderr)
+    from Mailman import Defaults as mm_cfg
+
+# Import version information
+from Mailman.Version import VERSION, RELEASE_DATE
+
+# Import core modules
+from Mailman import Utils
+from Mailman import Errors
+from Mailman import MailList
+from Mailman import Message
+from Mailman import Pending
+from Mailman import LockFile
+from Mailman import Post
+from Mailman import i18n
+
+# Import default configuration
+from Mailman import Defaults
+
+# Import site configuration if it exists
+try:
+    from Mailman import mm_cfg
+except ImportError:
+    print('Warning: mm_cfg.py not found. Using default configuration.', file=sys.stderr)
+    from Mailman import Defaults as mm_cfg

@@ -79,8 +79,8 @@ files can be `-'.
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 import os
@@ -104,15 +104,15 @@ _ = i18n._
 C_ = i18n.C_
 
 
-def usage(status, msg=''):
-    if status:
+def usage(code, msg=''):
+    if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
     print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
-    sys.exit(status)
+    sys.exit(code)
 
 
 def readfile(filename):
@@ -192,16 +192,17 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                 'a:r:d:w:im:nh',
-                                 ['admin-notify=',
-                                  'regular-members-file=',
-                                  'digest-members-file=',
-                                  'welcome-msg=',
-                                  'invite',
-                                  'invite-msg-file=',
-                                  'nomail',
-                                  'help',])
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            'a:r:d:w:im:nh',
+            ['admin-notify=',
+             'regular-members-file=',
+             'digest-members-file=',
+             'welcome-msg=',
+             'invite',
+             'invite-msg-file=',
+             'nomail',
+             'help'])
     except getopt.error as msg:
         usage(1, msg)
 
@@ -251,7 +252,7 @@ def main():
         usage(1, C_('Cannot read both digest and normal members '
                     'from standard input.'))
 
-    if not invite and invite_msg_file <> None:
+    if not invite and invite_msg_file != None:
         usage(1, C_('Setting invite-msg-file requires --invite.'))
 
     try:

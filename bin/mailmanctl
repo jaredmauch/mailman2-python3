@@ -303,10 +303,10 @@ def main():
     global quiet
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hnsqu',
-                                  ['help', 'no-restart', 'stale-lock-cleanup',
-                                   'quiet', 'run-as-user'])
-    except getopt.error as e:
-        usage(1, e)
+                                 ['help', 'no-restart', 'stale-lock-cleanup',
+                                  'quiet', 'run-as-user'])
+    except getopt.error as msg:
+        usage(1, msg)
     if not args:
         usage(1, C_('No command specified.'))
     command = args[0]

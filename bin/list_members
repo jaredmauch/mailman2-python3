@@ -74,11 +74,12 @@ followed by digest members, but no indication is given as to address status.
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 from types import UnicodeType
+import getopt
 
 import paths
 from Mailman import mm_cfg
@@ -93,12 +94,6 @@ from email.Utils import formataddr
 PROGRAM = sys.argv[0]
 ENC = sys.getdefaultencoding()
 COMMASPACE = ', '
-
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
 
 
 WHYCHOICES = {'enabled' : MemberAdaptor.ENABLED,
@@ -150,12 +145,18 @@ def whymatches(mlist, addr, why):
 
 
 def main():
-    # Because of the optional arguments, we can't use getopt. :(
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hl:o:n:d:',
+                                 ['help', 'list=', 'output=', 'nomail=', 'digest='])
+    except getopt.error as msg:
+        usage(1, msg)
+
     outfile = None
     regular = None
     digest = None
-    preserve = None
     nomail = None
+    nomoderator = None
+    preserve = None
     why = None
     kind = None
     fullnames = False
@@ -165,15 +166,10 @@ def main():
     nonmoderatedonly = False
 
     # Throw away the first (program) argument
-    args = sys.argv[1:]
     if not args:
         usage(0)
 
-    while True:
-        try:
-            opt = args.pop(0)
-        except IndexError:
-            usage(1)
+    for opt, val in opts:
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-f', '--fullnames'):
@@ -184,13 +180,13 @@ def main():
             regular = True
         elif opt in ('-o', '--output'):
             try:
-                outfile = args.pop(0)
+                outfile = val
             except IndexError:
                 usage(1)
         elif opt == '-n':
             nomail = True
-            if args and args[0] in WHYCHOICES:
-                why = args.pop(0)
+            if val and val in WHYCHOICES:
+                why = val
         elif opt.startswith('--nomail'):
             nomail = True
             i = opt.find('=')
@@ -200,8 +196,8 @@ def main():
                     usage(1, C_('Bad --nomail option: %(why)s'))
         elif opt == '-d':
             digest = True
-            if args and args[0] in ('mime', 'plain'):
-                kind = args.pop(0)
+            if val and val in ('mime', 'plain'):
+                kind = val
         elif opt.startswith('--digest'):
             digest = True
             i = opt.find('=')

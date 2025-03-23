@@ -36,6 +36,11 @@ You will need to run `bin/check_perms -f' after running this script.
 """
 # This script is provided for convenience purposes only.  It isn't supported.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+
 import os
 import sys
 import getopt
@@ -49,24 +54,22 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
     # get command line arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:
@@ -74,7 +77,7 @@ def main():
             usage(0)
 
     for filename in args:
-        print 'processing:', filename
+        print('processing:', filename)
         fp = open(filename, 'rb')
         d = marshal.load(fp)
         fp.close()
@@ -88,9 +91,8 @@ def main():
         os.rename(filename, filename + '.bak')
         os.rename(filename + '.tmp', filename)
 
-    print 'You should now run "bin/check_perms -f"'
+    print('You should now run "bin/check_perms -f"')
 
 
-
 if __name__ == '__main__':
     main()

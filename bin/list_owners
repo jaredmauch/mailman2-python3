@@ -54,13 +54,6 @@ from Mailman.i18n import C_
 
 PROGRAM = sys.argv[0]
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -75,7 +68,7 @@ def usage(code, msg=''):
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'wmh',
-                                   ['with-listnames', 'moderators', 'help'])
+                                 ['with-listnames', 'moderators', 'help'])
     except getopt.error as msg:
         usage(1, msg)
 

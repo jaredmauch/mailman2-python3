@@ -17,11 +17,35 @@
 """MailList mixin class managing the autoresponder.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import sys
+import os
+import time
+import getopt
+
+import paths
 from Mailman import mm_cfg
-from Mailman.i18n import _
+from Mailman import Utils
+from Mailman import MailList
+from Mailman import Errors
+from Mailman import Message
+from Mailman.i18n import C_
+
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(C_(__doc__), file=fd)
+    if msg:
+        print(msg, file=fd)
+    sys.exit(code)
 
 
-
 class Autoresponder:
     def InitVars(self):
         # configurable

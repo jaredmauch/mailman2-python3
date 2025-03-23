@@ -74,9 +74,8 @@ def usage(code, msg=''):
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'apbV:h',
-                                   ['advertised', 'public-archive', 'bare',
-                                    'virtual-host-overview=',
-                                    'help'])
+                                 ['advertised', 'public-archive', 'bare',
+                                  'virtual-host-overview=', 'help'])
     except getopt.error as msg:
         usage(1, msg)
 

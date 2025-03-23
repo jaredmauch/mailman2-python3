@@ -18,7 +18,11 @@
 
 """Shared mailman errors and messages."""
 
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 # exceptions for problems related to opening a list
 class MMListError(Exception): pass
 class MMUnknownListError(MMListError): pass
@@ -51,21 +55,21 @@ class MMCookieError(MMAuthenticationError): pass
 class MMExpiredCookieError(MMCookieError): pass
 class MMInvalidCookieError(MMCookieError): pass
 
-class MMMustDigestError: pass
-class MMCantDigestError: pass
-class MMNeedApproval:
+class MMMustDigestError(Exception): pass
+class MMCantDigestError(Exception): pass
+class MMNeedApproval(object):
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMSubscribeNeedsConfirmation: pass
-class MMBadConfirmation:
+class MMSubscribeNeedsConfirmation(Exception): pass
+class MMBadConfirmation(object):
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMAlreadyDigested: pass
-class MMAlreadyUndigested: pass
+class MMAlreadyDigested(Exception): pass
+class MMAlreadyUndigested(Exception): pass
 
 MODERATED_LIST_MSG    = "Moderated list"
 IMPLICIT_DEST_MSG     = "Implicit destination"
@@ -73,7 +77,6 @@ SUSPICIOUS_HEADER_MSG = "Suspicious header"
 FORBIDDEN_SENDER_MSG  = "Forbidden sender"
 
 
-
 # New style class based exceptions.  All the above errors should eventually be
 # converted.
 
@@ -108,7 +111,6 @@ class LostHeldMessage(MailmanError):
     pass
 
 
-
 def _(s):
     return s
 
@@ -161,7 +163,7 @@ class RejectMessage(HandlerError):
     def notice(self):
         return self.__notice
 
-
+
 # Additional exceptions
 class HostileSubscriptionError(MailmanError):
     """A cross-subscription attempt was made."""

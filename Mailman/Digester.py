@@ -17,6 +17,11 @@
 
 """Mixin class with list-digest handling methods and settings."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 from stat import ST_SIZE
 import errno
@@ -28,7 +33,6 @@ from Mailman.Handlers import ToDigest
 from Mailman.i18n import _
 
 
-
 class Digester:
     def InitVars(self):
         # Configurable

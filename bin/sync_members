@@ -82,6 +82,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
+import getopt
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
@@ -119,6 +120,13 @@ def yesno(opt):
 
 
 def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'l:f:n:d:w:g:a:',
+                                 ['list=', 'file=', 'nomail=', 'digest=',
+                                  'welcome=', 'goodbye=', 'notifyadmin='])
+    except getopt.error as msg:
+        usage(1, msg)
+
     dryrun = 0
     digest = 0
     welcome = None
@@ -127,55 +135,40 @@ def main():
     listname = None
     notifyadmin = None
 
-    # TBD: can't use getopt with this command line syntax, which is broken and
-    # should be changed to be getopt compatible.
-    i = 1
-    while i < len(sys.argv):
-        opt = sys.argv[i]
+    for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-n', '--no-change'):
             dryrun = 1
-            i += 1
             print(C_('Dry run mode'))
         elif opt in ('-d', '--digest'):
             digest = 1
-            i += 1
         elif opt.startswith('-d=') or opt.startswith('--digest='):
             digest = yesno(opt)
-            i += 1
         elif opt in ('-w', '--welcome-msg'):
             welcome = 1
-            i += 1
         elif opt.startswith('-w=') or opt.startswith('--welcome-msg='):
             welcome = yesno(opt)
-            i += 1
         elif opt in ('-g', '--goodbye-msg'):
             goodbye = 1
-            i += 1
         elif opt.startswith('-g=') or opt.startswith('--goodbye-msg='):
             goodbye = yesno(opt)
-            i += 1
         elif opt in ('-f', '--file'):
             if filename is not None:
                 usage(1, C_('Only one -f switch allowed'))
             try:
-                filename = sys.argv[i+1]
+                filename = arg
             except IndexError:
                 usage(1, C_('No argument to -f given'))
-            i += 2
         elif opt in ('-a', '--notifyadmin'):
             notifyadmin = 1
-            i += 1
         elif opt.startswith('-a=') or opt.startswith('--notifyadmin='):
             notifyadmin = yesno(opt)
-            i += 1
         elif opt[0] == '-':
             usage(1, C_('Illegal option: %(opt)s'))
         else:
             try:
-                listname = sys.argv[i].lower()
-                i += 1
+                listname = arg.lower()
             except IndexError:
                 usage(1, C_('No listname given'))
             break

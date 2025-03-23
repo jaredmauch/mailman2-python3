@@ -17,8 +17,15 @@
 
 """Handle delivery bounces."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
+import os
 import time
+import getopt
 from typing import List, Tuple, Dict, Set
 
 from email.MIMEText import MIMEText
@@ -32,6 +39,9 @@ from Mailman import Pending
 from Mailman.Errors import MMUnknownListError
 from Mailman.Logging.Syslog import syslog
 from Mailman import i18n
+from Mailman import MailList
+from Mailman import Errors
+from Mailman.i18n import C_
 
 EMPTYSTRING = ''
 
@@ -52,7 +62,17 @@ REASONS = {MemberAdaptor.BYBOUNCE: _('due to excessive bounces'),
 _ = i18n._
 
 
-
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(C_(__doc__), file=fd)
+    if msg:
+        print(msg, file=fd)
+    sys.exit(code)
+
+
 class _BounceInfo:
     def __init__(self, member, score, date, noticesleft):
         self.member = member
@@ -76,8 +96,15 @@ class _BounceInfo:
         confirmation cookie: }{(cookie)s
         >""" }{ self.__dict__
 
+    def __str__(self):
+        return """<BounceInfo
+        member: %(member)s
+        score: %(score)s
+        date: %(date)s
+        noticesleft: %(noticesleft)s
+        >""" % self.__dict__
 
-
+
 class Bouncer:
     def InitVars(self):
         # Configurable...
@@ -111,7 +138,6 @@ class Bouncer:
             # check regular_include_lists, only one level
             if not self.regular_include_lists or sibling:
                 return
-            from Mailman.MailList import MailList
             for listaddr in self.regular_include_lists:
                 listname, hostname = listaddr.split('@')
                 listname = listname.lower()

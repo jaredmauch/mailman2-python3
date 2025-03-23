@@ -36,6 +36,10 @@ Options:
         one of the directories inside the qfiles directory.  If omitted, the
         incoming queue is used.
 
+    -L
+    --showqnames
+        Show the names of all queues and exit.
+
 filename is the name of the plaintext message file to inject.  If omitted,
 standard input is used.
 """
@@ -69,9 +73,8 @@ def usage(code, msg=''):
 
 def main():
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hl:q:L',
-            ['help', 'listname=', 'queue=', 'showqnames'])
+        opts, args = getopt.getopt(sys.argv[1:], 'hl:q:L',
+                                 ['help', 'listname=', 'queue=', 'showqnames'])
     except getopt.error as msg:
         usage(1, msg)
 
@@ -87,6 +90,8 @@ def main():
                 usage(1, C_('Bad queue directory: %(qdir)s'))
         elif opt in ('-l', '--listname'):
             listname = arg.lower()
+        elif opt in ('-L', '--showqnames'):
+            usage(0)
 
     if listname is None:
         usage(1, C_('A list name is required'))

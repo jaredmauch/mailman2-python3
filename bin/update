@@ -57,6 +57,11 @@ from Mailman.Queue.Switchboard import Switchboard
 from Mailman.OldStyleMemberships import OldStyleMemberships
 from Mailman.MemberAdaptor import BYBOUNCE, ENABLED
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+
 FRESH = 0
 NOTFRESH = -1
 
@@ -64,7 +69,6 @@ LMVFILE = os.path.join(mm_cfg.DATA_DIR, 'last_mailman_version')
 PROGRAM = sys.argv[0]
 
 
-
 def calcversions():
     # Returns a tuple of (lastversion, thisversion).  If the last version
     # could not be determined, lastversion will be FRESH or NOTFRESH,
@@ -94,17 +98,16 @@ def calcversions():
     return (lastversion, thisversion)
 
 
-
 def makeabs(relpath):
     return os.path.join(mm_cfg.PREFIX, relpath)
 
 def make_varabs(relpath):
     return os.path.join(mm_cfg.VAR_PREFIX, relpath)
 
-
+
 def move_language_templates(mlist):
     listname = mlist.internal_name()
-    print C_('Fixing language templates: %(listname)s')
+    print(C_('Fixing language templates: %(listname)s'))
     # Mailman 2.1 has a new cascading search for its templates, defined and
     # described in Utils.py:maketext().  Putting templates in the top level
     # templates/ subdir or the lists/<listname> subdir is deprecated and no
@@ -126,7 +129,7 @@ def move_language_templates(mlist):
         # handle_opts.html
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
-        except IOError, e:
+        except IOError as e:
             if e.errno not in (errno.ENOENT, errno.EISDIR): raise
             # No global template or maybe a VCS directory
             continue
@@ -136,8 +139,8 @@ def move_language_templates(mlist):
         # Match against the lists/<list>/* template
         try:
             fp = open(os.path.join(mlist.fullpath(), gtemplate))
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -146,8 +149,8 @@ def move_language_templates(mlist):
         # Match against the lists/<list>/*.prev template
         try:
             fp = open(os.path.join(mlist.fullpath(), gtemplate + '.prev'))
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -156,8 +159,8 @@ def move_language_templates(mlist):
         # Match against the lists/<list>/en/* templates
         try:
             fp = open(os.path.join(mlist.fullpath(), 'en', gtemplate))
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -166,8 +169,8 @@ def move_language_templates(mlist):
         # Match against the templates/* template
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate))
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -176,8 +179,8 @@ def move_language_templates(mlist):
         # Match against the templates/*.prev template
         try:
             fp = open(os.path.join(mm_cfg.TEMPLATE_DIR, gtemplate + '.prev'))
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
         else:
             tcksum = Utils.md5_new(fp.read()).digest()
             fp.close()
@@ -186,15 +189,13 @@ def move_language_templates(mlist):
                                        gtemplate + '.prev'))
 
 
-
 def dolist(listname):
     errors = 0
     mlist = MailList.MailList(listname, lock=0)
     try:
         mlist.Lock(0.5)
     except TimeOutError:
-        print >> sys.stderr, C_('WARNING: could not acquire lock for list: '
-                                '%(listname)s')
+        print(C_('WARNING: could not acquire lock for list: %(listname)s'), file=sys.stderr)
         return 1
 
     # Sanity check the invariant that every BYBOUNCE disabled member must have
@@ -212,13 +213,13 @@ def dolist(listname):
         # re-disable them if necessary.
         n = len(noinfo)
         if n > 0:
-            print C_(
-                'Resetting %(n)s BYBOUNCEs disabled addrs with no bounce info')
+            print(C_(
+                'Resetting %(n)s BYBOUNCEs disabled addrs with no bounce info'))
             for addr in noinfo.keys():
                 mlist.setDeliveryStatus(addr, ENABLED)
 
     # Update the held requests database
-    print C_("""Updating the held requests database.""")
+    print(C_("""Updating the held requests database.""""))
     mlist._UpdateRecords()
 
     mbox_dir = make_varabs('archives/private/%s.mbox' % (listname))
@@ -239,11 +240,11 @@ def dolist(listname):
             os.mkdir(mbox_dir, 02775)
         else:
             # this shouldn't happen, but hey, just in case
-            if not os.path.isdir(mbox_dir):
-                print C_("""\
+            msg = C_("""\
 For some reason, %(mbox_dir)s exists as a file.  This won't work with
-b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding.""")
-                os.rename(mbox_dir, "%s.tmp" % (mbox_dir))
+b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding.""" % {'mbox_dir': mbox_dir})
+            print(msg, file=sys.stderr)
+            os.rename(mbox_dir, "%s.tmp" % (mbox_dir))
             os.mkdir(mbox_dir, 02775)
     finally:
         os.umask(ou)
@@ -252,14 +253,16 @@ b6, so I'm renaming it to %(mbox_dir)s.tmp and proceeding.""")
     # private one existing
     if os.path.isfile(o_pri_mbox_file) and os.path.isfile(o_pub_mbox_file):
         if mlist.archive_private:
-            print C_("""\
+            msg = C_("""\
 
 %(listname)s has both public and private mbox archives.  Since this list
-currently uses private archiving, I'm installing the private mbox archive
--- %(o_pri_mbox_file)s -- as the active archive, and renaming
-        %(o_pub_mbox_file)s
-to
-        %(o_pub_mbox_file)s.preb6
+is marked as private, I'm removing the public archive.""" % {'listname': listname})
+            print(msg, file=sys.stderr)
+            currently uses private archiving, I'm installing the private mbox archive
+            -- %(o_pri_mbox_file)s -- as the active archive, and renaming
+            %(o_pub_mbox_file)s
+            to
+            %(o_pub_mbox_file)s.preb6
 
 You can integrate that into the archives if you want by using the 'arch'
 script.
@@ -267,7 +270,7 @@ script.
         o_pub_mbox_file)
             os.rename(o_pub_mbox_file, "%s.preb6" % (o_pub_mbox_file))
         else:
-            print C_("""\
+            msg = C_("""\
 %s has both public and private mbox archives.  Since this list
 currently uses public archiving, I'm installing the public mbox file
 archive file (%s) as the active one, and renaming
@@ -279,6 +282,7 @@ You can integrate that into the archives if you want by using the 'arch'
 script.
 """) % (mlist._internal_name, o_pub_mbox_file, o_pri_mbox_file,
         o_pri_mbox_file)
+            print(msg, file=sys.stderr)
             os.rename(o_pri_mbox_file, "%s.preb6" % (o_pri_mbox_file))
     #
     # move private archive mbox there if it's around
@@ -375,7 +379,6 @@ script.
     return 0
 
 
-
 def archive_path_fixer(unused_arg, dir, files):
     # Passed to os.path.walk to fix the perms on old html archives.
     for f in files:
@@ -407,7 +410,7 @@ def remove_old_sources(module):
         except os.error, rest:
             print C_("couldn't remove old file %(pyc)s -- %(rest)s")
 
-
+
 def update_qfiles():
     print C_('updating old qfiles')
     prefix = `time.time()` + '+'
@@ -455,7 +458,6 @@ def update_qfiles():
             print C_('Warning!  Not a directory: %(dirpath)s')
 
 
-
 # Implementations taken from the pre-2.1.5 Switchboard
 def ext_read(filename):
     fp = open(filename)
@@ -549,7 +551,6 @@ def dequeue(filebase):
     return msg, data
 
 
-
 def update_pending():
     file20 = os.path.join(mm_cfg.DATA_DIR, 'pending_subscriptions.db')
     file214 = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
@@ -660,8 +661,13 @@ def update_pending():
         if e.errno <> errno.ENOENT: raise
 
 
-
 def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'v',
+                                 ['verbose', 'help'])
+    except getopt.error as msg:
+        usage(1, msg)
+
     errors = 0
     # get rid of old stuff
     print C_('getting rid of old source files')
@@ -754,24 +760,22 @@ NOTE NOTE NOTE NOTE NOTE
     return errors
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__) % globals()
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> sys.stderr, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf',
-                                   ['help', 'force'])
-    except getopt.error, msg:
+        opts, args = getopt.getopt(sys.argv[1:], 'v',
+                                 ['verbose', 'help'])
+    except getopt.error as msg:
         usage(1, msg)
 
     if args:
