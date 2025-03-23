@@ -220,9 +220,13 @@ class Link(object):
         texpr = ""
         if self.target != None:
             texpr = ' target="%s"' % Utils.websafe(self.target)
-        # Ensure href and text are properly escaped
+        # Ensure href is properly escaped
         safe_href = Utils.websafe(self.href)
-        safe_text = Utils.websafe(self.text)
+        # Handle text which might be an HTML formatting object
+        if isinstance(self.text, str):
+            safe_text = Utils.websafe(self.text)
+        else:
+            safe_text = HTMLFormatObject(self.text, indent)
         return '<a href="%s"%s>%s</a>' % (safe_href, texpr, safe_text)
 
 class FontSize(object):
@@ -387,10 +391,10 @@ class StdContainer(Container):
 class QuotedContainer(Container):
     def Format(self, indent=0):
         # If I don't start a new I ignore indent
-        output = '<%s>%s</%s>' % (
-            self.tag,
-            Utils.websafe(Container.Format(self, indent)),
-            self.tag)
+        content = Container.Format(self, indent)
+        # Use HTMLFormatObject to handle any HTML formatting objects in the content
+        formatted_content = HTMLFormatObject(content, indent)
+        output = '<%s>%s</%s>' % (self.tag, formatted_content, self.tag)
         return output
 
 class Header(StdContainer):
