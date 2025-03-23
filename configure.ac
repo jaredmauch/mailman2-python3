@@ -66,13 +66,12 @@ try:
     v = sys.hexversion
 except AttributeError:
     v = 0
-if v >= 0x2040000:
+if v >= 0x3000000:  # Python 3.0
     s = sys.version.split()[0]
 else:
     s = ""
-fp = open("conftest.out", "w")
-fp.write("%s\n" % s)
-fp.close()
+with open("conftest.out", "w", encoding='utf-8') as fp:
+    fp.write("%s\n" % s)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -83,7 +82,7 @@ then
     AC_MSG_ERROR([
 
 ***** $PYTHON is too old (or broken)
-***** Python 2.4 or newer is required])
+***** Python 3.0 or newer is required])
 fi
 AC_MSG_RESULT($version)
 
@@ -96,9 +95,8 @@ try:
     res = 'ok'
 except ImportError:
     res = 'no'
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w", encoding='utf-8') as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -108,11 +106,10 @@ if test "$havednspython" = "no"
 then
     AC_MSG_ERROR([
  
-***** dnspython <2.0 not found. It is required for the new
+***** dnspython not found. It is required for the
 ***** dmarc_moderation_action feature. Get it from
 ***** <http://www.dnspython.org/> or
-***** <https://pypi.python.org/pypi/dnspython/>
-***** You must get a version < 2.0])
+***** <https://pypi.python.org/pypi/dnspython/>])
 fi
 AC_MSG_RESULT($havednspython)
  
@@ -123,24 +120,27 @@ cat > conftest.py <<EOF
 import sys
 try:
     import email
+    from email import __version__ as email_version
+    res = "ok"
+    with open("conftest.out", "w", encoding='utf-8') as fp:
+        fp.write("%s\n" % res)
+        fp.write("%s\n" % email_version)
 except ImportError:
     res = "not ok"
-else:
-    res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+    with open("conftest.out", "w", encoding='utf-8') as fp:
+        fp.write("%s\n" % res)
+        fp.write("0.0.0\n")
 EOF
 changequote([, ])
 $PYTHON conftest.py
-needemailpkg=`cat conftest.out`
+needemailpkg=`sed -n '1p' conftest.out`
+emailversion=`sed -n '2p' conftest.out`
 rm -f conftest.out conftest.py
 
 cat > getver.py <<EOF
 from Mailman.Version import VERSION
-fp = open("getver.out", "w")
-fp.write("%s\n" % VERSION)
-fp.close()
+with open("getver.out", "w", encoding='utf-8') as fp:
+    fp.write("%s\n" % VERSION)
 EOF
 $PYTHON getver.py
 MM_VERSION=`cat getver.out`
@@ -162,14 +162,12 @@ AC_MSG_CHECKING(Japanese codecs)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    str('OK').encode('iso-2022-jp')
+    'OK'.encode('iso-2022-jp')
+    res = "ok"
 except LookupError:
     res = "not ok"
-else:
-    res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w", encoding='utf-8') as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -191,14 +189,12 @@ AC_MSG_CHECKING(Korean codecs)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    str('OK').encode('euc-kr')
+    'OK'.encode('euc-kr')
+    res = "ok"
 except LookupError:
     res = "not ok"
-else:
-    res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w", encoding='utf-8') as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
@@ -215,49 +211,41 @@ else
 fi
 AC_MSG_RESULT($needkocodecs)
 
-# Make sure distutils is available.  Some Linux Python packages split
-# distutils into the "-devel" package, so they need both.
-AC_MSG_CHECKING(that Python has a working distutils)
+# Make sure setuptools is available (replacing distutils)
+AC_MSG_CHECKING(that Python has a working setuptools)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    import distutils.errors
-    import distutils.sysconfig
+    import setuptools
+    import sysconfig
+    res = "yes"
+    # Check for Python.h
+    import os.path
+    pdothpath = sysconfig.get_path('include')
+    if os.path.isfile(os.path.join(pdothpath, "Python.h")):
+        res = "yes"
+    else:
+        res = "no"
 except ImportError:
     res = "no"
-else:
-    try:
-        distutils.sysconfig.get_config_vars()
-    except distutils.errors.DistutilsPlatformError:
-        res = "no"
-    else:
-        # some RedHat packages put distutils in python, but the C headers
-        # are in python-devel so check for headers too.
-        import os.path
-        pdothpath = distutils.sysconfig.get_python_inc()
-        if os.path.isfile(os.path.join(pdothpath, "Python.h")):
-            res = "yes"
-        else:
-            res = "no"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w", encoding='utf-8') as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
 $PYTHON conftest.py
-havedistutils=`cat conftest.out`
+havesetuptools=`cat conftest.out`
 rm -f conftest.out conftest.py
-if test "$havedistutils" != "yes"
+if test "$havesetuptools" != "yes"
 then
     AC_MSG_ERROR([
 
-***** Distutils is not available or is incomplete for $PYTHON
+***** Setuptools is not available or is incomplete for $PYTHON
 ***** If you installed Python from RPM (or other package manager)
 ***** be sure to install the -devel package, or install Python
 ***** from source.  See sec. 15.1 of the Installation Manual for
 ***** details])
 fi
-AC_MSG_RESULT($havedistutils)
+AC_MSG_RESULT($havesetuptools)
 
 # Checks for programs.
 AC_PROG_INSTALL
@@ -411,7 +399,7 @@ rm -f conftest.out conftest.py])
 # Check for some other uid to use than `mailman'
 AC_MSG_CHECKING(for --with-username)
 AC_ARG_WITH(username, dnl
-[  --with-username      specify a user name other than \"mailman\"])
+[  --with-username      specify a user name other than "mailman"])
 
 if test -z "$with_username"
 then
@@ -422,15 +410,15 @@ AC_MSG_RESULT($USERNAME)
 
 # User `mailman' must exist
 AC_SUBST(MAILMAN_USER)
-AC_MSG_CHECKING(for user name \"$USERNAME\")
+AC_MSG_CHECKING(for user name "$USERNAME")
 MM_FIND_USER_NAME(MAILMAN_USER, $USERNAME)
 if test -z "$MAILMAN_USER"
 then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No \"$USERNAME\" user found!
-***** Your system must have a \"$USERNAME\" user defined
+***** No "$USERNAME" user found!
+***** Your system must have a "$USERNAME" user defined
 ***** (usually in your /etc/passwd file).  Please see the INSTALL
 ***** file for details.])
   fi
@@ -441,7 +429,7 @@ AC_MSG_RESULT(okay)
 # Check for some other gid to use than `mailman'
 AC_MSG_CHECKING(for --with-groupname)
 AC_ARG_WITH(groupname, dnl
-[  --with-groupname     specify a group name other than \"mailman\"])
+[  --with-groupname     specify a group name other than "mailman"])
 
 if test -z "$with_groupname"
 then
@@ -453,15 +441,15 @@ AC_MSG_RESULT($GROUPNAME)
 
 # Target group must exist
 AC_SUBST(MAILMAN_GROUP)
-AC_MSG_CHECKING(for group name \"$GROUPNAME\")
+AC_MSG_CHECKING(for group name "$GROUPNAME")
 MM_FIND_GROUP_NAME(MAILMAN_GROUP, $GROUPNAME)
 if test -z "$MAILMAN_GROUP"
 then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No \"$GROUPNAME\" group found!
-***** Your system must have a \"$GROUPNAME\" group defined
+***** No "$GROUPNAME" group found!
+***** Your system must have a "$GROUPNAME" group defined
 ***** (usually in your /etc/group file).  Please see the INSTALL
 ***** file for details.])
   fi
@@ -537,7 +525,7 @@ then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No group name \"$with_mail_gid\" found for the mail wrapper program.
+***** No group name "$with_mail_gid" found for the mail wrapper program.
 ***** This is the group that your mail server will use to run Mailman's
 ***** programs.  You should specify an existing group with the
 ***** --with-mail-gid configure option, or use --without-permcheck to
@@ -564,7 +552,7 @@ then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No group name \"$with_cgi_gid\" found for the CGI wrapper program.
+***** No group name "$with_cgi_gid" found for the CGI wrapper program.
 ***** This is the group that your web server will use to run Mailman's
 ***** programs.  You should specify an existing group with the
 ***** --with-cgi-gid configure option, or use --without-permcheck to
@@ -665,12 +653,7 @@ if test $ac_cv_func_syslog = no; then
 fi
 
 # Checks for header files.
-m4_warn([obsolete],
-[The preprocessor macro `STDC_HEADERS' is obsolete.
-  Except in unusual embedded environments, you can safely include all
-  ISO C90 headers unconditionally.])dnl
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
+# Remove obsolete STDC_HEADERS check since all ISO C90 headers are included unconditionally
 AC_CHECK_INCLUDES_DEFAULT
 AC_PROG_EGREP
 
