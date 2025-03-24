@@ -582,7 +582,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if mtime < self.__timestamp:
                 # File is not newer
                 return None, None
-            fp = open(dbfile, mode='rb')
+            # Open the file in binary mode to avoid any text decoding
+            fp = open(dbfile, 'rb')
         except EnvironmentError as e:
             if e.errno != errno.ENOENT: raise
             # The file doesn't exist yet
