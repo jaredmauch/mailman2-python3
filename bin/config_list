@@ -83,7 +83,6 @@ NL = '\n'
 nonasciipat = re.compile(r'[\x80-\xff]')
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -95,45 +94,68 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
-def do_output(listname, outfile):
-    closep = 0
-    try:
-        if outfile == '-':
-            outfp = sys.stdout
+def do_output(mlist, fp, category=None, subcat=None, indent=0):
+    """Output a list's configuration variables to the given file object."""
+    if category is None:
+        # Output all categories
+        for cat in mlist.GetConfigCategories().keys():
+            do_output(mlist, fp, cat, subcat, indent)
+        return
+
+    # Get the configuration info for this category
+    info = mlist.GetConfigInfo(category, subcat)
+    if not info:
+        return
+
+    # Write the category header
+    fp.write(' ' * indent + category + ':\n')
+
+    # Now output all the items in this category
+    for item in info:
+        name = item[0]
+        value = item[1]
+        desc = item[2]
+        
+        # Handle bytes objects consistently
+        if isinstance(value, bytes):
+            try:
+                charset = Utils.GetCharSet(mlist.preferred_language) or 'us-ascii'
+                value = value.decode(charset, errors='ignore')
+            except (UnicodeError, LookupError):
+                value = value.decode('latin-1', errors='ignore')
+        elif isinstance(value, list):
+            # Handle lists of strings
+            value = [
+                v.decode('latin-1', errors='ignore') if isinstance(v, bytes) else v 
+                for v in value
+            ]
+        elif isinstance(value, dict):
+            # Handle nested dictionaries
+            for k, v in value.items():
+                if isinstance(v, bytes):
+                    try:
+                        charset = Utils.GetCharSet(mlist.preferred_language) or 'us-ascii'
+                        value[k] = v.decode(charset, errors='ignore')
+                    except (UnicodeError, LookupError):
+                        value[k] = v.decode('latin-1', errors='ignore')
+
+        # Format the value appropriately
+        if isinstance(value, list):
+            # For lists, output each item on a separate line
+            fp.write(' ' * (indent + 2) + name + ':\n')
+            for v in value:
+                if isinstance(v, str):
+                    fp.write(' ' * (indent + 4) + v + '\n')
+                else:
+                    fp.write(' ' * (indent + 4) + str(v) + '\n')
         else:
-            outfp = open(outfile, 'w')
-            closep = 1
-        # Open the specified list unlocked, since we're only reading it.
-        try:
-            mlist = MailList.MailList(listname, lock=0)
-        except Errors.MMListError:
-            usage(1, C_('No such list: %(listname)s'))
-        # Preamble for the config info. PEP263 charset and capture time.
-        language = mlist.preferred_language
-        charset = Utils.GetCharSet(language)
-        i18n.set_language(language)
-        if not charset:
-            charset = 'us-ascii'
-        when = time.ctime(time.time())
-        print(C_('''\
-# -*- python -*-
-# -*- coding: %(charset)s -*-
-## "%(listname)s" mailing list configuration settings
-## captured on %(when)s
-'''), file=outfp)
-        # get all the list config info.  all this stuff is accessible via the
-        # web interface
-        for k in mm_cfg.ADMIN_CATEGORIES:
-            subcats = mlist.GetConfigSubCategories(k)
-            if subcats is None:
-                do_list_categories(mlist, k, None, outfp)
+            # For other types, output on a single line
+            if isinstance(value, str):
+                fp.write(' ' * (indent + 2) + name + ': ' + value + '\n')
             else:
-                for subcat in [t[0] for t in subcats]:
-                    do_list_categories(mlist, k, subcat, outfp)
-    finally:
-        if closep:
-            outfp.close()
+                fp.write(' ' * (indent + 2) + name + ': ' + str(value) + '\n')
+        if desc:
+            fp.write(' ' * (indent + 4) + '# ' + desc + '\n')
 
 
 def do_list_categories(mlist, k, subcat, outfp):
@@ -218,7 +240,6 @@ def do_list_categories(mlist, k, subcat, outfp):
         print(file=outfp)
 
 
-
 def getPropertyMap(mlist):
     guibyprop = {}
     categories = mlist.GetConfigCategories()
@@ -318,7 +339,6 @@ def do_input(listname, infile, checkonly, verbose):
         mlist.Unlock()
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(
@@ -361,6 +381,5 @@ def main():
         do_input(listname, infile, checkonly, verbose)
 
 
-
 if __name__ == '__main__':
     main()

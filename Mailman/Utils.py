@@ -431,19 +431,23 @@ def GetRandomSeed():
     return "%c%c" % tuple(map(mkletter, (chr1, chr2)))
 
 
-def set_global_password(pw, siteadmin=True):
-    if siteadmin:
-        filename = mm_cfg.SITE_PW_FILE
-    else:
-        filename = mm_cfg.LISTCREATOR_PW_FILE
-    # rw-r-----
-    omask = os.umask(0o026)
-    try:
-        fp = open(filename, 'w')
-        fp.write(sha_new(pw).hexdigest() + '\n')
-        fp.close()
-    finally:
-        os.umask(omask)
+def set_global_password(password):
+    """Set the global site password in the file specified by mm_cfg.GLOBAL_PASSWORD_FILE."""
+    if isinstance(password, bytes):
+        try:
+            charset = Utils.GetCharSet(mm_cfg.DEFAULT_SERVER_LANGUAGE) or 'us-ascii'
+            password = password.decode(charset, errors='ignore')
+        except (UnicodeError, LookupError):
+            password = password.decode('latin-1', errors='ignore')
+    
+    # Ensure password is encoded as UTF-8 before writing
+    password = password.encode('utf-8', errors='ignore')
+    
+    # Write the password to the file
+    with open(mm_cfg.GLOBAL_PASSWORD_FILE, 'wb') as f:
+        f.write(password)
+        if mm_cfg.SYNC_AFTER_WRITE:
+            os.fsync(f.fileno())
 
 
 def get_global_password(siteadmin=True):

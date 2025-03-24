@@ -664,7 +664,13 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         value = getattr(mlist, varname)
     # Ensure value is properly converted to string if it's bytes
     if isinstance(value, bytes):
-        value = value.decode('latin-1', errors='ignore')
+        try:
+            # Try to decode using the list's preferred charset first
+            charset = Utils.GetCharSet(mlist.preferred_language) or 'us-ascii'
+            value = value.decode(charset, errors='ignore')
+        except (UnicodeError, LookupError):
+            # Fall back to latin-1 if preferred charset fails
+            value = value.decode('latin-1', errors='ignore')
     # Now create the widget for this value
     if kind == mm_cfg.Radio or kind == mm_cfg.Toggle:
         # If we are returning the option for subscribe policy and this site

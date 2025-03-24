@@ -80,7 +80,31 @@ class ListAdmin(object):
             try:
                 fp = open(self.__filename, 'rb')
                 try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Convert any bytes objects to strings using the list's preferred charset
+                    if isinstance(data, dict):
+                        charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                        for key, value in data.items():
+                            if isinstance(value, bytes):
+                                try:
+                                    data[key] = value.decode(charset, errors='ignore')
+                                except (UnicodeError, LookupError):
+                                    data[key] = value.decode('latin-1', errors='ignore')
+                            elif isinstance(value, list):
+                                # Handle lists of strings
+                                data[key] = [
+                                    v.decode('latin-1', errors='ignore') if isinstance(v, bytes) else v 
+                                    for v in value
+                                ]
+                            elif isinstance(value, dict):
+                                # Handle nested dictionaries
+                                for k, v in value.items():
+                                    if isinstance(v, bytes):
+                                        try:
+                                            value[k] = v.decode(charset, errors='ignore')
+                                        except (UnicodeError, LookupError):
+                                            value[k] = v.decode('latin-1', errors='ignore')
+                    self.__db = data
                 finally:
                     fp.close()
             except IOError as e:

@@ -459,96 +459,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # automatic discarding
         self.max_days_to_hold = mm_cfg.DEFAULT_MAX_DAYS_TO_HOLD
 
-
-    #
-    # Web API support via administrative categories
-    #
-    def GetConfigCategories(self):
-        class CategoryDict(UserDict):
-            def __init__(self):
-                UserDict.__init__(self)
-                self.keysinorder = mm_cfg.ADMIN_CATEGORIES[:]
-            def keys(self):
-                return self.keysinorder
-            def items(self):
-                items = []
-                for k in mm_cfg.ADMIN_CATEGORIES:
-                    items.append((k, self.data[k]))
-                return items
-            def values(self):
-                values = []
-                for k in mm_cfg.ADMIN_CATEGORIES:
-                    values.append(self.data[k])
-                return values
-
-        categories = CategoryDict()
-        # Only one level of mixin inheritance allowed
-        for gui in self._gui:
-            k, v = gui.GetConfigCategory()
-            categories[k] = (v, gui)
-        return categories
-
-    def GetConfigSubCategories(self, category):
-        for gui in self._gui:
-            if hasattr(gui, 'GetConfigSubCategories'):
-                # Return the first one that knows about the given subcategory
-                subcat = gui.GetConfigSubCategories(category)
-                if subcat is not None:
-                    return subcat
-        return None
-
-    def GetConfigInfo(self, category, subcat=None):
-        for gui in self._gui:
-            if hasattr(gui, 'GetConfigInfo'):
-                value = gui.GetConfigInfo(self, category, subcat)
-                if value:
-                    return value
-
-
-    #
-    # List creation
-    #
-    def Create(self, name, admin, crypted_password,
-               langs=None, emailhost=None, urlhost=None):
-        assert name == name.lower(), 'List name must be all lower case.'
-        if Utils.list_exists(name):
-            raise Errors.MMListAlreadyExistsError(name)
-        # Problems and potential attacks can occur if the list name in the
-        # pipe to the wrapper in an MTA alias or other delivery process
-        # contains shell special characters so allow only defined characters
-        # (default = '[-+_.=a-z0-9]').
-        if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', name)) > 0:
-            raise Errors.BadListNameError(name)
-        # Validate what will be the list's posting address.  If that's
-        # invalid, we don't want to create the mailing list.  The hostname
-        # part doesn't really matter, since that better already be valid.
-        # However, most scripts already catch MMBadEmailError as exceptions on
-        # the admin's email address, so transform the exception.
-        if emailhost is None:
-            emailhost = mm_cfg.DEFAULT_EMAIL_HOST
-        postingaddr = '%s@%s' % (name, emailhost)
-        try:
-            Utils.ValidateEmail(postingaddr)
-        except Errors.EmailAddressError:
-            raise Errors.BadListNameError(postingaddr)
-        # Validate the admin's email address
-        Utils.ValidateEmail(admin)
-        self._internal_name = name
-        self._full_path = Site.get_listpath(name, create=1)
-        # Don't use Lock() since that tries to load the non-existant config.pck
-        self.__lock.lock()
-        self.InitVars(name, admin, crypted_password, urlhost=urlhost)
-        self.CheckValues()
-        if langs is None:
-            self.available_languages = [self.preferred_language]
-        else:
-            self.available_languages = langs
-
-
-
-    #
-    # Database and filesystem I/O
-    #
     def __save(self, dict):
         # Save the file as a binary pickle, and rotate the old version to a
         # backup file.  We must guarantee that config.pck is always valid so
@@ -560,6 +470,32 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         fname_last = fname + '.last'
         fp = None
         try:
+            # Ensure all string values are properly encoded
+            for key, value in dict.items():
+                if isinstance(value, str):
+                    # Try to encode using the list's preferred charset first
+                    try:
+                        charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                        dict[key] = value.encode(charset, errors='ignore')
+                    except (UnicodeError, LookupError):
+                        # Fall back to latin-1 if preferred charset fails
+                        dict[key] = value.encode('latin-1', errors='ignore')
+                elif isinstance(value, list):
+                    # Handle lists of strings
+                    dict[key] = [
+                        v.encode('latin-1', errors='ignore') if isinstance(v, str) else v 
+                        for v in value
+                    ]
+                elif isinstance(value, dict):
+                    # Handle nested dictionaries
+                    for k, v in value.items():
+                        if isinstance(v, str):
+                            try:
+                                charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                                value[k] = v.encode(charset, errors='ignore')
+                            except (UnicodeError, LookupError):
+                                value[k] = v.encode('latin-1', errors='ignore')
+
             fp = open(fname_tmp, 'wb')
             # Use a binary format... it's more efficient.
             pickle.dump(dict, fp, 1)
@@ -652,27 +588,36 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if e.errno != errno.ENOENT: raise
             # The file doesn't exist yet
             return None, e
-        now = int(time.time())
-        try:
-            try:
-                if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
-                    dict_retval = marshal.load(fp)
-                elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-                    dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
-#                dict_retval = loadfunc(fp)
 
-                if not isinstance(dict_retval, dict):
-                    return None, 'Load() expected to return a dictionary'
-            except (EOFError, ValueError, TypeError, MemoryError,
-                    pickle.PicklingError, pickle.UnpicklingError) as e:
-                return None, e
+        try:
+            # Load the data with proper encoding handling
+            data = loadfunc(fp)
+            # Convert any bytes objects to strings using the list's preferred charset
+            if isinstance(data, dict):
+                charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                for key, value in data.items():
+                    if isinstance(value, bytes):
+                        try:
+                            data[key] = value.decode(charset, errors='ignore')
+                        except (UnicodeError, LookupError):
+                            data[key] = value.decode('latin-1', errors='ignore')
+                    elif isinstance(value, list):
+                        # Handle lists of strings
+                        data[key] = [
+                            v.decode('latin-1', errors='ignore') if isinstance(v, bytes) else v 
+                            for v in value
+                        ]
+                    elif isinstance(value, dict):
+                        # Handle nested dictionaries
+                        for k, v in value.items():
+                            if isinstance(v, bytes):
+                                try:
+                                    value[k] = v.decode(charset, errors='ignore')
+                                except (UnicodeError, LookupError):
+                                    value[k] = v.decode('latin-1', errors='ignore')
+            return data, None
         finally:
             fp.close()
-        # Update the timestamp.  We use current time here rather than mtime
-        # so the test above might succeed the next time.  And we get the time
-        # before unpickling in case it takes more than a second.  (LP: #266464)
-        self.__timestamp = now
-        return dict_retval, None
 
     def Load(self, check_version=True):
         if not Utils.list_exists(self.internal_name()):
@@ -758,7 +703,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             shutil.copy(file, dfile)
             shutil.copy(file, dfile + '.safety')
 
-
+
     #
     # Sanity checks
     #
@@ -827,7 +772,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 goodtopics.append((name, pattern, desc, emptyflag))
         self.topics = goodtopics
 
-
+
     #
     # Membership management front-ends and assertion checks
     #
@@ -1340,7 +1285,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             msg = Message.OwnerNotification(self, subject, text)
             msg.send(self)
 
-
+
     #
     # Confirmation processing
     #
@@ -1512,7 +1457,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         msg['Auto-Submitted'] = 'auto-generated'
         msg.send(self)
 
-
+
     #
     # Miscellaneous stuff
     #
@@ -1752,7 +1697,6 @@ bad regexp in bounce_matching_header line: %s
         return matched
 
 
-
     #
     # Multilingual (i18n) support
     #
