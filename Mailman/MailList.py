@@ -99,6 +99,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.InitTempVars(name)
         # Initialize data_version before any other operations
         self.data_version = mm_cfg.DATA_FILE_VERSION
+        # Initialize default values
+        self.InitVars(name)
         # Default membership adaptor class
         self._memberadaptor = OldStyleMemberships(self)
         # This extension mechanism allows list-specific overrides of any
