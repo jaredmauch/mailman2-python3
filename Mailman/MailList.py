@@ -596,10 +596,16 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 """Helper function to convert values to Python 3 strings"""
                 if isinstance(value, bytes):
                     try:
-                        charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
-                        return value.decode(charset, errors='ignore')
-                    except (UnicodeError, LookupError, AttributeError):
-                        return value.decode('latin-1', errors='ignore')
+                        # First try to decode as UTF-8
+                        return value.decode('utf-8', errors='ignore')
+                    except UnicodeError:
+                        try:
+                            # Then try the list's preferred charset
+                            charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                            return value.decode(charset, errors='ignore')
+                        except (UnicodeError, LookupError, AttributeError):
+                            # Finally fall back to latin-1
+                            return value.decode('latin-1', errors='ignore')
                 elif isinstance(value, list):
                     return [convert_value(v) for v in value]
                 elif isinstance(value, dict):
