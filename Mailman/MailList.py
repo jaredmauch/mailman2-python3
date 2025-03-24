@@ -457,7 +457,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # automatic discarding
         self.max_days_to_hold = mm_cfg.DEFAULT_MAX_DAYS_TO_HOLD
 
-    def __save(self, dict):
+    def __save(self, data_dict):
         # Save the file as a binary pickle, and rotate the old version to a
         # backup file.  We must guarantee that config.pck is always valid so
         # we never rotate unless the we've successfully written the temp file.
@@ -492,12 +492,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 return value
 
             # Convert all values in the dictionary to Python 3 unicode strings
-            for key, value in dict.items():
-                dict[key] = convert_value(value)
+            for key, value in data_dict.items():
+                data_dict[key] = convert_value(value)
 
             fp = open(fname_tmp, 'wb')
             # Use a binary format... it's more efficient.
-            pickle.dump(dict, fp, 1)
+            pickle.dump(data_dict, fp, 1)
             fp.flush()
             if mm_cfg.SYNC_AFTER_WRITE:
                 os.fsync(fp.fileno())
