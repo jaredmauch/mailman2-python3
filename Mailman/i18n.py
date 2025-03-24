@@ -86,13 +86,15 @@ def _(s, frame=1):
     tns = _translation.gettext(s)
     charset = _translation.charset() or 'us-ascii'
     
-    # Handle dictionary values
+    # Handle dictionary values - convert bytes to str if needed
     for k, v in list(dict.items()):
-        if isinstance(v, str):
+        if isinstance(v, bytes):
             try:
-                dict[k] = v.encode(charset, 'replace')
+                dict[k] = v.decode(charset, 'replace')
             except (UnicodeError, LookupError):
-                dict[k] = v.encode('us-ascii', 'replace')
+                dict[k] = v.decode('us-ascii', 'replace')
+        elif not isinstance(v, str):
+            dict[k] = str(v)
     
     try:
         return tns % dict
@@ -106,11 +108,18 @@ def tolocale(s):
         return s
     if _ctype_charset is None:
         return s
-    source = _translation.charset() or 'us-ascii'
+    
+    # If we have bytes, decode to str first
+    if isinstance(s, bytes):
+        source = _translation.charset() or 'us-ascii'
+        try:
+            s = s.decode(source, 'replace')
+        except (UnicodeError, LookupError):
+            s = s.decode('us-ascii', 'replace')
+    
+    # Now encode to the target charset if needed
     try:
-        if isinstance(s, bytes):
-            return s.decode(source, 'replace').encode(_ctype_charset, 'replace')
-        return s.encode(_ctype_charset, 'replace')
+        return s.encode(_ctype_charset, 'replace').decode(_ctype_charset)
     except (UnicodeError, LookupError):
         return s
 
