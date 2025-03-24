@@ -483,8 +483,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                         return value.decode(charset, errors='ignore')
                     except (UnicodeError, LookupError, AttributeError):
                         return value.decode('latin-1', errors='ignore')
-                elif isinstance(value, list):
-                    # Handle lists recursively
+                elif isinstance(value, (list, tuple)):
+                    # Handle lists and tuples recursively
                     return [convert_value(v) for v in value]
                 elif isinstance(value, dict):
                     # Handle dictionaries recursively
