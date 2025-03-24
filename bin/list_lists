@@ -103,6 +103,13 @@ def main():
         except Errors.MMUnknownListError:
             # The list could have been deleted by another process.
             continue
+        except Errors.MMCorruptListDatabaseError as e:
+            # The list's database is corrupted
+            print(C_('Error loading list %(listname)s: %(error)s') % {
+                'listname': n,
+                'error': str(e)
+                }, file=sys.stderr)
+            continue
         if advertised and not mlist.advertised:
             continue
         if public and mlist.archive_private:
