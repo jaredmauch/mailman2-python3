@@ -97,6 +97,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 baseclass.__init__(self)
         # Initialize volatile attributes
         self.InitTempVars(name)
+        # Initialize data_version before any other operations
+        self.data_version = mm_cfg.DATA_FILE_VERSION
         # Default membership adaptor class
         self._memberadaptor = OldStyleMemberships(self)
         # This extension mechanism allows list-specific overrides of any
