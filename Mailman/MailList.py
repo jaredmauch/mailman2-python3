@@ -149,7 +149,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return '<mailing list "%s" %s at %x>' % (
             self.internal_name(), status, id(self))
 
-
+
     #
     # Lock management
     #
@@ -170,7 +170,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return self.__lock.locked()
 
 
-
     #
     # Useful accessors
     #
@@ -276,7 +275,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                                                                     errors)
 
 
-
     #
     # Instance and subcomponent initialization
     #
@@ -594,7 +592,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             data = loadfunc(fp)
             # Convert any bytes objects to strings using the list's preferred charset
             if isinstance(data, dict):
-                charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                # Use a default charset if preferred_language is not yet available
+                try:
+                    charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                except AttributeError:
+                    charset = 'us-ascii'
                 for key, value in data.items():
                     if isinstance(value, bytes):
                         try:
