@@ -468,31 +468,32 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         fname_last = fname + '.last'
         fp = None
         try:
-            # Ensure all string values are properly encoded
-            for key, value in dict.items():
+            def convert_value(value):
+                """Helper function to convert values to Python 3 unicode strings"""
                 if isinstance(value, str):
-                    # Try to encode using the list's preferred charset first
+                    # If it's already a string, ensure it's unicode
+                    try:
+                        return value.decode('latin-1', errors='ignore')
+                    except (UnicodeError, AttributeError):
+                        return value
+                elif isinstance(value, bytes):
+                    # Convert bytes to unicode using preferred charset or latin-1
                     try:
                         charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
-                        dict[key] = value.encode(charset, errors='ignore')
-                    except (UnicodeError, LookupError):
-                        # Fall back to latin-1 if preferred charset fails
-                        dict[key] = value.encode('latin-1', errors='ignore')
+                        return value.decode(charset, errors='ignore')
+                    except (UnicodeError, LookupError, AttributeError):
+                        return value.decode('latin-1', errors='ignore')
                 elif isinstance(value, list):
-                    # Handle lists of strings
-                    dict[key] = [
-                        v.encode('latin-1', errors='ignore') if isinstance(v, str) else v 
-                        for v in value
-                    ]
+                    # Handle lists recursively
+                    return [convert_value(v) for v in value]
                 elif isinstance(value, dict):
-                    # Handle nested dictionaries
-                    for k, v in value.items():
-                        if isinstance(v, str):
-                            try:
-                                charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
-                                value[k] = v.encode(charset, errors='ignore')
-                            except (UnicodeError, LookupError):
-                                value[k] = v.encode('latin-1', errors='ignore')
+                    # Handle dictionaries recursively
+                    return {k: convert_value(v) for k, v in value.items()}
+                return value
+
+            # Convert all values in the dictionary to Python 3 unicode strings
+            for key, value in dict.items():
+                dict[key] = convert_value(value)
 
             fp = open(fname_tmp, 'wb')
             # Use a binary format... it's more efficient.
@@ -590,33 +591,33 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             # Load the data with proper encoding handling
             data = loadfunc(fp)
-            # Convert any bytes objects to strings using the list's preferred charset
+            
+            def convert_value(value):
+                """Helper function to convert values to Python 3 strings"""
+                if isinstance(value, bytes):
+                    try:
+                        charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                        return value.decode(charset, errors='ignore')
+                    except (UnicodeError, LookupError, AttributeError):
+                        return value.decode('latin-1', errors='ignore')
+                elif isinstance(value, list):
+                    return [convert_value(v) for v in value]
+                elif isinstance(value, dict):
+                    return {k: convert_value(v) for k, v in value.items()}
+                elif isinstance(value, str):
+                    # Handle Python 2 unicode strings
+                    try:
+                        return value.decode('latin-1', errors='ignore')
+                    except (UnicodeError, AttributeError):
+                        return value
+                return value
+
+            # Convert all values in the loaded data
             if isinstance(data, dict):
-                # Use a default charset if preferred_language is not yet available
-                try:
-                    charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
-                except AttributeError:
-                    charset = 'us-ascii'
-                for key, value in data.items():
-                    if isinstance(value, bytes):
-                        try:
-                            data[key] = value.decode(charset, errors='ignore')
-                        except (UnicodeError, LookupError):
-                            data[key] = value.decode('latin-1', errors='ignore')
-                    elif isinstance(value, list):
-                        # Handle lists of strings
-                        data[key] = [
-                            v.decode('latin-1', errors='ignore') if isinstance(v, bytes) else v 
-                            for v in value
-                        ]
-                    elif isinstance(value, dict):
-                        # Handle nested dictionaries
-                        for k, v in value.items():
-                            if isinstance(v, bytes):
-                                try:
-                                    value[k] = v.decode(charset, errors='ignore')
-                                except (UnicodeError, LookupError):
-                                    value[k] = v.decode('latin-1', errors='ignore')
+                data = {k: convert_value(v) for k, v in data.items()}
+            else:
+                data = convert_value(data)
+
             return data, None
         finally:
             fp.close()
