@@ -596,6 +596,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             def convert_value(value):
                 """Helper function to convert values to Python 3 strings"""
                 if isinstance(value, bytes):
+                    # Handle Python 2 binary strings
                     try:
                         # First try to decode as UTF-8
                         return value.decode('utf-8', errors='ignore')
@@ -607,16 +608,23 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                         except (UnicodeError, LookupError, AttributeError):
                             # Finally fall back to latin-1
                             return value.decode('latin-1', errors='ignore')
-                elif isinstance(value, list):
+                elif isinstance(value, str):
+                    # Handle Python 3 unicode strings and Python 2 unicode strings
+                    try:
+                        # If it's already a Python 3 string, return as is
+                        return value
+                    except (UnicodeError, AttributeError):
+                        # If it's a Python 2 unicode string, encode to bytes then decode
+                        try:
+                            return value.encode('latin-1', errors='ignore').decode('latin-1', errors='ignore')
+                        except (UnicodeError, AttributeError):
+                            return value
+                elif isinstance(value, (list, tuple)):
+                    # Handle lists and tuples recursively
                     return [convert_value(v) for v in value]
                 elif isinstance(value, dict):
+                    # Handle dictionaries recursively
                     return {k: convert_value(v) for k, v in value.items()}
-                elif isinstance(value, str):
-                    # Handle Python 2 unicode strings
-                    try:
-                        return value.decode('latin-1', errors='ignore')
-                    except (UnicodeError, AttributeError):
-                        return value
                 return value
 
             # Convert all values in the loaded data
