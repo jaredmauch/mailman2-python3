@@ -634,6 +634,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 data = convert_value(data)
 
             return data, None
+        except Exception as e:
+            # Log the error and return it
+            syslog('error', 'Error loading %s: %s', dbfile, str(e))
+            return None, e
         finally:
             fp.close()
 
