@@ -411,8 +411,7 @@ class HTMLFormatter(object):
             '<mm-mailman-footer>' : self.GetMailmanFooter(),
             '<mm-list-name>' : self.real_name,
             '<mm-email-user>' : self._internal_name,
-            '<mm-list-description>' :
-                Utils.websafe(self.GetDescription(cset)),
+            '<mm-list-description>' : self.GetDescription(cset),
             '<mm-list-info>' : 
                 '<!---->' + BR.join(self.info.split(NL)) + '<!---->',
             '<mm-form-end>'  : self.FormatFormEnd(),
