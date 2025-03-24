@@ -110,6 +110,10 @@ class Table(object):
 
     def AddCellInfo(self, row, col, **kws):
         kws = CaseInsensitiveKeyedDict(kws)
+        # Convert any bytes values to strings
+        for key, value in kws.items():
+            if isinstance(value, bytes):
+                kws[key] = value.decode('latin-1', errors='ignore')
         if row not in self.cell_info:
             self.cell_info[row] = { col : kws }
         elif col in self.cell_info[row]:
@@ -119,6 +123,10 @@ class Table(object):
 
     def AddRowInfo(self, row, **kws):
         kws = CaseInsensitiveKeyedDict(kws)
+        # Convert any bytes values to strings
+        for key, value in kws.items():
+            if isinstance(value, bytes):
+                kws[key] = value.decode('latin-1', errors='ignore')
         if row not in self.row_info:
             self.row_info[row] = kws
         else:
