@@ -1123,8 +1123,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 subject = _('%(realname)s subscription notification')
             finally:
                 i18n.set_translation(otrans)
-            if isinstance(name, str):
-                name = name.encode(Utils.GetCharSet(lang), 'replace')
+
+            # The formataddr() function takes a str and performs its own encoding, so we should not allow the name to be pre-encoded
+            if isinstance(name, bytes):
+                name = name.decode(Utils.GetCharSet(lang))
+
             text = Utils.maketext(
                 "adminsubscribeack.txt",
                 {"listname" : realname,
