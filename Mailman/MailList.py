@@ -658,9 +658,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
                     dict_retval = marshal.load(fp)
                 elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-                    dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
-#                dict_retval = loadfunc(fp)
-
+                    dict_retval = Utils.load_pickle(dbfile)
                 if not isinstance(dict_retval, dict):
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,

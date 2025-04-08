@@ -17,6 +17,7 @@ CACHESIZE = 100    # Number of slots in the cache
 
 from Mailman import mm_cfg
 from Mailman import Errors
+from Mailman import Utils
 from Mailman.Mailbox import ArchiverMailbox
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _, C_
@@ -298,10 +299,8 @@ class T(object):
         try:
             if not reload:
                 raise IOError
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'rb')
+            d = Utils.load_pickle(os.path.join(self.basedir, 'pipermail.pck'))
             self.message(C_('Reloading pickled archive state'))
-            d = pickle.load(f, fix_imports=True)
-            f.close()
             for key, value in list(d.items()):
                 setattr(self, key, value)
         except (IOError, EOFError):

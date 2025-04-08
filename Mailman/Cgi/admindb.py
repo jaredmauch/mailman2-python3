@@ -23,6 +23,7 @@ from builtins import str
 import sys
 import os
 import cgi
+import codecs
 import errno
 import signal
 import email
@@ -692,6 +693,7 @@ def show_post_requests(mlist, id, info, total, count, form):
     # just do raw reads on the file.
     try:
         msg = readMessage(os.path.join(mm_cfg.DATA_DIR, filename))
+        Utils.set_cte_if_missing(msg)
     except IOError as e:
         if e.errno != errno.ENOENT:
             raise
@@ -720,27 +722,30 @@ def show_post_requests(mlist, id, info, total, count, form):
     # A negative value means, include the entire message regardless of size
     limit = mm_cfg.ADMINDB_PAGE_TEXT_LIMIT
 
-    # Use the new email package API to extract and iterate over message lines
     if msg.is_multipart():
         for part in msg.walk():
+            if not hasattr(part, 'policy'):
+                part.policy = email._policybase.compat32
             if part.get_content_type() == 'text/plain':
                 payload = part.get_payload(decode=True)
                 if payload:
-                    for line in payload.decode(part.get_content_charset() or 'utf-8', errors='replace').splitlines():
+                    decoded_payload = codecs.decode(payload, 'unicode_escape')
+                    for line in decoded_payload.splitlines():
                         lines.append(line)
                         chars += len(line)
                         if chars >= limit > 0:
                             break
                 break
     else:
+        charset = msg.get_content_charset() or 'utf-8'
         payload = msg.get_payload(decode=True)
         if payload:
-            for line in payload.decode(msg.get_content_charset() or 'utf-8', errors='replace').splitlines():
+            decoded_payload = codecs.decode(payload, 'unicode_escape')
+            for line in decoded_payload.splitlines():
                 lines.append(line)
                 chars += len(line)
                 if chars >= limit > 0:
                     break
-
     # Ensure the full last line is included to avoid splitting multibyte characters
     body = ''.join(lines)
     # Get message charset and try encode in list charset
@@ -755,6 +760,8 @@ def show_post_requests(mlist, id, info, total, count, form):
     else:
         mcset = 'us-ascii'
     lcset = Utils.GetCharSet(mlist.preferred_language)
+    # <NOTE> Note that this following block breaks a lot of messages. Removing it allows them to stay in their native character sets.
+    # Leaving in as it seems like behavior people would have grown to expect.
     if mcset != lcset:
     # Ensure the body is in the list's preferred charset
         try:
@@ -765,6 +772,7 @@ def show_post_requests(mlist, id, info, total, count, form):
         except (UnicodeEncodeError, UnicodeDecodeError):
             # Fallback in case of encoding/decoding issues
             body = body.encode('ascii', 'replace').decode('ascii', 'replace')
+	# </NOTE>
     hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
     hdrtxt = Utils.websafe(hdrtxt)
     # Okay, we've reconstituted the message just fine.  Now for the fun part!

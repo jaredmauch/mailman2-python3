@@ -27,7 +27,7 @@ import pickle
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
-from Mailman.Utils import sha_new
+from Mailman.Utils import sha_new, load_pickle
 
 # Types of pending records
 SUBSCRIPTION = 'S'
@@ -84,14 +84,13 @@ class Pending(object):
 
     def __load(self):
         try:
-            fp = open(self.__pendfile, 'rb')
-        except IOError as e:
-            if e.errno != errno.ENOENT: raise
+            obj = Utils.load_pickle(self.__pendfile)
+            if obj == None:
+                return {'evictions': {}}
+            else:
+                return obj
+        except Exception as e:
             return {'evictions': {}}
-        try:
-            return pickle.load(fp, fix_imports=True, encoding='latin1')
-        finally:
-            fp.close()
 
     def __save(self, db):
         evictions = db['evictions']

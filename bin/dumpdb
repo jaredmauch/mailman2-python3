@@ -54,6 +54,7 @@ import marshal
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
 from Mailman.i18n import C_
+from Mailman import Utils
 
 PROGRAM = sys.argv[0]
 COMMASPACE = ', '
@@ -125,7 +126,12 @@ def main():
             print(C_('[----- start %(typename)s file -----]'))
         while True:
             try:
-                obj = load(fp, encoding='latin1')
+                if typename == 'pickle':
+                    obj = Utils.load_pickle(fp)
+                    if obj is None:
+                        break
+                else:
+                    obj = load(fp, encoding='utf-8')
             except EOFError:
                 if doprint:
                     print(C_('[----- end %(typename)s file -----]'))

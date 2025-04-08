@@ -66,6 +66,8 @@ class Mailbox(mailbox.mbox):
             # Create a Generator instance to write the message to the file
             g = Generator(fileh)
             Utils.set_cte_if_missing(msg)
+            if not hasattr(msg, 'policy'):
+                msg.policy = email._policybase.compat32
             g.flatten(msg, unixfrom=True)
             # Add one more trailing newline for separation with the next message
             # to be appended to the mbox.

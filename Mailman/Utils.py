@@ -673,6 +673,7 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
             except UnicodeError:
                 # Try again after coercing the template to unicode
                 utemplate = str(template, GetCharSet(lang), 'replace')
+
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
             # The template is really screwed up
@@ -1660,8 +1661,58 @@ def get_current_encoding(filename):
     return 'utf-8'
 
 def set_cte_if_missing(msg):
+    if not hasattr(msg, 'policy'):
+        msg.policy = email._policybase.compat32
     if 'content-transfer-encoding' not in msg:
         msg['Content-Transfer-Encoding'] = '7bit'
     if msg.is_multipart():
         for part in msg.get_payload():
+            if not hasattr(part, 'policy'):
+                part.policy = email._policybase.compat32
             set_cte_if_missing(part)
+
+# Attempt to load a pickle file as utf-8 first, falling back to others. If they all fail, there was probably no hope. Note that get_current_encoding above is useless in testing pickles.
+def load_pickle(path):
+    import pickle
+
+    encodings = [ 'utf-8', 'iso-8859-1', 'iso-8859-2', 'iso-8859-15', 'iso-8859-7', 'iso-8859-13', 'euc-jp', 'euc-kr', 'iso-8859-9', 'us-ascii', 'latin1' ]
+
+    if isinstance(path, str):
+        for encoding in encodings:
+            try:
+                try:
+                    fp = open(path, 'rb')
+                except IOError as e:
+                    if e.errno != errno.ENOENT: raise
+
+                msg = pickle.load(fp, fix_imports=True, encoding=encoding)
+                fp.close()
+                return msg
+            except UnicodeDecodeError as e:
+                continue
+            except exception as e:
+                return None
+    elif isinstance(path, bytes):
+        for encoding in encodings:
+            try:
+                msg = pickle.loads(path, fix_imports=True, encoding=encoding)
+                return msg
+            except UnicodeDecodeError:
+                continue
+            except Exception as e:
+                return None
+    # Check if it's a file-like object, such as using BufferedReader
+    elif hasattr(path, 'read') and callable(getattr(path, 'read')):
+        for encoding in encodings:
+            try:
+                msg = pickle.load(path, fix_imports=True, encoding=encoding)
+                return msg
+            except UnicodeDecodeError:
+                continue
+            except EOFError as e:
+                return None
+            except Exception as e:
+                return None
+
+    else:
+        return None

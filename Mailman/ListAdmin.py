@@ -37,6 +37,9 @@ from email.mime.message import MIMEMessage
 from email.generator import BytesGenerator
 from email.generator import Generator
 from email.utils import getaddresses
+from email.message import EmailMessage
+from email.parser import Parser
+from email import policy
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -81,7 +84,7 @@ class ListAdmin(object):
             try:
                 fp = open(self.__filename, 'rb')
                 try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    self.__db = Utils.load_pickle(fp)
                 finally:
                     fp.close()
             except IOError as e:
@@ -242,25 +245,37 @@ class ListAdmin(object):
                 return LOST
             try:
                 if path.endswith('.pck'):
-                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    msg = Utils.load_pickle(path)
                 else:
                     assert path.endswith('.txt'), '%s not .pck or .txt' % path
                     msg = fp.read()
             finally:
                 fp.close()
+
+            # If msg is still a Message from Python 2 pickle, convert it
+            if isinstance(msg, email.message.Message):
+                if not hasattr(msg, 'policy'):
+                    msg.policy = email._policybase.compat32
+                if not hasattr(msg, 'mangle_from_'):
+                    msg.mangle_from_ = True
+                if not hasattr(msg, 'linesep'):
+                    msg.linesep = email.policy.default.linesep
+
             # Save the plain text to a .msg file, not a .pck file
             outpath = os.path.join(mm_cfg.SPAM_DIR, spamfile)
             head, ext = os.path.splitext(outpath)
             outpath = head + '.msg'
-            outfp = open(outpath, 'wb')
-            try:
-                if path.endswith('.pck'):
-                    g = BytesGenerator(outfp)
-                    g.flatten(msg, 1)
-                else:
-                    outfp.write(msg)
-            finally:
-                outfp.close()
+
+            with open(outpath, 'w', encoding='utf-8') as outfp:
+                try:
+                    if path.endswith('.pck'):
+                        g = Generator(outfp, policy=msg.policy)
+                        g.flatten(msg, 1)
+                    else:
+                        outfp.write(msg.get_payload(decode=True).decode() if isinstance(msg.get_payload(decode=True), bytes) else msg.get_payload())
+                except Exception as e:
+                    raise Errors.LostHeldMessage(path)
+
         # Now handle updates to the database
         rejection = None
         fp = None
@@ -549,15 +564,10 @@ class ListAdmin(object):
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             filename = os.path.join(self.fullpath(), 'request.pck')
-            try:
-                fp = open(filename, 'rb')
-                try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
-                finally:
-                    fp.close()
-            except IOError as e:
-                if e.errno != errno.ENOENT: raise
+            self.__db = Utils.load_pickle(filename)
+            if self.__db is None:
                 self.__db = {}
+
         for id, x in list(self.__db.items()):
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in
             # just info being stored instead of (op, info)
@@ -608,15 +618,17 @@ def readMessage(path):
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
     ext = os.path.splitext(path)[1]
-    fp = open(path, 'rb')
     try:
         if ext == '.txt':
+            fp = open(path, 'rb')
             msg = email.message_from_file(fp, Message.Message)
+            fp.close()
         else:
             assert ext == '.pck'
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            msg = Utils.load_pickle(path)
             if not hasattr(msg, 'policy'):
                 msg.policy = email._policybase.compat32
-    finally:
-        fp.close()
-    return msg
+
+        return msg
+    except Exception as e:
+        return None
