@@ -737,7 +737,6 @@ def show_post_requests(mlist, id, info, total, count, form):
                             break
                 break
     else:
-        charset = msg.get_content_charset() or 'utf-8'
         payload = msg.get_payload(decode=True)
         if payload:
             decoded_payload = codecs.decode(payload, 'unicode_escape')
