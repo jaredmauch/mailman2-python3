@@ -673,7 +673,6 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
             except UnicodeError:
                 # Try again after coercing the template to unicode
                 utemplate = str(template, GetCharSet(lang), 'replace')
-
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
             # The template is really screwed up
