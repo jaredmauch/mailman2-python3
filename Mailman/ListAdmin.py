@@ -134,7 +134,7 @@ class ListAdmin(object):
     def __getmsgids(self, rtype):
         self.__opendb()
         ids = [k for k, (op, data) in list(self.__db.items()) if op == rtype]
-        ids.sort()
+        ids.sort(key=int)
         return ids
 
     def GetHeldMessageIds(self):
