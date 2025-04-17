@@ -361,13 +361,13 @@ def send_i18n_digests(mlist, mboxfp):
         payload = msg.get_payload(decode=True)
         if payload == None:
             payload = msg.as_string().split('\n\n',1)[1]
-        else:
-            payload = str(payload, 'utf-8')
-
+        mcset = msg.get_content_charset('')
+        if mcset == None or mcset == "":
+            mcset = 'utf-8'
+        if isinstance(payload, bytes):
+            payload = payload.decode(mcset, 'replace')
         print(payload, file=plainmsg)
-        if isinstance(payload, str):
-            payload = payload.encode('utf-8')
-        if not payload.endswith(b'\n'):
+        if not payload.endswith('\n'):
             print(file=plainmsg)
 
     # Now add the footer but only if more than whitespace.

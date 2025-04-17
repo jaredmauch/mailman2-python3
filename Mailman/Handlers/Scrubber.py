@@ -531,8 +531,24 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     # Is it a message/rfc822 attachment?
     elif ctype == 'message/rfc822':
         submsg = msg.get_payload()
+
+        # submsg is usually a list containing a single Message object.
+        # We need to extract that Message object. (taken from Utils.websafe())
+        if isinstance(submsg, list) or isinstance(submsg, tuple):
+            if len(submsg) == 0:
+                submsg = ''
+            else:
+                submsg = submsg[-1]
+
         # BAW: I'm sure we can eventually do better than this. :(
         decodedpayload = Utils.websafe(str(submsg))
+
+        # encode the message back into the charset of the original message.
+        mcset = submsg.get_content_charset('')
+        if mcset == None or mcset == "":
+            mcset = 'utf-8'
+        decodedpayload = decodedpayload.encode(mcset)
+
     fp = open(path, 'wb')
     fp.write(decodedpayload)
     fp.close()
