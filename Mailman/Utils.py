@@ -1689,7 +1689,7 @@ def load_pickle(path):
                 return msg
             except UnicodeDecodeError as e:
                 continue
-            except exception as e:
+            except Exception as e:
                 return None
     elif isinstance(path, bytes):
         for encoding in encodings:

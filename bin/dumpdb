@@ -129,6 +129,8 @@ def main():
                 if typename == 'pickle':
                     obj = Utils.load_pickle(fp)
                     if obj is None:
+                        if doprint:
+                            print(C_('[----- end %(typename)s file -----]'))
                         break
                 else:
                     obj = load(fp, encoding='utf-8')

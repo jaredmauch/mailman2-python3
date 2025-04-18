@@ -85,6 +85,8 @@ class ListAdmin(object):
                 fp = open(self.__filename, 'rb')
                 try:
                     self.__db = Utils.load_pickle(fp)
+                    if not self.__db:
+                        raise IOError("Pickled data is empty or None")
                 finally:
                     fp.close()
             except IOError as e:

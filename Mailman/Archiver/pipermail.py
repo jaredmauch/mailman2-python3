@@ -300,6 +300,8 @@ class T(object):
             if not reload:
                 raise IOError
             d = Utils.load_pickle(os.path.join(self.basedir, 'pipermail.pck'))
+            if not d:
+                raise IOError("Pickled data is empty or None")
             self.message(C_('Reloading pickled archive state'))
             for key, value in list(d.items()):
                 setattr(self, key, value)
