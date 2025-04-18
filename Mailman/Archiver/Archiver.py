@@ -36,11 +36,6 @@ from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
-try:
-    True, False
-except NameError:
-    pass  # True and False are built-in constants in Python 3
-
 FILEMODE = 0o660
 DIRMODE = 0o2775
 

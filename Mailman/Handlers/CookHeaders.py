@@ -46,14 +46,6 @@ CONTINUATION = ',\n '
 COMMASPACE = ', '
 MAXLINELEN = 78
 
-# True/False
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 def is_unicode(s):
     """Return true if s is a unicode string."""
     return isinstance(s, str)

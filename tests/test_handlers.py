@@ -1069,7 +1069,7 @@ To: yall@dom.ain
         finally:
             try:
                 os.unlink(file)
-            except OSError, e:
+            except OSError as e:
                 if e.errno <> e.ENOENT: raise
 
     def test_file_exists_no_member(self):
@@ -1092,7 +1092,7 @@ To: yall@dom.ain
         finally:
             try:
                 os.unlink(file)
-            except OSError, e:
+            except OSError as e:
                 if e.errno <> e.ENOENT: raise
 
     def test_file_exists_is_member(self):
@@ -1116,7 +1116,7 @@ To: yall@dom.ain
         finally:
             try:
                 os.unlink(file)
-            except OSError, e:
+            except OSError as e:
                 if e.errno <> e.ENOENT: raise
 
 
@@ -1136,7 +1136,7 @@ class TestHold(TestBase):
         TestBase.tearDown(self)
         try:
             os.unlink(os.path.join(mm_cfg.DATA_DIR, 'pending.db'))
-        except OSError, e:
+        except OSError as e:
             if e.errno <> errno.ENOENT: raise
         for f in [holdfile for holdfile in os.listdir(mm_cfg.DATA_DIR)
                   if holdfile.startswith('heldmsg-')]:
@@ -2000,7 +2000,7 @@ Here is message %(i)d
     def tearDown(self):
         try:
             os.unlink(self._path)
-        except OSError, e:
+        except OSError as e:
             if e.errno <> errno.ENOENT: raise
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
             os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))

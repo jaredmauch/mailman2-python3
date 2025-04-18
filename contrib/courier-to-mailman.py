@@ -80,9 +80,9 @@ def main():
         listname = string.lower(local)
         types = (("-admin$", "admin"),
                          ("-bounces$", "bounces"),
-                         ("-bounces\+.*$", "bounces"),          # for VERP
+                         ("-bounces\\+.*$", "bounces"),          # for VERP
                          ("-confirm$", "confirm"),
-                         ("-confirm\+.*$", "confirm"),
+                         ("-confirm\\+.*$", "confirm"),
                          ("-join$", "join"),
                          ("-leave$", "leave"),
                          ("-owner$", "owner"),
@@ -114,7 +114,7 @@ give you directions on how to post to each mailing list.\n"""
 
 try:
         sys.exit(main())
-except SystemExit, argument:
+except SystemExit as argument:
         sys.exit(argument)
 
 except Exception, argument:

@@ -111,7 +111,7 @@ give you directions on how to post to each mailing list.\n"""
 
 try:
     sys.exit(main())
-except SystemExit, argument:
+except SystemExit as argument:
     sys.exit(argument)
 
 except Exception, argument:

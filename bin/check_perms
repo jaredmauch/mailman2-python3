@@ -55,11 +55,6 @@ PROGRAM = sys.argv[0]
 
 # Gotta check the archives/private/*/database/* files
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
 
 
 

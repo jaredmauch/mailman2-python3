@@ -48,7 +48,7 @@ from Mailman.i18n import C_
 
 
 def usage(code, msg=''):
-    print C_(__doc__.replace('%', '%%'))
+    print(C_(__doc__.replace('%', '%%')))
     if msg:
         print msg
     sys.exit(code)

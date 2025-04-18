@@ -47,11 +47,6 @@ except ImportError:
 
 COMMASPACE = ', '
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
 
 
 
@@ -98,7 +93,7 @@ class BounceMixin:
     def _queue_bounces(self, listname, addrs, msg):
         today = time.localtime()[:3]
         if self._bounce_events_fp is None:
-            omask = os.umask(006)
+            omask = os.umask(0o006)
             try:
                 self._bounce_events_fp = open(self._bounce_events_file, 'a+b')
             finally:

@@ -82,7 +82,7 @@ def main(argv):
     for dir in dirstochownroot:
         dirpath = paths.prefix + '/' + dir
         os.chown(dirpath, 0, gid)
-        os.chmod(dirpath, 02755)
+        os.chmod(dirpath, 0o2755)
         print dirpath
 
     print

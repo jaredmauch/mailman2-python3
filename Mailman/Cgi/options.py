@@ -48,12 +48,6 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 def D_(s):
     return s
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 def main():
     global _
     doc = Document()

@@ -36,11 +36,6 @@ from Mailman.Auth import Auth
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
 
 
 def main():

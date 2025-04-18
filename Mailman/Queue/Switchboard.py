@@ -48,7 +48,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
 
 # 20 bytes of all bits set, maximum sha.digest() value
-shamax = 0xffffffffffffffffffffffffffffffffffffffffL
+shamax = 0xffffffffffffffffffffffffffffffffffffffff
 
 try:
     import dns.resolver
@@ -70,7 +70,6 @@ DELTA = .0001
 MAX_BAK_COUNT = 3
 
 
-
 class Switchboard:
     def __init__(self, whichq, slice=None, numslices=1, recover=False):
         self.__whichq = whichq

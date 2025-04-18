@@ -68,11 +68,6 @@ if sys.platform == 'darwin':
         newsoft = min(hard, max(soft, 1024*2048))
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
-try:
-    True, False
-except NameError:
-    pass  # True and False are built-in constants in Python 3
-
 def html_quote(s, lang=None):
     repls = ( ('&', '&amp;'),
               ("<", '&lt;'),

@@ -497,7 +497,7 @@ def main():
     for filename in args:
         if filename == '-':
             if options.verbose:
-                print _('Reading standard input')
+                print(_('Reading standard input'))
             fp = sys.stdin
             closep = 0
         else:

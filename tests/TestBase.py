@@ -36,7 +36,7 @@ class TestBase(unittest.TestCase):
         # Python 2.2 and beyond
         def ndiffAssertEqual(self, first, second):
             """Like failUnlessEqual except use ndiff for readable output."""
-            if first <> second:
+            if first != second:
                 sfirst = str(first)
                 ssecond = str(second)
                 diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())

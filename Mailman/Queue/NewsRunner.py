@@ -74,7 +74,7 @@ class NewsRunner(Runner):
                                         user=mm_cfg.NNTP_USERNAME,
                                         password=mm_cfg.NNTP_PASSWORD)
                     conn.post(fp)
-                except nntplib.error_temp, e:
+                except nntplib.error_temp as e:
                     syslog('error',
                            '(NNTPDirect) NNTP error for list "%s": %s',
                            mlist.internal_name(), e)

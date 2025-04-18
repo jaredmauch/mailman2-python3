@@ -99,11 +99,11 @@ class TestAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except OSError, e:
+        except OSError as e:
             if e.errno <> errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
-        except OSError, e:
+        except OSError as e:
             if e.errno <> errno.ENOENT: raise
         TestBase.tearDown(self)
 
@@ -229,11 +229,11 @@ class TestWebAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except OSError, e:
+        except OSError as e:
             if e.errno <> errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
-        except OSError, e:
+        except OSError as e:
             if e.errno <> errno.ENOENT: raise
         del os.environ['HTTP_COOKIE']
         TestBase.tearDown(self)

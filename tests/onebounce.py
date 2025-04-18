@@ -44,15 +44,13 @@ PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
 
-
 def usage(code, msg=''):
-    print __doc__ % globals()
+    print(__doc__ % globals())
     if msg:
         print msg
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hva',
@@ -91,6 +89,5 @@ def main():
                     break
 
 
-
 if __name__ == '__main__':
     main()

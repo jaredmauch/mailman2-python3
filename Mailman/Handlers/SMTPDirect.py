@@ -47,12 +47,6 @@ from email.Charset import Charset
 
 DOT = '.'
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 
 
 # Manage a connection to the SMTP server

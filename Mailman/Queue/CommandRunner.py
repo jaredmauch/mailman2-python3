@@ -59,9 +59,8 @@ BADCMD = 2
 BADSUBJ = 3
 
 try:
-    True, False
+    False
 except NameError:
-    True = 1
     False = 0
 
 
