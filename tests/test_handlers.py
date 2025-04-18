@@ -19,13 +19,16 @@
 """
 
 import os
+import sys
 import time
 import email
 import errno
-import cPickle
+import pickle as cPickle
+import shutil
+import tempfile
 import unittest
-from types import ListType
-from email.Generator import Generator
+from io import StringIO
+from email.generator import Generator
 try:
     from Mailman import __init__
 except ImportError:
@@ -62,12 +65,10 @@ from Mailman.Utils import sha_new
 from TestBase import TestBase
 
 
-
 def password(plaintext):
     return sha_new(plaintext).hexdigest()
 
 
-
 class TestAcknowledge(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -197,7 +198,6 @@ Your preferences: http://www.dom.ain/mailman/options/_xtest/aperson%40dom.ain
         eq(len(self._sb.files()), 0)
 
 
-
 class TestAfterDelivery(TestBase):
     # Both msg and msgdata are ignored
     def test_process(self):
@@ -209,7 +209,6 @@ class TestAfterDelivery(TestBase):
         self.assertEqual(mlist.post_id, post_id + 1)
 
 
-
 class TestApprove(TestBase):
     def test_short_circuit(self):
         msgdata = {'approved': 1}
@@ -226,7 +225,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_moderator(self):
@@ -238,7 +237,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approved_admin(self):
@@ -250,7 +249,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_admin(self):
@@ -262,7 +261,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('approved'))
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_unapproved(self):
@@ -285,7 +284,6 @@ X-BeenThere: %s
         self.assertRaises(Errors.LoopError, Approve.process, mlist, msg, {})
 
 
-
 class TestCalcRecips(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -312,7 +310,7 @@ From: dperson@dom.ain
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -327,7 +325,7 @@ From: cperson@dom.ain
         self._mlist.setMemberOption('cperson@dom.ain',
                                     mm_cfg.DontReceiveOwnPosts, 1)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain'])
@@ -341,7 +339,7 @@ Urgent: xxXXxx
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -358,7 +356,7 @@ Urgent: xxXXxx
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless(msgdata.has_key('recips'))
+        self.failUnless('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -381,7 +379,6 @@ Urgent: zzZZzz
     # BAW: must test the do_topic_filters() path...
 
 
-
 class TestCleanse(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -444,7 +441,6 @@ Subject: a message to you
         eq(msg['subject'], 'a message to you')
 
 
-
 class TestCookHeaders(TestBase):
     def test_transform_noack_to_xack(self):
         eq = self.assertEqual
@@ -865,7 +861,6 @@ From: aperson@dom.ain
         eq(msg['list-post'], '<mailto:_xtest@dom.ain>')
 
 
-
 class TestDecorate(TestBase):
     def test_short_circuit(self):
         msgdata = {'isdigest': 1}
@@ -1037,7 +1032,6 @@ IMAGEDATAIMAGEDATAIMAGEDATA
                                    'recips': [1, 2, 3]})
 
 
-
 class TestFileRecips(TestBase):
     def test_short_circuit(self):
         msgdata = {'recips': 1}
@@ -1120,7 +1114,6 @@ To: yall@dom.ain
                 if e.errno != e.ENOENT: raise
 
 
-
 class TestHold(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1278,7 +1271,6 @@ From: aperson@dom.ain
         eq(len(holdfiles), 0)
 
 
-
 class TestMimeDel(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1764,17 +1756,15 @@ Final plain part.
         eq(part1.get_content_type(), 'text/plain')
         eq(part1.get_payload(), 'Attached Message 5 plain body.\n')
 
-
+
 class TestModerate(TestBase):
     pass
 
 
-
 class TestReplybot(TestBase):
     pass
 
 
-
 class TestSpamDetect(TestBase):
     def test_short_circuit(self):
         msgdata = {'approved': 1}
@@ -1805,7 +1795,6 @@ A message.
             mm_cfg.KNOWN_SPAMMERS = spammers
 
 
-
 class TestTagger(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1920,7 +1909,6 @@ Keywords: barbaz
         eq(msgdata.get('topichits'), None)
 
 
-
 class TestToArchive(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1976,7 +1964,6 @@ It rocks!
         eq(msg.as_string(unixfrom=0), msg2.as_string(unixfrom=0))
 
 
-
 class TestToDigest(TestBase):
     def _makemsg(self, i=0):
         msg = email.message_from_string("""From: aperson@dom.ain
@@ -2058,7 +2045,6 @@ Here is message %(i)d
         # BAW: this test is incomplete...
 
 
-
 class TestToOutgoing(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -2095,7 +2081,6 @@ It rocks!
         #self.failUnless(data['received_time'] <= time.time())
 
 
-
 class TestToUsenet(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -2143,7 +2128,6 @@ Mailman rocks!
         #self.failUnless(data['received_time'] <= time.time())
 
 
-
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestAcknowledge))
@@ -2167,6 +2151,5 @@ def suite():
     return suite
 
 
-
 if __name__ == '__main__':
     unittest.main(defaultTest='suite')
