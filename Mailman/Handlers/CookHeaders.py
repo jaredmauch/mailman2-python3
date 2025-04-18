@@ -50,7 +50,7 @@ def is_unicode(s):
     """Return true if s is a unicode string."""
     return isinstance(s, str)
 
-nonascii = re.compile('[^\s!-~]')
+nonascii = re.compile(r'[^\s!-~]')
 
 def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     # Get the charset to encode the string in. Then search if there is any
@@ -284,7 +284,7 @@ def process(mlist, msg, msgdata):
         # thing.  We also add the original From: to Cc: if it wasn't added
         # to Reply-To:
         add_list = (mlist.personalize == 2 and
-                    mlist.reply_goes_to_list <> 1 and
+                    mlist.reply_goes_to_list != 1 and
                     not mlist.anonymous_list)
         if add_list or o_from:
             # Watch out for existing Cc headers, merge, and remove dups.  Note

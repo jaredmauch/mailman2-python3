@@ -30,7 +30,7 @@ class ContentFilter(GUIBase):
         return 'contentfilter', _('Content&nbsp;filtering')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'contentfilter':
+        if category != 'contentfilter':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

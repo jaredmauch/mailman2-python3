@@ -129,14 +129,14 @@ def main():
         text = _('View this page in'))
     replacements['<mm-lang-form-start>'] = mlist.FormatFormStart('roster')
     doc.AddItem(mlist.ParseTags('roster.html', replacements, lang))
-    print doc.Format()
+    print(doc.Format())
 
 
 def error_page(errmsg):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
     error_page_doc(doc, errmsg)
-    print doc.Format()
+    print(doc.Format())
 
 
 def error_page_doc(doc, errmsg):

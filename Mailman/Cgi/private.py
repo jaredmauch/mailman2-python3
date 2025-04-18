@@ -66,7 +66,7 @@ def main():
 
     path = os.environ.get('PATH_INFO')
     tpath = true_path(path)
-    if tpath <> path[1:]:
+    if tpath != path[1:]:
         msg = _('Private archive - "./" and "../" not allowed in URL.')
         doc.SetTitle(msg)
         doc.AddItem(Header(2, msg))

@@ -31,7 +31,7 @@ class Autoresponse(GUIBase):
         return 'autoreply', _('Auto-responder')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'autoreply':
+        if category != 'autoreply':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

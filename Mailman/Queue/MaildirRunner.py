@@ -53,8 +53,8 @@ import os
 import re
 import errno
 
-from email.Parser import Parser
-from email.Utils import parseaddr
+from email.parser import Parser
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -86,7 +86,6 @@ lre = re.compile(r"""
  """, re.VERBOSE | re.IGNORECASE)
 
 
-
 class MaildirRunner(Runner):
     # This class is much different than most runners because it pulls files
     # of a different format than what scripts/post and friends leaves.  The
@@ -108,17 +107,19 @@ class MaildirRunner(Runner):
         # Cruise through all the files currently in the new/ directory
         try:
             files = os.listdir(self._dir)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
-            # Nothing's been delivered yet
-            return 0
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                # Some other MaildirRunner beat us to it
+                return 0
+            syslog('error', 'Could not rename maildir file: %s', srcname)
+            raise
         for file in files:
             srcname = os.path.join(self._dir, file)
             dstname = os.path.join(self._cur, file + ':1,P')
             xdstname = os.path.join(self._cur, file + ':1,X')
             try:
                 os.rename(srcname, dstname)
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ENOENT:
                     # Some other MaildirRunner beat us to it
                     continue
@@ -188,7 +189,7 @@ class MaildirRunner(Runner):
                     continue
                 queue.enqueue(msg, msgdata)
                 os.unlink(dstname)
-            except Exception, e:
+            except Exception as e:
                 os.rename(dstname, xdstname)
                 syslog('error', str(e))
 

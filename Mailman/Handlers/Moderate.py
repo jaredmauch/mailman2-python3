@@ -19,9 +19,9 @@
 """
 
 import re
-from email.MIMEMessage import MIMEMessage
-from email.MIMEText import MIMEText
-from email.Utils import parseaddr
+from email.mime.message import MIMEMessage
+from email.mime.text import MIMEText
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -33,7 +33,6 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.MailList import MailList
 
 
-
 class ModeratedMemberPost(Hold.ModeratedPost):
     # BAW: I wanted to use the reason below to differentiate between this
     # situation and normal ModeratedPost reasons.  Greg Ward and Stonewall
@@ -88,7 +87,7 @@ def process(mlist, msg, msgdata):
                 else:
                     # Use the default RejectMessage notice string
                     text = None
-                raise Errors.RejectMessage, text
+                raise Errors.RejectMessage(text)
             elif mlist.member_moderation_action == 2:
                 # Discard.  BAW: Again, it would be nice if we could send a
                 # discard notice to the sender
@@ -144,14 +143,13 @@ def process(mlist, msg, msgdata):
 def do_reject(mlist):
     listowner = mlist.GetOwnerEmail()
     if mlist.nonmember_rejection_notice:
-        raise Errors.RejectMessage, \
-              Utils.wrap(_(mlist.nonmember_rejection_notice))
+        raise Errors.RejectMessage(Utils.wrap(_(mlist.nonmember_rejection_notice)))
     else:
-        raise Errors.RejectMessage, Utils.wrap(_("""\
+        raise Errors.RejectMessage(Utils.wrap(_("""\
 Your message has been rejected, probably because you are not subscribed to the
 mailing list and the list's policy is to prohibit non-members from posting to
 it.  If you think that your messages are being rejected in error, contact the
-mailing list owner at %(listowner)s."""))
+mailing list owner at %(listowner)s.""")))
 
 
 def do_discard(mlist, msg):

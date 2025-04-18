@@ -26,7 +26,7 @@ class Bounce(GUIBase):
         return 'bounce', _('Bounce processing')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'bounce':
+        if category != 'bounce':
             return None
         return [
             _("""These policies control the automatic bounce processing system

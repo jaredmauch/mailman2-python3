@@ -116,7 +116,7 @@ def process(res, args):
             ok = full = True
     else:
         # Admin only
-        if len(args) <> 1:
+        if len(args) != 1:
             usage(res)
             return STOP
         if mlist.Authenticate((mm_cfg.AuthListModerator,

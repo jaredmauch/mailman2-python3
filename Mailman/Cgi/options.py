@@ -341,7 +341,7 @@ def main():
                    user, listname, remote)
             # So as not to allow membership leakage, prompt for the email
             # address and the password here.
-            if mlist.private_roster <> 0:
+            if mlist.private_roster != 0:
                 syslog('mischief',
                        'Login failure with private rosters: %s from %s',
                        user, remote)
@@ -427,7 +427,7 @@ def main():
             extra = ''
             url = gmlist.GetOptionsURL(user)
             link = Link(url, gmlist.real_name)
-            if gmlist.getDeliveryStatus(user) <> MemberAdaptor.ENABLED:
+            if gmlist.getDeliveryStatus(user) != MemberAdaptor.ENABLED:
                 extra += ', ' + _('nomail')
             if user in gmlist.getDigestMemberKeys():
                 extra += ', ' + _('digest')
@@ -463,12 +463,8 @@ def main():
         # We will change the member's name under the following conditions:
         # - membername has a value
         # - membername has no value, but they /used/ to have a membername
-        if membername and membername <> oldname:
-            # Setting it to a new value
-            set_membername = 1
-        if not membername and oldname:
-            # Unsetting it
-            set_membername = 1
+        if membername and membername != oldname:
+            mlist.setMemberName(user, membername)
         # We will change the user's address if both newaddr and confirmaddr
         # are non-blank, have the same value, and aren't the currently
         # subscribed email address (when compared case-sensitively).  If both
@@ -476,35 +472,21 @@ def main():
         # an error.
         msg = ''
         if newaddr and confirmaddr:
-            if newaddr <> confirmaddr:
+            if newaddr != confirmaddr:
                 options_page(mlist, doc, user, cpuser, userlang,
                              _('Addresses did not match!'))
                 print(doc.Format())
                 return
             if newaddr == cpuser:
                 options_page(mlist, doc, user, cpuser, userlang,
-                             _('You are already using that email address'))
+                             _('New address is same as old address!'))
                 print(doc.Format())
                 return
-            # If they're requesting to subscribe an address which is already a
-            # member, and they're /not/ doing it globally, then refuse.
-            # Otherwise, we'll agree to do it globally (with a warning
-            # message) and let ApprovedChangeMemberAddress() handle already a
-            # member issues.
-            if mlist.isMember(newaddr):
-                safenewaddr = Utils.websafe(newaddr)
-                if globally:
-                    listname = mlist.real_name
-                    msg += _("""\
-The new address you requested %(newaddr)s is already a member of the
-%(listname)s mailing list, however you have also requested a global change of
-address.  Upon confirmation, any other mailing list containing the address
-%(safeuser)s will be changed. """)
-                    # Don't return
-                else:
-                    options_page(
-                        mlist, doc, user, cpuser, userlang,
-                        _('The new address is already a member: %(newaddr)s'))
+            if newaddr != cpuser:
+                # See if this address is already subscribed
+                if mlist.isMember(newaddr):
+                    options_page(mlist, doc, user, cpuser, userlang,
+                                 _('Address is already subscribed!'))
                     print(doc.Format())
                     return
             set_address = 1
@@ -573,7 +555,7 @@ address.  Upon confirmation, any other mailing list containing the address
                          _('Passwords may not be blank'))
             print(doc.Format())
             return
-        if newpw <> confirmpw:
+        if newpw != confirmpw:
             options_page(mlist, doc, user, cpuser, userlang,
                          _('Passwords did not match!'))
             print(doc.Format())
@@ -700,7 +682,7 @@ address.  Upon confirmation, any other mailing list containing the address
             elif flag == mm_cfg.DisableDelivery:
                 status = mlist.getDeliveryStatus(user)
                 # Here, newval == 0 means enable, newval == 1 means disable
-                if not newval and status <> MemberAdaptor.ENABLED:
+                if not newval and status != MemberAdaptor.ENABLED:
                     newval = MemberAdaptor.ENABLED
                 elif newval and status == MemberAdaptor.ENABLED:
                     newval = MemberAdaptor.BYUSER
@@ -1080,7 +1062,7 @@ def lists_of_member(mlist, user):
         if listname == mlist.internal_name():
             continue
         glist = MailList.MailList(listname, lock=0)
-        if glist.host_name <> hostname:
+        if glist.host_name != hostname:
             continue
         if not glist.isMember(user):
             continue

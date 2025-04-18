@@ -96,7 +96,7 @@ class GUIBase:
                         bad_addrs.append(addr)
                 addrs.append(addr)
             if bad_addrs:
-                raise Errors.EmailAddressError, ', '.join(bad_addrs)
+                raise Errors.EmailAddressError(', '.join(bad_addrs))
             return addrs
         # This is a host name, i.e. verbatim
         if wtype == mm_cfg.Host:
@@ -108,15 +108,13 @@ class GUIBase:
             # truncate the value to an int.
             if isinstance(val, float):
                 return val
-            num = -1
             try:
-                num = int(val)
+                return int(val)
             except ValueError:
-                # Let ValueErrors percolate up
-                num = float(val)
-            if num < 0:
-                return getattr(mlist, property)
-            return num
+                try:
+                    return float(val)
+                except ValueError:
+                    raise Errors.ValueError(_('Not a valid number: %(val)s'))
         # This widget is a select box, i.e. verbatim
         if wtype == mm_cfg.Select:
             return val
@@ -137,8 +135,13 @@ class GUIBase:
 
     def _setValue(self, mlist, property, val, doc):
         # Set the value, or override to take special action on the property
-        if not property.startswith('_') and getattr(mlist, property) <> val:
-            setattr(mlist, property, val)
+        if not property.startswith('_') and getattr(mlist, property) != val:
+            mlist.Lock()
+            try:
+                self._setValue(mlist, property, val, doc)
+            finally:
+                mlist.Save()
+                mlist.Unlock()
 
     def _postValidate(self, mlist, doc):
         # Validate all the attributes for this category
@@ -171,8 +174,7 @@ class GUIBase:
                 val = self._getValidValue(mlist, property, wtype, val)
             except ValueError:
                 doc.addError(_('Invalid value for variable: %(property)s'))
-            # This is the parent of MMBadEmailError and MMHostileAddress
-            except Errors.EmailAddressError, error:
+            except Errors.EmailAddressError as error:
                 error = Utils.websafe(str(error))
                 doc.addError(
                     _('Bad email address for option %(property)s: %(error)s'))
@@ -214,7 +216,7 @@ class GUIBase:
         # the corrected string.
         if not dollarp:
             fixed = Utils.to_percent(Utils.to_dollar(val))
-            if fixed <> val:
+            if fixed != val:
                 doc.addError(_(
                     """Your <code>%(property)s</code> string appeared to
                     have some correctable problems in its new value.
