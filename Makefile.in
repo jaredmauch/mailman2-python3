@@ -74,6 +74,7 @@ EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.fi
 # Rules
 
 all: subdirs
+	python3 -m compileall -q .
 
 subdirs: $(SUBDIRS)
 	for d in $(SUBDIRS); \
