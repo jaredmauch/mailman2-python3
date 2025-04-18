@@ -39,7 +39,7 @@ class Topics(GUIBase):
         return 'topics', _('Topics')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'topics':
+        if category != 'topics':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

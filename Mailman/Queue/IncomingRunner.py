@@ -171,7 +171,7 @@ class IncomingRunner(Runner):
                 # Let the approval process take it from here.  The message no
                 # longer needs to be queued.
                 return 0
-            except Errors.RejectMessage, e:
+            except Errors.RejectMessage as e:
                 # Log this.
                 # We do need to push the current handler back in the pipeline
                 # just in case the syslog call or BounceMessage throws an

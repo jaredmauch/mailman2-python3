@@ -29,13 +29,12 @@ PERSONALIZED_ALLOWEDS = ('user_address', 'user_delivered_to', 'user_password',
                          )
 
 
-
 class NonDigest(GUIBase):
     def GetConfigCategory(self):
         return 'nondigest', _('Non-digest&nbsp;options')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'nondigest':
+        if category != 'nondigest':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 

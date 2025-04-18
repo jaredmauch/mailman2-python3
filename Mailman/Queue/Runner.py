@@ -207,9 +207,12 @@ class Runner:
         # weakref.proxy created other issues.
         try:
             mlist = MailList.MailList(listname, lock=False)
-        except Errors.MMListError, e:
-            syslog('error', 'error opening list: %s\n%s', listname, e)
-            return None
+        except Errors.MMListError as e:
+            # We did not successfully acquire the list lock (which really shouldn't
+            # happen), so throw this in the qfiles/shunt queue for the site admin
+            # to resolve later.
+            self._log(e)
+            return True
         return mlist
 
     def _log(self, exc):

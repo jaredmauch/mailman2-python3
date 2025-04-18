@@ -250,7 +250,7 @@ Content-Type: multipart/report; boundary=BOUNDARY
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(BounceTest))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(BounceTest))
     return suite
 
 

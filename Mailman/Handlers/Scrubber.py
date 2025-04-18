@@ -210,7 +210,7 @@ def process(mlist, msg, msgdata=None):
             # Make it specifically 'attachment'.
             if (part.get('content-disposition', '').lower() == 'attachment'
                     and not part.get_content_charset()):
-                omask = os.umask(002)
+                omask = os.umask(0o002)
                 try:
                     url = save_attachment(mlist, part, dir)
                 finally:
@@ -238,7 +238,7 @@ URL: %(url)s
                 # Pull it out as an attachment but leave it unescaped.  This
                 # is dangerous, but perhaps useful for heavily moderated
                 # lists.
-                omask = os.umask(002)
+                omask = os.umask(0o002)
                 try:
                     url = save_attachment(mlist, part, dir, filter_html=False)
                 finally:
@@ -263,7 +263,7 @@ URL: %(url)s
                 # We're replacing the payload with the decoded payload so this
                 # will just get in the way.
                 del part['content-transfer-encoding']
-                omask = os.umask(002)
+                omask = os.umask(0o002)
                 try:
                     url = save_attachment(mlist, part, dir, filter_html=False)
                 finally:
@@ -275,7 +275,7 @@ URL: %(url)s
         elif ctype == 'message/rfc822':
             # This part contains a submessage, so it too needs scrubbing
             submsg = part.get_payload(0)
-            omask = os.umask(002)
+            omask = os.umask(0o002)
             try:
                 url = save_attachment(mlist, part, dir)
             finally:
@@ -308,7 +308,7 @@ URL: %(url)s
             if payload is None:
                 continue
             size = len(payload)
-            omask = os.umask(002)
+            omask = os.umask(0o002)
             try:
                 url = save_attachment(mlist, part, dir)
             finally:
@@ -354,8 +354,8 @@ URL: %(url)s
             # if sanitize == 2, there could be text/html parts so keep them
             # but skip any other parts.
             partctype = part.get_content_type()
-            if partctype <> 'text/plain' and (partctype <> 'text/html' or
-                                              sanitize <> 2):
+            if partctype != 'text/plain' and (partctype != 'text/html' or
+                                              sanitize != 2):
                 text.append(_('Skipped content of type %(partctype)s\n'))
                 continue
             try:
@@ -376,7 +376,7 @@ URL: %(url)s
                 partcharset = str(partcharset)
             else:
                 partcharset = part.get_content_charset()
-            if partcharset and partcharset <> charset:
+            if partcharset and partcharset != charset:
                 try:
                     t = unicode(t, partcharset, 'replace')
                 except (UnicodeError, LookupError, ValueError,

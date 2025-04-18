@@ -34,7 +34,7 @@ class Language(GUIBase):
         return 'language', _('Language&nbsp;options')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'language':
+        if category != 'language':
             return None
 
         # Set things up for the language choices

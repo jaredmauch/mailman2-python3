@@ -78,7 +78,7 @@ class Switchboard:
         omask = os.umask(0)                       # rwxrws---
         try:
             try:
-                os.mkdir(self.__whichq, 0770)
+                os.mkdir(self.__whichq, 0o770)
             except OSError, e:
                 if e.errno <> errno.EEXIST: raise
         finally:

@@ -91,7 +91,7 @@ class OutgoingRunner(Runner, BounceMixin):
                 self.__logged = True
             self._snooze(0)
             return True
-        except Errors.SomeRecipientsFailed, e:
+        except Errors.SomeRecipientsFailed as e:
             # Handle local rejects of probe messages differently.
             if msgdata.get('probe_token') and e.permfailures:
                 self._probe_bounce(mlist, msgdata['probe_token'])

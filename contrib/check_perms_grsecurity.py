@@ -96,7 +96,7 @@ def main(argv):
 
     if not os.path.exists(droplib):
         print "Creating " + droplib
-        fp = open(droplib, 'w', 0644)
+        fp = open(droplib, 'w', 0o644)
         fp.write("""import sys
 import os
 import grp, pwd

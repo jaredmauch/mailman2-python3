@@ -48,7 +48,7 @@ class Privacy(GUIBase):
         return None
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'privacy':
+        if category != 'privacy':
             return None
         # Pre-calculate some stuff.  Technically, we shouldn't do the
         # sub_cfentry calculation here, but it's too ugly to indent it any

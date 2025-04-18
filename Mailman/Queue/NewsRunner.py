@@ -78,14 +78,14 @@ class NewsRunner(Runner):
                     syslog('error',
                            '(NNTPDirect) NNTP error for list "%s": %s',
                            mlist.internal_name(), e)
-                except socket.error, e:
+                except socket.error as e:
                     syslog('error',
                            '(NNTPDirect) socket error for list "%s": %s',
                            mlist.internal_name(), e)
             finally:
                 if conn:
                     conn.quit()
-        except Exception, e:
+        except Exception as e:
             # Some other exception occurred, which we definitely did not
             # expect, so set this message up for requeuing.
             self._log(e)

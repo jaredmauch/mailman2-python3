@@ -96,7 +96,7 @@ class HTMLFormatter:
             if realname and mm_cfg.ROSTER_DISPLAY_REALNAME:
                 showing += " (%s)" % Utils.websafe(realname)
             got = Link(url, showing)
-            if self.getDeliveryStatus(person) <> MemberAdaptor.ENABLED:
+            if self.getDeliveryStatus(person) != MemberAdaptor.ENABLED:
                 got = Italic('(', got, ')')
             items.append(got)
         # Just return the .Format() so this works until I finish
@@ -105,7 +105,7 @@ class HTMLFormatter:
 
     def FormatOptionButton(self, option, value, user):
         if option == mm_cfg.DisableDelivery:
-            optval = self.getDeliveryStatus(user) <> MemberAdaptor.ENABLED
+            optval = self.getDeliveryStatus(user) != MemberAdaptor.ENABLED
         else:
             optval = self.getMemberOption(user, option)
         if optval == value:

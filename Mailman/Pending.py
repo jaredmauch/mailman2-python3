@@ -115,7 +115,7 @@ class Pending:
                 del evictions[cookie]
         db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
         tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
-        omask = os.umask(007)
+        omask = os.umask(0o007)
         try:
             fp = open(tmpfile, 'w')
             try:

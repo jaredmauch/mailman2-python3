@@ -115,7 +115,7 @@ class BounceMixin:
         while True:
             try:
                 listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
-            except ValueError, e:
+            except ValueError as e:
                 syslog('bounce', 'Error reading bounce events: %s', e)
             except EOFError:
                 break

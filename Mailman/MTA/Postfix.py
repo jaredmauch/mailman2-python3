@@ -548,11 +548,11 @@ def main():
         return
 
     # Create the list directory with proper permissions
-    oldmask = os.umask(0o007)
+    omask = os.umask(0o007)
     try:
         os.makedirs(mlist.fullpath(), mode=0o2775)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
     finally:
-        os.umask(oldmask)
+        os.umask(omask)

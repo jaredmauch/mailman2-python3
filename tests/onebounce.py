@@ -76,15 +76,15 @@ def main():
             __import__(modname)
             addrs = sys.modules[modname].process(msg)
             if addrs is BouncerAPI.Stop:
-                print module, 'got a Stop'
+                print(module, 'got a Stop')
                 if not all:
                     break
                 continue
             if not addrs:
                 if verbose:
-                    print module, 'found no matches'
+                    print(module, 'found no matches')
             else:
-                print module, 'found', COMMASPACE.join(addrs)
+                print(module, 'found', COMMASPACE.join(addrs))
                 if not all:
                     break
 

@@ -413,7 +413,7 @@ class LockFile:
 
     def __write(self):
         # Make sure it's group writable
-        oldmask = os.umask(002)
+        oldmask = os.umask(0o002)
         try:
             fp = open(self.__tmpfname, 'w')
             fp.write(self.__tmpfname)
