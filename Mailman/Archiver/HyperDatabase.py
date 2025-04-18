@@ -66,7 +66,7 @@ class DumbBTree:
         self.load()
 
     def __repr__(self):
-        return "DumbBTree({})".format(self.path)
+        return "DumbBTree(%s)" % self.path
 
     def __sort(self, dirty=None):
         if self.__dirty == 1 or dirty:
@@ -127,13 +127,16 @@ class DumbBTree:
             self.current_index = len(self.sorted) - 1
             return key, self.dict[key]
 
-    def next(self):
+    def __next__(self):
         try:
             key = self.sorted[self.current_index]
         except IndexError:
             raise KeyError
         self.current_index = self.current_index + 1
         return key, self.dict[key]
+
+    def next(self):
+        return self.__next__()
 
     def has_key(self, key):
         return key in self.dict
@@ -244,17 +247,17 @@ class HyperDatabase(pipermail.Database):
             return
         self.__closeIndices()
         arcdir = os.path.join(self.basedir, 'database')
-        omask = os.umask(0)
+        omask = os.umask(0o007)
         try:
             try:
                 os.mkdir(arcdir, 0o2770)
             except OSError as e:
                 if e.errno != errno.EEXIST: raise
+            for i in ('date', 'author', 'subject', 'article', 'thread'):
+                t = DumbBTree(os.path.join(arcdir, archive + '-' + i))
+                setattr(self, i + 'Index', t)
         finally:
             os.umask(omask)
-        for i in ('date', 'author', 'subject', 'article', 'thread'):
-            t = DumbBTree(os.path.join(arcdir, archive + '-' + i))
-            setattr(self, i + 'Index', t)
         self.__currentOpenArchive = archive
 
     def __closeIndices(self):
@@ -276,7 +279,7 @@ class HyperDatabase(pipermail.Database):
 
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return self.articleIndex in msgid
+        return self.articleIndex.has_key(msgid)
 
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
@@ -284,7 +287,7 @@ class HyperDatabase(pipermail.Database):
 
     def getArticle(self, archive, msgid):
         self.__openIndices(archive)
-        if not self.__cache in msgid:
+        if not self.__cache.has_key(msgid):
             # get the pickled object out of the DumbBTree
             buf = self.articleIndex[msgid]
             article = self.__cache[msgid] = pickle.loads(buf)
@@ -331,9 +334,7 @@ class HyperDatabase(pipermail.Database):
         self.__openIndices(archive)
         if hasattr(self.threadIndex, 'clear'):
             self.threadIndex.clear()
-        else:
-            # For Python 3 compatibility
-            self.threadIndex = {}
+            return
         finished=0
         try:
             key, msgid=self.threadIndex.first()

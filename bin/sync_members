@@ -76,13 +76,7 @@ Where `options' are:
         Required.  This specifies the list to synchronize.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
-import getopt
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
@@ -94,6 +88,8 @@ from Mailman import Utils
 from Mailman.UserDesc import UserDesc
 from Mailman.i18n import C_
 
+
+
 PROGRAM = sys.argv[0]
 
 def usage(code, msg=''):
@@ -101,12 +97,13 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def yesno(opt):
     i = opt.find('=')
     yesno = opt[i+1:].lower()
@@ -120,13 +117,6 @@ def yesno(opt):
 
 
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:f:n:d:w:g:a:',
-                                 ['list=', 'file=', 'nomail=', 'digest=',
-                                  'welcome=', 'goodbye=', 'notifyadmin='])
-    except getopt.error as msg:
-        usage(1, msg)
-
     dryrun = 0
     digest = 0
     welcome = None
@@ -135,40 +125,55 @@ def main():
     listname = None
     notifyadmin = None
 
-    for opt, arg in opts:
+    # TBD: can't use getopt with this command line syntax, which is broken and
+    # should be changed to be getopt compatible.
+    i = 1
+    while i < len(sys.argv):
+        opt = sys.argv[i]
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-n', '--no-change'):
             dryrun = 1
-            print(C_('Dry run mode'))
+            i += 1
+            print C_('Dry run mode')
         elif opt in ('-d', '--digest'):
             digest = 1
+            i += 1
         elif opt.startswith('-d=') or opt.startswith('--digest='):
             digest = yesno(opt)
+            i += 1
         elif opt in ('-w', '--welcome-msg'):
             welcome = 1
+            i += 1
         elif opt.startswith('-w=') or opt.startswith('--welcome-msg='):
             welcome = yesno(opt)
+            i += 1
         elif opt in ('-g', '--goodbye-msg'):
             goodbye = 1
+            i += 1
         elif opt.startswith('-g=') or opt.startswith('--goodbye-msg='):
             goodbye = yesno(opt)
+            i += 1
         elif opt in ('-f', '--file'):
             if filename is not None:
                 usage(1, C_('Only one -f switch allowed'))
             try:
-                filename = arg
+                filename = sys.argv[i+1]
             except IndexError:
                 usage(1, C_('No argument to -f given'))
+            i += 2
         elif opt in ('-a', '--notifyadmin'):
             notifyadmin = 1
+            i += 1
         elif opt.startswith('-a=') or opt.startswith('--notifyadmin='):
             notifyadmin = yesno(opt)
+            i += 1
         elif opt[0] == '-':
             usage(1, C_('Illegal option: %(opt)s'))
         else:
             try:
-                listname = arg.lower()
+                listname = sys.argv[i].lower()
+                i += 1
             except IndexError:
                 usage(1, C_('No listname given'))
             break
@@ -181,10 +186,13 @@ def main():
         filemembers = sys.stdin.readlines()
     else:
         try:
-            with open(filename) as fp:
-                filemembers = fp.readlines()
-        except IOError as e:
-            usage(1, C_('Cannot read address file: %(filename)s: %(msg)s') % {'filename': filename, 'msg': str(e)})
+            fp = open(filename)
+        except IOError, (code, msg):
+            usage(1, C_('Cannot read address file: %(filename)s: %(msg)s'))
+        try:
+            filemembers = fp.readlines()
+        finally:
+            fp.close()
 
     # strip out lines we don't care about, they are comments (# in first
     # non-whitespace) or are blank
@@ -192,7 +200,7 @@ def main():
         addr = filemembers[i].strip()
         if addr == '' or addr[:1] == '#':
             del filemembers[i]
-            print(C_('Ignore  :  %(addr)30s') % {'addr': addr})
+            print C_('Ignore  :  %(addr)30s')
 
     # first filter out any invalid addresses
     filemembers = email.Utils.getaddresses(filemembers)
@@ -201,17 +209,17 @@ def main():
         try:
             Utils.ValidateEmail(addr)
         except Errors.EmailAddressError:
-            print(C_('Invalid :  %(addr)30s') % {'addr': addr})
+            print C_('Invalid :  %(addr)30s')
             invalid = 1
     if invalid:
-        print(C_('You must fix the preceding invalid addresses first.'))
+        print C_('You must fix the preceding invalid addresses first.')
         sys.exit(1)
 
     # get the locked list object
     try:
         mlist = MailList.MailList(listname)
-    except Errors.MMListError as e:
-        print(C_('No such list: %(listname)s') % {'listname': listname})
+    except Errors.MMListError, e:
+        print C_('No such list: %(listname)s')
         sys.exit(1)
 
     try:
@@ -226,14 +234,14 @@ def main():
             # Any address found in the file that is also in the list can be
             # ignored.  If not found in the list, it must be added later.
             laddr = addr.lower()
-            if laddr in addrs:
+            if addrs.has_key(laddr):
                 del addrs[laddr]
                 matches[laddr] = 1
-            elif laddr not in matches:
+            elif not matches.has_key(laddr):
                 needsadding[laddr] = (name, addr)
 
         if not needsadding and not addrs:
-            print(C_('Nothing to do.'))
+            print C_('Nothing to do.')
             sys.exit(0)
 
         enc = sys.getdefaultencoding()
@@ -250,14 +258,15 @@ def main():
                     mlist.ApprovedAddMember(userdesc, welcome, notifyadmin)
                 # Avoid UnicodeError if name can't be decoded
                 if isinstance(name, str):
-                    name = name.encode(enc, 'replace')
+                    name = unicode(name, errors='replace')
                 name = name.encode(enc, 'replace')
                 s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-                print(C_('Added  : %(s)s') % {'s': s})
+                print C_('Added  : %(s)s')
             except Errors.MMAlreadyAMember:
                 pass
-            except Errors.MembershipIsBanned as pattern:
-                print('%s:' % addr, C_('Banned address (matched %(pattern)s)') % {'pattern': pattern})
+            except Errors.MembershipIsBanned, pattern:
+                print ('%s:' % addr), C_(
+                                      'Banned address (matched %(pattern)s)')
 
         for laddr, addr in addrs.items():
             # Should be a member, otherwise our test above is broken
@@ -274,10 +283,10 @@ def main():
                     mlist.removeMember(addr)
             # Avoid UnicodeError if name can't be decoded
             if isinstance(name, str):
-                name = name.encode(enc, 'replace')
+                name = unicode(name, errors='replace')
             name = name.encode(enc, 'replace')
             s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-            print(C_('Removed: %(s)s') % {'s': s})
+            print C_('Removed: %(s)s')
 
         mlist.Save()
     finally:

@@ -15,20 +15,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Base class for loggers."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+"""File-based logger, writes to named category files in mm_cfg.LOG_DIR."""
 
 import sys
-import time
-import traceback
-from typing import Dict, List, Optional, Union, Any, TextIO, Tuple
+import os
+import codecs
+from types import StringType
 
 from Mailman import mm_cfg
-from Mailman.Logging.Utils import _logexc, _logfile_open
+from Mailman.Logging.Utils import _logexc
 
 # Set this to the encoding to be used for your log file output.  If set to
 # None, then it uses your system's default encoding.  Otherwise, it must be an
@@ -36,106 +31,143 @@ from Mailman.Logging.Utils import _logexc, _logfile_open
 LOG_ENCODING = 'iso-8859-1'
 
 
+def main():
+    doc = Document()
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        # Send this with a 404 status
+        print('Status: 404 Not Found')
+        print(doc.Format())
+        return
+
+    # Must be authenticated to get any farther
+    cgidata = cgi.FieldStorage()
+    try:
+        cgidata.getfirst('adminpw', '')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    # Editing the html for a list is limited to the list admin and site admin.
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.getfirst('adminpw', '')):
+        if 'admlogin' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (logger): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
+        return
+
+    # Create the list directory with proper permissions
+    oldmask = os.umask(0o007)
+    try:
+        os.makedirs(mlist.fullpath(), mode=0o2775)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    finally:
+        os.umask(oldmask)
+
+
 class Logger:
-    """Base class for loggers.
-    
-    Attributes:
-        filename: The name of the log file.
-        mode: The mode to open the file in.
-        encoding: The encoding to use for the file.
-        nofail: Whether to fail silently.
-        _fileobj: The file object for writing logs.
-    """
+    def __init__(self, category, nofail=1, immediate=0):
+        """nofail says to fallback to sys.__stderr__ if write fails to
+        category file - a complaint message is emitted, but no exception is
+        raised.  Set nofail=0 if you want to handle the error in your code,
+        instead.
 
-    def __init__(self, filename: str, mode: str = 'a', encoding: str = 'utf-8',
-                 nofail: bool = True) -> None:
-        """Initialize the logger.
-        
-        Args:
-            filename: The name of the log file.
-            mode: The mode to open the file in (default: 'a').
-            encoding: The encoding to use (default: 'utf-8').
-            nofail: Whether to fail silently (default: True).
+        immediate=1 says to create the log file on instantiation.
+        Otherwise, the file is created only when there are writes pending.
         """
-        self.filename = filename
-        self.mode = mode
-        self.encoding = encoding
-        self.nofail = nofail
-        self._fileobj = None
-        self._open()
-
-    def _open(self) -> None:
-        """Open the log file."""
-        try:
-            self._fileobj = _logfile_open(self.filename, self.mode, self.encoding)
-        except IOError:
-            if not self.nofail:
-                raise
-            self._fileobj = None
-
-    def _close(self) -> None:
-        """Close the log file."""
-        if self._fileobj:
-            try:
-                self._fileobj.close()
-            except IOError:
-                if not self.nofail:
-                    raise
-            self._fileobj = None
-
-    def write(self, msg: str) -> None:
-        """Write a message to the log file.
-        
-        Args:
-            msg: The message to write.
-        """
-        if self._fileobj:
-            try:
-                self._fileobj.write(msg)
-                self._fileobj.flush()
-            except IOError:
-                if not self.nofail:
-                    raise
-                # Try to reopen the file
-                self._close()
-                self._open()
-                if self._fileobj:
-                    try:
-                        self._fileobj.write(msg)
-                        self._fileobj.flush()
-                    except IOError:
-                        if not self.nofail:
-                            raise
-
-    def writelines(self, lines: List[str]) -> None:
-        """Write multiple lines to the log file.
-        
-        Args:
-            lines: The lines to write.
-        """
-        for line in lines:
-            self.write(line)
-
-    def flush(self) -> None:
-        """Flush the log file."""
-        if self._fileobj:
-            try:
-                self._fileobj.flush()
-            except IOError:
-                if not self.nofail:
-                    raise
-
-    def close(self) -> None:
-        """Close the log file."""
-        self._close()
-
-    def __repr__(self) -> str:
-        """Return a string representation of the logger.
-        
-        Returns:
-            A string representation of the logger.
-        """
-        return '<{0} to {1}>'.format(self.__class__.__name__, self.filename)
+        self.__filename = os.path.join(mm_cfg.LOG_DIR, category)
+        self.__fp = None
+        self.__nofail = nofail
+        self.__encoding = LOG_ENCODING or sys.getdefaultencoding()
+        if immediate:
+            self.__get_f()
 
     def __del__(self):
         self.close()
+
+    def __repr__(self):
+        return '<%s to %s>' % (self.__class__.__name__, `self.__filename`)
+
+    def __get_f(self):
+        if self.__fp:
+            return self.__fp
+        else:
+            try:
+                ou = os.umask(007)
+                try:
+                    try:
+                        f = codecs.open(
+                            self.__filename, 'a+', self.__encoding, 'replace',
+                            1)
+                    except LookupError:
+                        f = open(self.__filename, 'a+', 1)
+                    self.__fp = f
+                finally:
+                    os.umask(ou)
+            except IOError, e:
+                if self.__nofail:
+                    _logexc(self, e)
+                    f = self.__fp = sys.__stderr__
+                else:
+                    raise
+            return f
+
+    def flush(self):
+        f = self.__get_f()
+        if hasattr(f, 'flush'):
+            f.flush()
+
+    def write(self, msg):
+        if isinstance(msg, StringType):
+            msg = unicode(msg, self.__encoding, 'replace')
+        f = self.__get_f()
+        try:
+            f.write(msg)
+        except IOError, msg:
+            _logexc(self, msg)
+
+    def writelines(self, lines):
+        for l in lines:
+            self.write(l)
+
+    def close(self):
+        if not self.__fp:
+            return
+        self.__get_f().close()
+        self.__fp = None

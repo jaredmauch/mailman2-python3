@@ -26,17 +26,12 @@ responsibility to let the users know that their passwords have been changed.
 
 This script is intended to be run as a bin/withlist script, i.e.
 
-{ bin/withlist -l -r reset_pw listname [options]
+% bin/withlist -l -r reset_pw listname [options]
 
 Options:
     -v / --verbose
         Print what the script is doing.
 """
-
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
 
 import sys
 import getopt
@@ -46,22 +41,30 @@ from Mailman import Utils
 from Mailman.i18n import C_
 
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
 
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__.replace('}{', '}{}{')), file=fd)
+    print >> fd, C_(__doc__.replace('%', '%%'))
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def reset_pw(mlist, *args):
     try:
         opts, args = getopt.getopt(args, 'v', ['verbose'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     verbose = False
@@ -71,17 +74,17 @@ def reset_pw(mlist, *args):
 
     listname = mlist.internal_name()
     if verbose:
-        print(C_('Changing passwords for list: }{(listname)s'))
+        print C_('Changing passwords for list: %(listname)s')
 
     for member in mlist.getMembers():
         randompw = Utils.MakeRandomPassword()
         mlist.setMemberPassword(member, randompw)
         if verbose:
-            print(C_('New password for member }{(member)40s: }{(randompw)s'))
+            print C_('New password for member %(member)40s: %(randompw)s')
 
     mlist.Save()
 
 
+
 if __name__ == '__main__':
     usage(0)
-}

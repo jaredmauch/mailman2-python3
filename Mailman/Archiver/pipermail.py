@@ -7,14 +7,20 @@ import os
 import re
 import sys
 import time
-from email.Utils import parseaddr, parsedate_tz, mktime_tz, formatdate
-import pickle
-from io import StringIO
-from string import ascii_lowercase as lowercase
+from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
+try:
+    import pickle
+except ImportError:
+    import cPickle as pickle
+try:
+    from io import StringIO
+except ImportError:
+    from cStringIO import StringIO
+from string import ascii_lowercase
 
 # Work around for some misguided Python packages that add iso-8859-1
 # accented characters to string.lowercase.
-lowercase = lowercase[:26]
+lowercase = ascii_lowercase[:26]
 
 __version__ = '0.09 (Mailman edition)'
 VERSION = __version__
@@ -22,13 +28,97 @@ CACHESIZE = 100    # Number of slots in the cache
 
 from Mailman import mm_cfg
 from Mailman import Errors
-from Mailman.Mailbox import ArchiverMailbox
+from Mailman import LockFile
+from Mailman import MailList
+from Mailman import i18n
+from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
-from Mailman.i18n import _, C_
+from Mailman.Mailbox import ArchiverMailbox
+
+# Set up i18n.  Assume the current language has already been set in the caller.
+_ = i18n._
+C_ = i18n.C_
 
 # True/False
-SPACE = ' '
+try:
+    import gzip
+    gzip_available = True
+except ImportError:
+    gzip_available = False
 
+EMPTYSTRING = ''
+NL = '\n'
+
+# MacOSX has a default stack size that is too small for deeply recursive
+# regular expressions.  We see this as crashes in the Python test suite when
+# running test_re.py and test_sre.py.  The fix is to set the stack limit to
+# 2048; the general recommendation is to do in the shell before running the
+# test suite.  But that's inconvenient for a daemon like the qrunner.
+#
+# AFAIK, this problem only affects the archiver, so we're adding this work
+# around to this file (it'll get imported by the bundled pipermail or by the
+# bin/arch script.  We also only do this on darwin, a.k.a. MacOSX.
+if sys.platform == 'darwin':
+    try:
+        import resource
+    except ImportError:
+        pass
+    else:
+        soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
+        newsoft = min(hard, max(soft, 1024*2048))
+        resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
+
+try:
+    True, False
+except NameError:
+    pass  # True and False are built-in constants in Python 3
+
+def html_quote(s, lang=None):
+    repls = ( ('&', '&amp;'),
+              ("<", '&lt;'),
+              (">", '&gt;'),
+              ('"', '&quot;'))
+    for thing, repl in repls:
+        s = s.replace(thing, repl)
+    return Utils.uncanonstr(s, lang)
+
+def url_quote(s):
+    return urllib.quote(s)
+
+def null_to_space(s):
+    return s.replace('\000', ' ')
+
+def sizeof(filename, lang):
+    try:
+        size = os.path.getsize(filename)
+    except OSError as e:
+        # ENOENT can happen if the .mbox file was moved away or deleted, and
+        # an explicit mbox file name was given to bin/arch.
+        if e.errno != errno.ENOENT: raise
+        return _('size not available')
+    if size < 1000:
+        # Avoid i18n side-effects
+        otrans = i18n.get_translation()
+        try:
+            i18n.set_language(lang)
+            out = _(' %(size)i bytes ')
+        finally:
+            i18n.set_translation(otrans)
+        return out
+    elif size < 1000000:
+        return ' %d KB ' % (size / 1000)
+    # GB?? :-)
+    return ' %d MB ' % (size / 1000000)
+
+html_charset = '<META http-equiv="Content-Type" ' \
+               'content="text/html; charset=%s">'
+
+def CGIescape(arg, lang=None):
+    if isinstance(arg, str):
+        s = Utils.websafe(arg)
+    else:
+        s = Utils.websafe(str(arg))
+    return Utils.uncanonstr(s.replace('"', '&quot;'), lang)
 
 msgid_pat = re.compile(r'(<.*>)')
 def strip_separators(s):
@@ -118,7 +208,7 @@ class Database(DatabaseInterface):
         self.changed[archive, article.msgid] = None
 
         parentID = article.parentID
-        if parentID is not None and self.articleIndex in parentID):
+        if parentID is not None and self.articleIndex.has_key(parentID):
             parent = self.getArticle(archive, parentID)
             myThreadKey = (parent.threadKey + article.date + '.'
                            + str(article.sequence) + '-')
@@ -172,7 +262,7 @@ class Article:
             self.msgid = str(self.sequence)
         else: self.msgid = id
 
-        if message in 'Subject'):
+        if message.has_key('Subject'):
             self.subject = str(message['Subject'])
         else:
             self.subject = _('No subject')
@@ -219,7 +309,7 @@ class Article:
         # Save any other interesting headers
         self.headers = {}
         for i in keepHeaders:
-            if message in i):
+            if message.has_key(i):
                 self.headers[i] = message[i]
 
         # Read the message body
@@ -254,7 +344,7 @@ class Article:
         if date is None:
             date = self._last_article_time + 1
         self._last_article_time = date
-        self.date = '{:011d}'.format(date)
+        self.date = '%011i' % date
         self.datestr = message.get('date') \
                        or message.get('x-list-received-date') \
                        or formatdate(date)
@@ -268,8 +358,8 @@ class Article:
 # Pipermail formatter class
 
 class T:
-    DIRMODE = 0o755      # Mode to give to created directories
-    FILEMODE = 0o644     # Mode to give to created files
+    DIRMODE = 0o2775      # Mode to give to created directories
+    FILEMODE = 0o660     # Mode to give to created files
     INDEX_EXT = ".html" # Extension for indexes
 
     def __init__(self, basedir = None, reload = 1, database = None):
@@ -287,12 +377,12 @@ class T:
         # message in the HTML archive now -- Marc
         try:
             os.stat(self.basedir)
-        except OSError as errdata:
+        except os.error as errdata:
             errno, errmsg = errdata
             if errno != 2:
-                raise OSError(errdata)
+                raise os.error(errdata)
             else:
-                self.message(C_('Creating archive directory {}').format(self.basedir))
+                self.message(C_('Creating archive directory ') + self.basedir)
                 omask = os.umask(0)
                 try:
                     os.mkdir(self.basedir, self.DIRMODE)
@@ -331,7 +421,8 @@ class T:
         self.update_TOC = 0
         self.write_TOC()
         # Save the collective state
-        self.message(C_('Pickling archive state into {}').format(os.path.join(self.basedir, 'pipermail.pck')))
+        self.message(C_('Pickling archive state into ')
+                     + os.path.join(self.basedir, 'pipermail.pck'))
         self.database.close()
         del self.database
 
@@ -379,7 +470,7 @@ class T:
                 parentID = article.in_reply_to
             elif article.references:
                 # Remove article IDs that aren't in the archive
-                refs = filter(self.articleIndex.has_key, article.references)
+                refs = [ref for ref in article.references if ref in self.articleIndex]
                 if not refs:
                     return None
                 maxdate = self.database.getArticle(self.archive,
@@ -394,7 +485,7 @@ class T:
                 try:
                     key, tempid = \
                          self.subjectIndex.set_location(article.subject)
-                    print(key, end='')
+                    print(key, tempid)
                     self.subjectIndex.next()
                     [subject, date] = key.split('\0')
                     print(article.subject, subject, date)
@@ -436,13 +527,13 @@ class T:
     # Public methods:
     #
     # These are part of the public interface of the T class, but will
-    # never be overridden (unless yore trying to do something very new).
+    # never be overridden (unless you're trying to do something very new).
 
-    # Update a single archives indices, whether the archive's been
+    # Update a single archive's indices, whether the archive's been
     # dirtied or not.
     def update_archive(self, archive):
         self.archive = archive
-        self.message(C_("Updating index files for archive [{}]").format(archive))
+        self.message(C_("Updating index files for archive [%(archive)s]"))
         arcdir = os.path.join(self.basedir, archive)
         self.__set_parameters(archive)
 
@@ -500,7 +591,7 @@ class T:
                 artkey = article.threadKey
             if artkey is not None:
                 self.write_threadindex_entry(article, artkey.count('-') - 1)
-                if self.database.changed in (archive, article.msgid):
+                if self.database.changed.has_key((archive,article.msgid)):
                     a1 = L[1]
                     a3 = L[3]
                     self.update_article(arcdir, article, a1, a3)
@@ -508,7 +599,7 @@ class T:
                         self.database.changed[(archive, a3.msgid)] = None
                     if a1 is not None:
                         key = archive, a1.msgid
-                        if not self.database.changed in key):
+                        if not self.database.changed.has_key(key):
                             self.update_article(arcdir, a1, L[0], L[2])
                         else:
                             del self.database.changed[key]
@@ -577,7 +668,7 @@ class T:
             except Errors.DiscardMessage:
                 continue
             except Exception:
-                syslog('error', 'uncaught archiver exception at filepos: }{s',
+                syslog('error', 'uncaught archiver exception at filepos: %s',
                        pos)
                 raise
             if m is None:
@@ -586,7 +677,7 @@ class T:
                 # It was an unparseable message
                 continue
             msgid = m.get('message-id', 'n/a')
-            self.message(C_('#{:05d} {}').format(counter, msgid))
+            self.message(C_('#%(counter)05d %(msgid)s'))
             a = self._makeArticle(m, self.sequence)
             self.sequence += 1
             self.add_article(a)
@@ -601,7 +692,7 @@ class T:
         # If the archive directory doesn't exist, create it
         try:
             os.stat(archivedir)
-        except os.error, errdata:
+        except os.error as errdata:
             errno, errmsg = errdata
             if errno == 2:
                 omask = os.umask(0)
@@ -610,7 +701,7 @@ class T:
                 finally:
                     os.umask(omask)
             else:
-                raise os.error, errdata
+                raise os.error(errdata)
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
@@ -632,11 +723,11 @@ class T:
             self.write_article(arch, temp, os.path.join(archivedir,
                                                         filename))
 
-            if article.decoded in 'author'):
+            if 'author' in article.decoded:
                 author = fixAuthor(article.decoded['author'])
             else:
                 author = fixAuthor(article.author)
-            if article.decoded in 'stripped'):
+            if 'stripped' in article.decoded:
                 subject = article.decoded['stripped'].lower()
             else:
                 subject = article.subject.lower()
@@ -661,7 +752,7 @@ class T:
     def get_parent_info(self, archive, article):
         parentID = None
         if article.in_reply_to:
-            if self.database.hasArticle(archive, article.in_reply_to):
+            if article.in_reply_to in self.database.articleIndex:
                 # Only use In-Reply-To if it's in the archive.
                 parentID = article.in_reply_to
         if not parentID and article.references:
@@ -677,13 +768,13 @@ class T:
             # Get the oldest article with a matching subject, and
             # assume this is a follow-up to that article
             # But, use the subject that's in the database
-            if article.decoded in 'stripped'):
+            if 'stripped' in article.decoded:
                 subject = article.decoded['stripped'].lower()
             else:
                 subject = article.subject.lower()
             parentID = self.database.getOldestArticle(archive, subject)
 
-        if parentID and not self.database.hasArticle(archive, parentID):
+        if parentID and parentID not in self.database.articleIndex:
             parentID = None
         return parentID
 
@@ -795,7 +886,7 @@ class BSDDBdatabase(Database):
         omask = os.umask(0)
         try:
             try:
-                os.mkdir(arcdir, 02775)
+                os.mkdir(arcdir, 0o2775)
             except OSError:
                 # BAW: Hmm...
                 pass
@@ -828,13 +919,13 @@ class BSDDBdatabase(Database):
         self.__closeIndices()
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return self.articleIndex in msgid)
+        return self.articleIndex.has_key(msgid)
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
         self.threadIndex[key] = msgid
     def getArticle(self, archive, msgid):
         self.__openIndices(archive)
-        if self.__cachedict in msgid):
+        if self.__cachedict.has_key(msgid):
             self.__cachekeys.remove(msgid)
             self.__cachekeys.append(msgid)
             return self.__cachedict[msgid]
@@ -898,4 +989,3 @@ class BSDDBdatabase(Database):
                 finished = 1
 
 
-}

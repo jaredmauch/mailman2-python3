@@ -38,8 +38,14 @@ from Mailman.Logging.Syslog import syslog
 # permanent failures.  It is a count of calls to _doperiodic()
 DEAL_WITH_PERMFAILURES_EVERY = 10
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
 
-
+
 class OutgoingRunner(Runner, BounceMixin):
     QDIR = mm_cfg.OUTQUEUE_DIR
 
@@ -67,8 +73,8 @@ class OutgoingRunner(Runner, BounceMixin):
             pid = os.getpid()
             self._func(mlist, msg, msgdata)
             # Failsafe -- a child may have leaked through.
-            if pid != os.getpid():
-                syslog('error', 'child process leaked thru: {s', modname)
+            if pid <> os.getpid():
+                syslog('error', 'child process leaked thru: %s', modname)
                 os._exit(1)
             self.__logged = False
         except socket.error:
@@ -80,7 +86,7 @@ class OutgoingRunner(Runner, BounceMixin):
                 port = 'smtp'
             # Log this just once.
             if not self.__logged:
-                syslog('error', 'Cannot connect to SMTP server }{s on port }{s',
+                syslog('error', 'Cannot connect to SMTP server %s on port %s',
                        mm_cfg.SMTPHOST, port)
                 self.__logged = True
             self._snooze(0)
@@ -134,4 +140,3 @@ class OutgoingRunner(Runner, BounceMixin):
     def _cleanup(self):
         BounceMixin._cleanup(self)
         Runner._cleanup(self)
-}

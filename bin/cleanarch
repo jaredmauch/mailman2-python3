@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
+#! @PYTHON@
 
 # Copyright (C) 2001-2018 by the Free Software Foundation, Inc.
 #
@@ -66,30 +63,34 @@ cre = re.compile(mailbox.UnixMailbox._fromlinepattern)
 fre = re.compile(r'[\041-\071\073-\176]+')
 
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def escape_line(line, lineno, quiet, output):
     if output:
         sys.stdout.write('>' + line)
     if not quiet:
-        print(C_('Unix-From line changed: %(lineno)d'), file=sys.stderr)
-        print(line[:-1], file=sys.stderr)
+        print >> sys.stderr, C_('Unix-From line changed: %(lineno)d')
+        print >> sys.stderr, line[:-1]
 
 
+
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hqns:', 
-                                 ['help', 'quiet', 'dry-run', 'status='])
-    except getopt.error as msg:
+        opts, args = getopt.getopt(
+            sys.argv[1:], 'hqns:',
+            ['help', 'quiet', 'dry-run', 'status='])
+    except getopt.error, msg:
         usage(1, msg)
 
     quiet = False
@@ -146,7 +147,7 @@ def main():
                     if output:
                         # Before we spit out the From_ line, make sure the
                         # previous line was blank.
-                        if prevline is not None and prevline != '\n':
+                        if prevline is not None and prevline <> '\n':
                             sys.stdout.write('\n')
                         sys.stdout.write(line)
                         sys.stdout.write(nextline)
@@ -160,12 +161,12 @@ def main():
             sys.stderr.write('#')
             statuscnt += 1
             if statuscnt > 50:
-                print(file=sys.stderr)
+                print >> sys.stderr
                 statuscnt = 0
         prevline = line
-    print(file=sys.stderr)
-    print(C_('%(messages)d messages found'), file=sys.stderr)
+    print >> sys.stderr, C_('%(messages)d messages found')
 
 
+
 if __name__ == '__main__':
     main()

@@ -50,6 +50,13 @@ from Mailman.Utils import sha_new
 # 20 bytes of all bits set, maximum sha.digest() value
 shamax = 0xffffffffffffffffffffffffffffffffffffffffL
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 # This flag causes messages to be written as pickles (when True) or text files
 # (when False).  Pickles are more efficient because the message doesn't need
 # to be re-parsed every time it's unqueued, but pickles are not human readable.
@@ -63,6 +70,7 @@ DELTA = .0001
 MAX_BAK_COUNT = 3
 
 
+
 class Switchboard:
     def __init__(self, whichq, slice=None, numslices=1, recover=False):
         self.__whichq = whichq
@@ -71,16 +79,16 @@ class Switchboard:
         omask = os.umask(0)                       # rwxrws---
         try:
             try:
-                os.mkdir(self.__whichq, 0o770)
-            except OSError as e:
-                if e.errno != errno.EEXIST: raise
+                os.mkdir(self.__whichq, 0770)
+            except OSError, e:
+                if e.errno <> errno.EEXIST: raise
         finally:
             os.umask(omask)
         # Fast track for no slices
         self.__lower = None
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
-        if numslices != 1:
+        if numslices <> 1:
             self.__lower = ((shamax+1) * slice) / numslices
             self.__upper = (((shamax+1) * (slice+1)) / numslices) - 1
         if recover:
@@ -124,7 +132,7 @@ class Switchboard:
         # object or not.
         data['_parsemsg'] = (protocol == 0)
         # Write to the pickle file the message object and metadata.
-        omask = os.umask(0o007)                     # -rw-rw----
+        omask = os.umask(007)                     # -rw-rw----
         try:
             fp = open(tmpfile, 'w')
             try:
@@ -169,15 +177,15 @@ class Switchboard:
                 try:
                     try:
                         os.mkdir(mm_cfg.BADQUEUE_DIR, 0770)
-                    except OSError as e:
-                        if e.errno != errno.EEXIST: raise
+                    except OSError, e:
+                        if e.errno <> errno.EEXIST: raise
                 finally:
                     os.umask(omask)
                 os.rename(bakfile, psvfile)
             else:
                 os.unlink(bakfile)
-        except EnvironmentError as e:
-            syslog('error', 'Failed to unlink/preserve backup file: {s\n}{s',
+        except EnvironmentError, e:
+            syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    bakfile, e)
 
     def files(self, extension='.pck'):
@@ -188,15 +196,15 @@ class Switchboard:
             # By ignoring anything that doesn't end in .pck, we ignore
             # tempfiles and avoid a race condition.
             filebase, ext = os.path.splitext(f)
-            if ext != extension:
+            if ext <> extension:
                 continue
             when, digest = filebase.split('+')
             # Throw out any files which don't match our bitrange.  BAW: test
             # performance and end-cases of this algorithm.  MAS: both
             # comparisons need to be <= to get complete range.
-            if lower is None or (lower <= int(digest, 16) <= upper):
+            if lower is None or (lower <= long(digest, 16) <= upper):
                 key = float(when)
-                while times in key):
+                while times.has_key(key):
                     key += DELTA
                 times[key] = filebase
         # FIFO sort
@@ -220,11 +228,11 @@ class Switchboard:
                     msg = cPickle.load(fp)
                     data_pos = fp.tell()
                     data = cPickle.load(fp)
-                except Exception as s:
+                except Exception, s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
-                    syslog('error', 'Unpickling .bak exception: }{s\n'
-                           + 'preserving file: }{s', s, filebase)
+                    syslog('error', 'Unpickling .bak exception: %s\n'
+                           + 'preserving file: %s', s, filebase)
                     self.finish(filebase, preserve=True)
                 else:
                     data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
@@ -239,11 +247,10 @@ class Switchboard:
                     os.fsync(fp.fileno())
                     if data['_bak_count'] >= MAX_BAK_COUNT:
                         syslog('error',
-                               '.bak file max count, preserving file: }{s',
+                               '.bak file max count, preserving file: %s',
                                filebase)
                         self.finish(filebase, preserve=True)
                     else:
                         os.rename(src, dst)
             finally:
                 fp.close()
-}

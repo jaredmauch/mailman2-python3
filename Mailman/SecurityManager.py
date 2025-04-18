@@ -54,8 +54,11 @@ import Cookie
 import marshal
 import binascii
 import urllib
-from typing import List, Tuple, Dict, Set, TupleType
-from urlparse import urlparse
+from types import StringType, TupleType
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 try:
     import crypt
@@ -68,8 +71,8 @@ from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import md5_new, sha_new
 
+# True and False are built-in constants in Python 3
 
-
 class SecurityManager:
     def InitVars(self):
         # We used to set self.password here, from a crypted_password argument,
@@ -97,11 +100,11 @@ class SecurityManager:
         if authcontext == mm_cfg.AuthUser:
             if user is None:
                 # A bad system error
-                raise TypeError, 'No user supplied for AuthUser context'
+                raise TypeError('No user supplied for AuthUser context')
             user = Utils.UnobscureEmail(urllib.unquote(user))
             secret = self.getMemberPassword(user)
             userdata = urllib.quote(Utils.ObscureEmail(user), safe='')
-            key += 'user+{s' }{ userdata
+            key += 'user+%s' % userdata
         elif authcontext == mm_cfg.AuthListPoster:
             secret = self.post_password
             key += 'poster'
@@ -213,8 +216,8 @@ class SecurityManager:
                         pass
             else:
                 # What is this context???
-                syslog('error', 'Bad authcontext: }{s', ac)
-                raise ValueError, 'Bad authcontext: }{s' }{ ac
+                syslog('error', 'Bad authcontext: %s', ac)
+                raise ValueError('Bad authcontext: %s' % ac)
         return mm_cfg.UnAuthorized
 
     def WebAuthenticate(self, authcontexts, response, user=None):
@@ -232,18 +235,18 @@ class SecurityManager:
         # Check passwords
         ac = self.Authenticate(authcontexts, response, user)
         if ac:
-            print(s, end=\'\')elf.MakeCookie(ac, user)
+            print(self.MakeCookie(ac, user))
             return True
         return False
 
     def MakeCookie(self, authcontext, user=None):
         key, secret = self.AuthContextInfo(authcontext, user)
-        if key is None or secret is None or not isinstance(secret, StringType):
+        if key is None or secret is None or not isinstance(secret, str):
             raise ValueError
         # Timestamp
         issued = int(time.time())
         # Get a digest of the secret, plus other information.
-        mac = sha_new(secret + `issued`).hexdigest()
+        mac = sha_new(secret + repr(issued)).hexdigest()
         # Create the cookie object.
         c = Cookie.SimpleCookie()
         c[key] = binascii.hexlify(marshal.dumps((issued, mac)))
@@ -326,7 +329,7 @@ class SecurityManager:
             key, secret = self.AuthContextInfo(authcontext, user)
         except Errors.NotAMemberError:
             return False
-        if not c in key) or not isinstance(secret, StringType):
+        if key not in c or not isinstance(secret, str):
             return False
         # Undo the encoding we performed in MakeCookie() above.  BAW: I
         # believe this is safe from exploit because marshal can't be forced to
@@ -349,18 +352,57 @@ class SecurityManager:
         if (mm_cfg.AUTHENTICATION_COOKIE_LIFETIME and
                 issued + mm_cfg.AUTHENTICATION_COOKIE_LIFETIME < now):
             return False
-        # Calculate what the mac ought to be based on the cookie's timestamp
-        # and the shared secret.
-        mac = sha_new(secret + `issued`).hexdigest()
+        # Calculate a MAC using the issued timestamp and the shared secret
+        mac = sha_new(secret + repr(issued)).hexdigest()
         if mac != received_mac:
             return False
+        
         # Authenticated!
         # Refresh the cookie
-        print(s, end=\'\')elf.MakeCookie(authcontext, user)
+        print(self.MakeCookie(authcontext, user))
         return True
 
+    def CheckProgrammers(self):
+        # Return true if this list should be advertised as a programmers list
+        return self.programmer_members
 
-
+    def IsProgrammersMember(self, addr):
+        # Return true if addr is a member of the programmers list
+        return addr in self.programmer_members
+
+    def GetConfigInfo(self):
+        return self._config_info
+
+    def __repr__(self):
+        # Return string representation of list object
+        return repr(self.internal_name())
+
+    def __str__(self):
+        # Return string representation of list object
+        return str(self.internal_name())
+
+    def __cmp__(self, other):
+        # Compare function for sorting lists.  The sorting is based on the list
+        # name (in lower case).  If other isn't a MailList instance, raise
+        # NotImplementedError
+        if not isinstance(other, MailList):
+            raise NotImplementedError
+        return cmp(self.internal_name().lower(), other.internal_name().lower())
+
+    def __hash__(self):
+        # Hash function for using lists as dictionary keys.  The hash is based
+        # on the list name which should be unique per system.
+        return hash(self.internal_name())
+
+    def __bool__(self):
+        # Lists are never false
+        return True
+
+    def __nonzero__(self):
+        # For Python 2 compatibility
+        return self.__bool__()
+
+
 splitter = re.compile(';\s*')
 
 def parsecookie(s):
@@ -374,4 +416,3 @@ def parsecookie(s):
             else:
                 c[k] = v
     return c
-}

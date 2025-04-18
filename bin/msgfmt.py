@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Written by Martin v. Lwis <loewis@informatik.hu-berlin.de>
+# Written by Martin v. Löwis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
 
@@ -25,11 +25,6 @@ Options:
         Display version information and exit.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import sys
 import os
 import getopt
@@ -41,13 +36,15 @@ __version__ = "1.1"
 MESSAGES = {}
 
 
+
 def usage(code, msg=''):
-    print(__doc__, file=sys.stderr)
+    print >> sys.stderr, __doc__
     if msg:
-        print(msg, file=sys.stderr)
+        print >> sys.stderr, msg
     sys.exit(code)
 
 
+
 def add(id, str, fuzzy):
     "Add a non-fuzzy translation to the dictionary."
     global MESSAGES
@@ -55,6 +52,7 @@ def add(id, str, fuzzy):
         MESSAGES[id] = str
 
 
+
 def generate():
     "Return the generated output."
     global MESSAGES
@@ -97,6 +95,7 @@ def generate():
     return output
 
 
+
 def make(filename, outfile):
     ID = 1
     STR = 2
@@ -110,10 +109,9 @@ def make(filename, outfile):
         outfile = os.path.splitext(infile)[0] + '.mo'
 
     try:
-        with open(infile) as fp:
-            lines = fp.readlines()
-    except IOError as msg:
-        print(msg, file=sys.stderr)
+        lines = open(infile).readlines()
+    except IOError, msg:
+        print >> sys.stderr, msg
         sys.exit(1)
     
     section = None
@@ -156,8 +154,9 @@ def make(filename, outfile):
         elif section == STR:
             msgstr += l
         else:
-            print('Syntax error on {s:}{d' }{ (infile, lno), 'before:', file=sys.stderr)
-            print(l, file=sys.stderr)
+            print >> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
+                  'before:'
+            print >> sys.stderr, l
             sys.exit(1)
     # Add last entry
     if section == STR:
@@ -167,17 +166,17 @@ def make(filename, outfile):
     output = generate()
 
     try:
-        with open(outfile, "wb") as fp:
-            fp.write(output)
-    except IOError as msg:
-        print(msg, file=sys.stderr)
+        open(outfile,"wb").write(output)
+    except IOError,msg:
+        print >> sys.stderr, msg
+                      
 
-
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
                                    ['help', 'version', 'output-file='])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     outfile = None
@@ -186,14 +185,14 @@ def main():
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-V', '--version'):
-            print("msgfmt.py", __version__, file=sys.stderr)
+            print >> sys.stderr, "msgfmt.py", __version__
             sys.exit(0)
         elif opt in ('-o', '--output-file'):
             outfile = arg
     # do it
     if not args:
-        print('No input file given', file=sys.stderr)
-        print("Try `msgfmt --help' for more information.", file=sys.stderr)
+        print >> sys.stderr, 'No input file given'
+        print >> sys.stderr, "Try `msgfmt --help' for more information."
         return
 
     for filename in args:
@@ -202,4 +201,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-}

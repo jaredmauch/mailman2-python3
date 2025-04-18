@@ -30,7 +30,7 @@ class ContentFilter(GUIBase):
         return 'contentfilter', _('Content&nbsp;filtering')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category != 'contentfilter':
+        if category <> 'contentfilter':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 
@@ -168,7 +168,7 @@ class ContentFilter(GUIBase):
                 elif slashes > 1:
                     ok = 0
                 if not ok:
-                    doc.addError(_('Bad MIME type ignored: {(spectype)s'))
+                    doc.addError(_('Bad MIME type ignored: %(spectype)s'))
                 else:
                     types.append(spectype.strip().lower())
             if property == 'filter_mime_types':
@@ -197,4 +197,3 @@ class ContentFilter(GUIBase):
         if property == 'pass_filename_extensions':
             return NL.join(mlist.pass_filename_extensions)
         return None
-}

@@ -14,50 +14,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-"""User description class/structure, for ApprovedAddMember and friends.
-
-This module provides a UserDesc class that encapsulates user information
-for mailing list operations, such as adding new members or updating
-existing ones.
-"""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from typing import Optional, Any
+"""User description class/structure, for ApprovedAddMember and friends."""
 
 
+from types import UnicodeType
+
+
+
 class UserDesc:
-    """A class to hold user description information.
-    
-    This class is used to store and manipulate user information for mailing
-    list operations. It provides methods to combine user descriptions and
-    format them for display.
-    
-    Attributes:
-        address: The user's email address
-        fullname: The user's full name
-        password: The user's password
-        digest: Whether the user receives digest format
-        language: The user's preferred language
-    """
-
-    def __init__(self, address: Optional[str] = None,
-                 fullname: Optional[str] = None,
-                 password: Optional[str] = None,
-                 digest: Optional[bool] = None,
-                 lang: Optional[str] = None) -> None:
-        """Initialize a UserDesc instance.
-        
-        Args:
-            address: The user's email address
-            fullname: The user's full name
-            password: The user's password
-            digest: Whether the user receives digest format
-            lang: The user's preferred language
-        """
+    def __init__(self, address=None, fullname=None, password=None,
+                 digest=None, lang=None):
         if address is not None:
             self.address = address
         if fullname is not None:
@@ -69,18 +35,7 @@ class UserDesc:
         if lang is not None:
             self.language = lang
 
-    def __iadd__(self, other: 'UserDesc') -> 'UserDesc':
-        """Add another UserDesc's attributes to this one.
-        
-        This method updates this UserDesc with any non-None attributes
-        from the other UserDesc.
-        
-        Args:
-            other: Another UserDesc instance to combine with
-            
-        Returns:
-            This UserDesc instance
-        """
+    def __iadd__(self, other):
         if getattr(other, 'address', None) is not None:
             self.address = other.address
         if getattr(other, 'fullname', None) is not None:
@@ -93,12 +48,7 @@ class UserDesc:
             self.language = other.language
         return self
 
-    def __repr__(self) -> str:
-        """Return a string representation of this UserDesc.
-        
-        Returns:
-            A formatted string containing all user information
-        """
+    def __repr__(self):
         address = getattr(self, 'address', 'n/a')
         fullname = getattr(self, 'fullname', 'n/a')
         password = getattr(self, 'password', 'n/a')
@@ -108,7 +58,10 @@ class UserDesc:
         elif digest == 1:
             digest = 'yes'
         language = getattr(self, 'language', 'n/a')
-        
-        # In Python 3, we don't need to encode strings as they are already Unicode
-        return '<UserDesc {0} ({1}) [{2}] [digest? {3}] [{4}]>'.format(
+        # Make sure fullname and password are encoded if they're strings
+        if isinstance(fullname, UnicodeType):
+            fullname = fullname.encode('ascii', 'replace')
+        if isinstance(password, UnicodeType):
+            password = password.encode('ascii', 'replace')
+        return '<UserDesc %s (%s) [%s] [digest? %s] [%s]>' % (
             address, fullname, password, digest, language)

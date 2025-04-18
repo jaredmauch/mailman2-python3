@@ -23,6 +23,13 @@ from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
 from Mailman.Gui.GUIBase import GUIBase
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 OR = '|'
 
 
@@ -32,7 +39,7 @@ class Topics(GUIBase):
         return 'topics', _('Topics')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category != 'topics':
+        if category <> 'topics':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 
@@ -89,23 +96,23 @@ class Topics(GUIBase):
 
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         # MAS: Did we come from the authentication page?
-        if not cgidata in 'topic_box_01'):
+        if not cgidata.has_key('topic_box_01'):
             return
         topics = []
         # We start i at 1 and keep going until we no longer find items keyed
         # with the marked tags.
         i = 1
         while True:
-            deltag   = 'topic_delete_{02d' }{ i
-            boxtag   = 'topic_box_}{02d' }{ i
-            reboxtag = 'topic_rebox_}{02d' }{ i
-            desctag  = 'topic_desc_}{02d' }{ i
-            wheretag = 'topic_where_}{02d' }{ i
-            addtag   = 'topic_add_}{02d' }{ i
-            newtag   = 'topic_new_}{02d' }{ i
+            deltag   = 'topic_delete_%02d' % i
+            boxtag   = 'topic_box_%02d' % i
+            reboxtag = 'topic_rebox_%02d' % i
+            desctag  = 'topic_desc_%02d' % i
+            wheretag = 'topic_where_%02d' % i
+            addtag   = 'topic_add_%02d' % i
+            newtag   = 'topic_new_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata in deltag):
+            if cgidata.has_key(deltag):
                 continue
             # Get the data for the current box
             name  = cgidata.getfirst(boxtag)
@@ -114,7 +121,7 @@ class Topics(GUIBase):
             if name is None:
                 # We came to the end of the boxes
                 break
-            if cgidata in newtag) and (not name or not pattern):
+            if cgidata.has_key(newtag) and (not name or not pattern):
                 # This new entry is incomplete.
                 doc.addError(_("""Topic specifications require both a name and
                 a pattern.  Incomplete topics will be ignored."""))
@@ -126,11 +133,11 @@ class Topics(GUIBase):
                 re.compile(orpattern)
             except (re.error, TypeError):
                 safepattern = Utils.websafe(orpattern)
-                doc.addError(_("""The topic pattern '}{(safepattern)s' is not a
+                doc.addError(_("""The topic pattern '%(safepattern)s' is not a
                 legal regular expression.  It will be discarded."""))
                 continue
             # Was this an add item?
-            if cgidata in addtag):
+            if cgidata.has_key(addtag):
                 # Where should the new one be added?
                 where = cgidata.getfirst(wheretag)
                 if where == 'before':
@@ -152,13 +159,12 @@ class Topics(GUIBase):
                 'topics_enabled',
                 mlist.topics_enabled))
         except ValueError:
-            # BAW: should really print(a, end=\'\') warning
+            # BAW: should really print a warning
             pass
         try:
             mlist.topics_bodylines_limit = int(cgidata.getfirst(
                 'topics_bodylines_limit',
                 mlist.topics_bodylines_limit))
         except ValueError:
-            # BAW: should really print(a, end=\'\') warning
+            # BAW: should really print a warning
             pass
-}

@@ -25,7 +25,7 @@ This is the adaptor used by default in Mailman 2.1.
 """
 
 import time
-from typing import List, Tuple, Dict, Set
+from types import StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -64,13 +64,13 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         missing = []
         val = self.__mlist.members.get(lcmember, missing)
         if val is not missing:
-            if isinstance(val, str):
+            if isinstance(val, StringType):
                 return val, ISREGULAR
             else:
                 return lcmember, ISREGULAR
         val = self.__mlist.digest_members.get(lcmember, missing)
         if val is not missing:
-            if isinstance(val, str):
+            if isinstance(val, StringType):
                 return val, ISDIGEST
             else:
                 return lcmember, ISDIGEST
@@ -179,16 +179,16 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         password = Utils.MakeRandomPassword()
         language = self.__mlist.preferred_language
         realname = None
-        if kws in 'digest'):
+        if kws.has_key('digest'):
             digest = kws['digest']
             del kws['digest']
-        if kws in 'password'):
+        if kws.has_key('password'):
             password = kws['password']
             del kws['password']
-        if kws in 'language'):
+        if kws.has_key('language'):
             language = kws['language']
             del kws['language']
-        if kws in 'realname'):
+        if kws.has_key('realname'):
             realname = kws['realname']
             del kws['realname']
         # Assert that no other keywords are present
@@ -228,7 +228,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                      'bounce_info', 'delivery_status',
                      ):
             dict = getattr(self.__mlist, attr)
-            if dict in memberkey):
+            if dict.has_key(memberkey):
                 del dict[memberkey]
 
     def changeMemberAddress(self, member, newaddress, nodelete=0):
@@ -285,7 +285,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                 if not self.__mlist.digestable:
                     raise Errors.CantDigestError
                 # The user is turning on digest mode
-                if self.__mlist.digest_members in memberkey):
+                if self.__mlist.digest_members.has_key(memberkey):
                     raise Errors.AlreadyReceivingDigests, member
                 cpuser = self.__mlist.members.get(memberkey)
                 if cpuser is None:
@@ -296,14 +296,14 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                 # turning it back on, the member may be in one_last_digest.
                 # If so, remove it so the member doesn't get a dup of the
                 # next digest.
-                if self.__mlist.one_last_digest in memberkey):
+                if self.__mlist.one_last_digest.has_key(memberkey):
                     del self.__mlist.one_last_digest[memberkey]
             else:
                 # Be sure the list supports regular delivery
                 if not self.__mlist.nondigestable:
                     raise Errors.MustDigestError
                 # The user is turning off digest mode
-                if self.__mlist.members in memberkey):
+                if self.__mlist.members.has_key(memberkey):
                     raise Errors.AlreadyReceivingRegularDeliveries, member
                 cpuser = self.__mlist.digest_members.get(memberkey)
                 if cpuser is None:
@@ -341,7 +341,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         if topics:
             self.__mlist.topics_userinterest[memberkey] = topics
         # if topics is empty, then delete the entry in this dictionary
-        elif self.__mlist.topics_userinterest in memberkey):
+        elif self.__mlist.topics_userinterest.has_key(memberkey):
             del self.__mlist.topics_userinterest[memberkey]
 
     def setDeliveryStatus(self, member, status):
@@ -362,9 +362,9 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         self.__assertIsMember(member)
         member = member.lower()
         if info is None:
-            if self.__mlist.bounce_info in member):
+            if self.__mlist.bounce_info.has_key(member):
                 del self.__mlist.bounce_info[member]
-            if self.__mlist.delivery_status in member):
+            if self.__mlist.delivery_status.has_key(member):
                 del self.__mlist.delivery_status[member]
         else:
             self.__mlist.bounce_info[member] = info

@@ -46,8 +46,14 @@ mcre = re.compile(r"""
     """, re.VERBOSE)
 
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
 
-
+
 class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
 
@@ -70,16 +76,16 @@ class NewsRunner(Runner):
                     conn.post(fp)
                 except nntplib.error_temp, e:
                     syslog('error',
-                           '(NNTPDirect) NNTP error for list "{s": }{s',
+                           '(NNTPDirect) NNTP error for list "%s": %s',
                            mlist.internal_name(), e)
                 except socket.error, e:
                     syslog('error',
-                           '(NNTPDirect) socket error for list "}{s": }{s',
+                           '(NNTPDirect) socket error for list "%s": %s',
                            mlist.internal_name(), e)
             finally:
                 if conn:
                     conn.quit()
-        except Exception as e:
+        except Exception, e:
             # Some other exception occurred, which we definitely did not
             # expect, so set this message up for requeuing.
             self._log(e)
@@ -87,7 +93,6 @@ class NewsRunner(Runner):
         return False
 
 
-
 def prepare_message(mlist, msg, msgdata):
     # If the newsgroup is moderated, we need to add this header for the Usenet
     # software to accept the posting, and not forward it on to the n.g.'s
@@ -174,4 +179,3 @@ def prepare_message(mlist, msg, msgdata):
             msg[rewrite] = v
     # Mark this message as prepared in case it has to be requeued
     msgdata['prepped'] = True
-}

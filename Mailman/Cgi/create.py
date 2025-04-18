@@ -17,16 +17,11 @@
 
 """Create mailing lists through the web."""
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import sys
 import os
 import signal
 import cgi
-from typing import List, Tuple, Dict, Set
+from types import ListType
 import errno
 
 from Mailman import mm_cfg
@@ -37,6 +32,7 @@ from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
+from Mailman.Auth import loginpage
 
 # Set up i18n
 _ = i18n._
@@ -66,17 +62,17 @@ def main():
         doc.SetTitle(title)
         doc.AddItem(
             Header(3, Bold(FontAttr(title, color='#ff0000', size='+2'))))
-        syslog('error', 'Bad URL specification: {s', parts)
-    elif 'doit' in cgidata:
+        syslog('error', 'Bad URL specification: %s', parts)
+    elif cgidata.has_key('doit'):
         # We must be processing the list creation request
         process_request(doc, cgidata)
-    elif 'clear' in cgidata:
+    elif cgidata.has_key('clear'):
         request_creation(doc)
     else:
         # Put up the list creation request form
         request_creation(doc)
     doc.AddItem('<hr>')
-    # Always add the footer and print(t, end=\'\')he document
+    # Always add the footer and print the document
     doc.AddItem(_('Return to the ') +
                 Link(Utils.ScriptURL('listinfo'),
                      _('general list overview')).Format())
@@ -89,8 +85,62 @@ def main():
 
 def process_request(doc, cgidata):
     # Lowercase the listname since this is treated as the "internal" name.
-    listname = cgidata.getfirst('listname', '').strip().lower()
-    owner    = cgidata.getfirst('owner', '').strip()
+    listname = cgidata.getfirst('listname', '').lower()
+    if not listname:
+        request_creation(doc, cgidata, _('You must enter a list name'))
+        return
+
+    # Check for valid list name
+    if not Utils.ValidateEmail(listname):
+        request_creation(doc, cgidata,
+                        _('%(listname)s is not a valid list name'))
+        return
+
+    # Check for list existence
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+        request_creation(doc, cgidata,
+                        _('%(listname)s already exists'))
+        return
+    except Errors.MMListError as e:
+        if str(e) != 'No such list':
+            request_creation(doc, cgidata, str(e))
+            return
+
+    # Get the admin email
+    admin = cgidata.getfirst('admin', '')
+    if not admin:
+        request_creation(doc, cgidata, _('You must enter an admin email'))
+        return
+
+    # Check for valid admin email
+    if not Utils.ValidateEmail(admin):
+        request_creation(doc, cgidata,
+                        _('%(admin)s is not a valid email address'))
+        return
+
+    # Get the admin password
+    password = cgidata.getfirst('password', '')
+    if not password:
+        request_creation(doc, cgidata, _('You must enter a password'))
+        return
+
+    # Get the admin password confirmation
+    confirm = cgidata.getfirst('confirm', '')
+    if password != confirm:
+        request_creation(doc, cgidata,
+                        _('Passwords do not match'))
+        return
+
+    # Create the list
+    try:
+        mlist = MailList.MailList(listname, create=1)
+    except Errors.MMListError as e:
+        request_creation(doc, cgidata, str(e))
+        return
+
+    # Lowercase the owner since this is treated as the "internal" name.
+    owner = cgidata.getfirst('owner', '').strip().lower()
     try:
         autogen  = int(cgidata.getfirst('autogen', '0'))
     except ValueError:
@@ -105,29 +155,23 @@ def process_request(doc, cgidata):
     except ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
-    password = cgidata.getfirst('password', '').strip()
-    confirm  = cgidata.getfirst('confirm', '').strip()
     auth     = cgidata.getfirst('auth', '').strip()
     langs    = cgidata.getvalue('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
 
-    if not isinstance(langs, list):
+    if not isinstance(langs, ListType):
         langs = [langs]
     # Sanity check
     safelistname = Utils.websafe(listname)
     if '@' in listname:
         request_creation(doc, cgidata,
-                         _('List name must not include "@": }{(safelistname)s'))
+                         _('List name must not include "@": %(safelistname)s'))
         return
     if Utils.list_exists(listname):
         # BAW: should we tell them the list already exists?  This could be
         # used to mine/guess the existance of non-advertised lists.  Then
         # again, that can be done in other ways already, so oh well.
         request_creation(doc, cgidata,
-                         _('List already exists: }{(safelistname)s'))
-        return
-    if not listname:
-        request_creation(doc, cgidata,
-                         _('You forgot to enter the list name'))
+                         _('List already exists: %(safelistname)s'))
         return
     if not owner:
         request_creation(doc, cgidata,
@@ -171,7 +215,7 @@ def process_request(doc, cgidata):
                  os.environ.get('REMOTE_ADDR',
                                 'unidentified origin')))
         syslog('security',
-               'Authorization failed (create): list=}{s: remote=}{s',
+               'Authorization failed (create): list=%s: remote=%s',
                listname, remote)
         request_creation(
             doc, cgidata,
@@ -180,34 +224,15 @@ def process_request(doc, cgidata):
     # Make sure the web hostname matches one of our virtual domains
     hostname = Utils.get_domain()
     if mm_cfg.VIRTUAL_HOST_OVERVIEW and \
-           hostname not in mm_cfg.VIRTUAL_HOSTS:
+           not mm_cfg.VIRTUAL_HOSTS.has_key(hostname):
         safehostname = Utils.websafe(hostname)
         request_creation(doc, cgidata,
-                         _('Unknown virtual host: }{(safehostname)s'))
+                         _('Unknown virtual host: %(safehostname)s'))
         return
     emailhost = mm_cfg.VIRTUAL_HOSTS.get(hostname, mm_cfg.DEFAULT_EMAIL_HOST)
     # We've got all the data we need, so go ahead and try to create the list
     # See admin.py for why we need to set up the signal handler.
-    try:
-        mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
-        # Avoid cross-site scripting attacks
-        safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _('No such list <em>}{(safelistname)s</em>')))
-        # Send this with a 404 status.
-        print('Status: 404 Not Found')
-        print(doc.Format())
-        syslog('error', 'create: No such list "}{s": }{s', listname, e)
-        return
 
-    # We need a signal handler to catch the SIGTERM that can come from Apache
-    # when the user hits the browser's STOP button.  See the comment in
-    # admin.py for details.
-    #
-    # BAW: Strictly speaking, the list should not need to be locked just to
-    # read the request database.  However the request database asserts that
-    # the list is locked in order to load it and it's not worth complicating
-    # that logic.
     def sigterm_handler(signum, frame, mlist=mlist):
         # Make sure the list gets unlocked...
         mlist.Unlock()
@@ -216,39 +241,53 @@ def process_request(doc, cgidata):
         # could be bad!
         sys.exit(0)
 
-    mlist.Lock()
     try:
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        # Get the list's current settings
-        current_settings = mlist.GetSettings()
-        if current_settings != {}:
-            doc.AddItem(Header(2, _('List already exists')))
-            doc.AddItem(Bold(_('A list with the name <em>}{(safelistname)s</em> already exists.')))
-            doc.AddItem(mlist.GetMailmanFooter())
-            print(doc.Format())
-            return
-
         pw = sha_new(password).hexdigest()
-        # Make sure the files are created with proper permissions
-        omask = os.umask(0)
+        # Guarantee that all newly created files have the proper permission.
+        # proper group ownership should be assured by the autoconf script
+        # enforcing that all directories have the group sticky bit set
+        oldmask = os.umask(0o002)
         try:
-            mlist.Create(listname, owner, pw, autogen, notify, moderate)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-        finally:
-            os.umask(omask)
-
-        # Send the welcome message
-        if notify:
-            mlist.SendWelcomeMessage(owner)
+            try:
+                mlist.Create(listname, owner, pw, langs, emailhost,
+                             urlhost=hostname)
+            finally:
+                os.umask(oldmask)
+        except Errors.EmailAddressError as e:
+            if e.args:
+                s = Utils.websafe(e.args[0])
+            else:
+                s = Utils.websafe(owner)
+            request_creation(doc, cgidata,
+                             _('Bad owner email address: %(s)s'))
+            return
+        except Errors.MMListAlreadyExistsError:
+            # MAS: List already exists so we don't need to websafe it.
+            request_creation(doc, cgidata,
+                             _('List already exists: %(listname)s'))
+            return
+        except Errors.BadListNameError as e:
+            if e.args:
+                s = Utils.websafe(e.args[0])
+            else:
+                s = Utils.websafe(listname)
+            request_creation(doc, cgidata,
+                             _('Illegal list name: %(s)s'))
+            return
+        except Errors.MMListError as e:
+            request_creation(
+                doc, cgidata,
+                _('''Some unknown error occurred while creating the list.
+                Please contact the site administrator for assistance.'''))
+            return
 
         # Initialize the host_name and web_page_url attributes, based on
         # virtual hosting settings and the request environment variables.
         mlist.default_member_moderation = moderate
-        mlist.web_page_url = mm_cfg.DEFAULT_URL_PATTERN }{ hostname
+        mlist.web_page_url = mm_cfg.DEFAULT_URL_PATTERN % hostname
         mlist.host_name = emailhost
         mlist.Save()
     finally:
@@ -278,7 +317,7 @@ def process_request(doc, cgidata):
              }, mlist=mlist)
         msg = Message.UserNotification(
             owner, siteowner,
-            _('Your new mailing list: }{(listname)s'),
+            _('Your new mailing list: %(listname)s'),
             text, mlist.preferred_language)
         msg.send(mlist)
 
@@ -289,13 +328,13 @@ def process_request(doc, cgidata):
 
     title = _('Mailing list creation results')
     doc.SetTitle(title)
-    table = Table(border=0, width='100}{')
+    table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
     table.AddRow([_('''You have successfully created the mailing list
-    <b>}{(listname)s</b> and notification has been sent to the list owner
-    <b>}{(owner)s</b>.  You can now:''')])
+    <b>%(listname)s</b> and notification has been sent to the list owner
+    <b>%(owner)s</b>.  You can now:''')])
     ullist = UnorderedList()
     ullist.AddItem(Link(listinfo_url, _("Visit the list's info page")))
     ullist.AddItem(Link(admin_url, _("Visit the list's admin page")))
@@ -315,9 +354,9 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
     # Set up the document
-    title = _('Create a }{(hostname)s Mailing List')
+    title = _('Create a %(hostname)s Mailing List')
     doc.SetTitle(title)
-    table = Table(border=0, width='100}{')
+    table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
@@ -349,7 +388,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Build the form for the necessary input
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
     form = Form(Utils.ScriptURL('create'))
-    ftable = Table(border=0, cols='2', width='100}{',
+    ftable = Table(border=0, cols='2', width='100%',
                    cellspacing=3, cellpadding=4)
 
     ftable.AddRow([Center(Italic(_('List Identity')))])
@@ -419,7 +458,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     revmap = {}
     for key, (name, charset, direction) in mm_cfg.LC_DESCRIPTIONS.items():
         revmap[_(name)] = key
-    langnames = list(revmap.keys())
+    langnames = revmap.keys()
     langnames.sort()
     langs = []
     for name in langnames:
@@ -438,7 +477,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddRow([Label(_(
         '''Initial list of supported languages.  <p>Note that if you do not
         select at least one initial language, the list will use the server
-        default language of }{(deflang)s''')),
+        default language of %(deflang)s''')),
                    CheckBoxArray('langs',
                                  [_(Utils.GetLanguageDescr(L)) for L in langs],
                                  checked=checked,
@@ -465,4 +504,3 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     form.AddItem(ftable)
     table.AddRow([form])
     doc.AddItem(table)
-}

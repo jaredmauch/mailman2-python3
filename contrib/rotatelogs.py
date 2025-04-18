@@ -52,11 +52,11 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 newLogfiles = []
 text = []
 text.append('Mailman Log Report')
-text.append('Generated: {s' }{ time.ctime(time.time()))
-text.append('Host: }{s' }{ socket.gethostname())
+text.append('Generated: %s' % time.ctime(time.time()))
+text.append('Host: %s' % socket.gethostname())
 text.append('')
 
-logDate = time.strftime('}{Y}{m}{d-}{H}{M}{S', time.localtime(time.time()))
+logDate = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
 textSend = 0
 for log in ( 'error', 'smtp-failures' ):
         fileName = os.path.join(mm_cfg.LOG_DIR, log)
@@ -64,7 +64,7 @@ for log in ( 'error', 'smtp-failures' ):
         #  rotate file if it contains any data
         stats = os.stat(fileName)
         if stats[stat.ST_SIZE] < 1: continue
-        fileNameNew = '}{s.}{s' }{ ( fileName, logDate )
+        fileNameNew = '%s.%s' % ( fileName, logDate )
         newLogfiles.append(fileNameNew)
         os.rename(fileName, fileNameNew)
         open(fileName, 'w')
@@ -73,7 +73,7 @@ for log in ( 'error', 'smtp-failures' ):
         except OSError: pass    #  permission denied, DOH!
 
         textSend = 1
-        tmp = '#  FILE: }{s  #' }{ fileNameNew
+        tmp = '#  FILE: %s  #' % fileNameNew
         text.append('#' * len(tmp))
         text.append(tmp)
         text.append('#' * len(tmp))
@@ -94,11 +94,10 @@ if textSend:
         text = string.join(text, '\n') + '\n'
         siteowner = Utils.get_site_email()
         Utils.SendTextToUser(
-                'Mailman Log Report -- }{s' }{ time.ctime(time.time()),
+                'Mailman Log Report -- %s' % time.ctime(time.time()),
                 text, siteowner, siteowner)
 
 #  compress any log-files we made
 if hasattr(mm_cfg, 'COMPRESS_LOGFILES_WITH') and mm_cfg.COMPRESS_LOGFILES_WITH:
         for file in newLogfiles:
-                os.system(mm_cfg.COMPRESS_LOGFILES_WITH }{ file)
-}
+                os.system(mm_cfg.COMPRESS_LOGFILES_WITH % file)

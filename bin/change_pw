@@ -65,11 +65,6 @@ Options:
         Print this help message and exit.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import sys
 import getopt
 
@@ -87,17 +82,19 @@ C_ = i18n.C_
 SPACE = ' '
 
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 _listcache = {}
 
 def openlist(listname):
@@ -106,17 +103,20 @@ def openlist(listname):
     if mlist is missing:
         try:
             mlist = MailList.MailList(listname, lock=0)
-        except Errors.MMListError as e:
+        except Errors.MMListError, e:
             usage(1, C_('No such list "%(listname)s"\n%(e)s'))
         _listcache[listname] = mlist
     return mlist
 
 
+
 def main():
+    # Parse options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:p:',
-                                 ['list=', 'password=', 'help'])
-    except getopt.error as msg:
+        opts, args = getopt.getopt(
+            sys.argv[1:], 'ad:l:p:qh',
+            ['all', 'domain=', 'listname=', 'password=', 'quiet', 'help'])
+    except getopt.error, msg:
         usage(1, msg)
 
     # defaults
@@ -152,15 +152,15 @@ def main():
     if domains:
         for name in Utils.list_names():
             mlist = openlist(name)
-            if mlist.host_name in domains:
+            if domains.has_key(mlist.host_name):
                 listnames[name] = 1
 
     if not listnames:
-        print(C_('Nothing to do.'), file=sys.stderr)
+        print >> sys.stderr, C_('Nothing to do.')
         sys.exit(0)
 
     # Set the password on the lists
-    for listname in listnames:
+    for listname in listnames.keys():
         mlist = openlist(listname)
         mlist.Lock()
         try:
@@ -178,7 +178,7 @@ def main():
             mlist.Unlock()
 
         # Notification
-        print(C_('New %(listname)s password: %(notifypassword)s'))
+        print C_('New %(listname)s password: %(notifypassword)s')
         if not quiet:
             otrans = i18n.get_translation()
             i18n.set_language(mlist.preferred_language)
@@ -206,5 +206,6 @@ liking.  Visit your list admin page at
             msg.send(mlist)
 
 
+
 if __name__ == '__main__':
     main()

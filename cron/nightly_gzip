@@ -153,7 +153,7 @@ if __name__ == '__main__' and \
     # the mbox, and the gzip file is not created on demand (i.e. for every
     # individual post).  This is the normal mode of operation.  Also, be sure
     # we can actually import the gzip module!
-    omask = os.umask(0o002)
+    omask = os.umask(002)
     try:
         main()
     finally:

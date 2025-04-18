@@ -38,7 +38,20 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 COMMASPACE = ', '
+
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
 
 
 
@@ -77,7 +90,7 @@ class BounceMixin:
         # their lists.  So now we ignore site list bounces.  Ce La Vie for
         # password reminder bounces.
         self._bounce_events_file = os.path.join(
-            mm_cfg.DATA_DIR, 'bounce-events-{05d.pck' }{ os.getpid())
+            mm_cfg.DATA_DIR, 'bounce-events-%05d.pck' % os.getpid())
         self._bounce_events_fp = None
         self._bouncecnt = 0
         self._nextaction = time.time() + mm_cfg.REGISTER_BOUNCES_EVERY
@@ -85,7 +98,7 @@ class BounceMixin:
     def _queue_bounces(self, listname, addrs, msg):
         today = time.localtime()[:3]
         if self._bounce_events_fp is None:
-            omask = os.umask(0o006)
+            omask = os.umask(006)
             try:
                 self._bounce_events_fp = open(self._bounce_events_file, 'a+b')
             finally:
@@ -98,7 +111,7 @@ class BounceMixin:
         self._bouncecnt += len(addrs)
 
     def _register_bounces(self):
-        syslog('bounce', '}{s processing }{s queued bounces',
+        syslog('bounce', '%s processing %s queued bounces',
                self, self._bouncecnt)
         # Read all the records from the bounce file, then unlink it.  Sort the
         # records by listname for more efficient processing.
@@ -107,8 +120,8 @@ class BounceMixin:
         while True:
             try:
                 listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
-            except ValueError as e:
-                syslog('bounce', 'Error reading bounce events: }{s', e)
+            except ValueError, e:
+                syslog('bounce', 'Error reading bounce events: %s', e)
             except EOFError:
                 break
             events.setdefault(listname, []).append((addr, day, msg))
@@ -258,7 +271,7 @@ class BounceRunner(Runner, BounceMixin):
         addrs = filter(None, addrs)
         if not addrs:
             syslog('bounce',
-                   '}{s: bounce message w/no discernable addresses: }{s',
+                   '%s: bounce message w/no discernable addresses: %s',
                    mlist.internal_name(),
                    msg.get('message-id', 'n/a'))
             maybe_forward(mlist, msg)
@@ -297,13 +310,13 @@ def verp_bounce(mlist, msg):
         if not mo:
             continue                          # no match of regexp
         try:
-            if bmailbox != mo.group('bounces'):
+            if bmailbox <> mo.group('bounces'):
                 continue                      # not a bounce to our list
             # All is good
-            addr = '}{s@}{s' }{ mo.group('mailbox', 'host')
+            addr = '%s@%s' % mo.group('mailbox', 'host')
         except IndexError:
             syslog('error',
-                   "VERP_REGEXP doesn't yield the right match groups: }{s",
+                   "VERP_REGEXP doesn't yield the right match groups: %s",
                    mm_cfg.VERP_REGEXP)
             return []
         return [addr]
@@ -329,7 +342,7 @@ def verp_probe(mlist, msg):
         if not mo:
             continue                          # no match of regexp
         try:
-            if bmailbox != mo.group('bounces'):
+            if bmailbox <> mo.group('bounces'):
                 continue                      # not a bounce to our list
             # Extract the token and see if there's an entry
             token = mo.group('token')
@@ -339,7 +352,7 @@ def verp_probe(mlist, msg):
         except IndexError:
             syslog(
                 'error',
-                "VERP_PROBE_REGEXP doesn't yield the right match groups: }{s",
+                "VERP_PROBE_REGEXP doesn't yield the right match groups: %s",
                 mm_cfg.VERP_PROBE_REGEXP)
     return None
 
@@ -358,18 +371,17 @@ mailing list has been configured to send all unrecognized bounce messages to
 the list administrator(s).
 
 For more information see:
-}{(adminurl)s
+%(adminurl)s
 
 """),
                              subject=_('Uncaught bounce notification'),
                              tomoderators=0)
         syslog('bounce',
-               '}{s: forwarding unrecognized, message-id: }{s',
+               '%s: forwarding unrecognized, message-id: %s',
                mlist.internal_name(),
                msg.get('message-id', 'n/a'))
     else:
         syslog('bounce',
-               '}{s: discarding unrecognized, message-id: }{s',
+               '%s: discarding unrecognized, message-id: %s',
                mlist.internal_name(),
                msg.get('message-id', 'n/a'))
-}

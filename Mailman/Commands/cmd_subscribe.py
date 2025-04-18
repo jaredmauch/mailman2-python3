@@ -59,7 +59,7 @@ def process(res, args):
             password = arg
         elif argnum == 1:
             if arg.lower() not in ('digest', 'nodigest'):
-                res.results.append(_('Bad digest specifier: {(arg)s'))
+                res.results.append(_('Bad digest specifier: %(arg)s'))
                 return STOP
             if arg.lower() == 'digest':
                 digest = 1
@@ -94,10 +94,10 @@ def process(res, args):
         # Watch for encoded names
         try:
             h = make_header(decode_header(realname))
-            # BAW: in Python 2.2, use just str(h)
+            # BAW: in Python 2.2, use just unicode(h)
             realname = h.__unicode__()
         except UnicodeError:
-            realname = 
+            realname = u''
         # Coerce to byte string if uh contains only ascii
         try:
             realname = realname.encode('us-ascii')
@@ -113,7 +113,7 @@ def process(res, args):
         res.results.append(_("""\
 The email address you supplied is banned from this mailing list.
 If you think this restriction is erroneous, please contact the list
-owners at }{(listowner)s."""))
+owners at %(listowner)s."""))
         return STOP
     except Errors.MMBadEmailError:
         res.results.append(_("""\
@@ -145,8 +145,7 @@ the email address you gave is insecure."""))
     except Errors.MMNeedApproval:
         res.results.append(_("""\
 Your subscription request has been forwarded to the list administrator
-at }{(listowner)s for review."""))
+at %(listowner)s for review."""))
     else:
         # Everything is a-ok
         res.results.append(_('Subscription request succeeded.'))
-}

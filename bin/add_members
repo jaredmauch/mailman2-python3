@@ -77,19 +77,14 @@ You must supply at least one of -r and -d options.  At most one of the
 files can be `-'.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import sys
 import os
 import getopt
-from io import StringIO
+from cStringIO import StringIO
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-from email.utils import parseaddr
+from email.Utils import parseaddr
 
 from Mailman import i18n
 from Mailman import Utils
@@ -104,17 +99,19 @@ _ = i18n._
 C_ = i18n.C_
 
 
-def usage(code, msg=''):
-    if code:
+
+def usage(status, msg=''):
+    if status:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+        print >> fd, msg
+    sys.exit(status)
 
 
+
 def readfile(filename):
     if filename == '-':
         fp = sys.stdin
@@ -123,18 +120,19 @@ def readfile(filename):
         fp = open(filename)
         closep = 1
     # strip all the lines of whitespace and discard blank lines
-    lines = [line.strip() for line in fp.readlines()]
-    lines = [line for line in lines if line]
+    lines = filter(None, [line.strip() for line in fp.readlines()])
     if closep:
         fp.close()
     return lines
 
 
+
 def readmsgfile(filename):
-    with open(filename) as fp:
-        return fp.read()
+    lines = open(filename).read()
+    return lines
 
 
+
 class Tee:
     def __init__(self, outfp):
         self.__outfp = outfp
@@ -144,6 +142,7 @@ class Tee:
         self.__outfp.write(msg)
 
 
+
 def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
     tee = Tee(outfp)
     for member in members:
@@ -160,53 +159,54 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
                 userdesc.invitation = mlist.internal_name()
                 # InviteNewMember doesn't throw Errors.MMAlreadyAMember.
                 if mlist.isMember(userdesc.address):
-                    print(_('Already a member: %(member)s'), file=tee)
+                    print >> tee, _('Already a member: %(member)s')
                     continue
                 mlist.InviteNewMember(userdesc, invite_msg)
             else:
                 mlist.ApprovedAddMember(userdesc,
-                                      ack=ack,
-                                      admin_notif=False,
-                                      whence='bin/add_members',
-                                     )
+                                        ack=ack,
+                                        admin_notif=False,
+                                        whence='bin/add_members',
+                                       )
         except Errors.MMAlreadyAMember:
-            print(_('Already a member: %(member)s'), file=tee)
-        except Errors.MembershipIsBanned as pattern:
-            print('%s:' % member, _('Banned address (matched %(pattern)s)'), file=tee)
+            print >> tee, _('Already a member: %(member)s')
+        except Errors.MembershipIsBanned, pattern:
+            print >> tee, ('%s:' %
+                           member), _('Banned address (matched %(pattern)s)')
         except Errors.MMBadEmailError:
             if userdesc.address == '':
-                print(_('Bad/Invalid email address: blank line'), file=tee)
+                print >> tee, _('Bad/Invalid email address: blank line')
             else:
-                print(_('Bad/Invalid email address: %(member)s'), file=tee)
+                print >> tee, _('Bad/Invalid email address: %(member)s')
         except Errors.MMHostileAddress:
-            print(_('Hostile address (illegal characters): %(member)s'), file=tee)
+            print >> tee, _('Hostile address (illegal characters): %(member)s')
         else:
             if invite:
-                print(_('Invited: %(member)s'), file=tee)
+                print >> tee, _('Invited: %(member)s')
             else:
-                print(_('Subscribed: %(member)s'), file=tee)
+                print >> tee, _('Subscribed: %(member)s')
                 if nomail:
                     mlist.setDeliveryStatus(
                         userdesc.address.lower(), MemberAdaptor.BYADMIN)
 
 
+
 def main():
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:],
-            'a:r:d:w:im:nh',
-            ['admin-notify=',
-             'regular-members-file=',
-             'digest-members-file=',
-             'welcome-msg=',
-             'invite',
-             'invite-msg-file=',
-             'nomail',
-             'help'])
-    except getopt.error as msg:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   'a:r:d:w:im:nh',
+                                   ['admin-notify=',
+                                    'regular-members-file=',
+                                    'digest-members-file=',
+                                    'welcome-msg=',
+                                    'invite',
+                                    'invite-msg-file=',
+                                    'nomail',
+                                    'help',])
+    except getopt.error, msg:
         usage(1, msg)
 
-    if len(args) != 1:
+    if len(args) <> 1:
         usage(1)
 
     listname = args[0].lower().strip()
@@ -252,7 +252,7 @@ def main():
         usage(1, C_('Cannot read both digest and normal members '
                     'from standard input.'))
 
-    if not invite and invite_msg_file != None:
+    if not invite and invite_msg_file <> None:
         usage(1, C_('Setting invite-msg-file requires --invite.'))
 
     try:
@@ -310,6 +310,6 @@ def main():
         mlist.Unlock()
         i18n.set_translation(otrans)
 
-
+
 if __name__ == '__main__':
     main()

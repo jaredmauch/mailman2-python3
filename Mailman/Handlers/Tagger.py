@@ -35,16 +35,18 @@ EMPTYSTRING = ''
 NLTAB = '\n\t'
 
 
-
+def _decode(h):
+    """Decode a header value to unicode."""
+    if h is None:
+        return ''
+    if isinstance(h, str):
+        return h
+    return h.decode('us-ascii', 'replace')
+
+
 def process(mlist, msg, msgdata):
     if not mlist.topics_enabled:
         return
-    # Helper function.  Return RFC 2047 decoded header as a string in the
-    # charset of the list's preferred language.
-    def _decode(h):
-        if not h:
-            return h
-        return Utils.oneline(h, Utils.GetCharSet(mlist.preferred_language))
     # Extract the Subject:, Keywords:, and possibly body text
     matchlines = []
     matchlines.append(_decode(msg.get('subject', None)))
@@ -76,7 +78,6 @@ def process(mlist, msg, msgdata):
                       mlist, msg, msgdata, delete=False)
 
 
-
 def scanbody(msg, numlines=None):
     # We only scan the body of the message if it is of MIME type text/plain,
     # or if the outer type is multipart/alternative and there is a text/plain
@@ -115,7 +116,6 @@ def scanbody(msg, numlines=None):
     return msg.get_all('subject', []) + msg.get_all('keywords', [])
 
 
-
 class _ForgivingParser(email.Parser.HeaderParser):
     # Be a little more forgiving about non-header/continuation lines, since
     # we'll just read as much as we can from "header-like" lines in the body.

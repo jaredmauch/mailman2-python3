@@ -39,13 +39,19 @@ from Mailman import Utils
 from Mailman.Handlers.Hold import hold_for_approval
 from Mailman.Logging.Syslog import syslog
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 # First, play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.
 def _(s):
     return s
 
 
-
 class SpamDetected(Errors.DiscardMessage):
     """The message contains known spam"""
 
@@ -55,22 +61,21 @@ class HeaderMatchHold(Errors.HoldMessage):
 
     def reason_notice(self):
         pattern = self.__pattern
-        return _('Header matched regexp: {(pattern)s')
+        return _('Header matched regexp: %(pattern)s')
 
 
 # And reset the translator
 _ = i18n._
 
 
-
 def getDecodedHeaders(msg, cset='utf-8'):
     """Returns a unicode containing all the headers of msg, unfolded and
     RFC 2047 decoded, normalized and separated by new lines.
     """
 
-    headers = 
+    headers = u''
     for h, v in msg.items():
-        uvalue = 
+        uvalue = u''
         try:
             v = decode_header(re.sub('\n\s', ' ', v))
         except HeaderParseError:
@@ -79,21 +84,28 @@ def getDecodedHeaders(msg, cset='utf-8'):
             if not cs:
                 cs = 'us-ascii'
             try:
-                uvalue += str(frag, cs, 'replace')
+                uvalue += unicode(frag, cs, 'replace')
             except LookupError:
                 # The encoding charset is unknown.  At this point, frag
                 # has been QP or base64 decoded into a byte string whose
                 # charset we don't know how to handle.  We will try to
                 # unicode it as iso-8859-1 which may result in a garbled
                 # mess, but we have to do something.
-                uvalue += str(frag, 'iso-8859-1', 'replace')
+                uvalue += unicode(frag, 'iso-8859-1', 'replace')
         uhdr = h.decode('us-ascii', 'replace')
-        headers += }{s: }{s\n }{ (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
+        headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
     return headers
 
 
-
+def _decode_header(h):
+    """Decode a header value to unicode."""
+    if isinstance(h, str):
+        return h
+    return h.decode('us-ascii', 'replace')
+
+
 def process(mlist, msg, msgdata):
+    """Process a message for spam detection."""
     # Before anything else, check DMARC if necessary.  We do this as early
     # as possible so reject/discard actions trump other holds/approvals and
     # wrap/munge actions get flagged even for approved messages.
@@ -122,7 +134,7 @@ def process(mlist, msg, msgdata):
 """You are not allowed to post to this mailing list From: a domain which
 publishes a DMARC policy of reject or quarantine, and your message has been
 automatically rejected.  If you think that your messages are being rejected in
-error, contact the mailing list owner at }{(listowner)s."""))
+error, contact the mailing list owner at %(listowner)s."""))
                     raise Errors.RejectMessage, text
                 elif mlist.dmarc_moderation_action == 4:
                     raise Errors.DiscardMessage
@@ -138,7 +150,7 @@ error, contact the mailing list owner at }{(listowner)s."""))
            ):
              mlist.setMemberOption(sender, mm_cfg.Moderate, 1)
              syslog('vette',
-                    '}{s: Automatically Moderated }{s for verbose postings.',
+                    '%s: Automatically Moderated %s for verbose postings.',
                      mlist.real_name, sender) 
 
     if msgdata.get('approved'):
@@ -154,7 +166,7 @@ error, contact the mailing list owner at }{(listowner)s."""))
     # Now do header_filter_rules
     # TK: Collect headers in sub-parts because attachment filename
     # extension may be a clue to possible virus/spam.
-    headers = 
+    headers = u''
     # Get the character set of the lists preferred language for headers
     lcset = Utils.GetCharSet(mlist.preferred_language)
     for p in msg.walk():
@@ -168,7 +180,7 @@ error, contact the mailing list owner at }{(listowner)s."""))
             # ignore 'empty' patterns
             if not pattern.strip():
                 continue
-            pattern = Utils.xml_to_str(pattern, lcset)
+            pattern = Utils.xml_to_unicode(pattern, lcset)
             pattern = normalize(mm_cfg.NORMALIZE_FORM, pattern)
             try:
                 mo = re.search(pattern,
@@ -176,7 +188,7 @@ error, contact the mailing list owner at }{(listowner)s."""))
                                re.IGNORECASE|re.MULTILINE|re.UNICODE)
             except (re.error, TypeError):
                 syslog('error',
-                       'ignoring header_filter_rules invalid pattern: }{s',
+                       'ignoring header_filter_rules invalid pattern: %s',
                        pattern)
             if mo:
                 if action == mm_cfg.DISCARD:
@@ -199,4 +211,3 @@ error, contact the mailing list owner at }{(listowner)s."""))
                         mlist, msg, msgdata, HeaderMatchHold(pattern))
                 if action == mm_cfg.ACCEPT:
                     return
-}

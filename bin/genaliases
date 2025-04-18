@@ -32,11 +32,6 @@ Options:
         Print this message and exit.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import os
 import sys
 import getopt
@@ -47,23 +42,32 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def main():
     quiet = False
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hq',
-                                 ['help', 'quiet'])
-    except getopt.error as msg:
+                                   ['help', 'quiet'])
+    except getopt.error, msg:
         usage(1, msg)
 
     for opt, arg in opts:
@@ -97,7 +101,7 @@ def main():
         mlists.setdefault(mlist.host_name, []).append(mlist)
     # Make sure the files are created rw-rw-xxx; it should be okay to be world
     # readable.
-    omask = os.umask(0o002)
+    omask = os.umask(002)
     try:
         MTA.clear()
         if not mlists:
@@ -115,5 +119,6 @@ def main():
         os.umask(omask)
 
 
+
 if __name__ == '__main__':
     main()

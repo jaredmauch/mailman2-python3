@@ -41,6 +41,5 @@ def process(msg):
                 if re.search('@', local):
                     addrs.append(local)
                 else:
-                    addrs.append('{s@aol.com' }{ local)
+                    addrs.append('%s@aol.com' % local)
     return addrs
-}

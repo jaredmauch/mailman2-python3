@@ -17,10 +17,7 @@
 
 """Cleanse a message for archiving."""
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
+from __future__ import nested_scopes
 
 import os
 import re
@@ -28,13 +25,13 @@ import time
 import errno
 import binascii
 import tempfile
-from io import StringIO
-import subprocess
+from cStringIO import StringIO
+from types import IntType, StringType
 
-from email.utils import parsedate
-from email.parser import HeaderParser
-from email.generator import Generator
-from email.charset import Charset
+from email.Utils import parsedate
+from email.Parser import HeaderParser
+from email.Generator import Generator
+from email.Charset import Charset
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -57,19 +54,27 @@ BR = '<br>\n'
 SPACE = ' '
 
 try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
+
+try:
     from mimetypes import guess_all_extensions
 except ImportError:
     import mimetypes
     def guess_all_extensions(ctype, strict=True):
         # BAW: sigh, guess_all_extensions() is new in Python 2.3
         all = []
-        def check(mime_map):
-            for e, t in mime_map.items():
+        def check(map):
+            for e, t in map.items():
                 if t == ctype:
                     all.append(e)
         check(mimetypes.types_map)
         # Python 2.1 doesn't have common_types.  Sigh, sigh.
-        if not strict:
+        if not strict and hasattr(mimetypes, 'common_types'):
             check(mimetypes.common_types)
         return all
 
@@ -82,10 +87,10 @@ def guess_extension(ctype, ext):
     all = guess_all_extensions(ctype, strict=False)
     if ext in all:
         return ext
-    if ctype.lower() == 'application/octet-stream':
+    if ctype.lower == 'application/octet-stream':
         # For this type, all[0] is '.obj'. '.bin' is better.
         return '.bin'
-    if ctype.lower() == 'text/plain':
+    if ctype.lower == 'text/plain':
         # For this type, all[0] is '.ksh'. '.txt' is better.
         return '.txt'
     return all and all[0]
@@ -103,7 +108,7 @@ def calculate_attachments_dir(mlist, msg, msgdata):
     # under.  To avoid inode limitations, the scheme will be:
     # archives/private/<listname>/attachments/YYYYMMDD/<msgid-hash>/<files>
     # Start by calculating the date-based and msgid-hash components.
-    fmt = '{Y}{m}{d'
+    fmt = '%Y%m%d'
     datestr = msg.get('Date')
     if datestr:
         now = parsedate(datestr)
@@ -126,7 +131,7 @@ def calculate_attachments_dir(mlist, msg, msgdata):
         except (IndexError, ValueError):
             # Best we can do I think
             month = day = year = 0
-        datedir = '}{04d}{02d}{02d' }{ (year, month, day)
+        datedir = '%04d%02d%02d' % (year, month, day)
     assert datedir
     # As for the msgid hash, we'll base this part on the Message-ID: so that
     # all attachments for the same message end up in the same directory (we'll
@@ -147,10 +152,17 @@ def replace_payload_by_text(msg, text, charset):
     # message by a text (scrubbing).
     del msg['content-type']
     del msg['content-transfer-encoding']
-    if isinstance(charset, str):
+    if isinstance(charset, unicode):
         # email 3.0.1 (python 2.4) doesn't like unicode
         charset = charset.encode('us-ascii')
     msg.set_payload(text, charset)
+
+
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
 
 
 def process(mlist, msg, msgdata=None):
@@ -198,7 +210,7 @@ def process(mlist, msg, msgdata=None):
             # Make it specifically 'attachment'.
             if (part.get('content-disposition', '').lower() == 'attachment'
                     and not part.get_content_charset()):
-                omask = os.umask(0o002)
+                omask = os.umask(002)
                 try:
                     url = save_attachment(mlist, part, dir)
                 finally:
@@ -207,10 +219,10 @@ def process(mlist, msg, msgdata=None):
                 filename = Utils.oneline(filename, lcset)
                 replace_payload_by_text(part, _("""\
 An embedded and charset-unspecified text was scrubbed...
-Name: }{(filename)s
-URL: }{(url)s
+Name: %(filename)s
+URL: %(url)s
 """), lcset)
-        elif ctype == 'text/html' and isinstance(sanitize, int):
+        elif ctype == 'text/html' and isinstance(sanitize, IntType):
             if sanitize == 0:
                 if outer:
                     raise DiscardMessage
@@ -226,14 +238,14 @@ URL: }{(url)s
                 # Pull it out as an attachment but leave it unescaped.  This
                 # is dangerous, but perhaps useful for heavily moderated
                 # lists.
-                omask = os.umask(0o002)
+                omask = os.umask(002)
                 try:
                     url = save_attachment(mlist, part, dir, filter_html=False)
                 finally:
                     os.umask(omask)
                 replace_payload_by_text(part, _("""\
 An HTML attachment was scrubbed...
-URL: }{(url)s
+URL: %(url)s
 """), lcset)
             else:
                 # HTML-escape it and store it as an attachment, but make it
@@ -251,19 +263,19 @@ URL: }{(url)s
                 # We're replacing the payload with the decoded payload so this
                 # will just get in the way.
                 del part['content-transfer-encoding']
-                omask = os.umask(0o002)
+                omask = os.umask(002)
                 try:
                     url = save_attachment(mlist, part, dir, filter_html=False)
                 finally:
                     os.umask(omask)
                 replace_payload_by_text(part, _("""\
 An HTML attachment was scrubbed...
-URL: }{(url)s
+URL: %(url)s
 """), lcset)
         elif ctype == 'message/rfc822':
             # This part contains a submessage, so it too needs scrubbing
             submsg = part.get_payload(0)
-            omask = os.umask(0o002)
+            omask = os.umask(002)
             try:
                 url = save_attachment(mlist, part, dir)
             finally:
@@ -275,11 +287,11 @@ URL: }{(url)s
             size = len(str(submsg))
             replace_payload_by_text(part, _("""\
 An embedded message was scrubbed...
-From: }{(who)s
-Subject: }{(subject)s
-Date: }{(date)s
-Size: }{(size)s
-URL: }{(url)s
+From: %(who)s
+Subject: %(subject)s
+Date: %(date)s
+Size: %(size)s
+URL: %(url)s
 """), lcset)
         # If the message isn't a multipart, then we'll strip it out as an
         # attachment that would have to be separately downloaded.  Pipermail
@@ -296,7 +308,7 @@ URL: }{(url)s
             if payload is None:
                 continue
             size = len(payload)
-            omask = os.umask(0o002)
+            omask = os.umask(002)
             try:
                 url = save_attachment(mlist, part, dir)
             finally:
@@ -307,11 +319,11 @@ URL: }{(url)s
             filename = Utils.oneline(filename, lcset)
             replace_payload_by_text(part, _("""\
 A non-text attachment was scrubbed...
-Name: }{(filename)s
-Type: }{(ctype)s
-Size: }{(size)d bytes
-Desc: }{(desc)s
-URL: }{(url)s
+Name: %(filename)s
+Type: %(ctype)s
+Size: %(size)d bytes
+Desc: %(desc)s
+URL: %(url)s
 """), lcset)
         outer = False
     # We still have to sanitize multipart messages to flat text because
@@ -342,9 +354,9 @@ URL: }{(url)s
             # if sanitize == 2, there could be text/html parts so keep them
             # but skip any other parts.
             partctype = part.get_content_type()
-            if partctype != 'text/plain' and (partctype != 'text/html' or
-                                              sanitize != 2):
-                text.append(_('Skipped content of type }{(partctype)s\n'))
+            if partctype <> 'text/plain' and (partctype <> 'text/html' or
+                                              sanitize <> 2):
+                text.append(_('Skipped content of type %(partctype)s\n'))
                 continue
             try:
                 t = part.get_payload(decode=True) or ''
@@ -364,20 +376,14 @@ URL: }{(url)s
                 partcharset = str(partcharset)
             else:
                 partcharset = part.get_content_charset()
-            if partcharset and partcharset != charset:
+            if partcharset and partcharset <> charset:
                 try:
-                    if isinstance(t, bytes):
-                        t = t.decode(partcharset, 'replace')
-                    else:
-                        t = t.encode(partcharset, 'replace').decode(partcharset, 'replace')
+                    t = unicode(t, partcharset, 'replace')
                 except (UnicodeError, LookupError, ValueError,
                         AssertionError):
                     # We can get here if partcharset is bogus in come way.
                     # Replace funny characters.  We use errors='replace'
-                    if isinstance(t, bytes):
-                        t = t.decode('ascii', 'replace')
-                    else:
-                        t = t.encode('ascii', 'replace').decode('ascii', 'replace')
+                    t = unicode(t, 'ascii', 'replace')
                 try:
                     # Should use HTML-Escape, or try generalizing to UTF-8
                     t = t.encode(charset, 'replace')
@@ -386,9 +392,7 @@ URL: }{(url)s
                     # if the message charset is bogus, use the list's.
                     t = t.encode(lcset, 'replace')
             # Separation is useful
-            if isinstance(t, (str, bytes)):
-                if isinstance(t, bytes):
-                    t = t.decode('ascii', 'replace')
+            if isinstance(t, StringType):
                 if not t.endswith('\n'):
                     t += '\n'
                 text.append(t)
@@ -397,11 +401,8 @@ URL: }{(url)s
         # The i18n separator is in the list's charset. Coerce it to the
         # message charset.
         try:
-            if isinstance(sep, bytes):
-                sep = sep.decode(lcset, 'replace')
-            else:
-                sep = sep.encode(lcset, 'replace').decode(lcset, 'replace')
-            sep = sep.encode(charset, 'replace')
+            s = unicode(sep, lcset, 'replace')
+            sep = s.encode(charset, 'replace')
         except (UnicodeError, LookupError, ValueError,
                 AssertionError):
             pass
@@ -416,14 +417,14 @@ URL: }{(url)s
 def makedirs(dir):
     # Create all the directories to store this attachment in
     try:
-        os.makedirs(dir, 0o2775)
+        os.makedirs(dir, 02775)
         # Unfortunately, FreeBSD seems to be broken in that it doesn't honor
         # the mode arg of mkdir().
-        for root, dirs, files in os.walk(dir):
-            os.chmod(root, 0o2775)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+        def twiddle(arg, dirname, names):
+            os.chmod(dirname, 02775)
+        os.path.walk(dir, twiddle, None)
+    except OSError, e:
+        if e.errno <> errno.EEXIST: raise
 
 
 def save_attachment(mlist, msg, dir, filter_html=True):
@@ -496,7 +497,7 @@ def save_attachment(mlist, msg, dir, filter_html=True):
             # guaranteed that no other process will be racing with us.
             if os.path.exists(path):
                 counter += 1
-                extra = '-}{04d' }{ counter
+                extra = '-%04d' % counter
             else:
                 break
     finally:
@@ -509,16 +510,18 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     if filter_html and ctype == 'text/html':
         base, ext = os.path.splitext(path)
         tmppath = base + '-tmp' + ext
-        with open(tmppath, 'w') as fp:
-            fp.write(decodedpayload)
+        fp = open(tmppath, 'w')
         try:
-            cmd = mm_cfg.ARCHIVE_HTML_SANITIZER }{ {'filename': tmppath}
-            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            decodedpayload, stderr = process.communicate()
-            if process.returncode:
+            fp.write(decodedpayload)
+            fp.close()
+            cmd = mm_cfg.ARCHIVE_HTML_SANITIZER % {'filename' : tmppath}
+            progfp = os.popen(cmd, 'r')
+            decodedpayload = progfp.read()
+            status = progfp.close()
+            if status:
                 syslog('error',
-                       'HTML sanitizer exited with non-zero status: }{s',
-                       process.returncode)
+                       'HTML sanitizer exited with non-zero status: %s',
+                       status)
         finally:
             os.unlink(tmppath)
         # BAW: Since we've now sanitized the document, it should be plain
@@ -531,17 +534,87 @@ def save_attachment(mlist, msg, dir, filter_html=True):
         submsg = msg.get_payload()
         # BAW: I'm sure we can eventually do better than this. :(
         decodedpayload = Utils.websafe(str(submsg))
-    with open(path, 'w') as fp:
-        fp.write(decodedpayload)
+    fp = open(path, 'w')
+    fp.write(decodedpayload)
+    fp.close()
     # Now calculate the url
     baseurl = mlist.GetBaseArchiveURL()
     # Private archives will likely have a trailing slash.  Normalize.
-    if baseurl[-1] != '/':
+    if baseurl[-1] <> '/':
         baseurl += '/'
     # A trailing space in url string may save users who are using
     # RFC-1738 compliant MUA (Not Mozilla).
     # Trailing space will definitely be a problem with format=flowed.
     # Bracket the URL instead.
-    url = '<' + baseurl + '}{s/}{s}{s}{s>' }{ (dir, filebase, extra, ext)
+    url = '<' + baseurl + '%s/%s%s%s>' % (dir, filebase, extra, ext)
     return url
-}
+
+
+def main():
+    doc = Document()
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        # Send this with a 404 status
+        print('Status: 404 Not Found')
+        print(doc.Format())
+        return
+
+    # Must be authenticated to get any farther
+    cgidata = cgi.FieldStorage()
+    try:
+        cgidata.getfirst('adminpw', '')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    # Editing the html for a list is limited to the list admin and site admin.
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.getfirst('adminpw', '')):
+        if 'admlogin' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (scrubber): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
+        return
+
+    # Create the list directory with proper permissions
+    oldmask = os.umask(0o002)
+    try:
+        os.makedirs(mlist.fullpath(), mode=0o2775)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    finally:
+        os.umask(oldmask)

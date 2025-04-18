@@ -24,12 +24,8 @@ of the target mailing list.
 Errors are redirected to logs/errors.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
+
 import paths
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -40,15 +36,16 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr('error', 'leave')
 
 
+
 def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print(_('leave script got no listname.'), file=sys.stderr)
+        print >> sys.stderr, _('leave script got no listname.')
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print(_('leave script, list not found: %(listname)s') % {'listname': listname}, file=sys.stderr)
+        print >> sys.stderr, _('leave script, list not found: %(listname)s')
         sys.exit(1)
     # Immediately queue the message for the bounce/cmd qrunner to process.
     # The advantage to this approach is that messages should never get lost --
@@ -59,5 +56,6 @@ def main():
     cmdq.enqueue(sys.stdin.read(), listname=listname, toleave=1, _plaintext=1)
 
 
+
 if __name__ == '__main__':
     main()

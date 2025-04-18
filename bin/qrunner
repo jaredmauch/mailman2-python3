@@ -72,11 +72,6 @@ Note also that this script should be started up from mailmanctl as a normal
 operation.  It is only useful for debugging if it is run separately.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import getopt
 import signal
@@ -95,26 +90,28 @@ COMMASPACE = ', '
 AS_SUBPROC = 0
 
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def make_qrunner(name, slice, range, once=0):
     modulename = 'Mailman.Queue.' + name
     try:
         __import__(modulename)
-    except ImportError as e:
+    except ImportError, e:
         if AS_SUBPROC:
             # Exit with SIGTERM exit code so mailmanctl won't try to restart us
-            print('Cannot import runner module', modulename, file=sys.stderr)
-            print(e, file=sys.stderr)
+            print >> sys.stderr, 'Cannot import runner module', modulename
+            print >> sys.stderr, e
             sys.exit(signal.SIGTERM)
         else:
             usage(1, e)
@@ -130,6 +127,7 @@ def make_qrunner(name, slice, range, once=0):
     return qrunner
 
 
+
 def set_signals(loop):
     # Set up the SIGTERM handler for stopping the loop
     def sigterm_handler(signum, frame, loop=loop):
@@ -156,13 +154,14 @@ def set_signals(loop):
     signal.signal(signal.SIGHUP, sighup_handler)
 
 
+
 def main():
     global AS_SUBPROC
     try:
         opts, args = getopt.getopt(
             sys.argv[1:], 'hlor:vs',
             ['help', 'list', 'once', 'runner=', 'verbose', 'subproc'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     once = 0
@@ -177,8 +176,8 @@ def main():
                     name = runnername[:-len('Runner')]
                 else:
                     name = runnername
-                print(C_('%(name)s runs the %(runnername)s qrunner'))
-            print(C_('All runs all the above qrunners'))
+                print C_('%(name)s runs the %(runnername)s qrunner')
+            print C_('All runs all the above qrunners')
             sys.exit(0)
         elif opt in ('-o', '--once'):
             once = 1
@@ -211,7 +210,7 @@ def main():
         elif opt in ('-v', '--verbose'):
             verbose = 1
 
-    if len(args) != 0:
+    if len(args) <> 0:
         usage(1)
     if len(runners) == 0:
         usage(1, C_('No runner name given.'))
@@ -249,25 +248,34 @@ def main():
         class Loop:
             status = 0
             def __init__(self):
-                self.__qrunners = qrunners
+                self.__isdone = 0
             def name(self):
-                return 'RoundRobin'
+                return 'Main loop'
             def stop(self):
-                for qrunner in self.__qrunners:
-                    qrunner.stop()
+                self.__isdone = 1
+            def isdone(self):
+                return self.__isdone
         loop = Loop()
         set_signals(loop)
-        # Now start up the main loop
-        syslog('qrunner', 'RoundRobin qrunner started.')
-        while not loop.status:
+        syslog('qrunner', 'Main qrunner loop started.')
+        while not loop.isdone():
             for qrunner in qrunners:
-                if loop.status:
+                # In case the SIGTERM came in the middle of this iteration
+                if loop.isdone():
                     break
+                if verbose:
+                    syslog('qrunner', 'Now doing a %s qrunner iteration',
+                           qrunner.__class__.__bases__[0].__name__)
                 qrunner.run()
-        syslog('qrunner', 'RoundRobin qrunner exiting.')
-
+            if once:
+                break
+            if mm_cfg.QRUNNER_SLEEP_TIME > 0:
+                time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
+        syslog('qrunner', 'Main qrunner loop exiting.')
+    # All done
     sys.exit(loop.status)
 
 
+
 if __name__ == '__main__':
     main()

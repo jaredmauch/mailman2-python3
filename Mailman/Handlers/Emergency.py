@@ -20,13 +20,15 @@ No notices are sent to either the sender or the list owner for emergency
 holds.  I think they'd be too obnoxious.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 from Mailman import Errors
 from Mailman.i18n import _
+
+
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
 
 
 class EmergencyHold(Errors.HoldMessage):
@@ -35,6 +37,12 @@ class EmergencyHold(Errors.HoldMessage):
 
 
 def process(mlist, msg, msgdata):
+    """Process a message for emergency handling."""
+    # Get the message headers
+    subject = _encode_header(msg.get('subject', ''), 'utf-8')
+    from_ = _encode_header(msg.get('from', ''), 'utf-8')
+    to = _encode_header(msg.get('to', ''), 'utf-8')
+    cc = _encode_header(msg.get('cc', ''), 'utf-8')
     if mlist.emergency and not msgdata.get('adminapproved'):
         mlist.HoldMessage(msg, _(EmergencyHold.reason), msgdata)
         raise EmergencyHold

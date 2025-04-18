@@ -25,7 +25,6 @@ tcre = re.compile(r'the following recipients did not receive this message:',
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
-
 def process(msg):
     if msg.get_content_type() != 'multipart/mixed':
         return None

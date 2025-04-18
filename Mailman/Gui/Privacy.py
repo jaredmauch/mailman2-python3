@@ -19,14 +19,21 @@
 
 import os
 import re
-from typing import List, Tuple
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman.i18n import _
 from Mailman.Gui.GUIBase import GUIBase
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
 
+
+
 class Privacy(GUIBase):
     def GetConfigCategory(self):
         return 'privacy', _('Privacy options...')
@@ -41,7 +48,7 @@ class Privacy(GUIBase):
         return None
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category != 'privacy':
+        if category <> 'privacy':
             return None
         # Pre-calculate some stuff.  Technically, we shouldn't do the
         # sub_cfentry calculation here, but it's too ugly to indent it any
@@ -98,7 +105,7 @@ class Privacy(GUIBase):
             _("""This section allows you to configure subscription and
             membership exposure policy.  You can also control whether this
             list is public or not.  See also the
-            <a href="{(admin)s/archive">Archival Options</a> section for
+            <a href="%(admin)s/archive">Archival Options</a> section for
             separate archive-related privacy settings."""),
 
             _('Subscribing'),
@@ -221,7 +228,7 @@ class Privacy(GUIBase):
              member postings by default.  Turn this option on to, by default,
              moderate member postings first.  You can always manually set an
              individual member's moderation bit by using the
-             <a href="}{(adminurl)s/members">membership management
+             <a href="%(adminurl)s/members">membership management
              screens</a>.""")),
 
             ('member_verbosity_threshold', mm_cfg.Number, 5, 0,
@@ -282,7 +289,7 @@ class Privacy(GUIBase):
              (_('Accept'), _('Munge From'), _('Wrap Message'), _('Reject'),
                  _('Discard')), 0,
              _("""Action to take when anyone posts to the
-             list from a domain with a DMARC Reject}{(quarantine)s Policy."""),
+             list from a domain with a DMARC Reject%(quarantine)s Policy."""),
 
              _("""<ul><li><b>Munge From</b> -- applies the <a
              href="?VARHELP=general/from_is_list">from_is_list Munge From</a>
@@ -348,7 +355,7 @@ class Privacy(GUIBase):
              <a href="?VARHELP=privacy/sender/dmarc_moderation_action"
              >rejection notice</a> to
              be sent to anyone who posts to this list from a domain
-             with a DMARC Reject}{(quarantine)s Policy.""")),
+             with a DMARC Reject%(quarantine)s Policy.""")),
              
             ('dmarc_moderation_addresses', mm_cfg.EmailListEx, (10, WIDTH), 1,
              _("""List of addresses (or regexps) whose posts should always apply
@@ -487,7 +494,7 @@ class Privacy(GUIBase):
             ('nonmember_rejection_notice', mm_cfg.Text, (10, WIDTH), 1,
              _("""Text to include in any rejection notice to be sent to
              non-members who post to this list. This notice can include
-             the list's owner address by }{}{(listowner)s and replaces the
+             the list's owner address by %%(listowner)s and replaces the
              internally crafted default message.""")),
 
             ]
@@ -628,7 +635,7 @@ class Privacy(GUIBase):
     def _handleForm(self, mlist, category, subcat, cgidata, doc):
         # TK: If there is no hdrfilter_* in cgidata, we should not touch
         # the header filter rules.
-        if not cgidata in 'hdrfilter_rebox_01'):
+        if not cgidata.has_key('hdrfilter_rebox_01'):
             return
         # First deal with
         rules = []
@@ -637,17 +644,17 @@ class Privacy(GUIBase):
         i = 1
         downi = None
         while True:
-            deltag    = 'hdrfilter_delete_}{02d' }{ i
-            reboxtag  = 'hdrfilter_rebox_}{02d' }{ i
-            actiontag = 'hdrfilter_action_}{02d' }{ i
-            wheretag  = 'hdrfilter_where_}{02d' }{ i
-            addtag    = 'hdrfilter_add_}{02d' }{ i
-            newtag    = 'hdrfilter_new_}{02d' }{ i
-            uptag     = 'hdrfilter_up_}{02d' }{ i
-            downtag   = 'hdrfilter_down_}{02d' }{ i
+            deltag    = 'hdrfilter_delete_%02d' % i
+            reboxtag  = 'hdrfilter_rebox_%02d' % i
+            actiontag = 'hdrfilter_action_%02d' % i
+            wheretag  = 'hdrfilter_where_%02d' % i
+            addtag    = 'hdrfilter_add_%02d' % i
+            newtag    = 'hdrfilter_new_%02d' % i
+            uptag     = 'hdrfilter_up_%02d' % i
+            downtag   = 'hdrfilter_down_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata in deltag):
+            if cgidata.has_key(deltag):
                 continue
             # Get the data for the current box
             pattern = cgidata.getfirst(reboxtag)
@@ -660,7 +667,7 @@ class Privacy(GUIBase):
             if pattern is None:
                 # We came to the end of the boxes
                 break
-            if cgidata in newtag) and not pattern:
+            if cgidata.has_key(newtag) and not pattern:
                 # This new entry is incomplete.
                 if i == 2:
                     # OK it is the first.
@@ -679,17 +686,17 @@ class Privacy(GUIBase):
             else:
                 cset = Utils.GetCharSet(mlist.preferred_language)
             try:
-                upattern = Utils.xml_to_str(pattern, cset)
+                upattern = Utils.xml_to_unicode(pattern, cset)
                 re.compile(upattern)
                 pattern = upattern
             except (re.error, TypeError):
                 safepattern = Utils.websafe(pattern)
                 doc.addError(_("""The header filter rule pattern
-                '}{(safepattern)s' is not a legal regular expression.  This
+                '%(safepattern)s' is not a legal regular expression.  This
                 rule will be ignored."""))
                 continue
             # Was this an add item?
-            if cgidata in addtag):
+            if cgidata.has_key(addtag):
                 # Where should the new one be added?
                 where = cgidata.getfirst(wheretag)
                 if where == 'before':
@@ -701,14 +708,14 @@ class Privacy(GUIBase):
                     rules.append((pattern, action, False))
                     rules.append(('', mm_cfg.DEFER, True))
             # Was this an up movement?
-            elif cgidata in uptag):
+            elif cgidata.has_key(uptag):
                 # As long as this one isn't the first rule, move it up
                 if rules:
                     rules.insert(-1, (pattern, action, False))
                 else:
                     rules.append((pattern, action, False))
             # Was this the down movement?
-            elif cgidata in downtag):
+            elif cgidata.has_key(downtag):
                 downi = i - 2
                 rules.append((pattern, action, False))
             # Otherwise, just retain this one in the list
@@ -726,4 +733,3 @@ class Privacy(GUIBase):
             self._handleForm(mlist, category, subcat, cgidata, doc)
         # Everything else is dealt with by the base handler
         GUIBase.handleForm(self, mlist, category, subcat, cgidata, doc)
-}

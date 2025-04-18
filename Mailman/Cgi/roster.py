@@ -19,10 +19,6 @@
 Takes listname in PATH_INFO.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
 
 # We don't need to lock in this script, because we're never going to change
 # data.
@@ -30,7 +26,7 @@ from __future__ import unicode_literals
 import sys
 import os
 import cgi
-import urllib.parse
+import urllib
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -39,6 +35,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Auth import Auth
 
 # Set up i18n
 _ = i18n._
@@ -46,24 +43,63 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
 def main():
-    parts = Utils.GetPathPieces()
-    if not parts:
-        error_page(_('Invalid options to CGI script'))
-        return
-
-    listname = parts[0].lower()
+    doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        # Send this with a 404 status.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        # Send this with a 404 status
         print('Status: 404 Not Found')
-        error_page(_('No such list <em>{(safelistname)s</em>'))
-        syslog('error', 'roster: No such list "}{s": }{s', listname, e)
+        print(doc.Format())
         return
 
+    # Must be authenticated to get any farther
     cgidata = cgi.FieldStorage()
+    try:
+        cgidata.getfirst('adminpw', '')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    # Editing the html for a list is limited to the list admin and site admin.
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.getfirst('adminpw', '')):
+        if 'admlogin' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (roster): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
+        return
 
     # messages in form should go in selected language (if any...)
     try:
@@ -83,53 +119,6 @@ def main():
         lang = mlist.preferred_language
     i18n.set_language(lang)
 
-    # Perform authentication for protected rosters.  If the roster isn't
-    # protected, then anybody can see the pages.  If members-only or
-    # "admin"-only, then we try to cookie authenticate the user, and failing
-    # that, we check roster-email and roster-pw fields for a valid password.
-    # (also allowed: the list moderator, the list admin, and the site admin).
-    password = cgidata.getfirst('roster-pw', '').strip()
-    addr = cgidata.getfirst('roster-email', '').strip()
-    list_hidden = (not mlist.WebAuthenticate((mm_cfg.AuthUser,),
-                                             password, addr)
-                   and mlist.WebAuthenticate((mm_cfg.AuthListModerator,
-                                              mm_cfg.AuthListAdmin,
-                                              mm_cfg.AuthSiteAdmin),
-                                             password))
-    if mlist.private_roster == 0:
-        # No privacy
-        ok = 1
-    elif mlist.private_roster == 1:
-        # Members only
-        ok = mlist.WebAuthenticate((mm_cfg.AuthUser,
-                                    mm_cfg.AuthListModerator,
-                                    mm_cfg.AuthListAdmin,
-                                    mm_cfg.AuthSiteAdmin),
-                                   password, addr)
-    else:
-        # Admin only, so we can ignore the address field
-        ok = mlist.WebAuthenticate((mm_cfg.AuthListModerator,
-                                    mm_cfg.AuthListAdmin,
-                                    mm_cfg.AuthSiteAdmin),
-                                   password)
-    if not ok:
-        realname = mlist.real_name
-        doc = Document()
-        doc.set_language(lang)
-        # Send this with a 401 status.
-        print('Status: 401 Unauthorized')
-        error_page_doc(doc, _('}{(realname)s roster authentication failed.'))
-        doc.AddItem(mlist.GetMailmanFooter())
-        print(doc.Format())
-        remote = os.environ.get('HTTP_FORWARDED_FOR',
-                 os.environ.get('HTTP_X_FORWARDED_FOR',
-                 os.environ.get('REMOTE_ADDR',
-                                'unidentified origin')))
-        syslog('security',
-               'Authorization failed (roster): user=}{s: list=}{s: remote=}{s',
-               addr, listname, remote)
-        return
-
     # The document and its language
     doc = HeadlessDocument()
     doc.set_language(lang)
@@ -140,14 +129,14 @@ def main():
         text = _('View this page in'))
     replacements['<mm-lang-form-start>'] = mlist.FormatFormStart('roster')
     doc.AddItem(mlist.ParseTags('roster.html', replacements, lang))
-    print(doc.Format())
+    print doc.Format()
 
 
 def error_page(errmsg):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
     error_page_doc(doc, errmsg)
-    print(doc.Format())
+    print doc.Format()
 
 
 def error_page_doc(doc, errmsg):
@@ -155,4 +144,3 @@ def error_page_doc(doc, errmsg):
     doc.SetTitle(_("Error"))
     doc.AddItem(Header(2, _("Error")))
     doc.AddItem(Bold(errmsg))
-}

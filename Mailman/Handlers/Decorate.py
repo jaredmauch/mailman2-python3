@@ -17,14 +17,10 @@
 
 """Decorate a message by sticking the header and footer around it."""
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import re
 
-from email.mime.text import MIMEText
+from types import ListType
+from email.MIMEText import MIMEText
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -33,6 +29,20 @@ from Mailman.Message import Message
 from Mailman.i18n import _
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
+
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
+
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
 
 def process(mlist, msg, msgdata):
     # Digests and Mailman-craft messages should not get additional headers
@@ -43,16 +53,17 @@ def process(mlist, msg, msgdata):
         # Calculate the extra personalization dictionary.  Note that the
         # length of the recips list better be exactly 1.
         recips = msgdata.get('recips')
-        assert isinstance(recips, list) and len(recips) == 1
+        assert type(recips) == ListType and len(recips) == 1
         member = recips[0].lower()
         d['user_address'] = member
         try:
             d['user_delivered_to'] = mlist.getMemberCPAddress(member)
+            # BAW: Hmm, should we allow this?
             d['user_password'] = mlist.getMemberPassword(member)
             d['user_language'] = mlist.getMemberLanguage(member)
             username = mlist.getMemberName(member) or None
             try:
-                username = username.encode(Utils.GetCharSet(d['user_language'])).decode('utf-8')
+                username = username.encode(Utils.GetCharSet(d['user_language']))
             except (AttributeError, UnicodeError):
                 username = member
             d['user_name'] = username
@@ -92,21 +103,24 @@ def process(mlist, msg, msgdata):
     if not msg.is_multipart() and msgtype == 'text/plain':
         # TK: Try to keep the message plain by converting the header/
         # footer/oldpayload into unicode and encode with mcset/lcset.
-        if isinstance(header, str):
+        # Try to decode qp/base64 also.
+        # It is possible header/footer is already unicode if it was
+        # interpolated with a unicode.
+        if isinstance(header, unicode):
             uheader = header
         else:
-            uheader = str(header, lcset, 'ignore')
-        if isinstance(footer, str):
+            uheader = unicode(header, lcset, 'ignore')
+        if isinstance(footer, unicode):
             ufooter = footer
         else:
-            ufooter = str(footer, lcset, 'ignore')
+            ufooter = unicode(footer, lcset, 'ignore')
         try:
-            oldpayload = str(msg.get_payload(decode=True), mcset)
-            frontsep = endsep = ''
+            oldpayload = unicode(msg.get_payload(decode=True), mcset)
+            frontsep = endsep = u''
             if header and not header.endswith('\n'):
-                frontsep = '\n'
+                frontsep = u'\n'
             if footer and not oldpayload.endswith('\n'):
-                endsep = '\n'
+                endsep = u'\n'
             payload = uheader + frontsep + oldpayload + endsep + ufooter
             try:
                 # first, try encode with list charset
@@ -134,7 +148,7 @@ def process(mlist, msg, msgdata):
         # The next easiest thing to do is just prepend the header and append
         # the footer as additional subparts
         payload = msg.get_payload()
-        if not isinstance(payload, list):
+        if not isinstance(payload, ListType):
             payload = [payload]
         if footer:
             mimeftr = MIMEText(footer, 'plain', lcset)
@@ -208,7 +222,7 @@ def decorate(mlist, template, what, extradict=None):
 
     # BAW: We've found too many situations where Python can be fooled into
     # interpolating too much revealing data into a format string.  For
-    # example, a footer of "{ silly }{(real_name)s" would give a header
+    # example, a footer of "% silly %(real_name)s" would give a header
     # containing all list attributes.  While we've previously removed such
     # really bad ones like `password' and `passwords', it's much better to
     # provide a whitelist of known good attributes, then to try to remove a
@@ -231,12 +245,11 @@ def decorate(mlist, template, what, extradict=None):
     # Interpolate into the template
     try:
         text = re.sub(r'(?m)(?<!^--) +(?=\n)', '',
-                      re.sub(r'\r\n', r'\n', template }{ d))
-    except (ValueError, TypeError) as e:
-        syslog('error', 'Exception while calculating }{s:\n}{s', what, e)
+                      re.sub(r'\r\n', r'\n', template % d))
+    except (ValueError, TypeError), e:
+        syslog('error', 'Exception while calculating %s:\n%s', what, e)
         text = template
     # Ensure text ends with new-line
     if not text.endswith('\n'):
         text += '\n'
     return text
-}

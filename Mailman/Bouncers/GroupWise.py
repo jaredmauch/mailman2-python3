@@ -28,7 +28,6 @@ from cStringIO import StringIO
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
-
 def find_textplain(msg):
     if msg.get_content_type() == 'text/plain':
         return msg
@@ -42,7 +41,6 @@ def find_textplain(msg):
     return None
 
 
-
 def process(msg):
     if msg.get_content_type() != 'multipart/mixed' or not msg['x-mailer']:
         return None

@@ -18,11 +18,6 @@
 """Produce listinfo page, primary web entry-point to mailing lists.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 # No lock needed in this script, because we don't change data.
 
 import os
@@ -36,6 +31,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Auth import Auth
 
 # Set up i18n
 _ = i18n._
@@ -43,25 +39,65 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
 def main():
-    parts = Utils.GetPathPieces()
-    if not parts:
-        listinfo_overview()
-        return
-
-    listname = parts[0].lower()
+    doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        # Send this with a 404 status.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        # Send this with a 404 status
         print('Status: 404 Not Found')
-        listinfo_overview(_('No such list <em>{(safelistname)s</em>'))
-        syslog('error', 'listinfo: No such list "}{s": }{s', listname, e)
+        print(doc.Format())
+        return
+
+    # Must be authenticated to get any farther
+    cgidata = cgi.FieldStorage()
+    try:
+        cgidata.getfirst('adminpw', '')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    # Editing the html for a list is limited to the list admin and site admin.
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.getfirst('adminpw', '')):
+        if 'admlogin' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (listinfo): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
         return
 
     # See if the user want to see this page in other language
-    cgidata = cgi.FieldStorage()
     try:
         language = cgidata.getfirst('language')
     except TypeError:
@@ -89,10 +125,10 @@ def listinfo_overview(msg=''):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    legend = _("}{(hostname)s Mailing Lists")
+    legend = _("%(hostname)s Mailing Lists")
     doc.SetTitle(legend)
 
-    table = Table(border=0, width="100}{")
+    table = Table(border=0, width="100%")
     table.AddRow([Center(Header(2, legend))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
@@ -110,8 +146,8 @@ def listinfo_overview(msg=''):
             continue
         if mlist.advertised:
             if mm_cfg.VIRTUAL_HOST_OVERVIEW and (
-                   mlist.web_page_url.find('/}{s/' }{ hostname) == -1 and
-                   mlist.web_page_url.find('/}{s:' }{ hostname) == -1):
+                   mlist.web_page_url.find('/%s/' % hostname) == -1 and
+                   mlist.web_page_url.find('/%s:' % hostname) == -1):
                 # List is for different identity of this host - skip it.
                 continue
             else:
@@ -128,11 +164,11 @@ def listinfo_overview(msg=''):
     if not advertised:
         welcome.extend(
             _('''<p>There currently are no publicly-advertised
-            }{(mailmanlink)s mailing lists on }{(hostname)s.'''))
+            %(mailmanlink)s mailing lists on %(hostname)s.'''))
     else:
         welcome.append(
             _('''<p>Below is a listing of all the public mailing lists on
-            }{(hostname)s.  Click on a list name to get more information about
+            %(hostname)s.  Click on a list name to get more information about
             the list, or to subscribe, unsubscribe, and change the preferences
             on your subscription.'''))
 
@@ -141,7 +177,7 @@ def listinfo_overview(msg=''):
     siteowner = Utils.get_site_email()
     welcome.extend(
         (_(''' To visit the general information page for an unadvertised list,
-        open a URL similar to this one, but with a '/' and the }{(adj)s
+        open a URL similar to this one, but with a '/' and the %(adj)s
         list name appended.
         <p>List administrators, you can visit '''),
          Link(Utils.ScriptURL('admin'),
@@ -151,7 +187,7 @@ def listinfo_overview(msg=''):
          Link('mailto:' + siteowner, siteowner),
          '.<p>'))
 
-    table.AddRow([Container(*welcome)])
+    table.AddRow([apply(Container, welcome)])
     table.AddCellInfo(max(table.GetCurrentRowIndex(), 0), 0, colspan=2)
 
     if advertised:
@@ -227,16 +263,16 @@ def list_listinfo(mlist, lang):
                     you are not a bot:"""
                 )
             replacements['<mm-captcha-ui>'] = (
-                """<tr><td BGCOLOR="#dddddd">}{s<br>}{s</td><td>}{s</td></tr>"""
-                }{ (pre_question, captcha_question, captcha_box))
+                """<tr><td BGCOLOR="#dddddd">%s<br>%s</td><td>%s</td></tr>"""
+                % (pre_question, captcha_question, captcha_box))
         else:
             # just to have something to include in the hash below
             captcha_idx = ''
         # fill form
         replacements['<mm-subscribe-form-start>'] += (
                 '<input type="hidden" name="sub_form_token"'
-                ' value="}{s:}{s:}{s">\n'
-                }{ (now, captcha_idx,
+                ' value="%s:%s:%s">\n'
+                % (now, captcha_idx,
                           Utils.sha_new(mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
                           now + ":" +
                           captcha_idx + ":" +
@@ -268,12 +304,12 @@ def list_listinfo(mlist, lang):
         noscript = _('This form requires JavaScript.')
         replacements['<mm-recaptcha-ui>'] = (
             """<tr><td>&nbsp;</td><td>
-            <noscript>}{s</noscript>
-            <script src="https://www.google.com/recaptcha/api.js?hl=}{s">
+            <noscript>%s</noscript>
+            <script src="https://www.google.com/recaptcha/api.js?hl=%s">
             </script>
-            <div class="g-recaptcha" data-sitekey="}{s"></div>
+            <div class="g-recaptcha" data-sitekey="%s"></div>
             </td></tr>"""
-            }{ (noscript, lang, mm_cfg.RECAPTCHA_SITE_KEY))
+            % (noscript, lang, mm_cfg.RECAPTCHA_SITE_KEY))
     else:
         replacements['<mm-recaptcha-ui>'] = ''
 
@@ -284,4 +320,3 @@ def list_listinfo(mlist, lang):
 
 if __name__ == "__main__":
     main()
-}

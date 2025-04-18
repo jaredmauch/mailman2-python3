@@ -20,7 +20,7 @@ X-Mailer: <SMTP32 vXXXXXX>
 
 What the heck is this thing?  Here's a recent host:
 
-{ telnet 207.51.255.218 smtp
+% telnet 207.51.255.218 smtp
 Trying 207.51.255.218...
 Connected to 207.51.255.218.
 Escape character is '^]'.
@@ -58,4 +58,3 @@ def process(msg):
         if mo:
             addrs[mo.group('addr')] = 1
     return addrs.keys()
-}

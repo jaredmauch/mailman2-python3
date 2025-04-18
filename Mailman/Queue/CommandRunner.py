@@ -23,13 +23,12 @@
 # -owner.
 
 
-
 # BAW: get rid of this when we Python 2.2 is a minimum requirement.
 from __future__ import nested_scopes
 
 import re
 import sys
-from typing import List, Tuple, Dict, Set, UnicodeType
+from types import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -46,14 +45,26 @@ from email.Iterators import typed_subpart_iterator
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 NL = '\n'
 CONTINUE = 0
 STOP = 1
 BADCMD = 2
 BADSUBJ = 3
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
 
-
+
 class Results:
     def __init__(self, mlist, msg, msgdata):
         self.mlist = mlist
@@ -70,7 +81,7 @@ class Results:
         self.subjcmdretried = 0
         self.respond = True
         # Extract the subject header and do RFC 2047 decoding.  Note that
-        # Python 2.1's str() builtin doesn't call obj.__unicode__().
+        # Python 2.1's unicode() builtin doesn't call obj.__unicode__().
         subj = msg.get('subject', '')
         try:
             subj = make_header(decode_header(subj)).__unicode__()
@@ -95,7 +106,7 @@ class Results:
             return
         body = part.get_payload(decode=True)
         if (part.get_content_charset(None)):
-            body = str(body, part.get_content_charset(),
+            body = unicode(body, part.get_content_charset(),
                            errors='replace').encode(
                            Utils.GetCharSet(self.msgdata['lang']),
                            errors='replace')
@@ -236,7 +247,6 @@ To obtain instructions, send a message containing just the word "help".
         msg.send(self.mlist)
 
 
-
 class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
 
@@ -246,8 +256,8 @@ class CommandRunner(Runner):
         # it to prevent replybot response storms.
         precedence = msg.get('precedence', '').lower()
         ack = msg.get('x-ack', '').lower()
-        if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
-            syslog('vette', 'Precedence: {s message discarded by: }{s',
+        if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
+            syslog('vette', 'Precedence: %s message discarded by: %s',
                    precedence, mlist.GetRequestEmail())
             return False
         # Do replybot for commands
@@ -284,11 +294,10 @@ class CommandRunner(Runner):
                     ret = res.do_command('confirm', (mo.group('cookie'),))
             if ret == BADCMD and mm_cfg.DISCARD_MESSAGE_WITH_NO_COMMAND:
                 syslog('vette',
-                       'No command, message discarded, msgid: }{s',
+                       'No command, message discarded, msgid: %s',
                        msg.get('message-id', 'n/a'))
             else:
                 res.send_response()
                 mlist.Save()
         finally:
             mlist.Unlock()
-}

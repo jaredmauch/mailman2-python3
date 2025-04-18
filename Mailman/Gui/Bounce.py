@@ -26,7 +26,7 @@ class Bounce(GUIBase):
         return 'bounce', _('Bounce processing')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category != 'bounce':
+        if category <> 'bounce':
             return None
         return [
             _("""These policies control the automatic bounce processing system
@@ -191,8 +191,8 @@ class Bounce(GUIBase):
                 val = int(val)
         except ValueError:
             doc.addError(
-                _("""Bad value for <a href="?VARHELP=bounce/{(property)s"
-                >}{(property)s</a>: }{(val)s"""),
+                _("""Bad value for <a href="?VARHELP=bounce/%(property)s"
+                >%(property)s</a>: %(val)s"""),
                 tag = _('Error: '))
             return
         GUIBase._setValue(self, mlist, property, val, doc)
@@ -202,4 +202,3 @@ class Bounce(GUIBase):
                            'bounce_you_are_disabled_warnings_interval'):
             return None
         return int(getattr(mlist, varname) / days(1))
-}

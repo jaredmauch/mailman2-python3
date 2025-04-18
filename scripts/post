@@ -27,10 +27,6 @@ Stdin is the mail message, and argv[1] is the name of the target mailing list.
 """
 
 import sys
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import paths
 from Mailman import mm_cfg
@@ -42,6 +38,7 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr("error", "post")
 
 
+
 def main():
     # TBD: If you've configured your list or aliases so poorly as to get
     # either of these first two errors, there's little that can be done to
@@ -50,11 +47,11 @@ def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print(_('post script got no listname.'), file=sys.stderr)
+        print >> sys.stderr, _('post script got no listname.')
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print(_('post script, list not found: %(listname)s') % {'listname': listname}, file=sys.stderr)
+        print >> sys.stderr, _('post script, list not found: %(listname)s')
         sys.exit(1)
     # Immediately queue the message for the incoming qrunner to process.  The
     # advantage to this approach is that messages should never get lost --
@@ -67,5 +64,6 @@ def main():
                 tolist=1, _plaintext=1)
 
 
+
 if __name__ == '__main__':
     main()

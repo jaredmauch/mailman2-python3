@@ -45,15 +45,10 @@ Python pickle.  In either case, if you want to override the default assumption
 -- or if the file ends in neither suffix -- use the -p or -m flags.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import getopt
 import pprint
-import pickle
+import cPickle
 import marshal
 from types import StringType
 
@@ -64,22 +59,31 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__) % globals(), file=fd)
+    print >> fd, C_(__doc__) % globals()
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'o:',
-                                 ['output=', 'help'])
-    except getopt.error as msg:
+        opts, args = getopt.getopt(sys.argv[1:], 'mphn',
+                                   ['marshal', 'pickle', 'help', 'noprint'])
+    except getopt.error, msg:
         usage(1, msg)
 
     # Options.
@@ -119,33 +123,34 @@ def main():
         load = marshal.load
         typename = 'marshal'
     else:
-        load = pickle.load
+        load = cPickle.load
         typename = 'pickle'
-    with open(filename, 'rb') as fp:
-        m = []
-        try:
-            cnt = 1
-            if doprint:
-                print(C_('[----- start %(typename)s file -----]'))
-            while True:
-                try:
-                    obj = load(fp)
-                except EOFError:
-                    if doprint:
-                        print(C_('[----- end %(typename)s file -----]'))
-                    break
+    fp = open(filename)
+    m = []
+    try:
+        cnt = 1
+        if doprint:
+            print C_('[----- start %(typename)s file -----]')
+        while True:
+            try:
+                obj = load(fp)
+            except EOFError:
                 if doprint:
-                    print(C_('<----- start object %(cnt)s ----->'))
-                    if isinstance(obj, str):
-                        print(obj)
-                    else:
-                        pp.pprint(obj)
-                cnt += 1
-                m.append(obj)
-        finally:
-            fp.close()
+                    print C_('[----- end %(typename)s file -----]')
+                break
+            if doprint:
+                print C_('<----- start object %(cnt)s ----->')
+                if isinstance(obj, StringType):
+                    print obj
+                else:
+                    pp.pprint(obj)
+            cnt += 1
+            m.append(obj)
+    finally:
+        fp.close()
     return m
 
 
+
 if __name__ == '__main__':
     msg = main()

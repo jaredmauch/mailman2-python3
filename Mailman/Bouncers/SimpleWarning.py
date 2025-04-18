@@ -83,7 +83,7 @@ def process(msg):
                 if mo:
                     addr = mo.group('addr')
                     if addr:
-                        addrs[addr.strip('!=')] = 1
+                        addrs[addr.strip('<>')] = 1
                 elif ecre.search(line):
                     break
         if addrs:

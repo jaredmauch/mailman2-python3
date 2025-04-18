@@ -17,19 +17,12 @@
 
 """Handle delivery bounces."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
-import os
 import time
-import getopt
-from typing import List, Tuple, Dict, Set, Optional, Union, Any
+from types import StringType
 
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
+from email.MIMEText import MIMEText
+from email.MIMEMessage import MIMEMessage
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -39,9 +32,6 @@ from Mailman import Pending
 from Mailman.Errors import MMUnknownListError
 from Mailman.Logging.Syslog import syslog
 from Mailman import i18n
-from Mailman import MailList
-from Mailman import Errors
-from Mailman.i18n import C_
 
 EMPTYSTRING = ''
 
@@ -50,17 +40,7 @@ EMPTYSTRING = ''
 # for time.mktime().
 ZEROHOUR_PLUSONEDAY = time.localtime(mm_cfg.days(1))[:3]
 
-def D_(s: str) -> str:
-    """Return the string unchanged for translation.
-    
-    Args:
-        s: String to return
-        
-    Returns:
-        The input string unchanged
-    """
-    return s
-
+def D_(s): return s
 _ = D_
 
 REASONS = {MemberAdaptor.BYBOUNCE: _('due to excessive bounces'),
@@ -72,121 +52,49 @@ REASONS = {MemberAdaptor.BYBOUNCE: _('due to excessive bounces'),
 _ = i18n._
 
 
-def usage(code: int, msg: str = '') -> None:
-    """Print usage information and exit.
-    
-    Args:
-        code: Exit code to use
-        msg: Optional message to print before exiting
-    """
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
-
-
+
 class _BounceInfo:
-    """Internal class for tracking bounce information for a member.
-    
-    Attributes:
-        member: Email address of the member
-        score: Current bounce score
-        date: Date of last bounce
-        noticesleft: Number of notices remaining to send
-        cookie: Optional confirmation cookie
-        lastnotice: Date of last notice sent
-    """
-
-    def __init__(self, member: str, score: float, date: Tuple[int, int, int],
-                 noticesleft: int) -> None:
-        """Initialize bounce info for a member.
-        
-        Args:
-            member: Email address of the member
-            score: Initial bounce score
-            date: Date of first bounce
-            noticesleft: Number of notices to send
-        """
+    def __init__(self, member, score, date, noticesleft):
         self.member = member
         self.cookie = None
         self.reset(score, date, noticesleft)
 
-    def reset(self, score: float, date: Tuple[int, int, int],
-              noticesleft: int) -> None:
-        """Reset bounce information.
-        
-        Args:
-            score: New bounce score
-            date: New bounce date
-            noticesleft: New number of notices
-        """
+    def reset(self, score, date, noticesleft):
         self.score = score
         self.date = date
         self.noticesleft = noticesleft
         self.lastnotice = ZEROHOUR_PLUSONEDAY
 
-    def __repr__(self) -> str:
-        """Return detailed string representation for debugging."""
-        return f"""\
-<bounce info for member {self.member}
-        current score: {self.score}
-        last bounce date: {self.date}
-        email notices left: {self.noticesleft}
-        last notice date: {self.lastnotice}
-        confirmation cookie: {self.cookie}
-        >"""
-
-    def __str__(self) -> str:
-        """Return string representation."""
-        return f"""<BounceInfo
-        member: {self.member}
-        score: {self.score}
-        date: {self.date}
-        noticesleft: {self.noticesleft}
-        >"""
+    def __repr__(self):
+        # For debugging
+        return """\
+<bounce info for member %(member)s
+        current score: %(score)s
+        last bounce date: %(date)s
+        email notices left: %(noticesleft)s
+        last notice date: %(lastnotice)s
+        confirmation cookie: %(cookie)s
+        >""" % self.__dict__
 
 
+
 class Bouncer:
-    """Mixin class for handling delivery bounces.
-    
-    This class provides functionality for tracking and processing
-    delivery bounces, including disabling members who bounce too often.
-    
-    Attributes:
-        bounce_processing: Whether bounce processing is enabled
-        bounce_score_threshold: Score at which to disable member
-        bounce_info_stale_after: Days until bounce info is considered stale
-        bounce_you_are_disabled_warnings: Number of warnings to send
-        bounce_you_are_disabled_warnings_interval: Days between warnings
-        bounce_unrecognized_goes_to_list_owner: Whether to forward unrecognized bounces
-        bounce_notify_owner_on_bounce_increment: Whether to notify on score increase
-        bounce_notify_owner_on_disable: Whether to notify on member disable
-        bounce_notify_owner_on_removal: Whether to notify on member removal
-        bounce_info: Dictionary of member bounce information
-        delivery_status: Dictionary of member delivery status
-    """
-
-    def InitVars(self) -> None:
-        """Initialize the bouncer configuration variables."""
+    def InitVars(self):
         # Configurable...
-        self.bounce_processing: bool = mm_cfg.DEFAULT_BOUNCE_PROCESSING
-        self.bounce_score_threshold: float = mm_cfg.DEFAULT_BOUNCE_SCORE_THRESHOLD
-        self.bounce_info_stale_after: int = mm_cfg.DEFAULT_BOUNCE_INFO_STALE_AFTER
-        self.bounce_you_are_disabled_warnings: int = \
+        self.bounce_processing = mm_cfg.DEFAULT_BOUNCE_PROCESSING
+        self.bounce_score_threshold = mm_cfg.DEFAULT_BOUNCE_SCORE_THRESHOLD
+        self.bounce_info_stale_after = mm_cfg.DEFAULT_BOUNCE_INFO_STALE_AFTER
+        self.bounce_you_are_disabled_warnings = \
             mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS
-        self.bounce_you_are_disabled_warnings_interval: int = \
+        self.bounce_you_are_disabled_warnings_interval = \
             mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL
-        self.bounce_unrecognized_goes_to_list_owner: bool = \
+        self.bounce_unrecognized_goes_to_list_owner = \
             mm_cfg.DEFAULT_BOUNCE_UNRECOGNIZED_GOES_TO_LIST_OWNER
-        self.bounce_notify_owner_on_bounce_increment: bool = \
+        self.bounce_notify_owner_on_bounce_increment = \
             mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_BOUNCE_INCREMENT
-        self.bounce_notify_owner_on_disable: bool = \
+        self.bounce_notify_owner_on_disable = \
             mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_DISABLE
-        self.bounce_notify_owner_on_removal: bool = \
+        self.bounce_notify_owner_on_removal = \
             mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_REMOVAL
         # Not configurable...
         #
@@ -194,21 +102,22 @@ class Bouncer:
         # member address, and the value is an object containing the bounce
         # score, the date of the last received bounce, and a count of the
         # notifications left to send.
-        self.bounce_info: Dict[str, _BounceInfo] = {}
+        self.bounce_info = {}
         # New style delivery status
-        self.delivery_status: Dict[str, int] = {}
+        self.delivery_status = {}
 
     def registerBounce(self, member, msg, weight=1.0, day=None, sibling=False):
         if not self.isMember(member):
             # check regular_include_lists, only one level
             if not self.regular_include_lists or sibling:
                 return
+            from Mailman.MailList import MailList
             for listaddr in self.regular_include_lists:
                 listname, hostname = listaddr.split('@')
                 listname = listname.lower()
                 if listname == self.internal_name():
                     syslog('error',
-                           'Bouncer: }{s: Include list self reference',
+                           'Bouncer: %s: Include list self reference',
                            listname)
                     continue
                 try:
@@ -217,7 +126,7 @@ class Bouncer:
                         siblist = MailList(listname)
                     except MMUnknownListError:
                         syslog('error',
-                               'Bouncer: }{s: Include list "}{s" not found.',
+                               'Bouncer: %s: Include list "%s" not found.',
                                self.real_name,
                                listname)
                         continue
@@ -238,22 +147,22 @@ class Bouncer:
             info = _BounceInfo(member, weight, day,
                                self.bounce_you_are_disabled_warnings)
             # setBounceInfo is now called below after check phase.
-            syslog('bounce', '}{s: }{s bounce score: }{s', self.internal_name(),
+            syslog('bounce', '%s: %s bounce score: %s', self.internal_name(),
                    member, info.score)
             # Continue to the check phase below
         elif self.getDeliveryStatus(member) != MemberAdaptor.ENABLED:
             # The user is already disabled, so we can just ignore subsequent
             # bounces.  These are likely due to residual messages that were
             # sent before disabling the member, but took a while to bounce.
-            syslog('bounce', '}{s: }{s residual bounce received',
+            syslog('bounce', '%s: %s residual bounce received',
                    self.internal_name(), member)
             return
         elif info.date == day:
             # We've already scored any bounces for this day, so ignore it.
             first_today = False
-            syslog('bounce', '}{s: }{s already scored a bounce for date }{s',
+            syslog('bounce', '%s: %s already scored a bounce for date %s',
                    self.internal_name(), member,
-                   time.strftime('}{d-}{b-}{Y', day + (0,0,0,0,1,0)))
+                   time.strftime('%d-%b-%Y', day + (0,0,0,0,1,0)))
             # Continue to check phase below
         else:
             # See if this member's bounce information is stale.
@@ -262,14 +171,14 @@ class Bouncer:
             if lastbounce + self.bounce_info_stale_after < now:
                 # Information is stale, so simply reset it
                 info.reset(weight, day, self.bounce_you_are_disabled_warnings)
-                syslog('bounce', '}{s: }{s has stale bounce info, resetting',
+                syslog('bounce', '%s: %s has stale bounce info, resetting',
                        self.internal_name(), member)
             else:
                 # Nope, the information isn't stale, so add to the bounce
                 # score and take any necessary action.
                 info.score += weight
                 info.date = day
-                syslog('bounce', '}{s: }{s current bounce score: }{s',
+                syslog('bounce', '%s: %s current bounce score: %s',
                        self.internal_name(), member, info.score)
             # Continue to the check phase below
         #
@@ -278,7 +187,7 @@ class Bouncer:
         if info.score >= self.bounce_score_threshold:
             if mm_cfg.VERP_PROBES:
                 syslog('bounce',
-                   'sending }{s list probe to: }{s (score }{s >= }{s)',
+                   'sending %s list probe to: %s (score %s >= %s)',
                    self.internal_name(), member, info.score,
                    self.bounce_score_threshold)
                 self.sendProbe(member, msg)
@@ -306,10 +215,10 @@ class Bouncer:
         self.setBounceInfo(member, info)
         # Disable them
         if mm_cfg.VERP_PROBES:
-            syslog('bounce', '}{s: }{s disabling due to probe bounce received',
+            syslog('bounce', '%s: %s disabling due to probe bounce received',
                    self.internal_name(), member)
         else:
-            syslog('bounce', '}{s: }{s disabling due to bounce score }{s >= }{s',
+            syslog('bounce', '%s: %s disabling due to bounce score %s >= %s',
                    self.internal_name(), member,
                    info.score, self.bounce_score_threshold)
         self.setDeliveryStatus(member, MemberAdaptor.BYBOUNCE)
@@ -321,7 +230,7 @@ class Bouncer:
         # BAW: This is a bit kludgey, but we're not providing as much
         # information in the new admin bounce notices as we used to (some of
         # it was of dubious value).  However, we'll provide empty, strange, or
-        # meaningless strings for the unused }{()s fields so that the language
+        # meaningless strings for the unused %()s fields so that the language
         # translators don't have to provide new templates.
         if did is None:
             did = _('disabled')
@@ -340,7 +249,7 @@ class Bouncer:
         umsg = Message.UserNotification(self.GetOwnerEmail(),
                                         siteowner, subject,
                                         lang=self.preferred_language)
-        # BAW: Be sure you set the type before trying to attach, or yoll get
+        # BAW: Be sure you set the type before trying to attach, or you'll get
         # a MultipartConversionError.
         umsg.set_type('multipart/mixed')
         umsg.attach(
@@ -369,9 +278,9 @@ class Bouncer:
             # returned data.
             self.pend_confirm(info.cookie)
             if reason == MemberAdaptor.BYBOUNCE:
-                syslog('bounce', '}{s: }{s deleted after exhausting notices',
+                syslog('bounce', '%s: %s deleted after exhausting notices',
                        self.internal_name(), member)
-            syslog('subscribe', '}{s: }{s auto-unsubscribed [reason: }{s]',
+            syslog('subscribe', '%s: %s auto-unsubscribed [reason: %s]',
                    self.internal_name(), member,
                    {MemberAdaptor.BYBOUNCE: 'BYBOUNCE',
                     MemberAdaptor.BYUSER: 'BYUSER',
@@ -380,7 +289,7 @@ class Bouncer:
                 reason, 'invalid value'))
             return
         # Send the next notification
-        confirmurl = '}{s/}{s' }{ (self.GetScriptURL('confirm', absolute=1),
+        confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
                                 info.cookie)
         optionsurl = self.GetOptionsURL(member, absolute=1)
         reqaddr = self.GetRequestEmail()
@@ -392,9 +301,9 @@ class Bouncer:
             txtreason = _(txtreason)
         # Give a little bit more detail on bounce disables
         if reason == MemberAdaptor.BYBOUNCE:
-            date = time.strftime('}{d-}{b-}{Y',
+            date = time.strftime('%d-%b-%Y',
                                  time.localtime(Utils.midnight(info.date)))
-            extra = _(' The last bounce received from you was dated }{(date)s')
+            extra = _(' The last bounce received from you was dated %(date)s')
             txtreason += extra
         text = Utils.maketext(
             'disabled.txt',
@@ -419,33 +328,27 @@ class Bouncer:
         # the list, we need to tell it to update
         self.setBounceInfo(member, info)
 
-    def BounceMessage(self, msg: Message.Message, msgdata: Dict[str, Any],
-                     e: Optional[Exception] = None) -> None:
-        """Bounce a message back to the sender with an error message.
-        
-        Args:
-            msg: The message to bounce
-            msgdata: Additional message data
-            e: Optional exception containing bounce details
-        """
+    def BounceMessage(self, msg, msgdata, e=None):
+        # Bounce a message back to the sender, with an error message if
+        # provided in the exception argument.
         sender = msg.get_sender()
         subject = msg.get('subject', _('(no subject)'))
         subject = Utils.oneline(subject,
-                              Utils.GetCharSet(self.preferred_language))
+                                Utils.GetCharSet(self.preferred_language))
         if e is None:
             notice = _('[No bounce details are available]')
         else:
             notice = _(e.notice())
         # Currently we always craft bounces as MIME messages.
         bmsg = Message.UserNotification(msg.get_sender(),
-                                      self.GetOwnerEmail(),
-                                      subject,
-                                      lang=self.preferred_language)
+                                        self.GetOwnerEmail(),
+                                        subject,
+                                        lang=self.preferred_language)
         # BAW: Be sure you set the type before trying to attach, or you'll get
         # a MultipartConversionError.
         bmsg.set_type('multipart/mixed')
         txt = MIMEText(notice,
-                      _charset=Utils.GetCharSet(self.preferred_language))
+                       _charset=Utils.GetCharSet(self.preferred_language))
         bmsg.attach(txt)
         bmsg.attach(MIMEMessage(msg))
         bmsg.send(self)

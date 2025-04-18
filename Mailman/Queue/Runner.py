@@ -33,6 +33,13 @@ from Mailman.Queue.Switchboard import Switchboard
 
 import email.Errors
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 
 
 class Runner:
@@ -49,7 +56,7 @@ class Runner:
         self._stop = False
 
     def __repr__(self):
-        return '<{s at }{s>' }{ (self.__class__.__name__, id(self))
+        return '<%s at %s>' % (self.__class__.__name__, id(self))
 
     def stop(self):
         self._stop = True
@@ -91,7 +98,7 @@ class Runner:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
-            except Exception as e:
+            except Exception, e:
                 # This used to just catch email.Errors.MessageParseError,
                 # but other problems can occur in message parsing, e.g.
                 # ValueError, and exceptions can occur in unpickling too.
@@ -100,19 +107,19 @@ class Runner:
                 self._log(e)
                 if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
                     syslog('error',
-                           'Skipping and preserving unparseable message: }{s',
+                           'Skipping and preserving unparseable message: %s',
                            filebase)
                     preserve = True
                 else:
                     syslog('error',
-                           'Ignoring unparseable message: }{s', filebase)
+                           'Ignoring unparseable message: %s', filebase)
                     preserve = False
                 self._switchboard.finish(filebase, preserve=preserve)
                 continue
             try:
                 self._onefile(msg, msgdata)
                 self._switchboard.finish(filebase)
-            except Exception as e:
+            except Exception, e:
                 # All runners that implement _dispose() must guarantee that
                 # exceptions are caught and dealt with properly.  Still, there
                 # may be a bug in the infrastructure, and we do not want those
@@ -127,15 +134,15 @@ class Runner:
                 # message.  Try to be graceful.
                 try:
                     new_filebase = self._shunt.enqueue(msg, msgdata)
-                    syslog('error', 'SHUNTING: }{s', new_filebase)
+                    syslog('error', 'SHUNTING: %s', new_filebase)
                     self._switchboard.finish(filebase)
-                except Exception as e:
+                except Exception, e:
                     # The message wasn't successfully shunted.  Log the
                     # exception and try to preserve the original queue entry
                     # for possible analysis.
                     self._log(e)
                     syslog('error',
-                           'SHUNTING FAILED, preserving original entry: }{s',
+                           'SHUNTING FAILED, preserving original entry: %s',
                            filebase)
                     self._switchboard.finish(filebase, preserve=True)
             # Other work we want to do each time through the loop
@@ -159,7 +166,7 @@ class Runner:
         mlist = self._open_list(listname)
         if not mlist:
             syslog('error',
-                   'Dequeuing message destined for missing list: }{s',
+                   'Dequeuing message destined for missing list: %s',
                    listname)
             self._shunt.enqueue(msg, msgdata)
             return
@@ -201,12 +208,12 @@ class Runner:
         try:
             mlist = MailList.MailList(listname, lock=False)
         except Errors.MMListError, e:
-            syslog('error', 'error opening list: }{s\n}{s', listname, e)
+            syslog('error', 'error opening list: %s\n%s', listname, e)
             return None
         return mlist
 
     def _log(self, exc):
-        syslog('error', 'Uncaught runner exception: }{s', exc)
+        syslog('error', 'Uncaught runner exception: %s', exc)
         s = StringIO()
         traceback.print_exc(file=s)
         syslog('error', s.getvalue())
@@ -268,4 +275,3 @@ class Runner:
         You could, for example, implement a throttling algorithm here.
         """
         return self._stop
-}

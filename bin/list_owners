@@ -39,11 +39,6 @@ Options:
         all the lists will be displayed.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import getopt
 
@@ -54,22 +49,31 @@ from Mailman.i18n import C_
 
 PROGRAM = sys.argv[0]
 
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'wmh',
-                                 ['with-listnames', 'moderators', 'help'])
-    except getopt.error as msg:
+                                   ['with-listnames', 'moderators', 'help'])
+    except getopt.error, msg:
         usage(1, msg)
 
     withnames = moderators = False
@@ -96,21 +100,22 @@ def main():
             unique = {}
             for addr in bylist[listname]:
                 unique[addr] = 1
-            keys = list(unique.keys())
+            keys = unique.keys()
             keys.sort()
-            print(listname)
+            print listname
             for k in keys:
-                print('\t', k)
+                print '\t', k
     else:
         unique = {}
         for listname in listnames:
             for addr in bylist[listname]:
                 unique[addr] = 1
-        keys = list(unique.keys())
+        keys = unique.keys()
         keys.sort()
         for k in keys:
-            print(k)
+            print k
 
 
+
 if __name__ == '__main__':
     main()

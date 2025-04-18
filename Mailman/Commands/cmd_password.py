@@ -20,8 +20,8 @@
         your current password.  With arguments <oldpassword> and <newpassword>
         you can change your password.
 
-        If yore posting from an address other than your membership address,
-        specify your membership address with `address=<address> (no brackets
+        If you're posting from an address other than your membership address,
+        specify your membership address with `address=<address>' (no brackets
         around the email address, and no quotes!).  Note that in this case the
         response is always sent to the subscribed address.
 """
@@ -48,13 +48,13 @@ def process(res, args):
         realname, address = parseaddr(res.msg['from'])
         if mlist.isMember(address):
             password = mlist.getMemberPassword(address)
-            res.results.append(_('Your password is: {(password)s'))
+            res.results.append(_('Your password is: %(password)s'))
             # Prohibit multiple password retrievals.
             return STOP
         else:
             listname = mlist.real_name
             res.results.append(
-                _('You are not a member of the }{(listname)s mailing list'))
+                _('You are not a member of the %(listname)s mailing list'))
             return STOP
     elif len(args) == 1 and args[0].startswith('address='):
         # They want their password, but they're posting from a different
@@ -63,13 +63,13 @@ def process(res, args):
         res.returnaddr = address
         if mlist.isMember(address):
             password = mlist.getMemberPassword(address)
-            res.results.append(_('Your password is: }{(password)s'))
+            res.results.append(_('Your password is: %(password)s'))
             # Prohibit multiple password retrievals.
             return STOP
         else:
             listname = mlist.real_name
             res.results.append(
-                _('You are not a member of the }{(listname)s mailing list'))
+                _('You are not a member of the %(listname)s mailing list'))
             return STOP
     elif len(args) == 2:
         # They are changing their password
@@ -92,7 +92,7 @@ current password, then try again."""))
         else:
             listname = mlist.real_name
             res.results.append(
-                _('You are not a member of the }{(listname)s mailing list'))
+                _('You are not a member of the %(listname)s mailing list'))
             return STOP
     elif len(args) == 3 and args[2].startswith('address='):
         # They want to change their password, and they're sending this from a
@@ -118,6 +118,5 @@ current password, then try again."""))
         else:
             listname = mlist.real_name
             res.results.append(
-                _('You are not a member of the }{(listname)s mailing list'))
+                _('You are not a member of the %(listname)s mailing list'))
             return STOP
-}

@@ -93,9 +93,9 @@ def testfile(dbfile):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'v',
-                                 ['verbose', 'help'])
-    except getopt.error as msg:
+        opts, args = getopt.getopt(sys.argv[1:], 'ahv',
+                                   ['all', 'verbose', 'help'])
+    except getopt.error, msg:
         usage(1, msg)
 
     verbose = 0

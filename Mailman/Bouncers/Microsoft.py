@@ -18,12 +18,11 @@
 
 import re
 from cStringIO import StringIO
-from typing import List, Tuple, Dict, Set
+from types import ListType
 
 scre = re.compile(r'transcript of session follows', re.IGNORECASE)
 
 
-
 def process(msg):
     if msg.get_content_type() != 'multipart/mixed':
         return None

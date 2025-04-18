@@ -22,16 +22,19 @@ has already received a copy, we either drop the message, add a duplicate
 warning header, or pass it through, depending on the user's preferences.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
-from email.utils import getaddresses, formataddr
+from email.Utils import getaddresses, formataddr
 from Mailman import mm_cfg
 from Mailman.Handlers.CookHeaders import change_header
 
 COMMASPACE = ', '
+
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
+
 
 def process(mlist, msg, msgdata):
     recips = msgdata['recips']
@@ -70,7 +73,7 @@ def process(mlist, msg, msgdata):
     newrecips = []
     for r in recips:
         # If this recipient is explicitly addressed...
-        if r.lower() in explicit_recips:
+        if explicit_recips.has_key(r.lower()):
             send_duplicate = True
             # If the member wants to receive duplicates, or if the recipient
             # is not a member at all, just flag the X-Mailman-Duplicate: yes
@@ -84,7 +87,7 @@ def process(mlist, msg, msgdata):
             if send_duplicate:
                 msgdata.setdefault('add-dup-header', {})[r] = True
                 newrecips.append(r)
-            elif r.lower() in ccaddrs:
+            elif ccaddrs.has_key(r.lower()):
                 del ccaddrs[r.lower()]
                 munge_cc = True
         else:

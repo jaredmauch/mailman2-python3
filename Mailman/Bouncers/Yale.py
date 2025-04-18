@@ -32,7 +32,6 @@ ecre = re.compile(r'Error Detail', re.IGNORECASE)
 acre = re.compile(r'\s+(?P<addr>\S+)\s+')
 
 
-
 def process(msg):
     if msg.is_multipart():
         return None
@@ -47,7 +46,7 @@ def process(msg):
         return None
     parts = domain.split('.')
     parts.reverse()
-    for part1, part2 in zip(parts, ('ed, yale')):
+    for part1, part2 in zip(parts, ('edu', 'yale')):
         if part1 != part2:
             return None
     # Okay, we've established that the bounce came from the mailer-daemon at
@@ -74,6 +73,6 @@ def process(msg):
     # @cs.yale.edu.  Add them both.
     addrs = []
     for name in names.keys():
-        addrs.append(name + '@yale.ed)
-        addrs.append(name + @cs.yale.edu')
+        addrs.append(name + '@yale.edu')
+        addrs.append(name + '@cs.yale.edu')
     return addrs

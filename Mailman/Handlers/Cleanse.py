@@ -17,14 +17,9 @@
 
 """Cleanse certain headers from all messages."""
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import re
 
-from email.utils import formataddr, getaddresses, parseaddr
+from email.Utils import formataddr, getaddresses, parseaddr
 
 from Mailman import mm_cfg
 from Mailman.Utils import unique_message_id
@@ -37,9 +32,9 @@ for regexp in mm_cfg.ANONYMOUS_LIST_KEEP_HEADERS:
         if regexp.endswith(':'):
             regexp = regexp[:-1] + '$'
         cres.append(re.compile(regexp, re.IGNORECASE))
-    except re.error as e:
+    except re.error, e:
         syslog('error',
-               'ANONYMOUS_LIST_KEEP_HEADERS: ignored bad regexp {s: }{s',
+               'ANONYMOUS_LIST_KEEP_HEADERS: ignored bad regexp %s: %s',
                regexp, e)
 
 def remove_nonkeepers(msg):
@@ -52,8 +47,14 @@ def remove_nonkeepers(msg):
         if not keep:
             del msg[hdr]
 
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
 
 def process(mlist, msg, msgdata):
+    """Process a message for cleansing."""
     # Always remove this header from any outgoing messages.  Be sure to do
     # this after the information on the header is actually used, but before a
     # permanent record of the header is saved.
@@ -70,7 +71,7 @@ def process(mlist, msg, msgdata):
     msgdata['original_sender'] = msg.get_sender()
     # We remove other headers from anonymous lists
     if mlist.anonymous_list:
-        syslog('post', 'post to }{s from }{s anonymized',
+        syslog('post', 'post to %s from %s anonymized',
                mlist.internal_name(), msg.get('from'))
         del msg['from']
         del msg['reply-to']
@@ -88,7 +89,7 @@ def process(mlist, msg, msgdata):
         del msg['x-envelope-from']
         # And now remove all but the keepers.
         remove_nonkeepers(msg)
-        i18ndesc = str(uheader(mlist, mlist.description, 'From'))
+        i18ndesc = _encode_header(uheader(mlist, mlist.description, 'From'), 'utf-8')
         msg['From'] = formataddr((i18ndesc, mlist.GetListEmail()))
         msg['Reply-To'] = mlist.GetListEmail()
         uf = msg.get_unixfrom()
@@ -101,4 +102,3 @@ def process(mlist, msg, msgdata):
     del msg['x-confirm-reading-to']
     # Pegasus mail uses this one... sigh
     del msg['x-pmrqc']
-}

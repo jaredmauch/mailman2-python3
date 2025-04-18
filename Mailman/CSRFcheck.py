@@ -17,30 +17,16 @@
 
 """ Cross-Site Request Forgery checker """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import sys
-import os
 import time
-import getopt
-from typing import Dict, List, Optional, Union
-from urllib.parse import quote, unquote
+import urllib
+import marshal
+import binascii
 
-import paths
 from Mailman import mm_cfg
-from Mailman import Utils
-from Mailman import MailList
-from Mailman import Errors
-from Mailman import Message
-from Mailman.i18n import C_
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import UnobscureEmail, sha_new
 
-# Dictionary mapping user roles to their authentication levels
-keydict: Dict[str, str] = {
+keydict = {
     'user':      mm_cfg.AuthUser,
     'poster':    mm_cfg.AuthListPoster,
     'moderator': mm_cfg.AuthListModerator,
@@ -48,56 +34,69 @@ keydict: Dict[str, str] = {
     'site':      mm_cfg.AuthSiteAdmin,
 }
 
-def usage(code: int, msg: str = '') -> None:
-    """Print usage information and exit.
-    
-    Args:
-        code: Exit code to use
-        msg: Optional message to print before exiting
-    """
-    if code:
-        fd = sys.stderr
+
+def csrf_token(mlist, contexts, user=None):
+    """ create token by mailman cookie generation algorithm """
+
+    if user:
+        # Unmunge a munged email address.
+        user = UnobscureEmail(urllib.unquote(user))
+        
+    for context in contexts:
+        key, secret = mlist.AuthContextInfo(context, user)
+        if key and secret:
+            break
     else:
-        fd = sys.stdout
-    print(C_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+        return None     # not authenticated
+    issued = int(time.time())
+    mac = sha_new(secret + repr(issued)).hexdigest()
+    keymac = '%s:%s' % (key, mac)
+    token = binascii.hexlify(marshal.dumps((issued, keymac)))
+    return token
 
-def csrf_token(mlist: MailList.MailList, contexts: List[str], user: Optional[str] = None) -> str:
-    """Create a CSRF token using the mailman cookie generation algorithm.
-    
-    Args:
-        mlist: The mailing list object
-        contexts: List of contexts for the token
-        user: Optional user name to include in the token
-        
-    Returns:
-        A hexdigest of the SHA hash of the token
-    """
-    if user is None:
-        user = mlist.GetMemberName(user)
-    if user is None:
-        user = ''
-    # Create a token that includes the list name, user name, and contexts
-    token = '%s:%s:%s' % (mlist.internal_name(), user, ':'.join(contexts))
-    # Hash the token with the site password
-    return sha_new(token + mm_cfg.SITE_PASSWORD).hexdigest()
-
-def csrf_check(mlist: MailList.MailList, contexts: List[str], token: Optional[str], 
-               user: Optional[str] = None) -> bool:
-    """Check if the token is valid for the given list, contexts and user.
-    
-    Args:
-        mlist: The mailing list object
-        contexts: List of contexts to check against
-        token: The token to validate
-        user: Optional user name to check against
-        
-    Returns:
-        True if the token is valid, False otherwise
-    """
-    if token is None:
+def csrf_check(mlist, token, cgi_user=None):
+    """ check token by mailman cookie validation algorithm """
+    try:
+        issued, keymac = marshal.loads(binascii.unhexlify(token))
+        key, received_mac = keymac.split(':', 1)
+        if not key.startswith(mlist.internal_name() + '+'):
+            return False
+        key = key[len(mlist.internal_name()) + 1:]
+        if '+' in key:
+            key, user = key.split('+', 1)
+        else:
+            user = None
+        # Don't allow unprivileged tokens for admin or admindb.
+        if cgi_user == 'admin':
+            if key not in ('admin', 'site'):
+                syslog('mischief',
+                       'admin form submitted with CSRF token issued for %s.',
+                       key + '+' + user if user else key)
+                return False
+        elif cgi_user == 'admindb':
+            if key not in ('moderator', 'admin', 'site'):
+                syslog('mischief',
+                       'admindb form submitted with CSRF token issued for %s.',
+                       key + '+' + user if user else key)
+                return False
+        if user:
+            # This is for CVE-2021-42097.  The token is a user token because
+            # of the fix for CVE-2021-42096 but it must match the user for
+            # whom the options page is requested.
+            raw_user = UnobscureEmail(urllib.unquote(user))
+            if cgi_user and cgi_user.lower() != raw_user.lower():
+                syslog('mischief',
+                       'Form for user %s submitted with CSRF token '
+                       'issued for %s.',
+                       cgi_user, raw_user)
+                return False
+        context = keydict.get(key)
+        key, secret = mlist.AuthContextInfo(context, user)
+        assert key
+        mac = sha_new(secret + repr(issued)).hexdigest()
+        if (mac == received_mac 
+            and 0 < time.time() - issued < mm_cfg.FORM_LIFETIME):
+            return True
         return False
-    expected = csrf_token(mlist, contexts, user)
-    return token == expected
+    except (AssertionError, ValueError, TypeError):
+        return False

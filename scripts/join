@@ -25,10 +25,6 @@ Errors are redirected to logs/errors.
 """
 
 import sys
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import paths
 from Mailman import mm_cfg
@@ -40,15 +36,16 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr('error', 'join')
 
 
+
 def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print(_('join script got no listname.'), file=sys.stderr)
+        print >> sys.stderr, _('join script got no listname.')
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print(_('join script, list not found: %(listname)s') % {'listname': listname}, file=sys.stderr)
+        print >> sys.stderr, _('join script, list not found: %(listname)s')
         sys.exit(1)
     # Immediately queue the message for the bounce/cmd qrunner to process.
     # The advantage to this approach is that messages should never get lost --
@@ -59,5 +56,6 @@ def main():
     cmdq.enqueue(sys.stdin.read(), listname=listname, tojoin=1, _plaintext=1)
 
 
+
 if __name__ == '__main__':
     main()

@@ -1,10 +1,3 @@
-# -*- python -*-
-
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 # Copyright (C) 2001-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -36,6 +29,7 @@ except ImportError:
 from Mailman.Bouncers.BouncerAPI import Stop
 
 
+
 class BounceTest(unittest.TestCase):
     DATA = (
         # Postfix bounces
@@ -52,8 +46,8 @@ class BounceTest(unittest.TestCase):
         ('SimpleMatch', 'simple_01.txt', ['bbbsss@example.com']),
         ('SimpleMatch', 'simple_02.txt', ['userx@example.net']),
         ('SimpleMatch', 'simple_04.txt', ['userx@example.com']),
-        ('SimpleMatch', 'newmailru_01.txt', ['zzzzz@newmail.r]),
-        (SimpleMatch', 'hotpop_01.txt', ['userx@example.com']),
+        ('SimpleMatch', 'newmailru_01.txt', ['zzzzz@newmail.ru']),
+        ('SimpleMatch', 'hotpop_01.txt', ['userx@example.com']),
         ('SimpleMatch', 'microsoft_03.txt', ['userx@example.com']),
         ('SimpleMatch', 'simple_05.txt', ['userx@example.net']),
         ('SimpleMatch', 'simple_06.txt', ['userx@example.com']),
@@ -84,10 +78,10 @@ class BounceTest(unittest.TestCase):
         ('SimpleMatch', 'simple_33.txt', ['userx@example.com']),
         ('SimpleMatch', 'simple_34.txt', ['roland@example.com']),
         ('SimpleMatch', 'simple_36.txt', ['userx@example.com']),
-        ('SimpleMatch', 'simple_37.txt', ['user@example.ed]),
-        (SimpleMatch', 'simple_38.txt', ['userx@example.com']),
-        ('SimpleMatch', 'simple_39.txt', ['userx@example.r]),
-        (SimpleMatch', 'simple_41.txt', ['userx@example.com']),
+        ('SimpleMatch', 'simple_37.txt', ['user@example.edu']),
+        ('SimpleMatch', 'simple_38.txt', ['userx@example.com']),
+        ('SimpleMatch', 'simple_39.txt', ['userx@example.ru']),
+        ('SimpleMatch', 'simple_41.txt', ['userx@example.com']),
         ('SimpleMatch', 'simple_44.txt', ['user@example.com']),
         ('SimpleMatch', 'bounce_02.txt', ['userx@example.com']),
         ('SimpleMatch', 'bounce_03.txt', ['userx@example.uk']),
@@ -110,10 +104,10 @@ class BounceTest(unittest.TestCase):
         # Not a bounce but has confused groupwise
         ('GroupWise', 'groupwise_03.txt', []),
         # Yale's own
-        ('Yale', 'yale_01.txt', ['userx@cs.yale.ed,
-                                 userx@yale.ed]),
+        ('Yale', 'yale_01.txt', ['userx@cs.yale.edu',
+                                 'userx@yale.edu']),
         # DSN, i.e. RFC 1894
-        (DSN', 'dsn_01.txt', ['userx@example.com']),
+        ('DSN', 'dsn_01.txt', ['userx@example.com']),
         ('DSN', 'dsn_02.txt', ['zzzzz@example.uk']),
         ('DSN', 'dsn_03.txt', ['userx@example.be']),
         ('DSN', 'dsn_04.txt', ['userx@example.ch']),
@@ -147,8 +141,8 @@ class BounceTest(unittest.TestCase):
         ('Qmail', 'qmail_01.txt', ['userx@example.de']),
         ('Qmail', 'qmail_02.txt', ['userx@example.com']),
         ('Qmail', 'qmail_03.txt', ['userx@example.jp']),
-        ('Qmail', 'qmail_04.txt', ['userx@example.a]),
-        (Qmail', 'qmail_05.txt', ['userx@example.com']),
+        ('Qmail', 'qmail_04.txt', ['userx@example.au']),
+        ('Qmail', 'qmail_05.txt', ['userx@example.com']),
         ('Qmail', 'qmail_06.txt', ['ntl@xxx.com']),
         ('Qmail', 'qmail_07.txt', ['user@example.net']),
         ('Qmail', 'qmail_08.txt', []),
@@ -198,8 +192,11 @@ class BounceTest(unittest.TestCase):
         for modname, file, addrs in self.DATA:
             module = 'Mailman.Bouncers.' + modname
             __import__(module)
-            with open(os.path.join('tests', 'bounces', file)) as fp:
+            fp = open(os.path.join('tests', 'bounces', file))
+            try:
                 msg = email.message_from_file(fp)
+            finally:
+                fp.close()
             foundaddrs = sys.modules[module].process(msg)
             # Some modules return None instead of [] for failure
             if foundaddrs is None:
@@ -215,10 +212,13 @@ class BounceTest(unittest.TestCase):
     def test_SMTP32_failure(self):
         from Mailman.Bouncers import SMTP32
         # This file has no X-Mailer: header
-        with open(os.path.join('tests', 'bounces', 'postfix_01.txt')) as fp:
+        fp = open(os.path.join('tests', 'bounces', 'postfix_01.txt'))
+        try:
             msg = email.message_from_file(fp)
-        self.assertIsNone(msg['x-mailer'])
-        self.assertFalse(SMTP32.process(msg))
+        finally:
+            fp.close()
+        self.failIf(msg['x-mailer'] is not None)
+        self.failIf(SMTP32.process(msg))
 
     def test_caiwireless(self):
         from Mailman.Bouncers import Caiwireless
@@ -247,12 +247,13 @@ Content-Type: multipart/report; boundary=BOUNDARY
         self.assertEqual(None, Microsoft.process(msg))
 
 
+
 def suite():
-    from unittest import TestSuite, makeSuite
-    suite = TestSuite()
-    suite.addTest(makeSuite(BounceTest))
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(BounceTest))
     return suite
 
 
+
 if __name__ == '__main__':
     unittest.main(defaultTest='suite')

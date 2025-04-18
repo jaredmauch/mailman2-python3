@@ -119,11 +119,6 @@ and run this from the command line:
  %% bin/withlist -l -r changepw mylist somebody@somewhere.org foobar
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import os
 import sys
 import code
@@ -134,6 +129,13 @@ from Mailman import Errors
 from Mailman import MailList
 from Mailman import Utils
 from Mailman.i18n import C_
+
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
 
 # `m' will be the MailList object and `r' will be the results of the callable
 m = None
@@ -146,14 +148,15 @@ LOCK = False
 sys.path.append(os.path.dirname(sys.argv[0]))
 
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
@@ -169,27 +172,29 @@ def atexit():
     if m.Locked():
         if VERBOSE:
             listname = m.internal_name()
-            print(C_('Unlocking (but not saving) list: %(listname)s'), file=sys.stderr)
+            print >> sys.stderr, C_(
+                'Unlocking (but not saving) list: %(listname)s')
         m.Unlock()
     if VERBOSE:
-        print(C_('Finalizing'), file=sys.stderr)
+        print >> sys.stderr, C_('Finalizing')
     del m
 
 
+
 def do_list(listname, args, func):
     global m
     # first try to open mailing list
     if VERBOSE:
-        print(C_('Loading list %(listname)s'), file=sys.stderr)
+        print >> sys.stderr, C_('Loading list %(listname)s'),
         if LOCK:
-            print(C_('(locked)'), file=sys.stderr)
+            print >> sys.stderr, C_('(locked)')
         else:
-            print(C_('(unlocked)'), file=sys.stderr)
+            print >> sys.stderr, C_('(unlocked)')
 
     try:
         m = MailList.MailList(listname, lock=LOCK)
     except Errors.MMUnknownListError:
-        print(C_('Unknown list: %(listname)s'), file=sys.stderr)
+        print >> sys.stderr, C_('Unknown list: %(listname)s')
         m = None
 
     # try to import the module and run the callable
@@ -198,14 +203,16 @@ def do_list(listname, args, func):
     return None
 
 
+
 def main():
     global VERBOSE
     global LOCK
     global r
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hlr:qia',
-                                 ['help', 'lock', 'run=', 'quiet', 'interactive', 'all'])
-    except getopt.error as msg:
+        opts, args = getopt.getopt(
+            sys.argv[1:], 'hlr:qia',
+            ['help', 'lock', 'run=', 'quiet', 'interactive', 'all'])
+    except getopt.error, msg:
         usage(1, msg)
 
     run = None
@@ -230,7 +237,7 @@ def main():
         warning = C_('No list name supplied.')
         if interact:
             # Let them keep going
-            print(warning)
+            print warning
             dolist = False
         else:
             usage(1, warning)
@@ -256,11 +263,11 @@ def main():
             module = run[:i]
             callable = run[i+1:]
         if VERBOSE:
-            print(C_('Importing %(module)s...'), file=sys.stderr)
+            print >> sys.stderr, C_('Importing %(module)s...')
         __import__(module)
         mod = sys.modules[module]
         if VERBOSE:
-            print(C_('Running %(module)s.%(callable)s()...'), file=sys.stderr)
+            print >> sys.stderr, C_('Running %(module)s.%(callable)s()...')
         func = getattr(mod, callable)
 
     if all:
@@ -287,5 +294,6 @@ def main():
         code.InteractiveConsole(namespace).interact(ban)
 
 
+
 sys.exitfunc = atexit
 main()

@@ -56,11 +56,6 @@ displayed.
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import sys
 import re
 import getopt
@@ -75,17 +70,19 @@ AS_MEMBER = 0x01
 AS_OWNER = 0x02
 
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def scanlists(options):
     cres = []
     for r in options.regexps:
@@ -97,7 +94,7 @@ def scanlists(options):
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError:
-            print(C_('No such list: %(listname)s'))
+            print C_('No such list: %(listname)s')
             continue
         if options.owners:
             owners = mlist.owner
@@ -122,6 +119,7 @@ def scanlists(options):
     return matches
 
 
+
 class Options:
     listnames = Utils.list_names()
     owners = None
@@ -130,8 +128,9 @@ class Options:
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'l:x:wh',
-                                 ['listname=', 'exclude=', 'owners', 'help'])
-    except getopt.error as msg:
+                                   ['listname=', 'exclude=', 'owners',
+                                    'help'])
+    except getopt.error, msg:
         usage(1, msg)
 
     options = Options()
@@ -140,7 +139,7 @@ def main():
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage(0)
-        elif opt in ('-l', '--list'):
+        elif opt in ('-l', '--listname'):
             if not loptseen:
                 options.listnames = []
                 loptseen = 1
@@ -162,23 +161,24 @@ def main():
     options.regexps = args
 
     if not options.listnames:
-        print(C_('No lists to search'))
+        print C_('No lists to search')
         return
 
     matches = scanlists(options)
-    addrs = list(matches.keys())
+    addrs = matches.keys()
     addrs.sort()
     for k in addrs:
         hits = matches[k]
-        lists = list(hits.keys())
-        print(k, C_('found in:'))
+        lists = hits.keys()
+        print k, C_('found in:')
         for name in lists:
             aswhat = hits[name]
             if aswhat & AS_MEMBER:
-                print('    ', name)
+                print '    ', name
             if aswhat & AS_OWNER:
-                print('    ', name, C_('(as owner)'))
+                print '    ', name, C_('(as owner)')
 
 
+
 if __name__ == '__main__':
     main()

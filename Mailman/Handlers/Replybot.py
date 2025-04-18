@@ -26,7 +26,12 @@ from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 
 
-
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
+
 def process(mlist, msg, msgdata):
     # Normally, the replybot should get a shot at this message, but there are
     # some important short-circuits, mostly to suppress 'bot storms, at least
@@ -40,7 +45,7 @@ def process(mlist, msg, msgdata):
     if ack == 'no' or msgdata.get('noack'):
         return
     precedence = msg.get('precedence', '').lower()
-    if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
+    if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
         return
     # Check to see if the list is even configured to autorespond to this email
     # message.  Note: the owner script sets the `toowner' key, and the various
@@ -59,7 +64,7 @@ def process(mlist, msg, msgdata):
     sender = msg.get_sender()
     now = time.time()
     graceperiod = mlist.autoresponse_graceperiod
-    if graceperiod > 0 and ack != 'yes':
+    if graceperiod > 0 and ack <> 'yes':
         if toadmin:
             quiet_until = mlist.admin_responses.get(sender, 0)
         elif torequest:
@@ -73,7 +78,7 @@ def process(mlist, msg, msgdata):
     # message, send it, and update the database.
     realname = mlist.real_name
     subject = _(
-        'Auto-response for your message to the "{(realname)s" mailing list')
+        'Auto-response for your message to the "%(realname)s" mailing list')
     # Do string interpolation
     d = SafeDict({'listname'    : realname,
                   'listurl'     : mlist.GetScriptURL('listinfo'),
@@ -96,9 +101,9 @@ def process(mlist, msg, msgdata):
     if getattr(mlist, 'use_dollar_strings', 0):
         rtext = Utils.to_percent(rtext)
     try:
-        text = rtext }{ d
+        text = rtext % d
     except Exception:
-        syslog('error', 'Bad autoreply text for list: }{s\n}{s',
+        syslog('error', 'Bad autoreply text for list: %s\n%s',
                mlist.internal_name(), rtext)
         text = rtext
     # Wrap the response.
@@ -119,4 +124,3 @@ def process(mlist, msg, msgdata):
             mlist.request_responses[sender] = quiet_until
         else:
             mlist.postings_responses[sender] = quiet_until
-}

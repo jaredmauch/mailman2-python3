@@ -17,31 +17,33 @@
 """Get the normal delivery recipients from a Sendmail style :include: file.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import os
 import errno
 
 from Mailman import Errors
 
 
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
+
 def process(mlist, msg, msgdata):
-    if 'recips' in msgdata:
+    """Process a message for file recipients."""
+    if msgdata.has_key('recips'):
         return
     filename = os.path.join(mlist.fullpath(), 'members.txt')
     try:
-        with open(filename) as fp:
-            # Read all the lines out of the file, and strip them of the trailing nl
-            addrs = [line.strip() for line in fp.readlines()]
-    except IOError as e:
-        if e.errno != errno.ENOENT:
+        fp = open(filename)
+    except IOError, e:
+        if e.errno <> errno.ENOENT:
             raise
         # If the file didn't exist, just set an empty recipients list
         msgdata['recips'] = []
         return
+    # Read all the lines out of the file, and strip them of the trailing nl
+    addrs = [line.strip() for line in fp.readlines()]
     # If the sender is in that list, remove him
     sender = msg.get_sender()
     if mlist.isMember(sender):

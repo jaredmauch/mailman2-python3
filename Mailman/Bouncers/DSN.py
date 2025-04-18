@@ -27,8 +27,14 @@ from cStringIO import StringIO
 
 from Mailman.Bouncers.BouncerAPI import Stop
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
 
-
+
 def process(msg):
     # Iterate over each message/delivery-status subpart
     addrs = []

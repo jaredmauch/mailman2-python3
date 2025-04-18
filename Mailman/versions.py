@@ -32,13 +32,10 @@ number of the list, and then does a .Save(), so the transformations won't be
 run again until another version change is detected.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import email
-from typing import List, Tuple, Dict, Set, Optional, Any, Union, Type
+
+from types import ListType, StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -48,13 +45,9 @@ from Mailman.MemberAdaptor import UNKNOWN
 from Mailman.Logging.Syslog import syslog
 
 
-def Update(l: Any, stored_state: Dict[str, Any]) -> None:
-    """Update mailing list structure to current version.
-    
-    Args:
-        l: The mailing list object to update
-        stored_state: Last snapshot from file storage
-    """
+
+def Update(l, stored_state):
+    "Dispose of old vars and user options, mapping to new ones when suitable."
     ZapOldVars(l)
     UpdateOldUsers(l)
     NewVars(l)
@@ -63,12 +56,8 @@ def Update(l: Any, stored_state: Dict[str, Any]) -> None:
     NewRequestsDatabase(l)
 
 
-def ZapOldVars(mlist: Any) -> None:
-    """Remove obsolete variables from the mailing list.
-    
-    Args:
-        mlist: The mailing list object to clean up
-    """
+
+def ZapOldVars(mlist):
     for name in ('num_spawns', 'filter_prog', 'clobber_date',
                  'public_archive_file_dir', 'private_archive_file_dir',
                  'archive_directory',
@@ -82,40 +71,33 @@ def ZapOldVars(mlist: Any) -> None:
             delattr(mlist, name)
 
 
+
 uniqueval = []
-def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
+def UpdateOldVars(l, stored_state):
     """Transform old variable values into new ones, deleting old ones.
-    
-    Args:
-        l: The mailing list object to update
-        stored_state: Last snapshot from file storage
-    """
+    stored_state is last snapshot from file, as opposed to from InitVars()."""
 
-    def PreferStored(oldname: str, newname: str, newdefault: Any = uniqueval,
-                     l: Any = l, state: Dict[str, Any] = stored_state) -> None:
+    def PreferStored(oldname, newname, newdefault=uniqueval,
+                     l=l, state=stored_state):
         """Use specified old value if new value is not in stored state.
-        
-        Args:
-            oldname: Name of the old attribute
-            newname: Name of the new attribute
-            newdefault: Default value if neither exists
-            l: The mailing list object
-            state: The stored state dictionary
+
+        If the old attr does not exist, and no newdefault is specified, the
+        new attr is *not* created - so either specify a default or be positive
+        that the old attr exists - or don't depend on the new attr.
+
         """
         if hasattr(l, oldname):
-            if newname not in state:
+            if not state.has_key(newname):
                 setattr(l, newname, getattr(l, oldname))
             delattr(l, oldname)
         if not hasattr(l, newname) and newdefault is not uniqueval:
-            setattr(l, newname, newdefault)
+                setattr(l, newname, newdefault)
 
-    def recode(mlist: Any, f: str, t: str) -> None:
-        """Recode string values to new character set.
-        
-        Args:
-            mlist: The mailing list object
-            f: Old character set
-            t: New character set
+    def recode(mlist, f, t):
+        """If the character set for a list's preferred_language has changed,
+        attempt to recode old string values into the new character set.
+
+        mlist is the list, f is the old charset and t is the new charset.
         """
         for x in dir(mlist):
             if x.startswith('_'):
@@ -124,17 +106,10 @@ def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
             if nv:
                 setattr(mlist, x, nv)
 
-    def doitem(v: Any, f: str, t: str) -> Optional[Any]:
-        """Recursively process data structures and convert strings.
-        
-        Args:
-            v: Value to process
-            f: Old character set
-            t: New character set
-            
-        Returns:
-            Updated value if changed, None if unchanged
-        """
+    def doitem(v, f, t):
+        """Recursively process lists, tuples and dictionary values and
+        convert strings as needed. Return either the updated item or None
+        if no change."""
         changed = False
         if isinstance(v, str):
             return convert(v, f, t)
@@ -172,26 +147,19 @@ def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
             else:
                 return None
         else:
-            return None
+            return None 
 
-    def convert(s: str, f: str, t: str) -> Optional[str]:
-        """Convert string between character sets.
-        
-        Args:
-            s: String to convert
-            f: Source character set
-            t: Target character set
-            
-        Returns:
-            Converted string if possible, None if not
-        """
+    def convert(s, f, t):
+        """This does the actual character set conversion of the string s
+        from charset f to charset t."""
+
         try:
-            u = str(s, f)
+            u = unicode(s, f)
             is_f = True
         except ValueError:
             is_f = False
         try:
-            str(s, t)
+            unicode(s, t)
             is_t = True
         except ValueError:
             is_t = False
@@ -380,12 +348,12 @@ def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
     # transfer the list data type for holding members and digest members
     # to the dict data type starting file format version 11
     #
-    if isinstance(l.members, list):
+    if type(l.members) is ListType:
         members = {}
         for m in l.members:
             members[m] = 1
         l.members = members
-    if isinstance(l.digest_members, list):
+    if type(l.digest_members) is ListType:
         dmembers = {}
         for dm in l.digest_members:
             dmembers[dm] = 1
@@ -401,20 +369,20 @@ def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
     # both these are always lowercased, but if there is a case difference, the
     # value contains the case preserved value
     #
-    for k in list(l.members.keys()):
+    for k in l.members.keys():
         if k.lower() != k:
             l.members[k.lower()] = Utils.LCDomain(k)
             del l.members[k]
-        elif isinstance(l.members[k], str) and k == l.members[k].lower():
+        elif type(l.members[k]) == StringType and k == l.members[k].lower():
             # already converted
             pass
         else:
             l.members[k] = 0
-    for k in list(l.digest_members.keys()):
-        if k.lower() != k:
+    for k in l.digest_members.keys():
+        if k.lower() <> k:
             l.digest_members[k.lower()] = Utils.LCDomain(k)
             del l.digest_members[k]
-        elif isinstance(l.digest_members[k], str) and \
+        elif type(l.digest_members[k]) == StringType and \
                  k == l.digest_members[k].lower():
             # already converted
             pass
@@ -424,7 +392,7 @@ def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
     # Convert pre 2.2 topics regexps which were compiled in verbose mode
     # to a non-verbose equivalent.
     #
-    if stored_state['data_version'] < 106 and 'topics' in stored_state:
+    if stored_state['data_version'] < 106 and stored_state.has_key('topics'):
         l.topics = []
         for name, pattern, description, emptyflag in stored_state['topics']:
             pattern = Utils.strip_verbose_pattern(pattern)
@@ -447,13 +415,10 @@ def UpdateOldVars(l: Any, stored_state: Dict[str, Any]) -> None:
                  mm_cfg.DEFAULT_FROM_IS_LIST)
 
 
-def NewVars(l: Any) -> None:
-    """Add defaults for these new variables if they don't exist.
-    
-    Args:
-        l: The mailing list object to update
-    """
-    def add_only_if_missing(attr: str, initval: Any, l: Any = l) -> None:
+
+def NewVars(l):
+    """Add defaults for these new variables if they don't exist."""
+    def add_only_if_missing(attr, initval, l=l):
         if not hasattr(l, attr):
             setattr(l, attr, initval)
     # 1.2 beta 1, baw 18-Feb-2000
@@ -577,12 +542,9 @@ def NewVars(l: Any) -> None:
                         mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE)
 
 
-def UpdateOldUsers(mlist: Any) -> None:
-    """Transform sense of changed user options.
-    
-    Args:
-        mlist: The mailing list object to update
-    """
+
+def UpdateOldUsers(mlist):
+    """Transform sense of changed user options."""
     # pre-1.0b11 to 1.0b11.  Force all keys in l.passwords to be lowercase
     passwords = {}
     for k, v in mlist.passwords.items():
@@ -591,18 +553,15 @@ def UpdateOldUsers(mlist: Any) -> None:
     # Go through all the keys in bounce_info.  If the key is not a member, or
     # if the data is not a _BounceInfo instance, chuck the bounce info.  We're
     # doing things differently now.
-    for m in list(mlist.bounce_info.keys()):
+    for m in mlist.bounce_info.keys():
         if not mlist.isMember(m) or not isinstance(mlist.getBounceInfo(m),
                                                    _BounceInfo):
             del mlist.bounce_info[m]
 
 
-def CanonicalizeUserOptions(l: Any) -> None:
-    """Fix up the user options.
-    
-    Args:
-        l: The mailing list object to update
-    """
+
+def CanonicalizeUserOptions(l):
+    """Fix up the user options."""
     # I want to put a flag in the list database which tells this routine to
     # never try to canonicalize the user options again.
     if getattr(l, 'useropts_version', 0) > 0:
@@ -615,7 +574,7 @@ def CanonicalizeUserOptions(l: Any) -> None:
             continue
         lcuser = k.lower()
         flags = 0
-        if lcuser in options:
+        if options.has_key(lcuser):
             flags = options[lcuser]
         flags |= v
         options[lcuser] = flags
@@ -636,12 +595,9 @@ def CanonicalizeUserOptions(l: Any) -> None:
     l.useropts_version = 1
 
 
-def NewRequestsDatabase(l: Any) -> None:
-    """With version 1.2, we use a new pending request database schema.
-    
-    Args:
-        l: The mailing list object to update
-    """
+
+def NewRequestsDatabase(l):
+    """With version 1.2, we use a new pending request database schema."""
     r = getattr(l, 'requests', {})
     if not r:
         # no old-style requests
@@ -682,6 +638,5 @@ def NewRequestsDatabase(l: Any) -> None:
             del r[k]
         else:
             syslog('error', """\
-VERY BAD NEWS.  Unknown pending request type `{0}' found for list: {1}""",
+VERY BAD NEWS.  Unknown pending request type `%s' found for list: %s""",
                    k, l.internal_name())
-}

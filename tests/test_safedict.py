@@ -17,10 +17,6 @@
 """Unit tests for the SafeDict.py module
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import email
 import unittest
 try:
@@ -31,16 +27,17 @@ except ImportError:
 from Mailman import SafeDict
 
 
+
 class TestSafeDict(unittest.TestCase):
     def test_okay(self):
         sd = SafeDict.SafeDict({'foo': 'bar'})
-        si = '{foo}s'.format(**sd)
+        si = '%(foo)s' % sd
         self.assertEqual(si, 'bar')
 
     def test_key_error(self):
         sd = SafeDict.SafeDict({'foo': 'bar'})
-        si = '{baz}s'.format(**sd)
-        self.assertEqual(si, '{baz}s')
+        si = '%(baz)s' % sd
+        self.assertEqual(si, '%(baz)s')
 
     def test_key_error_not_string(self):
         key = ()
@@ -48,6 +45,7 @@ class TestSafeDict(unittest.TestCase):
         self.assertEqual(sd[key], '<Missing key: ()>')
 
 
+
 class TestMsgSafeDict(unittest.TestCase):
     def setUp(self):
         self._msg = email.message_from_string("""To: foo
@@ -60,33 +58,34 @@ Cc: bperson@dom.ain
 
     def test_normal_key(self):
         sd = SafeDict.MsgSafeDict(self._msg, {'key': 'value'})
-        si = '{key}s'.format(**sd)
+        si = '%(key)s' % sd
         self.assertEqual(si, 'value')
 
     def test_msg_key(self):
         sd = SafeDict.MsgSafeDict(self._msg, {'to': 'value'})
-        si = '{msg_to}s'.format(**sd)
+        si = '%(msg_to)s' % sd
         self.assertEqual(si, 'foo')
 
     def test_allmsg_key(self):
         sd = SafeDict.MsgSafeDict(self._msg, {'cc': 'value'})
-        si = '{allmsg_cc}s'.format(**sd)
+        si = '%(allmsg_cc)s' % sd
         self.assertEqual(si, 'aperson@dom.ain, bperson@dom.ain')
 
     def test_msg_no_key(self):
         sd = SafeDict.MsgSafeDict(self._msg)
-        si = '{msg_date}s'.format(**sd)
+        si = '%(msg_date)s' % sd
         self.assertEqual(si, 'n/a')
 
     def test_allmsg_no_key(self):
         sd = SafeDict.MsgSafeDict(self._msg)
-        si = '{allmsg_date}s'.format(**sd)
+        si = '%(allmsg_date)s' % sd
         self.assertEqual(si, 'n/a')
 
     def test_copy(self):
         sd = SafeDict.MsgSafeDict(self._msg, {'foo': 'bar'})
         copy = sd.copy()
-        items = sorted(copy.items())
+        items = copy.items()
+        items.sort()
         self.assertEqual(items, [
             ('allmsg_cc', 'aperson@dom.ain, bperson@dom.ain'),
             ('foo', 'bar'),
@@ -95,7 +94,7 @@ Cc: bperson@dom.ain
             ('msg_to', 'foo'),
             ])
 
-
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestSafeDict))
@@ -103,6 +102,6 @@ def suite():
     return suite
 
 
+
 if __name__ == '__main__':
     unittest.main(defaultTest='suite')
-}

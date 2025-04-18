@@ -24,7 +24,12 @@ from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
 
 
-
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
+
 def process(mlist, msg, msgdata):
     # short circuits
     if msgdata.get('isdigest') or not mlist.archive:
@@ -32,9 +37,14 @@ def process(mlist, msg, msgdata):
     # Common practice seems to favor "X-No-Archive: yes".  No other value for
     # this header seems to make sense, so we'll just test for it's presence.
     # I'm keeping "X-Archive: no" for backwards compatibility.
-    if msg in 'x-no-archive') or msg.get('x-archive', '').lower() == 'no':
+    if msg.has_key('x-no-archive') or msg.get('x-archive', '').lower() == 'no':
         return
     # Send the message to the archiver queue
     archq = get_switchboard(mm_cfg.ARCHQUEUE_DIR)
+    # Get the message headers
+    subject = _encode_header(msg.get('subject', ''), 'utf-8')
+    from_ = _encode_header(msg.get('from', ''), 'utf-8')
+    to = _encode_header(msg.get('to', ''), 'utf-8')
+    cc = _encode_header(msg.get('cc', ''), 'utf-8')
     # Send the message to the queue
     archq.enqueue(msg, msgdata)

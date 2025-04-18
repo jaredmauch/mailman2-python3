@@ -2599,12 +2599,13 @@ try:
     v = sys.hexversion
 except AttributeError:
     v = 0
-if v >= 0x3000000:  # Python 3.0 or newer
+if v >= 0x3000000:
     s = sys.version.split()[0]
 else:
     s = ""
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % s)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % s)
+fp.close()
 EOF
 
 $PYTHON conftest.py
@@ -2630,8 +2631,9 @@ try:
     res = 'ok'
 except ImportError:
     res = 'no'
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % res)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % res)
+fp.close()
 EOF
 
 $PYTHON conftest.py
@@ -2641,11 +2643,10 @@ if test "$havednspython" = "no"
 then
     as_fn_error $? "
 
-***** dnspython <2.0 not found. It is required for the new
+***** dnspython not found. It is required for the new
 ***** dmarc_moderation_action feature. Get it from
 ***** <http://www.dnspython.org/> or
-***** <https://pypi.python.org/pypi/dnspython/>
-***** You must get a version < 2.0" "$LINENO" 5
+***** <https://pypi.python.org/pypi/dnspython/>" "$LINENO" 5
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $havednspython" >&5
 printf "%s\n" "$havednspython" >&6; }
@@ -2658,11 +2659,12 @@ cat > conftest.py <<EOF
 import sys
 try:
     import email
-    res = "ok"  # In Python 3, we don't check version since email is built-in
+    res = "ok"
 except ImportError:
     res = "not ok"
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % res)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % res)
+fp.close()
 EOF
 
 $PYTHON conftest.py
@@ -2671,8 +2673,9 @@ rm -f conftest.out conftest.py
 
 cat > getver.py <<EOF
 from Mailman.Version import VERSION
-with open("getver.out", "w") as fp:
-    fp.write("%s\n" % VERSION)
+fp = open("getver.out", "w")
+fp.write("%s\n" % VERSION)
+fp.close()
 EOF
 $PYTHON getver.py
 MM_VERSION=`cat getver.out`
@@ -2696,12 +2699,14 @@ printf %s "checking Japanese codecs... " >&6; }
 
 cat > conftest.py <<EOF
 try:
-    "OK".encode('iso-2022-jp').decode('iso-2022-jp')
-    res = "ok"
+    'OK'.encode('iso-2022-jp')
 except LookupError:
     res = "not ok"
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % res)
+else:
+    res = "ok"
+fp = open("conftest.out", "w")
+fp.write("%s\n" % res)
+fp.close()
 EOF
 
 $PYTHON conftest.py
@@ -2725,12 +2730,14 @@ printf %s "checking Korean codecs... " >&6; }
 
 cat > conftest.py <<EOF
 try:
-    "OK".encode('euc-kr').decode('euc-kr')
-    res = "ok"
+    'OK'.encode('euc-kr')
 except LookupError:
     res = "not ok"
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % res)
+else:
+    res = "ok"
+fp = open("conftest.out", "w")
+fp.write("%s\n" % res)
+fp.close()
 EOF
 
 $PYTHON conftest.py
@@ -2773,8 +2780,9 @@ else:
             res = "yes"
         else:
             res = "no"
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % res)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % res)
+fp.close()
 EOF
 
 $PYTHON conftest.py
@@ -4168,7 +4176,7 @@ if test -z "$MAILMAN_USER"
 then
     cat > conftest.py <<EOF
 import pwd
-uname = ''
+uid = ''
 for user in "$USERNAME".split():
     try:
         try:
@@ -4179,8 +4187,9 @@ for user in "$USERNAME".split():
             break
     except KeyError:
         uname = ''
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % uname)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % uname)
+fp.close()
 EOF
     $PYTHON conftest.py
     MAILMAN_USER=`cat conftest.out`
@@ -4235,7 +4244,7 @@ if test -z "$MAILMAN_GROUP"
 then
     cat > conftest.py <<EOF
 import grp
-gname = ''
+gid = ''
 for group in "$GROUPNAME".split():
     try:
         try:
@@ -4246,8 +4255,9 @@ for group in "$GROUPNAME".split():
             break
     except KeyError:
         gname = ''
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % gname)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % gname)
+fp.close()
 EOF
     $PYTHON conftest.py
     MAILMAN_GROUP=`cat conftest.out`
@@ -4269,59 +4279,40 @@ fi
 printf "%s\n" "okay" >&6; }
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking permissions on $prefixcheck" >&5
-printf %s "checking permissions on $prefixcheck... " >&6; }
+# Check permissions on installation directory
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking permissions on $prefix" >&5
+printf %s "checking permissions on $prefix... " >&6; }
 
 cat > conftest.py <<EOF
-import os, grp
-from stat import *
-prefix = "$prefixcheck"
-groupname = "$GROUPNAME"
-mailmangroup = "$MAILMAN_GROUP"
+import os
+import grp
+import pwd
+import sys
+
 try:
-    mailmangid = grp.getgrnam(mailmangroup)[2]
-except KeyError:
-    mailmangid = -1
-problems = []
-try:
-    statdata = os.stat(prefix)
-except OSError:
-    problems.append("Directory doesn't exist: " + prefix)
-else:
-    mode = statdata[ST_MODE]
-    gid = statdata[ST_GID]
-    if mailmangid != gid:  # Changed <> to !=
-        problems.append("Directory must be owned by group " +
-                        groupname + ": " + prefix)
-    if (mode & S_ISGID) != S_ISGID:  # Changed <> to !=
-        problems.append("Set-gid bit must be set for directory: " + prefix)
-    perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
-    if (mode & perms) != perms:
-        problems.append("Permissions should be at least 02775: " + prefix)
-if not problems:
-    msg = "okay\n"
-else:
-    msg = '***** ' + '\n***** '.join(problems) + '\n'
-with open("conftest.out", "w") as fp:
-    fp.write(msg)
+    mailmangid = grp.getgrnam('$GROUPNAME')[2]
+    gid = os.getgid()
+    if mailmangid != gid:
+        print("not ok")
+    else:
+        print("ok")
+except (KeyError, OSError):
+    print("not ok")
 EOF
 
 $PYTHON conftest.py
-status=`cat conftest.out`
+permissions=`cat conftest.out`
 rm -f conftest.out conftest.py
-if test "$with_permcheck" = "yes"
+if test "$permissions" = "not ok"
 then
-    if test "$status" != "okay"
-    then
-        as_fn_error $? "
-***** Installation directory $prefixcheck is not configured properly!
-$status" "$LINENO" 5
-    fi
-else
-    status="skipped"
+    as_fn_error $? "
+
+***** Installation directory $prefix is not configured properly!
+***** The directory must be owned by the $GROUPNAME group.
+***** Please see the INSTALL file for details." "$LINENO" 5
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $status" >&5
-printf "%s\n" "$status" >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $permissions" >&5
+printf "%s\n" "$permissions" >&6; }
 
 
 # Now find the UIDs and GIDs
@@ -4348,7 +4339,7 @@ if test -z "$MAIL_GROUP"
 then
     cat > conftest.py <<EOF
 import grp
-gname = ''
+gid = ''
 for group in "$with_mail_gid".split():
     try:
         try:
@@ -4359,8 +4350,9 @@ for group in "$with_mail_gid".split():
             break
     except KeyError:
         gname = ''
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % gname)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % gname)
+fp.close()
 EOF
     $PYTHON conftest.py
     MAIL_GROUP=`cat conftest.out`
@@ -4409,7 +4401,7 @@ if test -z "$CGI_GROUP"
 then
     cat > conftest.py <<EOF
 import grp
-gname = ''
+gid = ''
 for group in "$with_cgi_gid".split():
     try:
         try:
@@ -4420,8 +4412,9 @@ for group in "$with_cgi_gid".split():
             break
     except KeyError:
         gname = ''
-with open("conftest.out", "w") as fp:
-    fp.write("%s\n" % gname)
+fp = open("conftest.out", "w")
+fp.write("%s\n" % gname)
+fp.close()
 EOF
     $PYTHON conftest.py
     CGI_GROUP=`cat conftest.out`
@@ -4516,9 +4509,10 @@ cat > conftest.py <<EOF
 # python
 from socket import *
 fqdn = getfqdn()
-with open('conftest.out', 'w') as fp:
-    print(fqdn, file=fp)
-    print(fqdn, file=fp)
+fp = open('conftest.out', 'w')
+print >> fp, fqdn
+print >> fp, fqdn
+fp.close()
 EOF
 $PYTHON conftest.py
 

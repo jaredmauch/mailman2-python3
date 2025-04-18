@@ -41,7 +41,7 @@ def process(res, args):
         res.results.append(gethelp(mlist))
         return STOP
     hostname = mlist.host_name
-    res.results.append(_('Public mailing lists at {(hostname)s:'))
+    res.results.append(_('Public mailing lists at %(hostname)s:'))
     lists = Utils.list_names()
     lists.sort()
     i = 1
@@ -56,15 +56,14 @@ def process(res, args):
         # Skip the list if it isn't in the same virtual domain.  BAW: should a
         # message to the site list include everything regardless of domain?
         if mm_cfg.VIRTUAL_HOST_OVERVIEW and \
-               xlist.host_name != mlist.host_name:
+               xlist.host_name <> mlist.host_name:
             continue
         realname = xlist.real_name
         description = xlist.description or _('n/a')
         requestaddr = xlist.GetRequestEmail()
         if i > 1:
             res.results.append('')
-        res.results.append(_('}{(i)3d. List name:   }{(realname)s'))
-        res.results.append(_('     Description: }{(description)s'))
-        res.results.append(_('     Requests to: }{(requestaddr)s'))
+        res.results.append(_('%(i)3d. List name:   %(realname)s'))
+        res.results.append(_('     Description: %(description)s'))
+        res.results.append(_('     Requests to: %(requestaddr)s'))
         i += 1
-}

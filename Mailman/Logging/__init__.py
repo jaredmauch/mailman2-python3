@@ -13,21 +13,3 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
-"""Mailman logging classes."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from typing import Dict, List, Optional, Union, Any
-
-from Mailman.Logging.Logger import Logger
-from Mailman.Logging.MultiLogger import MultiLogger
-from Mailman.Logging.StampedLogger import StampedLogger
-from Mailman.Logging.Syslog import Syslog
-from Mailman.Logging.Utils import LogStdErr, LogStdOut
-
-# For backwards compatibility
-from Mailman.Logging.Utils import *

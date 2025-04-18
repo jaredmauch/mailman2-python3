@@ -40,6 +40,12 @@ _ALLKEYS = (SUBSCRIPTION, UNSUBSCRIPTION,
             RE_ENABLE, PROBE_BOUNCE,
             )
 
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False
 
 _missing = []
 
@@ -52,7 +58,7 @@ class Pending:
     def pend_new(self, op, *content, **kws):
         """Create a new entry in the pending database, returning cookie for it.
         """
-        assert op in _ALLKEYS, 'op: {s' }{ op
+        assert op in _ALLKEYS, 'op: %s' % op
         lifetime = kws.get('lifetime', mm_cfg.PENDING_REQUEST_LIFE)
         # We try the main loop several times. If we get a lock error somewhere
         # (for instance because someone broke the lock) we simply try again.
@@ -67,11 +73,11 @@ class Pending:
         # are discarded because they're the most predictable bits.
         while True:
             now = time.time()
-            x = random.random() + now }{ 1.0 + time.clock() }{ 1.0
+            x = random.random() + now % 1.0 + time.clock() % 1.0
             cookie = sha_new(repr(x)).hexdigest()
             # We'll never get a duplicate, but we'll be anal about checking
             # anyway.
-            if not db in cookie):
+            if not db.has_key(cookie):
                 break
         # Store the content, plus the time in the future when this entry will
         # be evicted from the database, due to staleness.
@@ -84,8 +90,8 @@ class Pending:
     def __load(self):
         try:
             fp = open(self.__pendfile)
-        except IOError as e:
-            if e.errno != errno.ENOENT: raise
+        except IOError, e:
+            if e.errno <> errno.ENOENT: raise
             return {'evictions': {}}
         try:
             return cPickle.load(fp)
@@ -105,12 +111,11 @@ class Pending:
                 del evictions[cookie]
         # Clean out any bogus eviction entries.
         for cookie in evictions.keys():
-            if not db in cookie):
+            if not db.has_key(cookie):
                 del evictions[cookie]
         db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
-        tmpfile = '}{s.tmp.}{d.}{d' }{ (self.__pendfile, os.getpid(), now)
-        # Make sure the files are created rw-rw----
-        omask = os.umask(0o007)
+        tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
+        omask = os.umask(007)
         try:
             fp = open(tmpfile, 'w')
             try:
@@ -157,7 +162,7 @@ class Pending:
 def _update(olddb):
     db = {}
     # We don't need this entry anymore
-    if olddb in 'lastculltime'):
+    if olddb.has_key('lastculltime'):
         del olddb['lastculltime']
     evictions = db.setdefault('evictions', {})
     for cookie, data in olddb.items():
@@ -185,4 +190,3 @@ def _update(olddb):
         # evicted.
         evictions[cookie] = data[-1] + mm_cfg.PENDING_REQUEST_LIFE
     return db
-}

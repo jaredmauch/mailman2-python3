@@ -42,11 +42,6 @@ Where:
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import re
 import sys
 import getopt
@@ -65,18 +60,20 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print >> fd, C_(__doc__)
     if msg:
-        print(msg, file=fd)
+        print >> fd, msg
     sys.exit(code)
 
 
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'apbV:h',
-                                 ['advertised', 'public-archive', 'bare',
-                                  'virtual-host-overview=', 'help'])
-    except getopt.error as msg:
+                                   ['advertised', 'public-archive', 'bare',
+                                    'virtual-host-overview=',
+                                    'help'])
+    except getopt.error, msg:
         usage(1, msg)
 
     advertised = 0
@@ -119,20 +116,21 @@ def main():
         longest = max(len(mlist.real_name), longest)
 
     if not mlists and not bare:
-        print(C_('No matching mailing lists found'))
+        print C_('No matching mailing lists found')
         return
 
     if not bare:
-        print(len(mlists), C_('matching mailing lists found:'))
+        print len(mlists), C_('matching mailing lists found:')
 
     format = '%%%ds - %%.%ds' % (longest, 77 - longest)
     for mlist in mlists:
         if bare:
-            print(mlist.internal_name())
+            print mlist.internal_name()
         else:
             description = mlist.description or C_('[no description available]')
-            print('   ', format % (mlist.real_name, description))
+            print '   ', format % (mlist.real_name, description)
 
 
+
 if __name__ == '__main__':
     main()

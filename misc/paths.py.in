@@ -24,11 +24,6 @@
 # attributes that other modules may use to get the absolute path to the
 # installed Mailman distribution.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import sys
 
@@ -42,13 +37,13 @@ if exec_prefix == '${prefix}':
 
 # Check if ja/ko codecs are available before changing path.
 try:
-    s = 'OK'.encode('iso-2022-jp').decode('iso-2022-jp')
+    s = unicode('OK', 'iso-2022-jp')
     jaok = True
 except LookupError:
     jaok = False
 
 try:
-    s = 'OK'.encode('euc-kr').decode('euc-kr')
+    s = unicode('OK', 'euc-kr')
     kook = True
 except LookupError:
     kook = False

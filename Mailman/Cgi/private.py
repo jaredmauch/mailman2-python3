@@ -17,11 +17,6 @@
 
 """Provide a password-interface wrapper around private archives."""
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import os
 import sys
 import cgi
@@ -34,6 +29,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Web import Auth
 
 # Set up i18n.  Until we know which list is being requested, we use the
 # server's default.
@@ -70,12 +66,12 @@ def main():
 
     path = os.environ.get('PATH_INFO')
     tpath = true_path(path)
-    if tpath != path[1:]:
+    if tpath <> path[1:]:
         msg = _('Private archive - "./" and "../" not allowed in URL.')
         doc.SetTitle(msg)
         doc.AddItem(Header(2, msg))
         print(doc.Format())
-        syslog('mischief', 'Private archive hostile path: {s', path)
+        syslog('mischief', 'Private archive hostile path: %s', path)
         return
     # BAW: This needs to be converted to the Site module abstraction
     true_filename = os.path.join(
@@ -107,21 +103,21 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        msg = _('No such list <em>}{(safelistname)s</em>')
-        doc.SetTitle(_("Private Archive Error - }{(msg)s"))
-        doc.AddItem(Header(2, msg))
-        # Send this with a 404 status.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        # Send this with a 404 status
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'private: No such list "}{s": }{s\n', listname, e)
+        syslog('error', 'private: No such list "%s": %s\n', listname, e)
         return
 
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
+    # Must be authenticated to get any farther
     cgidata = cgi.FieldStorage()
     try:
-        username = cgidata.getfirst('username', '').strip()
+        cgidata.getfirst('adminpw', '')
     except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -130,72 +126,37 @@ def main():
         print('Status: 400 Bad Request')
         print(doc.Format())
         return
-    password = cgidata.getfirst('password', '')
 
-    is_auth = 0
-    realname = mlist.real_name
-    message = ''
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
 
-    if not mlist.WebAuthenticate((mm_cfg.AuthUser,
-                                  mm_cfg.AuthListModerator,
-                                  mm_cfg.AuthListAdmin,
+    # Editing the html for a list is limited to the list admin and site admin.
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 password, username):
-        if 'submit' in cgidata:
+                                 cgidata.getfirst('adminpw', '')):
+        if 'admlogin' in cgidata:
             # This is a re-authorization attempt
-            message = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
                      os.environ.get('HTTP_X_FORWARDED_FOR',
                      os.environ.get('REMOTE_ADDR',
                                     'unidentified origin')))
             syslog('security',
-                 'Authorization failed (private): user=}{s: list=}{s: remote=}{s',
-                   username, listname, remote)
-            # give an HTTP 401 for authentication failure
-            print('Status: 401 Unauthorized')
-        # Are we processing a password reminder from the login screen?
-        if 'login-remind' in cgidata:
-            if username:
-                message = Bold(FontSize('+1', _("""If you are a list member,
-                          your password has been emailed to you."""))).Format()
-            else:
-                message = Bold(FontSize('+1',
-                                _('Please enter your email address'))).Format()
-            if mlist.isMember(username):
-                mlist.MailUserPassword(username)
-            elif username:
-                # Not a member. Don't report address in any case. It leads to
-                # Content injection. Just log if roster is not public.
-                if mlist.private_roster != 0:
-                    syslog('mischief',
-                       'Reminder attempt of non-member w/ private rosters: }{s',
-                       username)
-        # Output the password form
-        charset = Utils.GetCharSet(mlist.preferred_language)
-        print('Content-type: text/html; charset=' + charset + '\n\n')
-        # Put the original full path in the authorization form, but avoid
-        # trailing slash if we're not adding parts.  We add it below.
-        action = mlist.GetScriptURL('private', absolute=1)
-        if mboxfile:
-            action += '.mbox'
-        if parts[1:]:
-            action = os.path.join(action, SLASH.join(parts[1:]))
-        # If we added '/index.html' to true_filename, add a slash to the URL.
-        # We need this because we no longer add the trailing slash in the
-        # private.html template.  It's always OK to test parts[-1] since we've
-        # already verified parts[0] is listname.  The basic rule is if the
-        # post URL (action) is a directory, it must be slash terminated, but
-        # not if it's a file.  Otherwise, relative links in the target archive
-        # page don't work.
-        if true_filename.endswith('/index.html') and parts[-1] != 'index.html':
-            action += SLASH
-        # Escape web input parameter to avoid cross-site scripting.
-        print(Utils.maketext(
-            'private.html',
-            {'action'  : Utils.websafe(action),
-             'realname': mlist.real_name,
-             'message' : message,
-             }, mlist=mlist))
+                   'Authorization failed (private): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
         return
 
     lang = mlist.getMemberLanguage(username)
@@ -222,9 +183,8 @@ def main():
         doc.AddItem(Header(2, msg))
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'Private archive file not found: }{s', true_filename)
+        syslog('error', 'Private archive file not found: %s', true_filename)
     else:
-        print('Content-type: }{s\n' }{ ctype)
+        print('Content-type: %s\n' % ctype)
         sys.stdout.write(f.read())
         f.close()
-}

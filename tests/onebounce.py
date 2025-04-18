@@ -1,10 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 # Copyright (C) 2002-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -24,7 +19,7 @@ from __future__ import unicode_literals
 
 """Test the bounce detection for files containing bounces.
 
-Usage: {(PROGRAM)s [options] file1 ...
+Usage: %(PROGRAM)s [options] file1 ...
 
 Options:
     -h / --help
@@ -49,18 +44,20 @@ PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
 
+
 def usage(code, msg=''):
-    print(__doc__ }{ globals())
+    print __doc__ % globals()
     if msg:
-        print(msg)
+        print msg
     sys.exit(code)
 
 
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hva',
                                    ['help', 'verbose', 'all'])
-    except getopt.error as msg:
+    except getopt.error, msg:
         usage(1, msg)
 
     all = verbose = 0
@@ -73,26 +70,27 @@ def main():
             all = 1
 
     for file in args:
-        with open(file) as fp:
-            msg = email.message_from_file(fp)
+        fp = open(file)
+        msg = email.message_from_file(fp)
+        fp.close()
         for module in BouncerAPI.BOUNCE_PIPELINE:
             modname = 'Mailman.Bouncers.' + module
             __import__(modname)
             addrs = sys.modules[modname].process(msg)
             if addrs is BouncerAPI.Stop:
-                print(module, 'got a Stop')
+                print module, 'got a Stop'
                 if not all:
                     break
                 continue
             if not addrs:
                 if verbose:
-                    print(module, 'found no matches')
+                    print module, 'found no matches'
             else:
-                print(module, 'found', COMMASPACE.join(addrs))
+                print module, 'found', COMMASPACE.join(addrs)
                 if not all:
                     break
 
 
+
 if __name__ == '__main__':
     main()
-}

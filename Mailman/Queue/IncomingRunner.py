@@ -17,7 +17,7 @@
 """Incoming queue runner."""
 
 # A typical Mailman list exposes nine aliases which point to seven different
-# wrapped scripts.  E.g. for a list named `mylist', yod have:
+# wrapped scripts.  E.g. for a list named `mylist', you'd have:
 #
 # mylist-bounces -> bounces (-admin is a deprecated alias)
 # mylist-confirm -> confirm
@@ -82,7 +82,7 @@
 # owner/moderators.  All -owner destined messages have their bounces directed
 # to the site list -bounces address, regardless of whether a human sent the
 # message or the message was crafted internally.  The intention here is that
-# the site owners want to be notified when one of their list owners addresses
+# the site owners want to be notified when one of their list owners' addresses
 # starts bouncing (yes, the will be automated in a future release).
 #
 # Any messages to site owners has their bounces directed to a special
@@ -152,8 +152,8 @@ class IncomingRunner(Runner):
                 pid = os.getpid()
                 sys.modules[modname].process(mlist, msg, msgdata)
                 # Failsafe -- a child may have leaked through.
-                if pid != os.getpid():
-                    syslog('error', 'child process leaked thru: {s', modname)
+                if pid <> os.getpid():
+                    syslog('error', 'child process leaked thru: %s', modname)
                     os._exit(1)
             except Errors.DiscardMessage:
                 # Throw the message away; we need do nothing else with it.
@@ -161,9 +161,9 @@ class IncomingRunner(Runner):
                 # just in case the syslog call throws an exception and the
                 # message is shunted.
                 pipeline.insert(0, handler)
-                syslog('vette', """Message discarded, msgid: }{s'
-        list: }{s,
-        handler: }{s""",
+                syslog('vette', """Message discarded, msgid: %s'
+        list: %s,
+        handler: %s""",
                        msg.get('message-id', 'n/a'),
                        mlist.real_name, handler)
                 return 0
@@ -177,10 +177,10 @@ class IncomingRunner(Runner):
                 # just in case the syslog call or BounceMessage throws an
                 # exception and the message is shunted.
                 pipeline.insert(0, handler)
-                syslog('vette', """Message rejected, msgid: }{s
-        list: }{s,
-        handler: }{s,
-        reason: }{s""",
+                syslog('vette', """Message rejected, msgid: %s
+        list: %s,
+        handler: %s,
+        reason: %s""",
                        msg.get('message-id', 'n/a'),
                        mlist.real_name, handler, e.notice())
                 mlist.BounceMessage(msg, msgdata, e)
@@ -192,4 +192,3 @@ class IncomingRunner(Runner):
                 raise
         # We've successfully completed handling of this message
         return 0
-}

@@ -31,6 +31,13 @@ def minutes(m): return m * 60
 def hours(h): return h * 60 * 60
 def days(d): return d * 60 * 60 * 24
 
+# Some convenient constants
+try:
+    True, False
+except NameError:
+    True = 1
+    False = 0
+
 Yes = yes = On = on = True
 No = no = Off = off = False
 
@@ -1837,3 +1844,10 @@ add_language('zh_CN', _('Chinese (China)'),     'utf-8',       'ltr')
 add_language('zh_TW', _('Chinese (Taiwan)'),    'utf-8',       'ltr')
 
 del _
+
+try:
+    import dns.resolver
+    from dns.exception import DNSException
+    dns_resolver = True
+except ImportError:
+    dns_resolver = False

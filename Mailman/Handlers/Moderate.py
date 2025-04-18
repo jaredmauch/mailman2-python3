@@ -18,15 +18,10 @@
 """Posting moderation filter.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import re
-from email.mime.message import MIMEMessage
-from email.mime.text import MIMEText
-from email.utils import parseaddr
+from email.MIMEMessage import MIMEMessage
+from email.MIMEText import MIMEText
+from email.Utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -38,6 +33,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.MailList import MailList
 
 
+
 class ModeratedMemberPost(Hold.ModeratedPost):
     # BAW: I wanted to use the reason below to differentiate between this
     # situation and normal ModeratedPost reasons.  Greg Ward and Stonewall
@@ -48,6 +44,13 @@ class ModeratedMemberPost(Hold.ModeratedPost):
     #
     # reason = _('Posts by member are currently quarantined for moderation')
     pass
+
+
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
 
 
 def process(mlist, msg, msgdata):
@@ -76,7 +79,7 @@ def process(mlist, msg, msgdata):
                 # to the notice sent back to the sender?
                 msgdata['sender'] = sender
                 Hold.hold_for_approval(mlist, msg, msgdata,
-                                     ModeratedMemberPost)
+                                       ModeratedMemberPost)
             elif mlist.member_moderation_action == 1:
                 # Reject
                 text = mlist.member_moderation_notice
@@ -85,7 +88,7 @@ def process(mlist, msg, msgdata):
                 else:
                     # Use the default RejectMessage notice string
                     text = None
-                raise Errors.RejectMessage(text)
+                raise Errors.RejectMessage, text
             elif mlist.member_moderation_action == 2:
                 # Discard.  BAW: Again, it would be nice if we could send a
                 # discard notice to the sender
@@ -141,14 +144,14 @@ def process(mlist, msg, msgdata):
 def do_reject(mlist):
     listowner = mlist.GetOwnerEmail()
     if mlist.nonmember_rejection_notice:
-        raise Errors.RejectMessage(
-            Utils.wrap(_(mlist.nonmember_rejection_notice)))
+        raise Errors.RejectMessage, \
+              Utils.wrap(_(mlist.nonmember_rejection_notice))
     else:
-        raise Errors.RejectMessage(Utils.wrap(_("""\
+        raise Errors.RejectMessage, Utils.wrap(_("""\
 Your message has been rejected, probably because you are not subscribed to the
 mailing list and the list's policy is to prohibit non-members from posting to
 it.  If you think that your messages are being rejected in error, contact the
-mailing list owner at {(listowner)s.""")))
+mailing list owner at %(listowner)s."""))
 
 
 def do_discard(mlist, msg):
@@ -156,7 +159,7 @@ def do_discard(mlist, msg):
     # Do we forward auto-discards to the list owners?
     if mlist.forward_auto_discards:
         lang = mlist.preferred_language
-        varhelp = '}{s/?VARHELP=privacy/sender/discard_these_nonmembers' }{ \
+        varhelp = '%s/?VARHELP=privacy/sender/discard_these_nonmembers' % \
                   mlist.GetScriptURL('admin', absolute=1)
         nmsg = Message.UserNotification(mlist.GetOwnerEmail(),
                                         mlist.GetBouncesEmail(),
@@ -171,4 +174,3 @@ def do_discard(mlist, msg):
         nmsg.send(mlist)
     # Discard this sucker
     raise Errors.DiscardMessage
-}

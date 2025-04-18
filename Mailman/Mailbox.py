@@ -18,170 +18,37 @@
 """Extend mailbox.UnixMailbox.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import os
 import sys
-import time
-import errno
-import email
-from email import message
-from email import parser
-from email import policy
-from typing import Optional, List, Dict, Any
-
 import mailbox
+import errno
+import os
+
+import email
+from email.parser import Parser
+from email.errors import MessageParseError
 
 from Mailman import mm_cfg
-from Mailman import Utils
-from Mailman.Logging.Syslog import syslog
 from Mailman.Message import Generator
 from Mailman.Message import Message
+
+try:
+    import mailbox
+    mailbox_available = True
+except ImportError:
+    mailbox_available = False
 
 
 def _safeparser(fp):
     try:
         return email.message_from_file(fp, Message)
-    except email.errors.MessageParseError:
+    except MessageParseError:
         # Don't return None since that will stop a mailbox iterator
         return ''
 
 
 class Mailbox(mailbox.PortableUnixMailbox):
-    def __init__(self, path: str):
-        """Initialize a mailbox.
-
-        Args:
-            path: The path to the mailbox file.
-        """
-        self.path = path
-        self._parser = parser.Parser(policy=policy.default)
-        self._messages: List[message.Message] = []
-        self._loaded = False
-        mailbox.PortableUnixMailbox.__init__(self, path, _safeparser)
-
-    def __iter__(self):
-        """Iterate over messages in the mailbox."""
-        if not self._loaded:
-            self.load()
-        return iter(self._messages)
-
-    def __len__(self):
-        """Return the number of messages in the mailbox."""
-        if not self._loaded:
-            self.load()
-        return len(self._messages)
-
-    def __getitem__(self, index: int) -> message.Message:
-        """Get a message by index.
-
-        Args:
-            index: The index of the message to get.
-
-        Returns:
-            The message at the given index.
-        """
-        if not self._loaded:
-            self.load()
-        return self._messages[index]
-
-    def load(self):
-        """Load messages from the mailbox file."""
-        if not os.path.exists(self.path):
-            self._messages = []
-            self._loaded = True
-            return
-
-        try:
-            with open(self.path, 'r', encoding='utf-8') as fp:
-                while True:
-                    try:
-                        msg = self._parser.parse(fp)
-                        self._messages.append(msg)
-                    except email.errors.MessageParseError:
-                        # Skip malformed messages
-                        continue
-                    except EOFError:
-                        break
-        except IOError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            self._messages = []
-        self._loaded = True
-
-    def save(self):
-        """Save messages to the mailbox file."""
-        if not self._loaded:
-            return
-
-        # Create parent directory if it doesn't exist
-        parent = os.path.dirname(self.path)
-        if parent and not os.path.exists(parent):
-            os.makedirs(parent)
-
-        # Write messages to a temporary file
-        tmpfile = self.path + '.tmp'
-        try:
-            with open(tmpfile, 'w', encoding='utf-8') as fp:
-                for msg in self._messages:
-                    fp.write(msg.as_string())
-                    fp.write('\n')
-                fp.flush()
-                os.fsync(fp.fileno())
-            # Rename temporary file to actual file
-            os.rename(tmpfile, self.path)
-        except:
-            # Clean up temporary file on error
-            try:
-                os.unlink(tmpfile)
-            except OSError:
-                pass
-            raise
-
-    def add(self, msg: message.Message):
-        """Add a message to the mailbox.
-
-        Args:
-            msg: The message to add.
-        """
-        if not self._loaded:
-            self.load()
-        self._messages.append(msg)
-
-    def remove(self, msg: message.Message):
-        """Remove a message from the mailbox.
-
-        Args:
-            msg: The message to remove.
-        """
-        if not self._loaded:
-            self.load()
-        self._messages.remove(msg)
-
-    def clear(self):
-        """Remove all messages from the mailbox."""
-        self._messages = []
-        self._loaded = True
-
-    def lock(self):
-        """Lock the mailbox for exclusive access."""
-        # Not implemented yet
-        pass
-
-    def unlock(self):
-        """Unlock the mailbox."""
-        # Not implemented yet
-        pass
-
-    def close(self):
-        """Close the mailbox and save changes."""
-        if self._loaded:
-            self.save()
-        self._messages = []
-        self._loaded = False
+    def __init__(self, fp):
+        mailbox.PortableUnixMailbox.__init__(self, fp, _safeparser)
 
     # msg should be an rfc822 message or a subclass.
     def AppendMessage(self, msg):
@@ -209,43 +76,113 @@ class Mailbox(mailbox.PortableUnixMailbox):
 # This stuff is used by pipermail.py:processUnixMailbox().  It provides an
 # opportunity for the built-in archiver to scrub archived messages of nasty
 # things like attachments and such...
-def _archfactory(fp):
-    """Create a scrubber for archiving messages."""
-    return ArchiverMailbox(fp)
+def _archfactory(mailbox):
+    # The factory gets a file object, but it also needs to have a MailList
+    # object, so the clearest <wink> way to do this is to build a factory
+    # function that has a reference to the mailbox object, which in turn holds
+    # a reference to the mailing list.  Nested scopes would help here, BTW,
+    # but we can't rely on them being around (e.g. Python 2.0).
+    def scrubber(fp, mailbox=mailbox):
+        msg = _safeparser(fp)
+        if msg == '':
+            return msg
+        return mailbox.scrub(msg)
+    return scrubber
 
 
 class ArchiverMailbox(Mailbox):
-    """A mailbox class that scrubs messages for archiving."""
+    # This is a derived class which is instantiated with a reference to the
+    # MailList object.  It is build such that the factory calls back into its
+    # scrub() method, giving the scrubber module a chance to do its thing
+    # before the message is archived.
+    def __init__(self, fp, mlist):
+        if mm_cfg.ARCHIVE_SCRUBBER:
+            __import__(mm_cfg.ARCHIVE_SCRUBBER)
+            self._scrubber = sys.modules[mm_cfg.ARCHIVE_SCRUBBER].process
+        else:
+            self._scrubber = None
+        self._mlist = mlist
+        mailbox.PortableUnixMailbox.__init__(self, fp, _archfactory(self))
 
-    def __init__(self, fp):
-        Mailbox.__init__(self, fp)
-        self._scrubber = None
+    def scrub(self, msg):
+        if self._scrubber:
+            return self._scrubber(self._mlist, msg)
+        else:
+            return msg
 
-    def _scrub(self, msg):
-        """Scrub the message of attachments and other unnecessary parts."""
-        if self._scrubber is None:
-            from Mailman.Archiver import Scrubber
-            self._scrubber = Scrubber(convert_html_to_plaintext=1)
-        return self._scrubber.scrub(msg)
+    def skipping(self, flag):
+        """ This method allows the archiver to skip over messages without
+        scrubbing attachments into the attachments directory."""
+        if flag:
+            self.factory = _safeparser
+        else:
+            self.factory = _archfactory(self)
 
-    def AppendMessage(self, msg):
-        """Append a scrubbed message to the mailbox."""
-        # First scrub the message
-        msg = self._scrub(msg)
-        # Then append it using the parent class's method
-        Mailbox.AppendMessage(self, msg)
+def main():
+    doc = Document()
+    try:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
+        # Send this with a 404 status
+        print('Status: 404 Not Found')
+        print(doc.Format())
+        return
 
-    def SkipAttachment(self, msg, part):
-        """Return true if the attachment should be skipped."""
-        # Skip attachments with content-disposition: attachment
-        if part.get('content-disposition', '').lower().startswith('attachment'):
-            return True
-        # Skip base64 encoded parts larger than 40KB
-        if part.get('content-transfer-encoding', '').lower() == 'base64':
-            try:
-                size = int(part.get('content-length', 0))
-                if size > 40 * 1024:  # 40KB
-                    return True
-            except (ValueError, TypeError):
-                pass
-        return False
+    # Must be authenticated to get any farther
+    cgidata = cgi.FieldStorage()
+    try:
+        cgidata.getfirst('adminpw', '')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    # Editing the html for a list is limited to the list admin and site admin.
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.getfirst('adminpw', '')):
+        if 'admlogin' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (mailbox): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
+        return
+
+    # Create the list directory with proper permissions
+    oldmask = os.umask(0o007)
+    try:
+        os.makedirs(mlist.fullpath(), mode=0o2775)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    finally:
+        os.umask(oldmask)

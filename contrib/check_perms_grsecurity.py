@@ -74,24 +74,28 @@ def main(argv):
     droplib = binpath + 'CheckFixUid.py'
 
     if len(argv) < 2 or argv[1] != "-f":
-        print(_, end=\'\')_doc__
+        print __doc__
         sys.exit(1)
 
-    print(", end=\'\')Making select directories owned and writable by root only"
+    print "Making select directories owned and writable by root only"
     gid = grp.getgrnam(MAILMAN_GROUP)[2]
     for dir in dirstochownroot:
         dirpath = paths.prefix + '/' + dir
         os.chown(dirpath, 0, gid)
         os.chmod(dirpath, 02755)
-        print(d, end=\'\')irpath
+        print dirpath
 
-    print(f, end=\'\')ile = mm_cfg.VAR_PREFIX + '/data/last_mailman_version'
-    print(", end=\'\')Making" + file + "owned by mailman (not root)"
+    print
+
+    file = mm_cfg.VAR_PREFIX + '/data/last_mailman_version'
+    print "Making" + file + "owned by mailman (not root)"
     uid = pwd.getpwnam(MAILMAN_USER)[2]
     gid = grp.getgrnam(MAILMAN_GROUP)[2]
     os.chown(file, uid, gid)
-    print(i, end=\'\')f not os.path.exists(droplib):
-        print(", end=\'\')Creating " + droplib
+    print
+
+    if not os.path.exists(droplib):
+        print "Creating " + droplib
         fp = open(droplib, 'w', 0644)
         fp.write("""import sys
 import os
@@ -105,40 +109,40 @@ class CheckFixUid:
         os.setgid(gid)
         os.setuid(uid)
     if os.geteuid() != uid:
-        print(", end=\'\')You need to run this script as root or mailman because it was configured to run"
-        print(", end=\'\')on a linux system with a security patch which restricts hard links"
+        print "You need to run this script as root or mailman because it was configured to run"
+        print "on a linux system with a security patch which restricts hard links"
         sys.exit()
 """)
         fp.close()
     else:
-        print(", end=\'\')Skipping creation of " + droplib
+        print "Skipping creation of " + droplib
 
 
-    print(", end=\'\')\nMaking cgis setuid mailman"
+    print "\nMaking cgis setuid mailman"
     cgis = glob.glob(paths.prefix + '/cgi-bin/*')
 
     for file in cgis:
-        print(f, end=\'\')ile
+        print file
         os.chown(file, uid, gid)
         os.chmod(file, 06755)
 
-    print(", end=\'\')\nMaking mail wrapper setuid mailman"
+    print "\nMaking mail wrapper setuid mailman"
     file= paths.prefix + '/mail/mailman'
     os.chown(file, uid, gid)
     os.chmod(file, 06755)
-    print(f, end=\'\')ile
+    print file
 
-    print(", end=\'\')\nEnsuring that all config.db/pck files are owned by Mailman"
+    print "\nEnsuring that all config.db/pck files are owned by Mailman"
     cdbs = glob.glob(mm_cfg.VAR_PREFIX + '/lists/*/config.db*')
     cpcks = glob.glob(mm_cfg.VAR_PREFIX + '/lists/*/config.pck*')
 
     for file in cdbs + cpcks:
         stat = os.stat(file)
         if (stat[ST_UID] != uid or stat[ST_GID] != gid):
-            print(f, end=\'\')ile
+            print file
             os.chown(file, uid, gid)
 
-    print(", end=\'\')\nPatching mailman scripts to change the uid to mailman"
+    print "\nPatching mailman scripts to change the uid to mailman"
 
     for script in binfilestopatch:
         filefd = open(script, "r")
@@ -148,7 +152,7 @@ class CheckFixUid:
         patched = 0
         try:
             file.index("import CheckFixUid\n")
-            print(", end=\'\')Not patching " + script + ", already patched"
+            print "Not patching " + script + ", already patched"
         except ValueError:
             file.insert(file.index("import paths\n")+1, "import CheckFixUid\n")
             for i in range(len(file)-1, 0, -1):
@@ -156,21 +160,21 @@ class CheckFixUid:
                 # Special hack to support patching of update
                 object2=re.compile("^([     ]*).*=[      ]*main\(").search(file[i])
                 if object:
-                    print(", end=\'\')Patching " + script
+                    print "Patching " + script
                     file.insert(i,
                         object.group(1) + "CheckFixUid.CheckFixUid()\n")
                     patched=1
                     break
                 if object2:
-                    print(", end=\'\')Patching " + script
+                    print "Patching " + script
                     file.insert(i,
                         object2.group(1) + "CheckFixUid.CheckFixUid()\n")
                     patched=1
                     break
 
             if patched==0:
-                print(", end=\'\')Warning, file "+script+" couldn't be patched."
-                print(", end=\'\')If you use it, mailman may not function properly"
+                print "Warning, file "+script+" couldn't be patched."
+                print "If you use it, mailman may not function properly"
             else:
                 filefd=open(script, "w")
                 filefd.writelines(file)

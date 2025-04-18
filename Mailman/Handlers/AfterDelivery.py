@@ -19,14 +19,21 @@
 This module must appear after the delivery module in the message pipeline.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import unicode_literals
-
 import time
 
 
+def _encode_header(h, charset):
+    """Encode a header value using the specified charset."""
+    if isinstance(h, str):
+        return h
+    return h.encode(charset, 'replace')
+
 def process(mlist, msg, msgdata):
+    """Process a message after delivery."""
+    # Get the message headers
+    subject = _encode_header(msg.get('subject', ''), 'utf-8')
+    from_ = _encode_header(msg.get('from', ''), 'utf-8')
+    to = _encode_header(msg.get('to', ''), 'utf-8')
+    cc = _encode_header(msg.get('cc', ''), 'utf-8')
     mlist.last_post_time = time.time()
     mlist.post_id += 1

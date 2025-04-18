@@ -108,8 +108,8 @@ class MaildirRunner(Runner):
         # Cruise through all the files currently in the new/ directory
         try:
             files = os.listdir(self._dir)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
+        except OSError, e:
+            if e.errno <> errno.ENOENT: raise
             # Nothing's been delivered yet
             return 0
         for file in files:
@@ -118,11 +118,11 @@ class MaildirRunner(Runner):
             xdstname = os.path.join(self._cur, file + ':1,X')
             try:
                 os.rename(srcname, dstname)
-            except OSError as e:
+            except OSError, e:
                 if e.errno == errno.ENOENT:
                     # Some other MaildirRunner beat us to it
                     continue
-                syslog('error', 'Could not rename maildir file: {s', srcname)
+                syslog('error', 'Could not rename maildir file: %s', srcname)
                 raise
             # Now open, read, parse, and enqueue this message
             try:
@@ -151,7 +151,7 @@ class MaildirRunner(Runner):
                 else:
                     # As far as we can tell, this message isn't destined for
                     # any list on the system.  What to do?
-                    syslog('error', 'Message apparently not for any list: }{s',
+                    syslog('error', 'Message apparently not for any list: %s',
                            xdstname)
                     os.rename(dstname, xdstname)
                     continue
@@ -183,15 +183,14 @@ class MaildirRunner(Runner):
                     msgdata['torequest'] = 1
                     queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
                 else:
-                    syslog('error', 'Unknown sub-queue: }{s', subq)
+                    syslog('error', 'Unknown sub-queue: %s', subq)
                     os.rename(dstname, xdstname)
                     continue
                 queue.enqueue(msg, msgdata)
                 os.unlink(dstname)
-            except Exception as e:
+            except Exception, e:
                 os.rename(dstname, xdstname)
                 syslog('error', str(e))
 
     def _cleanup(self):
         pass
-}
