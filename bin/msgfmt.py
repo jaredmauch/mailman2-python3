@@ -1,6 +1,6 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Written by Martin v. L�wis <loewis@informatik.hu-berlin.de>
+# Written by Martin v. Lwis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
 
@@ -53,18 +53,17 @@ def add(id, str, fuzzy):
 def generate():
     "Return the generated output."
     global MESSAGES
-    keys = MESSAGES.keys()
     # the keys are sorted in the .mo file
-    keys.sort()
+    keys = sorted(MESSAGES.keys())
     offsets = []
-    ids = strs = ''
+    ids = strs = b''
     for id in keys:
         # For each string, we need size and file offset.  Each string is NUL
         # terminated; the NUL does not count into the size.
         offsets.append((len(ids), len(id), len(strs), len(MESSAGES[id])))
-        ids += id + '\0'
-        strs += MESSAGES[id] + '\0'
-    output = ''
+        ids += id.encode('utf-8') + b'\0'
+        strs += MESSAGES[id].encode('utf-8') + b'\0'
+    
     # The header is 7 32-bit unsigned integers.  We don't use hash tables, so
     # the keys start right after the index tables.
     # translated string.
@@ -80,13 +79,13 @@ def generate():
         voffsets += [l2, o2+valuestart]
     offsets = koffsets + voffsets
     output = struct.pack("Iiiiiii",
-                         0x950412de,        # Magic
-                         0,                 # Version
-                         len(keys),         # # of entries
-                         7*4,               # start of key index
-                         7*4+len(keys)*8,   # start of value index
-                         0, 0)              # size and offset of hash table
-    output += array.array("i", offsets).tostring()
+                        0x950412de,        # Magic
+                        0,                 # Version
+                        len(keys),         # # of entries
+                        7*4,               # start of key index
+                        7*4+len(keys)*8,   # start of value index
+                        0, 0)              # size and offset of hash table
+    output += array.array("i", offsets).tobytes()
     output += ids
     output += strs
     return output
@@ -105,17 +104,25 @@ def make(filename, outfile):
         outfile = os.path.splitext(infile)[0] + '.mo'
 
     try:
-        f = open(infile, 'rb')
+        lines = []
+        with open(infile, 'rb') as f:
+            for line in f:
+                # Decode each line as UTF-8, falling back to ISO-8859-1 if needed
+                try:
+                    lines.append(line.decode('utf-8'))
+                except UnicodeDecodeError:
+                    lines.append(line.decode('iso-8859-1'))
     except IOError as msg:
         print(msg, file=sys.stderr)
         sys.exit(1)
-    
+
     section = None
     fuzzy = 0
 
     # Parse the catalog
+    msgid = msgstr = ''
     lno = 0
-    for l in f:
+    for l in lines:
         lno += 1
         # If we get a comment line after a msgstr, this is a new entry
         if l[0] == '#' and section == STR:
@@ -123,7 +130,7 @@ def make(filename, outfile):
             section = None
             fuzzy = 0
         # Record a fuzzy mark
-        if l[:2] == '#,' and l.find('fuzzy'):
+        if l.startswith('#,') and 'fuzzy' in l:
             fuzzy = 1
         # Skip comments
         if l[0] == '#':
@@ -144,15 +151,20 @@ def make(filename, outfile):
         if not l:
             continue
         # XXX: Does this always follow Python escape semantics?
-        l = eval(l)
+        try:
+            l = eval(l)
+        except Exception as e:
+            print('Syntax error on %s:%d' % (infile, lno), file=sys.stderr)
+            print('Before:', l, file=sys.stderr)
+            print('Error:', str(e), file=sys.stderr)
+            sys.exit(1)
         if section == ID:
             msgid += l
         elif section == STR:
             msgstr += l
         else:
-            print('Syntax error on %s:%d' % (infile, lno), \
-                   'before:')
-            print(l)
+            print('Syntax error on %s:%d' % (infile, lno), file=sys.stderr)
+            print('Before:', l, file=sys.stderr)
             sys.exit(1)
     # Add last entry
     if section == STR:
@@ -162,16 +174,17 @@ def make(filename, outfile):
     output = generate()
 
     try:
-        open(outfile,"wb").write(output)
-    except (IOError) as msg:
+        with open(outfile, "wb") as f:
+            f.write(output)
+    except IOError as msg:
         print(msg, file=sys.stderr)
-                      
+
 
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
-                                   ['help', 'version', 'output-file='])
-    except (getopt.error) as msg:
+                                 ['help', 'version', 'output-file='])
+    except getopt.error as msg:
         usage(1, msg)
 
     outfile = None
