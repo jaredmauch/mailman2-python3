@@ -472,9 +472,6 @@ except KeyError:
 problems = []
 try:
     statdata = os.stat(prefix)
-except OSError:
-    problems.append("Directory doesn't exist: " + prefix)
-else:
     mode = statdata[ST_MODE]
     gid = statdata[ST_GID]
     if mailmangid != gid:  # Changed <> to !=
@@ -485,6 +482,9 @@ else:
     perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
     if (mode & perms) != perms:
         problems.append("Permissions should be at least 02775: " + prefix)
+except OSError:
+    # Directory doesn't exist yet, which is fine - make install will create it
+    pass
 if not problems:
     msg = "okay\n"
 else:
