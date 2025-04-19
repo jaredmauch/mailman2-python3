@@ -20,61 +20,79 @@
 This might eventually be replaced by a syslog based logger, hence the name.
 """
 
+from typing import Dict, Optional, Any, Union
 import quopri
-
 from Mailman.Logging.StampedLogger import StampedLogger
 
-
-
 # Global, shared logger instance.  All clients should use this object.
-syslog = None
+syslog: Optional['_Syslog'] = None
 
-
-
-# Don't instantiate except below.
 class _Syslog:
-    def __init__(self):
-        self._logfiles = {}
+    """A central logging system for Mailman.
+    
+    This class manages multiple log files for different types of messages.
+    Each log file is handled by a StampedLogger instance.
+    """
+    
+    def __init__(self) -> None:
+        """Initialize the syslog with an empty dictionary of logfiles."""
+        self._logfiles: Dict[str, StampedLogger] = {}
 
-    def __del__(self):
+    def __del__(self) -> None:
+        """Clean up by closing all log files."""
         self.close()
 
-    def write(self, kind, msg, *args, **kws):
+    def write(self, kind: str, msg: str, *args: Any, **kws: Any) -> None:
+        """Write a message to the specified log type.
+        
+        Args:
+            kind: The type of log message (determines which log file to use)
+            msg: The message format string
+            *args: Positional arguments for message formatting
+            **kws: Keyword arguments for message formatting
+        """
         self.write_ex(kind, msg, args, kws)
 
-    # We need this because SMTPDirect tries to pass in a special dict-like
-    # object, which is not a concrete dictionary.  This is not allowed by
-    # Python's extended call syntax. :(
-    def write_ex(self, kind, msg, args=None, kws=None):
-        origmsg = msg
+    def write_ex(self, kind: str, msg: str, 
+                args: Optional[tuple] = None, 
+                kws: Optional[dict] = None) -> None:
+        """Extended write method that takes explicit args and kwargs.
+        
+        Args:
+            kind: The type of log message
+            msg: The message format string
+            args: Tuple of positional arguments for message formatting
+            kws: Dictionary of keyword arguments for message formatting
+        """
         logf = self._logfiles.get(kind)
         if not logf:
             logf = self._logfiles[kind] = StampedLogger(kind)
+        
         try:
             if args:
-                msg %= args
+                msg = msg % args
             if kws:
-                msg %= kws
-        # It's really bad if exceptions in the syslogger cause other crashes
+                msg = msg % kws
         except Exception as e:
-            msg = 'Bad format "%s": %s: %s' % (origmsg, repr(e), e)
+            msg = f'Bad format "{msg}": {type(e).__name__}: {str(e)}'
+        
         try:
-            logf.write(msg + '\n')
+            logf.write(f'{msg}\n')
         except UnicodeError:
-            # Python 2.4 may fail to write 8bit (non-ascii) characters
-            # Also, if msg is unicode with non-ascii, quopri.encodestring()
-            # will throw UnicodeEncodeError, so avoid that.
+            # Handle non-ASCII characters by encoding to quoted-printable
             if isinstance(msg, str):
-                msg = msg.encode('iso-8859-1', 'replace')
-            logf.write(quopri.encodestring(msg) + '\n')
+                msg = msg.encode('utf-8', errors='replace')
+            encoded_msg = quopri.encodestring(msg).decode('ascii')
+            logf.write(f'{encoded_msg}\n')
 
-    # For the ultimate in convenience
+    # For ultimate convenience, allow direct calling
     __call__ = write
 
-    def close(self):
-        for kind, logger in self._logfiles.items():
+    def close(self) -> None:
+        """Close all open log files and clear the logfiles dictionary."""
+        for logger in self._logfiles.values():
             logger.close()
         self._logfiles.clear()
 
-
+# Create the singleton instance
 syslog = _Syslog()
