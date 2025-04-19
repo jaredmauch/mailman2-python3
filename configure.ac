@@ -399,7 +399,7 @@ rm -f conftest.out conftest.py])
 # Check for some other uid to use than `mailman'
 AC_MSG_CHECKING(for --with-username)
 AC_ARG_WITH(username, dnl
-[  --with-username      specify a user name other than \"mailman\"])
+[  --with-username      specify a user name other than "mailman"])
 
 if test -z "$with_username"
 then
@@ -410,15 +410,15 @@ AC_MSG_RESULT($USERNAME)
 
 # User `mailman' must exist
 AC_SUBST(MAILMAN_USER)
-AC_MSG_CHECKING(for user name \"$USERNAME\")
+AC_MSG_CHECKING(for user name "$USERNAME")
 MM_FIND_USER_NAME(MAILMAN_USER, $USERNAME)
 if test -z "$MAILMAN_USER"
 then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No \"$USERNAME\" user found!
-***** Your system must have a \"$USERNAME\" user defined
+***** No "$USERNAME" user found!
+***** Your system must have a "$USERNAME" user defined
 ***** (usually in your /etc/passwd file).  Please see the INSTALL
 ***** file for details.])
   fi
@@ -429,7 +429,7 @@ AC_MSG_RESULT(okay)
 # Check for some other gid to use than `mailman'
 AC_MSG_CHECKING(for --with-groupname)
 AC_ARG_WITH(groupname, dnl
-[  --with-groupname     specify a group name other than \"mailman\"])
+[  --with-groupname     specify a group name other than "mailman"])
 
 if test -z "$with_groupname"
 then
@@ -441,15 +441,15 @@ AC_MSG_RESULT($GROUPNAME)
 
 # Target group must exist
 AC_SUBST(MAILMAN_GROUP)
-AC_MSG_CHECKING(for group name \"$GROUPNAME\")
+AC_MSG_CHECKING(for group name "$GROUPNAME")
 MM_FIND_GROUP_NAME(MAILMAN_GROUP, $GROUPNAME)
 if test -z "$MAILMAN_GROUP"
 then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No \"$GROUPNAME\" group found!
-***** Your system must have a \"$GROUPNAME\" group defined
+***** No "$GROUPNAME" group found!
+***** Your system must have a "$GROUPNAME" group defined
 ***** (usually in your /etc/group file).  Please see the INSTALL
 ***** file for details.])
   fi
@@ -525,7 +525,7 @@ then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No group name \"$with_mail_gid\" found for the mail wrapper program.
+***** No group name "$with_mail_gid" found for the mail wrapper program.
 ***** This is the group that your mail server will use to run Mailman's
 ***** programs.  You should specify an existing group with the
 ***** --with-mail-gid configure option, or use --without-permcheck to
@@ -552,7 +552,7 @@ then
   if test "$with_permcheck" = "yes"
   then
     AC_MSG_ERROR([
-***** No group name \"$with_cgi_gid\" found for the CGI wrapper program.
+***** No group name "$with_cgi_gid" found for the CGI wrapper program.
 ***** This is the group that your web server will use to run Mailman's
 ***** programs.  You should specify an existing group with the
 ***** --with-cgi-gid configure option, or use --without-permcheck to
@@ -613,9 +613,10 @@ cat > conftest.py <<EOF
 # python
 from socket import *
 fqdn = getfqdn()
-with open('conftest.out', 'w') as fp:
-    print(fqdn, file=fp)
-    print(fqdn, file=fp)
+fp = open('conftest.out', 'w')
+fp.write(fqdn + '\n')
+fp.write(fqdn + '\n')
+fp.close()
 EOF
 $PYTHON conftest.py
 changequote([, ])
@@ -652,15 +653,6 @@ if test $ac_cv_func_syslog = no; then
 fi
 
 # Checks for header files.
-m4_warn([obsolete],
-[The preprocessor macro 'STDC_HEADERS' is obsolete.
-  Except in unusual embedded environments, you can safely include all
-  C89 headers unconditionally.])dnl
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
-AC_CHECK_INCLUDES_DEFAULT
-AC_PROG_EGREP
-
 AC_CHECK_HEADERS(syslog.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
