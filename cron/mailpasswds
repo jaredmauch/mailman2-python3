@@ -41,7 +41,7 @@ Options:
 import sys
 import os
 import errno
-import getopt
+import argparse
 from types import UnicodeType
 
 import paths
@@ -66,48 +66,19 @@ PROGRAM = sys.argv[0]
 _ = i18n._
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
-
-
-
 def tounicode(s, enc):
-    if isinstance(s, UnicodeType):
+    if isinstance(s, str):
         return s
-    return unicode(s, enc, 'replace')
+    return str(s, enc, 'replace')
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:h',
-                                   ['listname=', 'help'])
-    except getopt.error, msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description=_('Send password reminders for all lists to all users.'))
+    parser.add_argument('-l', '--listname', action='append', help=_('Send password reminders for the named list only. If omitted, reminders are sent for all lists.'))
+    parser.add_argument('-h', '--help', action='help', help=_('Print this message and exit.'))
+    args = parser.parse_args()
 
-    if args:
-        usage(1)
-
-    listnames = None
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        if opt in ('-l', '--listname'):
-            if listnames is None:
-                listnames = [arg]
-            else:
-                listnames.append(arg)
-
-    if listnames is None:
-        listnames = Utils.list_names()
+    listnames = args.listname or Utils.list_names()
 
     # This is the list that all the reminders will look like they come from,
     # but with the host name coerced to the virtual host we're processing.
@@ -116,7 +87,7 @@ def main():
     except Errors.MMUnknownListError:
         # Do it this way for I18n's _()
         sitelistname = mm_cfg.MAILMAN_SITE_LIST
-        print >> sys.stderr, _('Site list is missing: %(sitelistname)s')
+        print(_('Site list is missing: %(sitelistname)s') % {'sitelistname': sitelistname}, file=sys.stderr)
         syslog('error', 'Site list is missing: %s', mm_cfg.MAILMAN_SITE_LIST)
         sys.exit(1)
 
@@ -138,7 +109,7 @@ def main():
 
     # Now for each virtual host, collate the user information.  Each user
     # entry has the form (listaddr, password, optionsurl)
-    for host in byhost.keys():
+    for host in list(byhost.keys()):
         # Site owner is `mailman@dom.ain'
         userinfo = {}
         for mlist in byhost[host]:
@@ -165,7 +136,7 @@ def main():
                 userinfo.setdefault(member, []).append(info)
         # Now that we've collected user information for this host, send each
         # user the password reminder.
-        for addr in userinfo.keys():
+        for addr in list(userinfo.keys()):
             # If the person is on more than one list, it is possible that they
             # have different preferred languages, and there's no good way to
             # know which one they want their password reminder in.  Pick the
@@ -238,6 +209,5 @@ def main():
                                   })
 
 
-
 if __name__ == '__main__':
     main()

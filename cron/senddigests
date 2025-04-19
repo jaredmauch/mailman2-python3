@@ -38,7 +38,7 @@ Options:
 
 import os
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -53,46 +53,19 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 PROGRAM = sys.argv[0]
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
-
-
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hl:e:',
-                                   ['help', 'listname=', 'exceptlist='])
-    except getopt.error, msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description=_('Dispatch digests for lists with pending messages and digest_send_periodic set.'))
+    parser.add_argument('-l', '--listname', action='append', help=_('Send the digest for the given list only, otherwise the digests for all lists are sent out.'))
+    parser.add_argument('-e', '--exceptlist', action='append', help=_('Don\'t send the digest for the given list.'))
+    args = parser.parse_args()
 
-    if args:
-        usage(1)
-
-    exceptlists = []
-    listnames = []
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-l', '--listname'):
-            listnames.append(arg)
-        elif opt in ('-e', '--exceptlist'):
-            exceptlists.append(arg)
-
-    if not listnames:
-        listnames = Utils.list_names()
-    for listname in exceptlists:
-        try:
-            listnames.remove(listname)
-        except ValueError:
-            pass
+    listnames = args.listname or Utils.list_names()
+    if args.exceptlist:
+        for listname in args.exceptlist:
+            try:
+                listnames.remove(listname)
+            except ValueError:
+                pass
 
     for listname in listnames:
         mlist = MailList.MailList(listname, lock=0)
@@ -105,16 +78,14 @@ def main():
                 # We are unable to predict what exception may occur in digest
                 # processing and we don't want to lose the other digests, so
                 # we catch everything.
-                except Exception, errmsg:
-                    print >> sys.stderr, \
-                      'List: %s: problem processing %s:\n%s' % \
-                        (listname,
-                         os.path.join(mlist.fullpath(), 'digest.mbox'),
-                         errmsg)
+                except Exception as errmsg:
+                    print('List: %s: problem processing %s:\n%s' % (
+                        listname,
+                        os.path.join(mlist.fullpath(), 'digest.mbox'),
+                        errmsg), file=sys.stderr)
             finally:
                 mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     main()

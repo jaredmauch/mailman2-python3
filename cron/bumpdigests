@@ -30,7 +30,7 @@ all lists are bumped.
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -46,44 +46,28 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 PROGRAM = sys.argv[0]
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
-
-
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description=_('Increment the digest volume number and reset the digest number to one.'))
+    parser.add_argument('-h', '--help', action='help', help=_('Print this message and exit.'))
+    parser.add_argument('listnames', nargs='*', help=_('List names to bump. If none given, all lists are bumped.'))
+    args = parser.parse_args()
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
-    if args:
-        listnames = args
+    if args.listnames:
+        listnames = args.listnames
     else:
         listnames = Utils.list_names()
 
     if not listnames:
-        print _('Nothing to do.')
+        print(_('Nothing to do.'))
         sys.exit(0)
 
     for listname in listnames:
         try:
             # be sure the list is locked
             mlist = MailList.MailList(listname)
-        except Errors.MMListError, e:
-            usage(1, _('No such list: %(listname)s'))
+        except Errors.MMListError as e:
+            print(_('No such list: %(listname)s') % {'listname': listname}, file=sys.stderr)
+            sys.exit(1)
         try:
             mlist.bump_digest_volume()
         finally:
@@ -91,6 +75,5 @@ def main():
             mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     main()
