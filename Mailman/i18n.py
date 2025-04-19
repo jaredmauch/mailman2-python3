@@ -47,7 +47,7 @@ def set_language(language=None):
     try:
         _translation = gettext.translation('mailman', mm_cfg.MESSAGES_DIR,
                                            language)
-    except (IOError:
+    except IOError:
         # The selected language was not installed in messages) as so fall back to
         # untranslated English.
         _translation = gettext.NullTranslations()

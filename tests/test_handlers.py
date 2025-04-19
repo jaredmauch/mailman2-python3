@@ -17,21 +17,20 @@
 
 """Unit tests for the various Mailman/Handlers/*.py modules.
 """
+from __future__ import print_function
 
+from builtins import str
+from builtins import range
 import os
-import sys
 import time
 import email
 import errno
-import pickle as cPickle
-import shutil
-import tempfile
+import pickle
 import unittest
-from io import io
 from email.generator import Generator
 try:
     from Mailman import __init__
-except (ImportError:
+except ImportError:
     import paths
 
 from Mailman import mm_cfg
@@ -60,15 +59,17 @@ from Mailman.Handlers import ToArchive
 from Mailman.Handlers import ToDigest
 from Mailman.Handlers import ToOutgoing
 from Mailman.Handlers import ToUsenet
-from Mailman.Utils import hashlib_new
+from Mailman.Utils import sha_new
 
 from TestBase import TestBase
 
 
+
 def password(plaintext):
     return sha_new(plaintext).hexdigest()
 
 
+
 class TestAcknowledge(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -81,7 +82,7 @@ class TestAcknowledge(TestBase):
 
     def tearDown(self):
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
-            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR) as f))
+            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
         TestBase.tearDown(self)
 
     def test_no_ack_msgdata(self):
@@ -198,6 +199,7 @@ Your preferences: http://www.dom.ain/mailman/options/_xtest/aperson%40dom.ain
         eq(len(self._sb.files()), 0)
 
 
+
 class TestAfterDelivery(TestBase):
     # Both msg and msgdata are ignored
     def test_process(self):
@@ -209,6 +211,7 @@ class TestAfterDelivery(TestBase):
         self.assertEqual(mlist.post_id, post_id + 1)
 
 
+
 class TestApprove(TestBase):
     def test_short_circuit(self):
         msgdata = {'approved': 1}
@@ -225,7 +228,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.assertTrue('approved' in msgdata)
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_moderator(self):
@@ -237,7 +240,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.assertTrue('approved' in msgdata)
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approved_admin(self):
@@ -249,7 +252,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.assertTrue('approved' in msgdata)
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_admin(self):
@@ -261,7 +264,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.assertTrue('approved' in msgdata)
+        self.failUnless('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_unapproved(self):
@@ -284,6 +287,7 @@ X-BeenThere: %s
         self.assertRaises(Errors.LoopError, Approve.process, mlist, msg, {})
 
 
+
 class TestCalcRecips(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -379,6 +383,7 @@ Urgent: zzZZzz
     # BAW: must test the do_topic_filters() path...
 
 
+
 class TestCleanse(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -441,6 +446,7 @@ Subject: a message to you
         eq(msg['subject'], 'a message to you')
 
 
+
 class TestCookHeaders(TestBase):
     def test_transform_noack_to_xack(self):
         eq = self.assertEqual
@@ -861,6 +867,7 @@ From: aperson@dom.ain
         eq(msg['list-post'], '<mailto:_xtest@dom.ain>')
 
 
+
 class TestDecorate(TestBase):
     def test_short_circuit(self):
         msgdata = {'isdigest': 1}
@@ -1032,6 +1039,7 @@ IMAGEDATAIMAGEDATAIMAGEDATA
                                    'recips': [1, 2, 3]})
 
 
+
 class TestFileRecips(TestBase):
     def test_short_circuit(self):
         msgdata = {'recips': 1}
@@ -1056,14 +1064,14 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print(>> fp, addr
+                print(addr, file=fp)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
             self.assertEqual(msgdata.get('recips'), addrs)
         finally:
             try:
                 os.unlink(file)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != e.ENOENT: raise
 
     def test_file_exists_no_member(self):
@@ -1071,7 +1079,7 @@ To: yall@dom.ain
 From: eperson@dom.ain
 To: yall@dom.ain
 
-""") as Message.Message)
+""", Message.Message)
         msgdata = {}
         file = os.path.join(self._mlist.fullpath(), 'members.txt')
         addrs = ['aperson@dom.ain', 'bperson@dom.ain',
@@ -1079,14 +1087,14 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print(>> fp, addr
+                print(addr, file=fp)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
             self.assertEqual(msgdata.get('recips'), addrs)
         finally:
             try:
                 os.unlink(file)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != e.ENOENT: raise
 
     def test_file_exists_is_member(self):
@@ -1094,7 +1102,7 @@ To: yall@dom.ain
 From: aperson@dom.ain
 To: yall@dom.ain
 
-""") as Message.Message)
+""", Message.Message)
         msgdata = {}
         file = os.path.join(self._mlist.fullpath(), 'members.txt')
         addrs = ['aperson@dom.ain', 'bperson@dom.ain',
@@ -1102,7 +1110,7 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print(>> fp, addr
+                print(addr, file=fp)
                 self._mlist.addNewMember(addr)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
@@ -1110,10 +1118,11 @@ To: yall@dom.ain
         finally:
             try:
                 os.unlink(file)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != e.ENOENT: raise
 
 
+
 class TestHold(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1125,15 +1134,15 @@ class TestHold(TestBase):
 
     def tearDown(self):
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
-            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR) as f))
+            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
         TestBase.tearDown(self)
         try:
             os.unlink(os.path.join(mm_cfg.DATA_DIR, 'pending.db'))
-        except (OSError as e:
-            if e.errno != e.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         for f in [holdfile for holdfile in os.listdir(mm_cfg.DATA_DIR)
                   if holdfile.startswith('heldmsg-')]:
-            os.unlink(os.path.join(mm_cfg.DATA_DIR) as f))
+            os.unlink(os.path.join(mm_cfg.DATA_DIR, f))
 
     def test_short_circuit(self):
         msgdata = {'approved': 1}
@@ -1252,7 +1261,7 @@ From: aperson@dom.ain
             qfiles[to] = qmsg, qdata
         # BAW: We could be testing many other attributes of either the
         # messages or the metadata files...
-        keys = qfiles.keys()
+        keys = list(qfiles.keys())
         keys.sort()
         eq(keys, ['_xtest-owner@dom.ain', 'aperson@dom.ain'])
         # Get the pending cookie from the message to the sender
@@ -1271,6 +1280,7 @@ From: aperson@dom.ain
         eq(len(holdfiles), 0)
 
 
+
 class TestMimeDel(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1507,7 +1517,7 @@ PDF part outer
         eq = self.assertEqual
         msg = email.message_from_string("""\
 Message-ID: <4D9E6AEA.1060802@example.net>
-Date: Thu, 0o7 Apr 2011 18:54:50 -0o700
+Date: Thu, 07 Apr 2011 18:54:50 -0700
 From: User <user@example.com>
 MIME-Version: 1.0
 To: Someone <someone@example.net>
@@ -1528,7 +1538,7 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment
 
 Message-ID: <4D9E647F.4050308@example.net>
-Date: Thu, 0o7 Apr 2011 18:27:27 -0o700
+Date: Thu, 07 Apr 2011 18:27:27 -0700
 From: User1 <user1@example.com>
 MIME-Version: 1.0
 To: Someone1 <someone1@example.net>
@@ -1550,7 +1560,7 @@ Content-Disposition: attachment
 From: User2 <user2@example.com>
 To: Someone2 <someone2@example.net>
 Subject: Attached Message 2 Subject
-Date: Thu, 7 Apr 2011 19:09:35 -0o500
+Date: Thu, 7 Apr 2011 19:09:35 -0500
 Message-ID: <DAE689E1FD1D493BACD15180145B4151@example.net>
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
@@ -1573,7 +1583,7 @@ Content-Disposition: attachment
 From: User3 <user3@example.com>
 To: Someone3 <someone3@example.net>
 Subject: Attached Message 3 Subject
-Date: Thu, 7 Apr 2011 17:22:0o4 -0o500
+Date: Thu, 7 Apr 2011 17:22:04 -0500
 Message-ID: <BANLkTi=SzfNJo-V7cvrg3nE3uOi9uxXv3g@example.net>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -1606,7 +1616,7 @@ Content-Disposition: attachment
 From: User4 <user4@example.com>
 To: Someone4 <someone4@example.net>
 Subject: Attached Message 4 Subject
-Date: Thu, 7 Apr 2011 17:24:26 -0o500
+Date: Thu, 7 Apr 2011 17:24:26 -0500
 Message-ID: <19CC3BDF28CF49AD988FF43B2DBC5F1D@example>
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
@@ -1642,7 +1652,7 @@ Content-Disposition: attachment
 From: User5 <user5@example.com>
 To: Someone5 <someone5@example.net>
 Subject: Attached Message 5 Subject
-Date: Thu, 7 Apr 2011 16:24:26 -0o500
+Date: Thu, 7 Apr 2011 16:24:26 -0500
 Message-ID: <some_id@example>
 Content-Type: multipart/alternative;
 	boundary="----=_NextPart_000_005C_01CBF557.56C6F370"
@@ -1756,15 +1766,17 @@ Final plain part.
         eq(part1.get_content_type(), 'text/plain')
         eq(part1.get_payload(), 'Attached Message 5 plain body.\n')
 
-
+
 class TestModerate(TestBase):
     pass
 
 
+
 class TestReplybot(TestBase):
     pass
 
 
+
 class TestSpamDetect(TestBase):
     def test_short_circuit(self):
         msgdata = {'approved': 1}
@@ -1795,6 +1807,7 @@ A message.
             mm_cfg.KNOWN_SPAMMERS = spammers
 
 
+
 class TestTagger(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1909,6 +1922,7 @@ Keywords: barbaz
         eq(msgdata.get('topichits'), None)
 
 
+
 class TestToArchive(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -1964,6 +1978,7 @@ It rocks!
         eq(msg.as_string(unixfrom=0), msg2.as_string(unixfrom=0))
 
 
+
 class TestToDigest(TestBase):
     def _makemsg(self, i=0):
         msg = email.message_from_string("""From: aperson@dom.ain
@@ -1987,10 +2002,10 @@ Here is message %(i)d
     def tearDown(self):
         try:
             os.unlink(self._path)
-        except (OSError as e:
-            if e.errno != e.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
-            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR) as f))
+            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
         TestBase.tearDown(self)
 
     def test_short_circuit(self):
@@ -2016,7 +2031,7 @@ Here is message %(i)d
         size = os.path.getsize(self._path) + len(str(msg))
         # Set digest_size_threshhold to a very small value to force a digest.
         # Setting to zero no longer works.
-        mlist.digest_size_threshhold = 0.0o01
+        mlist.digest_size_threshhold = 0.001
         ToDigest.process(mlist, msg, {})
         files = self._sb.files()
         # There should be two files in the queue, one for the MIME digest and
@@ -2045,6 +2060,7 @@ Here is message %(i)d
         # BAW: this test is incomplete...
 
 
+
 class TestToOutgoing(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -2081,6 +2097,7 @@ It rocks!
         #self.failUnless(data['received_time'] <= time.time())
 
 
+
 class TestToUsenet(TestBase):
     def setUp(self):
         TestBase.setUp(self)
@@ -2128,6 +2145,7 @@ Mailman rocks!
         #self.failUnless(data['received_time'] <= time.time())
 
 
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestAcknowledge))
@@ -2151,5 +2169,6 @@ def suite():
     return suite
 
 
+
 if __name__ == '__main__':
     unittest.main(defaultTest='suite')

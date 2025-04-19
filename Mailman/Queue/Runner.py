@@ -37,7 +37,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except (ImportError:
+except ImportError:
     dns_resolver = False
 
 

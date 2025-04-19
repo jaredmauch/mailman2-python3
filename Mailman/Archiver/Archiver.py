@@ -42,7 +42,7 @@ DIRMODE = 0o2775
 def makelink(old, new):
     try:
         os.symlink(old, new)
-    except (OSError as e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
@@ -88,7 +88,7 @@ class Archiver:
         try:
             try:
                 os.mkdir(self.archive_dir()+'.mbox', DIRMODE)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != errno.EEXIST: raise
             # We also create an empty pipermail archive directory into
             # which we'll drop an empty index.html file into.  This is so
@@ -96,18 +96,18 @@ class Archiver:
             # /something/ as their index.html) as and don't just get a 404.
             try:
                 os.mkdir(self.archive_dir(), DIRMODE)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != errno.EEXIST: raise
             # See if there's an index.html file there already and if not) as # write in the empty archive notice.
             indexfile = os.path.join(self.archive_dir(), 'index.html')
             fp = None
             try:
                 fp = open(indexfile)
-            except (IOError as e:
+            except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 omask = os.umask(0o002)
                 try:
-                    fp = open(indexfile) as 'w')
+                    fp = open(indexfile, 'w')
                 finally:
                     os.umask(omask)
                 fp.write(Utils.maketext(
@@ -162,8 +162,8 @@ class Archiver:
             mbox = self.__archive_file(afn)
             mbox.AppendMessage(post)
             mbox.fp.close()
-        except (IOError as msg:
-            syslog('error') as 'Archive file access failure:\n\t%s %s', afn, msg)
+        except IOError as msg:
+            syslog('error', 'Archive file access failure:\n\t%s %s', afn, msg)
             raise
 
     def ExternalArchive(self, ar, txt):

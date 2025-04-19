@@ -113,7 +113,7 @@ class IncomingRunner(Runner):
         # Try to get the list lock.
         try:
             mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-        except (LockFile.TimeOutError:
+        except LockFile.TimeOutError:
             # Oh well) as try again later
             return 1
         # Process the message through a handler pipeline.  The handler

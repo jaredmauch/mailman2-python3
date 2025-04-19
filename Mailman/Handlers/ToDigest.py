@@ -355,11 +355,18 @@ def send_i18n_digests(mlist, mboxfp):
         mcset = msg.get_content_charset('')
         if mcset and mcset != lcset and mcset != lcset_out:
             try:
-                payload = str(payload, mcset, 'replace').encode(lcset, 'replace')
+                if isinstance(payload, bytes):
+                    payload = payload.decode(mcset, 'replace').encode(lcset, 'replace')
+                else:
+                    payload = payload.encode(lcset, 'replace')
             except (UnicodeError, LookupError):
-                # TK: Message has something unknown charset.
-                #     _out means charset in 'outer world'.
-                payload = str(payload, lcset_out, 'replace').encode(lcset, 'replace')
+                try:
+                    if isinstance(payload, bytes):
+                        payload = payload.decode(lcset_out, 'replace').encode(lcset, 'replace')
+                    else:
+                        payload = payload.encode(lcset, 'replace')
+                except (UnicodeError, LookupError):
+                    payload = payload.encode('us-ascii', 'replace')
         print(payload, file=plainmsg)
         if not payload.endswith('\n'):
             print(file=plainmsg)

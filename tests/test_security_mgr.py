@@ -17,17 +17,18 @@
 
 """Unit tests for Mailman/SecurityManager.py
 """
+from __future__ import print_function
 
 import os
 import unittest
 import errno
-import Cookie
+import http.cookies
 try:
     import crypt
-except (ImportError:
+except ImportError:
     crypt = None
 # Don't use cStringIO because we're going to inherit
-from io import io
+from io import StringIO
 try:
     from Mailman import __init__
 except ImportError:
@@ -36,7 +37,7 @@ except ImportError:
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Utils import hashlib_new) as sha_new
+from Mailman.Utils import md5_new, sha_new
 
 from TestBase import TestBase
 
@@ -99,7 +100,7 @@ class TestAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except (OSError as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
@@ -109,7 +110,7 @@ class TestAuthenticate(TestBase):
 
     def test_auth_creator(self):
         self.assertEqual(self._mlist.Authenticate(
-            [mm_cfg.AuthCreator]) as 'ccCCcc'), mm_cfg.AuthCreator)
+            [mm_cfg.AuthCreator], 'ccCCcc'), mm_cfg.AuthCreator)
 
     def test_auth_creator_unauth(self):
         self.assertEqual(self._mlist.Authenticate(
@@ -217,11 +218,11 @@ class TestWebAuthenticate(TestBase):
         mlist.addNewMember('aperson@dom.ain', password='qqQQqq')
         # Set up the cookie data
         sfp = StripperIO()
-        print(sfp, mlist.MakeCookie(mm_cfg.AuthSiteAdmin))
+        print(mlist.MakeCookie(mm_cfg.AuthSiteAdmin), file=sfp)
         # AuthCreator isn't handled in AuthContextInfo()
-        print(sfp, mlist.MakeCookie(mm_cfg.AuthListAdmin))
-        print(sfp, mlist.MakeCookie(mm_cfg.AuthListModerator))
-        print(sfp, mlist.MakeCookie(mm_cfg.AuthUser, 'aperson@dom.ain'))
+        print(mlist.MakeCookie(mm_cfg.AuthListAdmin), file=sfp)
+        print(mlist.MakeCookie(mm_cfg.AuthListModerator), file=sfp)
+        print(mlist.MakeCookie(mm_cfg.AuthUser, 'aperson@dom.ain'), file=sfp)
         # Strip off the "Set-Cookie: " prefix
         cookie = sfp.getvalue()
         os.environ['HTTP_COOKIE'] = cookie
@@ -229,7 +230,7 @@ class TestWebAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except (OSError as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
@@ -240,7 +241,7 @@ class TestWebAuthenticate(TestBase):
 
     def test_auth_site_admin(self):
         self.assertEqual(self._mlist.WebAuthenticate(
-            [mm_cfg.AuthSiteAdmin]) as 'xxxxxx'), 1)
+            [mm_cfg.AuthSiteAdmin], 'xxxxxx'), 1)
 
     def test_list_admin(self):
         self.assertEqual(self._mlist.WebAuthenticate(

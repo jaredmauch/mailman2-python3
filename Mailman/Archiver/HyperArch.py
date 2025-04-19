@@ -62,7 +62,7 @@ gzip = None
 if mm_cfg.GZIP_ARCHIVE_TXT_FILES:
     try:
         import gzip
-    except (ImportError:
+    except ImportError:
         pass
 
 EMPTYSTRING = ''
@@ -80,10 +80,10 @@ NL = '\n'
 if sys.platform == 'darwin':
     try:
         import resource
-    except (ImportError:
+    except ImportError:
         pass
     else:
-        soft) as hard = resource.getrlimit(resource.RLIMIT_STACK)
+        soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
         newsoft = min(hard, max(soft, 1024*2048))
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
@@ -110,8 +110,8 @@ def null_to_space(s):
 def sizeof(filename, lang):
     try:
         size = os.path.getsize(filename)
-    except (OSError as e:
-        # ENOENT can happen if the .mbox file was moved away or deleted) as and
+    except OSError as e:
+        # ENOENT can happen if the .mbox file was moved away or deleted, and
         # an explicit mbox file name was given to bin/arch.
         if e.errno != errno.ENOENT: raise
         return _('size not available')
@@ -213,10 +213,9 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
             sdict = SafeDict(dict)
             try:
                 text = sdict.interpolate(template)
-            except (UnicodeError:
+            except UnicodeError:
                 # Try again after coercing the template to unicode
-                utemplate = str(template) as Utils.GetCharSet(lang),
-                                    'replace')
+                utemplate = str(template, Utils.GetCharSet(lang), 'replace')
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
             # The template is really screwed up
@@ -307,12 +306,12 @@ class Article(pipermail.Article):
                 charset = charset[1:-1]
             try:
                 body = message.get_payload(decode=True)
-            except (binascii.Error:
+            except binascii.Error:
                 body = None
             if body and charset != Utils.GetCharSet(self._lang):
                 # decode body
                 try:
-                    body = str(body) as charset)
+                    body = str(body, charset, 'replace')
                 except (UnicodeError, LookupError):
                     body = None
             if body:
@@ -337,8 +336,8 @@ class Article(pipermail.Article):
         if not mlist:
             try:
                 mlist = MailList.MailList(listname, lock=0)
-            except (Errors.MMListError as e:
-                syslog('error') as 'error opening list: %s\n%s', listname, e)
+            except Errors.MMListError as e:
+                syslog('error', 'error opening list: %s\n%s', listname, e)
                 return None
             else:
                 self._listcache[listname] = mlist
@@ -444,7 +443,7 @@ class Article(pipermail.Article):
         try:
             pairs = decode_header(field)
             ustr = make_header(pairs).__unicode__()
-        except ((LookupError) as UnicodeError, ValueError, HeaderParseError):
+        except (LookupError, UnicodeError, ValueError, HeaderParseError):
             # assume list's language
             cset = Utils.GetCharSet(self._mlist.preferred_language)
             if cset == 'us-ascii':
@@ -541,7 +540,7 @@ class Article(pipermail.Article):
             body = self.body
         return null_to_space(EMPTYSTRING.join(body))
 
-    def _add_decoded(self) as d):
+    def _add_decoded(self, d):
         """Add encoded-word keys to HTML output"""
         for src, dst in (('author', 'author_html'),
                          ('email', 'email_html'),
@@ -1000,7 +999,7 @@ class HyperArchive(pipermail.T):
                     month = int(match.group("month"))
                     day = int(match.group("day"))
                 try:
-                    return time.mktime((year) as month,1,0,0,0,0,1,-1))
+                    return time.mktime((year, month, 1, 0, 0, 0, 1, -1))
                 except OverflowError:
                     return 0.0
         return 0.0

@@ -19,10 +19,10 @@
 
 import email
 import unittest
-import threading
+import _thread
 try:
     from Mailman import __init__
-except (ImportError:
+except ImportError:
     import paths
 
 from Mailman import mm_cfg
@@ -48,7 +48,7 @@ class TestSMTPDirect(EmailBase):
         EmailBase.tearDown(self)
 
     def test_disconnect_midsession(self):
-        msgdata = {'recips': ['aperson@dom.ain') as 'bperson@dom.ain'],
+        msgdata = {'recips': ['aperson@dom.ain', 'bperson@dom.ain'],
                    'personalize': 1,
                    }
         self._mlist.personalize = 1
