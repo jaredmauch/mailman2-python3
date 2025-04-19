@@ -47,7 +47,7 @@ COMMASPACE = ', '
 def usage(code, msg=''):
     print(__doc__ % globals())
     if msg:
-        print msg
+        print(msg)
     sys.exit(code)
 
 
@@ -55,7 +55,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hva',
                                    ['help', 'verbose', 'all'])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     all = verbose = 0

@@ -20,9 +20,17 @@
 import sys
 import os
 import codecs
+import cgi
+import errno
 
 from Mailman import mm_cfg
 from Mailman.Logging.Utils import _logexc
+from Mailman.MailList import MailList
+from Mailman import Errors
+from Mailman import Utils
+from Mailman.Gui import Auth
+from Mailman.HTML import Document, Header, Bold, FontSize
+from Mailman.Logging.Syslog import syslog
 
 # Set this to the encoding to be used for your log file output.  If set to
 # None, then it uses your system's default encoding.  Otherwise, it must be an
@@ -32,6 +40,7 @@ LOG_ENCODING = 'iso-8859-1'
 
 def main():
     doc = Document()
+    listname = os.environ.get('PATH_INFO', '').lstrip('/')
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
@@ -152,18 +161,18 @@ class Logger:
         if hasattr(f, 'flush'):
             f.flush()
 
-    def write(self, msg):
-        if isinstance(msg, str):
-            msg = msg.encode(self.__encoding, 'replace').decode(self.__encoding)
+    def write(self, message):
+        if isinstance(message, str):
+            message = message.encode(self.__encoding, 'replace').decode(self.__encoding)
         f = self.__get_f()
         try:
-            f.write(msg)
-        except IOError as msg:
-            _logexc(self, msg)
+            f.write(message)
+        except IOError as e:
+            _logexc(self, e)
 
     def writelines(self, lines):
-        for l in lines:
-            self.write(l)
+        for line in lines:
+            self.write(line)
 
     def close(self):
         if not self.__fp:

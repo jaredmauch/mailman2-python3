@@ -21,7 +21,7 @@ import os
 import shutil
 import difflib
 import unittest
-from cStringIO import StringIO
+from io import StringIO
 
 from Mailman import MailList
 from Mailman import Utils
@@ -41,8 +41,8 @@ class TestBase(unittest.TestCase):
                 ssecond = str(second)
                 diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())
                 fp = StringIO()
-                print >> fp, NL, NL.join(diff)
-                raise self.failureException, fp.getvalue()
+                print(NL, NL.join(diff), file=fp)
+                raise self.failureException(fp.getvalue())
     else:
         # Python 2.1
         ndiffAssertEqual = unittest.TestCase.assertEqual
