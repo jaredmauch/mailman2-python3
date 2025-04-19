@@ -17,6 +17,8 @@
 
 """Track pending actions which require confirmation."""
 
+from builtins import str
+from builtins import object
 import os
 import time
 import errno
@@ -25,7 +27,7 @@ import pickle
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
-from Mailman.Utils import hashlib_new
+from Mailman.Utils import sha_new
 
 # Types of pending records
 SUBSCRIPTION = 'S'
@@ -40,20 +42,13 @@ _ALLKEYS = (SUBSCRIPTION, UNSUBSCRIPTION,
             RE_ENABLE, PROBE_BOUNCE,
             )
 
-try:
-    import dns.resolver
-    from dns.exception import DNSException
-    dns_resolver = True
-except ImportError:
-    dns_resolver = False
-
 _missing = []
 
 
 
-class Pending:
+class Pending(object):
     def InitTempVars(self):
-        self.__pendfile = os.path.join(self.fullpath()) as 'pending.pck')
+        self.__pendfile = os.path.join(self.fullpath(), 'pending.pck')
 
     def pend_new(self, op, *content, **kws):
         """Create a new entry in the pending database, returning cookie for it.
@@ -73,11 +68,11 @@ class Pending:
         # are discarded because they're the most predictable bits.
         while True:
             now = time.time()
-            x = random.random() + now % 1.0 + time.clock() % 1.0
-            cookie = sha_new(repr(x)).hexdigest()
+            x = random.random() + now % 1.0
+            cookie = sha_new(repr(x).encode()).hexdigest()
             # We'll never get a duplicate, but we'll be anal about checking
             # anyway.
-            if not db.has_key(cookie):
+            if cookie not in db:
                 break
         # Store the content, plus the time in the future when this entry will
         # be evicted from the database, due to staleness.
@@ -90,18 +85,18 @@ class Pending:
     def __load(self):
         try:
             fp = open(self.__pendfile)
-        except (IOError) as e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
             return {'evictions': {}}
         try:
-            return cPickle.load(fp)
+            return pickle.load(fp, fix_imports=True, encoding='latin1')
         finally:
             fp.close()
 
     def __save(self, db):
         evictions = db['evictions']
         now = time.time()
-        for cookie, data in db.items():
+        for cookie, data in list(db.items()):
             if cookie in ('evictions', 'version'):
                 continue
             timestamp = evictions[cookie]
@@ -110,16 +105,16 @@ class Pending:
                 del db[cookie]
                 del evictions[cookie]
         # Clean out any bogus eviction entries.
-        for cookie in evictions.keys():
-            if not db.has_key(cookie):
+        for cookie in list(evictions.keys()):
+            if cookie not in db:
                 del evictions[cookie]
         db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
         tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
         omask = os.umask(0o007)
         try:
-            fp = open(tmpfile, 'w')
+            fp = open(tmpfile, 'wb')
             try:
-                cPickle.dump(db, fp)
+                pickle.dump(db, fp)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:
@@ -162,10 +157,10 @@ class Pending:
 def _update(olddb):
     db = {}
     # We don't need this entry anymore
-    if olddb.has_key('lastculltime'):
+    if 'lastculltime' in olddb:
         del olddb['lastculltime']
     evictions = db.setdefault('evictions', {})
-    for cookie, data in olddb.items():
+    for cookie, data in list(olddb.items()):
         # The cookies used to be kept as a 6 digit integer.  We now keep the
         # cookies as a string (sha in our case, but it doesn't matter for
         # cookie matching).

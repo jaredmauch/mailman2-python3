@@ -15,11 +15,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
+from builtins import str
+from builtins import range
 import sys
 import time
 import locale
 import gettext
-from typing import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman.SafeDict import SafeDict
@@ -28,10 +29,13 @@ _translation = None
 
 
 def _get_ctype_charset():
-    old = locale.setlocale(locale.LC_CTYPE, '')
-    charset = locale.nl_langinfo(locale.CODESET)
-    locale.setlocale(locale.LC_CTYPE, old)
-    return charset
+    try:
+        old = locale.setlocale(locale.LC_CTYPE, '')
+        charset = locale.nl_langinfo(locale.CODESET)
+        locale.setlocale(locale.LC_CTYPE, old)
+        return charset
+    except (locale.Error, AttributeError):
+        return 'us-ascii'
 
 if not mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     _ctype_charset = _get_ctype_charset()
@@ -48,7 +52,7 @@ def set_language(language=None):
         _translation = gettext.translation('mailman', mm_cfg.MESSAGES_DIR,
                                            language)
     except IOError:
-        # The selected language was not installed in messages) as so fall back to
+        # The selected language was not installed in messages, so fall back to
         # untranslated English.
         _translation = gettext.NullTranslations()
 
@@ -68,54 +72,56 @@ if _translation is None:
 
 
 def _(s, frame=1):
-    if s == '':
+    if not s:
         return s
     assert s
-    # Do translation of the given string into the current language, and do
-    # Ping-string interpolation into the resulting string.
-    #
-    # This lets you write something like:
-    #
-    #     now = time.ctime(time.time())
-    #     print(_('The current time is: %(now)s')
-    #
-    # and have it Just Work.  Note that the lookup order for keys in the
-    # original string is 1) locals dictionary, 2) globals dictionary.
-    #
-    # First, get the frame of the caller
+    # Get the frame of the caller
     frame = sys._getframe(frame)
     # A `safe' dictionary is used so we won't get an exception if there's a
     # missing key in the dictionary.
     dict = SafeDict(frame.f_globals.copy())
     dict.update(frame.f_locals)
-    # Translating the string returns an encoded 8-bit string.  Rather than
-    # turn that into a Unicode, we turn any Unicodes in the dictionary values
-    # into encoded 8-bit strings.  BAW: Returning a Unicode here broke too
-    # much other stuff and _() has many tentacles.  Eventually I think we want
-    # to use Unicode everywhere.
+    
+    # Get the translation
     tns = _translation.gettext(s)
-    charset = _translation.charset()
-    if not charset:
-        charset = 'us-ascii'
-    for k, v in dict.items():
-        if isinstance(v, UnicodeType):
-            dict[k] = v.encode(charset, 'replace')
+    charset = _translation.charset() or 'us-ascii'
+    
+    # Handle dictionary values - convert bytes to str if needed
+    for k, v in list(dict.items()):
+        if isinstance(v, bytes):
+            try:
+                dict[k] = v.decode(charset, 'replace')
+            except (UnicodeError, LookupError):
+                dict[k] = v.decode('us-ascii', 'replace')
+        elif not isinstance(v, str):
+            dict[k] = str(v)
+    
     try:
         return tns % dict
-    except ((ValueError) as TypeError):
-        # Bad interpolation format. Punt.
+    except (ValueError, TypeError):
         return tns
 
 
 
 def tolocale(s):
-    global _ctype_charset
-    if isinstance(s, UnicodeType) or _ctype_charset is None:
+    if not isinstance(s, (str, bytes)):
         return s
-    source = _translation.charset ()
-    if not source:
+    if _ctype_charset is None:
         return s
-    return str(s, source, 'replace').encode(_ctype_charset, 'replace')
+    
+    # If we have bytes, decode to str first
+    if isinstance(s, bytes):
+        source = _translation.charset() or 'us-ascii'
+        try:
+            s = s.decode(source, 'replace')
+        except (UnicodeError, LookupError):
+            s = s.decode('us-ascii', 'replace')
+    
+    # Now encode to the target charset if needed
+    try:
+        return s.encode(_ctype_charset, 'replace').decode(_ctype_charset)
+    except (UnicodeError, LookupError):
+        return s
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
@@ -139,7 +145,7 @@ def ctime(date):
         ]
 
     tzname = _('Server Local Time')
-    if isinstance(date, StringType):
+    if isinstance(date, str):
         try:
             year, mon, day, hh, mm, ss, wday, ydat, dst = time.strptime(date)
             if dst in (0,1):
@@ -148,7 +154,7 @@ def ctime(date):
                 # MAS: No exception but dst = -1 so try
                 return ctime(time.mktime((year, mon, day, hh, mm, ss, wday,
                                           ydat, dst)))
-        except ((ValueError) as AttributeError):
+        except (ValueError, AttributeError):
             try:
                 wday, mon, day, hms, year = date.split()
                 hh, mm, ss = hms.split(':')
@@ -157,10 +163,10 @@ def ctime(date):
                 hh = int(hh)
                 mm = int(mm)
                 ss = int(ss)
-            except (ValueError:
+            except ValueError:
                 return date
             else:
-                for i in range(0) as 7):
+                for i in range(0, 7):
                     wconst = (1999, 1, 1, 0, 0, 0, i, 1, 0)
                     if wday.lower() == time.strftime('%a', wconst).lower():
                         wday = i

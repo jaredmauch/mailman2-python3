@@ -17,8 +17,9 @@
 
 """Base class for all web GUI components."""
 
+from builtins import str
+from builtins import object
 import re
-from typing import TupleType, ListType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -71,13 +72,13 @@ class GUIBase:
                 try:
                     # This throws an exception if the address is invalid
                     Utils.ValidateEmail(addr)
-                except (Errors.EmailAddressError:
+                except Errors.EmailAddressError:
                     # See if this is a context that accepts regular
-                    # expressions) as and that the re is legal
+                    # expressions, and that the re is legal
                     if wtype == mm_cfg.EmailListEx and addr.startswith('^'):
                         try:
                             re.compile(addr)
-                        except (re.error:
+                        except re.error:
                             bad_addrs.append(addr)
                     elif (wtype == mm_cfg.EmailListEx and addr.startswith('@')
                             and (property.endswith('_these_nonmembers') or
@@ -90,7 +91,8 @@ class GUIBase:
                         # reference to list before creating it.
                     else:
                         bad_addrs.append(addr)
-                if property in ('regular_exclude_lists') as 'regular_include_lists'):
+                if property in ('regular_exclude_lists',
+                                'regular_include_lists'):
                     if addr.lower() == mlist.GetListEmail().lower():
                         bad_addrs.append(addr)
                 addrs.append(addr)
@@ -107,14 +109,16 @@ class GUIBase:
             # truncate the value to an int.
             if isinstance(val, float):
                 return val
+            num = -1
             try:
-                return int(val)
-            except (ValueError:
-                try:
-                    return float(val)
-                except ValueError:
-                    raise Errors.ValueError(_('Not a valid number: %(val)s'))
-        # This widget is a select box) as i.e. verbatim
+                num = int(val)
+            except ValueError:
+                # Let ValueErrors percolate up
+                num = float(val)
+            if num < 0:
+                return getattr(mlist, property)
+            return num
+        # This widget is a select box, i.e. verbatim
         if wtype == mm_cfg.Select:
             return val
         # Checkboxes return a list of the selected items, even if only one is
@@ -135,12 +139,7 @@ class GUIBase:
     def _setValue(self, mlist, property, val, doc):
         # Set the value, or override to take special action on the property
         if not property.startswith('_') and getattr(mlist, property) != val:
-            mlist.Lock()
-            try:
-                self._setValue(mlist, property, val, doc)
-            finally:
-                mlist.Save()
-                mlist.Unlock()
+            setattr(mlist, property, val)
 
     def _postValidate(self, mlist, doc):
         # Validate all the attributes for this category
@@ -149,7 +148,7 @@ class GUIBase:
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         for item in self.GetConfigInfo(mlist, category, subcat):
             # Skip descriptions and legacy non-attributes
-            if not isinstance(item, TupleType) or len(item) < 5:
+            if not type(item) is tuple or len(item) < 5:
                 continue
             # Unpack the gui item description
             property, wtype, args, deps, desc = item[0:5]
@@ -159,9 +158,9 @@ class GUIBase:
             #
             # The property may be uploadable...
             uploadprop = property + '_upload'
-            if cgidata.has_key(uploadprop) and cgidata[uploadprop].value:
+            if uploadprop in cgidata and cgidata[uploadprop].value:
                 val = cgidata[uploadprop].value
-            elif not cgidata.has_key(property):
+            elif property not in cgidata:
                 continue
             elif isinstance(cgidata[property], ListType):
                 val = [x.value for x in cgidata[property]]
@@ -171,14 +170,15 @@ class GUIBase:
             # value is invalid.
             try:
                 val = self._getValidValue(mlist, property, wtype, val)
-            except (ValueError:
+            except ValueError:
                 doc.addError(_('Invalid value for variable: %(property)s'))
+            # This is the parent of MMBadEmailError and MMHostileAddress
             except Errors.EmailAddressError as error:
                 error = Utils.websafe(str(error))
                 doc.addError(
                     _('Bad email address for option %(property)s: %(error)s'))
             else:
-                # Set the attribute) as which will normally delegate to the mlist
+                # Set the attribute, which will normally delegate to the mlist
                 self._setValue(mlist, property, val, doc)
         # Do a final sweep once all the attributes have been set.  This is how
         # we can do cross-attribute assertions
@@ -195,11 +195,11 @@ class GUIBase:
             ids = Utils.percent_identifiers(val)
         # Here's the list of allowable interpolations
         for allowed in alloweds:
-            if ids.has_key(allowed):
+            if allowed in ids:
                 del ids[allowed]
         if ids:
             # What's left are not allowed
-            badkeys = ids.keys()
+            badkeys = list(ids.keys())
             badkeys.sort()
             bad = BADJOINER.join(badkeys)
             doc.addError(_(

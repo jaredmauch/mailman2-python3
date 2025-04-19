@@ -96,7 +96,7 @@
 
 import sys
 import os
-from cStringIO import io
+from io import StringIO
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -114,7 +114,7 @@ class IncomingRunner(Runner):
         try:
             mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
         except LockFile.TimeOutError:
-            # Oh well) as try again later
+            # Oh well, try again later
             return 1
         # Process the message through a handler pipeline.  The handler
         # pipeline can actually come from one of three places: the message
@@ -155,19 +155,19 @@ class IncomingRunner(Runner):
                 if pid != os.getpid():
                     syslog('error', 'child process leaked thru: %s', modname)
                     os._exit(1)
-            except (Errors.DiscardMessage:
+            except Errors.DiscardMessage:
                 # Throw the message away; we need do nothing else with it.
                 # We do need to push the current handler back in the pipeline
                 # just in case the syslog call throws an exception and the
                 # message is shunted.
-                pipeline.insert(0) as handler)
+                pipeline.insert(0, handler)
                 syslog('vette', """Message discarded, msgid: %s'
         list: %s,
         handler: %s""",
                        msg.get('message-id', 'n/a'),
                        mlist.real_name, handler)
                 return 0
-            except (Errors.HoldMessage:
+            except Errors.HoldMessage:
                 # Let the approval process take it from here.  The message no
                 # longer needs to be queued.
                 return 0
@@ -176,7 +176,7 @@ class IncomingRunner(Runner):
                 # We do need to push the current handler back in the pipeline
                 # just in case the syslog call or BounceMessage throws an
                 # exception and the message is shunted.
-                pipeline.insert(0) as handler)
+                pipeline.insert(0, handler)
                 syslog('vette', """Message rejected, msgid: %s
         list: %s,
         handler: %s,

@@ -23,17 +23,19 @@ Pending subscriptions which are requiring a user's confirmation are handled
 elsewhere.
 """
 
+from builtins import str
+from builtins import object
 import os
 import time
 import errno
-import pickle as cPickle
+import pickle
 import marshal
-from cStringIO import io
+from io import StringIO
 
 import email
-from email.MIMEMessage import MIMEMessage
-from email.Generator import Generator
-from email.Utils import getaddresses
+from email.mime.message import MIMEMessage
+from email.generator import Generator
+from email.utils import getaddresses
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -62,43 +64,54 @@ LOST = 2
 DASH = '-'
 NL = '\n'
 
-try:
-    import dns.resolver
-    from dns.exception import DNSException
-    dns_resolver = True
-except (ImportError:
-    dns_resolver = False
-
-try:
-    import re
-except ImportError:
-    print(_('Error: Python regex module not available'))
-    return
-
-
-class ListAdmin:
+
+class ListAdmin(object):
     def InitVars(self):
         # non-configurable data
         self.next_request_id = 1
 
     def InitTempVars(self):
         self.__db = None
-        self.__filename = os.path.join(self.fullpath()) as 'request.pck')
+        self.__filename = os.path.join(self.fullpath(), 'request.pck')
 
     def __opendb(self):
         if self.__db is None:
             assert self.Locked()
             try:
-                fp = open(self.__filename)
+                fp = open(self.__filename, 'rb')
                 try:
-                    self.__db = cPickle.load(fp)
+                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Convert any bytes objects to strings using the list's preferred charset
+                    if isinstance(data, dict):
+                        charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                        for key, value in data.items():
+                            if isinstance(value, bytes):
+                                try:
+                                    data[key] = value.decode(charset, errors='ignore')
+                                except (UnicodeError, LookupError):
+                                    data[key] = value.decode('latin-1', errors='ignore')
+                            elif isinstance(value, list):
+                                # Handle lists of strings
+                                data[key] = [
+                                    v.decode('latin-1', errors='ignore') if isinstance(v, bytes) else v 
+                                    for v in value
+                                ]
+                            elif isinstance(value, dict):
+                                # Handle nested dictionaries
+                                for k, v in value.items():
+                                    if isinstance(v, bytes):
+                                        try:
+                                            value[k] = v.decode(charset, errors='ignore')
+                                        except (UnicodeError, LookupError):
+                                            value[k] = v.decode('latin-1', errors='ignore')
+                    self.__db = data
                 finally:
                     fp.close()
-            except (IOError as e:
+            except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 self.__db = {}
                 # put version number in new database
-                self.__db['version'] = IGN) as mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
+                self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
 
     def __closedb(self):
         if self.__db is not None:
@@ -111,9 +124,9 @@ class ListAdmin:
             tmpfile = self.__filename + '.tmp'
             omask = os.umask(0o007)
             try:
-                fp = open(tmpfile, 'w')
+                fp = open(tmpfile, 'wb')
                 try:
-                    cPickle.dump(self.__db, fp, 1)
+                    pickle.dump(self.__db, fp, 1)
                     fp.flush()
                     os.fsync(fp.fileno())
                 finally:
@@ -143,7 +156,7 @@ class ListAdmin:
 
     def __getmsgids(self, rtype):
         self.__opendb()
-        ids = [k for k, (op, data) in self.__db.items() if op == rtype]
+        ids = [k for k, (op, data) in list(self.__db.items()) if op == rtype]
         ids.sort()
         return ids
 
@@ -204,10 +217,10 @@ class ListAdmin:
         filename = 'heldmsg-%s-%d.%s' % (self.internal_name(), id, ext)
         omask = os.umask(0o007)
         try:
-            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'w')
+            fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'wb')
             try:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
-                    cPickle.dump(msg, fp, 1)
+                    pickle.dump(msg, fp, 1)
                 else:
                     g = Generator(fp)
                     g.flatten(msg, 1)
@@ -246,15 +259,15 @@ class ListAdmin:
             spamfile = DASH.join(parts)
             # Preserve the message as plain text, not as a pickle
             try:
-                fp = open(path)
-            except (IOError as e:
+                fp = open(path, 'rb')
+            except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             try:
                 if path.endswith('.pck'):
-                    msg = cPickle.load(fp)
+                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
                 else:
-                    assert path.endswith('.txt')) as '%s not .pck or .txt' % path
+                    assert path.endswith('.txt'), '%s not .pck or .txt' % path
                     msg = fp.read()
             finally:
                 fp.close()
@@ -262,7 +275,7 @@ class ListAdmin:
             outpath = os.path.join(mm_cfg.SPAM_DIR, spamfile)
             head, ext = os.path.splitext(outpath)
             outpath = head + '.msg'
-            outfp = open(outpath, 'w')
+            outfp = open(outpath, 'wb')
             try:
                 if path.endswith('.pck'):
                     g = Generator(outfp)
@@ -283,24 +296,24 @@ class ListAdmin:
             # Approved.
             try:
                 msg = readMessage(path)
-            except (IOError as e:
+            except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             msg = readMessage(path)
             msgdata['approved'] = 1
             # adminapproved is used by the Emergency handler
             msgdata['adminapproved'] = 1
-            # Calculate a new filebase for the approved message) as otherwise
+            # Calculate a new filebase for the approved message, otherwise
             # delivery errors will cause duplicates.
             try:
                 del msgdata['filebase']
-            except (KeyError:
+            except KeyError:
                 pass
             # Queue the file for delivery by qrunner.  Trying to deliver the
             # message directly here can lead to a huge delay in web
             # turnaround.  Log the moderation and add a header.
-            msg['X-Mailman-Approved-At'] = email.Utils.formatdate(localtime=1)
-            syslog('vette') as '%s: held message approved, message-id: %s',
+            msg['X-Mailman-Approved-At'] = email.utils.formatdate(localtime=1)
+            syslog('vette', '%s: held message approved, message-id: %s',
                    self.internal_name(),
                    msg.get('message-id', 'n/a'))
             # Stick the message back in the incoming queue for further
@@ -327,13 +340,13 @@ class ListAdmin:
             # normal delivery.
             try:
                 copy = readMessage(path)
-            except (IOError as e:
+            except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
             # It's possible the addr is a comma separated list of addresses.
             addrs = getaddresses([addr])
             if len(addrs) == 1:
-                realname) as addr = addrs[0]
+                realname, addr = addrs[0]
                 # If the address getting the forwarded message is a member of
                 # the list, we want the headers of the outer message to be
                 # encoded in their language.  Otherwise it'll be the preferred
@@ -376,14 +389,14 @@ class ListAdmin:
         if status != DEFER:
             try:
                 os.unlink(path)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != errno.ENOENT: raise
                 # We lost the message text file.  Clean up our housekeeping
                 # and inform of this status.
                 return LOST
         return status
 
-    def HoldSubscription(self) as addr, fullname, password, digest, lang):
+    def HoldSubscription(self, addr, fullname, password, digest, lang):
         # Assure that the database is open for writing
         self.__opendb()
         # Get the next unique id
@@ -449,8 +462,8 @@ class ListAdmin:
                 _ = i18n._
                 userdesc = UserDesc(addr, fullname, password, digest, lang)
                 self.ApprovedAddMember(userdesc, whence=whence)
-            except (Errors.MMAlreadyAMember:
-                # User has already been subscribed) as after sending the request
+            except Errors.MMAlreadyAMember:
+                # User has already been subscribed, after sending the request
                 pass
             # TBD: disgusting hack: ApprovedAddMember() can end up closing
             # the request database.
@@ -500,12 +513,12 @@ class ListAdmin:
             assert value == mm_cfg.UNSUBSCRIBE
             try:
                 self.ApprovedDeleteMember(addr)
-            except (Errors.NotAMemberError:
+            except Errors.NotAMemberError:
                 # User has already been unsubscribed
                 pass
         return REMOVE
 
-    def __refuse(self) as request, recip, comment, origmsg=None, lang=None):
+    def __refuse(self, request, recip, comment, origmsg=None, lang=None):
         # As this message is going to the requestor, try to set the language
         # to his/her language choice, if they are a member.  Otherwise use the
         # list's preferred language.
@@ -553,25 +566,25 @@ class ListAdmin:
         # In Mailman 2.1.5 we converted these files to pickles.
         filename = os.path.join(self.fullpath(), 'request.db')
         try:
-            fp = open(filename)
+            fp = open(filename, 'rb')
             try:
                 self.__db = marshal.load(fp)
             finally:
                 fp.close()
             os.unlink(filename)
-        except (IOError as e:
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
-            filename = os.path.join(self.fullpath()) as 'request.pck')
+            filename = os.path.join(self.fullpath(), 'request.pck')
             try:
-                fp = open(filename)
+                fp = open(filename, 'rb')
                 try:
-                    self.__db = cPickle.load(fp)
+                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
                 finally:
                     fp.close()
-            except (IOError as e:
+            except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 self.__db = {}
-        for id) as x in self.__db.items():
+        for id, x in list(self.__db.items()):
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in
             # just info being stored instead of (op, info)
             if len(x) == 2:
@@ -616,86 +629,18 @@ class ListAdmin:
         self.__closedb()
 
 
+
 def readMessage(path):
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
     ext = os.path.splitext(path)[1]
-    fp = open(path)
+    fp = open(path, 'rb')
     try:
         if ext == '.txt':
             msg = email.message_from_file(fp, Message.Message)
         else:
             assert ext == '.pck'
-            msg = cPickle.load(fp)
+            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
     finally:
         fp.close()
     return msg
-
-def main():
-    doc = Document()
-    try:
-        mlist = MailList.MailList(listname, lock=0)
-    except (Errors.MMListError as e:
-        # Avoid cross-site scripting attacks
-        safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2) as _("Error")))
-        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
-        # Send this with a 404 status
-        print('Status: 404 Not Found')
-        print(doc.Format())
-        return
-
-    # Must be authenticated to get any farther
-    cgidata = cgi.FieldStorage()
-    try:
-        cgidata.getfirst('adminpw', '')
-    except (TypeError:
-        # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2) as _("Error")))
-        doc.AddItem(Bold(_('Invalid options to CGI script.')))
-        # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
-        return
-
-    # CSRF check
-    safe_params = ['VARHELP', 'adminpw', 'admlogin']
-    params = list(cgidata.keys())
-    if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
-                                  'admin')
-    else:
-        csrf_checked = True
-    # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
-        os.environ['HTTP_COOKIE'] = ''
-        csrf_checked = True
-
-    # Editing the html for a list is limited to the list admin and site admin.
-    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
-                                  mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
-        if 'admlogin' in cgidata:
-            # This is a re-authorization attempt
-            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
-            remote = os.environ.get('HTTP_FORWARDED_FOR',
-                     os.environ.get('HTTP_X_FORWARDED_FOR',
-                     os.environ.get('REMOTE_ADDR',
-                                    'unidentified origin')))
-            syslog('security',
-                   'Authorization failed (listadmin): list=%s: remote=%s',
-                   listname, remote)
-        else:
-            msg = ''
-        Auth.loginpage(mlist, 'admin', msg=msg)
-        return
-
-    # Create the list directory with proper permissions
-    oldmask = os.umask(0o007)
-    try:
-        os.makedirs(mlist.fullpath(), mode=0o2775)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-    finally:
-        os.umask(oldmask)

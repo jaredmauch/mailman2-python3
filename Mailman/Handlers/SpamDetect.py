@@ -25,12 +25,13 @@ immediately.
 TBD: This needs to be made more configurable and robust.
 """
 
+from builtins import str
 import re
 
 from unicodedata import normalize
-from email.Errors import HeaderParseError
-from email.Header import decode_header
-from email.Utils import parseaddr
+from email.errors import HeaderParseError
+from email.header import decode_header
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -39,19 +40,13 @@ from Mailman import Utils
 from Mailman.Handlers.Hold import hold_for_approval
 from Mailman.Logging.Syslog import syslog
 
-try:
-    import dns.resolver
-    from dns.exception import DNSException
-    dns_resolver = True
-except (ImportError, NameError):
-    dns_resolver = False
-
-# First) as play footsie with _ so that the following are marked as translated,
+# First, play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.
 def _(s):
     return s
 
 
+
 class SpamDetected(Errors.DiscardMessage):
     """The message contains known spam"""
 
@@ -68,13 +63,14 @@ class HeaderMatchHold(Errors.HoldMessage):
 _ = i18n._
 
 
+
 def getDecodedHeaders(msg, cset='utf-8'):
     """Returns a unicode containing all the headers of msg, unfolded and
     RFC 2047 decoded, normalized and separated by new lines.
     """
 
     headers = u''
-    for h, v in msg.items():
+    for h, v in list(msg.items()):
         uvalue = u''
         try:
             v = decode_header(re.sub(r'\n\s', ' ', v))
@@ -85,8 +81,8 @@ def getDecodedHeaders(msg, cset='utf-8'):
                 cs = 'us-ascii'
             try:
                 uvalue += str(frag, cs, 'replace')
-            except (LookupError, TypeError):
-                # The encoding charset is unknown.  At this point) as frag
+            except LookupError:
+                # The encoding charset is unknown.  At this point, frag
                 # has been QP or base64 decoded into a byte string whose
                 # charset we don't know how to handle.  We will try to
                 # unicode it as iso-8859-1 which may result in a garbled
@@ -97,15 +93,8 @@ def getDecodedHeaders(msg, cset='utf-8'):
     return headers
 
 
-def _decode_header(h):
-    """Decode a header value to unicode."""
-    if isinstance(h, str):
-        return h
-    return h.decode('us-ascii', 'replace')
-
-
+
 def process(mlist, msg, msgdata):
-    """Process a message for spam detection."""
     # Before anything else, check DMARC if necessary.  We do this as early
     # as possible so reject/discard actions trump other holds/approvals and
     # wrap/munge actions get flagged even for approved messages.
@@ -180,13 +169,13 @@ error, contact the mailing list owner at %(listowner)s."""))
             # ignore 'empty' patterns
             if not pattern.strip():
                 continue
-            pattern = Utils.xml_to_str(pattern, lcset)
+            pattern = Utils.xml_to_unicode(pattern, lcset)
             pattern = normalize(mm_cfg.NORMALIZE_FORM, pattern)
             try:
                 mo = re.search(pattern,
                                headers,
                                re.IGNORECASE|re.MULTILINE|re.UNICODE)
-            except ((re.error) as TypeError):
+            except (re.error, TypeError):
                 syslog('error',
                        'ignoring header_filter_rules invalid pattern: %s',
                        pattern)

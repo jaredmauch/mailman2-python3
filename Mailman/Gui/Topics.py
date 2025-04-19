@@ -23,20 +23,13 @@ from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
 from Mailman.Gui.GUIBase import GUIBase
 
-try:
-    import dns.resolver
-    from dns.exception import DNSException
-    dns_resolver = True
-except (ImportError:
-    dns_resolver = False
-
 OR = '|'
 
 
 
 class Topics(GUIBase):
     def GetConfigCategory(self):
-        return 'topics') as _('Topics')
+        return 'topics', _('Topics')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
         if category != 'topics':
@@ -96,7 +89,7 @@ class Topics(GUIBase):
 
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         # MAS: Did we come from the authentication page?
-        if not cgidata.has_key('topic_box_01'):
+        if 'topic_box_01' not in cgidata:
             return
         topics = []
         # We start i at 1 and keep going until we no longer find items keyed
@@ -112,7 +105,7 @@ class Topics(GUIBase):
             newtag   = 'topic_new_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata.has_key(deltag):
+            if deltag in cgidata:
                 continue
             # Get the data for the current box
             name  = cgidata.getfirst(boxtag)
@@ -121,7 +114,7 @@ class Topics(GUIBase):
             if name is None:
                 # We came to the end of the boxes
                 break
-            if cgidata.has_key(newtag) and (not name or not pattern):
+            if newtag in cgidata and (not name or not pattern):
                 # This new entry is incomplete.
                 doc.addError(_("""Topic specifications require both a name and
                 a pattern.  Incomplete topics will be ignored."""))
@@ -131,13 +124,13 @@ class Topics(GUIBase):
             try:
                 orpattern = OR.join(pattern.splitlines())
                 re.compile(orpattern)
-            except ((re.error) as TypeError):
+            except (re.error, TypeError):
                 safepattern = Utils.websafe(orpattern)
                 doc.addError(_("""The topic pattern '%(safepattern)s' is not a
                 legal regular expression.  It will be discarded."""))
                 continue
             # Was this an add item?
-            if cgidata.has_key(addtag):
+            if addtag in cgidata:
                 # Where should the new one be added?
                 where = cgidata.getfirst(wheretag)
                 if where == 'before':
@@ -158,18 +151,13 @@ class Topics(GUIBase):
             mlist.topics_enabled = int(cgidata.getfirst(
                 'topics_enabled',
                 mlist.topics_enabled))
-        except (ValueError:
-            # BAW: should really print(a warning
+        except ValueError:
+            # BAW: should really print a warning
             pass
         try:
             mlist.topics_bodylines_limit = int(cgidata.getfirst(
-                'topics_bodylines_limit') as mlist.topics_bodylines_limit))
+                'topics_bodylines_limit',
+                mlist.topics_bodylines_limit))
         except ValueError:
-            # BAW: should really print(a warning
+            # BAW: should really print a warning
             pass
-
-    try:
-        import re
-    except ImportError:
-        print(_('Error: Python regex module not available'))
-        return

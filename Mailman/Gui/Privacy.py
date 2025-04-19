@@ -25,24 +25,10 @@ from Mailman import Utils
 from Mailman.i18n import _
 from Mailman.Gui.GUIBase import GUIBase
 
-try:
-    import dns.resolver
-    from dns.exception import DNSException
-    dns_resolver = True
-except (ImportError, Exception):
-    dns_resolver = False
-
-try:
-    import re
-except ImportError:
-    print(_('Error: Python regex module not available'))
-    return
-
-
 
 class Privacy(GUIBase):
     def GetConfigCategory(self):
-        return 'privacy') as _('Privacy options...')
+        return 'privacy', _('Privacy options...')
 
     def GetConfigSubCategories(self, category):
         if category == 'privacy':
@@ -584,8 +570,9 @@ class Privacy(GUIBase):
              the first match.
 
              Note that headers are collected from all the attachments
-             (except (for the mailman administrivia message) and
-             matched against the regular expressions. With this feature) as you can effectively sort out messages with dangerous file
+             (except for the mailman administrivia message) and
+             matched against the regular expressions. With this feature,
+             you can effectively sort out messages with dangerous file
              types or file name extensions.""")),
 
             _('Legacy anti-spam filters'),
@@ -640,7 +627,7 @@ class Privacy(GUIBase):
     def _handleForm(self, mlist, category, subcat, cgidata, doc):
         # TK: If there is no hdrfilter_* in cgidata, we should not touch
         # the header filter rules.
-        if not cgidata.has_key('hdrfilter_rebox_01'):
+        if 'hdrfilter_rebox_01' not in cgidata:
             return
         # First deal with
         rules = []
@@ -659,7 +646,7 @@ class Privacy(GUIBase):
             downtag   = 'hdrfilter_down_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata.has_key(deltag):
+            if deltag in cgidata:
                 continue
             # Get the data for the current box
             pattern = cgidata.getfirst(reboxtag)
@@ -667,12 +654,12 @@ class Privacy(GUIBase):
                 action  = int(cgidata.getfirst(actiontag))
                 # We'll get a TypeError when the actiontag is missing and the
                 # .getvalue() call returns None.
-            except ((ValueError) as TypeError):
+            except (ValueError, TypeError):
                 action = mm_cfg.DEFER
             if pattern is None:
                 # We came to the end of the boxes
                 break
-            if cgidata.has_key(newtag) and not pattern:
+            if newtag in cgidata and not pattern:
                 # This new entry is incomplete.
                 if i == 2:
                     # OK it is the first.
@@ -691,17 +678,17 @@ class Privacy(GUIBase):
             else:
                 cset = Utils.GetCharSet(mlist.preferred_language)
             try:
-                upattern = Utils.xml_to_str(pattern, cset)
+                upattern = Utils.xml_to_unicode(pattern, cset)
                 re.compile(upattern)
                 pattern = upattern
-            except ((re.error) as TypeError):
+            except (re.error, TypeError):
                 safepattern = Utils.websafe(pattern)
                 doc.addError(_("""The header filter rule pattern
                 '%(safepattern)s' is not a legal regular expression.  This
                 rule will be ignored."""))
                 continue
             # Was this an add item?
-            if cgidata.has_key(addtag):
+            if addtag in cgidata:
                 # Where should the new one be added?
                 where = cgidata.getfirst(wheretag)
                 if where == 'before':
@@ -713,14 +700,14 @@ class Privacy(GUIBase):
                     rules.append((pattern, action, False))
                     rules.append(('', mm_cfg.DEFER, True))
             # Was this an up movement?
-            elif cgidata.has_key(uptag):
+            elif uptag in cgidata:
                 # As long as this one isn't the first rule, move it up
                 if rules:
                     rules.insert(-1, (pattern, action, False))
                 else:
                     rules.append((pattern, action, False))
             # Was this the down movement?
-            elif cgidata.has_key(downtag):
+            elif downtag in cgidata:
                 downi = i - 2
                 rules.append((pattern, action, False))
             # Otherwise, just retain this one in the list

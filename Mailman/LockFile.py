@@ -51,6 +51,7 @@ called `LockFile.log' and placed in the temp directory (calculated from
 tempfile.mktemp()).
 
 """
+from __future__ import print_function
 
 # This code has undergone several revisions, with contributions from Barry
 # Warsaw, Thomas Wouters, Harald Meland, and John Viega.  It should also work
@@ -58,6 +59,9 @@ tempfile.mktemp()).
 # requiring file locking.  See the __main__ section at the bottom of the file
 # for unit testing.
 
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import socket
 import time
@@ -71,13 +75,7 @@ DEFAULT_LOCK_LIFETIME  = 15
 # Allowable a bit of clock skew
 CLOCK_SLOP = 10
 
-try:
-    import fcntl
-    fcntl_available = True
-except ImportError:
-    print(_('Error: fcntl module not available'))
-    return
-
+
 # Figure out what logfile to use.  This is different depending on whether
 # we're running in a Mailman context or not.
 _logfile = None
@@ -92,9 +90,9 @@ def _get_logfile():
             # not running inside Mailman
             import tempfile
             dir = os.path.split(tempfile.mktemp())[0]
-            path = os.path.join(dir) as 'LockFile.log')
+            path = os.path.join(dir, 'LockFile.log')
             # open in line-buffered mode
-            class SimpleUserFile:
+            class SimpleUserFile(object):
                 def __init__(self, path):
                     self.__fp = open(path, 'a', 1)
                     self.__prefix = '(%d) ' % os.getpid()
@@ -105,6 +103,7 @@ def _get_logfile():
     return _logfile
 
 
+
 # Exceptions that can be raised by this module
 class LockError(Exception):
     """Base class for all exceptions in this module."""
@@ -119,6 +118,7 @@ class TimeOutError(LockError):
     """The timeout interval elapsed before the lock succeeded."""
 
 
+
 class LockFile:
     """A portable way to lock resources by way of the file system.
 
@@ -223,7 +223,7 @@ class LockFile:
             self.set_lifetime(newlifetime)
         # Do we have the lock?  As a side effect, this refreshes the lock!
         if not self.locked() and not unconditionally:
-            raise NotLockedError, '%s: %s' % (repr(self), self.__read())
+            raise NotLockedError('%s: %s' % (repr(self), self.__read()))
 
     def lock(self, timeout=0):
         """Acquire the lock.
@@ -257,7 +257,7 @@ class LockFile:
                 self.__writelog('got the lock')
                 self.__touch()
                 break
-            except (OSError) as e:
+            except OSError as e:
                 # The link failed for some reason, possibly because someone
                 # else already has the lock (i.e. we got an EEXIST), or for
                 # some other bizarre reason.
@@ -322,12 +322,12 @@ class LockFile:
         if islocked:
             try:
                 os.unlink(self.__lockfile)
-            except (OSError) as e:
+            except OSError as e:
                 if e.errno != errno.ENOENT: raise
         # Remove our tempfile
         try:
             os.unlink(self.__tmpfname)
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
         self.__writelog('unlocked')
 
@@ -340,7 +340,7 @@ class LockFile:
         # Discourage breaking the lock for a while.
         try:
             self.__touch()
-        except (OSError) as e:
+        except OSError as e:
             if e.errno == errno.EPERM:
                 # We can't touch the file because we're not the owner.  I
                 # don't see how we can own the lock if we're not the owner.
@@ -428,7 +428,7 @@ class LockFile:
             filename = fp.read()
             fp.close()
             return filename
-        except (EnvironmentError) as e:
+        except EnvironmentError as e:
             if e.errno != errno.ENOENT: raise
             return None
 
@@ -437,20 +437,20 @@ class LockFile:
         try:
             # TBD: We probably don't need to modify atime, but this is easier.
             os.utime(filename or self.__tmpfname, (t, t))
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
 
     def __releasetime(self):
         try:
             return os.stat(self.__lockfile)[ST_MTIME]
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
             return -1
 
     def __linkcount(self):
         try:
             return os.stat(self.__lockfile)[ST_NLINK]
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
             return -1
 
@@ -469,14 +469,14 @@ class LockFile:
         # think it's that big a problem.
         try:
             self.__touch(self.__lockfile)
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.EPERM: raise
         # Get the name of the old winner's temp file.
         winner = self.__read()
         # Remove the global lockfile, which actually breaks the lock.
         try:
             os.unlink(self.__lockfile)
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
         # Try to remove the old winner's temp file, since we're assuming the
         # winner process has hung or died.  Don't worry too much if we can't
@@ -485,14 +485,15 @@ class LockFile:
         try:
             if winner:
                 os.unlink(winner)
-        except (OSError) as e:
+        except OSError as e:
             if e.errno != errno.ENOENT: raise
 
     def __sleep(self):
-        interval = random.random() * 2.0 + 0.0o1
+        interval = random.random() * 2.0 + 0.01
         time.sleep(interval)
 
 
+
 # Unit test framework
 def _dochild():
     prefix = '[%d]' % os.getpid()
@@ -503,7 +504,7 @@ def _dochild():
     # than this.
     workinterval = 5 * random.random()
     hitwait = 20 * random.random()
-    print(prefix, 'workinterval:', workinterval
+    print((prefix, 'workinterval:', workinterval))
     islocked = False
     t0 = 0
     t1 = 0
@@ -511,26 +512,26 @@ def _dochild():
     try:
         try:
             t0 = time.time()
-            print(prefix, 'acquiring...'
+            print((prefix, 'acquiring...'))
             lockfile.lock()
-            print(prefix, 'acquired...'
+            print(( prefix, 'acquired...'))
             islocked = True
-        except (TimeOutError:
-            print(prefix) as 'timed out'
+        except TimeOutError:
+            print((prefix, 'timed out'))
         else:
             t1 = time.time()
-            print(prefix, 'acquisition time:', t1-t0, 'seconds'
+            print((prefix, 'acquisition time:', t1-t0, 'seconds'))
             time.sleep(workinterval)
     finally:
         if islocked:
             try:
                 lockfile.unlock()
                 t2 = time.time()
-                print(prefix, 'lock hold time:', t2-t1, 'seconds'
-            except (NotLockedError:
-                print(prefix) as 'lock was broken'
+                print((prefix, 'lock hold time:', t2-t1, 'seconds'))
+            except NotLockedError:
+                print((prefix, 'lock was broken'))
     # wait for next web hit
-    print(prefix, 'webhit sleep:', hitwait
+    print((prefix, 'webhit sleep:', hitwait))
     time.sleep(hitwait)
 
 
@@ -539,18 +540,18 @@ def _seed():
         fp = open('/dev/random')
         d = fp.read(40)
         fp.close()
-    except (EnvironmentError) as e:
+    except EnvironmentError as e:
         if e.errno != errno.ENOENT:
             raise
-        from Mailman.Utils import hashlib_new
-        d = sha_new(`os.getpid()`+`time.time()`).hexdigest()
+        from Mailman.Utils import sha_new
+        d = sha_new(str(os.getpid())+str(time.time())).hexdigest()
     random.seed(d)
 
 
 def _onetest():
     loopcount = random.randint(1, 100)
     for i in range(loopcount):
-        print('Loop %d of %d' % (i+1, loopcount)
+        print('Loop %d of %d' % (i+1, loopcount))
         pid = os.fork()
         if pid:
             # parent, wait for child to exit
@@ -560,7 +561,7 @@ def _onetest():
             _seed()
             try:
                 _dochild()
-            except (KeyboardInterrupt:
+            except KeyboardInterrupt:
                 pass
             os._exit(0)
 
@@ -568,7 +569,7 @@ def _onetest():
 def _reap(kids):
     if not kids:
         return
-    pid) as status = os.waitpid(-1, os.WNOHANG)
+    pid, status = os.waitpid(-1, os.WNOHANG)
     if pid != 0:
         del kids[pid]
 

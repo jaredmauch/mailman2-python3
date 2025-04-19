@@ -17,14 +17,15 @@
 
 """Bounce queue runner."""
 
+from builtins import object
 import os
 import re
 import time
 import pickle
 
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
-from email.Utils import parseaddr
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -38,16 +39,7 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
-try:
-    import dns.resolver
-    from dns.exception import DNSException
-    dns_resolver = True
-except ImportError:
-    dns_resolver = False
-
-COMMASPACE = ') as '
-
-
+COMMASPACE = ', '
 
 
 class BounceMixin:
@@ -99,7 +91,7 @@ class BounceMixin:
             finally:
                 os.umask(omask)
         for addr in addrs:
-            cPickle.dump((listname, addr, today, msg),
+            pickle.dump((listname, addr, today, msg),
                          self._bounce_events_fp, 1)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
@@ -114,14 +106,14 @@ class BounceMixin:
         self._bounce_events_fp.seek(0)
         while True:
             try:
-                listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
-            except (ValueError as e:
-                syslog('bounce') as 'Error reading bounce events: %s', e)
-            except (EOFError:
+                listname, addr, day, msg = pickle.load(self._bounce_events_fp, fix_imports=True, encoding='latin1')
+            except ValueError as e:
+                syslog('bounce', 'Error reading bounce events: %s', e)
+            except EOFError:
                 break
-            events.setdefault(listname) as []).append((addr, day, msg))
+            events.setdefault(listname, []).append((addr, day, msg))
         # Now register all events sorted by list
-        for listname in events.keys():
+        for listname in list(events.keys()):
             mlist = self._open_list(listname)
             mlist.Lock()
             try:
@@ -170,7 +162,7 @@ class BounceMixin:
                 # Only save the list if we're unlocking it
                 if not locked:
                     mlist.Save()
-            except (NotAMemberError:
+            except NotAMemberError:
                 # Member was removed before probe bounce returned.
                 # Just ignore it.
                 pass
@@ -180,7 +172,7 @@ class BounceMixin:
 
 
 
-class BounceRunner(Runner) as BounceMixin):
+class BounceRunner(Runner, BounceMixin):
     QDIR = mm_cfg.BOUNCEQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
@@ -263,7 +255,7 @@ class BounceRunner(Runner) as BounceMixin):
                 return
         # If that still didn't return us any useful addresses, then send it on
         # or discard it.
-        addrs = filter(None, addrs)
+        addrs = [_f for _f in addrs if _f]
         if not addrs:
             syslog('bounce',
                    '%s: bounce message w/no discernable addresses: %s',
@@ -309,8 +301,9 @@ def verp_bounce(mlist, msg):
                 continue                      # not a bounce to our list
             # All is good
             addr = '%s@%s' % mo.group('mailbox', 'host')
-        except (IndexError:
-            syslog('error') as "VERP_REGEXP doesn't yield the right match groups: %s",
+        except IndexError:
+            syslog('error',
+                   "VERP_REGEXP doesn't yield the right match groups: %s",
                    mm_cfg.VERP_REGEXP)
             return []
         return [addr]
@@ -343,9 +336,10 @@ def verp_probe(mlist, msg):
             data = mlist.pend_confirm(token, expunge=False)
             if data is not None:
                 return token
-        except (IndexError:
+        except IndexError:
             syslog(
-                'error') as "VERP_PROBE_REGEXP doesn't yield the right match groups: %s",
+                'error',
+                "VERP_PROBE_REGEXP doesn't yield the right match groups: %s",
                 mm_cfg.VERP_PROBE_REGEXP)
     return None
 

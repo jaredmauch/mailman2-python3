@@ -21,7 +21,6 @@ import re
 import email.Iterators
 
 
-
 def _c(pattern):
     return re.compile(pattern, re.IGNORECASE)
 
@@ -207,35 +206,43 @@ PATTERNS = [
     ]
 
 
-
 def process(msg, patterns=None):
+    """Process the message object to extract bouncing addresses.
+
+    msg must be an email.message.Message object.  patterns is an optional
+    alternative to the module global PATTERNS list.  If patterns is given, it
+    should be a list of 3-tuples of the form (start, end, addr-regexp).
+
+    Returns a list of addresses that matched the bounce patterns.
+    """
     if patterns is None:
         patterns = PATTERNS
-    # simple state machine
-    #     0 = nothing seen yet
-    #     1 = intro seen
+    # First we have to convert the message to text if it isn't already
+    if isinstance(msg, str):
+        text = msg
+    else:
+        text = email.Iterators.body_line_iterator(msg)
+        text = '\n'.join(text)
+    # MAS: This is a mess.  Some of the patterns in the list contain existing
+    # email addresses.  We should pre-parse them.
     addrs = {}
-    # MAS: This is a mess. The outer loop used to be over the message
-    # so we only looped through the message once.  Looping through the
-    # message for each set of patterns is obviously way more work, but
-    # if we don't do it, problems arise because scre from the wrong
-    # pattern set matches first and then acre doesn't match.  The
-    # alternative is to split things into separate modules, but then
-    # we process the message multiple times anyway.
-    for scre, ecre, acre in patterns:
-        state = 0
-        for line in email.Iterators.body_line_iterator(msg, decode=True):
-            if state == 0:
-                if scre.search(line):
-                    state = 1
-            if state == 1:
-                mo = acre.search(line)
+    for start_re, end_re, addr_re in patterns:
+        # If a start pattern isn't found, skip this pattern group
+        i = 0
+        while True:
+            start_mo = start_re.search(text, i)
+            if not start_mo:
+                break
+            # Search for the end pattern after the start pattern
+            end_mo = end_re.search(text, start_mo.end())
+            if not end_mo:
+                break
+            # Extract all the addresses that match the pattern
+            for line in text[start_mo.end():end_mo.start()].split('\n'):
+                mo = addr_re.search(line)
                 if mo:
                     addr = mo.group('addr')
-                    if addr:
-                        addrs[addr.strip('!=')] = 1
-                elif ecre.search(line):
-                    break
-        if addrs:
-            break
-    return [x for x in addrs.keys() if VALID.match(x)]
+                    if VALID.match(addr):
+                        addrs[addr] = 1
+            i = end_mo.end()
+    return list(addrs.keys())
