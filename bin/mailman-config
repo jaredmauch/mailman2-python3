@@ -20,21 +20,35 @@
 # Send bug reports or suggestions to Lindsay Haisley <fmouse@fmp.com>
 
 """Show basic statistics about, and build options for this
-installation of Mailman. Requires python 2."""
+installation of Mailman. Requires python 3."""
 
-print """Configuration and build information for Mailman\n"""
+import sys
+import logging
+from typing import NoReturn
 
-print 'Mailman version: %s' % '@MM_VERSION@'
-print 'Build Date:      %s' % '@BUILD_DATE@'
-print ''
-print 'prefix:          %s' % '@prefix@'
-print 'var_prefix:      %s' % '@VAR_PREFIX@'
-print 'mailman_user:    %s' % '@MAILMAN_USER@'
-print 'mailman_group:   %s' % '@MAILMAN_GROUP@'
-print 'mail_group:      %s' % '@MAIL_GROUP@'
-print 'cgi_group:       %s' % '@CGI_GROUP@'
-print ''
+def main() -> NoReturn:
+    """Print configuration and build information for Mailman.
+    
+    Raises:
+        SystemExit: Always exits with status 0
+    """
+    print("Configuration and build information for Mailman\n")
+    
+    print(f"Mailman version: {'@MM_VERSION@'}")
+    print(f"Build Date:      {'@BUILD_DATE@'}")
+    print("")
+    print(f"prefix:          {'@prefix@'}")
+    print(f"var_prefix:      {'@VAR_PREFIX@'}")
+    print(f"mailman_user:    {'@MAILMAN_USER@'}")
+    print(f"mailman_group:   {'@MAILMAN_GROUP@'}")
+    print(f"mail_group:      {'@MAIL_GROUP@'}")
+    print(f"cgi_group:       {'@CGI_GROUP@'}")
+    print("")
+    
+    print(f"configure_opts: \"{'@CONFIGURE_OPTS@'}\"")
+    
+    sys.exit(0)
 
-
-print 'configure_opts: "%s"' % '@CONFIGURE_OPTS@'
+if __name__ == "__main__":
+    main()
 

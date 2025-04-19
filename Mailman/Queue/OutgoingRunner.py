@@ -22,11 +22,14 @@ import sys
 import copy
 import time
 import socket
+import logging
+from typing import Any, Dict, List, Optional, Tuple, Union, NoReturn
 
 import email
+from email.message import Message
 
 from Mailman import mm_cfg
-from Mailman import Message
+from Mailman import Message as MailmanMessage
 from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
@@ -47,13 +50,26 @@ except ImportError:
 
 
 class OutgoingRunner(Runner, BounceMixin):
+    """Runner for outgoing messages.
+    
+    This class handles the delivery of outgoing messages to recipients.
+    It inherits from Runner and BounceMixin to provide message delivery
+    and bounce handling functionality.
+    """
+    
     QDIR = mm_cfg.OUTQUEUE_DIR
 
-    def __init__(self, slice=None, numslices=1):
+    def __init__(self, slice: Optional[int] = None, numslices: int = 1) -> None:
+        """Initialize the outgoing runner.
+        
+        Args:
+            slice: Optional slice number for parallel processing
+            numslices: Total number of slices for parallel processing
+        """
         Runner.__init__(self, slice, numslices)
         BounceMixin.__init__(self)
         # We look this function up only at startup time
-        modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
+        modname = f'Mailman.Handlers.{mm_cfg.DELIVERY_MODULE}'
         mod = __import__(modname)
         self._func = getattr(sys.modules[modname], 'process')
         # This prevents smtp server connection problems from filling up the
@@ -61,22 +77,41 @@ class OutgoingRunner(Runner, BounceMixin):
         # set if there was a socket.error.
         self.__logged = False
         self.__retryq = Switchboard(mm_cfg.RETRYQUEUE_DIR)
+        self.logger = logging.getLogger('mailman.outgoing')
 
-    def _dispose(self, mlist, msg, msgdata):
+    def _dispose(self, mlist: Any, msg: Message, msgdata: Dict[str, Any]) -> bool:
+        """Dispose of a message by delivering it or retrying.
+        
+        Args:
+            mlist: The mailing list object
+            msg: The email message
+            msgdata: Additional message metadata
+            
+        Returns:
+            bool: True if message should be retried, False if handled
+            
+        Raises:
+            socket.error: If there are SMTP connection problems
+            Errors.SomeRecipientsFailed: If delivery fails for some recipients
+        """
         # See if we should retry delivery of this message again.
         deliver_after = msgdata.get('deliver_after', 0)
         if time.time() < deliver_after:
             return True
+            
         # Make sure we have the most up-to-date state
         mlist.Load()
+        
         try:
             pid = os.getpid()
             self._func(mlist, msg, msgdata)
             # Failsafe -- a child may have leaked through.
             if pid != os.getpid():
+                self.logger.error('Child process leaked through: %s', modname)
                 syslog('error', 'child process leaked thru: %s', modname)
                 os._exit(1)
             self.__logged = False
+            
         except socket.error:
             # There was a problem connecting to the SMTP server.  Log this
             # once, but crank up our sleep time so we don't fill the error
@@ -86,11 +121,14 @@ class OutgoingRunner(Runner, BounceMixin):
                 port = 'smtp'
             # Log this just once.
             if not self.__logged:
+                self.logger.error('Cannot connect to SMTP server %s on port %s',
+                                mm_cfg.SMTPHOST, port)
                 syslog('error', 'Cannot connect to SMTP server %s on port %s',
                        mm_cfg.SMTPHOST, port)
                 self.__logged = True
             self._snooze(0)
             return True
+            
         except Errors.SomeRecipientsFailed as e:
             # Handle local rejects of probe messages differently.
             if msgdata.get('probe_token') and e.permfailures:
@@ -99,12 +137,6 @@ class OutgoingRunner(Runner, BounceMixin):
                 # Delivery failed at SMTP time for some or all of the
                 # recipients.  Permanent failures are registered as bounces,
                 # but temporary failures are retried for later.
-                #
-                # BAW: msg is going to be the original message that failed
-                # delivery, not a bounce message.  This may be confusing if
-                # this is what's sent to the user in the probe message.  Maybe
-                # we should craft a bounce-like message containing information
-                # about the permanent SMTP failure?
                 if e.permfailures:
                     self._queue_bounces(mlist.internal_name(), e.permfailures,
                                         msg)
@@ -118,8 +150,7 @@ class OutgoingRunner(Runner, BounceMixin):
                     deliver_until = msgdata.get('deliver_until', now)
                     if len(recips) == last_recip_count:
                         # We didn't make any progress, so don't attempt
-                        # delivery any longer.  BAW: is this the best
-                        # disposition?
+                        # delivery any longer.
                         if now > deliver_until:
                             return False
                     else:
@@ -137,6 +168,7 @@ class OutgoingRunner(Runner, BounceMixin):
 
     _doperiodic = BounceMixin._doperiodic
 
-    def _cleanup(self):
+    def _cleanup(self) -> None:
+        """Clean up resources."""
         BounceMixin._cleanup(self)
         Runner._cleanup(self)

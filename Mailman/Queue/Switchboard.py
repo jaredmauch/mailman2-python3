@@ -16,6 +16,9 @@
 # USA.
 
 """Reading and writing message objects and message metadata.
+
+This module provides a queue switchboard for processing messages. It handles
+the storage and retrieval of messages and their metadata in a queue directory.
 """
 
 # enqueue() and dequeue() are not symmetric.  enqueue() takes a Message
@@ -40,7 +43,8 @@ import email
 import errno
 import pickle
 import marshal
-from typing import Any, Dict, List, Optional, Tuple, Union
+import logging
+from typing import Any, Dict, List, Optional, Tuple, Union, Iterator
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -72,16 +76,21 @@ MAX_BAK_COUNT = 3
 
 
 class Switchboard:
-    """Queue switchboard for processing messages."""
+    """Queue switchboard for processing messages.
+    
+    This class provides a queue switchboard for processing messages. It handles
+    the storage and retrieval of messages and their metadata in a queue directory.
+    """
     
     def __init__(self, queue: str, slice: Optional[int] = None, 
-                 numslices: int = 1, recover=False) -> None:
+                 numslices: int = 1, recover: bool = False) -> None:
         """Initialize the switchboard.
         
         Args:
             queue: Name of the queue directory
             slice: Optional slice number for this instance
             numslices: Total number of slices
+            recover: Whether to recover backup files
         """
         self.queue = queue
         self.slice = slice
@@ -90,6 +99,7 @@ class Switchboard:
         self.msgdir = os.path.join(self.queuedir, 'messages')
         self.baddir = os.path.join(self.queuedir, 'bad')
         self.tmpdir = os.path.join(self.queuedir, 'tmp')
+        self.logger = logging.getLogger('mailman.switchboard')
         
         # Create necessary directories
         for dir in (self.queuedir, self.msgdir, self.baddir, self.tmpdir):
@@ -100,14 +110,18 @@ class Switchboard:
         # Fast track for no slices
         self.__lower = None
         self.__upper = None
-        # BAW: test performance and end-cases of this algorithm
         if numslices != 1:
             self.__lower = ((shamax+1) * slice) // numslices
             self.__upper = (((shamax+1) * (slice+1)) // numslices) - 1
         if recover:
             self.recover_backup_files()
 
-    def whichq(self):
+    def whichq(self) -> str:
+        """Return the name of this queue.
+        
+        Returns:
+            str: The name of the queue
+        """
         return self.queue
 
     def enqueue(self, msg: Message, msgdata: Dict[str, Any]) -> str:
@@ -118,22 +132,29 @@ class Switchboard:
             msgdata: Additional message metadata
             
         Returns:
-            The message ID
+            str: The message ID
+            
+        Raises:
+            IOError: If the message cannot be enqueued
         """
         # Generate a unique message ID
         msgid = Utils.unique_message_id()
         
         # Create the message file
         msgfile = os.path.join(self.msgdir, msgid)
-        with open(msgfile, 'wb') as fp:
-            pickle.dump(msg, fp, protocol=2)
-            
-        # Create the metadata file
-        datafile = os.path.join(self.msgdir, msgid + '.pck')
-        with open(datafile, 'wb') as fp:
-            pickle.dump(msgdata, fp, protocol=2)
-            
-        return msgid
+        try:
+            with open(msgfile, 'wb') as fp:
+                pickle.dump(msg, fp, protocol=2)
+                
+            # Create the metadata file
+            datafile = os.path.join(self.msgdir, msgid + '.pck')
+            with open(datafile, 'wb') as fp:
+                pickle.dump(msgdata, fp, protocol=2)
+                
+            return msgid
+        except IOError as e:
+            self.logger.error('Failed to enqueue message: %s', e)
+            raise
 
     def dequeue(self, msgid: str) -> Tuple[Message, Dict[str, Any]]:
         """Dequeue a message for processing.
@@ -142,7 +163,7 @@ class Switchboard:
             msgid: The message ID to dequeue
             
         Returns:
-            Tuple of (message, metadata)
+            Tuple[Message, Dict[str, Any]]: The message and its metadata
             
         Raises:
             IOError: If the message cannot be found
@@ -150,21 +171,26 @@ class Switchboard:
         msgfile = os.path.join(self.msgdir, msgid)
         datafile = os.path.join(self.msgdir, msgid + '.pck')
         
-        # Load the message
-        with open(msgfile, 'rb') as fp:
-            msg = pickle.load(fp)
-            
-        # Load the metadata
-        with open(datafile, 'rb') as fp:
-            msgdata = pickle.load(fp)
-            
-        return msg, msgdata
+        try:
+            # Load the message
+            with open(msgfile, 'rb') as fp:
+                msg = pickle.load(fp)
+                
+            # Load the metadata
+            with open(datafile, 'rb') as fp:
+                msgdata = pickle.load(fp)
+                
+            return msg, msgdata
+        except IOError as e:
+            self.logger.error('Failed to dequeue message %s: %s', msgid, e)
+            raise
 
-    def finish(self, msgid: str, preserve=False) -> None:
+    def finish(self, msgid: str, preserve: bool = False) -> None:
         """Finish processing a message.
         
         Args:
             msgid: The message ID to finish
+            preserve: Whether to preserve the message in the bad queue
         """
         msgfile = os.path.join(self.msgdir, msgid)
         datafile = os.path.join(self.msgdir, msgid + '.pck')
@@ -174,7 +200,6 @@ class Switchboard:
             if preserve:
                 psvfile = os.path.join(mm_cfg.BADQUEUE_DIR, msgid + '.psv')
                 # Create the directory if it doesn't yet exist.
-                # Copied from __init__.
                 omask = os.umask(0)                       # rwxrws---
                 try:
                     try:
@@ -189,93 +214,117 @@ class Switchboard:
                 os.unlink(msgfile)
                 os.unlink(datafile)
         except EnvironmentError as e:
+            self.logger.error('Failed to unlink/preserve backup file: %s', e)
             syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    msgfile, e)
 
-    def files(self, extension='.pck'):
+    def files(self, extension: str = '.pck') -> Iterator[str]:
+        """Get all files in the message directory.
+        
+        Args:
+            extension: File extension to filter by
+            
+        Yields:
+            str: The next file name
+        """
         times = {}
         lower = self.__lower
         upper = self.__upper
         for f in os.listdir(self.msgdir):
             # By ignoring anything that doesn't end in .pck, we ignore
-            # tempfiles and avoid a race condition.
-            filebase, ext = os.path.splitext(f)
-            if ext != extension:
+            # tempfiles created by this module's _safe_open() function
+            if not f.endswith(extension):
                 continue
-            when, digest = filebase.split('+')
-            # Throw out any files which don't match our bitrange.  BAW: test
-            # performance and end-cases of this algorithm.  MAS: both
-            # comparisons need to be <= to get complete range.
-            if lower is None or (lower <= int(digest, 16) <= upper):
-                key = float(when)
-                while key in times:
-                    key += DELTA
-                times[key] = filebase
-        # FIFO sort
-        keys = list(times.keys())
-        keys.sort()  # Sort numerically since keys are floats
-        return [times[k] for k in keys]
-
-    def recover_backup_files(self):
-        # Move all .bak files in our slice to .pck.  It's impossible for both
-        # to exist at the same time, so the move is enough to ensure that our
-        # normal dequeuing process will handle them.  We keep count in
-        # _bak_count in the metadata of the number of times we recover this
-        # file.  When the count reaches MAX_BAK_COUNT, we move the .bak file
-        # to a .psv file in the shunt queue.
-        for filebase in self.files('.bak'):
-            src = os.path.join(self.msgdir, filebase + '.bak')
-            dst = os.path.join(self.msgdir, filebase + '.pck')
-            fp = open(src, 'rb+')
+            # The file's base name is the message id of the message.
+            msgid = f[:-len(extension)]
+            # Calculate which slice this message id belongs to.  If we're
+            # not slicing, then we'll process all messages.
+            if lower is not None:
+                digest = hashlib_new(msgid).hexdigest()
+                # Convert the hex digest into a long
+                slice = int(digest, 16)
+                if slice < lower or slice > upper:
+                    continue
+            # Calculate the file's modification time
             try:
+                mtime = os.path.getmtime(os.path.join(self.msgdir, f))
+            except OSError:
+                # The file disappeared, so skip it
+                continue
+            # Get a unique time by adding a small increment to the time in
+            # case two entries have the same time.  This prevents skipping
+            # one of two entries with the same time until the next pass.
+            while mtime in times:
+                mtime += DELTA
+            times[mtime] = msgid
+        # Yield the message ids in chronological order
+        for mtime in sorted(times):
+            yield times[mtime]
+
+    def recover_backup_files(self) -> None:
+        """Recover backup files in the message directory.
+        
+        This method moves all .bak files in our slice to .pck. It's impossible
+        for both to exist at the same time, so the move is enough to ensure
+        that our normal dequeuing process will handle them. We keep count in
+        _bak_count in the metadata of the number of times we recover this
+        file. When the count reaches MAX_BAK_COUNT, we move the .bak file
+        to a .psv file in the shunt queue.
+        """
+        for f in os.listdir(self.msgdir):
+            if not f.endswith('.bak'):
+                continue
+            msgid = f[:-4]
+            # Calculate which slice this message id belongs to.  If we're
+            # not slicing, then we'll process all messages.
+            if self.__lower is not None:
+                digest = hashlib_new(msgid).hexdigest()
+                # Convert the hex digest into a long
+                slice = int(digest, 16)
+                if slice < self.__lower or slice > self.__upper:
+                    continue
+            # Get the metadata file
+            datafile = os.path.join(self.msgdir, msgid + '.pck')
+            # Get the backup file
+            bakfile = os.path.join(self.msgdir, f)
+            # Get the count of times this file has been recovered
+            try:
+                with open(datafile, 'rb') as fp:
+                    msgdata = pickle.load(fp)
+                count = msgdata.get('_bak_count', 0) + 1
+            except (IOError, pickle.UnpicklingError):
+                count = 1
+            # If we've recovered this file too many times, move it to the
+            # shunt queue
+            if count >= MAX_BAK_COUNT:
+                psvfile = os.path.join(mm_cfg.BADQUEUE_DIR, msgid + '.psv')
+                # Create the directory if it doesn't yet exist.
+                omask = os.umask(0)                       # rwxrws---
                 try:
-                    msg = pickle.load(fp)
-                    data_pos = fp.tell()
-                    data = pickle.load(fp)
-                except Exception as s:
-                    # If unpickling throws any exception, just log and
-                    # preserve this entry
-                    syslog('error', 'Unpickling .bak exception: %s\n'
-                           + 'preserving file: %s', s, filebase)
-                    self.finish(filebase, preserve=True)
-                else:
-                    data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
-                    fp.seek(data_pos)
-                    if data.get('_parsemsg'):
-                        protocol = 0
-                    else:
-                        protocol = 1
-                    pickle.dump(data, fp, protocol)
-                    fp.truncate()
-                    fp.flush()
-                    os.fsync(fp.fileno())
-                    if data['_bak_count'] >= MAX_BAK_COUNT:
-                        syslog('error',
-                               '.bak file max count, preserving file: %s',
-                               filebase)
-                        self.finish(filebase, preserve=True)
-                    else:
-                        os.rename(src, dst)
-            finally:
-                fp.close()
+                    try:
+                        os.mkdir(mm_cfg.BADQUEUE_DIR, 0o770)
+                    except OSError as e:
+                        if e.errno != errno.EEXIST: raise
+                finally:
+                    os.umask(omask)
+                os.rename(bakfile, psvfile)
+                os.rename(datafile, psvfile + '.pck')
+                self.logger.warning('Moved %s to shunt queue after %d recoveries',
+                                  msgid, count)
+                continue
+            # Update the count
+            msgdata['_bak_count'] = count
+            with open(datafile, 'wb') as fp:
+                pickle.dump(msgdata, fp, protocol=2)
+            # Move the backup file to the message file
+            os.rename(bakfile, os.path.join(self.msgdir, msgid))
 
     def reject(self, msgid: str, reason: str) -> None:
         """Reject a message.
         
         Args:
             msgid: The message ID to reject
-            reason: Reason for rejection
+            reason: The reason for rejection
         """
-        msgfile = os.path.join(self.msgdir, msgid)
-        datafile = os.path.join(self.msgdir, msgid + '.pck')
-        badfile = os.path.join(self.baddir, msgid)
-        
-        # Move the files to the bad directory
-        try:
-            os.rename(msgfile, badfile)
-            os.rename(datafile, badfile + '.pck')
-        except OSError:
-            pass
-            
-        # Log the rejection
-        syslog('error', 'Rejected message %s: %s', msgid, reason)
+        self.logger.warning('Rejecting message %s: %s', msgid, reason)
+        self.finish(msgid, preserve=True)

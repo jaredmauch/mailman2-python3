@@ -22,9 +22,7 @@ tags referenced in translation are the same variables and tags in
 the original templates and catalog.
 
 Usage:
-
-cd $MAILMAN_DIR
-%(program)s [-q] <lang>
+    transcheck [-q] <lang>
 
 Where <lang> is your country code (e.g. 'it' for Italy) and -q is
 to ask for a brief summary.
@@ -34,10 +32,26 @@ import sys
 import re
 import os
 import argparse
-from typing import Dict, List, Optional, Pattern, Union
+from typing import Dict, List, Optional, Pattern, Union, TextIO
 
 import paths
 from Mailman.i18n import C_
+
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments.
+    
+    Returns:
+        Parsed command line arguments
+    """
+    parser = argparse.ArgumentParser(
+        description="Check Mailman translations for consistency",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__
+    )
+    parser.add_argument('lang', help='Language code (e.g. "it" for Italy)')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                      help='Show only brief summary')
+    return parser.parse_args()
 
 program = sys.argv[0]
 
@@ -65,8 +79,8 @@ class TransChecker:
         """
         self.dict: Dict[str, int] = {}
         self.errs: List[str] = []
-        self.regexp = re.compile(regexp) if isinstance(regexp, str) else regexp
-        self.escaped = None
+        self.regexp: Pattern = re.compile(regexp) if isinstance(regexp, str) else regexp
+        self.escaped: Optional[Pattern] = None
         if escaped:
             self.escaped = re.compile(escaped) if isinstance(escaped, str) else escaped
 
@@ -131,52 +145,92 @@ class TransChecker:
 
 
 class POParser:
-    "parse a .po file extracting msgids and msgstrs"
-    def __init__(self, filename=""):
-        self.status = 0
-        self.files = []
-        self.msgid = ""
-        self.msgstr = ""
-        self.line = 1
-        self.f = None
-        self.esc = { "n": "\n", "r": "\r", "t": "\t" }
+    """Parse a .po file extracting msgids and msgstrs."""
+    
+    def __init__(self, filename: str = "") -> None:
+        """Initialize the PO file parser.
+        
+        Args:
+            filename: Optional path to PO file to parse
+        """
+        self.status: int = 0
+        self.files: List[str] = []
+        self.msgid: str = ""
+        self.msgstr: str = ""
+        self.line: int = 1
+        self.f: Optional[TextIO] = None
+        self.esc: Dict[str, str] = {"n": "\n", "r": "\r", "t": "\t"}
         if filename:
-            self.f = open(filename)
+            self.open(filename)
 
-    def open(self, filename):
-        self.f = open(filename)
+    def open(self, filename: str) -> None:
+        """Open a PO file for parsing.
+        
+        Args:
+            filename: Path to PO file
+            
+        Raises:
+            IOError: If file cannot be opened
+        """
+        self.f = open(filename, 'r', encoding='utf-8')
 
-    def close(self):
-        self.f.close()
+    def close(self) -> None:
+        """Close the PO file if open."""
+        if self.f:
+            self.f.close()
+            self.f = None
 
-    def parse(self):
-        """States table for the finite-states-machine parser:
+    def __enter__(self) -> 'POParser':
+        """Context manager entry.
+        
+        Returns:
+            Self for use in with statement
+        """
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Context manager exit.
+        
+        Ensures file is closed.
+        """
+        self.close()
+
+    def parse(self) -> bool:
+        """Parse the PO file.
+        
+        States table for the finite-states-machine parser:
             0  idle
             1  filename-or-comment
             2  msgid
             3  msgstr
             4  end
+            
+        Returns:
+            True if a message was parsed, False if EOF
+            
+        Raises:
+            ValueError: If file is not properly formatted
+            IOError: If file cannot be read
         """
+        if not self.f:
+            raise ValueError("No file open for parsing")
+
+        # can't continue if status == 4, this is a dead status
+        if self.status == 4:
+            return False
+
         # each time we can safely re-initialize those vars
         self.files = []
         self.msgid = ""
         self.msgstr = ""
 
-
-        # can't continue if status == 4, this is a dead status
-        if self.status == 4:
-            return 0
-
-        while 1:
+        while True:
             # continue scanning, char-by-char
             c = self.f.read(1)
             if not c:
                 # EOF -> maybe we have a msgstr to save?
                 self.status = 4
-                if self.msgstr:
-                    return 1
-                else:
-                    return 0
+                return bool(self.msgstr)
 
             # keep the line count up-to-date
             if c == "\n":
@@ -187,17 +241,17 @@ class POParser:
                 if c == ":":
                     # was a line of filenames
                     row = self.f.readline()
-                    self.files += row.split()
+                    self.files.extend(row.split())
                     self.line += 1
                 elif c == "\n":
-                    # was a single pount on the line
+                    # was a single pound on the line
                     pass
                 else:
                     # was a comment... discard
                     self.f.readline()
                     self.line += 1
                 # in every case, we switch to idle status
-                self.status = 0;
+                self.status = 0
                 continue
 
             # in idle status we search for a '#' or for a 'm'
@@ -230,7 +284,7 @@ class POParser:
                         if not c:
                             # EOF, bailout
                             self.status = 4
-                            return 0
+                            return False
                         if c == "\\":
                             # a quoted char...
                             c = self.f.read(1)
@@ -260,7 +314,7 @@ class POParser:
                         # ok, time to go idle and return
                         self.status = 0
                         self.line += 1
-                        return 1
+                        return True
                 if c == "\"":
                     # start of string found
                     while 1:
@@ -268,7 +322,7 @@ class POParser:
                         if not c:
                             # EOF, bail out
                             self.status = 4
-                            return 1
+                            return False
                         if c == "\\":
                             # a quoted char...
                             c = self.f.read(1)
@@ -352,76 +406,57 @@ def check_po(file, quiet=0):
     p.close()
     return n
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-q', '--quiet', action='store_true',
-                      help='Ask for a brief summary')
-    parser.add_argument('lang',
-                      help='Country code (e.g. \'it\' for Italy)')
-
-    try:
-        args = parser.parse_args()
-    except SystemExit:
-        usage(1)
+def main() -> None:
+    """Main program entry point."""
+    args = parse_args()
 
     # Check if the language directory exists
-    lang_dir = os.path.join(paths.prefix, 'messages', args.lang)
-    if not os.path.isdir(lang_dir):
-        usage(1, C_('Language directory %(lang_dir)s does not exist') % {'lang_dir': lang_dir})
+    lang = args.lang
+    langdir = os.path.join('messages', lang)
+    
+    if not os.path.isdir(langdir):
+        sys.exit(f"Error: Language directory {langdir} not found")
 
-    # Initialize checkers
-    var_checker = TransChecker(r'%\([^)]*\)s')
-    tag_checker = TransChecker(r'<[^>]*>', r'&[^;]*;')
-
-    # Check templates
-    template_dir = os.path.join(paths.prefix, 'templates', 'en')
-    for template in os.listdir(template_dir):
-        if not template.endswith('.txt'):
+    # Initialize checkers for different types of translations
+    var_checker = TransChecker(r'%\([^)]*\)[sd]')
+    tag_checker = TransChecker(r'</?[a-zA-Z][^>]*>')
+    
+    # Process each .po file
+    for filename in os.listdir(langdir):
+        if not filename.endswith('.po'):
             continue
-        template_path = os.path.join(template_dir, template)
-        with open(template_path) as f:
-            for line in f:
-                var_checker.checkin(line)
-                tag_checker.checkin(line)
-
-    # Check translations
-    trans_dir = os.path.join(paths.prefix, 'templates', args.lang)
-    for template in os.listdir(trans_dir):
-        if not template.endswith('.txt'):
+            
+        pofile = os.path.join(langdir, filename)
+        
+        try:
+            with POParser(pofile) as parser:
+                while parser.parse():
+                    # Check variables
+                    var_checker.checkin(parser.msgid)
+                    var_checker.checkout(parser.msgstr)
+                    
+                    # Check tags
+                    tag_checker.checkin(parser.msgid)
+                    tag_checker.checkout(parser.msgstr)
+                    
+                    # Print results if not quiet mode
+                    if not args.quiet:
+                        if var_checker.errs or tag_checker.errs:
+                            print(f"\nFile: {filename}")
+                            print(f"Line: {parser.line}")
+                            print(f"Original: {parser.msgid}")
+                            print(f"Translation: {parser.msgstr}")
+                            if var_checker.errs:
+                                print("Variables:", var_checker.errorsAsString())
+                            if tag_checker.errs:
+                                print("Tags:", tag_checker.errorsAsString())
+                            
+                    var_checker.reset()
+                    tag_checker.reset()
+                    
+        except (IOError, ValueError) as e:
+            print(f"Error processing {pofile}: {e}", file=sys.stderr)
             continue
-        template_path = os.path.join(trans_dir, template)
-        with open(template_path) as f:
-            for line in f:
-                var_checker.checkout(line)
-                tag_checker.checkout(line)
-
-    # Check catalog
-    catalog_path = os.path.join(lang_dir, 'LC_MESSAGES', 'mailman.po')
-    if os.path.exists(catalog_path):
-        parser = POParser(catalog_path)
-        while parser.parse():
-            var_checker.checkin(parser.msgid)
-            tag_checker.checkin(parser.msgid)
-            var_checker.checkout(parser.msgstr)
-            tag_checker.checkout(parser.msgstr)
-
-    # Compute and display results
-    var_checker.computeErrors()
-    tag_checker.computeErrors()
-
-    if not args.quiet:
-        print(C_('Variable check: %(status)s') % {'status': var_checker.status()})
-        if var_checker.errs:
-            print(var_checker.errorsAsString())
-        print(C_('Tag check: %(status)s') % {'status': tag_checker.status()})
-        if tag_checker.errs:
-            print(tag_checker.errorsAsString())
-    else:
-        if var_checker.errs or tag_checker.errs:
-            print(C_('FAILED'))
-        else:
-            print(C_('OK'))
-
 
 if __name__ == '__main__':
     main()
