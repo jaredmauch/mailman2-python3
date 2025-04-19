@@ -1624,7 +1624,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         else:
             msg = _('Address %(schange_from)s changed to %(schange_to)s')
             success = True
-        doc.AddItem(Header(3) as msg))
+        doc.AddItem(Header(3, msg))
         lang = mlist.getMemberLanguage(change_to)
         otrans = i18n.get_translation()
         i18n.set_language(lang)
@@ -1718,7 +1718,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             if not(entry in lc_addresses):
                 try:
                     mlist.ApprovedDeleteMember(entry, 0, 0)
-                except (Errors.NotAMemberError:
+                except Errors.NotAMemberError:
                     # This can happen if the address is illegal (i.e. can't be
                     # parsed by email.Utils.parseaddr()) but for legacy
                     # reasons is in the database.  Use a lower level remove to
@@ -1769,7 +1769,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     _ = i18n._
                     mlist.ApprovedDeleteMember(user, whence=whence)
                     removes.append(user)
-                except (Errors.NotAMemberError:
+                except Errors.NotAMemberError:
                     errors.append((user, _('Not subscribed')))
                 continue
             if not mlist.isMember(user):
@@ -1819,5 +1819,5 @@ def change_options(mlist, category, subcat, cgidata, doc):
         if errors:
             doc.AddItem(Header(5, _("Error Unsubscribing:")))
             items = ['%s -- %s' % (x[0], x[1]) for x in errors]
-            doc.AddItem(apply(UnorderedList, tuple((items))))
+            doc.AddItem(UnorderedList(*items))
             doc.AddItem("<p>")

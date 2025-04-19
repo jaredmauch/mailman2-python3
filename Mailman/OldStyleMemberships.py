@@ -96,7 +96,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberCPAddress(self, member):
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Errors.NotAMemberError, member
+            raise Errors.NotAMemberError(member)
         return cpaddr
 
     def getMemberCPAddresses(self, members):
@@ -117,7 +117,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
 
     def __assertIsMember(self, member):
         if not self.isMember(member):
-            raise Errors.NotAMemberError, member
+            raise Errors.NotAMemberError(member)
 
     def getMemberLanguage(self, member):
         """Return the member's preferred language."""
@@ -202,7 +202,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
             del kws['realname']
         # Assert that no other keywords are present
         if kws:
-            raise ValueError, kws.keys()
+            raise ValueError(kws.keys())
         # If the localpart has uppercase letters in it, then the value in the
         # members (or digest_members) dict is the case preserved address.
         # Otherwise the value is 0.  Note that the case of the domain part is
