@@ -167,3 +167,9 @@ class Topics(GUIBase):
         except ValueError:
             # BAW: should really print(a warning
             pass
+
+    try:
+        import re
+    except ImportError:
+        print(_('Error: Python regex module not available'))
+        return

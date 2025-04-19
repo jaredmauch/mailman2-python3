@@ -82,15 +82,13 @@ def main():
     # open list
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except (Errors.MMListError as e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         title = _('CGI script error')
         doc.SetTitle(title)
-        doc.AddItem(Header(2) as title))
-        doc.addError(_('No such list <em>%(safelistname)s</em>'))
-        doc.AddItem('<hr>')
-        doc.AddItem(MailmanLogo())
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
         print(doc.Format())

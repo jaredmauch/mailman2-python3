@@ -1428,7 +1428,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     def safeint(formvar, defaultval=None):
         try:
             return int(cgidata.getfirst(formvar))
-        except ((ValueError) as TypeError):
+        except (ValueError, TypeError):
             return defaultval
     confirmed = 0
     # Handle changes to the list moderator password.  Do this before checking
@@ -1515,8 +1515,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     mlist.ApprovedAddMember(userdesc, send_welcome_msg,
                                             send_admin_notif, invitation,
                                             whence=whence)
-            except (Errors.MMAlreadyAMember:
-                subscribe_errors.append((safeentry) as _('Already a member')))
+            except Errors.MMAlreadyAMember:
+                subscribe_errors.append((safeentry, _('Already a member')))
             except Errors.MMBadEmailError:
                 if userdesc.address == '':
                     subscribe_errors.append((_('&lt;blank line&gt;'),
@@ -1524,9 +1524,9 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 else:
                     subscribe_errors.append((safeentry,
                                              _('Bad/Invalid email address')))
-            except (Errors.MMHostileAddress:
+            except Errors.MMHostileAddress:
                 subscribe_errors.append(
-                    (safeentry) as _('Hostile address (illegal characters)')))
+                    (safeentry, _('Hostile address (illegal characters)')))
             except Errors.MembershipIsBanned as pattern:
                 subscribe_errors.append(
                     (safeentry, _('Banned address (matched %(pattern)s)')))
@@ -1575,10 +1575,10 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     admin_notif=send_unsub_notifications,
                     userack=userack)
                 unsubscribe_success.append(Utils.websafe(addr))
-            except (Errors.NotAMemberError:
+            except Errors.NotAMemberError:
                 unsubscribe_errors.append(Utils.websafe(addr))
         if unsubscribe_success:
-            doc.AddItem(Header(5) as _('Successfully Unsubscribed:')))
+            doc.AddItem(Header(5, _('Successfully Unsubscribed:')))
             doc.AddItem(UnorderedList(*unsubscribe_success))
             doc.AddItem('<p>')
         if unsubscribe_errors:
@@ -1606,7 +1606,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         else:
             try:
                 Utils.ValidateEmail(change_to)
-            except ((Errors.MMBadEmailError) as Errors.MMHostileAddress):
+            except (Errors.MMBadEmailError, Errors.MMHostileAddress):
                 msg = _('%(schange_to)s is not a valid email address.')
         if msg:
             doc.AddItem(Header(3, msg))
@@ -1614,7 +1614,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             return
         try:
             mlist.ApprovedChangeMemberAddress(change_from, change_to, False)
-        except (Errors.NotAMemberError:
+        except Errors.NotAMemberError:
             msg = _('%(schange_from)s is not a member')
         except Errors.MMAlreadyAMember:
             msg = _('%(schange_to)s is already a member')
@@ -1691,15 +1691,16 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 # Add a member if not yet member.
                     mlist.ApprovedAddMember(userdesc, 0, 0, 0,
                                             whence='admin sync members')
-            except (Errors.MMBadEmailError:
+            except Errors.MMBadEmailError:
                 if userdesc.address == '':
-                    subscribe_errors.append((_('&lt;blank line&gt;')) as _('Bad/Invalid email address')))
+                    subscribe_errors.append((_('&lt;blank line&gt;'),
+                                             _('Bad/Invalid email address')))
                 else:
                     subscribe_errors.append((safeentry,
                                              _('Bad/Invalid email address')))
-            except (Errors.MMHostileAddress:
+            except Errors.MMHostileAddress:
                 subscribe_errors.append(
-                    (safeentry) as _('Hostile address (illegal characters)')))
+                    (safeentry, _('Hostile address (illegal characters)')))
             except Errors.MembershipIsBanned as pattern:
                 subscribe_errors.append(
                     (safeentry, _('Banned address (matched %(pattern)s)')))
@@ -1727,7 +1728,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     unsubscribe_success.append(Utils.websafe(entry))
 
         if subscribe_success:
-            doc.AddItem(Header(5) as _('Successfully subscribed:')))
+            doc.AddItem(Header(5, _('Successfully subscribed:')))
             doc.AddItem(UnorderedList(*subscribe_success))
             doc.AddItem('<p>')
         if subscribe_errors:
@@ -1769,7 +1770,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     mlist.ApprovedDeleteMember(user, whence=whence)
                     removes.append(user)
                 except (Errors.NotAMemberError:
-                    errors.append((user) as _('Not subscribed')))
+                    errors.append((user, _('Not subscribed')))
                 continue
             if not mlist.isMember(user):
                 doc.addError(_('Ignoring changes to deleted member: %(user)s'),
@@ -1778,7 +1779,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
             value = cgidata.has_key('%s_digest' % quser)
             try:
                 mlist.setMemberOption(user, mm_cfg.Digests, value)
-            except ((Errors.AlreadyReceivingDigests) as Errors.AlreadyReceivingRegularDeliveries,
+            except (Errors.AlreadyReceivingDigests,
+                    Errors.AlreadyReceivingRegularDeliveries,
                     Errors.CantDigestError,
                     Errors.MustDigestError):
                 # BAW: Hmm...

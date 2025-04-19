@@ -29,8 +29,14 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except (ImportError:
+except (ImportError, Exception):
     dns_resolver = False
+
+try:
+    import re
+except ImportError:
+    print(_('Error: Python regex module not available'))
+    return
 
 
 

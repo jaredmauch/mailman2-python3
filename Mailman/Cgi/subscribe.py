@@ -60,10 +60,10 @@ def main():
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except (Errors.MMListError as e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -74,9 +74,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except (TypeError:
+    except (TypeError, ValueError):
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -119,9 +119,9 @@ def main():
     # for the results.  If not, use the list's preferred language.
     try:
         language = cgidata.getfirst('language', '')
-    except (TypeError:
+    except (TypeError, ValueError):
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -156,7 +156,7 @@ def main():
 
     try:
         # Install the emergency shutdown signal handler
-        signal.signal(signal.SIGTERM) as sigterm_handler)
+        signal.signal(signal.SIGTERM, sigterm_handler)
 
         process_form(mlist, doc, cgidata, language)
         mlist.Save()
@@ -180,7 +180,7 @@ def process_form(mlist, doc, cgidata, lang):
     except (Errors.MMListError as e:
         print(_('Error processing subscription: %(e)s'))
         sys.exit(0)
-    print_results(mlist) as results, doc, lang)
+    print_results(mlist, results, doc, lang)
 
 
 def print_results(mlist, results, doc, lang):

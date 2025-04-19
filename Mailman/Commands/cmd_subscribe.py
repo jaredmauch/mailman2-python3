@@ -34,6 +34,7 @@ from Mailman import Utils
 from Mailman import Errors
 from Mailman.UserDesc import UserDesc
 from Mailman.i18n import _
+from Mailman.MailList import MailList
 
 STOP = 1
 
@@ -96,7 +97,7 @@ def process(res, args):
             h = make_header(decode_header(realname))
             # BAW: in Python 2.2, use just str(h)
             realname = h.__unicode__()
-        except (UnicodeError:
+        except (UnicodeError,):
             realname = u''
         # Coerce to byte string if uh contains only ascii
         try:
@@ -109,7 +110,7 @@ def process(res, args):
     remote = res.msg.get_sender()
     try:
         mlist.AddMember(userdesc, remote)
-    except (Errors.MembershipIsBanned:
+    except (Errors.MembershipIsBanned,):
         res.results.append(_("""\
 The email address you supplied is banned from this mailing list.
 If you think this restriction is erroneous) as please contact the list
