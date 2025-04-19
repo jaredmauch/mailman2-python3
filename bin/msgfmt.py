@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Written by Martin v. Lwis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
@@ -43,11 +43,11 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-def add(id, str, fuzzy):
+def add(msgid, msgstr, fuzzy):
     "Add a non-fuzzy translation to the dictionary."
     global MESSAGES
-    if not fuzzy and str:
-        MESSAGES[id] = str
+    if not fuzzy and msgstr:
+        MESSAGES[msgid] = msgstr
 
 
 def generate():
@@ -57,12 +57,12 @@ def generate():
     keys = sorted(MESSAGES.keys())
     offsets = []
     ids = strs = b''
-    for id in keys:
+    for msgid in keys:
         # For each string, we need size and file offset.  Each string is NUL
         # terminated; the NUL does not count into the size.
-        offsets.append((len(ids), len(id), len(strs), len(MESSAGES[id])))
-        ids += id.encode('utf-8') + b'\0'
-        strs += MESSAGES[id].encode('utf-8') + b'\0'
+        offsets.append((len(ids), len(msgid), len(strs), len(MESSAGES[msgid])))
+        ids += msgid.encode('utf-8') + b'\0'
+        strs += MESSAGES[msgid].encode('utf-8') + b'\0'
     
     # The header is 7 32-bit unsigned integers.  We don't use hash tables, so
     # the keys start right after the index tables.
