@@ -928,7 +928,7 @@ def strip_verbose_pattern(pattern):
         elif c == ']' and inclass:
             inclass = False
             newpattern += c
-        elif re.search('\s', c):
+        elif re.search(r'\s', c):
             if inclass:
                 if c == NL:
                     newpattern += '\\n'
