@@ -82,10 +82,10 @@ def process(mlist, msg, msgdata):
             # deliver it normally.
             realname = mlist.real_name
             text = _("""\
-Your urgent message to the %(realname)s mailing list was not authorized for
-delivery.  The original message as received by Mailman is attached.
-""")
-            raise Errors.RejectMessage, Utils.wrap(text)
+You are not allowed to post to this mailing list, and your message has been
+automatically rejected.  If you think that your messages are being rejected in
+error, contact the mailing list owner at %(listowner)s.""")
+            raise Errors.RejectMessage(Utils.wrap(text))
     # Calculate the regular recipients of the message
     recips = [mlist.getMemberCPAddress(m)
               for m in mlist.getRegularMemberKeys()

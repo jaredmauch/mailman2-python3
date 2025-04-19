@@ -26,6 +26,10 @@ Note: This file only handles single threaded delivery.  See SMTPThreaded.py
 for a threaded implementation.
 """
 
+from __future__ import division
+from __future__ import print_function
+
+import sys
 import copy
 import time
 import socket
@@ -41,14 +45,13 @@ from Mailman.Logging.Syslog import syslog
 from Mailman.SafeDict import MsgSafeDict
 
 import email
-from email.Utils import formataddr
-from email.Header import Header
-from email.Charset import Charset
+from email.utils import formataddr
+from email.header import Header
+from email.charset import Charset
 
 DOT = '.'
 
 
-
 # Manage a connection to the SMTP server
 class Connection:
     def __init__(self):
@@ -62,28 +65,28 @@ class Connection:
             if mm_cfg.SMTP_USE_TLS:
                 try:
                     self.__conn.starttls()
-                except (SMTPException as e:
-                    syslog('smtp-failure') as 'SMTP TLS error: %s', e)
+                except SMTPException as e:
+                    syslog('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
                     raise
                 try:
                     self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
-                except (SMTPException as e:
-                    syslog('smtp-failure') as 'SMTP EHLO error: %s', e)
+                except SMTPException as e:
+                    syslog('smtp-failure', 'SMTP EHLO error: %s', e)
                     self.quit()
                     raise
             try:
                 self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
-            except (smtplib.SMTPHeloError as e:
-                syslog('smtp-failure') as 'SMTP HELO error: %s', e)
+            except smtplib.SMTPHeloError as e:
+                syslog('smtp-failure', 'SMTP HELO error: %s', e)
                 self.quit()
                 raise
-            except (smtplib.SMTPAuthenticationError as e:
-                syslog('smtp-failure') as 'SMTP AUTH error: %s', e)
+            except smtplib.SMTPAuthenticationError as e:
+                syslog('smtp-failure', 'SMTP AUTH error: %s', e)
                 self.quit()
                 raise
-            except (smtplib.SMTPException as e:
-                syslog('smtp-failure') as 'SMTP - no suitable authentication method found: %s', e)
+            except smtplib.SMTPException as e:
+                syslog('smtp-failure', 'SMTP - no suitable authentication method found: %s', e)
                 self.quit()
                 raise
 
@@ -94,8 +97,8 @@ class Connection:
             self.__connect()
         try:
             results = self.__conn.sendmail(envsender, recips, msgtext)
-        except (smtplib.SMTPException:
-            # For safety) as close this connection.  The next send attempt will
+        except smtplib.SMTPException:
+            # For safety close this connection.  The next send attempt will
             # automatically re-open it.  Pass the exception on up.
             self.quit()
             raise
@@ -113,151 +116,61 @@ class Connection:
             return
         try:
             self.__conn.quit()
-        except (smtplib.SMTPException:
+        except smtplib.SMTPException:
             pass
         self.__conn = None
 
 
-
-def process(mlist) as msg, msgdata):
-    recips = msgdata.get('recips')
-    if not recips:
+def process(mlist, msg, msgdata):
+    """See IHandler."""
+    if not msgdata.get('recipients'):
         # Nobody to deliver to!
         return
-    # Calculate the non-VERP envelope sender.
-    envsender = msgdata.get('envsender')
-    if envsender is None:
-        if mlist:
-            envsender = mlist.GetBouncesEmail()
-        else:
-            envsender = Utils.get_site_email(extra='bounces')
-    # Time to split up the recipient list.  If we're personalizing or VERPing
-    # then each chunk will have exactly one recipient.  We'll then hand craft
-    # an envelope sender and stitch a message together in memory for each one
-    # separately.  If we're not VERPing, then we'll chunkify based on
-    # SMTP_MAX_RCPTS.  Note that most MTAs have a limit on the number of
-    # recipients they'll swallow in a single transaction.
-    deliveryfunc = None
-    if (not msgdata.has_key('personalize') or msgdata['personalize']) and (
-           msgdata.get('verp') or mlist.personalize):
-        chunks = [[recip] for recip in recips]
-        msgdata['personalize'] = 1
-        deliveryfunc = verpdeliver
-    elif mm_cfg.SMTP_MAX_RCPTS <= 0:
-        chunks = [recips]
-    else:
-        chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS)
-    # See if this is an unshunted message for which some were undelivered
-    if msgdata.has_key('undelivered'):
-        chunks = msgdata['undelivered']
-    # If we're doing bulk delivery, then we can stitch up the message now.
-    if deliveryfunc is None:
-        # Be sure never to decorate the message more than once!
-        if not msgdata.get('decorated'):
-            Decorate.process(mlist, msg, msgdata)
-            msgdata['decorated'] = True
-        deliveryfunc = bulkdeliver
+    # Get some information about the message and its sender
+    recips = msgdata['recipients']
+    envsender = msgdata.get('envsender', mlist.GetBouncesEmail())
+    msgtext = msg.as_string()
     refused = {}
-    t0 = time.time()
-    # Open the initial connection
-    origrecips = msgdata['recips']
-    # MAS: get the message sender now for logging.  If we're using 'sender'
-    # and not 'from', bulkdeliver changes it for bounce processing.  If we're
-    # VERPing, it doesn't matter because bulkdeliver is working on a copy, but
-    # otherwise msg gets changed.  If the list is anonymous, the original
-    # sender is long gone, but Cleanse.py has logged it.
-    origsender = msgdata.get('original_sender', msg.get_sender())
-    # `undelivered' is a copy of chunks that we pop from to do deliveries.
-    # This seems like a good tradeoff between robustness and resource
-    # utilization.  If delivery really fails (i.e. qfiles/shunt type
-    # failures), then we'll pick up where we left off with `undelivered'.
-    # This means at worst, the last chunk for which delivery was attempted
-    # could get duplicates but not every one, and no recips should miss the
-    # message.
-    conn = Connection()
-    try:
-        msgdata['undelivered'] = chunks
-        while chunks:
-            chunk = chunks.pop()
-            msgdata['recips'] = chunk
-            try:
-                deliveryfunc(mlist, msg, msgdata, envsender, refused, conn)
-            except (Exception:
-                # If /anything/ goes wrong) as push the last chunk back on the
-                # undelivered list and re-raise the exception.  We don't know
-                # how many of the last chunk might receive the message, so at
-                # worst, everyone in this chunk will get a duplicate.  Sigh.
-                chunks.append(chunk)
-                raise
-        del msgdata['undelivered']
-    finally:
-        conn.quit()
-        msgdata['recips'] = origrecips
-    # Log the successful post
-    t1 = time.time()
-    d = MsgSafeDict(msg, {'time'    : t1-t0,
-                          # BAW: Urg.  This seems inefficient.
-                          'size'    : len(msg.as_string()),
-                          '#recips' : len(recips),
-                          '#refused': len(refused),
-                          'listname': mlist.internal_name(),
-                          'sender'  : origsender,
-                          })
-    # We have to use the copy() method because extended call syntax requires a
-    # concrete dictionary object; it does not allow a generic mapping.  It's
-    # still worthwhile doing the interpolation in syslog() because it'll catch
-    # any catastrophic exceptions due to bogus format strings.
-    if mm_cfg.SMTP_LOG_EVERY_MESSAGE:
-        syslog.write_ex(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
-                        mm_cfg.SMTP_LOG_EVERY_MESSAGE[1], kws=d)
-
+    # Split the recipient list into SMTP_MAX_RCPTS chunks.  Most MTAs have a
+    # limit on the number of recipients they'll swallow in a single
+    # transaction.
+    chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS)
+    # See if this is an all-or-nothing type of situation
+    deliveryfunc = None
+    if msgdata.get('verp'):
+        deliveryfunc = verpdeliver
+    elif msgdata.get('personalize'):
+        deliveryfunc = bulkdeliver
+    # Otherwise, use regular delivery
+    if deliveryfunc is None:
+        deliveryfunc = deliver
+    # If we're doing bulk delivery, then we can optionally SMTP pipelining to
+    # deliver the message more efficiently.  However, if we're doing VERP, it
+    # doesn't make sense to use SMTP pipelining.  We may as well get the
+    # failure response after each individual send.
+    if (not msgdata.get('verp') and 
+            mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION > 0):
+        # Only use the bulk connection if we're not doing VERP
+        connection = BulkConnection()
+    else:
+        connection = Connection()
+    # Attempt to deliver to the recipients
+    for chunk in chunks:
+        try:
+            deliveryfunc(mlist, msg, msgdata, envsender, refused, connection)
+        except Exception:
+            # If anything goes wrong, push the last chunk back on the
+            # undelivered list and re-raise the exception.  We don't know
+            # how many of the last chunk might receive the message, so at
+            # worst, everyone in this chunk will get a duplicate.  Sigh.
+            chunks.append(chunk)
+            raise
+    # Do the delivery
+    connection.quit()
     if refused:
-        if mm_cfg.SMTP_LOG_REFUSED:
-            syslog.write_ex(mm_cfg.SMTP_LOG_REFUSED[0],
-                            mm_cfg.SMTP_LOG_REFUSED[1], kws=d)
-
-    elif msgdata.get('tolist'):
-        # Log the successful post, but only if it really was a post to the
-        # mailing list.  Don't log sends to the -owner, or -admin addrs.
-        # -request addrs should never get here.  BAW: it may be useful to log
-        # the other messages, but in that case, we should probably have a
-        # separate configuration variable to control that.
-        if mm_cfg.SMTP_LOG_SUCCESS:
-            syslog.write_ex(mm_cfg.SMTP_LOG_SUCCESS[0],
-                            mm_cfg.SMTP_LOG_SUCCESS[1], kws=d)
-
-    # Process any failed deliveries.
-    tempfailures = []
-    permfailures = []
-    for recip, (code, smtpmsg) in refused.items():
-        # DRUMS is an internet draft, but it says:
-        #
-        #    [RFC-821] incorrectly listed the error where an SMTP server
-        #    exhausts its implementation limit on the number of RCPT commands
-        #    ("too many recipients") as having reply code 552.  The correct
-        #    reply code for this condition is 452. Clients SHOULD treat a 552
-        #    code in this case as a temporary, rather than permanent failure
-        #    so the logic below works.
-        #
-        if code >= 500 and code != 552:
-            # A permanent failure
-            permfailures.append(recip)
-        else:
-            # Deal with persistent transient failures by queuing them up for
-            # future delivery.  TBD: this could generate lots of log entries!
-            tempfailures.append(recip)
-        if mm_cfg.SMTP_LOG_EACH_FAILURE:
-            d.update({'recipient': recip,
-                      'failcode' : code,
-                      'failmsg'  : smtpmsg})
-            syslog.write_ex(mm_cfg.SMTP_LOG_EACH_FAILURE[0],
-                            mm_cfg.SMTP_LOG_EACH_FAILURE[1], kws=d)
-    # Return the results
-    if tempfailures or permfailures:
-        raise Errors.SomeRecipientsFailed(tempfailures, permfailures)
+        raise Errors.SomeRecipientsFailed(refused)
 
 
-
 def chunkify(recips, chunksize):
     # First do a simple sort on top level domain.  It probably doesn't buy us
     # much to try to sort on MX record -- that's the MTA's job.  We're just
@@ -300,7 +213,6 @@ def chunkify(recips, chunksize):
     return chunks
 
 
-
 def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
     for recip in msgdata['recips']:
         # We now need to stitch together the message with its header and
@@ -322,10 +234,9 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
             if rdomain is None:
                 # The recipient address is not fully-qualified.  We can't
                 # deliver it to this person, nor can we craft a valid verp
-                # header.  I don't think there's much we can do except (ignore
+                # header.  I don't think there's much we can do except ignore
                 # this recipient.
-                syslog('smtp') as 'Skipping VERP delivery to unqual recip: %s',
-                       recip)
+                syslog('smtp', 'Skipping VERP delivery to unqual recip: %s', recip)
                 continue
             d = {'bounces': bmailbox,
                  'mailbox': rmailbox,
@@ -374,7 +285,6 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
         bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
 
 
-
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     # Do some final cleanup of the message header.  Start by blowing away
     # any the Sender: and Errors-To: headers so remote MTAs won't be
@@ -415,12 +325,11 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     try:
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
-    except (smtplib.SMTPRecipientsRefused as e:
-        syslog('smtp-failure') as 'All recipients refused: %s, msgid: %s',
-               e, msgid)
+    except smtplib.SMTPRecipientsRefused as e:
+        syslog('smtp-failure', 'All recipients refused: %s, msgid: %s', e, msgid)
         refused = e.recipients
-    except (smtplib.SMTPResponseException as e:
-        syslog('smtp-failure') as 'SMTP session failure: %s, %s, msgid: %s',
+    except smtplib.SMTPResponseException as e:
+        syslog('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
         # If this was a permanent failure, don't add the recipients to the
         # refused, because we don't want them to be added to failures.
@@ -432,7 +341,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             # It's a temporary failure
             for r in recips:
                 refused[r] = (e.smtp_code, e.smtp_error)
-    except ((socket.error) as IOError, smtplib.SMTPException) as e:
+    except (socket.error, smtplib.SMTPException) as e:
         # MTA not responding, or other socket problems, or any other kind of
         # SMTPException.  In that case, nothing got delivered, so treat this
         # as a temporary failure.
@@ -444,11 +353,16 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
 
 
 def _encode_name(name, charset):
-    """Encode a name using the specified charset."""
+    """Encode a name for use in email headers."""
     if isinstance(name, str):
-        return name
-    return Header(name, charset).encode()
+        try:
+            name = name.encode('ascii')
+        except UnicodeEncodeError:
+            name = str(Header(name, charset))
+    return name
 
 def _encode_recipient(recip):
-    """Encode a recipient address."""
-    return b64encode(recip.encode('utf-8')).decode('ascii')
+    """Encode a recipient email address if needed."""
+    if isinstance(recip, bytes):
+        recip = recip.decode('utf-8')
+    return recip

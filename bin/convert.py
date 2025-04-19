@@ -41,4 +41,4 @@ def convert(mlist):
 
 
 if __name__ == '__main__':
-    print(C_(__doc__.replace('%', '%%'))
+    print(C_(__doc__.replace('%', '%%')))

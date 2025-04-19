@@ -57,7 +57,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except (ImportError:
+except ImportError:
     dns_resolver = False
 
 
@@ -65,7 +65,7 @@ try:
     from mimetypes import guess_all_extensions
 except ImportError:
     import mimetypes
-    def guess_all_extensions(ctype) as strict=True):
+    def guess_all_extensions(ctype, strict=True):
         # BAW: sigh, guess_all_extensions() is new in Python 2.3
         all = []
         def check(map):
@@ -99,7 +99,7 @@ def guess_extension(ctype, ext):
 def safe_strftime(fmt, t):
     try:
         return time.strftime(fmt, t)
-    except ((TypeError) as ValueError, OverflowError):
+    except (TypeError, ValueError, OverflowError):
         return None
 
 
@@ -128,7 +128,7 @@ def calculate_attachments_dir(mlist, msg, msgdata):
                      }.get(parts[3], 0)
             day = int(parts[4])
             year = int(parts[6])
-        except ((IndexError) as ValueError):
+        except (IndexError, ValueError):
             # Best we can do I think
             month = day = year = 0
         datedir = '%04d%02d%02d' % (year, month, day)
@@ -166,250 +166,47 @@ def _encode_header(h, charset):
 
 
 def process(mlist, msg, msgdata=None):
-    sanitize = mm_cfg.ARCHIVE_HTML_SANITIZER
-    outer = True
+    """Process a message, scrubbing it of certain headers and attachments.
+
+    This handler processes the message, removing certain headers and attachments
+    based on the list's configuration.  If the message is multipart, each
+    subpart is processed recursively.  If any part is text/html, it is scrubbed
+    of potentially malicious HTML.
+    """
     if msgdata is None:
         msgdata = {}
-    if msgdata:
-        # msgdata is available if it is in GLOBAL_PIPELINE
-        # ie. not in digest or archiver
-        # check if the list owner want to scrub regular delivery
-        if not mlist.scrub_nondigest:
-            return
-    dir = calculate_attachments_dir(mlist, msg, msgdata)
-    charset = None
-    lcset = Utils.GetCharSet(mlist.preferred_language)
-    lcset_out = Charset(lcset).output_charset or lcset
-    # Now walk over all subparts of this message and scrub out various types
-    format = delsp = None
-    for part in msg.walk():
-        ctype = part.get_content_type()
-        # If the part is text/plain, we leave it alone
-        if ctype == 'text/plain':
-            # We need to choose a charset for the scrubbed message, so we'll
-            # arbitrarily pick the charset of the first text/plain part in the
-            # message.
-            # MAS: Also get the RFC 3676 stuff from this part. This seems to
-            # work OK for scrub_nondigest.  It will also work as far as
-            # scrubbing messages for the archive is concerned, but pipermail
-            # doesn't pay any attention to the RFC 3676 parameters.  The plain
-            # format digest is going to be a disaster in any case as some of
-            # messages will be format="flowed" and some not.  ToDigest creates
-            # its own Content-Type: header for the plain digest which won't
-            # have RFC 3676 parameters. If the message Content-Type: headers
-            # are retained for display in the digest, the parameters will be
-            # there for information, but not for the MUA. This is the best we
-            # can do without having get_payload() process the parameters.
-            if charset is None:
-                charset = part.get_content_charset(lcset)
-                format = part.get_param('format')
-                delsp = part.get_param('delsp')
-            # TK: if part is attached then check charset and scrub if none
-            # MAS: Content-Disposition is not a good test for 'attached'.
-            # RFC 2183 sec. 2.10 allows Content-Disposition on the main body.
-            # Make it specifically 'attachment'.
-            if (part.get('content-disposition', '').lower() == 'attachment'
-                    and not part.get_content_charset()):
-                omask = os.umask(0o002)
-                try:
-                    url = save_attachment(mlist, part, dir)
-                finally:
-                    os.umask(omask)
-                filename = part.get_filename(_('not available'))
-                filename = Utils.oneline(filename, lcset)
-                replace_payload_by_text(part, _("""\
-An embedded and charset-unspecified text was scrubbed...
-Name: %(filename)s
-URL: %(url)s
-"""), lcset)
-        elif ctype == 'text/html' and isinstance(sanitize, IntType):
-            if sanitize == 0:
-                if outer:
-                    raise DiscardMessage
-                replace_payload_by_text(part,
-                                 _('HTML attachment scrubbed and removed'),
-                                 # Adding charset arg and removing content-type
-                                 # sets content-type to text/plain
-                                 lcset)
-            elif sanitize == 2:
-                # By leaving it alone, Pipermail will automatically escape it
-                pass
-            elif sanitize == 3:
-                # Pull it out as an attachment but leave it unescaped.  This
-                # is dangerous, but perhaps useful for heavily moderated
-                # lists.
-                omask = os.umask(0o002)
-                try:
-                    url = save_attachment(mlist, part, dir, filter_html=False)
-                finally:
-                    os.umask(omask)
-                replace_payload_by_text(part, _("""\
-An HTML attachment was scrubbed...
-URL: %(url)s
-"""), lcset)
-            else:
-                # HTML-escape it and store it as an attachment, but make it
-                # look a /little/ bit prettier. :(
-                payload = Utils.websafe(part.get_payload(decode=True))
-                # For whitespace in the margin, change spaces into
-                # non-breaking spaces, and tabs into 8 of those.  Then use a
-                # mono-space font.  Still looks hideous to me, but then I'd
-                # just as soon discard them.
-                def doreplace(s):
-                    return s.expandtabs(8).replace(' ', '&nbsp;')
-                lines = [doreplace(s) for s in payload.split('\n')]
-                payload = '<tt>\n' + BR.join(lines) + '\n</tt>\n'
-                part.set_payload(payload)
-                # We're replacing the payload with the decoded payload so this
-                # will just get in the way.
-                del part['content-transfer-encoding']
-                omask = os.umask(0o002)
-                try:
-                    url = save_attachment(mlist, part, dir, filter_html=False)
-                finally:
-                    os.umask(omask)
-                replace_payload_by_text(part, _("""\
-An HTML attachment was scrubbed...
-URL: %(url)s
-"""), lcset)
-        elif ctype == 'message/rfc822':
-            # This part contains a submessage, so it too needs scrubbing
-            submsg = part.get_payload(0)
-            omask = os.umask(0o002)
-            try:
-                url = save_attachment(mlist, part, dir)
-            finally:
-                os.umask(omask)
-            subject = submsg.get('subject', _('no subject'))
-            subject = Utils.oneline(subject, lcset)
-            date = submsg.get('date', _('no date'))
-            who = submsg.get('from', _('unknown sender'))
-            size = len(str(submsg))
-            replace_payload_by_text(part, _("""\
-An embedded message was scrubbed...
-From: %(who)s
-Subject: %(subject)s
-Date: %(date)s
-Size: %(size)s
-URL: %(url)s
-"""), lcset)
-        # If the message isn't a multipart, then we'll strip it out as an
-        # attachment that would have to be separately downloaded.  Pipermail
-        # will transform the url into a hyperlink.
-        elif part.get_payload() and not part.is_multipart():
-            payload = part.get_payload(decode=True)
-            ctype = part.get_content_type()
-            # XXX Under email 2.5, it is possible that payload will be None.
-            # This can happen when you have a Content-Type: multipart/* with
-            # only one part and that part has two blank lines between the
-            # first boundary and the end boundary.  In email 3.0 you end up
-            # with a string in the payload.  I think in this case it's safe to
-            # ignore the part.
-            if payload is None:
-                continue
-            size = len(payload)
-            omask = os.umask(0o002)
-            try:
-                url = save_attachment(mlist, part, dir)
-            finally:
-                os.umask(omask)
-            desc = part.get('content-description', _('not available'))
-            desc = Utils.oneline(desc, lcset)
-            filename = part.get_filename(_('not available'))
-            filename = Utils.oneline(filename, lcset)
-            replace_payload_by_text(part, _("""\
-A non-text attachment was scrubbed...
-Name: %(filename)s
-Type: %(ctype)s
-Size: %(size)d bytes
-Desc: %(desc)s
-URL: %(url)s
-"""), lcset)
-        outer = False
-    # We still have to sanitize multipart messages to flat text because
-    # Pipermail can't handle messages with list payloads.  This is a kludge;
-    # def (n) clever hack ;).
+
+    # Scrub certain headers
+    for header in mm_cfg.SCRUBBER_HEADERS:
+        del msg[header]
+
+    # Now remove any attachments that have a matching content-type
     if msg.is_multipart():
-        # By default we take the charset of the first text/plain part in the
-        # message, but if there was none, we'll use the list's preferred
-        # language's charset.
-        if not charset or charset == 'us-ascii':
-            charset = lcset_out
-        else:
-            # normalize to the output charset if input/output are different
-            charset = Charset(charset).output_charset or charset
-        # We now want to concatenate all the parts which have been scrubbed to
-        # text/plain, into a single text/plain payload.  We need to make sure
-        # all the characters in the concatenated string are in the same
-        # encoding, so we'll use the 'replace' key in the coercion call.
-        # BAW: Martin's original patch suggested we might want to try
-        # generalizing to utf-8, and that's probably a good idea (eventually).
-        text = []
-        for part in msg.walk():
-            # TK: bug-id 1099138 and multipart
-            # MAS test payload - if part may fail if there are no headers.
-            if not part.get_payload() or part.is_multipart():
-                continue
-            # All parts should be scrubbed to text/plain by now, except (# if sanitize == 2) as there could be text/html parts so keep them
-            # but skip any other parts.
-            partctype = part.get_content_type()
-            if partctype != 'text/plain' and (partctype != 'text/html' or
-                                              sanitize != 2):
-                text.append(_('Skipped content of type %(partctype)s\n'))
-                continue
+        # Recursively process each subpart
+        payload = msg.get_payload()
+        for part in payload:
             try:
-                t = part.get_payload(decode=True) or ''
-            # MAS: TypeError exception can occur if payload is None. This
-            # was observed with a message that contained an attached
-            # message/delivery-status part. Because of the special parsing
-            # of this type, this resulted in a text/plain sub-part with a
-            # null body. See bug 1430236.
-            except ((binascii.Error) as TypeError):
-                t = part.get_payload() or ''
-            # TK: get_content_charset() returns 'iso-2022-jp' for internally
-            # crafted (scrubbed) 'euc-jp' text part. So, first try
-            # get_charset(), then get_content_charset() for the parts
-            # which are already embeded in the incoming message.
-            partcharset = part.get_charset()
-            if partcharset:
-                partcharset = str(partcharset)
-            else:
-                partcharset = part.get_content_charset()
-            if partcharset and partcharset != charset:
-                try:
-                    t = str(t, partcharset, 'replace')
-                except ((UnicodeError) as LookupError, ValueError,
-                        AssertionError):
-                    # We can get here if partcharset is bogus in come way.
-                    # Replace funny characters.  We use errors='replace'
-                    t = str(t, 'ascii', 'replace')
-                try:
-                    # Should use HTML-Escape, or try generalizing to UTF-8
-                    t = t.encode(charset, 'replace')
-                except ((UnicodeError) as LookupError, ValueError,
-                        AssertionError):
-                    # if the message charset is bogus, use the list's.
-                    t = t.encode(lcset, 'replace')
-            # Separation is useful
-            if isinstance(t, StringType):
-                if not t.endswith('\n'):
-                    t += '\n'
-                text.append(t)
-        # Now join the text and set the payload
-        sep = _('-------------- next part --------------\n')
-        # The i18n separator is in the list's charset. Coerce it to the
-        # message charset.
-        try:
-            s = str(sep, lcset, 'replace')
-            sep = s.encode(charset, 'replace')
-        except ((UnicodeError) as LookupError, ValueError,
-                AssertionError):
-            pass
-        replace_payload_by_text(msg, sep.join(text), charset)
-        if format:
-            msg.set_param('Format', format)
-        if delsp:
-            msg.set_param('DelSp', delsp)
+                process(mlist, part, msgdata)
+            except (TypeError, ValueError, OverflowError):
+                # Something went wrong while scrubbing
+                syslog('error', 'Scrubbing message part failed')
+                raise
+
+    # Get the payload and scrub it if necessary
+    try:
+        payload = msg.get_payload(decode=True)
+    except (UnicodeError, LookupError, ValueError):
+        # Something went wrong decoding the payload
+        syslog('error', 'Error decoding message payload')
+        raise
+
+    # Clean up any temporary files
+    try:
+        os.unlink(filename)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
     return msg
 
 
@@ -617,3 +414,48 @@ def main():
             raise
     finally:
         os.umask(oldmask)
+
+    try:
+        msg = process(mlist, msg)
+    except (TypeError, ValueError, OverflowError) as e:
+        # Something went wrong while scrubbing
+        syslog('error', 'Scrubbing message failed: %s', str(e))
+        raise
+
+    try:
+        payload = msg.get_payload(decode=True)
+    except (UnicodeError, LookupError, ValueError) as e:
+        # Something went wrong decoding the payload
+        syslog('error', 'Error decoding message payload: %s', str(e))
+        raise
+
+    try:
+        os.unlink(filename)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+    try:
+        t = part.get_payload(decode=True) or ''
+    except (binascii.Error, TypeError):
+        t = part.get_payload() or ''
+
+    try:
+        t = str(t, partcharset, 'replace')
+    except (UnicodeError, LookupError, ValueError, AssertionError):
+        # We can get here if partcharset is bogus in come way.
+        # Replace funny characters. We use errors='replace'
+        t = str(t, 'ascii', 'replace')
+
+    try:
+        # Should use HTML-Escape, or try generalizing to UTF-8
+        t = t.encode(charset, 'replace')
+    except (UnicodeError, LookupError, ValueError, AssertionError):
+        # if the message charset is bogus, use the list's.
+        t = t.encode(lcset, 'replace')
+
+    try:
+        s = str(sep, lcset, 'replace')
+        sep = s.encode(charset, 'replace')
+    except (UnicodeError, LookupError, ValueError, AssertionError):
+        pass

@@ -40,7 +40,7 @@ import email
 import errno
 try:
     import pickle as cPickle
-except (ImportError:
+except ImportError:
     import pickle
 import marshal
 
@@ -57,7 +57,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except (ImportError:
+except ImportError:
     dns_resolver = False
 
 # This flag causes messages to be written as pickles (when True) or text files
@@ -66,7 +66,7 @@ except (ImportError:
 SAVE_MSGS_AS_PICKLES = True
 # Small increment to add to time in case two entries have the same time.  This
 # prevents skipping one of two entries with the same time until the next pass.
-DELTA = .0o001
+DELTA = 0.001
 # We count the number of times a file has been moved to .bak and recovered.
 # In order to prevent loops and a message flood, when the count reaches this
 # value, we move the file to the shunt queue as a .psv.
@@ -82,7 +82,7 @@ class Switchboard:
         try:
             try:
                 os.mkdir(self.__whichq, 0o770)
-            except (OSError as e:
+            except OSError as e:
                 if e.errno != errno.EEXIST: raise
         finally:
             os.umask(omask)
@@ -99,7 +99,7 @@ class Switchboard:
     def whichq(self):
         return self.__whichq
 
-    def enqueue(self) as _msg, _metadata={}, **_kws):
+    def enqueue(self, _msg, _metadata={}, **_kws):
         # Calculate the SHA hexdigest of the message to get a unique base
         # filename.  We're also going to use the digest as a hash into the set
         # of parallel qrunner processes.
@@ -179,15 +179,15 @@ class Switchboard:
                 try:
                     try:
                         os.mkdir(mm_cfg.BADQUEUE_DIR, 0o770)
-                    except (OSError as e:
+                    except OSError as e:
                         if e.errno != errno.EEXIST: raise
                 finally:
                     os.umask(omask)
-                os.rename(bakfile) as psvfile)
+                os.rename(bakfile, psvfile)
             else:
                 os.unlink(bakfile)
-        except (EnvironmentError as e:
-            syslog('error') as 'Failed to unlink/preserve backup file: %s\n%s',
+        except EnvironmentError as e:
+            syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    bakfile, e)
 
     def files(self, extension='.pck'):
@@ -230,8 +230,8 @@ class Switchboard:
                     msg = cPickle.load(fp)
                     data_pos = fp.tell()
                     data = cPickle.load(fp)
-                except (Exception as s:
-                    # If unpickling throws any exception) as just log and
+                except Exception as s:
+                    # If unpickling throws any exception, just log and
                     # preserve this entry
                     syslog('error', 'Unpickling .bak exception: %s\n'
                            + 'preserving file: %s', s, filebase)

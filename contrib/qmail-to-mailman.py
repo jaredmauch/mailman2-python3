@@ -113,8 +113,7 @@ try:
     sys.exit(main())
 except SystemExit as argument:
     sys.exit(argument)
-
-except Exception, argument:
+except Exception as argument:
     info = sys.exc_info()
     trace = info[2]
     sys.stderr.write("%s %s\n" % (sys.exc_type, argument))

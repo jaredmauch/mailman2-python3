@@ -36,15 +36,13 @@ __version__ = "1.1"
 MESSAGES = {}
 
 
-
 def usage(code, msg=''):
-    print(>> sys.stderr, __doc__
+    print(__doc__, file=sys.stderr)
     if msg:
-        print(>> sys.stderr, msg
+        print(msg, file=sys.stderr)
     sys.exit(code)
 
 
-
 def add(id, str, fuzzy):
     "Add a non-fuzzy translation to the dictionary."
     global MESSAGES
@@ -52,7 +50,6 @@ def add(id, str, fuzzy):
         MESSAGES[id] = str
 
 
-
 def generate():
     "Return the generated output."
     global MESSAGES
@@ -83,7 +80,7 @@ def generate():
         voffsets += [l2, o2+valuestart]
     offsets = koffsets + voffsets
     output = struct.pack("Iiiiiii",
-                         0x950412deL,       # Magic
+                         0x950412de,        # Magic
                          0,                 # Version
                          len(keys),         # # of entries
                          7*4,               # start of key index
@@ -95,7 +92,6 @@ def generate():
     return output
 
 
-
 def make(filename, outfile):
     ID = 1
     STR = 2
@@ -109,9 +105,9 @@ def make(filename, outfile):
         outfile = os.path.splitext(infile)[0] + '.mo'
 
     try:
-        lines = open(infile).readlines()
-    except (IOError) as msg:
-        print(>> sys.stderr, msg
+        f = open(infile, 'rb')
+    except IOError as msg:
+        print(msg, file=sys.stderr)
         sys.exit(1)
     
     section = None
@@ -119,7 +115,7 @@ def make(filename, outfile):
 
     # Parse the catalog
     lno = 0
-    for l in lines:
+    for l in f:
         lno += 1
         # If we get a comment line after a msgstr, this is a new entry
         if l[0] == '#' and section == STR:
@@ -154,9 +150,9 @@ def make(filename, outfile):
         elif section == STR:
             msgstr += l
         else:
-            print(>> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
-                  'before:'
-            print(>> sys.stderr, l
+            print('Syntax error on %s:%d' % (infile, lno), \
+                   'before:')
+            print(l)
             sys.exit(1)
     # Add last entry
     if section == STR:
@@ -168,10 +164,9 @@ def make(filename, outfile):
     try:
         open(outfile,"wb").write(output)
     except (IOError) as msg:
-        print(>> sys.stderr, msg
+        print(msg, file=sys.stderr)
                       
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
@@ -185,14 +180,14 @@ def main():
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-V', '--version'):
-            print(>> sys.stderr, "msgfmt.py", __version__
+            print("msgfmt.py", __version__, file=sys.stderr)
             sys.exit(0)
         elif opt in ('-o', '--output-file'):
             outfile = arg
     # do it
     if not args:
-        print(>> sys.stderr, 'No input file given'
-        print(>> sys.stderr, "Try `msgfmt --help' for more information."
+        print('No input file given', file=sys.stderr)
+        print("Try `msgfmt --help' for more information.", file=sys.stderr)
         return
 
     for filename in args:
