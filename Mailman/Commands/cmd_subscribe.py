@@ -29,6 +29,7 @@
 
 from email.utils import parseaddr
 from email.header import decode_header, make_header
+import sys
 
 from Mailman import Utils
 from Mailman import Errors
@@ -105,7 +106,11 @@ def process(res, args):
             pass
     # Create the UserDesc record and do a non-approved subscription
     listowner = mlist.GetOwnerEmail()
-    userdesc = UserDesc(address, realname, password, digest)
+    try:
+        userdesc = UserDesc(address, realname, password, digest)
+    except Errors.MMListError as e:
+        print(_('Error: %(e)s'), file=sys.stderr)
+        return 1
     remote = res.msg.get_sender()
     try:
         mlist.AddMember(userdesc, remote)
