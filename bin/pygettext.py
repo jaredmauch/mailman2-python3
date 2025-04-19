@@ -138,7 +138,7 @@ If `inputfile' is -, standard input is read.
 
 import os
 import sys
-import getopt
+import argparse
 import tokenize
 import token
 import glob
@@ -319,92 +319,57 @@ msgstr ""
 
 
 def main():
-    global escapes
-    escapes = {}
-
-    # parse options
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'ad:Ehk:Kno:p:S:vVw:x:X:',
-                                 ['extract-all', 'default-domain=', 'escape',
-                                  'help', 'keyword=', 'no-default-keywords',
-                                  'add-location', 'no-location',
-                                  'output=', 'output-dir=', 'style=',
-                                  'verbose', 'version', 'width=',
-                                  'exclude-file=', 'no-docstrings='])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    class Options:
-        # constants
-        GNU = 1
-        SOLARIS = 2
-        # defaults
-        extractall = 0 # FIXME: currently this option has no effect at all.
-        escape = 0
-        keywords = []
-        outpath = ''
-        outfile = 'messages.pot'
-        writelocations = 1
-        locationstyle = GNU
-        verbose = 0
-        width = 78
-        excludefilename = ''
-        docstrings = 0
-        nodocstrings = {}
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-a', '--extract-all', action='store_true', help='Extract all strings')
+    parser.add_argument('-d', '--default-domain', help='Rename the default output file from messages.pot to name.pot')
+    parser.add_argument('-E', '--escape', action='store_true', help='Replace non-ASCII characters with octal escape sequences')
+    parser.add_argument('-D', '--docstrings', action='store_true', help='Extract module, class, method, and function docstrings')
+    parser.add_argument('-k', '--keyword', action='append', help='Keywords to look for in addition to the default set')
+    parser.add_argument('-K', '--no-default-keywords', action='store_true', help='Disable the default set of keywords')
+    parser.add_argument('--no-location', action='store_true', help='Do not write filename/lineno location comments')
+    parser.add_argument('-n', '--add-location', action='store_true', help='Write filename/lineno location comments')
+    parser.add_argument('-o', '--output', help='Rename the default output file from messages.pot to filename')
+    parser.add_argument('-p', '--output-dir', help='Output files will be placed in directory dir')
+    parser.add_argument('-S', '--style', choices=['solaris', 'gnu'], default='gnu', help='Specify which style to use for location comments')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print the names of the files being processed')
+    parser.add_argument('-V', '--version', action='store_true', help='Print the version of pygettext and exit')
+    parser.add_argument('-w', '--width', type=int, default=78, help='Set width of output to columns')
+    parser.add_argument('-x', '--exclude-file', help='Specify a file that contains a list of strings that are not be extracted')
+    parser.add_argument('-X', '--no-docstrings', help='Specify a file that contains a list of files that should not have their docstrings extracted')
+    parser.add_argument('inputfiles', nargs='*', help='Input files to process')
+    
+    args = parser.parse_args()
+    
+    if args.version:
+        print(f"pygettext {__version__}")
+        sys.exit(0)
+        
+    if not args.inputfiles:
+        usage(1, "No input files given")
+        
+    # Process the options
     options = Options()
-    locations = {'gnu': options.GNU,
-                'solaris': options.SOLARIS}
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-V', '--version'):
-            print("pygettext.py", __version__, file=sys.stderr)
-            sys.exit(0)
-        elif opt in ('-v', '--verbose'):
-            options.verbose = 1
-        elif opt in ('-a', '--extract-all'):
-            options.extractall = 1
-        elif opt in ('-d', '--default-domain'):
-            options.outfile = arg + '.pot'
-        elif opt in ('-E', '--escape'):
-            options.escape = 1
-        elif opt in ('-D', '--docstrings'):
-            options.docstrings = 1
-        elif opt in ('-k', '--keyword'):
-            options.keywords.append(arg)
-        elif opt in ('-K', '--no-default-keywords'):
-            options.keywords = []
-        elif opt in ('-n', '--add-location'):
-            options.writelocations = 1
-        elif opt == '--no-location':
-            options.writelocations = 0
-        elif opt in ('-o', '--output'):
-            options.outfile = arg
-        elif opt in ('-p', '--output-dir'):
-            options.outpath = arg
-        elif opt in ('-S', '--style'):
-            try:
-                options.locationstyle = locations[arg.lower()]
-            except KeyError:
-                usage(1, 'Invalid value for --style: %s' % arg)
-        elif opt in ('-w', '--width'):
-            try:
-                options.width = int(arg)
-            except ValueError:
-                usage(1, '--width argument must be an integer: %s' % arg)
-        elif opt in ('-x', '--exclude-file'):
-            options.excludefilename = arg
-        elif opt in ('-X', '--no-docstrings'):
-            try:
-                with open(arg) as fp:
-                    for line in fp:
-                        filename = line.strip()
-                        if filename:
-                            options.nodocstrings[filename] = None
-            except IOError:
-                usage(1, "Can't read --exclude-file: %s" % arg)
+    options.extractall = args.extract_all
+    options.escape = args.escape
+    options.docstrings = args.docstrings
+    options.keywords = args.keyword or []
+    if args.no_default_keywords:
+        options.keywords = []
+    options.writelocations = not args.no_location
+    options.locationstyle = Options.GNU if args.style.lower() == 'gnu' else Options.SOLARIS
+    options.verbose = args.verbose
+    options.width = args.width
+    options.outfile = args.output or 'messages.pot'
+    options.outpath = args.output_dir or ''
+    options.excludefilename = args.exclude_file or ''
+    options.nodocstrings = {}
+    if args.no_docstrings:
+        try:
+            with open(args.no_docstrings) as fp:
+                for line in fp:
+                    options.nodocstrings[line.strip()] = 1
+        except IOError as msg:
+            usage(1, msg)
 
     # calculate escapes
     make_escapes(not options.escape)
@@ -429,7 +394,7 @@ def main():
 
     # slurp through all the files
     eater = TokenEater(options)
-    for filename in args:
+    for filename in args.inputfiles:
         if filename == '-':
             if options.verbose:
                 print('Reading standard input', file=sys.stderr)

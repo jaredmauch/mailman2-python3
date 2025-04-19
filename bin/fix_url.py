@@ -39,7 +39,7 @@ If run standalone, it prints this help text and exits.
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -54,18 +54,18 @@ def usage(code, msg=''):
 
 
 def fix_url(mlist, *args):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-u', '--urlhost', help='Look up urlhost in the virtual host table')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print what the script is doing')
+    
     try:
-        opts, args = getopt.getopt(args, 'u:v', ['urlhost=', 'verbose'])
-    except getopt.error as msg:
-        usage(1, msg)
+        args = parser.parse_args(args)
+    except SystemExit:
+        usage(1)
 
-    verbose = 0
-    urlhost = mailhost = None
-    for opt, arg in opts:
-        if opt in ('-u', '--urlhost'):
-            urlhost = arg
-        elif opt in ('-v', '--verbose'):
-            verbose = 1
+    verbose = args.verbose
+    urlhost = args.urlhost
+    mailhost = None
 
     # Make sure list is locked.
     if not mlist.Locked():

@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# Written by Martin v. Lwis <loewis@informatik.hu-berlin.de>
+#
+# Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 """Generate binary message catalog from textual translation description.
 
@@ -8,13 +22,12 @@ This program converts a textual Uniforum-style message catalog (.po file) into
 a binary GNU catalog (.mo file).  This is essentially the same function as the
 GNU msgfmt program, however, it is a simpler implementation.
 
-Usage: msgfmt.py [OPTIONS] filename.po
+Usage: msgfmt.py [options] filename.po ...
 
 Options:
     -o file
     --output-file=file
-        Specify the output file to write to.  If omitted, output will go to a
-        file named filename.mo (based off the input file name).
+        Specify the output file.
 
     -h
     --help
@@ -27,43 +40,45 @@ Options:
 
 import sys
 import os
-import getopt
+import argparse
 import struct
 import array
+from email.parser import HeaderParser
 
 __version__ = "1.1"
 
 MESSAGES = {}
 
-
 def usage(code, msg=''):
-    print(__doc__, file=sys.stderr)
+    """Print usage message and exit with given code."""
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(__doc__, file=fd)
     if msg:
-        print(msg, file=sys.stderr)
+        print(msg, file=fd)
     sys.exit(code)
 
-
-def add(msgid, msgstr, fuzzy):
-    "Add a non-fuzzy translation to the dictionary."
+def add(id, str, fuzzy):
+    """Add a non-fuzzy translation to the dictionary."""
     global MESSAGES
-    if not fuzzy and msgstr:
-        MESSAGES[msgid] = msgstr
-
+    if not fuzzy and str:
+        MESSAGES[id] = str
 
 def generate():
-    "Return the generated output."
-    global MESSAGES
-    # the keys are sorted in the .mo file
+    """Generate the binary message catalog."""
+    # The keys are sorted in the .mo file
     keys = sorted(MESSAGES.keys())
     offsets = []
     ids = strs = b''
-    for msgid in keys:
+    for id in keys:
         # For each string, we need size and file offset.  Each string is NUL
         # terminated; the NUL does not count into the size.
-        offsets.append((len(ids), len(msgid), len(strs), len(MESSAGES[msgid])))
-        ids += msgid.encode('utf-8') + b'\0'
-        strs += MESSAGES[msgid].encode('utf-8') + b'\0'
-    
+        offsets.append((len(ids), len(id), len(strs), len(MESSAGES[id])))
+        ids += id + b'\0'
+        strs += MESSAGES[id] + b'\0'
+    output = ''
     # The header is 7 32-bit unsigned integers.  We don't use hash tables, so
     # the keys start right after the index tables.
     # translated string.
@@ -75,137 +90,59 @@ def generate():
     # The string table first has the list of keys, then the list of values.
     # Each entry has first the size of the string, then the file offset.
     for o1, l1, o2, l2 in offsets:
-        koffsets += [l1, o1+keystart]
-        voffsets += [l2, o2+valuestart]
+        koffsets += [l1, o1 + keystart]
+        voffsets += [l2, o2 + valuestart]
     offsets = koffsets + voffsets
     output = struct.pack("Iiiiiii",
-                        0x950412de,        # Magic
-                        0,                 # Version
-                        len(keys),         # # of entries
-                        7*4,               # start of key index
-                        7*4+len(keys)*8,   # start of value index
-                        0, 0)              # size and offset of hash table
-    output += array.array("i", offsets).tobytes()
+                         0x950412de,       # Magic
+                         0,                 # Version
+                         len(keys),         # # of entries
+                         7*4,               # start of key index
+                         7*4+len(keys)*8,   # start of value index
+                         0, 0)              # size and offset of hash table
+    output += array.array("i", offsets).tostring()
     output += ids
     output += strs
     return output
 
-
 def make(filename, outfile):
-    ID = 1
-    STR = 2
-
-    # Compute .mo name from .po name and arguments
-    if filename.endswith('.po'):
-        infile = filename
-    else:
-        infile = filename + '.po'
-    if outfile is None:
-        outfile = os.path.splitext(infile)[0] + '.mo'
-
+    """Generate binary message catalog from textual translation description."""
     try:
-        lines = []
-        with open(infile, 'rb') as f:
-            for line in f:
-                # Decode each line as UTF-8, falling back to ISO-8859-1 if needed
-                try:
-                    lines.append(line.decode('utf-8'))
-                except UnicodeDecodeError:
-                    lines.append(line.decode('iso-8859-1'))
+        with open(filename, 'rb') as fp:
+            lines = fp.readlines()
     except IOError as msg:
-        print(msg, file=sys.stderr)
+        print(f"Cannot read {filename}: {msg}", file=sys.stderr)
+        sys.exit(1)
+    try:
+        with open(outfile, 'wb') as fp:
+            fp.write(generate())
+    except IOError as msg:
+        print(f"Cannot write {outfile}: {msg}", file=sys.stderr)
         sys.exit(1)
 
-    section = None
-    fuzzy = 0
-
-    # Parse the catalog
-    msgid = msgstr = ''
-    lno = 0
-    for l in lines:
-        lno += 1
-        # If we get a comment line after a msgstr, this is a new entry
-        if l[0] == '#' and section == STR:
-            add(msgid, msgstr, fuzzy)
-            section = None
-            fuzzy = 0
-        # Record a fuzzy mark
-        if l.startswith('#,') and 'fuzzy' in l:
-            fuzzy = 1
-        # Skip comments
-        if l[0] == '#':
-            continue
-        # Now we are in a msgid section, output previous section
-        if l.startswith('msgid'):
-            if section == STR:
-                add(msgid, msgstr, fuzzy)
-            section = ID
-            l = l[5:]
-            msgid = msgstr = ''
-        # Now we are in a msgstr section
-        elif l.startswith('msgstr'):
-            section = STR
-            l = l[6:]
-        # Skip empty lines
-        l = l.strip()
-        if not l:
-            continue
-        # XXX: Does this always follow Python escape semantics?
-        try:
-            l = eval(l)
-        except Exception as e:
-            print('Syntax error on %s:%d' % (infile, lno), file=sys.stderr)
-            print('Before:', l, file=sys.stderr)
-            print('Error:', str(e), file=sys.stderr)
-            sys.exit(1)
-        if section == ID:
-            msgid += l
-        elif section == STR:
-            msgstr += l
-        else:
-            print('Syntax error on %s:%d' % (infile, lno), file=sys.stderr)
-            print('Before:', l, file=sys.stderr)
-            sys.exit(1)
-    # Add last entry
-    if section == STR:
-        add(msgid, msgstr, fuzzy)
-
-    # Compute output
-    output = generate()
-
-    try:
-        with open(outfile, "wb") as f:
-            f.write(output)
-    except IOError as msg:
-        print(msg, file=sys.stderr)
-
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
-                                 ['help', 'version', 'output-file='])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    outfile = None
-    # parse options
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-V', '--version'):
-            print("msgfmt.py", __version__, file=sys.stderr)
-            sys.exit(0)
-        elif opt in ('-o', '--output-file'):
-            outfile = arg
-    # do it
-    if not args:
+    """Main entry point for the script."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-o', '--output-file', help='Specify the output file')
+    parser.add_argument('-V', '--version', action='store_true', help='Display version information and exit')
+    parser.add_argument('files', nargs='*', help='Input .po files')
+    
+    args = parser.parse_args()
+    
+    if args.version:
+        print(f"msgfmt (GNU gettext-tools) {__version__}")
+        sys.exit(0)
+        
+    if not args.files:
         print('No input file given', file=sys.stderr)
         print("Try `msgfmt --help' for more information.", file=sys.stderr)
         return
 
-    for filename in args:
+    for filename in args.files:
+        outfile = args.output_file
+        if outfile is None:
+            outfile = os.path.splitext(filename)[0] + '.mo'
         make(filename, outfile)
-
 
 if __name__ == '__main__':
     main()

@@ -38,7 +38,7 @@ import os
 import sys
 import time
 import errno
-import getopt
+import argparse
 import shutil
 import pickle
 import marshal
@@ -115,7 +115,7 @@ def make_varabs(relpath):
 
 def move_language_templates(mlist):
     listname = mlist.internal_name()
-    print(C_('Fixing language templates: %(listname)s'))
+    print(C_('Fixing language templates: %(listname)s') % {'listname': listname})
     # Mailman 2.1 has a new cascading search for its templates, defined and
     # described in Utils.py:maketext().  Putting templates in the top level
     # templates/ subdir or the lists/<listname> subdir is deprecated and no
@@ -192,7 +192,7 @@ def move_language_templates(mlist):
 def update_list(mlist):
     """Update a single list's data files."""
     listname = mlist.internal_name()
-    print(C_('Updating list: %(listname)s'))
+    print(C_('Updating list: %(listname)s') % {'listname': listname})
     # Update the list's data files
     mlist.Save()
     # Update the list's language templates
@@ -358,37 +358,48 @@ def update_all():
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-f', '--force', action='store_true',
+                      help='Force running the upgrade procedures')
+    
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'fh', ['force', 'help'])
-    except getopt.error as msg:
-        print(C_('Error: %(error)s') % {'error': str(msg)})
-        print(C_('Try %(program)s --help') % {'program': PROGRAM})
+        args = parser.parse_args()
+    except SystemExit:
         sys.exit(1)
 
-    force = False
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            print(__doc__ % {'PROGRAM': PROGRAM})
-            sys.exit(0)
-        elif opt in ('-f', '--force'):
-            force = True
-
-    if args:
-        print(C_('Error: too many arguments'))
-        print(C_('Try %(program)s --help') % {'program': PROGRAM})
-        sys.exit(1)
-
+    # Calculate the versions
     lastversion, thisversion = calcversions()
-    if lastversion == thisversion and not force:
-        print(C_('No update needed'))
-        sys.exit(0)
-    elif lastversion > thisversion and not force:
-        print(C_('Warning: downgrade detected'))
-        print(C_('Use --force to proceed anyway'))
-        sys.exit(1)
 
-    update_all()
-    print(C_('Update complete'))
+    # Should we proceed?
+    if not args.force and lastversion >= thisversion:
+        print(C_('No upgrade necessary.'))
+        sys.exit(0)
+
+    # Proceed with the upgrade
+    print(C_('Upgrading from version %(lastversion)x to %(thisversion)x') % {
+        'lastversion': lastversion,
+        'thisversion': thisversion
+    })
+
+    # Update all lists
+    for listname in Utils.list_names():
+        try:
+            mlist = MailList.MailList(listname, lock=1)
+            update_list(mlist)
+            mlist.Unlock()
+        except Errors.MMListError:
+            print(C_('Skipping non-existent list: %(listname)s') % {'listname': listname})
+        except TimeOutError:
+            print(C_('Skipping locked list: %(listname)s') % {'listname': listname})
+
+    # Store the current version
+    try:
+        with open(LMVFILE, 'w') as fp:
+            fp.write('%x' % thisversion)
+    except IOError:
+        print(C_('Could not write version file: %(lmvfile)s') % {'lmvfile': LMVFILE})
+
+    print(C_('Upgrade complete.'))
 
 
 if __name__ == '__main__':

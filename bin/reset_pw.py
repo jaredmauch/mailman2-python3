@@ -34,14 +34,13 @@ Options:
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import Utils
 from Mailman.i18n import C_
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -53,31 +52,27 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def reset_pw(mlist, *args):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print what the script is doing')
+    
     try:
-        opts, args = getopt.getopt(args, 'v', ['verbose'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    verbose = False
-    for opt, args in opts:
-        if opt in ('-v', '--verbose'):
-            verbose = True
+        args = parser.parse_args(args)
+    except SystemExit:
+        usage(1)
 
     listname = mlist.internal_name()
-    if verbose:
+    if args.verbose:
         print(C_('Changing passwords for list: %(listname)s'))
 
     for member in mlist.getMembers():
         randompw = Utils.MakeRandomPassword()
         mlist.setMemberPassword(member, randompw)
-        if verbose:
+        if args.verbose:
             print(C_('New password for member %(member)40s: %(randompw)s'))
 
     mlist.Save()
 
 
-
 if __name__ == '__main__':
     usage(0)

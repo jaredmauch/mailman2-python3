@@ -1,4 +1,4 @@
-#! @PYTHON@
+#! /usr/bin/env python3
 #
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
@@ -215,15 +215,12 @@ def main():
     except Errors.MMListError as e:
         usage(1, str(e))
 
-    if outfile:
-        try:
-            fp = open(outfile, 'w')
-        except IOError as e:
-            usage(1, str(e))
-    else:
-        fp = sys.stdout
-
     try:
+        if outfile:
+            fp = open(outfile, 'w', encoding='utf-8')
+        else:
+            fp = sys.stdout
+
         # Get all the members
         members = mlist.getMembers()
         if not members:

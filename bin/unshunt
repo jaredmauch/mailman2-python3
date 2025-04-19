@@ -1,4 +1,4 @@
-#! @PYTHON@
+#! /usr/bin/env python3
 
 # Copyright (C) 2002-2018 by the Free Software Foundation, Inc.
 #
@@ -41,23 +41,21 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import C_
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
+    except (getopt.error, getopt.GetoptError) as msg:
         usage(1, msg)
 
     for opt, arg in opts:
@@ -79,16 +77,15 @@ def main():
             whichq = msgdata.get('whichq', mm_cfg.INQUEUE_DIR)
             tosb = get_switchboard(whichq)
             tosb.enqueue(msg, msgdata)
-        except Exception, e:
+        except (IOError, OSError, KeyError, ValueError) as e:
             # If there are any unshunting errors, log them and continue trying
             # other shunted messages.
-            print >> sys.stderr, C_(
-                'Cannot unshunt message %(filebase)s, skipping:\n%(e)s')
+            print(C_('Cannot unshunt message %(filebase)s, skipping:\n%(e)s'),
+                  file=sys.stderr)
         else:
             # Unlink the .bak file left by dequeue()
             sb.finish(filebase)
 
 
-
 if __name__ == '__main__':
     main()
