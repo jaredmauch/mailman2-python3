@@ -343,7 +343,7 @@ script.
         #
         # chmod the html archives
         #
-        os.chmod(html_dir, 02775)
+        os.chmod(html_dir, 0o2775)
     # BAW: Is this still necessary?!
     mlist.Save()
     #
@@ -394,11 +394,11 @@ def archive_path_fixer(unused_arg, dir, files):
         abs = os.path.join(dir, f)
         if os.path.isdir(abs):
             if f == "database":
-                os.chmod(abs, 02770)
+                os.chmod(abs, 0o2770)
             else:
-                os.chmod(abs, 02775)
+                os.chmod(abs, 0o2775)
         elif os.path.isfile(abs):
-            os.chmod(abs, 0664)
+            os.chmod(abs, 0o664)
 
 def remove_old_sources(module):
     # Also removes old directories.
