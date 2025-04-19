@@ -29,12 +29,13 @@ import errno
 import re
 import shutil
 import socket
-import urllib.request, urllib.parse, urllib.error
-
+import urllib.request
+import urllib.parse
+import urllib.error
 from io import StringIO
 from collections import UserDict
 from urllib.parse import urlparse
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Type, Callable
 
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr
@@ -71,26 +72,26 @@ from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
 
 _ = i18n._
-def D_(s):
+def D_(s: str) -> str:
     return s
 
 EMPTYSTRING = ''
 OR = '|'
 
-
-# Use mixins here just to avoid having any one chunk be too large.
 class MailList(HTMLFormatter, Deliverer, ListAdmin,
                Archiver, Digester, SecurityManager, Bouncer, GatewayManager,
                Autoresponder, TopicMgr, Pending.Pending):
-
-    #
-    # A MailList object's basic Python object model support
-    #
-    def __init__(self, name=None, lock=1):
-        # No timeout by default.  If you want to timeout, open the list
+    """A Mailman mailing list class that mixes in many task-specific classes."""
+
+    def __init__(self, name: Optional[str] = None, lock: bool = True) -> None:
+        """Initialize a MailList instance.
+        
+        Args:
+            name: The name of the mailing list
+            lock: Whether to lock the list during initialization
+        """
+        # No timeout by default. If you want to timeout, open the list
         # unlocked, then lock explicitly.
-        #
-        # Only one level of mixin inheritance allowed
         for baseclass in self.__class__.__bases__:
             if hasattr(baseclass, '__init__'):
                 baseclass.__init__(self)
@@ -104,12 +105,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self._memberadaptor = OldStyleMemberships(self)
         # This extension mechanism allows list-specific overrides of any
         # method (well, except __init__(), InitTempVars(), and InitVars()
-        # I think).  Note that fullpath() will return None when we're creating
+        # I think). Note that fullpath() will return None when we're creating
         # the list, which will only happen when name is None.
         if name is None:
             return
         filename = os.path.join(self.fullpath(), 'extend.py')
-        namespace = {}
+        namespace: Dict[str, Any] = {}
         try:
             with open(filename, 'r', encoding='utf-8') as f:
                 exec(f.read(), namespace)
@@ -129,11 +130,18 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         else:
             self.Load()
 
-    def __getattr__(self, name):
-        # Because we're using delegation, we want to be sure that attribute
-        # access to a delegated member function gets passed to the
-        # sub-objects.  This of course imposes a specific name resolution
-        # order.
+    def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to member adaptor and GUI components.
+        
+        Args:
+            name: The name of the attribute to get
+            
+        Returns:
+            The attribute value
+            
+        Raises:
+            AttributeError: If the attribute is not found
+        """
         try:
             return getattr(self._memberadaptor, name)
         except AttributeError:
@@ -145,17 +153,26 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             else:
                 raise AttributeError(name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a string representation of the mailing list.
+        
+        Returns:
+            A string containing the list name and lock status
+        """
         status = '(locked)' if self.Locked() else '(unlocked)'
         return f'<mailing list "{self.internal_name()}" {status} at {id(self):x}>'
 
-
-    #
-    # Lock management
-    #
-    def Lock(self, timeout=0):
+    def Lock(self, timeout: int = 0) -> None:
+        """Lock the mailing list and reload the database.
+        
+        Args:
+            timeout: Maximum time to wait for the lock
+            
+        Raises:
+            Exception: If loading fails after acquiring the lock
+        """
         self.__lock.lock(timeout)
-        # Must reload our database for consistency.  Watch out for lists that
+        # Must reload our database for consistency. Watch out for lists that
         # don't exist.
         try:
             self.Load()
@@ -163,35 +180,72 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.Unlock()
             raise
 
-    def Unlock(self):
+    def Unlock(self) -> None:
+        """Unlock the mailing list."""
         self.__lock.unlock(unconditionally=1)
 
-    def Locked(self):
+    def Locked(self) -> bool:
+        """Check if the mailing list is locked.
+        
+        Returns:
+            True if the list is locked, False otherwise
+        """
         return self.__lock.locked()
 
-
-    #
-    # Useful accessors
-    #
-    def internal_name(self):
+    def internal_name(self) -> str:
+        """Get the internal name of the mailing list.
+        
+        Returns:
+            The internal name of the list
+        """
         return self._internal_name
 
-    def fullpath(self):
+    def fullpath(self) -> Optional[str]:
+        """Get the full path to the mailing list directory.
+        
+        Returns:
+            The full path to the list directory, or None if not set
+        """
         return self._full_path
 
-    def getListAddress(self, extra=None):
+    def getListAddress(self, extra: Optional[str] = None) -> str:
+        """Get the email address for the mailing list.
+        
+        Args:
+            extra: Optional suffix to add to the list name
+            
+        Returns:
+            The complete email address
+        """
         if extra is None:
             return f'{self.internal_name()}@{self.host_name}'
         return f'{self.internal_name()}-{extra}@{self.host_name}'
 
-    # For backwards compatibility
-    def GetBouncesEmail(self):
+    def GetBouncesEmail(self) -> str:
+        """Get the bounces email address for the list.
+        
+        Returns:
+            The bounces email address
+        """
         return self.getListAddress('bounces')
 
-    def GetOwnerEmail(self):
+    def GetOwnerEmail(self) -> str:
+        """Get the owner email address for the list.
+        
+        Returns:
+            The owner email address
+        """
         return self.getListAddress('owner')
 
-    def GetRequestEmail(self, cookie=''):
+    def GetRequestEmail(self, cookie: str = '') -> str:
+        """Get the request email address for the list.
+        
+        Args:
+            cookie: Optional cookie for confirmation
+            
+        Returns:
+            The request email address
+        """
         if mm_cfg.VERP_CONFIRMATIONS and cookie:
             return self.GetConfirmEmail(cookie)
         else:

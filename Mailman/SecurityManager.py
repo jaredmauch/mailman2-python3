@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
+# Copyright (C) 1998-2020 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -56,7 +56,7 @@ import binascii
 import urllib.parse
 import urllib.request
 import urllib.error
-from typing import Optional, Tuple, Union, List, Dict, Any
+from typing import Optional, Tuple, Union, List, Dict, Any, Type, Callable
 
 try:
     import crypt
@@ -72,6 +72,11 @@ from Mailman.Utils import hashlib_new as sha_new
 # True and False are built-in constants in Python 3
 
 class SecurityManager:
+    """Security manager for Mailman mailing lists.
+    
+    Handles authentication, authorization, and security-related operations.
+    """
+    
     def InitVars(self) -> None:
         """Initialize security-related variables."""
         self.mod_password: Optional[str] = None
@@ -211,14 +216,17 @@ class SecurityManager:
                     
         return mm_cfg.UnAuthorized
 
-    def WebAuthenticate(self, authcontexts, response, user=None):
-        # Given a list of authentication contexts, check to see if the cookie
-        # contains a matching authorization, falling back to checking whether
-        # the response matches one of the passwords.  authcontexts must be a
-        # sequence, and if it contains the context AuthUser, then the user
-        # argument should not be None.
-        #
-        # Returns a flag indicating whether authentication succeeded or not.
+    def WebAuthenticate(self, authcontexts: List[int], response: str, user: Optional[str] = None) -> bool:
+        """Authenticate a user via web interface.
+        
+        Args:
+            authcontexts: List of authentication contexts to check
+            response: Password or authentication response
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            True if authentication succeeded, False otherwise
+        """
         for ac in authcontexts:
             ok = self.CheckCookie(ac, user)
             if ok:
@@ -230,7 +238,19 @@ class SecurityManager:
             return True
         return False
 
-    def MakeCookie(self, authcontext, user=None):
+    def MakeCookie(self, authcontext: int, user: Optional[str] = None) -> Cookie.SimpleCookie:
+        """Create an authentication cookie.
+        
+        Args:
+            authcontext: Authentication context
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            A SimpleCookie object containing the authentication data
+            
+        Raises:
+            ValueError: If authentication context is invalid
+        """
         key, secret = self.AuthContextInfo(authcontext, user)
         if key is None or secret is None or not isinstance(secret, str):
             raise ValueError
@@ -255,8 +275,16 @@ class SecurityManager:
         c[key]['version'] = 1
         return c
 
-    def ZapCookie(self, authcontext, user=None):
-        # We can throw away the secret.
+    def ZapCookie(self, authcontext: int, user: Optional[str] = None) -> Cookie.SimpleCookie:
+        """Invalidate an authentication cookie.
+        
+        Args:
+            authcontext: Authentication context
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            A SimpleCookie object that invalidates the authentication
+        """
         key, secret = self.AuthContextInfo(authcontext, user)
         # Logout of the session by zapping the cookie.  For safety both set
         # max-age=0 (as per RFC2109) and set the cookie data to the empty
@@ -272,14 +300,16 @@ class SecurityManager:
         c[key]['version'] = 1
         return c
 
-    def CheckCookie(self, authcontext, user=None):
-        # Two results can occur: we return 1 meaning the cookie authentication
-        # succeeded for the authorization context, we return 0 meaning the
-        # authentication failed.
-        #
-        # Dig out the cookie data, which better be passed on this cgi
-        # environment variable.  If there's no cookie data, we reject the
-        # authentication.
+    def CheckCookie(self, authcontext: int, user: Optional[str] = None) -> bool:
+        """Check if a cookie is valid for the given authentication context.
+        
+        Args:
+            authcontext: Authentication context
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            True if the cookie is valid, False otherwise
+        """
         cookiedata = os.environ.get('HTTP_COOKIE')
         if not cookiedata:
             return False
@@ -313,9 +343,17 @@ class SecurityManager:
         else:
             return self.__checkone(c, authcontext, user)
 
-    def __checkone(self, c, authcontext, user):
-        # Do the guts of the cookie check, for one authcontext/user
-        # combination.
+    def __checkone(self, c: Dict[str, str], authcontext: int, user: Optional[str] = None) -> bool:
+        """Check a single cookie for validity.
+        
+        Args:
+            c: Cookie dictionary
+            authcontext: Authentication context
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            True if the cookie is valid, False otherwise
+        """
         try:
             key, secret = self.AuthContextInfo(authcontext, user)
         except (Errors.NotAMemberError, TypeError):
@@ -353,63 +391,142 @@ class SecurityManager:
         print(self.MakeCookie(authcontext, user))
         return True
 
-    def CheckProgrammers(self):
-        # Return true if this list should be advertised as a programmers list
+    def CheckProgrammers(self) -> bool:
+        """Check if this list should be advertised as a programmers list.
+        
+        Returns:
+            True if this is a programmers list, False otherwise
+        """
         return self.programmer_members
 
-    def IsProgrammersMember(self, addr):
-        # Return true if addr is a member of the programmers list
+    def IsProgrammersMember(self, addr: str) -> bool:
+        """Check if an address is a member of the programmers list.
+        
+        Args:
+            addr: Email address to check
+            
+        Returns:
+            True if the address is a programmers list member, False otherwise
+        """
         return addr in self.programmer_members
 
-    def GetConfigInfo(self):
+    def GetConfigInfo(self) -> Dict[str, Any]:
+        """Get configuration information for this list.
+        
+        Returns:
+            Dictionary containing configuration information
+        """
         return self._config_info
 
-    def __repr__(self):
-        # Return string representation of list object
+    def __repr__(self) -> str:
+        """Return string representation of list object.
+        
+        Returns:
+            String representation of the list
+        """
         return repr(self.internal_name())
 
-    def __str__(self):
-        # Return string representation of list object
+    def __str__(self) -> str:
+        """Return string representation of list object.
+        
+        Returns:
+            String representation of the list
+        """
         return str(self.internal_name())
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
+        """Compare two SecurityManager instances.
+        
+        Args:
+            other: Object to compare with
+            
+        Returns:
+            True if the objects represent the same list, False otherwise
+        """
         if not isinstance(other, SecurityManager):
             return NotImplemented
         return self.internal_name().lower() == other.internal_name().lower()
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
+        """Compare two SecurityManager instances for ordering.
+        
+        Args:
+            other: Object to compare with
+            
+        Returns:
+            True if this list name is less than the other, False otherwise
+        """
         if not isinstance(other, SecurityManager):
             return NotImplemented
         return self.internal_name().lower() < other.internal_name().lower()
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
+        """Compare two SecurityManager instances for ordering.
+        
+        Args:
+            other: Object to compare with
+            
+        Returns:
+            True if this list name is greater than the other, False otherwise
+        """
         if not isinstance(other, SecurityManager):
             return NotImplemented
         return self.internal_name().lower() > other.internal_name().lower()
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
+        """Compare two SecurityManager instances for ordering.
+        
+        Args:
+            other: Object to compare with
+            
+        Returns:
+            True if this list name is less than or equal to the other, False otherwise
+        """
         if not isinstance(other, SecurityManager):
             return NotImplemented
         return self.internal_name().lower() <= other.internal_name().lower()
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
+        """Compare two SecurityManager instances for ordering.
+        
+        Args:
+            other: Object to compare with
+            
+        Returns:
+            True if this list name is greater than or equal to the other, False otherwise
+        """
         if not isinstance(other, SecurityManager):
             return NotImplemented
         return self.internal_name().lower() >= other.internal_name().lower()
 
-    def __bool__(self):
-        # Lists are never false
+    def __bool__(self) -> bool:
+        """Return True for boolean context.
+        
+        Returns:
+            True
+        """
         return True
 
-    def __hash__(self):
-        # Hash function for using lists as dictionary keys.  The hash is based
-        # on the list name which should be unique per system.
+    def __hash__(self) -> int:
+        """Return hash value for this list.
+        
+        Returns:
+            Hash value based on the list name
+        """
         return hash(self.internal_name().lower())
 
 
 splitter = re.compile(r';\s*')
 
-def parsecookie(s):
+def parsecookie(s: str) -> Dict[str, str]:
+    """Parse a cookie string into a dictionary.
+    
+    Args:
+        s: Cookie string to parse
+        
+    Returns:
+        Dictionary containing cookie key-value pairs
+    """
     c = {}
     for line in s.splitlines():
         for p in splitter.split(line):
