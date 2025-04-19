@@ -31,11 +31,7 @@ from Mailman import LockFile
 
 CACHESIZE = pipermail.CACHESIZE
 
-try:
-    import pickle
-    pickle = cPickle
-except ImportError:
-    import pickle
+import pickle
 
 #
 # we're using a python dict in place of

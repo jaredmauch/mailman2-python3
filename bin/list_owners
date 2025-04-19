@@ -40,7 +40,7 @@ Options:
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import Utils
@@ -62,32 +62,29 @@ def usage(code, msg=''):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-w', '--with-listnames', action='store_true',
+                      help='Group the owners by list names and include the list names in the output')
+    parser.add_argument('-m', '--moderators', action='store_true',
+                      help='Include the list moderators in the output')
+    parser.add_argument('listnames', nargs='*', help='Print the owners of the specified lists')
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'wmh',
-                                   ['with-listnames', 'moderators', 'help'])
-    except (getopt.error, getopt.GetoptError) as msg:
-        usage(1, msg)
+        args = parser.parse_args()
+    except SystemExit:
+        usage(1)
 
-    withnames = moderators = False
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-m', '--moderators'):
-            moderators = True
-        elif opt in ('-w', '--with-listnames'):
-            withnames = True
-
-    listnames = [x.lower() for x in args] or Utils.list_names()
+    listnames = [x.lower() for x in args.listnames] or Utils.list_names()
     bylist = {}
 
     for listname in listnames:
         mlist = MailList(listname, lock=0)
         addrs = mlist.owner[:]
-        if moderators:
+        if args.moderators:
             addrs.extend(mlist.moderator)
         bylist[listname] = addrs
 
-    if withnames:
+    if args.with_listnames:
         for listname in listnames:
             unique = {}
             for addr in bylist[listname]:

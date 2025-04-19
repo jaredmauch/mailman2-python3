@@ -38,9 +38,9 @@ You will need to run `bin/check_perms -f' after running this script.
 
 import os
 import sys
-import getopt
+import argparse
 import marshal
-import cPickle as pickle
+import pickle
 
 # Required to get the right classes for unpickling
 import paths
@@ -49,48 +49,41 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
-    # get command line arguments
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('files', nargs='+', help='Files to process')
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
-        usage(1, msg)
+        args = parser.parse_args()
+    except SystemExit:
+        usage(1)
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
-    for filename in args:
-        print 'processing:', filename
-        fp = open(filename, 'rb')
-        d = marshal.load(fp)
-        fp.close()
+    for filename in args.files:
+        print('processing:', filename)
+        with open(filename, 'rb') as fp:
+            d = marshal.load(fp)
         newd = {}
         for key, pckstr in d.items():
             article = pickle.loads(pckstr)
             newd[key] = pickle.dumps(article)
-        fp = open(filename + '.tmp', 'wb')
-        marshal.dump(newd, fp)
-        fp.close()
+        with open(filename + '.tmp', 'wb') as fp:
+            marshal.dump(newd, fp)
         os.rename(filename, filename + '.bak')
         os.rename(filename + '.tmp', filename)
 
-    print 'You should now run "bin/check_perms -f"'
+    print('You should now run "bin/check_perms -f"')
 
 
-
 if __name__ == '__main__':
     main()

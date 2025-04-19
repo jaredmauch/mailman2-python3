@@ -40,7 +40,7 @@ have more than one named list on the command line.
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import MailList, Utils
@@ -52,51 +52,47 @@ COMMASPACE = ', '
 program = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hv:a',
-                                   ['help', 'all-vhost=', 'all'])
-    except getopt.error, msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-v', '--all-vhost', metavar='vhost',
+                      help='List the owners of all the mailing lists for the given virtual host')
+    parser.add_argument('-a', '--all', action='store_true',
+                      help='List the owners of all the mailing lists on this system')
+    parser.add_argument('listnames', nargs='*', help='Names of the mailing lists to print the owners of')
 
-    listnames = [x.lower() for x in args]
-    vhost = None
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-a', '--all'):
-            listnames = Utils.list_names()
-        elif opt in ('-v', '--all-vhost'):
-            listnames = Utils.list_names()
-            vhost = arg
+    try:
+        args = parser.parse_args()
+    except SystemExit:
+        usage(1)
+
+    listnames = [x.lower() for x in args.listnames]
+    if args.all:
+        listnames = Utils.list_names()
 
     for listname in listnames:
-       try:
-           mlist = MailList.MailList(listname, lock=0)
-       except Errors.MMListError, e:
-           print C_('No such list: %(listname)s')
-           continue
+        try:
+            mlist = MailList.MailList(listname, lock=0)
+        except Errors.MMListError:
+            print(C_('No such list: %(listname)s') % {'listname': listname})
+            continue
 
-       if vhost and vhost <> mlist.host_name:
-           continue
+        if args.all_vhost and args.all_vhost != mlist.host_name:
+            continue
 
-       owners = COMMASPACE.join(mlist.owner)
-       print C_('List: %(listname)s, \tOwners: %(owners)s')
+        owners = COMMASPACE.join(mlist.owner)
+        print(C_('List: %(listname)s, \tOwners: %(owners)s') % {'listname': listname, 'owners': owners})
 
 
-
 if __name__ == '__main__':
     main()

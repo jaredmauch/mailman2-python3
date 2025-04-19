@@ -7,15 +7,10 @@ import os
 import re
 import sys
 import time
+import urllib.parse
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
-try:
-    import pickle
-except ImportError:
-    import pickle as pickle
-try:
-    from io import io
-except ImportError:
-    from cStringIO import io
+import pickle
+from io import StringIO
 from string import ascii_lowercase
 
 # Work around for some misguided Python packages that add iso-8859-1
@@ -78,7 +73,7 @@ def html_quote(s, lang=None):
     return Utils.uncanonstr(s, lang)
 
 def url_quote(s):
-    return urllib.quote(s)
+    return urllib.parse.quote(s)
 
 def null_to_space(s):
     return s.replace('\0o00', ' ')

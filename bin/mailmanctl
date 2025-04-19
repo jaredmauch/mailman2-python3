@@ -95,7 +95,7 @@ Commands:
 import sys
 import os
 import time
-import getopt
+import argparse
 import signal
 import errno
 import pwd
@@ -116,7 +116,7 @@ PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 DOT = '.'
 
-# Locking contantsa
+# Locking constants
 LOCKFILE = os.path.join(mm_cfg.LOCK_DIR, mm_cfg.MASTER_LOCK_FILE)
 # Since we wake up once per day and refresh the lock, the LOCK_LIFETIME
 # needn't be (much) longer than SNOOZE.  We pad it 6 hours just to be safe.
@@ -198,202 +198,144 @@ def get_lock_data():
             print(str(e), file=sys.stderr)
         return None, None, None
 
-def acquire_lock_or_exit():
-    """Acquire the master lock or exit with an error message."""
-    try:
-        lock = LockFile.LockFile(LOCKFILE, lifetime=LOCK_LIFETIME)
-        lock.lock()
-    except LockFile.LockError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
-    return lock
-
-def start_runner(qrname, qrclass, status):
-    """Start a queue runner and return its pid."""
-    try:
-        pid = os.fork()
-    except OSError as e:
-        print(f'fork() failed: {e}', file=sys.stderr)
-        return None
-    if pid == 0:
-        # Child process
-        try:
-            # Close all file descriptors except stdin, stdout, and stderr
-            for fd in range(3, 256):
-                try:
-                    os.close(fd)
-                except OSError:
-                    pass
-            # Start the queue runner
-            qr = qrclass()
-            qr.run()
-        except Exception as e:
-            print(f'Queue runner {qrname} failed: {e}', file=sys.stderr)
-            sys.exit(1)
-    # Parent process
-    status.runners[qrname] = pid
-    return pid
-
-def start_all_runners():
-    kids = {}
-    for qrname, count in mm_cfg.QRUNNERS:
-        for slice in range(count):
-            # queue runner name, slice, numslices, restart count
-            info = (qrname, slice, count, 0)
-            pid = start_runner(qrname, slice, count)
-            kids[pid] = info
-    return kids
-
-def check_for_site_list():
-    sitelistname = mm_cfg.MAILMAN_SITE_LIST
-    try:
-        sitelist = MailList(sitelistname, lock=0)
-    except Errors.MMUnknownListError:
-        print(C_('Site list is missing: %s') % sitelistname, file=sys.stderr)
-        syslog('error', 'Site list is missing: %s', mm_cfg.MAILMAN_SITE_LIST)
-        sys.exit(1)
-
-def check_privs():
-    # If we're running as root (uid == 0), then seteuid to Mailman's uid.  If we
-    # can't, exit with message.
-    try:
-        running_uid = os.geteuid()
-        if running_uid != 0:
-            if running_uid != mm_cfg.UID:
-                name = mm_cfg.USERNAME
-                usage(1, C_('Run this program as root or as the %s user, or use -u.') % name)
-    except AttributeError as e:
-        # Ignore if we don't have geteuid
-        pass
+def check_and_lock_master():
+    # See if the master lock file exists.  If so, there are two possibilities:
+    # 1. it's stale or corrupt, or
+    # 2. the master watcher is still alive and watching
+    #
+    # In either case, we'll have to clean up the lock file.  In case #2, we'll
+    # also need to kill the process.  Since we can't tell which case we're in
+    # until we look more closely, get the lock file data now.  If there are
+    # any problems with the lock file, it's case #1.
+    pid, hostname, status = get_lock_data()
+    if status == 1:
+        # The process exists and the host matches.  Kill it.
+        print(C_('Killing possibly orphaned qrunner process %(pid)s'), file=sys.stderr)
+        kill_watcher()
+    elif status == -1:
+        # Process is on another machine.  It's definitely stale, so simply
+        # warn and delete the pid file.
+        print(C_('Cleaning up stale pid file from host: %(hostname)s'), file=sys.stderr)
+    elif status == 0:
+        # Process doesn't exist.  Clean up stale pid file.
+        print(C_('Cleaning up stale pid file'), file=sys.stderr)
+    # Now we can write our own pid file.  This will fail if another process
+    # has been started while we were cleaning up.
+    write_pidfile()
 
 def main():
-    """Main entry point."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-n', '--no-restart', action='store_true',
+                      help='Don\'t restart the qrunners when they exit')
+    parser.add_argument('-u', '--run-as-user', action='store_true',
+                      help='Run as the current user instead of mailman')
+    parser.add_argument('-s', '--stale-lock-cleanup', action='store_true',
+                      help='Clean up stale locks')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                      help='Don\'t print status messages')
+    parser.add_argument('command', choices=['start', 'stop', 'restart', 'reopen'],
+                      help='Command to execute')
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hnusq',
-                                  ['help', 'no-restart', 'run-as-user',
-                                   'stale-lock-cleanup', 'quiet'])
-    except getopt.error as e:
-        print(str(e), file=sys.stderr)
-        print(__doc__ % {'PROGRAM': PROGRAM}, file=sys.stderr)
+        args = parser.parse_args()
+    except SystemExit:
         sys.exit(1)
 
-    # Parse options
-    no_restart = False
-    run_as_user = False
-    stale_lock_cleanup = False
-    quiet = False
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            print(__doc__ % {'PROGRAM': PROGRAM})
-            sys.exit(0)
-        elif opt in ('-n', '--no-restart'):
-            no_restart = True
-        elif opt in ('-u', '--run-as-user'):
-            run_as_user = True
-        elif opt in ('-s', '--stale-lock-cleanup'):
-            stale_lock_cleanup = True
-        elif opt in ('-q', '--quiet'):
-            quiet = True
-
-    # Check command
-    if not args:
-        print('No command specified', file=sys.stderr)
-        print(__doc__ % {'PROGRAM': PROGRAM}, file=sys.stderr)
+    # Handle the commands
+    if args.command == 'stop':
+        # Simply kill the master watcher and exit.  The master will kill all
+        # the qrunners.
+        kill_watcher()
+        sys.exit(0)
+    elif args.command == 'restart':
+        # The master will kill and restart all qrunners.  The SIGHUP simply
+        # tells the master to close and reopen its log files.
+        kill_watcher(sig=signal.SIGHUP)
+        sys.exit(0)
+    elif args.command == 'reopen':
+        # The master will tell each qrunner to close and reopen its log files.
+        kill_watcher(sig=signal.SIGHUP)
+        sys.exit(0)
+    elif args.command != 'start':
+        print(C_('Usage: %(PROGRAM)s [options] start|stop|restart|reopen'), file=sys.stderr)
         sys.exit(1)
-    command = args[0]
 
-    # Check if we're running as the right user
-    if not run_as_user:
+    # We're starting up.  If we're root, we must change to mailman's uid/gid.
+    # If we're not root, then if we're not mailman, we should exit.  If we're
+    # not root and we're mailman, then we can startup the qrunners.  If we're
+    # root, we have to change to mailman's uid/gid.  Only mailman is allowed
+    # to run the qrunners.
+    if not args.run_as_user:
+        # If we're root, we have to suid to mailman.  If we're not root, we
+        # have to make sure we are mailman.
         try:
-            mailman_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER).pw_uid
-            mailman_gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP).gr_gid
-            if os.getuid() == 0:
-                # We're root, so change to the mailman user
-                os.setgid(mailman_gid)
+            running_uid = os.getuid()
+            mailman_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER)[2]
+            running_euid = os.geteuid()
+            if running_uid == 0:
+                # We're root, so suid to mailman.  This will also initialize
+                # the group.
+                os.setgid(grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2])
                 os.setuid(mailman_uid)
-            elif os.getuid() != mailman_uid or os.getgid() != mailman_gid:
-                print('You must be root or the mailman user to run this script',
-                      file=sys.stderr)
+            elif running_uid != mailman_uid:
+                # We're not root, and we're not mailman.  Exit with error.
+                print(C_('Run this program as root or as the %(name)s user, '
+                       'or use the -u flag.') % {'name': mm_cfg.MAILMAN_USER}, file=sys.stderr)
                 sys.exit(1)
-        except (KeyError, OSError) as e:
-            print(f'Error checking user/group: {e}', file=sys.stderr)
+        except (KeyError, ValueError) as e:
+            # Bad group/user name
+            print(str(e), file=sys.stderr)
             sys.exit(1)
 
-    # Handle the command
-    if command == 'start':
-        # Check for stale lock
-        if stale_lock_cleanup:
-            pid, hostname, status = get_lock_data()
-            if status == 0:  # Process not running
-                try:
-                    os.unlink(mm_cfg.PIDFILE)
-                except OSError as e:
-                    if e.errno != errno.ENOENT:
-                        print(str(e), file=sys.stderr)
-                        sys.exit(1)
-        # Start the master daemon
-        write_pidfile()
-        lock = acquire_lock_or_exit()
-        status = Status()
-        status.runners = {}
-        status.restarts = {}
-        # Start all queue runners
-        for qrname, qrclass in mm_cfg.QUEUE_RUNNERS:
-            pid = start_runner(qrname, qrclass, status)
-            if pid is None:
-                print(f'Failed to start queue runner: {qrname}', file=sys.stderr)
-                sys.exit(1)
-            if not quiet:
-                print(f'Started queue runner: {qrname}')
-        # Main loop
-        while True:
-            try:
-                # Check for dead children
-                pid, status = os.waitpid(-1, os.WNOHANG)
-                if pid > 0:
-                    # A child died
-                    for qrname, qrpid in list(status.runners.items()):
-                        if qrpid == pid:
-                            if not quiet:
-                                print(f'Queue runner {qrname} died with status {status}')
-                            del status.runners[qrname]
-                            if not no_restart:
-                                status.restarts[qrname] = status.restarts.get(qrname, 0) + 1
-                                if status.restarts[qrname] <= MAX_RESTARTS:
-                                    pid = start_runner(qrname, mm_cfg.QUEUE_RUNNERS[qrname], status)
-                                    if pid is None:
-                                        print(f'Failed to restart queue runner: {qrname}',
-                                              file=sys.stderr)
-                                    elif not quiet:
-                                        print(f'Restarted queue runner: {qrname}')
-                # Sleep for a while
-                time.sleep(SNOOZE)
-                # Refresh the lock
-                lock.refresh()
-            except KeyboardInterrupt:
-                # Clean up and exit
-                for pid in status.runners.values():
-                    try:
-                        os.kill(pid, signal.SIGTERM)
-                    except OSError:
-                        pass
-                unlock_and_exit(0)
-            except Exception as e:
-                print(f'Error in main loop: {e}', file=sys.stderr)
-                time.sleep(SNOOZE)
-    elif command == 'stop':
-        kill_watcher()
-        unlock_and_exit(0)
-    elif command == 'restart':
-        kill_watcher(signal.SIGINT)
-        unlock_and_exit(0)
-    elif command == 'reopen':
-        kill_watcher(signal.SIGHUP)
-        unlock_and_exit(0)
+    # Before we do anything else, check for stale locks.  We'll need both the
+    # master qrunner lock and the master shunt lock.
+    if args.stale_lock_cleanup:
+        check_and_lock_master()
     else:
-        print(f'Unknown command: {command}', file=sys.stderr)
-        print(__doc__ % {'PROGRAM': PROGRAM}, file=sys.stderr)
-        sys.exit(1)
+        write_pidfile()
+
+    # Now start up the master qrunner
+    qrunner = os.path.join(mm_cfg.BIN_DIR, 'qrunner')
+    # Set up the command line
+    cmd = [qrunner]
+    if args.no_restart:
+        cmd.extend(['-o'])
+    if args.quiet:
+        cmd.extend(['-q'])
+    cmd.extend(['-s'])  # for the master watcher
+    cmd.extend(['-r', 'All'])
+
+    # For the master qrunner, we're basically willing to restart it whenever it
+    # exits, no matter whether the exit was expected or not.  It's too
+    # difficult to figure out what a "normal" exit is, so we'll just restart
+    # it unconditionally.
+    #
+    # We will also initialize our own restart count.  The qrunners under the
+    # master's control do their own independent restart counting.
+    restarts = 0
+    while True:
+        if restarts > MAX_RESTARTS:
+            print(C_('Too many restarts, exiting.'), file=sys.stderr)
+            unlock_and_exit(1)
+        restarts += 1
+        pid = os.fork()
+        if pid:
+            # Parent
+            try:
+                pid, status = os.wait()
+            except OSError as e:
+                print(str(e), file=sys.stderr)
+                unlock_and_exit(1)
+            if args.no_restart:
+                unlock_and_exit(status)
+        else:
+            # Child
+            try:
+                os.execv(qrunner, cmd)
+            except OSError as e:
+                print(str(e), file=sys.stderr)
+                unlock_and_exit(1)
+
 
 if __name__ == '__main__':
     main()

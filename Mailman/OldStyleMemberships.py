@@ -25,7 +25,7 @@ This is the adaptor used by default in Mailman 2.1.
 """
 
 import time
-from typing import StringType
+from typing import str as StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -50,13 +50,13 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     # Read interface
     #
     def getMembers(self):
-        return self.__mlist.members.keys() + self.__mlist.digest_members.keys()
+        return list(self.__mlist.members.keys()) + list(self.__mlist.digest_members.keys())
 
     def getRegularMemberKeys(self):
-        return self.__mlist.members.keys()
+        return list(self.__mlist.members.keys())
 
     def getDigestMemberKeys(self):
-        return self.__mlist.digest_members.keys()
+        return list(self.__mlist.digest_members.keys())
 
     def __get_cp_member(self, member):
         lcmember = member.lower()
@@ -188,16 +188,16 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         password = Utils.MakeRandomPassword()
         language = self.__mlist.preferred_language
         realname = None
-        if kws.has_key('digest'):
+        if 'digest' in kws:
             digest = kws['digest']
             del kws['digest']
-        if kws.has_key('password'):
+        if 'password' in kws:
             password = kws['password']
             del kws['password']
-        if kws.has_key('language'):
+        if 'language' in kws:
             language = kws['language']
             del kws['language']
-        if kws.has_key('realname'):
+        if 'realname' in kws:
             realname = kws['realname']
             del kws['realname']
         # Assert that no other keywords are present

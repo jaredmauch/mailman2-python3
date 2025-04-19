@@ -25,10 +25,10 @@ import re
 from typing import UnicodeType, StringType, TupleType
 from typing import Any, Union, Optional, Tuple
 
-from email.Charset import Charset
-from email.Header import Header, decode_header, make_header
-from email.Utils import parseaddr, formataddr, getaddresses
-from email.Errors import HeaderParseError
+from email.charset import Charset
+from email.header import Header, decode_header, make_header
+from email.utils import parseaddr, formataddr, getaddresses
+from email.errors import HeaderParseError
 
 from Mailman import i18n
 from Mailman import mm_cfg
@@ -111,7 +111,7 @@ def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
         # ToDigest, ToArchive and ToUsenet.  Thus, we put them in
         # msgdata[add_header] here and apply them in WrapMessage.
         msgdata.setdefault('add_header', {})[name] = value
-    elif repl or not msg.has_key(name):
+    elif repl or name not in msg:
         if delete:
             del msg[name]
         msg[name] = value
@@ -187,7 +187,7 @@ def process(mlist, msg, msgdata):
         # in the charset of the list's preferred language or possibly unicode.
         # if it's from the email address, it should be ascii. In any case,
         # make it a unicode.
-        if isinstance(realname, unicode):
+        if isinstance(realname, str):
             urn = realname
         else:
             rn, cs = ch_oneline(realname)
