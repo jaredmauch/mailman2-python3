@@ -17,22 +17,41 @@
 """Handler for auto-responses.
 """
 
+from typing import Any, Dict, List, Optional, Tuple, Union
 import time
+from email.message import Message
 
 from Mailman import Utils
-from Mailman import Message
+from Mailman import Message as MailmanMessage
 from Mailman.i18n import _
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
+from Mailman.MailList import MailList
 
 
-def _encode_header(h, charset):
-    """Encode a header value using the specified charset."""
+def _encode_header(h: Union[str, bytes], charset: str) -> str:
+    """Encode a header value using the specified charset.
+    
+    Args:
+        h: Header value to encode
+        charset: Character set to use for encoding
+        
+    Returns:
+        Encoded header value
+    """
     if isinstance(h, str):
         return h
-    return h.encode(charset, 'replace')
+    return h.decode(charset, 'replace')
 
-def process(mlist, msg, msgdata):
+
+def process(mlist: MailList, msg: Message, msgdata: Dict[str, Any]) -> None:
+    """Process a message for auto-response.
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to process
+        msgdata: Message metadata
+    """
     # Normally, the replybot should get a shot at this message, but there are
     # some important short-circuits, mostly to suppress 'bot storms, at least
     # for well behaved email bots (there are other governors for misbehaving
@@ -102,18 +121,23 @@ def process(mlist, msg, msgdata):
         rtext = Utils.to_percent(rtext)
     try:
         text = rtext % d
-    except Exception:
-        syslog('error', 'Bad autoreply text for list: %s\n%s',
-               mlist.internal_name(), rtext)
+    except Exception as e:
+        syslog('error', 'Bad autoreply text for list %s: %s\n%s',
+               mlist.internal_name(), str(e), rtext)
         text = rtext
     # Wrap the response.
     text = Utils.wrap(text)
-    outmsg = Message.UserNotification(sender, mlist.GetBouncesEmail(),
+    outmsg = MailmanMessage.UserNotification(sender, mlist.GetBouncesEmail(),
                                       subject, text, mlist.preferred_language)
     outmsg['X-Mailer'] = _('The Mailman Replybot')
     # prevent recursions and mail loops!
     outmsg['X-Ack'] = 'No'
-    outmsg.send(mlist)
+    try:
+        outmsg.send(mlist)
+    except Exception as e:
+        syslog('error', 'Failed to send auto-response to %s: %s',
+               sender, str(e))
+        return
     # update the grace period database
     if graceperiod > 0:
         # graceperiod is in days, we need # of seconds

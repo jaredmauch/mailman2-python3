@@ -29,6 +29,7 @@ for a threaded implementation.
 from __future__ import division
 from __future__ import print_function
 
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import sys
 import copy
 import time
@@ -43,148 +44,184 @@ from Mailman import Errors
 from Mailman.Handlers import Decorate
 from Mailman.Logging.Syslog import syslog
 from Mailman.SafeDict import MsgSafeDict
+from Mailman.MailList import MailList
 
 import email
 from email.utils import formataddr
 from email.header import Header
 from email.charset import Charset
+from email.message import Message
 
 DOT = '.'
 
 
 # Manage a connection to the SMTP server
 class Connection:
-    def __init__(self):
-        self.__conn = None
+    """Manage a connection to the SMTP server."""
+    
+    def __init__(self) -> None:
+        """Initialize the connection."""
+        self.__conn: Optional[smtplib.SMTP] = None
+        self.__numsessions: int = 0
 
-    def __connect(self):
+    def __connect(self) -> None:
+        """Establish connection to SMTP server.
+        
+        Raises:
+            smtplib.SMTPException: For any SMTP-related errors
+        """
         self.__conn = smtplib.SMTP()
         self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
-        self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        
+        try:
+            self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        except (socket.error, smtplib.SMTPException) as e:
+            syslog('smtp-failure', 'SMTP connection failed: %s', str(e))
+            self.quit()
+            raise
+            
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
                 try:
                     self.__conn.starttls()
-                except SMTPException as e:
-                    syslog('smtp-failure', 'SMTP TLS error: %s', e)
-                    self.quit()
-                    raise
-                try:
                     self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
-                except SMTPException as e:
-                    syslog('smtp-failure', 'SMTP EHLO error: %s', e)
+                except smtplib.SMTPException as e:
+                    syslog('smtp-failure', 'SMTP TLS/EHLO error: %s', str(e))
                     self.quit()
                     raise
+                    
             try:
                 self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
-            except smtplib.SMTPHeloError as e:
-                syslog('smtp-failure', 'SMTP HELO error: %s', e)
-                self.quit()
-                raise
-            except smtplib.SMTPAuthenticationError as e:
-                syslog('smtp-failure', 'SMTP AUTH error: %s', e)
-                self.quit()
-                raise
             except smtplib.SMTPException as e:
-                syslog('smtp-failure', 'SMTP - no suitable authentication method found: %s', e)
+                syslog('smtp-failure', 'SMTP authentication error: %s', str(e))
                 self.quit()
                 raise
 
         self.__numsessions = mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION
 
-    def sendmail(self, envsender, recips, msgtext):
+    def sendmail(self, envsender: str, recips: List[str], msgtext: str) -> Dict[str, str]:
+        """Send mail via SMTP.
+        
+        Args:
+            envsender: Envelope sender address
+            recips: List of recipient addresses
+            msgtext: Message text to send
+            
+        Returns:
+            Dictionary of failed recipients and error messages
+            
+        Raises:
+            smtplib.SMTPException: For any SMTP-related errors
+        """
         if self.__conn is None:
             self.__connect()
+            
         try:
             results = self.__conn.sendmail(envsender, recips, msgtext)
         except smtplib.SMTPException:
-            # For safety close this connection.  The next send attempt will
-            # automatically re-open it.  Pass the exception on up.
+            # For safety close this connection. The next send attempt will
+            # automatically re-open it.
             self.quit()
             raise
-        # This session has been successfully completed.
+            
+        # This session has been successfully completed
         self.__numsessions -= 1
-        # By testing exactly for equality to 0, we automatically handle the
-        # case for SMTP_MAX_SESSIONS_PER_CONNECTION <= 0 meaning never close
-        # the connection.  We won't worry about wraparound <wink>.
+        
+        # Close connection if max sessions reached
         if self.__numsessions == 0:
             self.quit()
+            
         return results
 
-    def quit(self):
+    def quit(self) -> None:
+        """Close the SMTP connection safely."""
         if self.__conn is None:
             return
+            
         try:
             self.__conn.quit()
         except smtplib.SMTPException:
             pass
-        self.__conn = None
+        finally:
+            self.__conn = None
 
 
-def process(mlist, msg, msgdata):
-    """See IHandler."""
+def process(mlist: MailList, msg: Message, msgdata: Dict[str, Any]) -> None:
+    """Process a message for SMTP delivery.
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to process
+        msgdata: Message metadata
+        
+    Raises:
+        Errors.SomeRecipientsFailed: If any recipients failed
+    """
     if not msgdata.get('recipients'):
         # Nobody to deliver to!
         return
-    # Get some information about the message and its sender
+        
+    # Get message info
     recips = msgdata['recipients']
     envsender = msgdata.get('envsender', mlist.GetBouncesEmail())
     msgtext = msg.as_string()
-    refused = {}
-    # Split the recipient list into SMTP_MAX_RCPTS chunks.  Most MTAs have a
-    # limit on the number of recipients they'll swallow in a single
-    # transaction.
+    refused: Dict[str, str] = {}
+    
+    # Split recipients into chunks
     chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS)
-    # See if this is an all-or-nothing type of situation
-    deliveryfunc = None
+    
+    # Select delivery function
     if msgdata.get('verp'):
         deliveryfunc = verpdeliver
     elif msgdata.get('personalize'):
         deliveryfunc = bulkdeliver
-    # Otherwise, use regular delivery
-    if deliveryfunc is None:
+    else:
         deliveryfunc = deliver
-    # If we're doing bulk delivery, then we can optionally SMTP pipelining to
-    # deliver the message more efficiently.  However, if we're doing VERP, it
-    # doesn't make sense to use SMTP pipelining.  We may as well get the
-    # failure response after each individual send.
+        
+    # Select connection type
     if (not msgdata.get('verp') and 
             mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION > 0):
-        # Only use the bulk connection if we're not doing VERP
         connection = BulkConnection()
     else:
         connection = Connection()
-    # Attempt to deliver to the recipients
-    for chunk in chunks:
-        try:
-            deliveryfunc(mlist, msg, msgdata, envsender, refused, connection)
-        except Exception:
-            # If anything goes wrong, push the last chunk back on the
-            # undelivered list and re-raise the exception.  We don't know
-            # how many of the last chunk might receive the message, so at
-            # worst, everyone in this chunk will get a duplicate.  Sigh.
-            chunks.append(chunk)
-            raise
-    # Do the delivery
-    connection.quit()
+        
+    # Attempt delivery
+    try:
+        for chunk in chunks:
+            try:
+                deliveryfunc(mlist, msg, msgdata, envsender, refused, connection)
+            except Exception:
+                # If anything goes wrong, push the last chunk back and re-raise
+                chunks.append(chunk)
+                raise
+    finally:
+        connection.quit()
+        
     if refused:
         raise Errors.SomeRecipientsFailed(refused)
 
 
-def chunkify(recips, chunksize):
-    # First do a simple sort on top level domain.  It probably doesn't buy us
-    # much to try to sort on MX record -- that's the MTA's job.  We're just
-    # trying to avoid getting a max recips error.  Split the chunks along
-    # these lines (as suggested originally by Chuq Von Rospach and slightly
-    # elaborated by BAW).
-    chunkmap = {'com': 1,
-                'net': 2,
-                'org': 2,
-                'edu': 3,
-                'us' : 3,
-                'ca' : 3,
-                }
-    buckets = {}
+def chunkify(recips: List[str], chunksize: int) -> List[List[str]]:
+    """Split recipients into chunks by domain.
+    
+    Args:
+        recips: List of recipient addresses
+        chunksize: Maximum size of each chunk
+        
+    Returns:
+        List of recipient chunks
+    """
+    # Sort by top level domain
+    chunkmap = {
+        'com': 1,
+        'net': 2,
+        'org': 2,
+        'edu': 3,
+        'us': 3,
+        'ca': 3,
+    }
+    
+    buckets: Dict[int, List[str]] = {}
     for r in recips:
         tld = None
         i = r.rfind('.')
@@ -194,9 +231,10 @@ def chunkify(recips, chunksize):
         bucket = buckets.get(bin, [])
         bucket.append(r)
         buckets[bin] = bucket
-    # Now start filling the chunks
-    chunks = []
-    currentchunk = []
+        
+    # Fill chunks
+    chunks: List[List[str]] = []
+    currentchunk: List[str] = []
     chunklen = 0
     for bin in buckets.values():
         for r in bin:
