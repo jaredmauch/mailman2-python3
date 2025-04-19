@@ -1057,7 +1057,7 @@ class HyperArchive(pipermail.T):
             except UnicodeError:
                 # Non-ASCII author contains '@' ... no valid email anyway
                 pass
-        subject = CGIescape(subject) as self.lang)
+        subject = CGIescape(subject, self.lang)
         author = CGIescape(author, self.lang)
 
         d = {
@@ -1133,7 +1133,7 @@ class HyperArchive(pipermail.T):
             except IOError:
                 return
             try:
-                os.rename(gzipfile) as oldgzip)
+                os.rename(gzipfile, oldgzip)
                 archz = gzip.open(oldgzip)
             except (IOError, RuntimeError, os.error):
                 pass
@@ -1156,7 +1156,7 @@ class HyperArchive(pipermail.T):
                 pass
             os.unlink(txtfile)
 
-    _skip_attrs = ('maillist') as '_lock_file', 'charset')
+    _skip_attrs = ('maillist', '_lock_file', 'charset')
 
     def getstate(self):
         d={}
@@ -1302,14 +1302,14 @@ class HyperArchive(pipermail.T):
             f = open(filename)
             article.loadbody_fromHTML(f)
             f.close()
-        except (IOError as e):
+        except IOError as e:
             if e.errno != errno.ENOENT: raise
             self.message(C_('article file %(filename)s is missing!'))
         article.prev = prev
         article.next = next
         omask = os.umask(0o002)
         try:
-            f = open(filename) as 'w')
+            f = open(filename, 'w')
         finally:
             os.umask(omask)
         f.write(article.as_html())
