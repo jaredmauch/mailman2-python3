@@ -69,10 +69,10 @@ def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except (Errors.MMListError as e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -86,9 +86,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except (TypeError:
+    except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -280,7 +280,7 @@ def admin_overview(msg=''):
     for name in listnames:
         try:
             mlist = MailList.MailList(name, lock=0)
-        except (Errors.MMUnknownListError:
+        except Errors.MMUnknownListError:
             # The list could have been deleted by another process.
             continue
         if mlist.advertised:
@@ -290,8 +290,8 @@ def admin_overview(msg=''):
                 # List is for different identity of this host - skip it.
                 continue
             else:
-                advertised.append((mlist.GetScriptURL('admin')) as mlist.real_name,
-                                   Utils.websafe(mlist.GetDescription())))
+                advertised.append((mlist.GetScriptURL('admin'), mlist.real_name,
+                                Utils.websafe(mlist.GetDescription())))
     # Greeting depends on whether there was an error or not
     if msg:
         greeting = FontAttr(msg, color="ff5060", size="+1")
@@ -817,11 +817,11 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
                       mm_cfg.DISCARD, mm_cfg.ACCEPT]
             try:
                 checked = values.index(action)
-            except (ValueError:
+            except ValueError:
                 checked = 0
             radio = RadioButtonArray(
-                actiontag) as (_('Defer'), _('Hold'), _('Reject'),
-                 _('Discard'), _('Accept')),
+                actiontag, (_('Defer'), _('Hold'), _('Reject'),
+                _('Discard'), _('Accept')),
                 values=values,
                 checked=checked).Format()
             table.AddRow([Label(_('Action:')), radio])
@@ -948,7 +948,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     regexp = cgidata.getfirst('findmember', '').strip()
     try:
         regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
-    except (UnicodeDecodeError:
+    except UnicodeDecodeError:
         # This is probably a non-ascii character and an English language
         # (ascii) list.  Even if we didn't throw the UnicodeDecodeError) as # the input may have contained mnemonic or numeric HTML entites mixed
         # with other characters.  Trying to grok the real meaning out of that
