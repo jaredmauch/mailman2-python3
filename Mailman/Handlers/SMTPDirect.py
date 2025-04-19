@@ -251,156 +251,98 @@ def chunkify(recips: List[str], chunksize: int) -> List[List[str]]:
     return chunks
 
 
-def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
-    for recip in msgdata['recips']:
-        # We now need to stitch together the message with its header and
-        # footer.  If we're VERPIng, we have to calculate the envelope sender
-        # for each recipient.  Note that the list of recipients must be of
-        # length 1.
-        #
-        # BAW: ezmlm includes the message number in the envelope, used when
-        # sending a notification to the user telling her how many messages
-        # they missed due to bouncing.  Neat idea.
-        msgdata['recips'] = [recip]
-        # Make a copy of the message and decorate + delivery that
-        msgcopy = copy.deepcopy(msg)
-        Decorate.process(mlist, msgcopy, msgdata)
-        # Calculate the envelope sender, which we may be VERPing
-        if msgdata.get('verp'):
-            bmailbox, bdomain = Utils.ParseEmail(envsender)
-            rmailbox, rdomain = Utils.ParseEmail(recip)
-            if rdomain is None:
-                # The recipient address is not fully-qualified.  We can't
-                # deliver it to this person, nor can we craft a valid verp
-                # header.  I don't think there's much we can do except ignore
-                # this recipient.
-                syslog('smtp', 'Skipping VERP delivery to unqual recip: %s', recip)
-                continue
-            d = {'bounces': bmailbox,
-                 'mailbox': rmailbox,
-                 'host'   : DOT.join(rdomain),
-                 }
-            envsender = '%s@%s' % ((mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
-        if mlist.personalize == 2:
-            # When fully personalizing, we want the To address to point to the
-            # recipient, not to the mailing list
-            del msgcopy['to']
-            name = None
-            if mlist.isMember(recip):
-                name = mlist.getMemberName(recip)
-            if name:
-                # Convert the name to an email-safe representation.  If the
-                # name is a byte string, convert it first to Unicode, given
-                # the character set of the member's language, replacing bad
-                # characters for which we can do nothing about.  Once we have
-                # the name as Unicode, we can create a Header instance for it
-                # so that it's properly encoded for email transport.
-                charset = Utils.GetCharSet(mlist.getMemberLanguage(recip))
-                if charset == 'us-ascii':
-                    # Since Header already tries both us-ascii and utf-8,
-                    # let's add something a bit more useful.
-                    charset = 'iso-8859-1'
-                charset = Charset(charset)
-                codec = charset.input_codec or 'ascii'
-                if not isinstance(name, UnicodeType):
-                    name = str(name, codec, 'replace')
-                name = Header(name, charset).encode()
-                msgcopy['To'] = formataddr((name, recip))
-            else:
-                msgcopy['To'] = recip
-        # We can flag the mail as a duplicate for each member, if they've
-        # already received this message, as calculated by Message-ID.  See
-        # AvoidDuplicates.py for details.
-        del msgcopy['x-mailman-copy']
-        if msgdata.get('add-dup-header', {}).has_key(recip):
-            msgcopy['X-Mailman-Copy'] = 'yes'
-        # If desired, add the RCPT_BASE64_HEADER_NAME header
-        if len(mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
-            del msgcopy[mm_cfg.RCPT_BASE64_HEADER_NAME]
-            msgcopy[mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
-        # For the final delivery stage, we can just bulk deliver to a party of
-        # one. ;)
-        bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
+def verpdeliver(mlist: MailList, msg: Message, msgdata: Dict[str, Any], 
+                envsender: str, failures: Dict[str, str], conn: Connection) -> None:
+    """Deliver a message with VERP (Variable Envelope Return Path).
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to deliver
+        msgdata: Message metadata
+        envsender: Envelope sender address
+        failures: Dictionary to store failed deliveries
+        conn: SMTP connection to use
+    """
+    # Make a copy of the message for each recipient
+    for recip in msgdata['recipients']:
+        try:
+            # Create VERP envelope sender
+            verp_sender = f"{mlist.GetBouncesEmail()}+{recip}@{mlist.host_name}"
+            
+            # Send the message
+            refused = conn.sendmail(verp_sender, [recip], msg.as_string())
+            if refused:
+                failures.update(refused)
+                
+        except Exception as e:
+            failures[recip] = str(e)
+            syslog('smtp-failure', 'VERP delivery failed for %s: %s', recip, e)
 
-
-def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
-    # Do some final cleanup of the message header.  Start by blowing away
-    # any the Sender: and Errors-To: headers so remote MTAs won't be
-    # tempted to delivery bounces there instead of our envelope sender
-    #
-    # BAW An interpretation of RFCs 2822 and 2076 could argue for not touching
-    # the Sender header at all.  Brad Knowles points out that MTAs tend to
-    # wipe existing Return-Path headers, and old MTAs may still honor
-    # Errors-To while new ones will at worst ignore the header.
-    #
-    # With some MUAs (eg. Outlook 2003) rewriting the Sender header with our
-    # envelope sender causes more problems than it solves, because some will 
-    # include the Sender address in a reply-to-all, which is not only 
-    # confusing to subscribers, but can actually disable/unsubscribe them from
-    # lists, depending on how often they accidentally reply to it.  Also, when
-    # forwarding mail inline, the sender is replaced with the string "Full 
-    # Name (on behalf bounce@addr.ess)", essentially losing the original
-    # sender address.  To partially mitigate this, we add the list name as a
-    # display-name in the Sender: header that we add.
-    # 
-    # The drawback of not touching the Sender: header is that some MTAs might
-    # still send bounces to it, so by not trapping it, we can miss bounces.
-    # (Or worse, MTAs might send bounces to the From: address if they can't
-    # find a Sender: header.)  So instead of completely disabling the sender
-    # rewriting, we offer an option to disable it.
-    del msg['errors-to']
-    msg['Errors-To'] = envsender
-    if mlist.include_sender_header:
-        del msg['sender']
-        msg['Sender'] = '"%s" <%s>' % (mlist.real_name, envsender)
-    # Get the plain, flattened text of the message, sans unixfrom
-    # using our as_string() method to not mangle From_ and not fold
-    # sub-part headers possibly breaking signatures.
-    msgtext = msg.as_string(mangle_from_=False)
-    refused = {}
-    recips = msgdata['recips']
-    msgid = msg['message-id']
+def bulkdeliver(mlist: MailList, msg: Message, msgdata: Dict[str, Any],
+                envsender: str, failures: Dict[str, str], conn: Connection) -> None:
+    """Deliver a message in bulk mode.
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to deliver
+        msgdata: Message metadata
+        envsender: Envelope sender address
+        failures: Dictionary to store failed deliveries
+        conn: SMTP connection to use
+    """
+    # Clean up message headers
+    if not mm_cfg.SMTP_SENDER_REWRITE:
+        msg['Sender'] = None
+    else:
+        sender = formataddr((mlist.real_name, mlist.GetBouncesEmail()))
+        msg['Sender'] = sender
+        
+    msg['Errors-To'] = None
+    
     try:
         # Send the message
-        refused = conn.sendmail(envsender, recips, msgtext)
-    except smtplib.SMTPRecipientsRefused as e:
-        syslog('smtp-failure', 'All recipients refused: %s, msgid: %s', e, msgid)
-        refused = e.recipients
-    except smtplib.SMTPResponseException as e:
-        syslog('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
-               e.smtp_code, e.smtp_error, msgid)
-        # If this was a permanent failure, don't add the recipients to the
-        # refused, because we don't want them to be added to failures.
-        # Otherwise, if the MTA rejects the message because of the message
-        # content (e.g. it's spam, virii, or has syntactic problems), then
-        # this will end up registering a bounce score for every recipient.
-        # Definitely /not/ what we want.
-        if e.smtp_code < 500 or e.smtp_code == 552:
-            # It's a temporary failure
-            for r in recips:
-                refused[r] = (e.smtp_code, e.smtp_error)
-    except (socket.error, smtplib.SMTPException) as e:
-        # MTA not responding, or other socket problems, or any other kind of
-        # SMTPException.  In that case, nothing got delivered, so treat this
-        # as a temporary failure.
-        syslog('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
-        error = str(e)
-        for r in recips:
-            refused[r] = (-1, error)
-    failures.update(refused)
+        refused = conn.sendmail(envsender, msgdata['recipients'], msg.as_string())
+        if refused:
+            failures.update(refused)
+            
+    except Exception as e:
+        for recip in msgdata['recipients']:
+            failures[recip] = str(e)
+        syslog('smtp-failure', 'Bulk delivery failed: %s', e)
 
+def _encode_name(name: str, charset: str) -> str:
+    """Encode a name using the specified charset.
+    
+    Args:
+        name: Name to encode
+        charset: Character set to use
+        
+    Returns:
+        Encoded name string
+    """
+    if not name:
+        return ''
+        
+    try:
+        return name.encode(charset, 'replace').decode(charset)
+    except (UnicodeError, LookupError):
+        return name
 
-def _encode_name(name, charset):
-    """Encode a name for use in email headers."""
-    if isinstance(name, str):
-        try:
-            name = name.encode('ascii')
-        except UnicodeEncodeError:
-            name = str(Header(name, charset))
-    return name
-
-def _encode_recipient(recip):
-    """Encode a recipient email address if needed."""
-    if isinstance(recip, bytes):
-        recip = recip.decode('utf-8')
-    return recip
+def _encode_recipient(recip: str) -> str:
+    """Encode a recipient address.
+    
+    Args:
+        recip: Recipient address to encode
+        
+    Returns:
+        Encoded recipient string
+    """
+    try:
+        name, addr = email.utils.parseaddr(recip)
+        if name:
+            charset = Charset('utf-8')
+            name = _encode_name(name, charset)
+            return formataddr((name, addr))
+        return addr
+    except Exception:
+        return recip

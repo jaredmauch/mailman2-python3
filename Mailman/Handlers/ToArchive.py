@@ -51,35 +51,29 @@ class ToArchive:
         Args:
             msg: The email message
             msgdata: Additional message metadata
+            
+        Raises:
+            OSError: If there are file system errors
+            mailbox.Error: If there are mailbox errors
         """
-        # Get the archive directory
-        archive_dir = os.path.join(mm_cfg.ARCHIVE_DIR, self.mlist.internal_name())
-        
-        # Create the archive directory if it doesn't exist
-        if not os.path.exists(archive_dir):
-            try:
-                os.makedirs(archive_dir)
-            except OSError as e:
-                self.logger.error('Failed to create archive directory: %s', e)
-                syslog('error', 'Failed to create archive directory: %s', e)
-                return
-                
-        # Get the archive file path
-        archive_file = os.path.join(archive_dir, 'archive.mbox')
-        
         try:
-            # Open the archive file
-            mbox = mailbox.mbox(archive_file)
+            # Get the archive directory
+            archive_dir = os.path.join(mm_cfg.ARCHIVE_DIR, self.mlist.internal_name())
             
-            # Add the message to the archive
-            mbox.add(msg)
+            # Create the archive directory if it doesn't exist
+            os.makedirs(archive_dir, exist_ok=True)
             
-            # Close the archive file
-            mbox.close()
+            # Get the archive file path
+            archive_file = os.path.join(archive_dir, 'archive.mbox')
             
+            # Open the archive file and add the message
+            with mailbox.mbox(archive_file) as mbox:
+                mbox.add(msg)
+                
         except (OSError, mailbox.Error) as e:
             self.logger.error('Failed to process archive message: %s', e)
             syslog('error', 'Failed to process archive message: %s', e)
+            raise
             
     def reject(self, msg: Message, msgdata: Dict[str, Any], reason: str) -> None:
         """Reject a message from being archived.

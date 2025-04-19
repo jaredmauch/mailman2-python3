@@ -50,35 +50,29 @@ class ToUsenet:
         Args:
             msg: The email message
             msgdata: Additional message metadata
+            
+        Raises:
+            OSError: If there are file system errors
+            mailbox.Error: If there are mailbox errors
         """
-        # Get the Usenet directory
-        usenet_dir = os.path.join(mm_cfg.USENET_DIR, self.mlist.internal_name())
-        
-        # Create the Usenet directory if it doesn't exist
-        if not os.path.exists(usenet_dir):
-            try:
-                os.makedirs(usenet_dir)
-            except OSError as e:
-                self.logger.error('Failed to create Usenet directory: %s', e)
-                syslog('error', 'Failed to create Usenet directory: %s', e)
-                return
-                
-        # Get the Usenet file path
-        usenet_file = os.path.join(usenet_dir, 'usenet.mbox')
-        
         try:
-            # Open the Usenet file
-            mbox = mailbox.mbox(usenet_file)
+            # Get the Usenet directory
+            usenet_dir = os.path.join(mm_cfg.USENET_DIR, self.mlist.internal_name())
             
-            # Add the message to the Usenet
-            mbox.add(msg)
+            # Create the Usenet directory if it doesn't exist
+            os.makedirs(usenet_dir, exist_ok=True)
             
-            # Close the Usenet file
-            mbox.close()
+            # Get the Usenet file path
+            usenet_file = os.path.join(usenet_dir, 'usenet.mbox')
             
+            # Open the Usenet file and add the message
+            with mailbox.mbox(usenet_file) as mbox:
+                mbox.add(msg)
+                
         except (OSError, mailbox.Error) as e:
             self.logger.error('Failed to process Usenet message: %s', e)
             syslog('error', 'Failed to process Usenet message: %s', e)
+            raise
             
     def reject(self, msg: Message, msgdata: Dict[str, Any], reason: str) -> None:
         """Reject a message from being added to Usenet.

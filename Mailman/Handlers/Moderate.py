@@ -73,55 +73,76 @@ def process(mlist: MailList, msg: Message, msgdata: Dict[str, Any]) -> None:
     if msgdata.get('approved'):
         return
 
-    # Is the poster a member or not?
-    sender = None
+    # Get the sender and check if they're a member
+    sender = get_sender(mlist, msg)
+    if sender:
+        handle_member_post(mlist, msg, msgdata, sender)
+        return
+        
+    # Handle non-member posts
+    handle_non_member_post(mlist, msg, msgdata)
+
+
+def get_sender(mlist: MailList, msg: Message) -> Optional[str]:
+    """Get the sender address and check if they're a member.
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to check
+        
+    Returns:
+        The sender's address if they're a member, None otherwise
+    """
     for addr in msg.get_senders():
         if mlist.isMember(addr):
-            sender = addr
-            break
+            return addr
         for equiv_addr in Utils.check_eq_domains(addr, mlist.equivalent_domains):
             if mlist.isMember(equiv_addr):
-                sender = equiv_addr
-                break
-        if sender:
-            break
+                return equiv_addr
+    return None
 
-    if sender:
-        # If the member's moderation flag is on, then perform the moderation action
-        if mlist.getMemberOption(sender, mm_cfg.Moderate):
-            # Note that for member_moderation_action:
-            # 0 = Hold
-            # 1 = Reject  
-            # 2 = Discard
-            action = mlist.member_moderation_action
-            
-            if action == 0:
-                # Hold
-                msgdata['sender'] = sender
-                Hold.hold_for_approval(mlist, msg, msgdata, ModeratedMemberPost)
-                
-            elif action == 1:
-                # Reject
-                text = mlist.member_moderation_notice
-                if text:
-                    text = Utils.wrap(text)
-                raise Errors.RejectMessage(text)
-                
-            elif action == 2:
-                # Discard
-                raise Errors.DiscardMessage
-                
-            else:
-                raise ValueError(f'Invalid member_moderation_action: {action}')
-                
+
+def handle_member_post(mlist: MailList, msg: Message, msgdata: Dict[str, Any], 
+                      sender: str) -> None:
+    """Handle a post from a member.
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to process
+        msgdata: Message metadata
+        sender: The sender's address
+    """
+    if not mlist.getMemberOption(sender, mm_cfg.Moderate):
         return
-    else:
-        sender = msg.get_sender()
+        
+    action = mlist.member_moderation_action
+    if not 0 <= action <= 2:
+        raise ValueError(f'Invalid member_moderation_action: {action}')
+        
+    if action == 0:  # Hold
+        msgdata['sender'] = sender
+        Hold.hold_for_approval(mlist, msg, msgdata, ModeratedMemberPost)
+    elif action == 1:  # Reject
+        text = mlist.member_moderation_notice
+        if text:
+            text = Utils.wrap(text)
+        raise Errors.RejectMessage(text)
+    elif action == 2:  # Discard
+        raise Errors.DiscardMessage
 
-    # From here on out, we're dealing with non-members
+
+def handle_non_member_post(mlist: MailList, msg: Message, msgdata: Dict[str, Any]) -> None:
+    """Handle a post from a non-member.
+    
+    Args:
+        mlist: The mailing list
+        msg: The message to process
+        msgdata: Message metadata
+    """
+    sender = msg.get_sender()
     listname = mlist.internal_name()
     
-    # Check various non-member moderation patterns
+    # Check moderation patterns
     if mlist.GetPattern(sender, mlist.accept_these_nonmembers,
                        at_list='accept_these_nonmembers'):
         return
@@ -141,14 +162,13 @@ def process(mlist: MailList, msg: Message, msgdata: Dict[str, Any]) -> None:
         do_discard(mlist, msg)
         return
 
-    # Handle by way of generic non-member action
+    # Handle by generic non-member action
     action = mlist.generic_nonmember_action
     if not 0 <= action <= 4:
         raise ValueError(f'Invalid generic_nonmember_action: {action}')
         
     if action == 0 or msgdata.get('fromusenet'):
-        # Accept
-        return
+        return  # Accept
     elif action == 1:
         Hold.hold_for_approval(mlist, msg, msgdata, Hold.NonMemberPost)
     elif action == 2:
@@ -170,11 +190,11 @@ def do_reject(mlist: MailList) -> None:
     if mlist.nonmember_rejection_notice:
         raise Errors.RejectMessage(Utils.wrap(_(mlist.nonmember_rejection_notice)))
     
-    msg = _("""\
+    msg = _(f"""\
 Your message has been rejected, probably because you are not subscribed to the
 mailing list and the list's policy is to prohibit non-members from posting to
 it. If you think that your messages are being rejected in error, contact the
-mailing list owner at %(listowner)s.""")
+mailing list owner at {listowner}.""")
     
     raise Errors.RejectMessage(Utils.wrap(msg))
 
@@ -191,7 +211,7 @@ def do_discard(mlist: MailList, msg: Message) -> None:
     """
     sender = msg.get_sender()
     
-    # Do we forward auto-discards to the list owners?
+    # Forward auto-discards to list owners if configured
     if mlist.forward_auto_discards:
         lang = mlist.preferred_language
         varhelp = f'{mlist.GetScriptURL("admin", absolute=1)}/?VARHELP=privacy/sender/discard_these_nonmembers'
@@ -200,25 +220,28 @@ def do_discard(mlist: MailList, msg: Message) -> None:
         nmsg = MailmanMessage.UserNotification(
             mlist.GetOwnerEmail(),
             mlist.GetBouncesEmail(),
-            _('Auto-discard notification'),
-            lang=lang
+            _('Auto-discarded message from %(sender)s'),
+            _(f"""\
+A message from {sender} was automatically discarded because the sender was
+not a member of the mailing list and the list's policy is to discard messages
+from non-members.
+
+To modify this behavior, visit the list's privacy settings at:
+
+{varhelp}
+
+The original message follows:
+
+"""),
+            lang
         )
-        
-        nmsg.set_type('multipart/mixed')
-        
-        # Add notification text
-        charset = Utils.GetCharSet(lang)
-        text = MIMEText(
-            Utils.wrap(_('The attached message has been automatically discarded.')),
-            _charset=charset
-        )
-        nmsg.attach(text)
         
         # Attach original message
         nmsg.attach(MIMEMessage(msg))
         
-        # Send notification
-        nmsg.send(mlist)
-    
-    # Discard the message
+        try:
+            nmsg.send(mlist)
+        except Exception as e:
+            syslog('error', 'Failed to send auto-discard notice: %s', e)
+            
     raise Errors.DiscardMessage
