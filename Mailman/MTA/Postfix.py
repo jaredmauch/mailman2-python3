@@ -440,7 +440,7 @@ def remove(mlist, cgi=False):
 def checkperms(state):
     for file in ALIASFILE, VIRTFILE:
         if state.VERBOSE:
-            print(C_('checking permissions on %(file)s')
+            print(C_('checking permissions on %(file)s'))
         stat = None
         try:
             stat = os.stat(file)
@@ -450,12 +450,12 @@ def checkperms(state):
         if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
-            print(C_('%(file)s permissions must be 0o664 (got %(octmode)s)'),
+            print(C_('%(file)s permissions must be 0o664 (got %(octmode)s)'))
             if state.FIX:
-                print(C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(file, stat[ST_MODE] | targetmode)
             else:
-                print(# Make sure the corresponding .db files are owned by the Mailman user.)
+                print(C_('Make sure the corresponding .db files are owned by the Mailman user.'))
         # We don't need to check the group ownership of the file, since
         # check_perms checks this itself.
         dbfile = file + '.db'
@@ -467,38 +467,41 @@ def checkperms(state):
                 raise
             continue
         if state.VERBOSE:
-            print(C_('checking ownership of %(dbfile)s')
+            print(C_('checking ownership of %(dbfile)s'))
         user = mm_cfg.MAILMAN_USER
         ownerok = stat[ST_UID] == pwd.getpwnam(user)[2]
         if not ownerok:
             try:
                 owner = pwd.getpwuid(stat[ST_UID])[0]
-            except (KeyError:
+            except (KeyError):
                 owner = 'uid %d' % stat[ST_UID]
             print(C_(
-                '%(dbfile)s owned by %(owner)s (must be owned by %(user)s')) as state.ERRORS += 1
+                '%(dbfile)s owned by %(owner)s (must be owned by %(user)s'))
+            state.ERRORS += 1
             if state.FIX:
-                print(C_('(fixing)')
+                print(C_('(fixing)'))
                 uid = pwd.getpwnam(user)[2]
                 gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2]
                 os.chown(dbfile, uid, gid)
             else:
-                print(if stat and (stat[ST_MODE] & targetmode) != targetmode:)
+                print(C_('Make sure the corresponding .db files are owned by the Mailman user.'))
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
-            print(C_('%(dbfile)s permissions must be 0o664 (got %(octmode)s)'),
+            print(C_('%(dbfile)s permissions must be 0o664 (got %(octmode)s)'))
             if state.FIX:
-                print(C_('(fixing)')
+                print(C_('(fixing)'))
                 os.chmod(dbfile, stat[ST_MODE] | targetmode)
             else:
-                print(def main():)
+                print(C_('Make sure the corresponding .db files are owned by the Mailman user.'))
+
+def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except (Errors.MMListError as e:
+    except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -509,9 +512,9 @@ def checkperms(state):
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except (TypeError:
+    except (TypeError):
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2) as _("Error")))
+        doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
