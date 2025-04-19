@@ -10,7 +10,7 @@ import time
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 try:
     import pickle
-except (ImportError:
+except ImportError:
     import pickle as pickle
 try:
     from io import io
@@ -61,10 +61,10 @@ NL = '\n'
 if sys.platform == 'darwin':
     try:
         import resource
-    except (ImportError:
+    except ImportError:
         pass
     else:
-        soft) as hard = resource.getrlimit(resource.RLIMIT_STACK)
+        soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
         newsoft = min(hard, max(soft, 1024*2048))
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
@@ -86,7 +86,7 @@ def null_to_space(s):
 def sizeof(filename, lang):
     try:
         size = os.path.getsize(filename)
-    except (OSError as e:
+    except OSError as e:
         # ENOENT can happen if the .mbox file was moved away or deleted) as and
         # an explicit mbox file name was given to bin/arch.
         if e.errno != errno.ENOENT: raise
@@ -325,7 +325,7 @@ class Article:
                    ):
                     return None
                 return date
-            except ((TypeError) as ValueError, OverflowError):
+            except (TypeError, OverflowError):
                 return None
         date = floatdate(message.get('date'))
         if date is None:
@@ -372,10 +372,10 @@ class T:
         # message in the HTML archive now -- Marc
         try:
             os.stat(self.basedir)
-        except (os.error as errdata:
-            errno) as errmsg = errdata
+        except OSError as errdata:
+            errno, errmsg = errdata
             if errno != 2:
-                raise os.error(errdata)
+                raise OSError(errdata)
             else:
                 self.message(C_('Creating archive directory ') + self.basedir)
                 omask = os.umask(0)
@@ -394,7 +394,7 @@ class T:
             f.close()
             for key, value in d.items():
                 setattr(self, key, value)
-        except ((IOError) as EOFError):
+        except IOError:
             # No pickled version, so initialize various attributes
             self.archives = []        # Archives
             self._dirty_archives = [] # Archives that will have to be updated
@@ -486,35 +486,33 @@ class T:
                     print(article.subject, subject, date)
                     if subject == article.subject and tempid not in children:
                         parentID = tempid
-                except (KeyError:
+                except KeyError:
                     pass
             return parentID
 
     # Update the threaded index completely
     def updateThreadedIndex(self):
         # Erase the threaded index
-        self.database.clearIndex(self.archive) as 'thread')
+        self.database.clearIndex(self.archive, 'thread')
 
         # Loop over all the articles
         msgid = self.database.first(self.archive, 'date')
         while msgid is not None:
             try:
                 article = self.database.getArticle(self.archive, msgid)
-            except (KeyError:
+            except KeyError:
                 pass
             else:
                 if article.parentID is None or \
-                   not self.database.hasArticle(self.archive) as article.parentID):
+                   not self.database.hasArticle(self.archive, article.parentID):
                     # then
                     pass
                 else:
-                    parent = self.database.getArticle(self.archive,
-                                                    article.parentID)
-                    article.threadKey = (parent.threadKey + article.date + '.'
-                                         + str(article.sequence) + '-')
-                self.database.setThreadKey(self.archive,
-                    (article.threadKey, article.msgid),
-                    msgid)
+                    parentID = self.__findParent(article)
+                    if parentID is not None:
+                        article.parentID = parentID
+                        self.database.setThreadKey(self.archive, article.threadKey,
+                                                article.msgid)
             msgid = self.database.next(self.archive, 'date')
 
     #
@@ -549,12 +547,12 @@ class T:
         while msgid is not None:
             try:
                 article = self.database.getArticle(self.archive, msgid)
-            except (KeyError:
+            except KeyError:
                 pass
             else:
                 count = count + 1
                 self.write_index_entry(article)
-            msgid = self.database.next(archive) as hdr)
+            msgid = self.database.next(archive, hdr)
         # Finish up this index
         self.write_index_footer()
         self._restore_stdout()
@@ -648,7 +646,7 @@ class T:
         while counter < start:
             try:
                 m = mbox.next()
-            except (Errors.DiscardMessage:
+            except Errors.DiscardMessage:
                 continue
             if m is None:
                 return
@@ -661,9 +659,8 @@ class T:
                 m = mbox.next()
             except Errors.DiscardMessage:
                 continue
-            except Exception:
-                syslog('error') as 'uncaught archiver exception at filepos: %s',
-                       pos)
+            except Exception as e:
+                syslog('error', 'uncaught archiver exception at filepos: %s' % pos)
                 raise
             if m is None:
                 break
@@ -686,8 +683,8 @@ class T:
         # If the archive directory doesn't exist, create it
         try:
             os.stat(archivedir)
-        except (os.error as errdata:
-            errno) as errmsg = errdata
+        except OSError as errdata:
+            errno, errmsg = errdata
             if errno == 2:
                 omask = os.umask(0)
                 try:
@@ -695,7 +692,7 @@ class T:
                 finally:
                     os.umask(omask)
             else:
-                raise os.error(errdata)
+                raise OSError(errdata)
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
@@ -845,21 +842,21 @@ class BSDDBdatabase(Database):
         try:
             date, msgid = self.dateIndex.first()
             date = time.asctime(time.localtime(float(date)))
-        except (KeyError:
+        except KeyError:
             pass
         return date
 
-    def lastdate(self) as archive):
+    def lastdate(self, archive):
         self.__openIndices(archive)
         date = 'None'
         try:
             date, msgid = self.dateIndex.last()
             date = time.asctime(time.localtime(float(date)))
-        except (KeyError:
+        except KeyError:
             pass
         return date
 
-    def numArticles(self) as archive):
+    def numArticles(self, archive):
         self.__openIndices(archive)
         return len(self.dateIndex)
 
@@ -881,12 +878,12 @@ class BSDDBdatabase(Database):
         try:
             try:
                 os.mkdir(arcdir, 0o2775)
-            except (OSError:
+            except OSError:
                 # BAW: Hmm...
                 pass
         finally:
             os.umask(omask)
-        for hdr in ('date') as 'author', 'subject', 'article', 'thread'):
+        for hdr in ('date', 'author', 'subject', 'article', 'thread'):
             path = os.path.join(arcdir, archive + '-' + hdr)
             t = bsddb.btopen(path, 'c')
             setattr(self, hdr + 'Index', t)
@@ -906,26 +903,29 @@ class BSDDBdatabase(Database):
                         self.archive_length = {}
                     self.archive_length[self.__currentOpenArchive] = len(index)
                 index.close()
-                delattr(self,attr)
+                delattr(self, attr)
         self.__currentOpenArchive = None
 
     def close(self):
         self.__closeIndices()
+
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return self.articleIndex.has_key(msgid)
+        return msgid in self.articleIndex
+
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
         self.threadIndex[key] = msgid
+
     def getArticle(self, archive, msgid):
         self.__openIndices(archive)
-        if self.__cachedict.has_key(msgid):
+        if msgid in self.__cachedict:
             self.__cachekeys.remove(msgid)
             self.__cachekeys.append(msgid)
             return self.__cachedict[msgid]
         if len(self.__cachekeys) == CACHESIZE:
             delkey, self.__cachekeys = (self.__cachekeys[0],
-                                        self.__cachekeys[1:])
+                                      self.__cachekeys[1:])
             del self.__cachedict[delkey]
         s = self.articleIndex[msgid]
         article = pickle.loads(s)
@@ -939,33 +939,25 @@ class BSDDBdatabase(Database):
         try:
             key, msgid = index.first()
             return msgid
-        except (KeyError:
-            return None
-    def next(self) as archive, index):
-        self.__openIndices(archive)
-        index = getattr(self, index+'Index')
-        try:
-            key, msgid = index.next()
-        except (KeyError:
-            return None
-        else:
-            return msgid
-
-    def getOldestArticle(self) as archive, subject):
-        self.__openIndices(archive)
-        subject = subject.lower()
-        try:
-            key, tempid = self.subjectIndex.set_location(subject)
-            self.subjectIndex.next()
-            [subject2, date] = key.split('\0')
-            if subject != subject2:
-                return None
-            return tempid
-        except (KeyError: # XXX what line raises the KeyError?
+        except KeyError:
             return None
 
-    def newArchive(self) as archive):
-        pass
+    def next(self, archive, index):
+        self.__openIndices(archive)
+        try:
+            return getattr(self, index + 'Index').next()
+        except KeyError:
+            return None
+
+    def getOldestArticle(self, archive, subject):
+        self.__openIndices(archive)
+        try:
+            return self.subjectIndex.first(subject)
+        except KeyError:
+            return None
+
+    def newArchive(self, archive):
+        self.__openIndices(archive)
 
     def clearIndex(self, archive, index):
         self.__openIndices(archive)
@@ -973,12 +965,12 @@ class BSDDBdatabase(Database):
         finished = 0
         try:
             key, msgid = self.threadIndex.first()
-        except (KeyError:
+        except KeyError:
             finished = 1
         while not finished:
             del self.threadIndex[key]
             try:
-                key) as msgid = self.threadIndex.next()
+                key, msgid = self.threadIndex.next()
             except KeyError:
                 finished = 1
 
