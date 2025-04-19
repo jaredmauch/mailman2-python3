@@ -38,7 +38,10 @@ import os
 import time
 import email
 import errno
-import cPickle
+try:
+    import pickle as cPickle
+except ImportError:
+    import cPickle
 import marshal
 
 from Mailman import mm_cfg
@@ -79,17 +82,17 @@ class Switchboard:
         try:
             try:
                 os.mkdir(self.__whichq, 0o770)
-            except OSError, e:
-                if e.errno <> errno.EEXIST: raise
+            except OSError as e:
+                if e.errno != errno.EEXIST: raise
         finally:
             os.umask(omask)
         # Fast track for no slices
         self.__lower = None
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
-        if numslices <> 1:
-            self.__lower = ((shamax+1) * slice) / numslices
-            self.__upper = (((shamax+1) * (slice+1)) / numslices) - 1
+        if numslices != 1:
+            self.__lower = ((shamax+1) * slice) // numslices
+            self.__upper = (((shamax+1) * (slice+1)) // numslices) - 1
         if recover:
             self.recover_backup_files()
 
@@ -111,14 +114,14 @@ class Switchboard:
         else:
             protocol = 0
             msgsave = cPickle.dumps(str(_msg), protocol)
-        hashfood = msgsave + listname + `now`
+        hashfood = msgsave + listname + str(now)
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
         # the received time for this message (i.e. when it first showed up on
         # this system) and the sha hex digest.
         #rcvtime = data.setdefault('received_time', now)
         rcvtime = data.setdefault('received_time', now)
-        filebase = `rcvtime` + '+' + sha_new(hashfood).hexdigest()
+        filebase = str(rcvtime) + '+' + sha_new(hashfood).hexdigest()
         filename = os.path.join(self.__whichq, filebase + '.pck')
         tmpfile = filename + '.tmp'
         # Always add the metadata schema version number
@@ -176,14 +179,14 @@ class Switchboard:
                 try:
                     try:
                         os.mkdir(mm_cfg.BADQUEUE_DIR, 0770)
-                    except OSError, e:
-                        if e.errno <> errno.EEXIST: raise
+                    except OSError as e:
+                        if e.errno != errno.EEXIST: raise
                 finally:
                     os.umask(omask)
                 os.rename(bakfile, psvfile)
             else:
                 os.unlink(bakfile)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    bakfile, e)
 
@@ -195,20 +198,20 @@ class Switchboard:
             # By ignoring anything that doesn't end in .pck, we ignore
             # tempfiles and avoid a race condition.
             filebase, ext = os.path.splitext(f)
-            if ext <> extension:
+            if ext != extension:
                 continue
             when, digest = filebase.split('+')
             # Throw out any files which don't match our bitrange.  BAW: test
             # performance and end-cases of this algorithm.  MAS: both
             # comparisons need to be <= to get complete range.
-            if lower is None or (lower <= long(digest, 16) <= upper):
+            if lower is None or (lower <= int(digest, 16) <= upper):
                 key = float(when)
-                while times.has_key(key):
+                while key in times:
                     key += DELTA
                 times[key] = filebase
         # FIFO sort
-        keys = times.keys()
-        keys.sort()
+        keys = list(times.keys())
+        keys.sort()  # Sort numerically since keys are floats
         return [times[k] for k in keys]
 
     def recover_backup_files(self):
@@ -227,7 +230,7 @@ class Switchboard:
                     msg = cPickle.load(fp)
                     data_pos = fp.tell()
                     data = cPickle.load(fp)
-                except Exception, s:
+                except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
                     syslog('error', 'Unpickling .bak exception: %s\n'

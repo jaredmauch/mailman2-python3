@@ -408,9 +408,9 @@ class HTMLFormatter:
             '<mm-restricted-list-message>' : \
                 self.RestrictedListMessage(_('The current archive'),
                                            self.archive_private),
-            '<mm-num-reg-users>' : `member_len`,
-            '<mm-num-digesters>' : `dmember_len`,
-            '<mm-num-members>' : (`member_len + dmember_len`),
+            '<mm-num-reg-users>' : str(member_len),
+            '<mm-num-digesters>' : str(dmember_len),
+            '<mm-num-members>' : str(member_len + dmember_len),
             '<mm-posting-addr>' : '%s' % self.GetListEmail(),
             '<mm-request-addr>' : '%s' % self.GetRequestEmail(),
             '<mm-owner>' : self.GetOwnerEmail(),

@@ -23,6 +23,7 @@ list configuration.
 from __future__ import nested_scopes
 import re
 from types import UnicodeType, StringType, TupleType
+from typing import Any, Union, Optional, Tuple
 
 from email.Charset import Charset
 from email.Header import Header, decode_header, make_header
@@ -46,18 +47,44 @@ CONTINUATION = ',\n '
 COMMASPACE = ', '
 MAXLINELEN = 78
 
-def is_unicode(s):
-    """Return true if s is a unicode string."""
+def is_str(s: Any) -> bool:
+    """Return true if s is a string (unicode in Python 3).
+    
+    Args:
+        s: The object to check
+        
+    Returns:
+        bool: True if s is a string, False otherwise
+    """
     return isinstance(s, str)
 
 nonascii = re.compile(r'[^\s!-~]')
 
-def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
-    # Get the charset to encode the string in. Then search if there is any
-    # non-ascii character is in the string. If there is and the charset is
-    # us-ascii then we use iso-8859-1 instead. If the string is ascii only
-    # we use 'us-ascii' if another charset is specified.
+def uheader(mlist: Any, s: Union[str, bytes], header_name: Optional[str] = None,
+           continuation_ws: str = ' ', maxlinelen: Optional[int] = None) -> email.header.Header:
+    """Create an email header with proper encoding.
+    
+    Args:
+        mlist: The mailing list object
+        s: The header value to encode
+        header_name: Optional name of the header
+        continuation_ws: Whitespace for continuation lines
+        maxlinelen: Maximum line length
+        
+    Returns:
+        email.header.Header: The encoded header
+    """
+    # Get the charset to encode the string in
     charset = Utils.GetCharSet(mlist.preferred_language)
+    
+    # Convert bytes to str if necessary
+    if isinstance(s, bytes):
+        try:
+            s = s.decode(charset, 'replace')
+        except UnicodeError:
+            s = s.decode('utf-8', 'replace')
+    
+    # Check for non-ASCII characters
     if nonascii.search(s):
         # use list charset but ...
         if charset == 'us-ascii':
@@ -65,12 +92,13 @@ def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     else:
         # there is no nonascii so ...
         charset = 'us-ascii'
+    
     try:
-        return Header(s, charset, maxlinelen, header_name, continuation_ws)
+        return email.header.Header(s, charset, maxlinelen, header_name, continuation_ws)
     except UnicodeError:
         syslog('error', 'list: %s: can\'t decode "%s" as %s',
                mlist.internal_name(), s, charset)
-        return Header('', charset, maxlinelen, header_name, continuation_ws)
+        return email.header.Header('', charset, maxlinelen, header_name, continuation_ws)
 
 def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
     if ((msgdata.get('from_is_list') == 2 or
@@ -486,26 +514,33 @@ def prefix_subject(mlist, msg, msgdata):
     msgdata['stripped_subject'] = ss
 
 
-def ch_oneline(headerstr):
-    # Decode header string in one line and convert into single charset
-    # copied and modified from ToDigest.py and Utils.py
-    # return (string, cset) tuple as check for failure
+def ch_oneline(headerstr: Union[str, bytes]) -> Tuple[bytes, str]:
+    """Decode header string in one line and convert into single charset.
+    
+    Args:
+        headerstr: The header string to decode
+        
+    Returns:
+        Tuple[bytes, str]: The encoded string and the charset used
+    """
     try:
-        d = decode_header(headerstr)
-        # at this point, we should rstrip() every string because some
-        # MUA deliberately add trailing spaces when composing return
-        # message.
-        d = [(s.rstrip(), c) for (s,c) in d]
+        d = email.header.decode_header(headerstr)
+        # Strip trailing spaces from each part
+        d = [(s.rstrip(), c) for (s, c) in d]
+        
+        # Find the first non-None charset
         cset = 'us-ascii'
-        for x in d:
-            # search for no-None charset
-            if x[1]:
-                cset = x[1]
+        for _, c in d:
+            if c:
+                cset = c
                 break
-        h = make_header(d)
-        ustr = h.__unicode__()
-        oneline = u''.join(ustr.splitlines())
+                
+        h = email.header.make_header(d)
+        ustr = str(h)
+        oneline = ''.join(ustr.splitlines())
         return oneline.encode(cset, 'replace'), cset
-    except (LookupError, UnicodeError, ValueError, HeaderParseError):
-        # possibly charset problem. return with undecoded string in one line.
-        return ''.join(headerstr.splitlines()), 'us-ascii'
+    except (LookupError, UnicodeError, ValueError, email.errors.HeaderParseError):
+        # Handle charset problems by returning undecoded string in one line
+        if isinstance(headerstr, bytes):
+            return headerstr, 'us-ascii'
+        return headerstr.encode('us-ascii', 'replace'), 'us-ascii'

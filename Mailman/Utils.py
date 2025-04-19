@@ -891,9 +891,17 @@ def percent_identifiers(s):
 
 # Utilities to canonicalize a string, which means un-HTML-ifying the string to
 # produce a Unicode string or an 8-bit string if all the characters are ASCII.
-def canonstr(s, lang=None):
+def canonstr(s: Union[str, bytes], lang: Optional[str] = None) -> str:
     """Convert a string to unicode, using the charset specified in the language.
-    If the string is already unicode, it is returned unchanged.
+    
+    Args:
+        s: The input string, which can be either str or bytes
+        lang: Optional language code to determine the charset
+        
+    Returns:
+        str: The decoded string in Unicode
+        
+    If the string is already unicode (str), it is returned unchanged.
     If the string is not unicode, it is decoded using the charset specified in
     the language, or utf-8 if no language is specified.
     """
@@ -909,9 +917,18 @@ def canonstr(s, lang=None):
 # charset of the given language, which is the character set that the page will
 # be rendered in, and failing that, replaces non-ASCII characters with their
 # html references.  It always returns a byte string.
-def uncanonstr(s, lang=None):
+def uncanonstr(s: Union[str, bytes], lang: Optional[str] = None) -> bytes:
     """Convert a unicode string to a byte string, using the charset specified
-    in the language.  If the string is not unicode, it is returned unchanged.
+    in the language.
+    
+    Args:
+        s: The input string, which can be either str or bytes
+        lang: Optional language code to determine the charset
+        
+    Returns:
+        bytes: The encoded string
+        
+    If the string is not unicode (str), it is returned unchanged.
     """
     if not isinstance(s, str):
         return s
@@ -921,7 +938,16 @@ def uncanonstr(s, lang=None):
     return s.encode(charset, 'replace')
 
 
-def uquote(s):
+def uquote(s: str) -> str:
+    """Convert a string to HTML-safe form by replacing non-ASCII characters
+    with their HTML entity references.
+    
+    Args:
+        s: The input string
+        
+    Returns:
+        str: The HTML-safe string
+    """
     a = []
     for c in s:
         o = ord(c)
@@ -929,16 +955,23 @@ def uquote(s):
             a.append('&#%3d;' % o)
         else:
             a.append(c)
-    # Join characters together and coerce to byte string
-    return str(EMPTYSTRING.join(a))
+    return ''.join(a)
 
 
-def oneline(s, cset):
-    """Decode header string in one line and convert into specified charset."""
+def oneline(s: Union[str, bytes], cset: str) -> Tuple[bytes, str]:
+    """Decode header string in one line and convert into specified charset.
+    
+    Args:
+        s: The input string or bytes
+        cset: The target charset
+        
+    Returns:
+        Tuple[bytes, str]: The encoded string and the charset used
+    """
     try:
         h = email.Header.make_header(email.Header.decode_header(s))
         ustr = str(h)
-        oneline = EMPTYSTRING.join(ustr.splitlines())
+        oneline = ''.join(ustr.splitlines())
         return oneline.encode(cset, 'replace'), cset
     except (LookupError, UnicodeError, ValueError, email.errors.HeaderParseError):
         return s.encode(cset, 'replace'), cset
@@ -1479,9 +1512,17 @@ def _invert_xml(mo):
         return(u'\ufffd')
 
 
-def xml_to_unicode(s, cset):
+def xml_to_unicode(s: Union[str, bytes], cset: str) -> str:
     """Convert a string to unicode, using the charset specified.
-    If the string is already unicode, it is returned unchanged.
+    
+    Args:
+        s: The input string or bytes
+        cset: The charset to use for decoding
+        
+    Returns:
+        str: The decoded string
+        
+    If the string is already unicode (str), it is returned unchanged.
     """
     if isinstance(s, str):
         return s

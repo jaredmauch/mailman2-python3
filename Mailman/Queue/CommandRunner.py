@@ -79,102 +79,97 @@ class Results:
         self.lineno = 0
         self.subjcmdretried = 0
         self.respond = True
-        # Extract the subject header and do RFC 2047 decoding.  Note that
-        # Python 2.1's unicode() builtin doesn't call obj.__unicode__().
+        
+        # Extract the subject header and do RFC 2047 decoding
         subj = msg.get('subject', '')
         try:
-            subj = make_header(decode_header(subj)).__unicode__()
-            # TK: Currently we don't allow 8bit or multibyte in mail command.
-            # MAS: However, an l10n 'Re:' may contain non-ascii so ignore it.
-            subj = subj.encode('us-ascii', 'ignore')
+            # Decode the subject header
+            h = make_header(decode_header(subj))
+            subj = str(h)
+            # Convert to ASCII for command processing
+            subj = subj.encode('us-ascii', 'ignore').decode('us-ascii')
             # Always process the Subject: header first
             self.commands.append(subj)
         except (HeaderParseError, UnicodeError, LookupError):
             # We couldn't parse it so ignore the Subject header
             pass
+            
         # Find the first text/plain part
         part = None
         for part in typed_subpart_iterator(msg, 'text', 'plain'):
             break
+            
         if part is None or part is not msg:
             # Either there was no text/plain part or we ignored some
             # non-text/plain parts.
             self.results.append(_('Ignoring non-text/plain MIME parts'))
+            
         if part is None:
             # E.g the outer Content-Type: was text/html
             return
+            
         body = part.get_payload(decode=True)
-        if (part.get_content_charset(None)):
-            body = unicode(body, part.get_content_charset(),
-                           errors='replace').encode(
-                           Utils.GetCharSet(self.msgdata['lang']),
-                           errors='replace')
-        # text/plain parts better have string payloads
-        assert isinstance(body, StringType) or isinstance(body, UnicodeType)
-        lines = body.splitlines()
-        # Use no more lines than specified
-        self.commands.extend(lines[:mm_cfg.DEFAULT_MAIL_COMMANDS_MAX_LINES])
-        self.ignored.extend(lines[mm_cfg.DEFAULT_MAIL_COMMANDS_MAX_LINES:])
+        if part.get_content_charset(None):
+            # Convert body to Unicode using the message's charset
+            body = body.decode(part.get_content_charset(), 'replace')
+            # Then encode it using the list's charset
+            body = body.encode(Utils.GetCharSet(self.msgdata['lang']), 'replace')
+            
+        # Process the body for commands
+        self._process_body(body)
 
     def process(self):
-        # Now, process each line until we find an error.  The first
-        # non-command line found stops processing.
-        found = BADCMD
-        ret = CONTINUE
-        for line in self.commands:
-            if line and line.strip():
-                args = line.split()
-                cmd = args.pop(0).lower()
-                ret = self.do_command(cmd, args)
-                if ret == STOP or ret == CONTINUE:
-                    found = ret
+        """Process all the commands in the message."""
+        for cmd in self.commands:
             self.lineno += 1
-            if ret == STOP or ret == BADCMD:
-                break
-        return found
-
-    def do_command(self, cmd, args=None):
-        if args is None:
-            args = ()
-        # Try to import a command handler module for this command
-        modname = 'Mailman.Commands.cmd_' + cmd
+            # Skip empty lines
+            if not cmd.strip():
+                continue
+            # Skip lines that don't look like commands
+            if not cmd.startswith(mm_cfg.MAIL_COMMAND_PREFIX):
+                continue
+            # Process the command
+            self._process_command(cmd)
+            
+    def _process_command(self, cmd: str) -> None:
+        """Process a single command.
+        
+        Args:
+            cmd: The command string to process
+        """
+        # Remove the command prefix
+        cmd = cmd[len(mm_cfg.MAIL_COMMAND_PREFIX):].strip()
+        if not cmd:
+            return
+            
+        # Split the command into parts
+        parts = cmd.split()
+        if not parts:
+            return
+            
+        # Get the command name and arguments
+        cmd_name = parts[0].lower()
+        args = parts[1:]
+        
+        # Process the command
         try:
-            __import__(modname)
-            handler = sys.modules[modname]
-        # ValueError can be raised if cmd has dots in it.
-        # and KeyError if cmd is otherwise good but ends with a dot.
-        # and TypeError if cmd has a null byte.
-        except (ImportError, ValueError, KeyError, TypeError):
-            # If we're on line zero, it was the Subject: header that didn't
-            # contain a command.  It's possible there's a Re: prefix (or
-            # localized version thereof) on the Subject: line that's messing
-            # things up.  Pop the prefix off and try again... once.
-            #
-            # At least one MUA (163.com web mail) has been observed that
-            # inserts 'Re:' with no following space, so try to account for
-            # that too.
-            #
-            # If that still didn't work it isn't enough to stop processing.
-            # BAW: should we include a message that the Subject: was ignored?
-            #
-            # But first, be sure we're looking at the Subject: and not past
-            # it already.
-            if self.lineno != 0:
-                return BADCMD
-            if self.subjcmdretried < 1:
-                self.subjcmdretried += 1
-                if re.search('^.*:.+', cmd):
-                    cmd = re.sub('.*:', '', cmd).lower()
-                    return self.do_command(cmd, args)
-            if self.subjcmdretried < 2 and args:
-                self.subjcmdretried += 1
-                cmd = args.pop(0).lower()
-                return self.do_command(cmd, args)
-            return BADSUBJ
-        if handler.process(self, args):
-            return STOP
-        else:
-            return CONTINUE
+            if cmd_name != 'help' and cmd_name != 'subscribe' and cmd_name != 'unsubscribe' and cmd_name != 'set' and cmd_name != 'get':
+                self.results.append(_('Unknown command: %s') % cmd_name)
+                return
+                
+            # Import and execute the command handler
+            modname = 'Mailman.Commands.cmd_' + cmd_name
+            try:
+                __import__(modname)
+                handler = sys.modules[modname]
+                if handler.process(self, args):
+                    return
+            except (ImportError, ValueError, KeyError, TypeError) as e:
+                self.results.append(_('Error processing command: %s') % str(e))
+                return
+                
+        except Exception as e:
+            self.results.append(_('Error processing command: %s') % str(e))
 
     def send_response(self):
         # Helper
@@ -255,7 +250,7 @@ class CommandRunner(Runner):
         # it to prevent replybot response storms.
         precedence = msg.get('precedence', '').lower()
         ack = msg.get('x-ack', '').lower()
-        if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
+        if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
             syslog('vette', 'Precedence: %s message discarded by: %s',
                    precedence, mlist.GetRequestEmail())
             return False

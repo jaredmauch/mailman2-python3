@@ -114,10 +114,10 @@ def process(mlist, msg, msgdata):
             mboxfp.seek(0)
             send_digests(mlist, mboxfp)
             os.unlink(mboxfile)
-        except Exception, errmsg:
+        except (IOError, OSError) as e:
             # Bare except is generally prohibited in Mailman, but we can't
             # forecast what exceptions can occur here.
-            syslog('error', 'send_digests() failed: %s', errmsg)
+            syslog('error', 'send_digests() failed: %s', e)
             s = StringIO()
             traceback.print_exc(file=s)
             syslog('error', s.getvalue())
@@ -135,11 +135,11 @@ def send_digests(mlist, mboxfp):
         if freq == 0 and timetup[0] < now[0]:
             # Yearly
             bump = True
-        elif freq == 1 and timetup[1] <> now[1]:
+        elif freq == 1 and timetup[1] != now[1]:
             # Monthly, but we take a cheap way to calculate this.  We assume
             # that the clock isn't going to be reset backwards.
             bump = True
-        elif freq == 2 and (timetup[1] % 4 <> now[1] % 4):
+        elif freq == 2 and (timetup[1] % 4 != now[1] % 4):
             # Quarterly, same caveat
             bump = True
         elif freq == 3:
@@ -148,7 +148,7 @@ def send_digests(mlist, mboxfp):
             weeknum_now = int(time.strftime('%W', now))
             if weeknum_now > weeknum_last or timetup[0] > now[0]:
                 bump = True
-        elif freq == 4 and timetup[7] <> now[7]:
+        elif freq == 4 and timetup[7] != now[7]:
             # Daily
             bump = True
         if bump:
@@ -305,7 +305,7 @@ def send_i18n_digests(mlist, mboxfp):
             for field in keeper[keep]:
                 msg[keep] = field
         # And a bit of extra stuff
-        msg['Message'] = `msgcount`
+        msg['Message'] = repr(msgcount)
         # Get the next message in the digest mailbox
         msg = mbox.next()
     # Now we're finished with all the messages in the digest.  First do some
@@ -356,15 +356,13 @@ def send_i18n_digests(mlist, mboxfp):
         payload = msg.get_payload(decode=True) \
                   or msg.as_string().split('\n\n',1)[1]
         mcset = msg.get_content_charset('')
-        if mcset and mcset <> lcset and mcset <> lcset_out:
+        if mcset and mcset != lcset and mcset != lcset_out:
             try:
-                payload = unicode(payload, mcset, 'replace'
-                          ).encode(lcset, 'replace')
+                payload = unicode(payload, mcset, 'replace').encode(lcset, 'replace')
             except (UnicodeError, LookupError):
                 # TK: Message has something unknown charset.
                 #     _out means charset in 'outer world'.
-                payload = unicode(payload, lcset_out, 'replace'
-                          ).encode(lcset, 'replace')
+                payload = unicode(payload, lcset_out, 'replace').encode(lcset, 'replace')
         print >> plainmsg, payload
         if not payload.endswith('\n'):
             print >> plainmsg
@@ -411,7 +409,7 @@ def send_i18n_digests(mlist, mboxfp):
         # user might be None if someone who toggled off digest delivery
         # subsequently unsubscribed from the mailing list.  Also, filter out
         # folks who have disabled delivery.
-        if user is None or mlist.getDeliveryStatus(user) <> ENABLED:
+        if user is None or mlist.getDeliveryStatus(user) != ENABLED:
             continue
         # Otherwise, decide whether they get MIME or RFC 1153 digests
         if mlist.getMemberOption(user, mm_cfg.DisableMime):
@@ -495,7 +493,7 @@ def main():
     oldmask = os.umask(0o007)
     try:
         os.makedirs(mlist.fullpath(), mode=0o2775)
-    except OSError as e:
+    except (IOError, OSError) as e:
         if e.errno != errno.EEXIST:
             raise
     finally:
