@@ -841,7 +841,7 @@ class HyperArchive(pipermail.T):
                          self.maillist.internal_name() + '-arch.lock'))
         try:
             self._lock_file.lock(timeout=0.5)
-        except (LockFile.TimeOutError:
+        except LockFile.TimeOutError:
             return 0
         return 1
 
