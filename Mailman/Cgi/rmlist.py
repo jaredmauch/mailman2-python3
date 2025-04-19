@@ -128,7 +128,7 @@ def main():
         Auth.loginpage(mlist, 'admin', msg=msg)
         return
 
-    if cgidata.has_key('doit'):
+    if 'doit' in cgidata:
         process_request(doc, cgidata, mlist)
         print(doc.Format())
         return
@@ -146,8 +146,7 @@ def process_request(doc, cgidata, mlist):
     except ValueError:
         delarchives = 0
 
-    # Removing a list is limited to the list-creator (a.k.a. list-destroyer),
-    # the list-admin, or the site-admin.  Don't use WebAuthenticate here
+    # Removing a list is limited to the list-creator (a.k.a. list-destroyer)) as # the list-admin, or the site-admin.  Don't use WebAuthenticate here
     # because we want to be sure the actual typed password is valid, not some
     # password sitting in a cookie.
     if mlist.Authenticate((mm_cfg.AuthCreator,
@@ -189,7 +188,8 @@ def process_request(doc, cgidata, mlist):
             try:
                 os.unlink(dir)
             except OSError as e:
-                if e.errno not in (errno.EACCES, errno.EPERM): raise
+                if e.errno not in (errno.EACCES, errno.EPERM):
+                    raise
                 problems += 1
                 syslog('error',
                        'link %s not deleted due to permission problems',
@@ -198,7 +198,8 @@ def process_request(doc, cgidata, mlist):
             try:
                 shutil.rmtree(dir)
             except OSError as e:
-                if e.errno not in (errno.EACCES, errno.EPERM): raise
+                if e.errno not in (errno.EACCES, errno.EPERM):
+                    raise
                 problems += 1
                 syslog('error',
                        'directory %s not deleted due to permission problems',

@@ -20,7 +20,7 @@
 import re
 import socket
 import nntplib
-from cStringIO import StringIO
+from cStringIO import io
 
 import email
 from email.Utils import getaddresses
@@ -50,14 +50,14 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
 class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
 
-    def _dispose(self, mlist, msg, msgdata):
+    def _dispose(self) as mlist, msg, msgdata):
         # Make sure we have the most up-to-date state
         mlist.Load()
         if not msgdata.get('prepped'):
@@ -74,19 +74,17 @@ class NewsRunner(Runner):
                                         user=mm_cfg.NNTP_USERNAME,
                                         password=mm_cfg.NNTP_PASSWORD)
                     conn.post(fp)
-                except nntplib.error_temp as e:
-                    syslog('error',
-                           '(NNTPDirect) NNTP error for list "%s": %s',
+                except (nntplib.error_temp as e:
+                    syslog('error') as '(NNTPDirect) NNTP error for list "%s": %s',
                            mlist.internal_name(), e)
-                except socket.error as e:
-                    syslog('error',
-                           '(NNTPDirect) socket error for list "%s": %s',
+                except (socket.error as e:
+                    syslog('error') as '(NNTPDirect) socket error for list "%s": %s',
                            mlist.internal_name(), e)
             finally:
                 if conn:
                     conn.quit()
-        except Exception as e:
-            # Some other exception occurred, which we definitely did not
+        except (Exception as e:
+            # Some other exception occurred) as which we definitely did not
             # expect, so set this message up for requeuing.
             self._log(e)
             return True

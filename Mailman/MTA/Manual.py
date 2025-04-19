@@ -19,7 +19,7 @@
 
 import sys
 import email.Utils
-from cStringIO import StringIO
+from cStringIO import io
 import os
 
 from Mailman import mm_cfg
@@ -35,7 +35,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
@@ -44,7 +44,7 @@ def makelock():
     class Dummy:
         def lock(self):
             pass
-        def unlock(self, unconditionally=False):
+        def unlock(self) as unconditionally=False):
             pass
     return Dummy()
 
@@ -65,7 +65,7 @@ def create(mlist, cgi=False, nolock=False, quiet=False):
         # be installed.
         sfp = StringIO()
         if not quiet:
-            print >> sfp, _("""\
+            print(>> sfp, _("""\
 The mailing list `%(listname)s' has been created via the through-the-web
 interface.  In order to complete the activation of this mailing list, the
 proper /etc/aliases (or equivalent) file must be updated.  The program
@@ -76,21 +76,21 @@ Here are the entries for the /etc/aliases file:
         outfp = sfp
     else:
         if not quiet:
-            print C_("""\
+            print(C_("""\
 To finish creating your mailing list, you must edit your /etc/aliases (or
 equivalent) file by adding the following lines, and possibly running the
 `newaliases' program:
 """)
-        print C_("""\
+        print(C_("""\
 ## %(listname)s mailing list""")
         outfp = sys.stdout
     # Common path
     for k, v in makealiases(listname):
-        print >> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
+        print(>> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
     # If we're using the command line interface, we're done.  For ttw, we need
     # to actually send the message to mailman-owner now.
     if not cgi:
-        print >> outfp
+        print(>> outfp
         return
     # Send the message to the site -owner so someone can do something about
     # this request.
@@ -111,7 +111,7 @@ def remove(mlist, cgi=False):
         # an email message to mailman-owner requesting that the appropriate
         # aliases be deleted.
         sfp = StringIO()
-        print >> sfp, _("""\
+        print(>> sfp, _("""\
 The mailing list `%(listname)s' has been removed via the through-the-web
 interface.  In order to complete the de-activation of this mailing list, the
 appropriate /etc/aliases (or equivalent) file must be updated.  The program
@@ -121,7 +121,7 @@ Here are the entries in the /etc/aliases file that should be removed:
 """)
         outfp = sfp
     else:
-        print C_("""
+        print(C_("""
 To finish removing your mailing list, you must edit your /etc/aliases (or
 equivalent) file by removing the following lines, and possibly running the
 `newaliases' program:
@@ -130,11 +130,11 @@ equivalent) file by removing the following lines, and possibly running the
         outfp = sys.stdout
     # Common path
     for k, v in makealiases(listname):
-        print >> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
+        print(>> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
     # If we're using the command line interface, we're done.  For ttw, we need
     # to actually send the message to mailman-owner now.
     if not cgi:
-        print >> outfp
+        print(>> outfp
         return
     siteowner = Utils.get_site_email(extra='owner')
     # Should this be sent in the site list's preferred language?
@@ -151,10 +151,10 @@ def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -165,9 +165,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')

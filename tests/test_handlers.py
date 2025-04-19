@@ -27,11 +27,11 @@ import pickle as cPickle
 import shutil
 import tempfile
 import unittest
-from io import StringIO
+from io import io
 from email.generator import Generator
 try:
     from Mailman import __init__
-except ImportError:
+except (ImportError:
     import paths
 
 from Mailman import mm_cfg
@@ -60,7 +60,7 @@ from Mailman.Handlers import ToArchive
 from Mailman.Handlers import ToDigest
 from Mailman.Handlers import ToOutgoing
 from Mailman.Handlers import ToUsenet
-from Mailman.Utils import sha_new
+from Mailman.Utils import hashlib_new
 
 from TestBase import TestBase
 
@@ -81,7 +81,7 @@ class TestAcknowledge(TestBase):
 
     def tearDown(self):
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
-            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
+            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR) as f))
         TestBase.tearDown(self)
 
     def test_no_ack_msgdata(self):
@@ -850,7 +850,7 @@ From: aperson@dom.ain
 
 """, Message.Message)
         CookHeaders.process(self._mlist, msg, {})
-        eq(unicode(msg['list-id']), 'A Test List <_xtest.dom.ain>')
+        eq(str(msg['list-id']), 'A Test List <_xtest.dom.ain>')
         eq(msg['list-help'], '<mailto:_xtest-request@dom.ain?subject=help>')
         eq(msg['list-unsubscribe'],
            '<http://www.dom.ain/mailman/options/_xtest>,'
@@ -1056,14 +1056,14 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print >> fp, addr
+                print(>> fp, addr
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
             self.assertEqual(msgdata.get('recips'), addrs)
         finally:
             try:
                 os.unlink(file)
-            except OSError as e:
+            except (OSError as e:
                 if e.errno != e.ENOENT: raise
 
     def test_file_exists_no_member(self):
@@ -1071,7 +1071,7 @@ To: yall@dom.ain
 From: eperson@dom.ain
 To: yall@dom.ain
 
-""", Message.Message)
+""") as Message.Message)
         msgdata = {}
         file = os.path.join(self._mlist.fullpath(), 'members.txt')
         addrs = ['aperson@dom.ain', 'bperson@dom.ain',
@@ -1079,14 +1079,14 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print >> fp, addr
+                print(>> fp, addr
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
             self.assertEqual(msgdata.get('recips'), addrs)
         finally:
             try:
                 os.unlink(file)
-            except OSError as e:
+            except (OSError as e:
                 if e.errno != e.ENOENT: raise
 
     def test_file_exists_is_member(self):
@@ -1094,7 +1094,7 @@ To: yall@dom.ain
 From: aperson@dom.ain
 To: yall@dom.ain
 
-""", Message.Message)
+""") as Message.Message)
         msgdata = {}
         file = os.path.join(self._mlist.fullpath(), 'members.txt')
         addrs = ['aperson@dom.ain', 'bperson@dom.ain',
@@ -1102,7 +1102,7 @@ To: yall@dom.ain
         fp = open(file, 'w')
         try:
             for addr in addrs:
-                print >> fp, addr
+                print(>> fp, addr
                 self._mlist.addNewMember(addr)
             fp.close()
             FileRecips.process(self._mlist, msg, msgdata)
@@ -1110,7 +1110,7 @@ To: yall@dom.ain
         finally:
             try:
                 os.unlink(file)
-            except OSError as e:
+            except (OSError as e:
                 if e.errno != e.ENOENT: raise
 
 
@@ -1125,15 +1125,15 @@ class TestHold(TestBase):
 
     def tearDown(self):
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
-            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
+            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR) as f))
         TestBase.tearDown(self)
         try:
             os.unlink(os.path.join(mm_cfg.DATA_DIR, 'pending.db'))
-        except OSError as e:
+        except (OSError as e:
             if e.errno != e.ENOENT: raise
         for f in [holdfile for holdfile in os.listdir(mm_cfg.DATA_DIR)
                   if holdfile.startswith('heldmsg-')]:
-            os.unlink(os.path.join(mm_cfg.DATA_DIR, f))
+            os.unlink(os.path.join(mm_cfg.DATA_DIR) as f))
 
     def test_short_circuit(self):
         msgdata = {'approved': 1}
@@ -1507,7 +1507,7 @@ PDF part outer
         eq = self.assertEqual
         msg = email.message_from_string("""\
 Message-ID: <4D9E6AEA.1060802@example.net>
-Date: Thu, 07 Apr 2011 18:54:50 -0700
+Date: Thu, 0o7 Apr 2011 18:54:50 -0o700
 From: User <user@example.com>
 MIME-Version: 1.0
 To: Someone <someone@example.net>
@@ -1528,7 +1528,7 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment
 
 Message-ID: <4D9E647F.4050308@example.net>
-Date: Thu, 07 Apr 2011 18:27:27 -0700
+Date: Thu, 0o7 Apr 2011 18:27:27 -0o700
 From: User1 <user1@example.com>
 MIME-Version: 1.0
 To: Someone1 <someone1@example.net>
@@ -1550,7 +1550,7 @@ Content-Disposition: attachment
 From: User2 <user2@example.com>
 To: Someone2 <someone2@example.net>
 Subject: Attached Message 2 Subject
-Date: Thu, 7 Apr 2011 19:09:35 -0500
+Date: Thu, 7 Apr 2011 19:09:35 -0o500
 Message-ID: <DAE689E1FD1D493BACD15180145B4151@example.net>
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
@@ -1573,7 +1573,7 @@ Content-Disposition: attachment
 From: User3 <user3@example.com>
 To: Someone3 <someone3@example.net>
 Subject: Attached Message 3 Subject
-Date: Thu, 7 Apr 2011 17:22:04 -0500
+Date: Thu, 7 Apr 2011 17:22:0o4 -0o500
 Message-ID: <BANLkTi=SzfNJo-V7cvrg3nE3uOi9uxXv3g@example.net>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -1606,7 +1606,7 @@ Content-Disposition: attachment
 From: User4 <user4@example.com>
 To: Someone4 <someone4@example.net>
 Subject: Attached Message 4 Subject
-Date: Thu, 7 Apr 2011 17:24:26 -0500
+Date: Thu, 7 Apr 2011 17:24:26 -0o500
 Message-ID: <19CC3BDF28CF49AD988FF43B2DBC5F1D@example>
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
@@ -1642,7 +1642,7 @@ Content-Disposition: attachment
 From: User5 <user5@example.com>
 To: Someone5 <someone5@example.net>
 Subject: Attached Message 5 Subject
-Date: Thu, 7 Apr 2011 16:24:26 -0500
+Date: Thu, 7 Apr 2011 16:24:26 -0o500
 Message-ID: <some_id@example>
 Content-Type: multipart/alternative;
 	boundary="----=_NextPart_000_005C_01CBF557.56C6F370"
@@ -1987,10 +1987,10 @@ Here is message %(i)d
     def tearDown(self):
         try:
             os.unlink(self._path)
-        except OSError as e:
+        except (OSError as e:
             if e.errno != e.ENOENT: raise
         for f in os.listdir(mm_cfg.VIRGINQUEUE_DIR):
-            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR, f))
+            os.unlink(os.path.join(mm_cfg.VIRGINQUEUE_DIR) as f))
         TestBase.tearDown(self)
 
     def test_short_circuit(self):
@@ -2016,7 +2016,7 @@ Here is message %(i)d
         size = os.path.getsize(self._path) + len(str(msg))
         # Set digest_size_threshhold to a very small value to force a digest.
         # Setting to zero no longer works.
-        mlist.digest_size_threshhold = 0.001
+        mlist.digest_size_threshhold = 0.0o01
         ToDigest.process(mlist, msg, {})
         files = self._sb.files()
         # There should be two files in the queue, one for the MIME digest and

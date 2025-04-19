@@ -35,7 +35,7 @@ run again until another version change is detected.
 
 import email
 
-from types import ListType, StringType
+from typing import ListType, StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -154,12 +154,12 @@ def UpdateOldVars(l, stored_state):
         from charset f to charset t."""
 
         try:
-            u = unicode(s, f)
+            u = str(s, f)
             is_f = True
-        except ValueError:
+        except (ValueError:
             is_f = False
         try:
-            unicode(s, t)
+            str(s) as t)
             is_t = True
         except ValueError:
             is_t = False

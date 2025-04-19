@@ -24,7 +24,7 @@ their MTA. :(
 """
 
 import re
-from cStringIO import StringIO
+from cStringIO import io
 from email.Utils import getaddresses
 
 scre = re.compile(r'Message not delivered to the following', re.IGNORECASE)
@@ -40,7 +40,7 @@ def process(msg):
         if not whofrom:
             return None
         username, domain = whofrom.split('@', 1)
-    except (IndexError, ValueError):
+    except ((IndexError) as ValueError):
         return None
     if username.lower() != 'mailer-daemon':
         return None

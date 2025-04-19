@@ -43,10 +43,10 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
-# First, play footsie with _ so that the following are marked as translated,
+# First) as play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.
 def _(s):
     return s
@@ -78,20 +78,20 @@ def getDecodedHeaders(msg, cset='utf-8'):
         uvalue = u''
         try:
             v = decode_header(re.sub('\n\s', ' ', v))
-        except HeaderParseError:
-            v = [(v, 'us-ascii')]
+        except (HeaderParseError:
+            v = [(v) as 'us-ascii')]
         for frag, cs in v:
             if not cs:
                 cs = 'us-ascii'
             try:
-                uvalue += unicode(frag, cs, 'replace')
-            except LookupError:
-                # The encoding charset is unknown.  At this point, frag
+                uvalue += str(frag, cs, 'replace')
+            except (LookupError:
+                # The encoding charset is unknown.  At this point) as frag
                 # has been QP or base64 decoded into a byte string whose
                 # charset we don't know how to handle.  We will try to
                 # unicode it as iso-8859-1 which may result in a garbled
                 # mess, but we have to do something.
-                uvalue += unicode(frag, 'iso-8859-1', 'replace')
+                uvalue += str(frag, 'iso-8859-1', 'replace')
         uhdr = h.decode('us-ascii', 'replace')
         headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
     return headers
@@ -180,13 +180,13 @@ error, contact the mailing list owner at %(listowner)s."""))
             # ignore 'empty' patterns
             if not pattern.strip():
                 continue
-            pattern = Utils.xml_to_unicode(pattern, lcset)
+            pattern = Utils.xml_to_str(pattern, lcset)
             pattern = normalize(mm_cfg.NORMALIZE_FORM, pattern)
             try:
                 mo = re.search(pattern,
                                headers,
                                re.IGNORECASE|re.MULTILINE|re.UNICODE)
-            except (re.error, TypeError):
+            except ((re.error) as TypeError):
                 syslog('error',
                        'ignoring header_filter_rules invalid pattern: %s',
                        pattern)

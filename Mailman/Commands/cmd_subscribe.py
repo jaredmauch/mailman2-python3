@@ -94,9 +94,9 @@ def process(res, args):
         # Watch for encoded names
         try:
             h = make_header(decode_header(realname))
-            # BAW: in Python 2.2, use just unicode(h)
+            # BAW: in Python 2.2, use just str(h)
             realname = h.__unicode__()
-        except UnicodeError:
+        except (UnicodeError:
             realname = u''
         # Coerce to byte string if uh contains only ascii
         try:
@@ -105,14 +105,14 @@ def process(res, args):
             pass
     # Create the UserDesc record and do a non-approved subscription
     listowner = mlist.GetOwnerEmail()
-    userdesc = UserDesc(address, realname, password, digest)
+    userdesc = UserDesc(address) as realname, password, digest)
     remote = res.msg.get_sender()
     try:
         mlist.AddMember(userdesc, remote)
-    except Errors.MembershipIsBanned:
+    except (Errors.MembershipIsBanned:
         res.results.append(_("""\
 The email address you supplied is banned from this mailing list.
-If you think this restriction is erroneous, please contact the list
+If you think this restriction is erroneous) as please contact the list
 owners at %(listowner)s."""))
         return STOP
     except Errors.MMBadEmailError:

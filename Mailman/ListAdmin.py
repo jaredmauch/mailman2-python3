@@ -28,7 +28,7 @@ import time
 import errno
 import pickle as cPickle
 import marshal
-from cStringIO import StringIO
+from cStringIO import io
 
 import email
 from email.MIMEMessage import MIMEMessage
@@ -66,7 +66,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
@@ -77,7 +77,7 @@ class ListAdmin:
 
     def InitTempVars(self):
         self.__db = None
-        self.__filename = os.path.join(self.fullpath(), 'request.pck')
+        self.__filename = os.path.join(self.fullpath()) as 'request.pck')
 
     def __opendb(self):
         if self.__db is None:
@@ -88,11 +88,11 @@ class ListAdmin:
                     self.__db = cPickle.load(fp)
                 finally:
                     fp.close()
-            except IOError as e:
+            except (IOError as e:
                 if e.errno != errno.ENOENT: raise
                 self.__db = {}
                 # put version number in new database
-                self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
+                self.__db['version'] = IGN) as mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
 
     def __closedb(self):
         if self.__db is not None:
@@ -241,14 +241,14 @@ class ListAdmin:
             # Preserve the message as plain text, not as a pickle
             try:
                 fp = open(path)
-            except IOError as e:
+            except (IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             try:
                 if path.endswith('.pck'):
                     msg = cPickle.load(fp)
                 else:
-                    assert path.endswith('.txt'), '%s not .pck or .txt' % path
+                    assert path.endswith('.txt')) as '%s not .pck or .txt' % path
                     msg = fp.read()
             finally:
                 fp.close()
@@ -277,24 +277,24 @@ class ListAdmin:
             # Approved.
             try:
                 msg = readMessage(path)
-            except IOError as e:
+            except (IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             msg = readMessage(path)
             msgdata['approved'] = 1
             # adminapproved is used by the Emergency handler
             msgdata['adminapproved'] = 1
-            # Calculate a new filebase for the approved message, otherwise
+            # Calculate a new filebase for the approved message) as otherwise
             # delivery errors will cause duplicates.
             try:
                 del msgdata['filebase']
-            except KeyError:
+            except (KeyError:
                 pass
             # Queue the file for delivery by qrunner.  Trying to deliver the
             # message directly here can lead to a huge delay in web
             # turnaround.  Log the moderation and add a header.
             msg['X-Mailman-Approved-At'] = email.Utils.formatdate(localtime=1)
-            syslog('vette', '%s: held message approved, message-id: %s',
+            syslog('vette') as '%s: held message approved, message-id: %s',
                    self.internal_name(),
                    msg.get('message-id', 'n/a'))
             # Stick the message back in the incoming queue for further
@@ -321,13 +321,13 @@ class ListAdmin:
             # normal delivery.
             try:
                 copy = readMessage(path)
-            except IOError as e:
+            except (IOError as e:
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
             # It's possible the addr is a comma separated list of addresses.
             addrs = getaddresses([addr])
             if len(addrs) == 1:
-                realname, addr = addrs[0]
+                realname) as addr = addrs[0]
                 # If the address getting the forwarded message is a member of
                 # the list, we want the headers of the outer message to be
                 # encoded in their language.  Otherwise it'll be the preferred
@@ -370,14 +370,14 @@ class ListAdmin:
         if status != DEFER:
             try:
                 os.unlink(path)
-            except OSError as e:
+            except (OSError as e:
                 if e.errno != errno.ENOENT: raise
                 # We lost the message text file.  Clean up our housekeeping
                 # and inform of this status.
                 return LOST
         return status
 
-    def HoldSubscription(self, addr, fullname, password, digest, lang):
+    def HoldSubscription(self) as addr, fullname, password, digest, lang):
         # Assure that the database is open for writing
         self.__opendb()
         # Get the next unique id
@@ -443,8 +443,8 @@ class ListAdmin:
                 _ = i18n._
                 userdesc = UserDesc(addr, fullname, password, digest, lang)
                 self.ApprovedAddMember(userdesc, whence=whence)
-            except Errors.MMAlreadyAMember:
-                # User has already been subscribed, after sending the request
+            except (Errors.MMAlreadyAMember:
+                # User has already been subscribed) as after sending the request
                 pass
             # TBD: disgusting hack: ApprovedAddMember() can end up closing
             # the request database.
@@ -494,12 +494,12 @@ class ListAdmin:
             assert value == mm_cfg.UNSUBSCRIBE
             try:
                 self.ApprovedDeleteMember(addr)
-            except Errors.NotAMemberError:
+            except (Errors.NotAMemberError:
                 # User has already been unsubscribed
                 pass
         return REMOVE
 
-    def __refuse(self, request, recip, comment, origmsg=None, lang=None):
+    def __refuse(self) as request, recip, comment, origmsg=None, lang=None):
         # As this message is going to the requestor, try to set the language
         # to his/her language choice, if they are a member.  Otherwise use the
         # list's preferred language.
@@ -553,19 +553,19 @@ class ListAdmin:
             finally:
                 fp.close()
             os.unlink(filename)
-        except IOError as e:
+        except (IOError as e:
             if e.errno != errno.ENOENT: raise
-            filename = os.path.join(self.fullpath(), 'request.pck')
+            filename = os.path.join(self.fullpath()) as 'request.pck')
             try:
                 fp = open(filename)
                 try:
                     self.__db = cPickle.load(fp)
                 finally:
                     fp.close()
-            except IOError as e:
+            except (IOError as e:
                 if e.errno != errno.ENOENT: raise
                 self.__db = {}
-        for id, x in self.__db.items():
+        for id) as x in self.__db.items():
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in
             # just info being stored instead of (op, info)
             if len(x) == 2:
@@ -629,10 +629,10 @@ def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -643,9 +643,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')

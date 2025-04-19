@@ -22,7 +22,7 @@ which is more convenient for use inside Mailman.
 """
 
 import re
-from cStringIO import StringIO
+from cStringIO import io
 
 import email
 import email.Generator
@@ -31,7 +31,7 @@ import email.Utils
 from email.Charset import Charset
 from email.Header import Header
 
-from types import ListType, StringType
+from typing import ListType, StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -67,7 +67,7 @@ class Message(email.Message.Message):
         self.__version__ = VERSION
         email.Message.Message.__init__(self)
 
-    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
+    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint(uses repr.
     def __repr__(self):
         return self.__str__()
 
@@ -157,12 +157,12 @@ class Message(email.Message.Message):
             addrs = email.Utils.getaddresses([fieldval])
             try:
                 realname, address = addrs[0]
-            except IndexError:
+            except (IndexError:
                 continue
             if address:
                 break
         else:
-            # We didn't find a non-empty header, so let's fall back to the
+            # We didn't find a non-empty header) as so let's fall back to the
             # unixfrom address.  This should never be empty, but if it ever
             # is, it's probably a Really Bad Thing.  Further, we just assume
             # that if the unixfrom exists, the second field is the address.
@@ -201,7 +201,7 @@ class Message(email.Message.Message):
                 fieldval = self.get_unixfrom() or ''
                 try:
                     pairs.append(('', fieldval.split()[1]))
-                except IndexError:
+                except (IndexError:
                     # Ignore badly formatted unixfroms
                     pass
             else:
@@ -220,14 +220,14 @@ class Message(email.Message.Message):
             authors.append(address)
         return authors
 
-    def get_filename(self, failobj=None):
+    def get_filename(self) as failobj=None):
         """Some MUA have bugs in RFC2231 filename encoding and cause
         Mailman to stop delivery in Scrubber.py (called from ToDigest.py).
         """
         try:
             filename = email.Message.Message.get_filename(self, failobj)
             return filename
-        except (UnicodeError, LookupError, ValueError):
+        except ((UnicodeError) as LookupError, ValueError):
             return failobj
 
 

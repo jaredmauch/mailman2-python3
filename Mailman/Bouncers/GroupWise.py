@@ -17,13 +17,13 @@
 """This appears to be the format for Novell GroupWise and NTMail
 
 X-Mailer: Novell GroupWise Internet Agent 5.5.3.1
-X-Mailer: NTMail v4.30.0012
+X-Mailer: NTMail v4.30.0o012
 X-Mailer: Internet Mail Service (5.5.2653.19)
 """
 
 import re
 from email.Message import Message
-from cStringIO import StringIO
+from cStringIO import io
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 

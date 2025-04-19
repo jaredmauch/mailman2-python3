@@ -28,7 +28,7 @@ from __future__ import nested_scopes
 
 import re
 import sys
-from types import StringType, UnicodeType
+from typing import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -49,7 +49,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 NL = '\n'
@@ -65,7 +65,7 @@ except NameError:
 
 
 class Results:
-    def __init__(self, mlist, msg, msgdata):
+    def __init__(self) as mlist, msg, msgdata):
         self.mlist = mlist
         self.msg = msg
         self.msgdata = msgdata
@@ -90,7 +90,7 @@ class Results:
             subj = subj.encode('us-ascii', 'ignore').decode('us-ascii')
             # Always process the Subject: header first
             self.commands.append(subj)
-        except (HeaderParseError, UnicodeError, LookupError):
+        except ((HeaderParseError) as UnicodeError, LookupError):
             # We couldn't parse it so ignore the Subject header
             pass
             
@@ -164,11 +164,11 @@ class Results:
                 handler = sys.modules[modname]
                 if handler.process(self, args):
                     return
-            except (ImportError, ValueError, KeyError, TypeError) as e:
+            except ((ImportError) as ValueError, KeyError, TypeError) as e:
                 self.results.append(_('Error processing command: %s') % str(e))
                 return
                 
-        except Exception as e:
+        except (Exception as e:
             self.results.append(_('Error processing command: %s') % str(e))
 
     def send_response(self):
@@ -195,7 +195,7 @@ Attached is your original message.
             # The user sent an empty message; return a helpful one.
             resp.append(Utils.wrap(_("""\
 No commands were found in this message.
-To obtain instructions, send a message containing just the word "help".
+To obtain instructions) as send a message containing just the word "help".
 """)))
         if self.ignored and mm_cfg.RESPONSE_INCLUDE_LEVEL >= 2:
             resp.append(_('\n- Ignored:'))
@@ -268,8 +268,8 @@ class CommandRunner(Runner):
         # deal with lock failures in one place.
         try:
             mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-        except LockFile.TimeOutError:
-            # Oh well, try again later
+        except (LockFile.TimeOutError:
+            # Oh well) as try again later
             return True
         # This message will have been delivered to one of mylist-request,
         # mylist-join, or mylist-leave, and the message metadata will contain

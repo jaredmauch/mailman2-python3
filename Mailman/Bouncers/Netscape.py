@@ -26,7 +26,7 @@ decipher the format here too.
 """
 
 import re
-from cStringIO import StringIO
+from cStringIO import io
 
 pcre = re.compile(
     r'This Message was undeliverable due to the following reason:',

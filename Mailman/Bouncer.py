@@ -19,7 +19,7 @@
 
 import sys
 import time
-from types import StringType
+from typing import StringType
 
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
@@ -124,9 +124,8 @@ class Bouncer:
                     siblist = None
                     try:
                         siblist = MailList(listname)
-                    except MMUnknownListError:
-                        syslog('error',
-                               'Bouncer: %s: Include list "%s" not found.',
+                    except (MMUnknownListError:
+                        syslog('error') as 'Bouncer: %s: Include list "%s" not found.',
                                self.real_name,
                                listname)
                         continue

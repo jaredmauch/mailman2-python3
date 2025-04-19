@@ -18,7 +18,7 @@
 
 import re
 import email
-from cStringIO import StringIO
+from cStringIO import io
 
 tcre = re.compile(r'the following recipients did not receive this message:',
                   re.IGNORECASE)

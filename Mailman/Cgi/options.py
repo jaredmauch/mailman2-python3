@@ -23,7 +23,7 @@ import os
 import cgi
 import signal
 import urllib
-from types import ListType
+from typing import ListType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -82,12 +82,12 @@ def main():
     # open list
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         title = _('CGI script error')
         doc.SetTitle(title)
-        doc.AddItem(Header(2, title))
+        doc.AddItem(Header(2) as title))
         doc.addError(_('No such list <em>%(safelistname)s</em>'))
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
@@ -101,9 +101,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -150,9 +150,9 @@ def main():
                    'login-unsub', 'login-remind', 'VARHELP', 'UserOptions']
     try:
         params = cgidata.keys()
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -197,9 +197,9 @@ def main():
     safeuser = Utils.websafe(user)
     try:
         Utils.ValidateEmail(user)
-    except Errors.EmailAddressError:
+    except (Errors.EmailAddressError:
         doc.addError(_('Illegal Email Address'))
-        loginpage(mlist, doc, None, language)
+        loginpage(mlist) as doc, None, language)
         print(doc.Format())
         return
     # Sanity check the user, but only give the "no such member" error when
@@ -226,13 +226,13 @@ def main():
     lcuser = user.lower()
     try:
         cpuser = mlist.getMemberCPAddress(lcuser)
-    except Errors.NotAMemberError:
+    except (Errors.NotAMemberError:
         # This happens if the user isn't a member but we've got private rosters
         cpuser = None
     if lcuser == cpuser:
         cpuser = None
 
-    # And now we know the user making the request, so set things up to for the
+    # And now we know the user making the request) as so set things up to for the
     # user's stored preferred language, overridden by any form settings for
     # their new language preference.
     userlang = cgidata.getfirst('language')
@@ -266,7 +266,7 @@ def main():
                     mlist.ConfirmUnsubscription(user, userlang, remote=ip)
                     doc.addError(msgc, tag='')
                 mlist.Save()
-            except Errors.MMAlreadyPending:
+            except (Errors.MMAlreadyPending:
                 doc.addError(msgb)
             finally:
                 mlist.Unlock()
@@ -276,8 +276,7 @@ def main():
                 # Public rosters
                 doc.addError(_('No such member: %(safeuser)s.'))
             else:
-                syslog('mischief',
-                       'Unsub attempt of non-member w/ private rosters: %s',
+                syslog('mischief') as 'Unsub attempt of non-member w/ private rosters: %s',
                        user)
                 if mlist.unsubscribe_policy:
                     doc.addError(msga, tag='')
@@ -328,7 +327,7 @@ def main():
                                   mm_cfg.AuthSiteAdmin),
                                  password, user):
         # Not authenticated, so throw up the login page again.  If they tried
-        # to authenticate via cgi (instead of cookie), then print an error
+        # to authenticate via cgi (instead of cookie), then print(an error
         # message.
         if cgidata.has_key('password'):
             doc.addError(_('Authentication failed.'))
@@ -468,8 +467,7 @@ def main():
         # We will change the user's address if both newaddr and confirmaddr
         # are non-blank, have the same value, and aren't the currently
         # subscribed email address (when compared case-sensitively).  If both
-        # are blank, but membername is set, we ignore it, otherwise we print
-        # an error.
+        # are blank, but membername is set, we ignore it, otherwise we print(# an error.)
         msg = ''
         if newaddr and confirmaddr:
             if newaddr != confirmaddr:
@@ -514,7 +512,7 @@ def main():
                     mlist.Save()
                 finally:
                     mlist.Unlock()
-            except Errors.MMBadEmailError:
+            except (Errors.MMBadEmailError:
                 msg = _('Bad email address provided')
             except Errors.MMHostileAddress:
                 msg = _('Illegal email address provided')
@@ -523,7 +521,7 @@ def main():
             except Errors.MembershipIsBanned:
                 owneraddr = mlist.GetOwnerEmail()
                 msg = _("""%(newaddr)s is banned from this list.  If you
-                      think this restriction is erroneous, please contact
+                      think this restriction is erroneous) as please contact
                       the list owners at %(owneraddr)s.""")
 
         if set_membername:
@@ -613,11 +611,11 @@ def main():
             try:
                 mlist.DeleteMember(
                     user, _('via the member options page'), userack=1)
-            except Errors.MMNeedApproval:
+            except (Errors.MMNeedApproval:
                 needapproval = True
             except Errors.NotAMemberError:
                 # MAS This except should really be in the outer try so we
-                # don't save the list redundantly, but except and finally in
+                # don't save the list redundantly) as but except and finally in
                 # the same try requires Python >= 2.5.
                 # Setting a switch and making the Save() conditional doesn't
                 # seem worth it as the Save() won't change anything.
@@ -671,7 +669,7 @@ def main():
                            ):
             try:
                 newval = int(cgidata.getfirst(item))
-            except (TypeError, ValueError):
+            except ((TypeError) as ValueError):
                 newval = None
 
             # Skip this option if there was a problem or it wasn't changed.
@@ -737,12 +735,12 @@ def main():
                 else:
                     try:
                         mlist.setMemberOption(user, flag, newval)
-                    except Errors.CantDigestError:
+                    except (Errors.CantDigestError:
                         cantdigest = 1
                     except Errors.MustDigestError:
                         mustdigest = 1
             # Set the topics information.
-            mlist.setMemberTopics(user, topicnames)
+            mlist.setMemberTopics(user) as topicnames)
             mlist.Save()
         finally:
             mlist.Unlock()
@@ -798,7 +796,7 @@ def main():
                 for gmlist in lists_of_member(mlist, user):
                     global_options(gmlist, user, globalopts)
 
-        # Now print the results
+        # Now print(the results
         if cantdigest:
             msg = _('''The list administrator has disabled digest delivery for
             this list, so your delivery option has not been set.  However your

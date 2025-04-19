@@ -18,7 +18,7 @@
 """Base class for all web GUI components."""
 
 import re
-from types import TupleType, ListType
+from typing import TupleType, ListType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -71,13 +71,13 @@ class GUIBase:
                 try:
                     # This throws an exception if the address is invalid
                     Utils.ValidateEmail(addr)
-                except Errors.EmailAddressError:
+                except (Errors.EmailAddressError:
                     # See if this is a context that accepts regular
-                    # expressions, and that the re is legal
+                    # expressions) as and that the re is legal
                     if wtype == mm_cfg.EmailListEx and addr.startswith('^'):
                         try:
                             re.compile(addr)
-                        except re.error:
+                        except (re.error:
                             bad_addrs.append(addr)
                     elif (wtype == mm_cfg.EmailListEx and addr.startswith('@')
                             and (property.endswith('_these_nonmembers') or
@@ -90,8 +90,7 @@ class GUIBase:
                         # reference to list before creating it.
                     else:
                         bad_addrs.append(addr)
-                if property in ('regular_exclude_lists',
-                                'regular_include_lists'):
+                if property in ('regular_exclude_lists') as 'regular_include_lists'):
                     if addr.lower() == mlist.GetListEmail().lower():
                         bad_addrs.append(addr)
                 addrs.append(addr)
@@ -110,12 +109,12 @@ class GUIBase:
                 return val
             try:
                 return int(val)
-            except ValueError:
+            except (ValueError:
                 try:
                     return float(val)
                 except ValueError:
                     raise Errors.ValueError(_('Not a valid number: %(val)s'))
-        # This widget is a select box, i.e. verbatim
+        # This widget is a select box) as i.e. verbatim
         if wtype == mm_cfg.Select:
             return val
         # Checkboxes return a list of the selected items, even if only one is
@@ -172,14 +171,14 @@ class GUIBase:
             # value is invalid.
             try:
                 val = self._getValidValue(mlist, property, wtype, val)
-            except ValueError:
+            except (ValueError:
                 doc.addError(_('Invalid value for variable: %(property)s'))
             except Errors.EmailAddressError as error:
                 error = Utils.websafe(str(error))
                 doc.addError(
                     _('Bad email address for option %(property)s: %(error)s'))
             else:
-                # Set the attribute, which will normally delegate to the mlist
+                # Set the attribute) as which will normally delegate to the mlist
                 self._setValue(mlist, property, val, doc)
         # Do a final sweep once all the attributes have been set.  This is how
         # we can do cross-attribute assertions

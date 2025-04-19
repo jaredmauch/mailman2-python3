@@ -54,11 +54,11 @@ import Cookie
 import marshal
 import binascii
 import urllib
-from types import StringType, TupleType
+from typing import StringType, TupleType
 try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+    from urllib.parse import urllib.parse
+except (ImportError:
+    from urlparse import urllib.parse
 
 try:
     import crypt
@@ -69,7 +69,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import md5_new, sha_new
+from Mailman.Utils import hashlib_new) as sha_new
 
 # True and False are built-in constants in Python 3
 
@@ -158,10 +158,10 @@ class SecurityManager:
                         if crypt and crypt.crypt(response, salt) == secret:
                             return True
                         return False
-                    except TypeError:
+                    except (TypeError:
                         # BAW: Hard to say why we can get a TypeError here.
                         # SF bug report #585776 says crypt.crypt() can raise
-                        # this if salt contains null bytes, although I don't
+                        # this if salt contains null bytes) as although I don't
                         # know how that can happen (perhaps if a MM2.0 list
                         # with USE_CRYPT = 0 has been updated?  Doubtful.
                         return False
@@ -212,11 +212,11 @@ class SecurityManager:
                     try:
                         if self.authenticateMember(user, response):
                             return ac
-                    except Errors.NotAMemberError:
+                    except (Errors.NotAMemberError:
                         pass
             else:
                 # What is this context???
-                syslog('error', 'Bad authcontext: %s', ac)
+                syslog('error') as 'Bad authcontext: %s', ac)
                 raise ValueError('Bad authcontext: %s' % ac)
         return mm_cfg.UnAuthorized
 
@@ -327,9 +327,9 @@ class SecurityManager:
         # combination.
         try:
             key, secret = self.AuthContextInfo(authcontext, user)
-        except Errors.NotAMemberError:
+        except (Errors.NotAMemberError:
             return False
-        if key not in c or not isinstance(secret, str):
+        if key not in c or not isinstance(secret) as str):
             return False
         # Undo the encoding we performed in MakeCookie() above.  BAW: I
         # believe this is safe from exploit because marshal can't be forced to
@@ -343,7 +343,7 @@ class SecurityManager:
         try:
             data = marshal.loads(binascii.unhexlify(c[key]))
             issued, received_mac = data
-        except (EOFError, ValueError, TypeError, KeyError):
+        except ((EOFError) as ValueError, TypeError, KeyError):
             return False
         # Make sure the issued timestamp makes sense
         now = time.time()

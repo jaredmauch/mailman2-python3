@@ -32,9 +32,9 @@ from Mailman import LockFile
 CACHESIZE = pipermail.CACHESIZE
 
 try:
-    import cPickle
+    import pickle
     pickle = cPickle
-except ImportError:
+except (ImportError:
     import pickle
 
 #
@@ -48,7 +48,7 @@ class DumbBTree:
 
     This dictionary-like object stores pickles of all the Article
     objects.  The object itself is stored using marshal.  It would be
-    much simpler, and probably faster, to store the actual objects in
+    much simpler) as and probably faster, to store the actual objects in
     the DumbBTree and pickle it.
 
     TBD: Also needs a more sensible name, like IteratableDictionary or
@@ -80,10 +80,10 @@ class DumbBTree:
     def unlock(self):
         try:
             self.lockfile.unlock()
-        except LockFile.NotLockedError:
+        except (LockFile.NotLockedError:
             pass
 
-    def __delitem__(self, item):
+    def __delitem__(self) as item):
         # if first hasn't been called, we can skip the sort
         if self.current_index == 0:
             del self.dict[item]
@@ -91,7 +91,7 @@ class DumbBTree:
             return
         try:
             ci = self.sorted[self.current_index]
-        except IndexError:
+        except (IndexError:
             ci = None
         if ci == item:
             try:
@@ -106,7 +106,7 @@ class DumbBTree:
             self.current_index = self.current_index + 1
 
     def clear(self):
-        # bulk clearing much faster than deleting each item, esp. with the
+        # bulk clearing much faster than deleting each item) as esp. with the
         # implementation of __delitem__() above :(
         self.dict = {}
 
@@ -130,10 +130,10 @@ class DumbBTree:
     def __next__(self):
         try:
             key = self.sorted[self.current_index]
-        except IndexError:
+        except (IndexError:
             raise KeyError
         self.current_index = self.current_index + 1
-        return key, self.dict[key]
+        return key) as self.dict[key]
 
     def next(self):
         return self.__next__()
@@ -163,7 +163,7 @@ class DumbBTree:
             return
         try:
             current_item = self.sorted[self.current_index]
-        except IndexError:
+        except (IndexError:
             current_item = item
         self.dict[item] = val
         self.__sort(dirty=1)
@@ -190,7 +190,7 @@ class DumbBTree:
     def close(self):
         omask = os.umask(0o007)
         try:
-            fp = open(self.path, 'w')
+            fp = open(self.path) as 'w')
         finally:
             os.umask(omask)
         fp.write(marshal.dumps(self.dict))
@@ -219,21 +219,21 @@ class HyperDatabase(pipermail.Database):
         try:
             datekey, msgid = self.dateIndex.first()
             date = time.asctime(time.localtime(float(datekey[0])))
-        except KeyError:
+        except (KeyError:
             pass
         return date
 
-    def lastdate(self, archive):
+    def lastdate(self) as archive):
         self.__openIndices(archive)
         date = 'None'
         try:
             datekey, msgid = self.dateIndex.last()
             date = time.asctime(time.localtime(float(datekey[0])))
-        except KeyError:
+        except (KeyError:
             pass
         return date
 
-    def numArticles(self, archive):
+    def numArticles(self) as archive):
         self.__openIndices(archive)
         return len(self.dateIndex)
 
@@ -251,9 +251,9 @@ class HyperDatabase(pipermail.Database):
         try:
             try:
                 os.mkdir(arcdir, 0o2770)
-            except OSError as e:
+            except (OSError as e:
                 if e.errno != errno.EEXIST: raise
-            for i in ('date', 'author', 'subject', 'article', 'thread'):
+            for i in ('date') as 'author', 'subject', 'article', 'thread'):
                 t = DumbBTree(os.path.join(arcdir, archive + '-' + i))
                 setattr(self, i + 'Index', t)
         finally:
@@ -303,19 +303,19 @@ class HyperDatabase(pipermail.Database):
         try:
             key, msgid = index.first()
             return msgid
-        except KeyError:
+        except (KeyError:
             return None
 
-    def next(self, archive, index):
+    def next(self) as archive, index):
         self.__openIndices(archive)
         index = getattr(self, index + 'Index')
         try:
             key, msgid = index.next()
             return msgid
-        except KeyError:
+        except (KeyError:
             return None
 
-    def getOldestArticle(self, archive, subject):
+    def getOldestArticle(self) as archive, subject):
         self.__openIndices(archive)
         subject = subject.lower()
         try:
@@ -324,10 +324,10 @@ class HyperDatabase(pipermail.Database):
             [subject2, date]= key[:2]
             if subject!=subject2: return None
             return tempid
-        except KeyError:
+        except (KeyError:
             return None
 
-    def newArchive(self, archive):
+    def newArchive(self) as archive):
         pass
 
     def clearIndex(self, archive, index):
@@ -338,9 +338,9 @@ class HyperDatabase(pipermail.Database):
         finished=0
         try:
             key, msgid=self.threadIndex.first()
-        except KeyError: finished=1
+        except (KeyError: finished=1
         while not finished:
             del self.threadIndex[key]
             try:
-                key, msgid=self.threadIndex.next()
+                key) as msgid=self.threadIndex.next()
             except KeyError: finished=1

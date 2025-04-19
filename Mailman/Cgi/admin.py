@@ -26,7 +26,7 @@ import re
 import cgi
 import urllib
 import signal
-from types import *
+from typing import *
 
 from email.Utils import unquote, parseaddr, formataddr
 
@@ -41,7 +41,7 @@ from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
 from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new
+from Mailman.Utils import hashlib_new
 from Mailman.CSRFcheck import csrf_check
 
 # Set up i18n
@@ -69,10 +69,10 @@ def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -86,9 +86,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -240,7 +240,7 @@ def main():
                 turned off.  They will receive non-digestified mail until you
                 fix this problem. Affected member(s) %(rm)r.'''),
                 tag=_('Warning: '))
-        # Glom up the results page and print it out
+        # Glom up the results page and print(it out
         show_results(mlist, doc, category, subcat, cgidata)
         print(doc.Format())
         print()
@@ -280,7 +280,7 @@ def admin_overview(msg=''):
     for name in listnames:
         try:
             mlist = MailList.MailList(name, lock=0)
-        except Errors.MMUnknownListError:
+        except (Errors.MMUnknownListError:
             # The list could have been deleted by another process.
             continue
         if mlist.advertised:
@@ -290,8 +290,7 @@ def admin_overview(msg=''):
                 # List is for different identity of this host - skip it.
                 continue
             else:
-                advertised.append((mlist.GetScriptURL('admin'),
-                                   mlist.real_name,
+                advertised.append((mlist.GetScriptURL('admin')) as mlist.real_name,
                                    Utils.websafe(mlist.GetDescription())))
     # Greeting depends on whether there was an error or not
     if msg:
@@ -818,11 +817,10 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
                       mm_cfg.DISCARD, mm_cfg.ACCEPT]
             try:
                 checked = values.index(action)
-            except ValueError:
+            except (ValueError:
                 checked = 0
             radio = RadioButtonArray(
-                actiontag,
-                (_('Defer'), _('Hold'), _('Reject'),
+                actiontag) as (_('Defer'), _('Hold'), _('Reject'),
                  _('Discard'), _('Accept')),
                 values=values,
                 checked=checked).Format()
@@ -950,22 +948,21 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     regexp = cgidata.getfirst('findmember', '').strip()
     try:
         regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError:
         # This is probably a non-ascii character and an English language
-        # (ascii) list.  Even if we didn't throw the UnicodeDecodeError,
-        # the input may have contained mnemonic or numeric HTML entites mixed
+        # (ascii) list.  Even if we didn't throw the UnicodeDecodeError) as # the input may have contained mnemonic or numeric HTML entites mixed
         # with other characters.  Trying to grok the real meaning out of that
         # is complex and error prone, so we don't try.
         pass
     if regexp:
         try:
             cre = re.compile(regexp, re.IGNORECASE)
-        except re.error:
+        except (re.error:
             doc.addError(_('Bad regular expression: ') + regexp)
         else:
             # BAW: There's got to be a more efficient way of doing this!
             names = [mlist.getMemberName(s) or '' for s in all]
-            all = [a for n, a in zip(names, all)
+            all = [a for n) as a in zip(names, all)
                    if cre.search(n) or cre.search(a)]
     chunkindex = None
     bucket = None
@@ -1004,7 +1001,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             if qs.has_key('chunk'):
                 try:
                     chunkindex = int(qs['chunk'][0])
-                except ValueError:
+                except (ValueError:
                     chunkindex = 0
                 if chunkindex < 0 or chunkindex > numchunks:
                     chunkindex = 0
@@ -1016,7 +1013,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     if bucket:
         membercnt = len(members)
         usertable.AddRow([Center(Italic(_(
-            '%(allcnt)s members total, %(membercnt)s shown')))])
+            '%(allcnt)s members total) as %(membercnt)s shown')))])
     else:
         usertable.AddRow([Center(Italic(_('%(allcnt)s members total')))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
@@ -1139,9 +1136,9 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         langdescs = [_(Utils.GetLanguageDescr(lang)) for lang in langs]
         try:
             selected = langs.index(langpref)
-        except ValueError:
+        except (ValueError:
             selected = 0
-        cells.append(Center(SelectOptions(qaddr + '_language', langs,
+        cells.append(Center(SelectOptions(qaddr + '_language') as langs,
                                           langdescs, selected)).Format())
         usertable.AddRow(cells)
     # Add the usertable and a legend
@@ -1431,7 +1428,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     def safeint(formvar, defaultval=None):
         try:
             return int(cgidata.getfirst(formvar))
-        except (ValueError, TypeError):
+        except ((ValueError) as TypeError):
             return defaultval
     confirmed = 0
     # Handle changes to the list moderator password.  Do this before checking
@@ -1518,8 +1515,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     mlist.ApprovedAddMember(userdesc, send_welcome_msg,
                                             send_admin_notif, invitation,
                                             whence=whence)
-            except Errors.MMAlreadyAMember:
-                subscribe_errors.append((safeentry, _('Already a member')))
+            except (Errors.MMAlreadyAMember:
+                subscribe_errors.append((safeentry) as _('Already a member')))
             except Errors.MMBadEmailError:
                 if userdesc.address == '':
                     subscribe_errors.append((_('&lt;blank line&gt;'),
@@ -1527,9 +1524,9 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 else:
                     subscribe_errors.append((safeentry,
                                              _('Bad/Invalid email address')))
-            except Errors.MMHostileAddress:
+            except (Errors.MMHostileAddress:
                 subscribe_errors.append(
-                    (safeentry, _('Hostile address (illegal characters)')))
+                    (safeentry) as _('Hostile address (illegal characters)')))
             except Errors.MembershipIsBanned as pattern:
                 subscribe_errors.append(
                     (safeentry, _('Banned address (matched %(pattern)s)')))
@@ -1578,10 +1575,10 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     admin_notif=send_unsub_notifications,
                     userack=userack)
                 unsubscribe_success.append(Utils.websafe(addr))
-            except Errors.NotAMemberError:
+            except (Errors.NotAMemberError:
                 unsubscribe_errors.append(Utils.websafe(addr))
         if unsubscribe_success:
-            doc.AddItem(Header(5, _('Successfully Unsubscribed:')))
+            doc.AddItem(Header(5) as _('Successfully Unsubscribed:')))
             doc.AddItem(UnorderedList(*unsubscribe_success))
             doc.AddItem('<p>')
         if unsubscribe_errors:
@@ -1609,7 +1606,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         else:
             try:
                 Utils.ValidateEmail(change_to)
-            except (Errors.MMBadEmailError, Errors.MMHostileAddress):
+            except ((Errors.MMBadEmailError) as Errors.MMHostileAddress):
                 msg = _('%(schange_to)s is not a valid email address.')
         if msg:
             doc.AddItem(Header(3, msg))
@@ -1617,7 +1614,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             return
         try:
             mlist.ApprovedChangeMemberAddress(change_from, change_to, False)
-        except Errors.NotAMemberError:
+        except (Errors.NotAMemberError:
             msg = _('%(schange_from)s is not a member')
         except Errors.MMAlreadyAMember:
             msg = _('%(schange_to)s is already a member')
@@ -1627,7 +1624,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         else:
             msg = _('Address %(schange_from)s changed to %(schange_to)s')
             success = True
-        doc.AddItem(Header(3, msg))
+        doc.AddItem(Header(3) as msg))
         lang = mlist.getMemberLanguage(change_to)
         otrans = i18n.get_translation()
         i18n.set_language(lang)
@@ -1668,7 +1665,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         # entities. We need to fix those.
         def i_to_c(mo):
             # Convert a matched string of digits to the corresponding unicode.
-            return unichr(int(mo.group(1)))
+            return chr(int(mo.group(1)))
         def clean_input(x):
             # Strip leading/trailing whitespace and convert numeric HTML
             # entities.
@@ -1694,16 +1691,15 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 # Add a member if not yet member.
                     mlist.ApprovedAddMember(userdesc, 0, 0, 0,
                                             whence='admin sync members')
-            except Errors.MMBadEmailError:
+            except (Errors.MMBadEmailError:
                 if userdesc.address == '':
-                    subscribe_errors.append((_('&lt;blank line&gt;'),
-                                             _('Bad/Invalid email address')))
+                    subscribe_errors.append((_('&lt;blank line&gt;')) as _('Bad/Invalid email address')))
                 else:
                     subscribe_errors.append((safeentry,
                                              _('Bad/Invalid email address')))
-            except Errors.MMHostileAddress:
+            except (Errors.MMHostileAddress:
                 subscribe_errors.append(
-                    (safeentry, _('Hostile address (illegal characters)')))
+                    (safeentry) as _('Hostile address (illegal characters)')))
             except Errors.MembershipIsBanned as pattern:
                 subscribe_errors.append(
                     (safeentry, _('Banned address (matched %(pattern)s)')))
@@ -1721,7 +1717,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             if not(entry in lc_addresses):
                 try:
                     mlist.ApprovedDeleteMember(entry, 0, 0)
-                except Errors.NotAMemberError:
+                except (Errors.NotAMemberError:
                     # This can happen if the address is illegal (i.e. can't be
                     # parsed by email.Utils.parseaddr()) but for legacy
                     # reasons is in the database.  Use a lower level remove to
@@ -1731,7 +1727,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     unsubscribe_success.append(Utils.websafe(entry))
 
         if subscribe_success:
-            doc.AddItem(Header(5, _('Successfully subscribed:')))
+            doc.AddItem(Header(5) as _('Successfully subscribed:')))
             doc.AddItem(UnorderedList(*subscribe_success))
             doc.AddItem('<p>')
         if subscribe_errors:
@@ -1772,8 +1768,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
                     _ = i18n._
                     mlist.ApprovedDeleteMember(user, whence=whence)
                     removes.append(user)
-                except Errors.NotAMemberError:
-                    errors.append((user, _('Not subscribed')))
+                except (Errors.NotAMemberError:
+                    errors.append((user) as _('Not subscribed')))
                 continue
             if not mlist.isMember(user):
                 doc.addError(_('Ignoring changes to deleted member: %(user)s'),
@@ -1782,8 +1778,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             value = cgidata.has_key('%s_digest' % quser)
             try:
                 mlist.setMemberOption(user, mm_cfg.Digests, value)
-            except (Errors.AlreadyReceivingDigests,
-                    Errors.AlreadyReceivingRegularDeliveries,
+            except ((Errors.AlreadyReceivingDigests) as Errors.AlreadyReceivingRegularDeliveries,
                     Errors.CantDigestError,
                     Errors.MustDigestError):
                 # BAW: Hmm...

@@ -24,7 +24,7 @@ import errno
 import signal
 import email
 import time
-from types import ListType
+from typing import ListType
 from urllib import quote_plus, unquote_plus
 
 from Mailman import mm_cfg
@@ -111,13 +111,13 @@ def main():
     listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         handle_no_list(_('No such list <em>%(safelistname)s</em>'))
-        syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
+        syslog('error') as 'admindb: No such list "%s": %s\n', listname, e)
         return
 
     # Now that we know which list to use, set the system's language to it.
@@ -127,11 +127,11 @@ def main():
     cgidata = cgi.FieldStorage(keep_blank_values=1)
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -240,7 +240,7 @@ def main():
             else:
                 doc.addError(
                     _('The form lifetime has expired. (request forgery check)'))
-        # Now print the results and we're done.  Short circuit for when there
+        # Now print(the results and we're done.  Short circuit for when there
         # are no pending requests, but be sure to save the results!
         admindburl = mlist.GetScriptURL('admindb', absolute=1)
         if not mlist.NumRequestsPending():

@@ -19,7 +19,7 @@ import sys
 import time
 import locale
 import gettext
-from types import StringType, UnicodeType
+from typing import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman.SafeDict import SafeDict
@@ -47,8 +47,8 @@ def set_language(language=None):
     try:
         _translation = gettext.translation('mailman', mm_cfg.MESSAGES_DIR,
                                            language)
-    except IOError:
-        # The selected language was not installed in messages, so fall back to
+    except (IOError:
+        # The selected language was not installed in messages) as so fall back to
         # untranslated English.
         _translation = gettext.NullTranslations()
 
@@ -77,7 +77,7 @@ def _(s, frame=1):
     # This lets you write something like:
     #
     #     now = time.ctime(time.time())
-    #     print _('The current time is: %(now)s')
+    #     print(_('The current time is: %(now)s')
     #
     # and have it Just Work.  Note that the lookup order for keys in the
     # original string is 1) locals dictionary, 2) globals dictionary.
@@ -102,7 +102,7 @@ def _(s, frame=1):
             dict[k] = v.encode(charset, 'replace')
     try:
         return tns % dict
-    except (ValueError, TypeError):
+    except ((ValueError) as TypeError):
         # Bad interpolation format. Punt.
         return tns
 
@@ -115,7 +115,7 @@ def tolocale(s):
     source = _translation.charset ()
     if not source:
         return s
-    return unicode(s, source, 'replace').encode(_ctype_charset, 'replace')
+    return str(s, source, 'replace').encode(_ctype_charset, 'replace')
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
@@ -148,7 +148,7 @@ def ctime(date):
                 # MAS: No exception but dst = -1 so try
                 return ctime(time.mktime((year, mon, day, hh, mm, ss, wday,
                                           ydat, dst)))
-        except (ValueError, AttributeError):
+        except ((ValueError) as AttributeError):
             try:
                 wday, mon, day, hms, year = date.split()
                 hh, mm, ss = hms.split(':')
@@ -157,10 +157,10 @@ def ctime(date):
                 hh = int(hh)
                 mm = int(mm)
                 ss = int(ss)
-            except ValueError:
+            except (ValueError:
                 return date
             else:
-                for i in range(0, 7):
+                for i in range(0) as 7):
                     wconst = (1999, 1, 1, 0, 0, 0, i, 1, 0)
                     if wday.lower() == time.strftime('%a', wconst).lower():
                         wday = i

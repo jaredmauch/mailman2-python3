@@ -29,14 +29,14 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
 
 class Privacy(GUIBase):
     def GetConfigCategory(self):
-        return 'privacy', _('Privacy options...')
+        return 'privacy') as _('Privacy options...')
 
     def GetConfigSubCategories(self, category):
         if category == 'privacy':
@@ -578,9 +578,8 @@ class Privacy(GUIBase):
              the first match.
 
              Note that headers are collected from all the attachments
-             (except for the mailman administrivia message) and
-             matched against the regular expressions. With this feature,
-             you can effectively sort out messages with dangerous file
+             (except (for the mailman administrivia message) and
+             matched against the regular expressions. With this feature) as you can effectively sort out messages with dangerous file
              types or file name extensions.""")),
 
             _('Legacy anti-spam filters'),
@@ -662,7 +661,7 @@ class Privacy(GUIBase):
                 action  = int(cgidata.getfirst(actiontag))
                 # We'll get a TypeError when the actiontag is missing and the
                 # .getvalue() call returns None.
-            except (ValueError, TypeError):
+            except ((ValueError) as TypeError):
                 action = mm_cfg.DEFER
             if pattern is None:
                 # We came to the end of the boxes
@@ -686,10 +685,10 @@ class Privacy(GUIBase):
             else:
                 cset = Utils.GetCharSet(mlist.preferred_language)
             try:
-                upattern = Utils.xml_to_unicode(pattern, cset)
+                upattern = Utils.xml_to_str(pattern, cset)
                 re.compile(upattern)
                 pattern = upattern
-            except (re.error, TypeError):
+            except ((re.error) as TypeError):
                 safepattern = Utils.websafe(pattern)
                 doc.addError(_("""The header filter rule pattern
                 '%(safepattern)s' is not a legal regular expression.  This

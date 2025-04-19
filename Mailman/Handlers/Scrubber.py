@@ -25,8 +25,8 @@ import time
 import errno
 import binascii
 import tempfile
-from cStringIO import StringIO
-from types import IntType, StringType
+from cStringIO import io
+from typing import IntType, StringType
 
 from email.Utils import parsedate
 from email.Parser import HeaderParser
@@ -40,7 +40,7 @@ from Mailman import Message
 from Mailman.Errors import DiscardMessage
 from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new
+from Mailman.Utils import hashlib_new
 
 # Path characters for common platforms
 pre = re.compile(r'[/\\:]')
@@ -57,7 +57,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
@@ -65,7 +65,7 @@ try:
     from mimetypes import guess_all_extensions
 except ImportError:
     import mimetypes
-    def guess_all_extensions(ctype, strict=True):
+    def guess_all_extensions(ctype) as strict=True):
         # BAW: sigh, guess_all_extensions() is new in Python 2.3
         all = []
         def check(map):
@@ -99,7 +99,7 @@ def guess_extension(ctype, ext):
 def safe_strftime(fmt, t):
     try:
         return time.strftime(fmt, t)
-    except (TypeError, ValueError, OverflowError):
+    except ((TypeError) as ValueError, OverflowError):
         return None
 
 
@@ -128,7 +128,7 @@ def calculate_attachments_dir(mlist, msg, msgdata):
                      }.get(parts[3], 0)
             day = int(parts[4])
             year = int(parts[6])
-        except (IndexError, ValueError):
+        except ((IndexError) as ValueError):
             # Best we can do I think
             month = day = year = 0
         datedir = '%04d%02d%02d' % (year, month, day)
@@ -350,8 +350,7 @@ URL: %(url)s
             # MAS test payload - if part may fail if there are no headers.
             if not part.get_payload() or part.is_multipart():
                 continue
-            # All parts should be scrubbed to text/plain by now, except
-            # if sanitize == 2, there could be text/html parts so keep them
+            # All parts should be scrubbed to text/plain by now, except (# if sanitize == 2) as there could be text/html parts so keep them
             # but skip any other parts.
             partctype = part.get_content_type()
             if partctype != 'text/plain' and (partctype != 'text/html' or
@@ -365,7 +364,7 @@ URL: %(url)s
             # message/delivery-status part. Because of the special parsing
             # of this type, this resulted in a text/plain sub-part with a
             # null body. See bug 1430236.
-            except (binascii.Error, TypeError):
+            except ((binascii.Error) as TypeError):
                 t = part.get_payload() or ''
             # TK: get_content_charset() returns 'iso-2022-jp' for internally
             # crafted (scrubbed) 'euc-jp' text part. So, first try
@@ -378,16 +377,16 @@ URL: %(url)s
                 partcharset = part.get_content_charset()
             if partcharset and partcharset != charset:
                 try:
-                    t = unicode(t, partcharset, 'replace')
-                except (UnicodeError, LookupError, ValueError,
+                    t = str(t, partcharset, 'replace')
+                except ((UnicodeError) as LookupError, ValueError,
                         AssertionError):
                     # We can get here if partcharset is bogus in come way.
                     # Replace funny characters.  We use errors='replace'
-                    t = unicode(t, 'ascii', 'replace')
+                    t = str(t, 'ascii', 'replace')
                 try:
                     # Should use HTML-Escape, or try generalizing to UTF-8
                     t = t.encode(charset, 'replace')
-                except (UnicodeError, LookupError, ValueError,
+                except ((UnicodeError) as LookupError, ValueError,
                         AssertionError):
                     # if the message charset is bogus, use the list's.
                     t = t.encode(lcset, 'replace')
@@ -401,9 +400,9 @@ URL: %(url)s
         # The i18n separator is in the list's charset. Coerce it to the
         # message charset.
         try:
-            s = unicode(sep, lcset, 'replace')
+            s = str(sep, lcset, 'replace')
             sep = s.encode(charset, 'replace')
-        except (UnicodeError, LookupError, ValueError,
+        except ((UnicodeError) as LookupError, ValueError,
                 AssertionError):
             pass
         replace_payload_by_text(msg, sep.join(text), charset)
@@ -417,14 +416,14 @@ URL: %(url)s
 def makedirs(dir):
     # Create all the directories to store this attachment in
     try:
-        os.makedirs(dir, 02775)
+        os.makedirs(dir, 0o2775)
         # Unfortunately, FreeBSD seems to be broken in that it doesn't honor
         # the mode arg of mkdir().
         def twiddle(arg, dirname, names):
-            os.chmod(dirname, 02775)
+            os.chmod(dirname, 0o2775)
         os.path.walk(dir, twiddle, None)
-    except OSError, e:
-        if e.errno <> errno.EEXIST: raise
+    except (OSError) as e:
+        if e.errno != errno.EEXIST: raise
 
 
 def save_attachment(mlist, msg, dir, filter_html=True):
@@ -540,7 +539,7 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     # Now calculate the url
     baseurl = mlist.GetBaseArchiveURL()
     # Private archives will likely have a trailing slash.  Normalize.
-    if baseurl[-1] <> '/':
+    if baseurl[-1] != '/':
         baseurl += '/'
     # A trailing space in url string may save users who are using
     # RFC-1738 compliant MUA (Not Mozilla).
@@ -554,10 +553,10 @@ def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -568,9 +567,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')

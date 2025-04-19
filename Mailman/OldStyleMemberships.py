@@ -25,7 +25,7 @@ This is the adaptor used by default in Mailman 2.1.
 """
 
 import time
-from types import StringType
+from typing import StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -42,7 +42,6 @@ ISDIGEST = 2
 # Actually, fix /all/ errors
 
 
-
 class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def __init__(self, mlist):
         self.__mlist = mlist

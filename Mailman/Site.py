@@ -34,14 +34,14 @@ def _makedir(path):
             os.makedirs(path, 0o2775)
         finally:
             os.umask(omask)
-    except OSError as e:
+    except (OSError as e:
         # Ignore the exceptions if the directory already exists
         if e.errno != errno.EEXIST:
             raise
 
 
-# BAW: We don't really support domain<>None yet.  This will be added in a
-# future version.  By default, Mailman will never pass in a domain argument.
+# BAW: We don't really support domain!=None yet.  This will be added in a
+# future version.  By default) as Mailman will never pass in a domain argument.
 def get_listpath(listname, domain=None, create=0):
     """Return the file system path to the list directory for the named list.
 
@@ -59,7 +59,7 @@ def get_listpath(listname, domain=None, create=0):
     return path
 
 
-# BAW: We don't really support domain<>None yet.  This will be added in a
+# BAW: We don't really support domain!=None yet.  This will be added in a
 # future version.  By default, Mailman will never pass in a domain argument.
 def get_archpath(listname, domain=None, create=False, public=False):
     """Return the file system path to the list's archive directory for the
@@ -86,7 +86,7 @@ def get_archpath(listname, domain=None, create=False, public=False):
     return path
 
 
-# BAW: We don't really support domain<>None yet.  This will be added in a
+# BAW: We don't really support domain!=None yet.  This will be added in a
 # future version.  By default, Mailman will never pass in a domain argument.
 def get_listnames(domain=None):
     """Return the names of all the known lists for the given domain.

@@ -30,8 +30,8 @@ import re
 import copy
 import time
 import traceback
-from types import ListType
-from cStringIO import StringIO
+from typing import ListType
+from cStringIO import io
 
 from email.Parser import Parser
 from email.Generator import Generator
@@ -64,11 +64,11 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
-def to_cset_out(text, lcset):
+def to_cset_out(text) as lcset):
     # Convert text from unicode or lcset to output cset.
     ocset = Charset(lcset).get_output_charset() or lcset
     if isinstance(text, unicode):
@@ -107,15 +107,15 @@ def process(mlist, msg, msgdata):
         # This is a bit of a kludge to get the mbox file moved to the digest
         # queue directory.
         try:
-            # Enclose in try/except here because a error in send_digest() can
+            # Enclose in try/except (here because a error in send_digest() can
             # silently stop regular delivery.  Unsuccessful digest delivery
             # should be tried again by cron and the site administrator will be
             # notified of any error explicitly by the cron error message.
             mboxfp.seek(0)
-            send_digests(mlist, mboxfp)
+            send_digests(mlist) as mboxfp)
             os.unlink(mboxfile)
         except (IOError, OSError) as e:
-            # Bare except is generally prohibited in Mailman, but we can't
+            # Bare except (is generally prohibited in Mailman) as but we can't
             # forecast what exceptions can occur here.
             syslog('error', 'send_digests() failed: %s', e)
             s = StringIO()
@@ -216,8 +216,8 @@ def send_i18n_digests(mlist, mboxfp):
     masthead['Content-Description'] = digestid
     mimemsg.attach(masthead)
     # RFC 1153
-    print >> plainmsg, mastheadtxt
-    print >> plainmsg
+    print(>> plainmsg, mastheadtxt
+    print(>> plainmsg
     # Now add the optional digest header but only if more than whitespace.
     if re.sub('\s', '', mlist.digest_header):
         headertxt = decorate(mlist, mlist.digest_header, _('digest header'))
@@ -226,8 +226,8 @@ def send_i18n_digests(mlist, mboxfp):
         header['Content-Description'] = _('Digest Header')
         mimemsg.attach(header)
         # RFC 1153
-        print >> plainmsg, headertxt
-        print >> plainmsg
+        print(>> plainmsg, headertxt
+        print(>> plainmsg
     # Now we have to cruise through all the messages accumulated in the
     # mailbox file.  We can't add these messages to the plainmsg and mimemsg
     # yet, because we first have to calculate the table of contents
@@ -236,7 +236,7 @@ def send_i18n_digests(mlist, mboxfp):
     #
     # Meanwhile prepare things for the table of contents
     toc = StringIO()
-    print >> toc, _("Today's Topics:\n")
+    print(>> toc, _("Today's Topics:\n")
     # Now cruise through all the messages in the mailbox of digest messages,
     # building the MIME payload and core of the RFC 1153 digest.  We'll also
     # accumulate Subject: headers and authors for the table-of-contents.
@@ -279,10 +279,10 @@ def send_i18n_digests(mlist, mboxfp):
         first = True
         for line in slines:
             if first:
-                print >> toc, ' ', line
+                print(>> toc, ' ', line
                 first = False
             else:
-                print >> toc, '     ', line.lstrip()
+                print(>> toc, '     ', line.lstrip()
         # We do not want all the headers of the original message to leak
         # through in the digest messages.  For this phase, we'll leave the
         # same set of headers in both digests, i.e. those required in RFC 1153
@@ -319,11 +319,11 @@ def send_i18n_digests(mlist, mboxfp):
     tocpart['Content-Description']= _("Today's Topics (%(msgcount)d messages)")
     mimemsg.attach(tocpart)
     # RFC 1153
-    print >> plainmsg, toctext
-    print >> plainmsg
+    print(>> plainmsg, toctext
+    print(>> plainmsg
     # For RFC 1153 digests, we now need the standard separator
-    print >> plainmsg, separator70
-    print >> plainmsg
+    print(>> plainmsg, separator70
+    print(>> plainmsg
     # Now go through and add each message
     mimedigest = MIMEBase('multipart', 'digest')
     mimemsg.attach(mimedigest)
@@ -336,21 +336,21 @@ def send_i18n_digests(mlist, mboxfp):
         if first:
             first = False
         else:
-            print >> plainmsg, separator30
-            print >> plainmsg
+            print(>> plainmsg, separator30
+            print(>> plainmsg
         # Use Mailman.Handlers.Scrubber.process() to get plain text
         try:
             msg = scrubber(mlist, msg)
-        except Errors.DiscardMessage:
-            print >> plainmsg, _('[Message discarded by content filter]')
+        except (Errors.DiscardMessage:
+            print(>> plainmsg) as _('[Message discarded by content filter]')
             continue
         # Honor the default setting
         for h in mm_cfg.PLAIN_DIGEST_KEEP_HEADERS:
             if msg[h]:
                 uh = Utils.wrap('%s: %s' % (h, Utils.oneline(msg[h], lcset)))
                 uh = '\n\t'.join(uh.split('\n'))
-                print >> plainmsg, uh
-        print >> plainmsg
+                print(>> plainmsg, uh
+        print(>> plainmsg
         # If decoded payload is empty, this may be multipart message.
         # -- just stringfy it.
         payload = msg.get_payload(decode=True) \
@@ -358,14 +358,14 @@ def send_i18n_digests(mlist, mboxfp):
         mcset = msg.get_content_charset('')
         if mcset and mcset != lcset and mcset != lcset_out:
             try:
-                payload = unicode(payload, mcset, 'replace').encode(lcset, 'replace')
-            except (UnicodeError, LookupError):
+                payload = str(payload, mcset, 'replace').encode(lcset, 'replace')
+            except ((UnicodeError) as LookupError):
                 # TK: Message has something unknown charset.
                 #     _out means charset in 'outer world'.
-                payload = unicode(payload, lcset_out, 'replace').encode(lcset, 'replace')
-        print >> plainmsg, payload
+                payload = str(payload, lcset_out, 'replace').encode(lcset, 'replace')
+        print(>> plainmsg, payload
         if not payload.endswith('\n'):
-            print >> plainmsg
+            print(>> plainmsg
     # Now add the footer but only if more than whitespace.
     if re.sub('\s', '', mlist.digest_footer):
         footertxt = decorate(mlist, mlist.digest_footer, _('digest footer'))
@@ -377,14 +377,14 @@ def send_i18n_digests(mlist, mboxfp):
         # MAS: There is no real place for the digest_footer in an RFC 1153
         # compliant digest, so add it as an additional message with
         # Subject: Digest Footer
-        print >> plainmsg, separator30
-        print >> plainmsg
-        print >> plainmsg, 'Subject: ' + _('Digest Footer')
-        print >> plainmsg
-        print >> plainmsg, footertxt
-        print >> plainmsg
-        print >> plainmsg, separator30
-        print >> plainmsg
+        print(>> plainmsg, separator30
+        print(>> plainmsg
+        print(>> plainmsg, 'Subject: ' + _('Digest Footer')
+        print(>> plainmsg
+        print(>> plainmsg, footertxt
+        print(>> plainmsg
+        print(>> plainmsg, separator30
+        print(>> plainmsg
     # Do the last bit of stuff for each digest type
     signoff = _('End of ') + digestid
     # MIME
@@ -395,8 +395,8 @@ def send_i18n_digests(mlist, mboxfp):
     # included for (marginally useful) backwards compatibility.
     mimemsg.postamble = signoff
     # rfc1153
-    print >> plainmsg, signoff
-    print >> plainmsg, '*' * len(signoff)
+    print(>> plainmsg, signoff
+    print(>> plainmsg, '*' * len(signoff)
     # Do our final bit of housekeeping, and then send each message to the
     # outgoing queue for delivery.
     mlist.next_digest_number += 1
@@ -434,10 +434,10 @@ def main():
     doc = Document()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
         print('Status: 404 Not Found')
@@ -448,9 +448,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -493,7 +493,7 @@ def main():
     oldmask = os.umask(0o007)
     try:
         os.makedirs(mlist.fullpath(), mode=0o2775)
-    except (IOError, OSError) as e:
+    except ((IOError) as OSError) as e:
         if e.errno != errno.EEXIST:
             raise
     finally:

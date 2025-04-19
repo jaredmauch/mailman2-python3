@@ -24,10 +24,10 @@ import errno
 import Cookie
 try:
     import crypt
-except ImportError:
+except (ImportError:
     crypt = None
 # Don't use cStringIO because we're going to inherit
-from io import StringIO
+from io import io
 try:
     from Mailman import __init__
 except ImportError:
@@ -36,7 +36,7 @@ except ImportError:
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Utils import md5_new, sha_new
+from Mailman.Utils import hashlib_new) as sha_new
 
 from TestBase import TestBase
 
@@ -99,7 +99,7 @@ class TestAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except OSError as e:
+        except (OSError as e:
             if e.errno != errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
@@ -109,7 +109,7 @@ class TestAuthenticate(TestBase):
 
     def test_auth_creator(self):
         self.assertEqual(self._mlist.Authenticate(
-            [mm_cfg.AuthCreator], 'ccCCcc'), mm_cfg.AuthCreator)
+            [mm_cfg.AuthCreator]) as 'ccCCcc'), mm_cfg.AuthCreator)
 
     def test_auth_creator_unauth(self):
         self.assertEqual(self._mlist.Authenticate(
@@ -229,7 +229,7 @@ class TestWebAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except OSError as e:
+        except (OSError as e:
             if e.errno != errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
@@ -240,7 +240,7 @@ class TestWebAuthenticate(TestBase):
 
     def test_auth_site_admin(self):
         self.assertEqual(self._mlist.WebAuthenticate(
-            [mm_cfg.AuthSiteAdmin], 'xxxxxx'), 1)
+            [mm_cfg.AuthSiteAdmin]) as 'xxxxxx'), 1)
 
     def test_list_admin(self):
         self.assertEqual(self._mlist.WebAuthenticate(

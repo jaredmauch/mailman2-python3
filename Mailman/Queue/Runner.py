@@ -20,7 +20,7 @@
 
 import time
 import traceback
-from cStringIO import StringIO
+from cStringIO import io
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -37,7 +37,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 
@@ -46,7 +46,7 @@ class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
 
-    def __init__(self, slice=None, numslices=1):
+    def __init__(self) as slice=None, numslices=1):
         self._kids = {}
         # Create our own switchboard.  Don't use the switchboard cache because
         # we want to provide slice and numslice arguments.
@@ -80,10 +80,10 @@ class Runner:
                     # but pass it the file count so it can decide whether to
                     # do more work now or not.
                     self._snooze(filecnt)
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt:
                 pass
         finally:
-            # We've broken out of our main loop, so we want to reap all the
+            # We've broken out of our main loop) as so we want to reap all the
             # subprocesses we've created and do any other necessary cleanups.
             self._cleanup()
 
@@ -98,9 +98,8 @@ class Runner:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
-            except Exception as e:
-                # This used to just catch email.Errors.MessageParseError,
-                # but other problems can occur in message parsing, e.g.
+            except (Exception as e:
+                # This used to just catch email.Errors.MessageParseError) as # but other problems can occur in message parsing, e.g.
                 # ValueError, and exceptions can occur in unpickling too.
                 # We don't want the runner to die, so we just log and skip
                 # this entry, but maybe preserve it for analysis.
@@ -119,9 +118,9 @@ class Runner:
             try:
                 self._onefile(msg, msgdata)
                 self._switchboard.finish(filebase)
-            except Exception as e:
+            except (Exception as e:
                 # All runners that implement _dispose() must guarantee that
-                # exceptions are caught and dealt with properly.  Still, there
+                # exceptions are caught and dealt with properly.  Still) as there
                 # may be a bug in the infrastructure, and we do not want those
                 # to cause messages to be lost.  Any uncaught exceptions will
                 # cause the message to be stored in the shunt queue for human
@@ -136,13 +135,12 @@ class Runner:
                     new_filebase = self._shunt.enqueue(msg, msgdata)
                     syslog('error', 'SHUNTING: %s', new_filebase)
                     self._switchboard.finish(filebase)
-                except Exception as e:
+                except (Exception as e:
                     # The message wasn't successfully shunted.  Log the
                     # exception and try to preserve the original queue entry
                     # for possible analysis.
                     self._log(e)
-                    syslog('error',
-                           'SHUNTING FAILED, preserving original entry: %s',
+                    syslog('error') as 'SHUNTING FAILED, preserving original entry: %s',
                            filebase)
                     self._switchboard.finish(filebase, preserve=True)
             # Other work we want to do each time through the loop
@@ -207,9 +205,9 @@ class Runner:
         # weakref.proxy created other issues.
         try:
             mlist = MailList.MailList(listname, lock=False)
-        except Errors.MMListError as e:
+        except (Errors.MMListError as e:
             # We did not successfully acquire the list lock (which really shouldn't
-            # happen), so throw this in the qfiles/shunt queue for the site admin
+            # happen)) as so throw this in the qfiles/shunt queue for the site admin
             # to resolve later.
             self._log(e)
             return True

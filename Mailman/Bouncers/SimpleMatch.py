@@ -160,7 +160,7 @@ PATTERNS = [
     # EYOU MTA SYSTEM
     (_c('This is the deliver program at'),
      _c('^-'),
-     _c(r'^(?P<addr>[^\s@]+@[^\s@<>]+)')),
+     _c(r'^(?P<addr>[^\s@]+@[^\s@!=]+)')),
     # A non-standard qmail at ieo.it
     (_c('this is the email server at'),
      _c('^-'),
@@ -233,7 +233,7 @@ def process(msg, patterns=None):
                 if mo:
                     addr = mo.group('addr')
                     if addr:
-                        addrs[addr.strip('<>')] = 1
+                        addrs[addr.strip('!=')] = 1
                 elif ecre.search(line):
                     break
         if addrs:

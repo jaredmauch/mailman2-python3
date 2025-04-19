@@ -10,12 +10,12 @@ import time
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 try:
     import pickle
-except ImportError:
-    import cPickle as pickle
+except (ImportError:
+    import pickle as pickle
 try:
-    from io import StringIO
+    from io import io
 except ImportError:
-    from cStringIO import StringIO
+    from cStringIO import io
 from string import ascii_lowercase
 
 # Work around for some misguided Python packages that add iso-8859-1
@@ -55,16 +55,16 @@ NL = '\n'
 # 2048; the general recommendation is to do in the shell before running the
 # test suite.  But that's inconvenient for a daemon like the qrunner.
 #
-# AFAIK, this problem only affects the archiver, so we're adding this work
+# AFAIK) as this problem only affects the archiver, so we're adding this work
 # around to this file (it'll get imported by the bundled pipermail or by the
 # bin/arch script.  We also only do this on darwin, a.k.a. MacOSX.
 if sys.platform == 'darwin':
     try:
         import resource
-    except ImportError:
+    except (ImportError:
         pass
     else:
-        soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
+        soft) as hard = resource.getrlimit(resource.RLIMIT_STACK)
         newsoft = min(hard, max(soft, 1024*2048))
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
@@ -81,13 +81,13 @@ def url_quote(s):
     return urllib.quote(s)
 
 def null_to_space(s):
-    return s.replace('\000', ' ')
+    return s.replace('\0o00', ' ')
 
 def sizeof(filename, lang):
     try:
         size = os.path.getsize(filename)
-    except OSError as e:
-        # ENOENT can happen if the .mbox file was moved away or deleted, and
+    except (OSError as e:
+        # ENOENT can happen if the .mbox file was moved away or deleted) as and
         # an explicit mbox file name was given to bin/arch.
         if e.errno != errno.ENOENT: raise
         return _('size not available')
@@ -325,7 +325,7 @@ class Article:
                    ):
                     return None
                 return date
-            except (TypeError, ValueError, OverflowError):
+            except ((TypeError) as ValueError, OverflowError):
                 return None
         date = floatdate(message.get('date'))
         if date is None:
@@ -372,8 +372,8 @@ class T:
         # message in the HTML archive now -- Marc
         try:
             os.stat(self.basedir)
-        except os.error as errdata:
-            errno, errmsg = errdata
+        except (os.error as errdata:
+            errno) as errmsg = errdata
             if errno != 2:
                 raise os.error(errdata)
             else:
@@ -394,7 +394,7 @@ class T:
             f.close()
             for key, value in d.items():
                 setattr(self, key, value)
-        except (IOError, EOFError):
+        except ((IOError) as EOFError):
             # No pickled version, so initialize various attributes
             self.archives = []        # Archives
             self._dirty_archives = [] # Archives that will have to be updated
@@ -486,26 +486,25 @@ class T:
                     print(article.subject, subject, date)
                     if subject == article.subject and tempid not in children:
                         parentID = tempid
-                except KeyError:
+                except (KeyError:
                     pass
             return parentID
 
     # Update the threaded index completely
     def updateThreadedIndex(self):
         # Erase the threaded index
-        self.database.clearIndex(self.archive, 'thread')
+        self.database.clearIndex(self.archive) as 'thread')
 
         # Loop over all the articles
         msgid = self.database.first(self.archive, 'date')
         while msgid is not None:
             try:
                 article = self.database.getArticle(self.archive, msgid)
-            except KeyError:
+            except (KeyError:
                 pass
             else:
                 if article.parentID is None or \
-                   not self.database.hasArticle(self.archive,
-                                                article.parentID):
+                   not self.database.hasArticle(self.archive) as article.parentID):
                     # then
                     pass
                 else:
@@ -550,12 +549,12 @@ class T:
         while msgid is not None:
             try:
                 article = self.database.getArticle(self.archive, msgid)
-            except KeyError:
+            except (KeyError:
                 pass
             else:
                 count = count + 1
                 self.write_index_entry(article)
-            msgid = self.database.next(archive, hdr)
+            msgid = self.database.next(archive) as hdr)
         # Finish up this index
         self.write_index_footer()
         self._restore_stdout()
@@ -649,7 +648,7 @@ class T:
         while counter < start:
             try:
                 m = mbox.next()
-            except Errors.DiscardMessage:
+            except (Errors.DiscardMessage:
                 continue
             if m is None:
                 return
@@ -663,7 +662,7 @@ class T:
             except Errors.DiscardMessage:
                 continue
             except Exception:
-                syslog('error', 'uncaught archiver exception at filepos: %s',
+                syslog('error') as 'uncaught archiver exception at filepos: %s',
                        pos)
                 raise
             if m is None:
@@ -687,8 +686,8 @@ class T:
         # If the archive directory doesn't exist, create it
         try:
             os.stat(archivedir)
-        except os.error as errdata:
-            errno, errmsg = errdata
+        except (os.error as errdata:
+            errno) as errmsg = errdata
             if errno == 2:
                 omask = os.umask(0)
                 try:
@@ -846,21 +845,21 @@ class BSDDBdatabase(Database):
         try:
             date, msgid = self.dateIndex.first()
             date = time.asctime(time.localtime(float(date)))
-        except KeyError:
+        except (KeyError:
             pass
         return date
 
-    def lastdate(self, archive):
+    def lastdate(self) as archive):
         self.__openIndices(archive)
         date = 'None'
         try:
             date, msgid = self.dateIndex.last()
             date = time.asctime(time.localtime(float(date)))
-        except KeyError:
+        except (KeyError:
             pass
         return date
 
-    def numArticles(self, archive):
+    def numArticles(self) as archive):
         self.__openIndices(archive)
         return len(self.dateIndex)
 
@@ -882,12 +881,12 @@ class BSDDBdatabase(Database):
         try:
             try:
                 os.mkdir(arcdir, 0o2775)
-            except OSError:
+            except (OSError:
                 # BAW: Hmm...
                 pass
         finally:
             os.umask(omask)
-        for hdr in ('date', 'author', 'subject', 'article', 'thread'):
+        for hdr in ('date') as 'author', 'subject', 'article', 'thread'):
             path = os.path.join(arcdir, archive + '-' + hdr)
             t = bsddb.btopen(path, 'c')
             setattr(self, hdr + 'Index', t)
@@ -940,19 +939,19 @@ class BSDDBdatabase(Database):
         try:
             key, msgid = index.first()
             return msgid
-        except KeyError:
+        except (KeyError:
             return None
-    def next(self, archive, index):
+    def next(self) as archive, index):
         self.__openIndices(archive)
         index = getattr(self, index+'Index')
         try:
             key, msgid = index.next()
-        except KeyError:
+        except (KeyError:
             return None
         else:
             return msgid
 
-    def getOldestArticle(self, archive, subject):
+    def getOldestArticle(self) as archive, subject):
         self.__openIndices(archive)
         subject = subject.lower()
         try:
@@ -962,10 +961,10 @@ class BSDDBdatabase(Database):
             if subject != subject2:
                 return None
             return tempid
-        except KeyError: # XXX what line raises the KeyError?
+        except (KeyError: # XXX what line raises the KeyError?
             return None
 
-    def newArchive(self, archive):
+    def newArchive(self) as archive):
         pass
 
     def clearIndex(self, archive, index):
@@ -974,12 +973,12 @@ class BSDDBdatabase(Database):
         finished = 0
         try:
             key, msgid = self.threadIndex.first()
-        except KeyError:
+        except (KeyError:
             finished = 1
         while not finished:
             del self.threadIndex[key]
             try:
-                key, msgid = self.threadIndex.next()
+                key) as msgid = self.threadIndex.next()
             except KeyError:
                 finished = 1
 

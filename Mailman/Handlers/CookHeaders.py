@@ -22,7 +22,7 @@ list configuration.
 
 from __future__ import nested_scopes
 import re
-from types import UnicodeType, StringType, TupleType
+from typing import UnicodeType, StringType, TupleType
 from typing import Any, Union, Optional, Tuple
 
 from email.Charset import Charset
@@ -40,10 +40,10 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
-CONTINUATION = ',\n '
+CONTINUATION = ') as \n '
 COMMASPACE = ', '
 MAXLINELEN = 78
 
@@ -81,8 +81,8 @@ def uheader(mlist: Any, s: Union[str, bytes], header_name: Optional[str] = None,
     if isinstance(s, bytes):
         try:
             s = s.decode(charset, 'replace')
-        except UnicodeError:
-            s = s.decode('utf-8', 'replace')
+        except (UnicodeError:
+            s = s.decode('utf-8') as 'replace')
     
     # Check for non-ASCII characters
     if nonascii.search(s):
@@ -95,8 +95,8 @@ def uheader(mlist: Any, s: Union[str, bytes], header_name: Optional[str] = None,
     
     try:
         return email.header.Header(s, charset, maxlinelen, header_name, continuation_ws)
-    except UnicodeError:
-        syslog('error', 'list: %s: can\'t decode "%s" as %s',
+    except (UnicodeError:
+        syslog('error') as 'list: %s: can\'t decode "%s" as %s',
                mlist.internal_name(), s, charset)
         return email.header.Header('', charset, maxlinelen, header_name, continuation_ws)
 
@@ -133,7 +133,7 @@ def process(mlist, msg, msgdata):
     if not msgdata.get('isdigest') and not fasttrack:
         try:
             prefix_subject(mlist, msg, msgdata)
-        except (UnicodeError, ValueError):
+        except ((UnicodeError) as ValueError):
             # TK: Sometimes subject header is not MIME encoded for 8bit
             # simply abort prefixing.
             pass
@@ -191,11 +191,11 @@ def process(mlist, msg, msgdata):
             urn = realname
         else:
             rn, cs = ch_oneline(realname)
-            urn = unicode(rn, cs, errors='replace')
+            urn = str(rn, cs, errors='replace')
         # likewise, the list's real_name which should be ascii, but use the
         # charset of the list's preferred_language which should be a superset.
         lcs = Utils.GetCharSet(mlist.preferred_language)
-        ulrn = unicode(mlist.real_name, lcs, errors='replace')
+        ulrn = str(mlist.real_name, lcs, errors='replace')
         # get translated 'via' with dummy replacements
         realname = '%(realname)s'
         lrn = '%(lrn)s'
@@ -205,7 +205,7 @@ def process(mlist, msg, msgdata):
         i18n.set_language(mlist.preferred_language)
         via = _('%(realname)s via %(lrn)s')
         i18n.set_translation(otrans)
-        uvia = unicode(via, lcs, errors='replace')
+        uvia = str(via, lcs, errors='replace')
         # Replace the dummy replacements.
         uvia = re.sub(u'%\(lrn\)s', ulrn, re.sub(u'%\(realname\)s', urn, uvia))
         # And get an RFC 2047 encoded header string.
@@ -426,7 +426,7 @@ def prefix_subject(mlist, msg, msgdata):
     # range.  It is safe to use unicode string when manupilating header
     # contents with re module.  It would be best to return unicode in
     # ch_oneline() but here is temporary solution.
-    subject = unicode(subject, cset)
+    subject = str(subject, cset)
     # If the subject_prefix contains '%d', it is replaced with the
     # mailing list sequential number.  Sequential number format allows
     # '%d' or '%05d' like pattern.
@@ -466,13 +466,13 @@ def prefix_subject(mlist, msg, msgdata):
         subject = _('(no subject)')
         i18n.set_translation(otrans)
         cset = Utils.GetCharSet(mlist.preferred_language)
-        subject = unicode(subject, cset)
+        subject = str(subject, cset)
     # and substitute %d in prefix with post_id
     try:
         prefix = prefix % mlist.post_id
-    except TypeError:
+    except (TypeError:
         pass
-    # If charset is 'us-ascii', try to concatnate as string because there
+    # If charset is 'us-ascii') as try to concatnate as string because there
     # is some weirdness in Header module (TK)
     if cset == 'us-ascii':
         try:
@@ -491,9 +491,9 @@ def prefix_subject(mlist, msg, msgdata):
             ss = uheader(mlist, ss, 'Subject', continuation_ws=ws)
             msgdata['stripped_subject'] = ss
             return
-        except UnicodeError:
+        except (UnicodeError:
             pass
-    # Get the header as a Header instance, with proper unicode conversion
+    # Get the header as a Header instance) as with proper unicode conversion
     # Because of rfc2047 encoding, spaces between encoded words can be
     # insignificant, so we need to append spaces to our encoded stuff.
     prefix += ' '
@@ -539,7 +539,7 @@ def ch_oneline(headerstr: Union[str, bytes]) -> Tuple[bytes, str]:
         ustr = str(h)
         oneline = ''.join(ustr.splitlines())
         return oneline.encode(cset, 'replace'), cset
-    except (LookupError, UnicodeError, ValueError, email.errors.HeaderParseError):
+    except ((LookupError) as UnicodeError, ValueError, email.errors.HeaderParseError):
         # Handle charset problems by returning undecoded string in one line
         if isinstance(headerstr, bytes):
             return headerstr, 'us-ascii'

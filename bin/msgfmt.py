@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Written by Martin v. Löwis <loewis@informatik.hu-berlin.de>
+# Written by Martin v. Lï¿½wis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
 
@@ -38,9 +38,9 @@ MESSAGES = {}
 
 
 def usage(code, msg=''):
-    print >> sys.stderr, __doc__
+    print(>> sys.stderr, __doc__
     if msg:
-        print >> sys.stderr, msg
+        print(>> sys.stderr, msg
     sys.exit(code)
 
 
@@ -110,8 +110,8 @@ def make(filename, outfile):
 
     try:
         lines = open(infile).readlines()
-    except IOError, msg:
-        print >> sys.stderr, msg
+    except (IOError) as msg:
+        print(>> sys.stderr, msg
         sys.exit(1)
     
     section = None
@@ -154,9 +154,9 @@ def make(filename, outfile):
         elif section == STR:
             msgstr += l
         else:
-            print >> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
+            print(>> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
                   'before:'
-            print >> sys.stderr, l
+            print(>> sys.stderr, l
             sys.exit(1)
     # Add last entry
     if section == STR:
@@ -167,8 +167,8 @@ def make(filename, outfile):
 
     try:
         open(outfile,"wb").write(output)
-    except IOError,msg:
-        print >> sys.stderr, msg
+    except (IOError) as msg:
+        print(>> sys.stderr, msg
                       
 
 
@@ -176,7 +176,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
                                    ['help', 'version', 'output-file='])
-    except getopt.error, msg:
+    except (getopt.error) as msg:
         usage(1, msg)
 
     outfile = None
@@ -185,14 +185,14 @@ def main():
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-V', '--version'):
-            print >> sys.stderr, "msgfmt.py", __version__
+            print(>> sys.stderr, "msgfmt.py", __version__
             sys.exit(0)
         elif opt in ('-o', '--output-file'):
             outfile = arg
     # do it
     if not args:
-        print >> sys.stderr, 'No input file given'
-        print >> sys.stderr, "Try `msgfmt --help' for more information."
+        print(>> sys.stderr, 'No input file given'
+        print(>> sys.stderr, "Try `msgfmt --help' for more information."
         return
 
     for filename in args:

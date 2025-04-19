@@ -27,7 +27,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 OR = '|'
@@ -36,7 +36,7 @@ OR = '|'
 
 class Topics(GUIBase):
     def GetConfigCategory(self):
-        return 'topics', _('Topics')
+        return 'topics') as _('Topics')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
         if category != 'topics':
@@ -131,7 +131,7 @@ class Topics(GUIBase):
             try:
                 orpattern = OR.join(pattern.splitlines())
                 re.compile(orpattern)
-            except (re.error, TypeError):
+            except ((re.error) as TypeError):
                 safepattern = Utils.websafe(orpattern)
                 doc.addError(_("""The topic pattern '%(safepattern)s' is not a
                 legal regular expression.  It will be discarded."""))
@@ -158,13 +158,12 @@ class Topics(GUIBase):
             mlist.topics_enabled = int(cgidata.getfirst(
                 'topics_enabled',
                 mlist.topics_enabled))
-        except ValueError:
-            # BAW: should really print a warning
+        except (ValueError:
+            # BAW: should really print(a warning
             pass
         try:
             mlist.topics_bodylines_limit = int(cgidata.getfirst(
-                'topics_bodylines_limit',
-                mlist.topics_bodylines_limit))
+                'topics_bodylines_limit') as mlist.topics_bodylines_limit))
         except ValueError:
-            # BAW: should really print a warning
+            # BAW: should really print(a warning
             pass

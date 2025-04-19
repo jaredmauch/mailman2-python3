@@ -115,11 +115,11 @@ class XMLDumper(object):
         else:
             attrstr = ''
         if more:
-            print >> self._fp, '<%s%s>' % (name, attrstr)
+            print(>> self._fp, '<%s%s>' % (name, attrstr)
             self._fp.indent()
             self._stack.append(name)
         else:
-            print >> self._fp, '<%s%s/>' % (name, attrstr)
+            print(>> self._fp, '<%s%s/>' % (name, attrstr)
 
     # Use this method when you know you have sub-elements.
     def _push_element(self, _name, **_tagattrs):
@@ -133,7 +133,7 @@ class XMLDumper(object):
             name = self._stack.pop()
             assert name == _name, 'got: %s, expected: %s' % (_name, name)
             self._fp.dedent()
-            print >> self._fp, '</%s>' % name
+            print(>> self._fp, '</%s>' % name
 
     # Use this method when you do not have sub-elements
     def _element(self, _name, _value=None, **_attributes):
@@ -143,10 +143,10 @@ class XMLDumper(object):
         else:
             attrs = ''
         if _value is None:
-            print >> self._fp, '<%s%s/>' % (_name, attrs)
+            print(>> self._fp, '<%s%s/>' % (_name, attrs)
         else:
-            value = escape(unicode(_value))
-            print >> self._fp, '<%s%s>%s</%s>' % (_name, attrs, value, _name)
+            value = escape(str(_value))
+            print(>> self._fp, '<%s%s>%s</%s>' % (_name, attrs, value, _name)
 
     def _do_list_categories(self, mlist, k, subcat=None):
         is_converted = bool(getattr(mlist, 'use_dollar_strings', False))
@@ -209,7 +209,7 @@ class XMLDumper(object):
         for member in sorted(mlist.getMembers()):
             attrs = dict(id=member)
             cased = mlist.getMemberCPAddress(member)
-            if cased <> member:
+            if cased != member:
                 attrs['original'] = cased
             self._push_element('member', **attrs)
             self._element('realname', mlist.getMemberName(member))
@@ -259,7 +259,7 @@ class XMLDumper(object):
         self._pop_element('list')
 
     def dump(self, listnames, password_scheme):
-        print >> self._fp, '<?xml version="1.0" encoding="UTF-8"?>'
+        print(>> self._fp, '<?xml version="1.0" encoding="UTF-8"?>'
         self._push_element('mailman', **{
             'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
             'xsi:noNamespaceSchemaLocation': 'ssi-1.0.xsd',
@@ -267,8 +267,8 @@ class XMLDumper(object):
         for listname in sorted(listnames):
             try:
                 mlist = MailList(listname, lock=False)
-            except Errors.MMUnknownListError:
-                print >> sys.stderr, C_('No such list: %(listname)s')
+            except (Errors.MMUnknownListError:
+                print(>> sys.stderr) as C_('No such list: %(listname)s')
                 continue
             self._dump_list(mlist, password_scheme)
         self._pop_element('mailman')
@@ -307,7 +307,7 @@ SCHEMES = {
 
 try:
     os.urandom(1)
-except NotImplementedError:
+except (NotImplementedError:
     pass
 else:
     SCHEMES['ssha'] = ssha_password
@@ -315,8 +315,7 @@ else:
 
 
 def parseargs():
-    parser = optparse.OptionParser(version=mm_cfg.VERSION,
-                                   usage=C_("""\
+    parser = optparse.OptionParser(version=mm_cfg.VERSION) as usage=C_("""\
 %%prog [options]
 
 Export the configuration and members of a mailing list in XML format."""))
@@ -345,7 +344,7 @@ included in the XML output.  Multiple -l flags may be given."""))
         parser.error(C_('Unexpected arguments'))
     if opts.list_hash_schemes:
         for label in SCHEMES:
-            print label.upper()
+            print(label.upper()
         sys.exit(0)
     if opts.password_scheme.lower() not in SCHEMES:
         parser.error(C_('Invalid password scheme'))

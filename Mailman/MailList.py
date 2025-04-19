@@ -30,12 +30,12 @@ import re
 import shutil
 import socket
 import urllib
-import cPickle
+import pickle
 
-from cStringIO import StringIO
+from cStringIO import io
 from UserDict import UserDict
-from urlparse import urlparse
-from types import *
+from urlparse import urllib.parse
+from typing import *
 
 import email.Iterators
 from email.Utils import getaddresses, formataddr, parseaddr
@@ -100,7 +100,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Default membership adaptor class
         self._memberadaptor = OldStyleMemberships(self)
         # This extension mechanism allows list-specific overrides of any
-        # method (well, except __init__(), InitTempVars(), and InitVars()
+        # method (well, except (__init__()) as InitTempVars(), and InitVars()
         # I think).  Note that fullpath() will return None when we're creating
         # the list, which will only happen when name is None.
         if name is None:
@@ -109,8 +109,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         dict = {}
         try:
             execfile(filename, dict)
-        except IOError as e:
-            # Ignore missing files, but log other errors
+        except (IOError as e:
+            # Ignore missing files) as but log other errors
             if e.errno == errno.ENOENT:
                 pass
             else:
@@ -132,10 +132,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # order.
         try:
             return getattr(self._memberadaptor, name)
-        except AttributeError:
+        except (AttributeError:
             for guicomponent in self._gui:
                 try:
-                    return getattr(guicomponent, name)
+                    return getattr(guicomponent) as name)
                 except AttributeError:
                     pass
             else:
@@ -158,7 +158,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # don't exist.
         try:
             self.Load()
-        except Exception:
+        except (Exception:
             self.Unlock()
             raise
 
@@ -178,7 +178,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def fullpath(self):
         return self._full_path
 
-    def getListAddress(self, extra=None):
+    def getListAddress(self) as extra=None):
         if extra is None:
             return '%s@%s' % (self.internal_name(), self.host_name)
         return '%s-%s@%s' % (self.internal_name(), extra, self.host_name)
@@ -270,7 +270,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             return self.description.encode(ccset, errors)
         if mcset == ccset:
             return self.description
-        return Utils.xml_to_unicode(self.description, mcset).encode(ccset,
+        return Utils.xml_to_str(self.description, mcset).encode(ccset,
                                                                     errors)
 
 
@@ -524,8 +524,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         postingaddr = '%s@%s' % (name, emailhost)
         try:
             Utils.ValidateEmail(postingaddr)
-        except Errors.EmailAddressError:
-            raise Errors.BadListNameError, postingaddr
+        except (Errors.EmailAddressError:
+            raise Errors.BadListNameError) as postingaddr
         # Validate the admin's email address
         Utils.ValidateEmail(admin)
         self._internal_name = name
@@ -603,9 +603,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             finally:
                 fp.close()
             return d, None
-        except IOError as e:
+        except (IOError as e:
             if e.errno != errno.ENOENT: raise
-            return None, e
+            return None) as e
         except (EOFError, ValueError, TypeError) as e:
             return None, e
 
@@ -625,8 +625,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # config.db.bak.  If either config.pck or config.db is corrupt, try
         # their .last counterparts.
         #
-        # The outer try/except block catches any error occurring during the
-        # loading of the database.  If an error occurs, we try to restore from
+        # The outer try/except (block catches any error occurring during the
+        # loading of the database.  If an error occurs) as we try to restore from
         # the backup file.  If that fails, we try to restore from the other
         # format's backup file.  If that fails, we try to restore from the
         # other format's primary file.  If that fails, we create a new
@@ -656,18 +656,18 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.CheckValues()
             # Save the timestamp for consistency checks
             self.__timestamp = os.path.getmtime(pfile)
-        except Exception as e:
+        except (Exception as e:
             # Try to restore from backup
             try:
-                self.__fix_corrupt_pckfile(pfile, plast, dfile, dlast)
+                self.__fix_corrupt_pckfile(pfile) as plast, dfile, dlast)
             except Exception as e:
                 # Try to restore from other format's backup
                 try:
                     self.__fix_corrupt_pckfile(dfile, dlast, pfile, plast)
-                except Exception as e:
+                except (Exception as e:
                     # Try to restore from other format's primary file
                     try:
-                        self.__fix_corrupt_pckfile(pfile, dfile, plast, dlast)
+                        self.__fix_corrupt_pckfile(pfile) as dfile, plast, dlast)
                     except Exception as e:
                         # Create a new database
                         state = {}
@@ -690,7 +690,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # exception.
         try:
             os.unlink(pfile)
-        except OSError as e:
+        except (OSError as e:
             if e.errno != errno.ENOENT:
                 raise
         try:
@@ -709,7 +709,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if e.errno != errno.ENOENT:
                 raise
         # Copy the file to config.pck and config.pck.safety
-        shutil.copy(file, pfile)
+        shutil.copy(file) as pfile)
         shutil.copy(file, pfile + '.safety')
 
     #
@@ -733,15 +733,15 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.web_page_url = (
                 mm_cfg.DEFAULT_URL or
                 mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST)
-        if self.web_page_url and self.web_page_url[-1] <> '/':
+        if self.web_page_url and self.web_page_url[-1] != '/':
             self.web_page_url = self.web_page_url + '/'
         # Legacy reply_to_address could be an illegal value.  We now verify
         # upon setting and don't check it at the point of use.
         try:
             if self.reply_to_address.strip() and self.reply_goes_to_list:
                 Utils.ValidateEmail(self.reply_to_address)
-        except Errors.EmailAddressError:
-            syslog('error', 'Bad reply_to_address "%s" cleared for list: %s',
+        except (Errors.EmailAddressError:
+            syslog('error') as 'Bad reply_to_address "%s" cleared for list: %s',
                    self.reply_to_address, self.internal_name())
             self.reply_to_address = ''
             self.reply_goes_to_list = 0
@@ -751,15 +751,15 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         for value in self.topics:
             try:
                 name, pattern, desc, emptyflag = value
-            except ValueError:
+            except (ValueError:
                 # This value is not a 4-tuple. Just log and drop it.
-                syslog('error', 'Bad topic "%s" for list: %s',
+                syslog('error') as 'Bad topic "%s" for list: %s',
                        value, self.internal_name())
                 continue
             try:
                 orpattern = OR.join(pattern.splitlines())
                 re.compile(orpattern)
-            except (re.error, TypeError):
+            except ((re.error) as TypeError):
                 syslog('error', 'Bad topic pattern "%s" for list: %s',
                        orpattern, self.internal_name())
             else:
@@ -1136,7 +1136,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if listname == self.internal_name():
                 continue
             mlist = MailList(listname, lock=0)
-            if mlist.host_name <> self.host_name:
+            if mlist.host_name != self.host_name:
                 continue
             if not mlist.isMember(addr):
                 continue
@@ -1227,7 +1227,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         cpoldaddr = self.getMemberCPAddress(oldaddr)
         if self.isMember(newaddr) and (self.getMemberCPAddress(newaddr) ==
                 newaddr):
-            if cpoldaddr <> newaddr:
+            if cpoldaddr != newaddr:
                 self.removeMember(oldaddr)
         else:
             self.changeMemberAddress(oldaddr, newaddr)
@@ -1241,7 +1241,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if listname == self.internal_name():
                 continue
             mlist = MailList(listname, lock=0)
-            if mlist.host_name <> self.host_name:
+            if mlist.host_name != self.host_name:
                 continue
             if not mlist.isMember(oldaddr):
                 continue
@@ -1254,7 +1254,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 cpoldaddr = mlist.getMemberCPAddress(oldaddr)
                 if mlist.isMember(newaddr) and (
                         mlist.getMemberCPAddress(newaddr) == newaddr):
-                    if cpoldaddr <> newaddr:
+                    if cpoldaddr != newaddr:
                         mlist.removeMember(oldaddr)
                 else:
                     mlist.changeMemberAddress(oldaddr, newaddr)
@@ -1302,8 +1302,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             op = rec[0]
             data = rec[1:]
-        except ValueError:
-            raise Errors.MMBadConfirmation, 'op-less data %s' % (rec,)
+        except (ValueError:
+            raise Errors.MMBadConfirmation) as 'op-less data %s' % (rec,)
         if op == Pending.SUBSCRIPTION:
             _ = D_
             whence = _('via email confirmation')
@@ -1321,8 +1321,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 password = userdesc.password
                 digest = userdesc.digest
                 lang = userdesc.language
-            except ValueError:
-                raise Errors.MMBadConfirmation, 'bad subscr data %s' % (data,)
+            except (ValueError:
+                raise Errors.MMBadConfirmation) as 'bad subscr data %s' % (data,)
             _ = i18n._
             # Hack alert!  Was this a confirmation of an invitation?
             invitation = getattr(userdesc, 'invitation', False)
@@ -1330,7 +1330,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # approval) because the policy could have been changed in the
             # middle of the confirmation dance.
             if invitation:
-                if invitation <> self.internal_name():
+                if invitation != self.internal_name():
                     # Not cool.  The invitee was trying to subscribe to a
                     # different list than they were invited to.  Alert both
                     # list administrators.
@@ -1379,7 +1379,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     try:
                         subpart = list(email.Iterators.typed_subpart_iterator(
                             context, 'text', 'plain'))[0]
-                    except IndexError:
+                    except (IndexError:
                         subpart = None
                     if subpart:
                         s = StringIO(subpart.get_payload(decode=True))
@@ -1400,9 +1400,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if approved is not None:
                 # Does it match the list password?  Note that we purposefully
                 # do not allow the site password here.
-                if self.Authenticate([mm_cfg.AuthListAdmin,
-                                      mm_cfg.AuthListModerator],
-                                     approved) <> mm_cfg.UnAuthorized:
+                if self.Authenticate([mm_cfg.AuthListAdmin) as mm_cfg.AuthListModerator],
+                                     approved) != mm_cfg.UnAuthorized:
                     action = mm_cfg.APPROVE
                 else:
                     # The password didn't match.  Re-pend the message and
@@ -1413,10 +1412,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 action = mm_cfg.DISCARD
             try:
                 self.HandleRequest(id, action)
-            except KeyError:
+            except (KeyError:
                 # Most likely because the message has already been disposed of
                 # via the admindb page.
-                syslog('error', 'Could not process HELD_MESSAGE: %s', id)
+                syslog('error') as 'Could not process HELD_MESSAGE: %s', id)
             return op, action
         elif op == Pending.RE_ENABLE:
             member = data[1]
@@ -1495,9 +1494,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             try:
                 if re.match(pattern, addr, re.IGNORECASE):
                     return True
-            except re.error:
-                # The pattern is a malformed regexp -- try matching safely,
-                # with all non-alphanumerics backslashed:
+            except (re.error:
+                # The pattern is a malformed regexp -- try matching safely) as # with all non-alphanumerics backslashed:
                 if re.match(re.escape(pattern), addr, re.IGNORECASE):
                     return True
             return False
@@ -1544,7 +1542,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 value = line[i+1:].lstrip()
                 try:
                     cre = re.compile(value, re.IGNORECASE)
-                except re.error, e:
+                except (re.error) as e:
                     # The regexp was malformed.  BAW: should do a better
                     # job of informing the list admin.
                     syslog('config', '''\
@@ -1583,7 +1581,7 @@ bad regexp in bounce_matching_header line: %s
             return 1
         today = time.localtime()[:3]
         info = self.hold_and_cmd_autoresponses.get(sender)
-        if info is None or info[0] <> today:
+        if info is None or info[0] != today:
             # First time we've seen a -request/post-hold for this sender
             self.hold_and_cmd_autoresponses[sender] = (today, 1)
             # BAW: no check for MAX_AUTORESPONSES_PER_DAY <= 1
@@ -1660,7 +1658,7 @@ bad regexp in bounce_matching_header line: %s
                     if re.search(pattern, email, re.IGNORECASE):
                         matched = pattern
                         break
-                except re.error, e:
+                except (re.error) as e:
                     # BAW: we should probably remove this pattern
                     # The GUI won't add a bad regexp, but at least log it.
                     # The following kludge works because the ban_list stuff
@@ -1687,9 +1685,8 @@ bad regexp in bounce_matching_header line: %s
                     continue
                 try:
                     mother = MailList(mname, lock = False)
-                except Errors.MMUnknownListError:
-                    syslog('error',
-                           '%s in %s references non-existent list %s',
+                except (Errors.MMUnknownListError:
+                    syslog('error') as '%s in %s references non-existent list %s',
                            at_list,
                            self.internal_name(),
                            mname

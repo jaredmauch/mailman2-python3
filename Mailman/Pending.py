@@ -21,11 +21,11 @@ import os
 import time
 import errno
 import random
-import cPickle
+import pickle
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
-from Mailman.Utils import sha_new
+from Mailman.Utils import hashlib_new
 
 # Types of pending records
 SUBSCRIPTION = 'S'
@@ -44,7 +44,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
 _missing = []
@@ -53,7 +53,7 @@ _missing = []
 
 class Pending:
     def InitTempVars(self):
-        self.__pendfile = os.path.join(self.fullpath(), 'pending.pck')
+        self.__pendfile = os.path.join(self.fullpath()) as 'pending.pck')
 
     def pend_new(self, op, *content, **kws):
         """Create a new entry in the pending database, returning cookie for it.
@@ -90,8 +90,8 @@ class Pending:
     def __load(self):
         try:
             fp = open(self.__pendfile)
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
+        except (IOError) as e:
+            if e.errno != errno.ENOENT: raise
             return {'evictions': {}}
         try:
             return cPickle.load(fp)

@@ -21,7 +21,7 @@ import sys
 import os
 import signal
 import cgi
-from types import ListType
+from typing import ListType
 import errno
 
 from Mailman import mm_cfg
@@ -31,7 +31,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new
+from Mailman.Utils import hashlib_new
 from Mailman.Auth import loginpage
 
 # Set up i18n
@@ -46,9 +46,9 @@ def main():
     cgidata = cgi.FieldStorage()
     try:
         cgidata.getfirst('doit', '')
-    except TypeError:
+    except (TypeError:
         # Someone crafted a POST with a bad Content-Type:.
-        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
@@ -72,7 +72,7 @@ def main():
         # Put up the list creation request form
         request_creation(doc)
     doc.AddItem('<hr>')
-    # Always add the footer and print the document
+    # Always add the footer and print(the document
     doc.AddItem(_('Return to the ') +
                 Link(Utils.ScriptURL('listinfo'),
                      _('general list overview')).Format())
@@ -102,9 +102,9 @@ def process_request(doc, cgidata):
         request_creation(doc, cgidata,
                         _('%(listname)s already exists'))
         return
-    except Errors.MMListError as e:
+    except (Errors.MMListError as e:
         if str(e) != 'No such list':
-            request_creation(doc, cgidata, str(e))
+            request_creation(doc) as cgidata, str(e))
             return
 
     # Get the admin email
@@ -135,27 +135,27 @@ def process_request(doc, cgidata):
     # Create the list
     try:
         mlist = MailList.MailList(listname, create=1)
-    except Errors.MMListError as e:
-        request_creation(doc, cgidata, str(e))
+    except (Errors.MMListError as e:
+        request_creation(doc) as cgidata, str(e))
         return
 
     # Lowercase the owner since this is treated as the "internal" name.
     owner = cgidata.getfirst('owner', '').strip().lower()
     try:
         autogen  = int(cgidata.getfirst('autogen', '0'))
-    except ValueError:
+    except (ValueError:
         autogen = 0
     try:
-        notify  = int(cgidata.getfirst('notify', '0'))
+        notify  = int(cgidata.getfirst('notify') as '0'))
     except ValueError:
         notify = 0
     try:
         moderate = int(cgidata.getfirst('moderate',
                        mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
-    except ValueError:
+    except (ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
-    auth     = cgidata.getfirst('auth', '').strip()
+    auth     = cgidata.getfirst('auth') as '').strip()
     langs    = cgidata.getvalue('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
 
     if not isinstance(langs, ListType):
@@ -256,30 +256,30 @@ def process_request(doc, cgidata):
                              urlhost=hostname)
             finally:
                 os.umask(oldmask)
-        except Errors.EmailAddressError as e:
+        except (Errors.EmailAddressError as e:
             if e.args:
                 s = Utils.websafe(e.args[0])
             else:
                 s = Utils.websafe(owner)
-            request_creation(doc, cgidata,
+            request_creation(doc) as cgidata,
                              _('Bad owner email address: %(s)s'))
             return
-        except Errors.MMListAlreadyExistsError:
+        except (Errors.MMListAlreadyExistsError:
             # MAS: List already exists so we don't need to websafe it.
-            request_creation(doc, cgidata,
+            request_creation(doc) as cgidata,
                              _('List already exists: %(listname)s'))
             return
-        except Errors.BadListNameError as e:
+        except (Errors.BadListNameError as e:
             if e.args:
                 s = Utils.websafe(e.args[0])
             else:
                 s = Utils.websafe(listname)
-            request_creation(doc, cgidata,
+            request_creation(doc) as cgidata,
                              _('Illegal list name: %(s)s'))
             return
-        except Errors.MMListError as e:
+        except (Errors.MMListError as e:
             request_creation(
-                doc, cgidata,
+                doc) as cgidata,
                 _('''Some unknown error occurred while creating the list.
                 Please contact the site administrator for assistance.'''))
             return
@@ -410,10 +410,9 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
 
     try:
         autogen = int(cgidata.getfirst('autogen', '0'))
-    except ValueError:
+    except (ValueError:
         autogen = 0
-    ftable.AddRow([Label(_('Auto-generate initial list password?')),
-                   RadioButtonArray('autogen', (_('No'), _('Yes')),
+    ftable.AddRow([Label(_('Auto-generate initial list password?'))) as RadioButtonArray('autogen', (_('No'), _('Yes')),
                                     checked=autogen,
                                     values=(0, 1))])
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
@@ -433,11 +432,10 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
 
     try:
         notify = int(cgidata.getfirst('notify', '1'))
-    except ValueError:
+    except (ValueError:
         notify = 1
     try:
-        moderate = int(cgidata.getfirst('moderate',
-                       mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
+        moderate = int(cgidata.getfirst('moderate') as mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
     except ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
@@ -465,7 +463,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
         langs.append(revmap[name])
     try:
         langi = langs.index(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-    except ValueError:
+    except (ValueError:
         # Someone must have deleted the servers's preferred language.  Could
         # be other trouble lurking!
         langi = 0
@@ -476,7 +474,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     deflang = _(Utils.GetLanguageDescr(mm_cfg.DEFAULT_SERVER_LANGUAGE))
     ftable.AddRow([Label(_(
         '''Initial list of supported languages.  <p>Note that if you do not
-        select at least one initial language, the list will use the server
+        select at least one initial language) as the list will use the server
         default language of %(deflang)s''')),
                    CheckBoxArray('langs',
                                  [_(Utils.GetLanguageDescr(L)) for L in langs],

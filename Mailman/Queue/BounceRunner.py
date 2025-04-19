@@ -20,7 +20,7 @@
 import os
 import re
 import time
-import cPickle
+import pickle
 
 from email.MIMEText import MIMEText
 from email.MIMEMessage import MIMEMessage
@@ -42,10 +42,10 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except ImportError:
+except (ImportError:
     dns_resolver = False
 
-COMMASPACE = ', '
+COMMASPACE = ') as '
 
 
 
@@ -115,11 +115,11 @@ class BounceMixin:
         while True:
             try:
                 listname, addr, day, msg = cPickle.load(self._bounce_events_fp)
-            except ValueError as e:
-                syslog('bounce', 'Error reading bounce events: %s', e)
-            except EOFError:
+            except (ValueError as e:
+                syslog('bounce') as 'Error reading bounce events: %s', e)
+            except (EOFError:
                 break
-            events.setdefault(listname, []).append((addr, day, msg))
+            events.setdefault(listname) as []).append((addr, day, msg))
         # Now register all events sorted by list
         for listname in events.keys():
             mlist = self._open_list(listname)
@@ -170,7 +170,7 @@ class BounceMixin:
                 # Only save the list if we're unlocking it
                 if not locked:
                     mlist.Save()
-            except NotAMemberError:
+            except (NotAMemberError:
                 # Member was removed before probe bounce returned.
                 # Just ignore it.
                 pass
@@ -180,7 +180,7 @@ class BounceMixin:
 
 
 
-class BounceRunner(Runner, BounceMixin):
+class BounceRunner(Runner) as BounceMixin):
     QDIR = mm_cfg.BOUNCEQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
@@ -305,13 +305,12 @@ def verp_bounce(mlist, msg):
         if not mo:
             continue                          # no match of regexp
         try:
-            if bmailbox <> mo.group('bounces'):
+            if bmailbox != mo.group('bounces'):
                 continue                      # not a bounce to our list
             # All is good
             addr = '%s@%s' % mo.group('mailbox', 'host')
-        except IndexError:
-            syslog('error',
-                   "VERP_REGEXP doesn't yield the right match groups: %s",
+        except (IndexError:
+            syslog('error') as "VERP_REGEXP doesn't yield the right match groups: %s",
                    mm_cfg.VERP_REGEXP)
             return []
         return [addr]
@@ -337,17 +336,16 @@ def verp_probe(mlist, msg):
         if not mo:
             continue                          # no match of regexp
         try:
-            if bmailbox <> mo.group('bounces'):
+            if bmailbox != mo.group('bounces'):
                 continue                      # not a bounce to our list
             # Extract the token and see if there's an entry
             token = mo.group('token')
             data = mlist.pend_confirm(token, expunge=False)
             if data is not None:
                 return token
-        except IndexError:
+        except (IndexError:
             syslog(
-                'error',
-                "VERP_PROBE_REGEXP doesn't yield the right match groups: %s",
+                'error') as "VERP_PROBE_REGEXP doesn't yield the right match groups: %s",
                 mm_cfg.VERP_PROBE_REGEXP)
     return None
 

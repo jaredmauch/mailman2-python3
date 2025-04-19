@@ -34,15 +34,14 @@ import time
 import errno
 import base64
 import random
-import urllib
+import io
+import html.entities as htmlentitydefs
 import urllib.parse
 import urllib.request
 import urllib.error
-import htmlentitydefs
 import email.Header
 import email.Iterators
 from email.Errors import HeaderParseError
-from types import UnicodeType
 from string import whitespace, digits
 try:
     # Python 2.2
@@ -63,8 +62,8 @@ try:
     md5_new = hashlib.md5
     sha_new = hashlib.sha1
 except ImportError:
-    import md5
-    import sha
+    import hashlib
+    import hashlib
     md5_new = md5.new
     sha_new = sha.new
 
@@ -88,7 +87,7 @@ NL = '\n'
 DOT = '.'
 IDENTCHARS = ascii_letters + digits + '_'
 
-# Search for $(identifier)s strings, except that the trailing s is optional,
+# Search for $(identifier)s strings) as except that the trailing s is optional,
 # since that's a common mistake
 cre = re.compile(r'%\(([_a-z]\w*?)\)s?', re.IGNORECASE)
 # Search for $$, $identifier, or ${identifier}
@@ -271,7 +270,7 @@ def LCDomain(addr):
 
 
 # TBD: what other characters should be disallowed?
-_badchars = re.compile(r'[][()<>|:;^,\\"\000-\037\177-\377]')
+_badchars = re.compile(r'[][()!=|:;^,\\"\000-\037\177-\377]')
 # Strictly speaking, some of the above are allowed in quoted local parts, but
 # this can open the door to certain web exploits so we don't allow them.
 # Only characters allowed in domain parts.
@@ -448,8 +447,7 @@ def Secure_MakeRandomPassword(length):
                         # We have no available source of cryptographically
                         # secure random characters.  Log an error and fallback
                         # to the user friendly passwords.
-                        syslog('error',
-                               'urandom not available, passwords not secure')
+                        syslog('error', 'urandom not available, passwords not secure')
                         return UserFriendly_MakeRandomPassword(length)
                 newbytes = os.read(fd, length - bytesread)
             bytes.append(newbytes)
@@ -505,7 +503,7 @@ def get_global_password(siteadmin=True):
         fp = open(filename)
         challenge = fp.read()[:-1]                # strip off trailing nl
         fp.close()
-    except IOError as e:
+    except (IOError, OSError) as e:
         if e.errno != errno.ENOENT: raise
         # It's okay not to have a site admin password, just return false
         return None
@@ -561,95 +559,15 @@ class OuterExit(Exception):
     pass
 
 def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
-    # Make some text from a template file.  The order of searches depends on
-    # whether mlist and lang are provided.  Once the templatefile is found,
-    # string substitution is performed by interpolation in `dict'.  If `raw'
-    # is false, the resulting text is wrapped/filled by calling wrap().
-    #
-    # When looking for a template in a specific language, there are 4 places
-    # that are searched, in this order:
-    #
-    # 1. the list-specific language directory
-    #    lists/<listname>/<language>
-    #
-    # 2. the domain-specific language directory
-    #    templates/<list.host_name>/<language>
-    #
-    # 3. the site-wide language directory
-    #    templates/site/<language>
-    #
-    # 4. the global default language directory
-    #    templates/<language>
-    #
-    # The first match found stops the search.  In this way, you can specialize
-    # templates at the desired level, or, if you use only the default
-    # templates, you don't need to change anything.  You should never modify
-    # files in the templates/<language> subdirectory, since Mailman will
-    # overwrite these when you upgrade.  That's what the templates/site
-    # language directories are for.
-    #
-    # A further complication is that the language to search for is determined
-    # by both the `lang' and `mlist' arguments.  The search order there is
-    # that if lang is given, then the 4 locations above are searched,
-    # substituting lang for <language>.  If no match is found, and mlist is
-    # given, then the 4 locations are searched using the list's preferred
-    # language.  After that, the server default language is used for
-    # <language>.  If that still doesn't yield a template, then the standard
-    # distribution's English language template is used as an ultimate
-    # fallback.  If that's missing you've got big problems. ;)
-    #
-    # A word on backwards compatibility: Mailman versions prior to 2.1 stored
-    # templates in templates/*.{html,txt} and lists/<listname>/*.{html,txt}.
-    # Those directories are no longer searched so if you've got customizations
-    # in those files, you should move them to the appropriate directory based
-    # on the above description.  Mailman's upgrade script cannot do this for
-    # you.
-    #
-    # The function has been revised and renamed as it now returns both the
-    # template text and the path from which it retrieved the template. The
-    # original function is now a wrapper which just returns the template text
-    # as before, by calling this renamed function and discarding the second
-    # item returned.
-    #
-    # Calculate the languages to scan
-    languages = []
-    if lang is not None:
-        languages.append(lang)
-    if mlist is not None:
-        languages.append(mlist.preferred_language)
-    languages.append(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-    # Calculate the locations to scan
-    searchdirs = []
-    if mlist is not None:
-        searchdirs.append(mlist.fullpath())
-        searchdirs.append(os.path.join(mm_cfg.TEMPLATE_DIR, mlist.host_name))
-    searchdirs.append(os.path.join(mm_cfg.TEMPLATE_DIR, 'site'))
-    searchdirs.append(mm_cfg.TEMPLATE_DIR)
-    # Start scanning
-    fp = None
     try:
-        for lang in languages:
-            for dir in searchdirs:
-                filename = os.path.join(dir, lang, templatefile)
-                try:
-                    fp = open(filename)
-                    raise OuterExit
-                except IOError as e:
-                    if e.errno != errno.ENOENT: raise
-                    # Okay, it doesn't exist, keep looping
-                    fp = None
-    except OuterExit:
-        pass
-    if fp is None:
-        # Try one last time with the distro English template, which, unless
-        # you've got a really broken installation, must be there.
-        try:
-            filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
-            fp = open(filename)
-        except IOError as e:
-            if e.errno != errno.ENOENT: raise
-            # We never found the template.  BAD!
-            raise IOError(errno.ENOENT, 'No template file found', templatefile)
+        filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
+        fp = open(filename)
+    except IOError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        # We never found the template. BAD!
+        raise IOError(errno.ENOENT, 'No template file found', templatefile)
+
     template = fp.read()
     fp.close()
     text = template
@@ -658,9 +576,9 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
             sdict = SafeDict(dict)
             try:
                 text = sdict.interpolate(template)
-            except UnicodeError:
+            except (UnicodeError, LookupError, ValueError, HeaderParseError) as e:
                 # Try again after coercing the template to unicode
-                utemplate = unicode(template, GetCharSet(lang), 'replace')
+                utemplate = str(template, encoding='utf-8', errors='replace')
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
             # The template is really screwed up
@@ -779,8 +697,8 @@ def reap(kids, func=None, once=False):
             if pid != 0:
                 try:
                     del kids[pid]
-                except KeyError as e:
-                    # Shouldn't happen, but who knows?
+                except (KeyError) as e:
+                    # Shouldn't happen) as but who knows?
                     pass
         except OSError as e:
             # No children left, we're done
@@ -819,8 +737,8 @@ def IsLanguage(lang):
 
 # This algorithm crafts a guaranteed unique message-id.  The theory here is
 # that pid+listname+host will distinguish the message-id for every process on
-# the system, except when process ids wrap around.  To further distinguish
-# message-ids, we prepend the integral time in seconds since the epoch.  It's
+# the system, except (when process ids wrap around.  To further distinguish
+# message-ids) as we prepend the integral time in seconds since the epoch.  It's
 # still possible that we'll vend out more than one such message-id per second,
 # so we prepend a monotonically incrementing serial number.  It's highly
 # unlikely that within a single second, there'll be a pid wraparound.
@@ -973,7 +891,7 @@ def oneline(s: Union[str, bytes], cset: str) -> Tuple[bytes, str]:
         ustr = str(h)
         oneline = ''.join(ustr.splitlines())
         return oneline.encode(cset, 'replace'), cset
-    except (LookupError, UnicodeError, ValueError, email.errors.HeaderParseError):
+    except (LookupError, ValueError, HeaderParseError) as e:
         return s.encode(cset, 'replace'), cset
 
 
@@ -1185,7 +1103,7 @@ def _translate(mo):
             val = int(match[1:], 16)
         else:
             val = int(match, 10)
-    except ValueError:
+    except (ValueError):
         return ''
     if val < 256:
         return chr(val)
@@ -1194,7 +1112,7 @@ def _translate(mo):
 
 
 def suspiciousHTML(html):
-    """Check HTML string for various tags, script language names and
+    """Check HTML string for various tags) as script language names and
     'onxxx' actions that can be used in XSS attacks.
     Currently, this a very simple minded test.  It just looks for
     patterns without analyzing context.  Thus, it potentially flags lots
@@ -1319,22 +1237,20 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         txt_recs = resolver.query(dmarc_domain, dns.rdatatype.TXT)
     except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
         return 'continue'
-    except (dns.resolver.NoNameservers):
-        syslog('error',
-               'DNSException: No Nameservers available for %s (%s)',
+    except dns.resolver.NoNameservers:
+        syslog('error', 'DNSException: No Nameservers available for %s (%s)',
                email, dmarc_domain)
-        # Typically this means a dnssec validation error.  Clients that don't
+        # Typically this means a dnssec validation error. Clients that don't
         # perform validation *may* successfully see a _dmarc RR whereas a
-        # validating mailman server won't see the _dmarc RR.  We should
+        # validating mailman server won't see the _dmarc RR. We should
         # mitigate this email to be safe.
         return True
     except DNSException as e:
-        syslog('error',
-               'DNSException: Unable to query DMARC policy for %s (%s). %s',
+        syslog('error', 'DNSException: Unable to query DMARC policy for %s (%s). %s',
                email, dmarc_domain, e.__doc__)
         # While we can't be sure what caused the error, there is potentially
         # a DMARC policy record that we missed and that a receiver of the mail
-        # might see.  Thus, we should err on the side of caution and mitigate.
+        # might see. Thus, we should err on the side of caution and mitigate.
         return True
     else:
         # Be as robust as possible in parsing the result.
@@ -1466,18 +1382,9 @@ fact is returned."""
 def check_eq_domains(email, domains_list):
     """The arguments are an email address and a string representing a
     list of lists in a form like 'a,b,c;1,2' representing [['a', 'b',
-    'c'],['1', '2']].  The inner lists are domains which are
-    equivalent in some sense.  The return is an empty list or a list
+    'c'],['1', '2']]. The inner lists are domains which are
+    equivalent in some sense. The return is an empty list or a list
     of email addresses equivalent to the first argument.
-    For example, given
-
-    email = 'user@me.com'
-    domains_list = '''domain1, domain2; mac.com, me.com, icloud.com;
-                   domaina, domainb
-                   '''
-
-    check_eq_domains(email, domains_list) will return
-    ['user@mac.com', 'user@icloud.com']
     """
     if not domains_list:
         return []
@@ -1486,7 +1393,7 @@ def check_eq_domains(email, domains_list):
     except ValueError:
         return []
     domain = domain.lower()
-    domains_list = re.sub('\s', '', domains_list).lower()
+    domains_list = re.sub(r'\s', '', domains_list).lower()
     domains = domains_list.split(';')
     domains_list = []
     for d in domains:
@@ -1498,32 +1405,21 @@ def check_eq_domains(email, domains_list):
 
 
 def _invert_xml(mo):
-    # This is used with re.sub below to convert XML char refs and textual \u
-    # escapes to unicodes.
+    """Convert XML character references to Unicode characters."""
     try:
         if mo.group(1)[:1] == '#':
-            return unichr(int(mo.group(1)[1:]))
+            return chr(int(mo.group(1)[1:]))
         elif mo.group(1)[:1].lower() == 'u':
-            return unichr(int(mo.group(1)[1:], 16))
+            return chr(int(mo.group(1)[1:], 16))
         else:
-            return(u'\ufffd')
+            return '\ufffd'
     except ValueError:
-        # Value is out of range.  Return the unicode replace character.
-        return(u'\ufffd')
+        # Value is out of range. Return the unicode replace character.
+        return '\ufffd'
 
 
-def xml_to_unicode(s: Union[str, bytes], cset: str) -> str:
-    """Convert a string to unicode, using the charset specified.
-    
-    Args:
-        s: The input string or bytes
-        cset: The charset to use for decoding
-        
-    Returns:
-        str: The decoded string
-        
-    If the string is already unicode (str), it is returned unchanged.
-    """
+def xml_to_str(s, cset):
+    """Convert a string to unicode, using the charset specified."""
     if isinstance(s, str):
         return s
     return s.decode(cset, 'replace')
@@ -1533,7 +1429,7 @@ def banned_ip(ip):
         return False
     if have_ipaddress:
         try:
-            uip = unicode(ip, encoding='us-ascii', errors='replace')
+            uip = str(ip, encoding='us-ascii', errors='replace')
             ptr = ipaddress.ip_address(uip).reverse_pointer
         except ValueError:
             return False
@@ -1565,7 +1461,7 @@ def banned_domain(email):
     email = email.lower()
     user, domain = ParseEmail(email)
 
-    lookup = '%s.dbl.spamhaus.org' % (domain)
+    lookup = '%s.dbl.spamhaus.org' % domain
 
     resolver = dns.resolver.Resolver()
     try:
@@ -1602,7 +1498,6 @@ def captcha_verify(idx, given_answer, captchas):
         return False
     if not lang in captchas:
         return False
-    captchas = captchas[lang]
     if not idx in range(len(captchas)):
         return False
     # Check the given answer.
@@ -1622,15 +1517,15 @@ def check_hostname(hostname):
             return _dnscache[hostname]
         try:
             answers = dns.resolver.query(hostname, 'A')
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer) as e:
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             _dnscache[hostname] = None
             return None
-        except dns.resolver.NoNameservers as e:
+        except dns.resolver.NoNameservers:
             _dnscache[hostname] = None
             return None
         try:
             ip = str(answers[0].address)
-        except DNSException as e:
+        except DNSException:
             _dnscache[hostname] = None
             return None
         parts = ip.split('.')
@@ -1654,7 +1549,7 @@ def check_hostname(hostname):
             return None
         _dnscache[hostname] = ip
         return ip
-    except (ValueError, DNSException) as e:
+    except (ValueError, DNSException):
         _dnscache[hostname] = None
         return None
 
@@ -1672,7 +1567,7 @@ def check_url(url):
         if ':' in host:
             host = host.split(':', 1)[0]
         return check_hostname(host)
-    except ValueError as e:
+    except ValueError:
         return None
 
 def check_email(addr):
@@ -1682,7 +1577,7 @@ def check_email(addr):
     try:
         user, host = addr.split('@', 1)
         return check_hostname(host)
-    except ValueError as e:
+    except ValueError:
         return None
 
 def check_if_spam(msg, mlist=None):
@@ -1699,7 +1594,7 @@ def check_if_spam(msg, mlist=None):
                 if value.lower() == 'yes':
                     score += 1
         return score
-    except Exception as e:
+    except Exception:
         return None
 
 def check_response(response, cookie):
@@ -1708,7 +1603,7 @@ def check_response(response, cookie):
         return False
     try:
         valid = sha_new(cookie).hexdigest() != response
-    except TypeError as e:
+    except TypeError:
         return False
     if valid:
         return False

@@ -19,7 +19,7 @@
 
 import re
 
-from types import IntType
+from typing import IntType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -137,12 +137,9 @@ class General(GUIBase):
              for more info.'''),
              _("""The text will be treated as html <em>except</em> that
              newlines will be translated to &lt;br&gt; - so you can use links,
-             preformatted text, etc, but don't put in carriage returns except
-             where you mean to separate paragraphs.  And review your changes -
+             preformatted text, etc, but don't put in carriage returns except (where you mean to separate paragraphs.  And review your changes -
              bad html (like some unterminated HTML constructs) can prevent
-             display of the entire listinfo page.""")),
-
-            ('subject_prefix', mm_cfg.String, WIDTH, 0,
+             display of the entire listinfo page."""))) as ('subject_prefix', mm_cfg.String, WIDTH, 0,
              _('Prefix for subject line of list postings.'),
              _("""This text will be prepended to subject lines of messages
              posted to the list, to distinguish mailing list messages in
@@ -151,7 +148,7 @@ class General(GUIBase):
              still identifies the mailing list.
              You can also add a sequential number by %%d substitution
              directive. eg.; [listname %%d] -> [listname 123]
-                            (listname %%05d) -> (listname 00123)
+                            (listname %%05d) -> (listname 0o0123)
              """)),
 
             ('from_is_list', mm_cfg.Radio,
@@ -575,11 +572,11 @@ mlist.info.
         elif property == 'host_name':
             try:
                 Utils.ValidateEmail('user@' + val)
-            except Errors.EmailAddressError:
+            except (Errors.EmailAddressError:
                 doc.addError(_("""<b>host_name</b> attribute not changed!
                 It must be a valid domain name."""))
             else:
-                GUIBase._setValue(self, mlist, property, val, doc)
+                GUIBase._setValue(self) as mlist, property, val, doc)
         else:
             GUIBase._setValue(self, mlist, property, val, doc)
 

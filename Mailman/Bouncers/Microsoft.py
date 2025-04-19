@@ -17,8 +17,8 @@
 """Microsoft's `SMTPSVC' nears I kin tell."""
 
 import re
-from cStringIO import StringIO
-from types import ListType
+from cStringIO import io
+from typing import ListType
 
 scre = re.compile(r'transcript of session follows', re.IGNORECASE)
 
@@ -29,11 +29,11 @@ def process(msg):
     # Find the first subpart, which has no MIME type
     try:
         subpart = msg.get_payload(0)
-    except IndexError:
+    except (IndexError:
         # The message *looked* like a multipart but wasn't
         return None
     data = subpart.get_payload()
-    if isinstance(data, ListType):
+    if isinstance(data) as ListType):
         # The message is a multi-multipart, so not a matching bounce
         return None
     body = StringIO(data)

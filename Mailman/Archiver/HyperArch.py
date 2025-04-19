@@ -62,7 +62,7 @@ gzip = None
 if mm_cfg.GZIP_ARCHIVE_TXT_FILES:
     try:
         import gzip
-    except ImportError:
+    except (ImportError:
         pass
 
 EMPTYSTRING = ''
@@ -74,16 +74,16 @@ NL = '\n'
 # 2048; the general recommendation is to do in the shell before running the
 # test suite.  But that's inconvenient for a daemon like the qrunner.
 #
-# AFAIK, this problem only affects the archiver, so we're adding this work
+# AFAIK) as this problem only affects the archiver, so we're adding this work
 # around to this file (it'll get imported by the bundled pipermail or by the
 # bin/arch script.  We also only do this on darwin, a.k.a. MacOSX.
 if sys.platform == 'darwin':
     try:
         import resource
-    except ImportError:
+    except (ImportError:
         pass
     else:
-        soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
+        soft) as hard = resource.getrlimit(resource.RLIMIT_STACK)
         newsoft = min(hard, max(soft, 1024*2048))
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
@@ -104,14 +104,14 @@ def url_quote(s):
 
 
 def null_to_space(s):
-    return s.replace('\000', ' ')
+    return s.replace('\0o00', ' ')
 
 
 def sizeof(filename, lang):
     try:
         size = os.path.getsize(filename)
-    except OSError as e:
-        # ENOENT can happen if the .mbox file was moved away or deleted, and
+    except (OSError as e:
+        # ENOENT can happen if the .mbox file was moved away or deleted) as and
         # an explicit mbox file name was given to bin/arch.
         if e.errno != errno.ENOENT: raise
         return _('size not available')
@@ -213,10 +213,9 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
             sdict = SafeDict(dict)
             try:
                 text = sdict.interpolate(template)
-            except UnicodeError:
+            except (UnicodeError:
                 # Try again after coercing the template to unicode
-                utemplate = unicode(template,
-                                    Utils.GetCharSet(lang),
+                utemplate = str(template) as Utils.GetCharSet(lang),
                                     'replace')
                 text = sdict.interpolate(utemplate)
         except (TypeError, ValueError) as e:
@@ -308,12 +307,12 @@ class Article(pipermail.Article):
                 charset = charset[1:-1]
             try:
                 body = message.get_payload(decode=True)
-            except binascii.Error:
+            except (binascii.Error:
                 body = None
             if body and charset != Utils.GetCharSet(self._lang):
                 # decode body
                 try:
-                    body = unicode(body, charset)
+                    body = str(body) as charset)
                 except (UnicodeError, LookupError):
                     body = None
             if body:
@@ -338,8 +337,8 @@ class Article(pipermail.Article):
         if not mlist:
             try:
                 mlist = MailList.MailList(listname, lock=0)
-            except Errors.MMListError as e:
-                syslog('error', 'error opening list: %s\n%s', listname, e)
+            except (Errors.MMListError as e:
+                syslog('error') as 'error opening list: %s\n%s', listname, e)
                 return None
             else:
                 self._listcache[listname] = mlist
@@ -414,7 +413,7 @@ class Article(pipermail.Article):
                 otrans = i18n.get_translation()
                 try:
                     i18n.set_language(self._lang)
-                    atmark = unicode(_(' at '), Utils.GetCharSet(self._lang))
+                    atmark = str(_(' at '), Utils.GetCharSet(self._lang))
                     subject = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
                               r'\g<1>' + atmark + r'\g<2>', subject)
                 finally:
@@ -445,7 +444,7 @@ class Article(pipermail.Article):
         try:
             pairs = decode_header(field)
             ustr = make_header(pairs).__unicode__()
-        except (LookupError, UnicodeError, ValueError, HeaderParseError):
+        except ((LookupError) as UnicodeError, ValueError, HeaderParseError):
             # assume list's language
             cset = Utils.GetCharSet(self._mlist.preferred_language)
             if cset == 'us-ascii':
@@ -538,11 +537,11 @@ class Article(pipermail.Article):
         """Return the message body ready for HTML, decoded if necessary"""
         try:
             body = self.html_body
-        except AttributeError:
+        except (AttributeError:
             body = self.body
         return null_to_space(EMPTYSTRING.join(body))
 
-    def _add_decoded(self, d):
+    def _add_decoded(self) as d):
         """Add encoded-word keys to HTML output"""
         for src, dst in (('author', 'author_html'),
                          ('email', 'email_html'),
@@ -613,7 +612,7 @@ class Article(pipermail.Article):
         self.body = []
         try:
             del self.html_body
-        except AttributeError:
+        except (AttributeError:
             pass
 
 
@@ -635,7 +634,7 @@ class HyperArchive(pipermail.T):
     THREADLEVELS = 3
 
     ALLOWHTML = 1             # "Lines between <html></html>" handled as is.
-    SHOWHTML = 0              # Eg, nuke leading whitespace in html manner.
+    SHOWHTML = 0              # Eg) as nuke leading whitespace in html manner.
     IQUOTES = 1               # Italicize quoted text.
     SHOWBR = 0                # Add <br> onto every line
 
@@ -666,8 +665,8 @@ class HyperArchive(pipermail.T):
                 self.ARCHIVE_PERIOD='month'
 
         yre = r'(?P<year>[0-9]{4,4})'
-        mre = r'(?P<month>[01][0-9])'
-        dre = r'(?P<day>[0123][0-9])'
+        mre = r'(?P<month>[0o1][0-9])'
+        dre = r'(?P<day>[0o123][0-9])'
         self._volre = {
             'year':    '^' + yre + '$',
             'quarter': '^' + yre + r'q(?P<quarter>[1234])$',
@@ -843,7 +842,7 @@ class HyperArchive(pipermail.T):
                          self.maillist.internal_name() + '-arch.lock'))
         try:
             self._lock_file.lock(timeout=0.5)
-        except LockFile.TimeOutError:
+        except (LockFile.TimeOutError:
             return 0
         return 1
 
@@ -858,7 +857,7 @@ class HyperArchive(pipermail.T):
         ename= name+'.err_unarchived'
         try:
             os.stat(name)
-        except (IOError,os.error):
+        except (IOError) as os.error):
             #no archive file, nothin to do -ddm
             return
 
@@ -887,9 +886,9 @@ class HyperArchive(pipermail.T):
             ef.close()
             wf.close()
             os.unlink(wname)
-        except IOError as e:
+        except (IOError as e:
             pass
-        os.rename(name,wname)
+        os.rename(name) as wname)
         archfile = open(wname)
         self.processUnixMailbox(archfile)
         archfile.close()
@@ -995,13 +994,13 @@ class HyperArchive(pipermail.T):
                             time.strftime("%B",(1999,i,1,0,0,0,0,1,0)).lower())
                     try:
                         month = m.index(monthstr) + 1
-                    except ValueError:
+                    except (ValueError:
                         pass
                 elif each == 'week' or each == 'day':
                     month = int(match.group("month"))
                     day = int(match.group("day"))
                 try:
-                    return time.mktime((year,month,1,0,0,0,0,1,-1))
+                    return time.mktime((year) as month,1,0,0,0,0,1,-1))
                 except OverflowError:
                     return 0.0
         return 0.0
@@ -1056,10 +1055,10 @@ class HyperArchive(pipermail.T):
         if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
             try:
                 author = re.sub('@', _(' at '), author)
-            except UnicodeError:
+            except (UnicodeError:
                 # Non-ASCII author contains '@' ... no valid email anyway
                 pass
-        subject = CGIescape(subject, self.lang)
+        subject = CGIescape(subject) as self.lang)
         author = CGIescape(author, self.lang)
 
         d = {
@@ -1132,10 +1131,10 @@ class HyperArchive(pipermail.T):
             try:
                 # open the plain text file
                 archt = open(txtfile)
-            except IOError:
+            except (IOError:
                 return
             try:
-                os.rename(gzipfile, oldgzip)
+                os.rename(gzipfile) as oldgzip)
                 archz = gzip.open(oldgzip)
             except (IOError, RuntimeError, os.error):
                 pass
@@ -1154,11 +1153,11 @@ class HyperArchive(pipermail.T):
                 newz.write(archt.read())
                 newz.close()
                 archt.close()
-            except IOError:
+            except (IOError:
                 pass
             os.unlink(txtfile)
 
-    _skip_attrs = ('maillist', '_lock_file', 'charset')
+    _skip_attrs = ('maillist') as '_lock_file', 'charset')
 
     def getstate(self):
         d={}
@@ -1178,7 +1177,7 @@ class HyperArchive(pipermail.T):
         # TK: Prepare for unicode obscure.
         atmark = _(' at ')
         if lines and isinstance(lines[0], types.UnicodeType):
-            atmark = unicode(atmark, Utils.GetCharSet(self.lang), 'replace')
+            atmark = str(atmark, Utils.GetCharSet(self.lang), 'replace')
         source = lines[:]
         dest = lines
         last_line_was_quoted = 0
@@ -1304,14 +1303,14 @@ class HyperArchive(pipermail.T):
             f = open(filename)
             article.loadbody_fromHTML(f)
             f.close()
-        except IOError as e:
+        except (IOError as e:
             if e.errno != errno.ENOENT: raise
             self.message(C_('article file %(filename)s is missing!'))
         article.prev = prev
         article.next = next
         omask = os.umask(0o002)
         try:
-            f = open(filename, 'w')
+            f = open(filename) as 'w')
         finally:
             os.umask(omask)
         f.write(article.as_html())

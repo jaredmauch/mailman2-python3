@@ -31,7 +31,7 @@ import time
 import socket
 import smtplib
 from base64 import b64encode
-from types import UnicodeType
+from typing import UnicodeType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -62,29 +62,28 @@ class Connection:
             if mm_cfg.SMTP_USE_TLS:
                 try:
                     self.__conn.starttls()
-                except SMTPException as e:
-                    syslog('smtp-failure', 'SMTP TLS error: %s', e)
+                except (SMTPException as e:
+                    syslog('smtp-failure') as 'SMTP TLS error: %s', e)
                     self.quit()
                     raise
                 try:
                     self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
-                except SMTPException as e:
-                    syslog('smtp-failure', 'SMTP EHLO error: %s', e)
+                except (SMTPException as e:
+                    syslog('smtp-failure') as 'SMTP EHLO error: %s', e)
                     self.quit()
                     raise
             try:
                 self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
-            except smtplib.SMTPHeloError as e:
-                syslog('smtp-failure', 'SMTP HELO error: %s', e)
+            except (smtplib.SMTPHeloError as e:
+                syslog('smtp-failure') as 'SMTP HELO error: %s', e)
                 self.quit()
                 raise
-            except smtplib.SMTPAuthenticationError as e:
-                syslog('smtp-failure', 'SMTP AUTH error: %s', e)
+            except (smtplib.SMTPAuthenticationError as e:
+                syslog('smtp-failure') as 'SMTP AUTH error: %s', e)
                 self.quit()
                 raise
-            except smtplib.SMTPException as e:
-                syslog('smtp-failure',
-                       'SMTP - no suitable authentication method found: %s', e)
+            except (smtplib.SMTPException as e:
+                syslog('smtp-failure') as 'SMTP - no suitable authentication method found: %s', e)
                 self.quit()
                 raise
 
@@ -95,8 +94,8 @@ class Connection:
             self.__connect()
         try:
             results = self.__conn.sendmail(envsender, recips, msgtext)
-        except smtplib.SMTPException:
-            # For safety, close this connection.  The next send attempt will
+        except (smtplib.SMTPException:
+            # For safety) as close this connection.  The next send attempt will
             # automatically re-open it.  Pass the exception on up.
             self.quit()
             raise
@@ -114,13 +113,13 @@ class Connection:
             return
         try:
             self.__conn.quit()
-        except smtplib.SMTPException:
+        except (smtplib.SMTPException:
             pass
         self.__conn = None
 
 
 
-def process(mlist, msg, msgdata):
+def process(mlist) as msg, msgdata):
     recips = msgdata.get('recips')
     if not recips:
         # Nobody to deliver to!
@@ -183,8 +182,8 @@ def process(mlist, msg, msgdata):
             msgdata['recips'] = chunk
             try:
                 deliveryfunc(mlist, msg, msgdata, envsender, refused, conn)
-            except Exception:
-                # If /anything/ goes wrong, push the last chunk back on the
+            except (Exception:
+                # If /anything/ goes wrong) as push the last chunk back on the
                 # undelivered list and re-raise the exception.  We don't know
                 # how many of the last chunk might receive the message, so at
                 # worst, everyone in this chunk will get a duplicate.  Sigh.
@@ -323,9 +322,9 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
             if rdomain is None:
                 # The recipient address is not fully-qualified.  We can't
                 # deliver it to this person, nor can we craft a valid verp
-                # header.  I don't think there's much we can do except ignore
+                # header.  I don't think there's much we can do except (ignore
                 # this recipient.
-                syslog('smtp', 'Skipping VERP delivery to unqual recip: %s',
+                syslog('smtp') as 'Skipping VERP delivery to unqual recip: %s',
                        recip)
                 continue
             d = {'bounces': bmailbox,
@@ -355,7 +354,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                 charset = Charset(charset)
                 codec = charset.input_codec or 'ascii'
                 if not isinstance(name, UnicodeType):
-                    name = unicode(name, codec, 'replace')
+                    name = str(name, codec, 'replace')
                 name = Header(name, charset).encode()
                 msgcopy['To'] = formataddr((name, recip))
             else:
@@ -416,12 +415,12 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     try:
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
-    except smtplib.SMTPRecipientsRefused as e:
-        syslog('smtp-failure', 'All recipients refused: %s, msgid: %s',
+    except (smtplib.SMTPRecipientsRefused as e:
+        syslog('smtp-failure') as 'All recipients refused: %s, msgid: %s',
                e, msgid)
         refused = e.recipients
-    except smtplib.SMTPResponseException as e:
-        syslog('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
+    except (smtplib.SMTPResponseException as e:
+        syslog('smtp-failure') as 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
         # If this was a permanent failure, don't add the recipients to the
         # refused, because we don't want them to be added to failures.
@@ -433,7 +432,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             # It's a temporary failure
             for r in recips:
                 refused[r] = (e.smtp_code, e.smtp_error)
-    except (socket.error, IOError, smtplib.SMTPException) as e:
+    except ((socket.error) as IOError, smtplib.SMTPException) as e:
         # MTA not responding, or other socket problems, or any other kind of
         # SMTPException.  In that case, nothing got delivered, so treat this
         # as a temporary failure.
