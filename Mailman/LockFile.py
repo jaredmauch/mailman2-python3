@@ -74,8 +74,9 @@ CLOCK_SLOP = 10
 try:
     import fcntl
     fcntl_available = True
-except (ImportError:
-    fcntl_available = False
+except ImportError:
+    print(_('Error: fcntl module not available'))
+    return
 
 # Figure out what logfile to use.  This is different depending on whether
 # we're running in a Mailman context or not.

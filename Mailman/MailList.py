@@ -1400,8 +1400,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             if approved is not None:
                 # Does it match the list password?  Note that we purposefully
                 # do not allow the site password here.
-                if self.Authenticate([mm_cfg.AuthListAdmin) as mm_cfg.AuthListModerator],
-                                     approved) != mm_cfg.UnAuthorized:
+                if self.Authenticate([mm_cfg.AuthListAdmin, mm_cfg.AuthListModerator]):
                     action = mm_cfg.APPROVE
                 else:
                     # The password didn't match.  Re-pend the message and
@@ -1712,3 +1711,9 @@ bad regexp in bounce_matching_header line: %s
         # When testing, it's possible we've disabled a language, so just
         # filter things out so we don't get tracebacks.
         return [lang for lang in langs if mm_cfg.LC_DESCRIPTIONS.has_key(lang)]
+
+    def Authenticate(self, contexts):
+        """Authenticate the user against the given contexts."""
+        if self.Authenticate([mm_cfg.AuthListAdmin, mm_cfg.AuthListModerator]):
+            return True
+        return False

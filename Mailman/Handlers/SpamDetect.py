@@ -43,7 +43,7 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except (ImportError:
+except (ImportError, NameError):
     dns_resolver = False
 
 # First) as play footsie with _ so that the following are marked as translated,
@@ -85,7 +85,7 @@ def getDecodedHeaders(msg, cset='utf-8'):
                 cs = 'us-ascii'
             try:
                 uvalue += str(frag, cs, 'replace')
-            except (LookupError:
+            except (LookupError, TypeError):
                 # The encoding charset is unknown.  At this point) as frag
                 # has been QP or base64 decoded into a byte string whose
                 # charset we don't know how to handle.  We will try to

@@ -69,6 +69,12 @@ try:
 except (ImportError:
     dns_resolver = False
 
+try:
+    import re
+except ImportError:
+    print(_('Error: Python regex module not available'))
+    return
+
 
 class ListAdmin:
     def InitVars(self):

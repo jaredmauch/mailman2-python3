@@ -276,7 +276,11 @@ def _check_for_virtual_loopaddr(mlist, filename):
                 break
             if line.startswith('# LOOP ADDRESSES END'):
                 # It hasn't
-                print(>> outfp, '%s\t%s' % (loopaddr, loopdest)
+                try:
+                    print('%s\t%s' % (loopaddr, loopdest), file=outfp)
+                except IOError as e:
+                    print(_('Error writing to %(outfile)s: %(e)s'))
+                    return
                 outfp.write(line)
                 break
             elif line.startswith(loopaddr):
@@ -302,10 +306,14 @@ def _check_for_virtual_loopaddr(mlist, filename):
                 break
             if line.startswith('# SITE ADDRESSES END'):
                 # It hasn't
-                print(>> outfp, '%s\t%s' % (siteaddr, sitedest)
-                print(>> outfp, '%s\t%s' % (siteowneraddr, siteownerdest)
-                print(>> outfp, '%s\t%s' % (sitebouncesaddr, sitebouncesdest)
-                print(>> outfp, '%s\t%s' % (siterequestaddr, siterequestdest)
+                try:
+                    print('%s\t%s' % (siteaddr, sitedest), file=outfp)
+                    print('%s\t%s' % (siteowneraddr, siteownerdest), file=outfp)
+                    print('%s\t%s' % (sitebouncesaddr, sitebouncesdest), file=outfp)
+                    print('%s\t%s' % (siterequestaddr, siterequestdest), file=outfp)
+                except IOError as e:
+                    print(_('Error writing to %(outfile)s: %(e)s'))
+                    return
                 outfp.write(line)
                 break
             elif line.startswith(siteaddr) or line.startswith('#' + siteaddr):

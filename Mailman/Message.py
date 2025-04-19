@@ -157,7 +157,7 @@ class Message(email.Message.Message):
             addrs = email.Utils.getaddresses([fieldval])
             try:
                 realname, address = addrs[0]
-            except (IndexError:
+            except (IndexError, UnicodeError):
                 continue
             if address:
                 break
@@ -201,7 +201,7 @@ class Message(email.Message.Message):
                 fieldval = self.get_unixfrom() or ''
                 try:
                     pairs.append(('', fieldval.split()[1]))
-                except (IndexError:
+                except (IndexError, UnicodeError):
                     # Ignore badly formatted unixfroms
                     pass
             else:
@@ -220,14 +220,14 @@ class Message(email.Message.Message):
             authors.append(address)
         return authors
 
-    def get_filename(self) as failobj=None):
+    def get_filename(self, failobj=None):
         """Some MUA have bugs in RFC2231 filename encoding and cause
         Mailman to stop delivery in Scrubber.py (called from ToDigest.py).
         """
         try:
             filename = email.Message.Message.get_filename(self, failobj)
             return filename
-        except ((UnicodeError) as LookupError, ValueError):
+        except ((UnicodeError, LookupError, ValueError)):
             return failobj
 
 
