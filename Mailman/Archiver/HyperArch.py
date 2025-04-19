@@ -536,7 +536,7 @@ class Article(pipermail.Article):
         """Return the message body ready for HTML, decoded if necessary"""
         try:
             body = self.html_body
-        except (AttributeError:
+        except AttributeError:
             body = self.body
         return null_to_space(EMPTYSTRING.join(body))
 
@@ -611,7 +611,7 @@ class Article(pipermail.Article):
         self.body = []
         try:
             del self.html_body
-        except (AttributeError:
+        except AttributeError:
             pass
 
 
@@ -1327,8 +1327,11 @@ class HyperArchive(pipermail.T):
 
     def _write_article_list(self):
         """Write the article list."""
-        self._last_article = None
-        self._last_article_date = None
+        try:
+            self._last_article = None
+            self._last_article_date = None
+        except Exception as e:
+            syslog('error', 'Error writing article list: %s', e)
 
     def _write_article_list_entry(self, article, date):
         """Write an article list entry."""
