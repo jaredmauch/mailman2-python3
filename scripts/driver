@@ -21,6 +21,7 @@
 # as well let the Web server give us a fatal and obtrusive error.
 import os
 import sys
+import io
 
 # From here on we are as bulletproof as possible!
 
@@ -37,7 +38,6 @@ def websafe(s):
     return s
 
 
-
 # This standard driver script is used to run CGI programs, wrapped in code
 # that catches errors, and displays them as HTML.  This guarantees that
 # (almost) any problem in the Mailman software doesn't result in a Web server
@@ -58,7 +58,6 @@ def websafe(s):
 #   the Python installation, so it's also highly unlikely to occur.
 
 
-
 def run_main():
     global STEALTH_MODE, websafe
 
@@ -85,8 +84,7 @@ def run_main():
                                immediate=1)
         # Collect stdout in a cStringIO so that if /any/ errors occur during
         # printing it won't mess up our diagnostics page.
-        from cStringIO import StringIO
-        tempstdout = StringIO()
+        tempstdout = io.StringIO()
         # The name of the module to run is passed in argv[1].  What we
         # actually do is import the module named by argv[1] that lives in the
         # Mailman.Cgi package.  That module must have a main() function, which
@@ -112,7 +110,7 @@ def run_main():
                     print('Status: 405 Method not allowed')
                     print('Content-type: text/plain')
                     print()
-                    print('%s method is not allowed' % request_method)
+                    print(f'{request_method} method is not allowed')
                 else:
                     main()
                 sys.__stdout__.write(tempstdout.getvalue())
@@ -128,7 +126,6 @@ def run_main():
         print_environment(logger)
 
 
-
 # We are printing error reporting to two places.  One will always be stdout
 # and the other will always be the log file.  It is assumed that stdout is an
 # HTML sink and the log file is a plain text sink.
@@ -161,10 +158,10 @@ def print_traceback(logfp=None):
     print("""\
 Content-type: text/html
 
-<head><title>Bug in Mailman version %(VERSION)s</title></head>
-<body bgcolor=#ffffff><h2>Bug in Mailman version %(VERSION)s</h2>
+<head><title>Bug in Mailman version {VERSION}</title></head>
+<body bgcolor=#ffffff><h2>Bug in Mailman version {VERSION}</h2>
 <p><h3>We're sorry, we hit a bug!</h3>
-""" % locals())
+""")
     if not STEALTH_MODE:
         print('''<p>If you would like to help us identify the problem,
 please email a copy of this page to the webmaster for this site with
@@ -177,7 +174,7 @@ a description of what happened.  Thanks!
                 print(websafe(line), end='')
         else:
             print('[failed to import module traceback]')
-            print('[exc: %s, var: %s]' % [websafe(x) for x in exc_info[0:2]])
+            print('[exc: {}, var: {}]'.format(websafe(exc_info[0]), websafe(exc_info[1])))
         print('\n\n</pre></body>')
     else:
         print('''<p>Please inform the webmaster for this site of this
@@ -186,7 +183,6 @@ explicitly inhibited, but the webmaster can find this information in the
 Mailman error logs or the web server logs.''')
 
 
-
 def print_environment(logfp=None):
     if logfp is None:
         logfp = sys.__stderr__
@@ -253,7 +249,6 @@ def print_environment(logfp=None):
             print('<p><hr>[failed to import module os]', file=logfp)
 
 
-
 try:
     run_main()
 except:

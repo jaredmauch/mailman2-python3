@@ -36,16 +36,15 @@ from Mailman.Logging.Utils import LogStdErr
 LogStdErr('error', 'leave')
 
 
-
 def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print >> sys.stderr, _('leave script got no listname.')
+        print(_('leave script got no listname.'), file=sys.stderr)
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print >> sys.stderr, _('leave script, list not found: %(listname)s')
+        print(_('leave script, list not found: {listname}'), file=sys.stderr)
         sys.exit(1)
     # Immediately queue the message for the bounce/cmd qrunner to process.
     # The advantage to this approach is that messages should never get lost --
@@ -56,6 +55,5 @@ def main():
     cmdq.enqueue(sys.stdin.read(), listname=listname, toleave=1, _plaintext=1)
 
 
-
 if __name__ == '__main__':
     main()
