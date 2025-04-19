@@ -159,7 +159,7 @@ def main():
     parsedqs = None
     if qsenviron:
         parsedqs = cgi.parse_qs(qsenviron)
-    if cgidata.has_key('VARHELP'):
+    if 'VARHELP' in cgidata:
         varhelp = cgidata.getfirst('VARHELP')
     elif parsedqs:
         # POST methods, even if their actions have a query string, don't get
@@ -987,7 +987,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             bucket = qs.get('letter', '0')[0].lower()
         keys = buckets.keys()
         keys.sort()
-        if not bucket or not buckets.has_key(bucket):
+        if not bucket or bucket not in buckets:
             bucket = keys[0]
         members = buckets[bucket]
         action = adminurl + '/members?letter=%s' % bucket
@@ -998,7 +998,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             numchunks = i + (not not r * 1)
             # Now chunk them up
             chunkindex = 0
-            if qs.has_key('chunk'):
+            if 'chunk' in qs:
                 try:
                     chunkindex = int(qs['chunk'][0])
                 except ValueError:
@@ -1550,9 +1550,9 @@ def change_options(mlist, category, subcat, cgidata, doc):
             doc.AddItem('<p>')
     # Unsubscriptions
     removals = ''
-    if cgidata.has_key('unsubscribees'):
+    if 'unsubscribees' in cgidata:
         removals += cgidata['unsubscribees'].value
-    if cgidata.has_key('unsubscribees_upload') and \
+    if 'unsubscribees_upload' in cgidata and \
            cgidata['unsubscribees_upload'].value:
         removals += cgidata['unsubscribees_upload'].value
     if removals:
@@ -1588,7 +1588,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             doc.AddItem(UnorderedList(*unsubscribe_errors))
             doc.AddItem('<p>')
     # Address Changes
-    if cgidata.has_key('change_from'):
+    if 'change_from' in cgidata:
         change_from = cgidata.getfirst('change_from', '')
         change_to = cgidata.getfirst('change_to', '')
         schange_from = Utils.websafe(change_from)
@@ -1742,7 +1742,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             doc.AddItem('<p>')
 
     # See if this was a moderation bit operation
-    if cgidata.has_key('allmodbit_btn'):
+    if 'allmodbit_btn' in cgidata:
         val = safeint('allmodbit_val')
         if val not in (0, 1):
             doc.addError(_('Bad moderation flag value'))
@@ -1750,7 +1750,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
             for member in mlist.getMembers():
                 mlist.setMemberOption(member, mm_cfg.Moderate, val)
     # do the user options for members category
-    if cgidata.has_key('setmemberopts_btn') and cgidata.has_key('user'):
+    if 'setmemberopts_btn' in cgidata and 'user' in cgidata:
         user = cgidata['user']
         if type(user) is ListType:
             users = []
@@ -1762,7 +1762,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         removes = []
         for user in users:
             quser = urllib.quote(user)
-            if cgidata.has_key('%s_unsub' % quser):
+            if '%s_unsub' % quser in cgidata:
                 try:
                     _ = D_
                     whence=_('member mgt page')
@@ -1776,15 +1776,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 doc.addError(_('Ignoring changes to deleted member: %(user)s'),
                              tag=_('Warning: '))
                 continue
-            value = cgidata.has_key('%s_digest' % quser)
-            try:
-                mlist.setMemberOption(user, mm_cfg.Digests, value)
-            except (Errors.AlreadyReceivingDigests,
-                    Errors.AlreadyReceivingRegularDeliveries,
-                    Errors.CantDigestError,
-                    Errors.MustDigestError):
-                # BAW: Hmm...
-                pass
+            value = '%s_digest' % quser in cgidata
+            mlist.setMemberOption(user, mm_cfg.Digests, value)
 
             newname = cgidata.getfirst(quser+'_realname', '')
             newname = Utils.canonstr(newname, mlist.preferred_language)
@@ -1800,14 +1793,13 @@ def change_options(mlist, category, subcat, cgidata, doc):
 
             # Set the `nomail' flag, but only if the user isn't already
             # disabled (otherwise we might change BYUSER into BYADMIN).
-            if cgidata.has_key('%s_nomail' % quser):
-                if mlist.getDeliveryStatus(user) == MemberAdaptor.ENABLED:
-                    mlist.setDeliveryStatus(user, MemberAdaptor.BYADMIN)
+            if '%s_nomail' % quser in cgidata:
+                mlist.setMemberOption(user, mm_cfg.DisableDelivery, 1)
             else:
-                mlist.setDeliveryStatus(user, MemberAdaptor.ENABLED)
+                mlist.setMemberOption(user, mm_cfg.DisableDelivery, 0)
             for opt in ('hide', 'ack', 'notmetoo', 'nodupes', 'plain'):
                 opt_code = mm_cfg.OPTINFO[opt]
-                if cgidata.has_key('%s_%s' % (quser, opt)):
+                if '%s_%s' % (quser, opt) in cgidata:
                     mlist.setMemberOption(user, opt_code, 1)
                 else:
                     mlist.setMemberOption(user, opt_code, 0)

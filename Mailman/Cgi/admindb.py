@@ -147,7 +147,7 @@ def main():
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
+    if 'adminpw' in cgidata:
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
@@ -155,7 +155,7 @@ def main():
                                   mm_cfg.AuthListModerator,
                                   mm_cfg.AuthSiteAdmin),
                                  cgidata.getfirst('adminpw', '')):
-        if cgidata.has_key('adminpw'):
+        if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -228,7 +228,7 @@ def main():
         signal.signal(signal.SIGTERM, sigterm_handler)
 
         realname = mlist.real_name
-        if not cgidata.keys() or cgidata.has_key('admlogin'):
+        if not cgidata.keys() or 'admlogin' in cgidata:
             # If this is not a form submission (i.e. there are no keys in the
             # form) or it's a login, then we don't need to do much special.
             doc.SetTitle(_('%(realname)s Administrative Database'))

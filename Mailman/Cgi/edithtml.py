@@ -123,7 +123,7 @@ def main():
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
                                  cgidata.getfirst('adminpw', '')):
-        if cgidata.has_key('admlogin'):
+        if 'admlogin' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -176,7 +176,7 @@ def main():
         return
 
     try:
-        if cgidata.keys() and not cgidata.has_key('langform'):
+        if cgidata.keys() and 'langform' not in cgidata:
             if csrf_checked:
                 ChangeHTML(mlist, cgidata, template_name, doc, lang=language)
             else:
@@ -231,7 +231,7 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
 def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language
-    if not cgi_info.has_key('html_code'):
+    if 'html_code' not in cgi_info:
         doc.AddItem(Header(3,_("Can't have empty html page.")))
         doc.AddItem(Header(3,_("HTML Unchanged.")))
         doc.AddItem('<hr>')

@@ -187,7 +187,7 @@ def listinfo_overview(msg=''):
          Link('mailto:' + siteowner, siteowner),
          '.<p>'))
 
-    table.AddRow([apply(Container, welcome)])
+    table.AddRow([Container(*welcome)])
     table.AddCellInfo(max(table.GetCurrentRowIndex(), 0), 0, colspan=2)
 
     if advertised:

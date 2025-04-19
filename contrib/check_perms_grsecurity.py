@@ -110,8 +110,8 @@ class CheckFixUid:
         os.setgid(gid)
         os.setuid(uid)
     if os.geteuid() != uid:
-        print "You need to run this script as root or mailman because it was configured to run"
-        print "on a linux system with a security patch which restricts hard links"
+        print("You need to run this script as root or mailman because it was configured to run")
+        print("on a linux system with a security patch which restricts hard links")
         sys.exit()
 """)
         fp.close()
