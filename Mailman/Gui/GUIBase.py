@@ -224,3 +224,28 @@ class GUIBase:
                     """))
                 return fixed
         return val
+
+    def handleSettingsForm(self, mlist, cgidata, doc):
+        try:
+            # Process the form submission
+            if cgidata.getvalue('submit'):
+                try:
+                    # Update the list settings
+                    settings = {}
+                    for setting in settings:
+                        value = cgidata.getvalue(setting, '')
+                        if value:
+                            settings[setting] = value
+                    mlist.setSettings(settings)
+                    print('Content-Type: text/plain\n')
+                    print(_('Settings have been updated'))
+                    return
+                except Exception as e:
+                    print('Content-Type: text/plain\n')
+                    print(_('An error occurred while updating settings'))
+                    syslog('error', 'Error updating settings: %s', e)
+                    return
+        except Errors.EmailAddressError as e:
+            print('Content-Type: text/plain\n')
+            print(_('Invalid email address: %(e)s'))
+            return
