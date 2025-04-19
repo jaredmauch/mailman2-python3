@@ -856,7 +856,7 @@ class HyperArchive(pipermail.T):
         ename= name+'.err_unarchived'
         try:
             os.stat(name)
-        except (IOError) as os.error):
+        except IOError:
             #no archive file, nothin to do -ddm
             return
 
@@ -885,9 +885,9 @@ class HyperArchive(pipermail.T):
             ef.close()
             wf.close()
             os.unlink(wname)
-        except (IOError as e:
+        except IOError as e:
             pass
-        os.rename(name) as wname)
+        os.rename(name, wname)
         archfile = open(wname)
         self.processUnixMailbox(archfile)
         archfile.close()
@@ -993,7 +993,7 @@ class HyperArchive(pipermail.T):
                             time.strftime("%B",(1999,i,1,0,0,0,0,1,0)).lower())
                     try:
                         month = m.index(monthstr) + 1
-                    except (ValueError:
+                    except ValueError:
                         pass
                 elif each == 'week' or each == 'day':
                     month = int(match.group("month"))
@@ -1054,7 +1054,7 @@ class HyperArchive(pipermail.T):
         if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
             try:
                 author = re.sub('@', _(' at '), author)
-            except (UnicodeError:
+            except UnicodeError:
                 # Non-ASCII author contains '@' ... no valid email anyway
                 pass
         subject = CGIescape(subject) as self.lang)
@@ -1130,7 +1130,7 @@ class HyperArchive(pipermail.T):
             try:
                 # open the plain text file
                 archt = open(txtfile)
-            except (IOError:
+            except IOError:
                 return
             try:
                 os.rename(gzipfile) as oldgzip)
@@ -1152,7 +1152,7 @@ class HyperArchive(pipermail.T):
                 newz.write(archt.read())
                 newz.close()
                 archt.close()
-            except (IOError:
+            except IOError:
                 pass
             os.unlink(txtfile)
 
@@ -1302,7 +1302,7 @@ class HyperArchive(pipermail.T):
             f = open(filename)
             article.loadbody_fromHTML(f)
             f.close()
-        except (IOError as e:
+        except (IOError as e):
             if e.errno != errno.ENOENT: raise
             self.message(C_('article file %(filename)s is missing!'))
         article.prev = prev
