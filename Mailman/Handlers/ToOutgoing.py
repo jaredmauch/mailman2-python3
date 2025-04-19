@@ -21,35 +21,78 @@ posted to the list membership.  Anything else that needs to go out to some
 recipient should just be placed in the out queue directly.
 """
 
+from typing import Any, Dict, List, Optional, Tuple, Union
+import os
+import time
+import email
+from email.message import Message
+import logging
+import mailbox
+import shutil
+
 from Mailman import mm_cfg
+from Mailman import Utils
+from Mailman import i18n
+from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.sbcache import get_switchboard
 
+_ = i18n._
 
-
-def process(mlist, msg, msgdata):
-    interval = mm_cfg.VERP_DELIVERY_INTERVAL
-    # Should we VERP this message?  If personalization is enabled for this
-    # list and VERP_PERSONALIZED_DELIVERIES is true, then yes we VERP it.
-    # Also, if personalization is /not/ enabled, but VERP_DELIVERY_INTERVAL is
-    # set (and we've hit this interval), then again, this message should be
-    # VERPed. Otherwise, no.
-    #
-    # Note that the verp flag may already be set, e.g. by mailpasswds using
-    # VERP_PASSWORD_REMINDERS.  Preserve any existing verp flag.
-    if msgdata.has_key('verp'):
-        pass
-    elif mlist.personalize:
-        if mm_cfg.VERP_PERSONALIZED_DELIVERIES:
-            msgdata['verp'] = 1
-    elif interval == 0:
-        # Never VERP
-        pass
-    elif interval == 1:
-        # VERP every time
-        msgdata['verp'] = 1
-    else:
-        # VERP every `inteval' number of times
-        msgdata['verp'] = not int(mlist.post_id) % interval
-    # And now drop the message in qfiles/out
-    outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-    outq.enqueue(msg, msgdata, listname=mlist.internal_name())
+class ToOutgoing:
+    """Handler for outgoing messages."""
+    
+    def __init__(self, mlist: Any) -> None:
+        """Initialize the handler.
+        
+        Args:
+            mlist: The mailing list object
+        """
+        self.mlist = mlist
+        self.logger = logging.getLogger('mailman.outgoing')
+        
+    def process(self, msg: Message, msgdata: Dict[str, Any]) -> None:
+        """Process an outgoing message.
+        
+        Args:
+            msg: The email message
+            msgdata: Additional message metadata
+        """
+        # Get the outgoing directory
+        outgoing_dir = os.path.join(mm_cfg.OUTGOING_DIR, self.mlist.internal_name())
+        
+        # Create the outgoing directory if it doesn't exist
+        if not os.path.exists(outgoing_dir):
+            try:
+                os.makedirs(outgoing_dir)
+            except OSError as e:
+                self.logger.error('Failed to create outgoing directory: %s', e)
+                syslog('error', 'Failed to create outgoing directory: %s', e)
+                return
+                
+        # Get the outgoing file path
+        outgoing_file = os.path.join(outgoing_dir, 'outgoing.mbox')
+        
+        try:
+            # Open the outgoing file
+            mbox = mailbox.mbox(outgoing_file)
+            
+            # Add the message to the outgoing
+            mbox.add(msg)
+            
+            # Close the outgoing file
+            mbox.close()
+            
+        except (OSError, mailbox.Error) as e:
+            self.logger.error('Failed to process outgoing message: %s', e)
+            syslog('error', 'Failed to process outgoing message: %s', e)
+            
+    def reject(self, msg: Message, msgdata: Dict[str, Any], reason: str) -> None:
+        """Reject an outgoing message.
+        
+        Args:
+            msg: The email message
+            msgdata: Additional message metadata
+            reason: Reason for rejection
+        """
+        self.logger.warning('Rejected outgoing message: %s', reason)
+        syslog('warning', 'Rejected outgoing message: %s', reason)

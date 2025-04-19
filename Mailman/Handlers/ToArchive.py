@@ -15,36 +15,79 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Add the message to the archives."""
+"""Handler for archiving messages."""
 
+from typing import Any, Dict, List, Optional, Tuple, Union
+import os
 import time
-from cStringIO import io
+import email
+from email.message import Message
+import logging
+import mailbox
+import shutil
 
 from Mailman import mm_cfg
-from Mailman.Queue.sbcache import get_switchboard
+from Mailman import Utils
+from Mailman import i18n
+from Mailman.Logging.Syslog import syslog
 
+_ = i18n._
 
-def _encode_header(h, charset):
-    """Encode a header value using the specified charset."""
-    if isinstance(h, str):
-        return h
-    return h.encode(charset, 'replace')
-
-def process(mlist, msg, msgdata):
-    # short circuits
-    if msgdata.get('isdigest') or not mlist.archive:
-        return
-    # Common practice seems to favor "X-No-Archive: yes".  No other value for
-    # this header seems to make sense, so we'll just test for it's presence.
-    # I'm keeping "X-Archive: no" for backwards compatibility.
-    if msg.has_key('x-no-archive') or msg.get('x-archive', '').lower() == 'no':
-        return
-    # Send the message to the archiver queue
-    archq = get_switchboard(mm_cfg.ARCHQUEUE_DIR)
-    # Get the message headers
-    subject = _encode_header(msg.get('subject', ''), 'utf-8')
-    from_ = _encode_header(msg.get('from', ''), 'utf-8')
-    to = _encode_header(msg.get('to', ''), 'utf-8')
-    cc = _encode_header(msg.get('cc', ''), 'utf-8')
-    # Send the message to the queue
-    archq.enqueue(msg, msgdata)
+class ToArchive:
+    """Handler for archiving messages."""
+    
+    def __init__(self, mlist: Any) -> None:
+        """Initialize the handler.
+        
+        Args:
+            mlist: The mailing list object
+        """
+        self.mlist = mlist
+        self.logger = logging.getLogger('mailman.archive')
+        
+    def process(self, msg: Message, msgdata: Dict[str, Any]) -> None:
+        """Process a message for archiving.
+        
+        Args:
+            msg: The email message
+            msgdata: Additional message metadata
+        """
+        # Get the archive directory
+        archive_dir = os.path.join(mm_cfg.ARCHIVE_DIR, self.mlist.internal_name())
+        
+        # Create the archive directory if it doesn't exist
+        if not os.path.exists(archive_dir):
+            try:
+                os.makedirs(archive_dir)
+            except OSError as e:
+                self.logger.error('Failed to create archive directory: %s', e)
+                syslog('error', 'Failed to create archive directory: %s', e)
+                return
+                
+        # Get the archive file path
+        archive_file = os.path.join(archive_dir, 'archive.mbox')
+        
+        try:
+            # Open the archive file
+            mbox = mailbox.mbox(archive_file)
+            
+            # Add the message to the archive
+            mbox.add(msg)
+            
+            # Close the archive file
+            mbox.close()
+            
+        except (OSError, mailbox.Error) as e:
+            self.logger.error('Failed to process archive message: %s', e)
+            syslog('error', 'Failed to process archive message: %s', e)
+            
+    def reject(self, msg: Message, msgdata: Dict[str, Any], reason: str) -> None:
+        """Reject a message from being archived.
+        
+        Args:
+            msg: The email message
+            msgdata: Additional message metadata
+            reason: Reason for rejection
+        """
+        self.logger.warning('Rejected archive message: %s', reason)
+        syslog('warning', 'Rejected archive message: %s', reason)

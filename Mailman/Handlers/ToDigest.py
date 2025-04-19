@@ -30,8 +30,13 @@ import re
 import copy
 import time
 import traceback
-from typing import ListType
+from typing import ListType, Any, Dict, List, Optional, Tuple, Union
 from cStringIO import io
+import email
+from email.message import Message
+import logging
+import mailbox
+import shutil
 
 from email.Parser import Parser
 from email.Generator import Generator
@@ -502,3 +507,66 @@ def main():
             raise
     finally:
         os.umask(oldmask)
+
+class ToDigest:
+    """Handler for digesting messages."""
+    
+    def __init__(self, mlist: Any) -> None:
+        """Initialize the handler.
+        
+        Args:
+            mlist: The mailing list object
+        """
+        self.mlist = mlist
+        self.logger = logging.getLogger('mailman.digest')
+        
+    def process(self, msg: Message, msgdata: Dict[str, Any]) -> None:
+        """Process a message for digesting.
+        
+        Args:
+            msg: The email message
+            msgdata: Additional message metadata
+        """
+        # Check if digesting is enabled
+        if not self.mlist.digest:
+            return
+            
+        # Get the digest directory
+        digest_dir = os.path.join(mm_cfg.DIGEST_DIR, self.mlist.internal_name())
+        
+        # Create the digest directory if it doesn't exist
+        if not os.path.exists(digest_dir):
+            try:
+                os.makedirs(digest_dir)
+            except OSError as e:
+                self.logger.error('Failed to create digest directory: %s', e)
+                syslog('error', 'Failed to create digest directory: %s', e)
+                return
+                
+        # Get the digest file path
+        digest_file = os.path.join(digest_dir, 'digest.mbox')
+        
+        try:
+            # Open the digest file
+            mbox = mailbox.mbox(digest_file)
+            
+            # Add the message to the digest
+            mbox.add(msg)
+            
+            # Close the digest file
+            mbox.close()
+            
+        except (OSError, mailbox.Error) as e:
+            self.logger.error('Failed to digest message: %s', e)
+            syslog('error', 'Failed to digest message: %s', e)
+            
+    def reject(self, msg: Message, msgdata: Dict[str, Any], reason: str) -> None:
+        """Reject a message from being digested.
+        
+        Args:
+            msg: The email message
+            msgdata: Additional message metadata
+            reason: Reason for rejection
+        """
+        self.logger.warning('Rejected message from digesting: %s', reason)
+        syslog('warning', 'Rejected message from digesting: %s', reason)

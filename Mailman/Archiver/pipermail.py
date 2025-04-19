@@ -12,6 +12,8 @@ from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
 from string import ascii_lowercase
+from typing import Any, Dict, List, Optional, Tuple, Union
+from email.message import Message
 
 # Work around for some misguided Python packages that add iso-8859-1
 # accented characters to string.lowercase.
@@ -19,7 +21,7 @@ lowercase = ascii_lowercase[:26]
 
 __version__ = '0.09 (Mailman edition)'
 VERSION = __version__
-CACHESIZE = 100    # Number of slots in the cache
+CACHESIZE = 1000    # Number of articles to cache in memory
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -29,6 +31,8 @@ from Mailman import i18n
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 from Mailman.Mailbox import ArchiverMailbox
+from Mailman import Utils
+from Mailman import Message
 
 # Set up i18n.  Assume the current language has already been set in the caller.
 _ = i18n._
@@ -237,75 +241,115 @@ class Database(DatabaseInterface):
 # body       : A list of strings making up the message body
 
 class Article:
+    """Represents an archived article."""
+    
     _last_article_time = time.time()
 
-    def __init__(self, message = None, sequence = 0, keepHeaders = []):
-        if message is None:
-            return
-        self.sequence = sequence
-
-        self.parentID = None
+    def __init__(self, msg: Message, mlist: Any) -> None:
+        """Initialize an article from a message.
+        
+        Args:
+            msg: The email message
+            mlist: The mailing list
+        """
+        self._mlist = mlist
+        self._lang = mlist.preferred_language
+        self.cenc = None
+        self.decoded = {}
+        
+        # Extract basic message info
+        self.msgid = msg.get('message-id', '')
+        self.subject = msg.get('subject', '')
+        self.author = msg.get('from', '')
+        self.date = msg.get('date', '')
+        self.references = msg.get('references', '').split()
+        self.in_reply_to = msg.get('in-reply-to', '')
         self.threadKey = None
-        # otherwise the current sequence number is used.
-        id = strip_separators(message['Message-Id'])
-        if id == "":
-            self.msgid = str(self.sequence)
-        else: self.msgid = id
+        
+        # Parse author info
+        name, addr = parseaddr(self.author)
+        self.author_name = name
+        self.author_addr = addr
+        
+        # Store the message
+        self.msg = msg
 
-        if message.has_key('Subject'):
-            self.subject = str(message['Subject'])
+    def __getstate__(self) -> Dict[str, Any]:
+        """Get the state for pickling.
+        
+        Returns:
+            Dictionary containing the article state
+        """
+        d = self.__dict__.copy()
+        # Don't pickle the MailList instance
+        if '_mlist' in d:
+            mlist = d['_mlist']
+            del d['_mlist']
         else:
-            self.subject = _('No subject')
-        if self.subject == "": self.subject = _('No subject')
-
-        self._set_date(message)
-
-        # Figure out the e-mail address and poster's name.  Use the From:
-        # field first, followed by Reply-To:
-        self.author, self.email = parseaddr(message.get('From', ''))
-        e = message['Reply-To']
-        if not self.email and e is not None:
-            ignoreauthor, self.email = parseaddr(e)
-        self.email = strip_separators(self.email)
-        self.author = strip_separators(self.author)
-
-        if self.author == "":
-            self.author = self.email
-
-        # Save the In-Reply-To:, References:, and Message-ID: lines
-        #
-        # TBD: The original code does some munging on these fields, which
-        # shouldn't be necessary, but changing this may break code.  For
-        # safety, I save the original headers on different attributes for use
-        # in writing the plain text periodic flat files.
-        self._in_reply_to = message['in-reply-to']
-        self._references = message['references']
-        self._message_id = message['message-id']
-
-        i_r_t = message['In-Reply-To']
-        if i_r_t is None:
-            self.in_reply_to = ''
+            mlist = None
+        if mlist:
+            d['__listname'] = self._mlist.internal_name()
         else:
-            match = msgid_pat.search(i_r_t)
-            if match is None: self.in_reply_to = ''
-            else: self.in_reply_to = strip_separators(match.group(1))
+            d['__listname'] = None
+        # Clean up other unpicklable attributes
+        for attr in ('prev', 'next', 'body'):
+            if attr in d:
+                del d[attr]
+        d['body'] = []
+        return d
 
-        references = message['References']
-        if references is None:
-            self.references = []
-        else:
-            self.references = map(strip_separators, references.split())
+    def __setstate__(self, d: Dict[str, Any]) -> None:
+        """Restore state from pickle.
+        
+        Args:
+            d: Dictionary containing the article state
+        """
+        self.__dict__ = d
+        listname = d.get('__listname')
+        if listname:
+            del d['__listname']
+            d['_mlist'] = self._open_list(listname)
+        if '_lang' not in d:
+            if hasattr(self, '_mlist'):
+                self._lang = self._mlist.preferred_language
+            else:
+                self._lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
+        if 'cenc' not in d:
+            self.cenc = None
+        if 'decoded' not in d:
+            self.decoded = {}
 
-        # Save any other interesting headers
-        self.headers = {}
-        for i in keepHeaders:
-            if message.has_key(i):
-                self.headers[i] = message[i]
+    def _open_list(self, listname: str) -> Optional[Any]:
+        """Open a mailing list.
+        
+        Args:
+            listname: Name of the list to open
+            
+        Returns:
+            The mailing list object or None if not found
+        """
+        try:
+            from Mailman.MailList import MailList
+            return MailList(listname, lock=0)
+        except ImportError:
+            syslog('error', 'error opening list: %s', listname)
+            return None
 
-        # Read the message body
-        s = StringIO(message.get_payload(decode=True)\
-                     or message.as_string().split('\n\n',1)[1])
-        self.body = s.readlines()
+    def get_body(self) -> str:
+        """Get the article body.
+        
+        Returns:
+            The article body text
+        """
+        if not hasattr(self, 'body'):
+            self.body = []
+            if self.msg.is_multipart():
+                for part in self.msg.get_payload():
+                    if part.get_content_type() == 'text/plain':
+                        self.body.append(part.get_payload(decode=True))
+            else:
+                self.body.append(self.msg.get_payload(decode=True))
+        return b'\n'.join(self.body).decode('utf-8', 'replace')
 
     def _set_date(self, message):
         def floatdate(datestr):
@@ -629,7 +673,7 @@ class T:
     # object will then be archived.
 
     def _makeArticle(self, msg, sequence):
-        return Article(msg, sequence)
+        return Article(msg, self.maillist)
 
     def processUnixMailbox(self, input, start=None, end=None):
         mbox = ArchiverMailbox(input, self.maillist)

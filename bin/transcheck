@@ -34,6 +34,7 @@ import sys
 import re
 import os
 import argparse
+from typing import Dict, List, Optional, Pattern, Union
 
 import paths
 from Mailman.i18n import C_
@@ -53,68 +54,80 @@ def usage(code, msg=''):
 
 
 class TransChecker:
-    "check a translation comparing with the original string"
-    def __init__(self, regexp, escaped=None):
-        self.dict = {}
-        self.errs = []
-        self.regexp = re.compile(regexp)
+    """Check a translation comparing with the original string."""
+    
+    def __init__(self, regexp: Union[str, Pattern], escaped: Optional[Union[str, Pattern]] = None) -> None:
+        """Initialize the translation checker.
+        
+        Args:
+            regexp: Regular expression pattern to match strings
+            escaped: Optional pattern for escaped strings to ignore
+        """
+        self.dict: Dict[str, int] = {}
+        self.errs: List[str] = []
+        self.regexp = re.compile(regexp) if isinstance(regexp, str) else regexp
         self.escaped = None
         if escaped:
-            self.escaped = re.compile(escaped)
+            self.escaped = re.compile(escaped) if isinstance(escaped, str) else escaped
 
-    def checkin(self, string):
-        "scan a string from the original file"
+    def checkin(self, string: str) -> None:
+        """Scan a string from the original file.
+        
+        Args:
+            string: The string to scan
+        """
         for key in self.regexp.findall(string):
             if self.escaped and self.escaped.match(key):
                 continue
-            if self.dict.has_key(key):
-                self.dict[key] += 1
-            else:
-                self.dict[key] = 1
+            self.dict[key] = self.dict.get(key, 0) + 1
 
-    def checkout(self, string):
-        "scan a translated string"
+    def checkout(self, string: str) -> None:
+        """Scan a translated string.
+        
+        Args:
+            string: The string to scan
+        """
         for key in self.regexp.findall(string):
             if self.escaped and self.escaped.match(key):
                 continue
-            if self.dict.has_key(key):
+            if key in self.dict:
                 self.dict[key] -= 1
             else:
-                self.errs.append(
-                    "%(key)s was not found" %
-                    { 'key' : key }
-                )
+                self.errs.append(f"{key} was not found")
 
-    def computeErrors(self):
-        "check for differences between checked in and checked out"
-        for key in self.dict.keys():
-            if self.dict[key] < 0:
-                self.errs.append(
-                    "Too much %(key)s" %
-                    { 'key'  : key }
-                )
-            if self.dict[key] > 0:
-                self.errs.append(
-                    "Too few %(key)s" %
-                    { 'key'  : key }
-                )
+    def computeErrors(self) -> List[str]:
+        """Check for differences between checked in and checked out.
+        
+        Returns:
+            List of error messages
+        """
+        for key, count in self.dict.items():
+            if count < 0:
+                self.errs.append(f"Too many {key}")
+            elif count > 0:
+                self.errs.append(f"Too few {key}")
         return self.errs
 
-    def status(self):
-        if self.errs:
-            return "FAILED"
-        else:
-            return "OK"
+    def status(self) -> str:
+        """Get the status of the check.
+        
+        Returns:
+            'FAILED' if there are errors, 'OK' otherwise
+        """
+        return "FAILED" if self.errs else "OK"
 
-    def errorsAsString(self):
-        msg = ""
-        for err in self.errs:
-            msg += " - %(err)s" % { 'err': err }
-        return msg
+    def errorsAsString(self) -> str:
+        """Get all errors as a single string.
+        
+        Returns:
+            String containing all error messages
+        """
+        return "".join(f" - {err}" for err in self.errs)
 
-    def reset(self):
-        self.dict = {}
-        self.errs = []
+    def reset(self) -> None:
+        """Reset the checker state."""
+        self.dict.clear()
+        self.errs.clear()
 
 
 class POParser:
