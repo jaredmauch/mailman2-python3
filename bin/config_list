@@ -250,7 +250,7 @@ def do_input(listname, infile, checkonly, verbose):
     # open the specified list locked, unless checkonly is set
     try:
         mlist = MailList.MailList(listname, lock=not checkonly)
-    except Errors.MMListError, e:
+    except Errors.MMListError as e:
         usage(1, C_('No such list "%(listname)s"\n%(e)s'))
     savelist = 0
     guibyprop = getPropertyMap(mlist)
@@ -316,64 +316,39 @@ def do_input(listname, infile, checkonly, verbose):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-i', '--inputfile', help='Configure the list by assigning each module-global variable in the file to an attribute on the list object')
-    group.add_argument('-o', '--outputfile', help='Print out a list\'s configuration variables in a format suitable for input using this script')
-    parser.add_argument('-c', '--checkonly', action='store_true', help='With this option, the modified list is not actually changed')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Print the name of each attribute as it is being changed')
-    parser.add_argument('listname', help='The name of the list to configure')
-    
+    parser.add_argument('-i', '--inputfile',
+                      help='Configure the list by assigning each module-global variable in the file to an attribute on the list object')
+    parser.add_argument('-o', '--outputfile',
+                      help='Print out a list\'s configuration variables in a format suitable for input using this script')
+    parser.add_argument('-c', '--checkonly', action='store_true',
+                      help='With this option, the modified list is not actually changed')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                      help='Print the name of each attribute as it is being changed')
+    parser.add_argument('listname',
+                      help='Name of the list to configure')
+
     try:
         args = parser.parse_args()
     except SystemExit:
         usage(1)
 
-    if args.outputfile:
-        do_output(args.listname, args.outputfile)
-        return
+    # Check for mutually exclusive options
+    if args.inputfile and args.outputfile:
+        usage(1, C_('Cannot specify both --inputfile and --outputfile'))
 
-    # Open the list
-    try:
-        mlist = MailList.MailList(args.listname)
-    except Errors.MMListError:
+    # Check for required options
+    if not args.inputfile and not args.outputfile:
+        usage(1, C_('Must specify either --inputfile or --outputfile'))
+
+    # Check for list existence
+    if not Utils.list_exists(args.listname):
         usage(1, C_('No such list: %(listname)s') % {'listname': args.listname})
 
-    # Load the input file
-    try:
-        with open(args.inputfile) as fp:
-            code = fp.read()
-    except IOError as e:
-        usage(1, C_('Cannot open input file: %(e)s') % {'e': str(e)})
-
-    # Create a dictionary to hold the variables
-    vars = {'mlist': mlist}
-    try:
-        exec(code, vars)
-    except Exception as e:
-        usage(1, C_('Error in input file: %(e)s') % {'e': str(e)})
-
-    # Now go through all the variables in the dictionary and set them on the
-    # list object
-    changed = 0
-    for name, value in vars.items():
-        if name == 'mlist':
-            continue
-        if hasattr(mlist, name):
-            if args.verbose:
-                print(C_('Setting %(name)s to %(value)r') % {'name': name, 'value': value})
-            setattr(mlist, name, value)
-            changed += 1
-        else:
-            print(C_('Warning: %(name)s is not a valid list attribute') % {'name': name}, file=sys.stderr)
-
-    if changed:
-        if not args.checkonly:
-            mlist.Save()
-        print(C_('%(changed)d attributes changed') % {'changed': changed})
+    # Process the list
+    if args.outputfile:
+        do_output(args.listname, args.outputfile)
     else:
-        print(C_('No attributes changed'))
-
-    mlist.Unlock()
+        do_input(args.listname, args.inputfile, args.checkonly, args.verbose)
 
 
 if __name__ == '__main__':

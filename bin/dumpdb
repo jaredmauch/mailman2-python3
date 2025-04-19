@@ -46,11 +46,10 @@ Python pickle.  In either case, if you want to override the default assumption
 """
 
 import sys
-import getopt
+import argparse
 import pprint
-import cPickle
+import pickle
 import marshal
-from types import StringType
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
@@ -60,57 +59,46 @@ PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
 
-
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__) % globals()
+    print(C_(__doc__) % globals(), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-m', '--marshal', action='store_true',
+                      help='Assume the file contains a Python marshal')
+    parser.add_argument('-p', '--pickle', action='store_true',
+                      help='Assume the file contains a Python pickle')
+    parser.add_argument('-n', '--noprint', action='store_true',
+                      help='Don\'t attempt to pretty print the object')
+    parser.add_argument('filename',
+                      help='File to dump')
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'mphn',
-                                   ['marshal', 'pickle', 'help', 'noprint'])
-    except getopt.error, msg:
-        usage(1, msg)
+        args = parser.parse_args()
+    except SystemExit:
+        usage(1)
 
-    # Options.
-    # None == guess, 0 == pickle, 1 == marshal
-    filetype = None
-    doprint = True
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-p', '--pickle'):
-            filetype = 0
-        elif opt in ('-m', '--marshal'):
-            filetype = 1
-        elif opt in ('-n', '--noprint'):
-            doprint = False
-
-    if len(args) < 1:
-        usage(1, C_('No filename given.'))
-    elif len(args) > 1:
-        pargs = COMMASPACE.join(args)
-        usage(1, C_('Bad arguments: %(pargs)s'))
+    # Determine file type
+    if args.marshal and args.pickle:
+        usage(1, C_('Cannot specify both --marshal and --pickle'))
+    elif args.marshal:
+        filetype = 1  # marshal
+    elif args.pickle:
+        filetype = 0  # pickle
+    elif args.filename.endswith('.db'):
+        filetype = 1  # marshal
+    elif args.filename.endswith('.pck'):
+        filetype = 0  # pickle
     else:
-        filename = args[0]
-
-    if filetype is None:
-        if filename.endswith('.db'):
-            filetype = 1
-        elif filename.endswith('.pck'):
-            filetype = 0
-        else:
-            usage(1, C_('Please specify either -p or -m.'))
+        usage(1, C_('Please specify either -p or -m.'))
 
     # Handle dbs
     pp = pprint.PrettyPrinter(indent=4)
@@ -118,34 +106,31 @@ def main():
         load = marshal.load
         typename = 'marshal'
     else:
-        load = cPickle.load
+        load = pickle.load
         typename = 'pickle'
-    fp = open(filename)
+
     m = []
-    try:
+    with open(args.filename, 'rb') as fp:
         cnt = 1
-        if doprint:
-            print C_('[----- start %(typename)s file -----]')
+        if not args.noprint:
+            print(C_('[----- start %(typename)s file -----]') % {'typename': typename})
         while True:
             try:
                 obj = load(fp)
             except EOFError:
-                if doprint:
-                    print C_('[----- end %(typename)s file -----]')
+                if not args.noprint:
+                    print(C_('[----- end %(typename)s file -----]') % {'typename': typename})
                 break
-            if doprint:
-                print C_('<----- start object %(cnt)s ----->')
-                if isinstance(obj, StringType):
-                    print obj
+            if not args.noprint:
+                print(C_('<----- start object %(cnt)s ----->') % {'cnt': cnt})
+                if isinstance(obj, str):
+                    print(obj)
                 else:
                     pp.pprint(obj)
             cnt += 1
             m.append(obj)
-    finally:
-        fp.close()
     return m
 
 
-
 if __name__ == '__main__':
     msg = main()

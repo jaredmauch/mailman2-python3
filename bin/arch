@@ -58,7 +58,7 @@ be some path in the archives/private directory.  For example:
 
 import os
 import sys
-import getopt
+import argparse
 import shutil
 
 import paths
@@ -88,47 +88,23 @@ def usage(code, msg=''):
 
 
 def main():
-    # get command line arguments
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-q', '--quiet', action='store_true',
+                      help='Make the archiver output less verbose')
+    parser.add_argument('--wipe', action='store_true',
+                      help='First wipe out the original archive before regenerating')
+    parser.add_argument('-s', '--start', type=int,
+                      help='Start indexing at article N, where article 0 is the first in the mbox')
+    parser.add_argument('-e', '--end', type=int,
+                      help='End indexing at article M')
+    parser.add_argument('listname',
+                      help='The name of the list to rebuild the archive for')
+    parser.add_argument('mbox', nargs='?',
+                      help='Path to the list\'s complete mbox archive')
+
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hs:e:q',
-            ['help', 'start=', 'end=', 'quiet', 'wipe'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    start = None
-    end = None
-    verbose = 1
-    wipe = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-s', '--start'):
-            try:
-                start = int(arg)
-            except ValueError:
-                usage(1)
-        elif opt in ('-e', '--end'):
-            try:
-                end = int(arg)
-            except ValueError:
-                usage(1)
-        elif opt in ('-q', '--quiet'):
-            verbose = 0
-        elif opt == '--wipe':
-            wipe = 1
-
-    # grok arguments
-    if len(args) < 1:
-        usage(1, C_('listname is required'))
-    listname = args[0].lower().strip()
-
-    if len(args) < 2:
-        mbox = None
-    else:
-        mbox = args[1]
-
-    if len(args) > 2:
+        args = parser.parse_args()
+    except SystemExit:
         usage(1)
 
     # open the mailing list object
@@ -136,11 +112,16 @@ def main():
     lock = None
     try:
         try:
-            mlist = MailList(listname)
+            mlist = MailList(args.listname.lower().strip())
         except Errors.MMListError as e:
-            usage(2, C_('No such list "%(listname)s"\n%(e)s'))
-        if mbox is None:
+            usage(2, C_('No such list "%(listname)s"\n%(e)s') % {
+                'listname': args.listname,
+                'e': str(e)
+            })
+        if args.mbox is None:
             mbox = mlist.ArchiveFileName()
+        else:
+            mbox = args.mbox
 
         i18n.set_language(mlist.preferred_language)
         # lay claim to the archive's lock file.  this is so no other post can
@@ -163,9 +144,12 @@ def main():
         try:
             fp = open(mbox)
         except (IOError, OSError) as msg:
-            usage(3, C_('Cannot open mbox file %(mbox)s: %(msg)s'))
+            usage(3, C_('Cannot open mbox file %(mbox)s: %(msg)s') % {
+                'mbox': mbox,
+                'msg': str(msg)
+            })
         # Maybe wipe the old archives
-        if wipe:
+        if args.wipe:
             if mlist.scrub_nondigest:
                 # TK: save the attachments dir because they are not in mbox
                 saved = 0
@@ -182,9 +166,9 @@ def main():
                 os.renames(savedir, atchdir)
 
         archiver = HyperArchive(mlist)
-        archiver.VERBOSE = verbose
+        archiver.VERBOSE = not args.quiet
         try:
-            archiver.processUnixMailbox(fp, start, end)
+            archiver.processUnixMailbox(fp, args.start, args.end)
         finally:
             archiver.close()
         fp.close()

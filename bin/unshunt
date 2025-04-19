@@ -33,7 +33,7 @@ will result in losing all the messages in that queue.
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -53,21 +53,19 @@ def usage(code, msg=''):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('directory', nargs='?',
+                      help='Directory to dequeue from (default: qfiles/shunt)')
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except (getopt.error, getopt.GetoptError) as msg:
-        usage(1, msg)
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
-    if len(args) == 0:
-        qdir = mm_cfg.SHUNTQUEUE_DIR
-    elif len(args) == 1:
-        qdir = args[0]
-    else:
+        args = parser.parse_args()
+    except SystemExit:
         usage(1)
+
+    if args.directory is None:
+        qdir = mm_cfg.SHUNTQUEUE_DIR
+    else:
+        qdir = args.directory
 
     sb = get_switchboard(qdir)
     sb.recover_backup_files()
@@ -80,8 +78,10 @@ def main():
         except (IOError, OSError, KeyError, ValueError) as e:
             # If there are any unshunting errors, log them and continue trying
             # other shunted messages.
-            print(C_('Cannot unshunt message %(filebase)s, skipping:\n%(e)s'),
-                  file=sys.stderr)
+            print(C_('Cannot unshunt message %(filebase)s, skipping:\n%(e)s') % {
+                'filebase': filebase,
+                'e': str(e)
+            }, file=sys.stderr)
         else:
             # Unlink the .bak file left by dequeue()
             sb.finish(filebase)

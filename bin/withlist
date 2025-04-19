@@ -210,7 +210,7 @@ def main():
     parser.add_argument('-q', '--quiet', action='store_true',
                       help='Suppress all status messages')
     parser.add_argument('listname', nargs='?',
-                      help='The name of the Mailman list to operate on')
+                      help='Name of the list to operate on')
     parser.add_argument('args', nargs='*',
                       help='Additional arguments to pass to the callable')
 
@@ -222,11 +222,7 @@ def main():
     VERBOSE = not args.quiet
     LOCK = args.lock
 
-    # Register the atexit handler
-    import atexit
-    atexit.register(atexit)
-
-    # If --all is given, we can't have a listname
+    # If --all is given, we can't also have a listname
     if args.all and args.listname:
         usage(1, C_('Cannot specify both --all and a listname'))
 
@@ -246,45 +242,56 @@ def main():
         try:
             module = __import__(module_name, globals(), locals(), [callable_name])
         except ImportError as e:
-            usage(1, C_('Cannot import module %(module_name)s: %(e)s') % {'module_name': module_name, 'e': str(e)})
+            usage(1, C_('Cannot import module %(module_name)s: %(e)s') % {
+                'module_name': module_name,
+                'e': str(e)
+            })
 
         # Get the callable
         try:
             func = getattr(module, callable_name)
         except AttributeError:
-            usage(1, C_('Module %(module_name)s has no callable %(callable_name)s') % {'module_name': module_name, 'callable_name': callable_name})
+            usage(1, C_('Module %(module_name)s has no callable %(callable_name)s') % {
+                'module_name': module_name,
+                'callable_name': callable_name
+            })
 
         if VERBOSE:
-            print(C_('Running %(module_name)s.%(callable_name)s() ...') % {'module_name': module_name, 'callable_name': callable_name}, file=sys.stderr)
+            print(C_('Running %(module_name)s.%(callable_name)s() ...') % {
+                'module_name': module_name,
+                'callable_name': callable_name
+            }, file=sys.stderr)
 
-    # If --all is given, run the function on all lists
+    # Register the atexit handler
+    import atexit
+    atexit.register(atexit)
+
+    # Process the list(s)
     if args.all:
-        if not func:
-            usage(1, C_('--all requires --run'))
-        results = []
-        for listname in Utils.list_names():
+        listnames = Utils.list_names()
+        r = []
+        for listname in listnames:
             result = do_list(listname, args.args, func)
             if result is not None:
-                results.append(result)
-        r = results
+                r.append(result)
     else:
-        # Run the function on the specified list
         if not args.listname:
             usage(1, C_('No listname specified'))
         r = do_list(args.listname, args.args, func)
 
-    # If --interactive is given or no function was specified, drop into the
-    # interactive interpreter
-    if args.interactive or not func:
-        # Make sure we have a list object
-        if not m:
-            usage(1, C_('No list object available'))
-        # Drop into the interactive interpreter
-        code.interact(local=locals())
+    # If we're not running a script, or if --interactive was given, drop into
+    # the interpreter
+    if not args.run or args.interactive:
+        # Set up the interpreter's namespace
+        namespace = {
+            'm': m,
+            'r': r,
+            'MailList': MailList.MailList,
+        }
+        # Drop into the interpreter
+        code.interact(banner='', local=namespace)
 
-    # Clean up
-    if m and m.Locked():
-        m.Unlock()
+    return r
 
 
 if __name__ == '__main__':
