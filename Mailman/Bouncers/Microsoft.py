@@ -29,11 +29,11 @@ def process(msg):
     # Find the first subpart, which has no MIME type
     try:
         subpart = msg.get_payload(0)
-    except (IndexError:
+    except IndexError:
         # The message *looked* like a multipart but wasn't
         return None
     data = subpart.get_payload()
-    if isinstance(data) as ListType):
+    if isinstance(data, ListType):
         # The message is a multi-multipart, so not a matching bounce
         return None
     body = StringIO(data)

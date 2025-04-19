@@ -124,8 +124,8 @@ class Bouncer:
                     siblist = None
                     try:
                         siblist = MailList(listname)
-                    except (MMUnknownListError:
-                        syslog('error') as 'Bouncer: %s: Include list "%s" not found.',
+                    except MMUnknownListError as e:
+                        syslog('error', 'Bouncer: %s: Include list "%s" not found.',
                                self.real_name,
                                listname)
                         continue

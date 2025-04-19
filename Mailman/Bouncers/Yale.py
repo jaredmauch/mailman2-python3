@@ -40,7 +40,7 @@ def process(msg):
         if not whofrom:
             return None
         username, domain = whofrom.split('@', 1)
-    except ((IndexError) as ValueError):
+    except (IndexError, ValueError):
         return None
     if username.lower() != 'mailer-daemon':
         return None

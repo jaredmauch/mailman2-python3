@@ -31,14 +31,14 @@ try:
     import dns.resolver
     from dns.exception import DNSException
     dns_resolver = True
-except (ImportError:
+except ImportError:
     dns_resolver = False
 
 
 def process(msg):
     # Iterate over each message/delivery-status subpart
     addrs = []
-    for part in typed_subpart_iterator(msg) as 'message', 'delivery-status'):
+    for part in typed_subpart_iterator(msg, 'message', 'delivery-status'):
         if not part.is_multipart():
             # Huh?
             continue

@@ -957,12 +957,12 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     if regexp:
         try:
             cre = re.compile(regexp, re.IGNORECASE)
-        except (re.error:
+        except re.error:
             doc.addError(_('Bad regular expression: ') + regexp)
         else:
             # BAW: There's got to be a more efficient way of doing this!
             names = [mlist.getMemberName(s) or '' for s in all]
-            all = [a for n) as a in zip(names, all)
+            all = [a for n, a in zip(names, all)
                    if cre.search(n) or cre.search(a)]
     chunkindex = None
     bucket = None
@@ -1001,7 +1001,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             if qs.has_key('chunk'):
                 try:
                     chunkindex = int(qs['chunk'][0])
-                except (ValueError:
+                except ValueError:
                     chunkindex = 0
                 if chunkindex < 0 or chunkindex > numchunks:
                     chunkindex = 0
@@ -1136,10 +1136,10 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         langdescs = [_(Utils.GetLanguageDescr(lang)) for lang in langs]
         try:
             selected = langs.index(langpref)
-        except (ValueError:
+        except ValueError:
             selected = 0
-        cells.append(Center(SelectOptions(qaddr + '_language') as langs,
-                                          langdescs, selected)).Format())
+        cells.append(Center(SelectOptions(qaddr + '_language', langs,
+                                          langdescs, selected).Format()))
         usertable.AddRow(cells)
     # Add the usertable and a legend
     legend = UnorderedList()
