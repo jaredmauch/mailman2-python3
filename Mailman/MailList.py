@@ -24,18 +24,17 @@ Mixes in many task-specific classes.
 import sys
 import os
 import time
-import marshal
+import pickle
 import errno
 import re
 import shutil
 import socket
 import urllib.request, urllib.parse, urllib.error
-import pickle
 
 from io import StringIO
 from collections import UserDict
 from urllib.parse import urlparse
-from types import *
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr
@@ -110,9 +109,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if name is None:
             return
         filename = os.path.join(self.fullpath(), 'extend.py')
-        dict = {}
+        namespace = {}
         try:
-            exec(compile(open(filename, "rb").read(), filename, 'exec'), dict)
+            with open(filename, 'r', encoding='utf-8') as f:
+                exec(f.read(), namespace)
         except IOError as e:
             # Ignore missing files, but log other errors
             if e.errno == errno.ENOENT:
@@ -120,7 +120,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             else:
                 syslog('error', 'IOError reading list extension: %s', e)
         else:
-            func = dict.get('extend')
+            func = namespace.get('extend')
             if func:
                 func(self)
         if lock:
@@ -146,12 +146,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 raise AttributeError(name)
 
     def __repr__(self):
-        if self.Locked():
-            status = '(locked)'
-        else:
-            status = '(unlocked)'
-        return '<mailing list "%s" %s at %x>' % (
-            self.internal_name(), status, id(self))
+        status = '(locked)' if self.Locked() else '(unlocked)'
+        return f'<mailing list "{self.internal_name()}" {status} at {id(self):x}>'
 
 
     #
@@ -185,8 +181,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
 
     def getListAddress(self, extra=None):
         if extra is None:
-            return '%s@%s' % (self.internal_name(), self.host_name)
-        return '%s-%s@%s' % (self.internal_name(), extra, self.host_name)
+            return f'{self.internal_name()}@{self.host_name}'
+        return f'{self.internal_name()}-{extra}@{self.host_name}'
 
     # For backwards compatibility
     def GetBouncesEmail(self):
@@ -203,7 +199,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
 
     def GetConfirmEmail(self, cookie):
         return mm_cfg.VERP_CONFIRM_FORMAT % {
-            'addr'  : '%s-confirm' % self.internal_name(),
+            'addr'  : f'{self.internal_name()}-confirm',
             'cookie': cookie,
             } + '@' + self.host_name
 
@@ -246,7 +242,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             return member
         else:
             acct, host = tuple(member.split('@'))
-            return "%s%s@%s" % (acct, self.umbrella_member_suffix, host)
+            return f"{acct}{self.umbrella_member_suffix}@{host}"
 
     def GetScriptURL(self, scriptname, absolute=0):
         return Utils.ScriptURL(scriptname, self.web_page_url, absolute) + \
@@ -256,7 +252,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         url = self.GetScriptURL('options', absolute)
         if obscure:
             user = Utils.ObscureEmail(user)
-        return '%s/%s' % (url, urllib.parse.quote(user.lower()))
+        return f'{url}/{urllib.parse.quote(user.lower())}'
 
     def GetDescription(self, cset=None, errors='xmlcharrefreplace'):
         # Get list's description in charset specified by cset.
@@ -462,71 +458,33 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.max_days_to_hold = mm_cfg.DEFAULT_MAX_DAYS_TO_HOLD
 
     def __save(self, data_dict):
-        # Save the file as a binary pickle, and rotate the old version to a
-        # backup file.  We must guarantee that config.pck is always valid so
-        # we never rotate unless the we've successfully written the temp file.
-        # We use pickle now because marshal is not guaranteed to be compatible
-        # between Python versions.
-        fname = os.path.join(self.fullpath(), 'config.pck')
-        fname_tmp = fname + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
-        fname_last = fname + '.last'
-        fp = None
-        try:
-            def convert_value(value):
-                """Helper function to convert values to Python 3 unicode strings"""
-                if isinstance(value, str):
-                    # If it's already a string, ensure it's unicode
-                    try:
-                        return value.decode('latin-1', errors='ignore')
-                    except (UnicodeError, AttributeError):
-                        return value
-                elif isinstance(value, bytes):
-                    # Convert bytes to unicode using preferred charset or latin-1
-                    try:
-                        charset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
-                        return value.decode(charset, errors='ignore')
-                    except (UnicodeError, LookupError, AttributeError):
-                        return value.decode('latin-1', errors='ignore')
-                elif isinstance(value, (list, tuple)):
-                    # Handle lists and tuples recursively
-                    return [convert_value(v) for v in value]
-                elif isinstance(value, dict):
-                    # Handle dictionaries recursively
-                    return {k: convert_value(v) for k, v in value.items()}
+        # Save the file as a binary pickle. We use pickle because it is
+        # guaranteed to be compatible between Python versions.
+        def convert_value(value):
+            if isinstance(value, (str, bytes)):
                 return value
+            elif isinstance(value, (list, tuple)):
+                return [convert_value(v) for v in value]
+            elif isinstance(value, dict):
+                return {k: convert_value(v) for k, v in value.items()}
+            return value
 
-            # Convert all values in the dictionary to Python 3 unicode strings
-            for key, value in data_dict.items():
-                data_dict[key] = convert_value(value)
+        # Convert all values to ensure they're compatible
+        data_dict = convert_value(data_dict)
 
-            fp = open(fname_tmp, 'wb')
-            # Use a binary format... it's more efficient.
-            pickle.dump(data_dict, fp, 1)
-            fp.flush()
-            if mm_cfg.SYNC_AFTER_WRITE:
-                os.fsync(fp.fileno())
-            fp.close()
-        except IOError as e:
-            syslog('error',
-                   'Failed config.pck write, retaining old state.\n%s', e)
-            if fp is not None:
-                os.unlink(fname_tmp)
+        # Write to a temp file first
+        tempfile = os.path.join(self.fullpath(), 'config.pck.tmp')
+        try:
+            with open(tempfile, 'wb') as fp:
+                pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            os.replace(tempfile, os.path.join(self.fullpath(), 'config.pck'))
+        except Exception as e:
+            # Something went wrong, try to clean up
+            try:
+                os.unlink(tempfile)
+            except OSError:
+                pass
             raise
-        # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
-        # as safely as possible.
-        try:
-            # might not exist yet
-            os.unlink(fname_last)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        try:
-            # might not exist yet
-            os.link(fname, fname_last)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        os.rename(fname_tmp, fname)
-        # Reset the timestamp
-        self.__timestamp = os.path.getmtime(fname)
 
     def Save(self):
         # Refresh the lock, just to let other processes know we're still
@@ -1492,7 +1450,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         addresses in the recipient headers.
         """
         # This is the list's full address.
-        listfullname = '%s@%s' % (self.internal_name(), self.host_name)
+        listfullname = f'{self.internal_name()}@{self.host_name}'
         recips = []
         # Check all recipient addresses against the list's explicit addresses,
         # specifically To: Cc: and Resent-to:
@@ -1624,7 +1582,7 @@ bad regexp in bounce_matching_header line: %s
             text = Utils.maketext(
                 'nomoretoday.txt',
                 {'sender' : sender,
-                 'listname': '%s@%s' % (self.real_name, self.host_name),
+                 'listname': f'{self.real_name}@{self.host_name}',
                  'num' : count,
                  'owneremail': self.GetOwnerEmail(),
                  },

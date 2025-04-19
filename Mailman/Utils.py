@@ -62,10 +62,8 @@ try:
     md5_new = hashlib.md5
     sha_new = hashlib.sha1
 except ImportError:
-    import hashlib
-    import hashlib
-    md5_new = md5.new
-    sha_new = sha.new
+    # This should never happen in Python 3
+    raise ImportError("hashlib module not found")
 
 try:
     import dns.resolver
@@ -81,7 +79,7 @@ except ImportError:
     have_ipaddress = False
 
 EMPTYSTRING = ''
-UEMPTYSTRING = u''
+UEMPTYSTRING = ''  # No need for u'' prefix in Python 3
 CR = '\r'
 NL = '\n'
 DOT = '.'
@@ -140,7 +138,7 @@ def get_site_email(type='site', domain=None):
     """
     if domain is None:
         domain = Site.get_domain()
-    return '%s@%s' % (type, domain)
+    return f'{type}@{domain}'
 
 
 def map_list_names():
@@ -810,25 +808,20 @@ def percent_identifiers(s):
 # Utilities to canonicalize a string, which means un-HTML-ifying the string to
 # produce a Unicode string or an 8-bit string if all the characters are ASCII.
 def canonstr(s: Union[str, bytes], lang: Optional[str] = None) -> str:
-    """Convert a string to unicode, using the charset specified in the language.
-    
-    Args:
-        s: The input string, which can be either str or bytes
-        lang: Optional language code to determine the charset
-        
-    Returns:
-        str: The decoded string in Unicode
-        
-    If the string is already unicode (str), it is returned unchanged.
-    If the string is not unicode, it is decoded using the charset specified in
-    the language, or utf-8 if no language is specified.
+    """Convert a string to canonical form - i.e. as a str type string.
+
+    If a bytes object is passed, it is decoded using the charset for the
+    specified language, or ascii if no language is specified.  If a str
+    object is passed, it is returned unchanged.
+
+    :param s: String to convert
+    :param lang: Optional language code
+    :return: Canonical string
     """
     if isinstance(s, str):
         return s
-    if lang is None:
-        return s.decode('utf-8', 'replace')
     charset = GetCharSet(lang)
-    return s.decode(charset, 'replace')
+    return str(s, charset, 'replace')
 
 
 # The opposite of canonstr() -- sorta.  I.e. it attempts to encode s in the
@@ -836,22 +829,18 @@ def canonstr(s: Union[str, bytes], lang: Optional[str] = None) -> str:
 # be rendered in, and failing that, replaces non-ASCII characters with their
 # html references.  It always returns a byte string.
 def uncanonstr(s: Union[str, bytes], lang: Optional[str] = None) -> bytes:
-    """Convert a unicode string to a byte string, using the charset specified
-    in the language.
-    
-    Args:
-        s: The input string, which can be either str or bytes
-        lang: Optional language code to determine the charset
-        
-    Returns:
-        bytes: The encoded string
-        
-    If the string is not unicode (str), it is returned unchanged.
+    """Convert a string from canonical form to a bytes object.
+
+    If a str object is passed, it is encoded using the charset for the
+    specified language, or ascii if no language is specified.  If a bytes
+    object is passed, it is returned unchanged.
+
+    :param s: String to convert
+    :param lang: Optional language code
+    :return: Bytes object
     """
-    if not isinstance(s, str):
+    if isinstance(s, bytes):
         return s
-    if lang is None:
-        return s.encode('utf-8', 'replace')
     charset = GetCharSet(lang)
     return s.encode(charset, 'replace')
 

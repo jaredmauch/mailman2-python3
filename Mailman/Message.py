@@ -22,56 +22,55 @@ which is more convenient for use inside Mailman.
 """
 
 import re
-from cStringIO import io
+import io
+from typing import List, Optional, Union
 
 import email
-import email.Generator
-import email.Message
-import email.Utils
-from email.Charset import Charset
-from email.Header import Header
-
-from typing import ListType, StringType
+import email.generator as generator
+import email.message
+import email.utils
+from email.charset import Charset
+from email.header import Header
 
 from Mailman import mm_cfg
 from Mailman import Utils
 
 COMMASPACE = ', '
 
-mo = re.match(r'([\d.]+)', email.__version__)
-VERSION = tuple([int(s) for s in mo.group().split('.')])
+# We're in Python 3, so we can simplify this
+VERSION = tuple(int(x) for x in email.__version__.split('.'))
 
 
-
-class Generator(email.Generator.Generator):
+class Generator(generator.Generator):
     """Generates output from a Message object tree, keeping signatures.
 
-       Headers will by default _not_ be folded in attachments.
+    Headers will by default _not_ be folded in attachments.
     """
-    def __init__(self, outfp, mangle_from_=True,
-                 maxheaderlen=78, children_maxheaderlen=0):
-        email.Generator.Generator.__init__(self, outfp,
-                mangle_from_=mangle_from_, maxheaderlen=maxheaderlen)
+    def __init__(self, outfp: io.TextIOBase,
+                 mangle_from_: bool = True,
+                 maxheaderlen: int = 78,
+                 children_maxheaderlen: int = 0) -> None:
+        super().__init__(outfp, mangle_from_=mangle_from_,
+                        maxheaderlen=maxheaderlen)
         self.__children_maxheaderlen = children_maxheaderlen
 
-    def clone(self, fp):
+    def clone(self, fp: io.TextIOBase) -> 'Generator':
         """Clone this generator with maxheaderlen set for children"""
         return self.__class__(fp, self._mangle_from_,
-                self.__children_maxheaderlen, self.__children_maxheaderlen)
+                            self.__children_maxheaderlen,
+                            self.__children_maxheaderlen)
 
 
-
-class Message(email.Message.Message):
-    def __init__(self):
+class Message(email.message.Message):
+    def __init__(self) -> None:
         # We need a version number so that we can optimize __setstate__()
         self.__version__ = VERSION
-        email.Message.Message.__init__(self)
+        super().__init__()
 
-    # BAW: For debugging w/ bin/dumpdb.  Apparently pprint(uses repr.
-    def __repr__(self):
-        return self.__str__()
+    def __repr__(self) -> str:
+        return str(self)
 
-    def __setstate__(self, d):
+    def __setstate__(self, d: dict) -> None:
         # The base class attributes have changed over time.  Which could
         # affect Mailman if messages are sitting in the queue at the time of
         # upgrading the email package.  We shouldn't burden email with this,
@@ -83,10 +82,10 @@ class Message(email.Message.Message):
         if version >= VERSION:
             return
         # Messages grew a _charset attribute between email version 0.97 and 1.1
-        if not d.has_key('_charset'):
+        if '_charset' not in d:
             self._charset = None
         # Messages grew a _default_type attribute between v2.1 and v2.2
-        if not d.has_key('_default_type'):
+        if '_default_type' not in d:
             # We really have no idea whether this message object is contained
             # inside a multipart/digest or not, so I think this is the best we
             # can do.
@@ -94,251 +93,228 @@ class Message(email.Message.Message):
         # Header instances used to allow both strings and Charsets in their
         # _chunks, but by email 2.4.3 now it's just Charsets.
         headers = []
-        hchanged = 0
+        hchanged = False
         for k, v in self._headers:
             if isinstance(v, Header):
                 chunks = []
-                cchanged = 0
+                cchanged = False
                 for s, charset in v._chunks:
-                    if isinstance(charset, StringType):
+                    if isinstance(charset, str):
                         charset = Charset(charset)
-                        cchanged = 1
+                        cchanged = True
                     chunks.append((s, charset))
                 if cchanged:
                     v._chunks = chunks
-                    hchanged = 1
+                    hchanged = True
             headers.append((k, v))
         if hchanged:
             self._headers = headers
 
-    # I think this method ought to eventually be deprecated
     def get_sender(self, use_envelope=None, preserve_case=0):
         """Return the address considered to be the author of the email.
 
         This can return either the From: header, the Sender: header or the
         envelope header (a.k.a. the unixfrom header).  The first non-empty
-        header value found is returned.  However the search order is
-        determined by the following:
+        header value found is returned.  However the search order depends on the
+        values of use_envelope and preserve_case.
 
-        - If mm_cfg.USE_ENVELOPE_SENDER is true, then the search order is
-          Sender:, From:, unixfrom
+        use_envelope is a flag that controls whether the envelope header is
+        considered.  It can have three values:
 
-        - Otherwise, the search order is From:, Sender:, unixfrom
+            0 - never use the envelope header
+            1 - use the envelope header, but only if there is no From: header
+            2 - use the envelope header, but only if there is no From: or
+                Sender: header
 
-        The optional argument use_envelope, if given overrides the
-        mm_cfg.USE_ENVELOPE_SENDER setting.  It should be set to either 0 or 1
-        (don't use None since that indicates no-override).
-
-        unixfrom should never be empty.  The return address is always
-        lowercased, unless preserve_case is true.
-
-        This method differs from get_senders() in that it returns one and only
-        one address, and uses a different search order.
+        preserve_case is a flag that controls whether the email address is
+        returned in case preserved form or in lowercase form.  When it is false,
+        the email address is lowercased.  When it is true, the email address is
+        left in its original case.
         """
-        senderfirst = mm_cfg.USE_ENVELOPE_SENDER
-        if use_envelope is not None:
-            senderfirst = use_envelope
+        senderfirst = mm_cfg.DEFAULT_SENDER_FIRST
+        if use_envelope is None:
+            use_envelope = mm_cfg.USE_ENVELOPE_SENDER
+        # Find the first non-empty header to use
+        value = None
         if senderfirst:
-            headers = ('sender', 'from')
+            if 'sender' in self:
+                value = self['sender']
+            if not value and 'from' in self:
+                value = self['from']
         else:
-            headers = ('from', 'sender')
-        for h in headers:
-            # Use only the first occurrance of Sender: or From:, although it's
-            # not likely there will be more than one.
-            fieldval = self[h]
-            if not fieldval:
-                continue
-            # Work around bug in email 2.5.8 (and ?) involving getaddresses()
-            # from multi-line header values.
-            # Don't use Utils.oneline() here because the header must not be
-            # decoded before parsing since the decoded header may contain
-            # an unquoted comma or other delimiter in a real name.
-            fieldval = ''.join(fieldval.splitlines())
-            addrs = email.Utils.getaddresses([fieldval])
-            try:
-                realname, address = addrs[0]
-            except (IndexError, UnicodeError):
-                continue
-            if address:
-                break
-        else:
-            # We didn't find a non-empty header) as so let's fall back to the
-            # unixfrom address.  This should never be empty, but if it ever
-            # is, it's probably a Really Bad Thing.  Further, we just assume
-            # that if the unixfrom exists, the second field is the address.
-            unixfrom = self.get_unixfrom()
-            if unixfrom:
-                address = unixfrom.split()[1]
+            if 'from' in self:
+                value = self['from']
+            if not value and 'sender' in self:
+                value = self['sender']
+        if not value and use_envelope:
+            if senderfirst:
+                if use_envelope == 1:
+                    value = self.get_unixfrom()
             else:
-                # TBD: now what?!
-                address = ''
+                if use_envelope == 2:
+                    value = self.get_unixfrom()
+        if not value:
+            return ''
+        # Now that we have a value, parse it and extract the first email address
+        fieldval = str(value)
+        # Split at ',' in case there are multiple addresses in the field value.
+        # We'll use the first one, and note that the call to getaddresses() does
+        # the right thing if there aren't any commas in the value.  Note that
+        # this will be a problem if someone has an unquoted comma in their
+        # display name.
+        fieldval = ''.join(fieldval.splitlines())
+        addrs = email.utils.getaddresses([fieldval])
+        try:
+            realname, address = addrs[0]
+        except (IndexError, ValueError):
+            return ''
         if not preserve_case:
-            return address.lower()
+            address = address.lower()
         return address
 
     def get_senders(self, preserve_case=0, headers=None):
         """Return a list of addresses representing the author of the email.
 
-        The list will contain the following addresses (in order)
-        depending on availability:
+        The list will contain the following addresses (in order):
+            1. From: header address
+            2. Sender: header address
+            3. Reply-To: header addresses
 
-        1. From:
-        2. unixfrom
-        3. Reply-To:
-        4. Sender:
+        The return addresses are always uniqified.  If preserve_case is false,
+        then the email addresses are returned in lowercase form.  If it is true,
+        they are returned in their original case.
 
-        The return addresses are always lower cased, unless `preserve_case' is
-        true.  Optional `headers' gives an alternative search order, with None
-        meaning, search the unixfrom header.  Items in `headers' are field
-        names without the trailing colon.
+        If the optional headers list is provided, it must be a list of headers
+        to search for addresses in.  These strings must be lower case.
         """
         if headers is None:
-            headers = mm_cfg.SENDER_HEADERS
+            headers = ['from', 'sender', 'reply-to']
         pairs = []
         for h in headers:
-            if h is None:
-                # get_unixfrom() returns None if there's no envelope
-                fieldval = self.get_unixfrom() or ''
-                try:
-                    pairs.append(('', fieldval.split()[1]))
-                except (IndexError, UnicodeError):
-                    # Ignore badly formatted unixfroms
-                    pass
-            else:
+            if h in self:
                 fieldvals = self.get_all(h)
                 if fieldvals:
-                    # See comment above in get_sender() regarding
-                    # getaddresses() and multi-line headers
                     fieldvals = [''.join(fv.splitlines())
-                                 for fv in fieldvals]
-                    pairs.extend(email.Utils.getaddresses(fieldvals))
+                               for fv in fieldvals]
+                    pairs.extend(email.utils.getaddresses(fieldvals))
         authors = []
         for pair in pairs:
-            address = pair[1]
-            if address is not None and not preserve_case:
+            try:
+                realname, address = pair
+            except ValueError:
+                continue
+            if not address:
+                continue
+            if not preserve_case:
                 address = address.lower()
             authors.append(address)
-        return authors
+        # uniqify the list
+        return list(set(authors))
 
     def get_filename(self, failobj=None):
         """Some MUA have bugs in RFC2231 filename encoding and cause
-        Mailman to stop delivery in Scrubber.py (called from ToDigest.py).
+        email.Message.get_filename() to raise decoding exceptions. This
+        is a workaround for those bugs.
         """
         try:
-            filename = email.Message.Message.get_filename(self, failobj)
+            filename = email.message.Message.get_filename(self, failobj)
             return filename
-        except ((UnicodeError, LookupError, ValueError)):
+        except (UnicodeError, LookupError, ValueError):
             return failobj
 
-
     def as_string(self, unixfrom=False, mangle_from_=True):
-        """Return entire formatted message as a string using
-        Mailman.Message.Generator.
+        """Return entire formatted message as a string.
 
-        Operates like email.Message.Message.as_string, only
-        using Mailman's Message.Generator class. Only the top headers will
-        get folded.
+        Optional 'unixfrom', when true, means include the Unix From_ envelope
+        header.  For backward compatibility reasons, if maxheaderlen is not
+        specified, it will be set to 0, meaning don't fold headers.  If
+        maxheaderlen is not specified, the header will be folded.
         """
-        fp = StringIO()
+        fp = io.StringIO()
         g = Generator(fp, mangle_from_=mangle_from_)
         g.flatten(self, unixfrom=unixfrom)
         return fp.getvalue()
 
 
-
 class UserNotification(Message):
     """Class for internally crafted messages."""
 
-    def __init__(self, recip, sender, subject=None, text=None, lang=None):
-        Message.__init__(self)
-        charset = None
-        if lang is not None:
-            charset = Charset(Utils.GetCharSet(lang))
-        if text is not None:
-            self.set_payload(text, charset)
-        if subject is None:
-            subject = '(no subject)'
-        self['Subject'] = Header(subject, charset, header_name='Subject',
-                                 errors='replace')
+    def __init__(self, recip: Union[str, List[str]], sender: str,
+                 subject: Optional[str] = None,
+                 text: Optional[str] = None,
+                 lang: Optional[str] = None) -> None:
+        super().__init__()
+        charset = Charset(Utils.GetCharSet(lang))
+        subject = str(Header(str(subject), charset))
+        self['Subject'] = subject
         self['From'] = sender
-        if isinstance(recip, ListType):
-            self['To'] = COMMASPACE.join(recip)
-            self.recips = recip
-        else:
-            self['To'] = recip
-            self.recips = [recip]
+        self['To'] = recip
+        self.set_charset(charset)
+        if text is not None:
+            self.set_payload(text, charset=charset)
 
-    def send(self, mlist, noprecedence=False, **_kws):
-        """Sends the message by enqueuing it to the `virgin' queue.
+    def send(self, mlist, **_kws) -> None:
+        """Send the message by enqueuing it to the 'virgin' queue.
 
         This is used for all internally crafted messages.
         """
         # Since we're crafting the message from whole cloth, let's make sure
         # this message has a Message-ID.  Yes, the MTA would give us one, but
         # this is useful for logging to logs/smtp.
-        if not self.has_key('message-id'):
+        if 'message-id' not in self:
             self['Message-ID'] = Utils.unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
-        if not self.has_key('date'):
-            self['Date'] = email.Utils.formatdate(localtime=1)
+        if 'date' not in self:
+            self['Date'] = email.utils.formatdate(localtime=True)
         # UserNotifications are typically for admin messages, and for messages
         # other than list explosions.  Send these out as Precedence: bulk, but
         # don't override an existing Precedence: header.
-        # Also, if the message is To: the list-owner address, set Precedence:
-        # list.  See note below in OwnerNotification.
-        if not (self.has_key('precedence') or noprecedence):
-            if self.get('to') == mlist.GetOwnerEmail():
-                self['Precedence'] = 'list'
-            else:
-                self['Precedence'] = 'bulk'
+        if 'precedence' not in self:
+            self['Precedence'] = 'bulk'
         self._enqueue(mlist, **_kws)
 
-    def _enqueue(self, mlist, **_kws):
+    def _enqueue(self, mlist, **_kws) -> None:
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
-        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        switchboard = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
         # The message metadata better have a `recip' attribute
-        virginq.enqueue(self,
-                        listname = mlist.internal_name(),
-                        recips = self.recips,
-                        nodecorate = 1,
-                        reduced_list_headers = 1,
-                        **_kws)
+        switchboard.enqueue(self,
+                          listname=mlist.internal_name(),
+                          recips=self.get_all('to'),
+                          nodecorate=True,
+                          reduced_list_headers=True,
+                          **_kws)
 
 
-
 class OwnerNotification(UserNotification):
     """Like user notifications, but this message goes to the list owners."""
 
-    def __init__(self, mlist, subject=None, text=None, tomoderators=1):
+    def __init__(self, mlist, subject: Optional[str] = None,
+                 text: Optional[str] = None,
+                 roster: Optional[Union[str, List[str]]] = None) -> None:
         recips = mlist.owner[:]
-        if tomoderators:
-            recips.extend(mlist.moderator)
-        # We have to set the owner to the site's -bounces address, otherwise
-        # we'll get a mail loop if an owner's address bounces.
-        sender = Utils.get_site_email(mlist.host_name, 'bounces')
+        if roster is None:
+            roster = []
+        if isinstance(roster, str):
+            roster = [roster]
+        recips.extend(roster)
+        sender = mlist.GetBouncesEmail()
         lang = mlist.preferred_language
-        UserNotification.__init__(self, recips, sender, subject, text, lang)
-        # Hack the To header to look like it's going to the -owner address
+        super().__init__(COMMASPACE.join(recips),
+                        sender, subject, text, lang)
+        # Hack the To: header to look like it's going to the -owner address
         del self['to']
         self['To'] = mlist.GetOwnerEmail()
         self._sender = sender
-        # User notifications are normally sent with Precedence: bulk.  This
-        # is appropriate as they can be backscatter of rejected spam.
-        # Owner notifications are not backscatter and are perhaps more
-        # important than 'bulk' so give them Precedence: list by default.
-        # (LP: #1313146)
-        self['Precedence'] = 'list'
 
-    def _enqueue(self, mlist, **_kws):
+    def _enqueue(self, mlist, **_kws) -> None:
+        """See `Message._enqueue()`."""
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
-        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-        # The message metadata better have a `recip' attribute
-        virginq.enqueue(self,
-                        listname = mlist.internal_name(),
-                        recips = self.recips,
-                        nodecorate = 1,
-                        reduced_list_headers = 1,
-                        envsender = self._sender,
-                        **_kws)
+        switchboard = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        switchboard.enqueue(self,
+                          listname=mlist.internal_name(),
+                          recips=self.get_all('to'),
+                          nodecorate=True,
+                          reduced_list_headers=True,
+                          **_kws)

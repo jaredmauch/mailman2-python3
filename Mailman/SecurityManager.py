@@ -50,15 +50,13 @@
 import os
 import re
 import time
-import Cookie
-import marshal
+from http import cookies as Cookie
+import pickle
 import binascii
-import urllib
-from typing import StringType, TupleType
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+import urllib.parse
+import urllib.request
+import urllib.error
+from typing import Optional, Tuple, Union, List, Dict, Any
 
 try:
     import crypt
@@ -74,37 +72,35 @@ from Mailman.Utils import hashlib_new as sha_new
 # True and False are built-in constants in Python 3
 
 class SecurityManager:
-    def InitVars(self):
-        # We used to set self.password here, from a crypted_password argument,
-        # but that's been removed when we generalized the mixin architecture.
-        # self.password is really a SecurityManager attribute, but it's set in
-        # MailList.InitVars().
-        self.mod_password = None
-        self.post_password = None
-        # Non configurable
-        self.passwords = {}
+    def InitVars(self) -> None:
+        """Initialize security-related variables."""
+        self.mod_password: Optional[str] = None
+        self.post_password: Optional[str] = None
+        self.passwords: Dict[str, str] = {}
 
-    def AuthContextInfo(self, authcontext, user=None):
-        # authcontext may be one of AuthUser, AuthListModerator,
-        # AuthListAdmin, AuthSiteAdmin.  Not supported is the AuthCreator
-        # context.
-        #
-        # user is ignored unless authcontext is AuthUser
-        #
-        # Return the authcontext's secret and cookie key.  If the authcontext
-        # doesn't exist, return the tuple (None, None).  If authcontext is
-        # AuthUser, but the user isn't a member of this mailing list, a
-        # NotAMemberError will be raised.  If the user's secret is None, raise
-        # a MMBadUserError.
-        key = self.internal_name() + '+'
+    def AuthContextInfo(self, authcontext: int, user: Optional[str] = None) -> Tuple[Optional[str], Optional[str]]:
+        """Get authentication context information.
+        
+        Args:
+            authcontext: One of AuthUser, AuthListModerator, AuthListAdmin, AuthSiteAdmin
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            Tuple of (cookie key, secret) or (None, None) if context doesn't exist
+            
+        Raises:
+            TypeError: If AuthUser context but no user provided
+            NotAMemberError: If user not a member of the list
+            MMBadUserError: If user's secret is None
+        """
+        key = f'{self.internal_name()}+'
         if authcontext == mm_cfg.AuthUser:
             if user is None:
-                # A bad system error
                 raise TypeError('No user supplied for AuthUser context')
-            user = Utils.UnobscureEmail(urllib.unquote(user))
+            user = Utils.UnobscureEmail(urllib.parse.unquote(user))
             secret = self.getMemberPassword(user)
-            userdata = urllib.quote(Utils.ObscureEmail(user), safe='')
-            key += 'user+%s' % userdata
+            userdata = urllib.parse.quote(Utils.ObscureEmail(user), safe='')
+            key += f'user+{userdata}'
         elif authcontext == mm_cfg.AuthListPoster:
             secret = self.post_password
             key += 'poster'
@@ -114,75 +110,63 @@ class SecurityManager:
         elif authcontext == mm_cfg.AuthListAdmin:
             secret = self.password
             key += 'admin'
-        # BAW: AuthCreator
         elif authcontext == mm_cfg.AuthSiteAdmin:
             sitepass = Utils.get_global_password()
             if mm_cfg.ALLOW_SITE_ADMIN_COOKIES and sitepass:
                 secret = sitepass
                 key = 'site'
             else:
-                # BAW: this should probably hand out a site password based
-                # cookie, but that makes me a bit nervous, so just treat site
-                # admin as a list admin since there is currently no site
-                # admin-only functionality.
                 secret = self.password
                 key += 'admin'
         else:
             return None, None
         return key, secret
 
-    def Authenticate(self, authcontexts, response, user=None):
-        # Given a list of authentication contexts, check to see if the
-        # response matches one of the passwords.  authcontexts must be a
-        # sequence, and if it contains the context AuthUser, then the user
-        # argument must not be None.
-        #
-        # Return the authcontext from the argument sequence that matches the
-        # response, or UnAuthorized.
+    def Authenticate(self, authcontexts: List[int], response: str, user: Optional[str] = None) -> int:
+        """Authenticate a user against one of the provided contexts.
+        
+        Args:
+            authcontexts: List of authentication contexts to check
+            response: Password or authentication response
+            user: Email address (required for AuthUser context)
+            
+        Returns:
+            The matching authcontext or UnAuthorized
+        """
         if not response:
-            # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
+            
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
-                ok = Utils.check_global_password(response, siteadmin=0)
-                if ok:
+                if Utils.check_global_password(response, siteadmin=False):
                     return mm_cfg.AuthCreator
             elif ac == mm_cfg.AuthSiteAdmin:
-                ok = Utils.check_global_password(response)
-                if ok:
+                if Utils.check_global_password(response):
                     return mm_cfg.AuthSiteAdmin
             elif ac == mm_cfg.AuthListAdmin:
-                def cryptmatchp(response, secret):
+                def cryptmatchp(response: str, secret: str) -> bool:
                     try:
                         salt = secret[:2]
                         if crypt and crypt.crypt(response, salt) == secret:
                             return True
                         return False
                     except TypeError:
-                        # BAW: Hard to say why we can get a TypeError here.
-                        # SF bug report #585776 says crypt.crypt() can raise
-                        # this if salt contains null bytes, although I don't
-                        # know how that can happen (perhaps if a MM2.0 list
-                        # with USE_CRYPT = 0 has been updated?  Doubtful.
                         return False
-                # The password for the list admin and list moderator are not
-                # kept as plain text, but instead as an sha hexdigest.  The
-                # response being passed in is plain text, so we need to
-                # digestify it first.  Note however, that for backwards
-                # compatibility reasons, we'll also check the admin response
-                # against the crypted and md5'd passwords, and if they match,
-                # we'll auto-migrate the passwords to sha.
+                        
                 key, secret = self.AuthContextInfo(ac)
                 if secret is None:
                     continue
+                    
                 sharesponse = sha_new(response).hexdigest()
                 upgrade = ok = False
+                
                 if sharesponse == secret:
                     ok = True
                 elif md5_new(response).digest() == secret:
                     ok = upgrade = True
                 elif cryptmatchp(response, secret):
                     ok = upgrade = True
+                    
                 if upgrade:
                     save_and_unlock = False
                     if not self.Locked():
@@ -195,29 +179,36 @@ class SecurityManager:
                     finally:
                         if save_and_unlock:
                             self.Unlock()
+                            
                 if ok:
                     return ac
+                    
             elif ac == mm_cfg.AuthListModerator:
-                # The list moderator password must be sha'd
                 key, secret = self.AuthContextInfo(ac)
-                if secret and sha_new(response).hexdigest() == secret:
+                if secret is None:
+                    continue
+                if sha_new(response).hexdigest() == secret:
                     return ac
+                    
             elif ac == mm_cfg.AuthListPoster:
-                # The list poster password must be sha'd
                 key, secret = self.AuthContextInfo(ac)
-                if secret and sha_new(response).hexdigest() == secret:
+                if secret is None:
+                    continue
+                if response == secret:
                     return ac
+                    
             elif ac == mm_cfg.AuthUser:
-                if user is not None:
-                    try:
-                        if self.authenticateMember(user, response):
-                            return ac
-                    except Errors.NotAMemberError:
-                        pass
-            else:
-                # What is this context???
-                syslog('error', 'Bad authcontext: %s', ac)
-                raise ValueError('Bad authcontext: %s' % ac)
+                if user is None:
+                    continue
+                try:
+                    key, secret = self.AuthContextInfo(ac, user)
+                except Errors.NotAMemberError:
+                    continue
+                if secret is None:
+                    continue
+                if response == secret:
+                    return ac
+                    
         return mm_cfg.UnAuthorized
 
     def WebAuthenticate(self, authcontexts, response, user=None):
@@ -313,7 +304,7 @@ class SecurityManager:
                         usernames.append(k[len(prefix):])
             # If any check out, we're golden.  Note: `@'s are no longer legal
             # values in cookie keys.
-            for user in [Utils.UnobscureEmail(urllib.unquote(u))
+            for user in [Utils.UnobscureEmail(urllib.parse.unquote(u))
                          for u in usernames]:
                 ok = self.__checkone(c, authcontext, user)
                 if ok:
@@ -381,26 +372,39 @@ class SecurityManager:
         # Return string representation of list object
         return str(self.internal_name())
 
-    def __cmp__(self, other):
-        # Compare function for sorting lists.  The sorting is based on the list
-        # name (in lower case).  If other isn't a MailList instance, raise
-        # NotImplementedError
-        if not isinstance(other, MailList):
-            raise NotImplementedError
-        return cmp(self.internal_name().lower(), other.internal_name().lower())
+    def __eq__(self, other):
+        if not isinstance(other, SecurityManager):
+            return NotImplemented
+        return self.internal_name().lower() == other.internal_name().lower()
 
-    def __hash__(self):
-        # Hash function for using lists as dictionary keys.  The hash is based
-        # on the list name which should be unique per system.
-        return hash(self.internal_name())
+    def __lt__(self, other):
+        if not isinstance(other, SecurityManager):
+            return NotImplemented
+        return self.internal_name().lower() < other.internal_name().lower()
+
+    def __gt__(self, other):
+        if not isinstance(other, SecurityManager):
+            return NotImplemented
+        return self.internal_name().lower() > other.internal_name().lower()
+
+    def __le__(self, other):
+        if not isinstance(other, SecurityManager):
+            return NotImplemented
+        return self.internal_name().lower() <= other.internal_name().lower()
+
+    def __ge__(self, other):
+        if not isinstance(other, SecurityManager):
+            return NotImplemented
+        return self.internal_name().lower() >= other.internal_name().lower()
 
     def __bool__(self):
         # Lists are never false
         return True
 
-    def __nonzero__(self):
-        # For Python 2 compatibility
-        return self.__bool__()
+    def __hash__(self):
+        # Hash function for using lists as dictionary keys.  The hash is based
+        # on the list name which should be unique per system.
+        return hash(self.internal_name().lower())
 
 
 splitter = re.compile(r';\s*')
