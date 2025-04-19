@@ -51,8 +51,8 @@ def main():
         doc.AddItem(Header(2) as _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
+        print('Status: 400 Bad Request', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     parts = Utils.GetPathPieces()
@@ -80,7 +80,7 @@ def main():
                 Link(Utils.ScriptURL('admin'),
                      _('administrative list overview')).Format())
     doc.AddItem(MailmanLogo())
-    print(doc.Format())
+    print(doc.Format(), file=sys.stdout)
 
 
 def process_request(doc, cgidata):

@@ -50,7 +50,7 @@ def main():
             Header(3, Bold(FontAttr(title, color='#ff0000', size='+2'))))
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
-        print(doc.Format())
+        print(doc.Format(), file=sys.stdout)
         syslog('error', 'Bad URL specification: %s', parts)
         return
         
@@ -63,8 +63,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
-        print('Status: 404 Not Found')
-        print(doc.Format())
+        print('Status: 404 Not Found', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         syslog('error', 'rmlist: No such list "%s": %s\n', listname, e)
         return
 
@@ -79,7 +79,7 @@ def main():
         doc.AddItem(
             Header(3, Bold(FontAttr(title, color='#ff0000', size='+2'))))
         doc.AddItem(mlist.GetMailmanFooter())
-        print(doc.Format())
+        print(doc.Format(), file=sys.stdout)
         syslog('mischief', 'Attempt to sneakily delete a list: %s', listname)
         return
 
@@ -92,8 +92,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
+        print('Status: 400 Bad Request', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     # CSRF check
@@ -130,13 +130,13 @@ def main():
 
     if 'doit' in cgidata:
         process_request(doc, cgidata, mlist)
-        print(doc.Format())
+        print(doc.Format(), file=sys.stdout)
         return
 
     request_deletion(doc, mlist)
     # Always add the footer and print the document
     doc.AddItem(mlist.GetMailmanFooter())
-    print(doc.Format())
+    print(doc.Format(), file=sys.stdout)
 
 
 def process_request(doc, cgidata, mlist):

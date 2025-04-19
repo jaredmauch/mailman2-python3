@@ -21,6 +21,7 @@ import signal
 import cgi
 import time
 import os
+import sys
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -46,7 +47,7 @@ def main():
     if not parts or len(parts) < 1:
         bad_confirmation(doc)
         doc.AddItem(MailmanLogo())
-        print(doc.Format())
+        print(doc.Format(), file=sys.stdout)
         return
 
     listname = parts[0].lower()
@@ -58,8 +59,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
-        print('Status: 404 Not Found')
-        print(doc.Format())
+        print('Status: 404 Not Found', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     # Set the language for the list
@@ -75,8 +76,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
+        print('Status: 400 Bad Request', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     # CSRF check
@@ -120,8 +121,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
+        print('Status: 400 Bad Request', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     if cookie == '':
@@ -134,7 +135,7 @@ def main():
     if len(parts) > 2:
         bad_confirmation(doc)
         doc.AddItem(mlist.GetMailmanFooter())
-        print(doc.Format())
+        print(doc.Format(), file=sys.stdout)
         return
 
     if not cookie:
@@ -159,7 +160,7 @@ def main():
     if content is None:
         bad_confirmation(doc, badconfirmstr)
         doc.AddItem(mlist.GetMailmanFooter())
-        print(doc.Format())
+        print(doc.Format(), file=sys.stdout)
         return
 
     try:
@@ -220,7 +221,7 @@ def main():
         bad_confirmation(doc, badconfirmstr)
 
     doc.AddItem(mlist.GetMailmanFooter())
-    print(doc.Format())
+    print(doc.Format(), file=sys.stdout)
 
 
 def bad_confirmation(doc, extra=''):
@@ -267,7 +268,7 @@ def ask_for_cookie(mlist, doc, extra=''):
     form.AddItem(table)
     doc.AddItem(form)
     doc.AddItem(mlist.GetMailmanFooter())
-    print(doc.Format())
+    print(doc.Format(), file=sys.stdout)
 
 
 def subscription_prompt(mlist, doc, cookie, userdesc):

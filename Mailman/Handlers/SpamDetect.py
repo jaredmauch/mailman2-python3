@@ -77,7 +77,7 @@ def getDecodedHeaders(msg, cset='utf-8'):
     for h, v in msg.items():
         uvalue = u''
         try:
-            v = decode_header(re.sub('\n\s', ' ', v))
+            v = decode_header(re.sub(r'\n\s', ' ', v))
         except HeaderParseError:
             v = [(v, 'us-ascii')]
         for frag, cs in v:
@@ -135,7 +135,7 @@ def process(mlist, msg, msgdata):
 publishes a DMARC policy of reject or quarantine, and your message has been
 automatically rejected.  If you think that your messages are being rejected in
 error, contact the mailing list owner at %(listowner)s."""))
-                    raise Errors.RejectMessage, text
+                    raise Errors.RejectMessage(text)
                 elif mlist.dmarc_moderation_action == 4:
                     raise Errors.DiscardMessage
 

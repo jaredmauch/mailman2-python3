@@ -115,7 +115,7 @@ def main():
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
-        print('Status: 404 Not Found')
+        print('Status: 404 Not Found', file=sys.stdout)
         handle_no_list(_('No such list <em>%(safelistname)s</em>'))
         syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
         return
@@ -134,8 +134,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
+        print('Status: 400 Bad Request', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     # CSRF check
@@ -176,10 +176,10 @@ def main():
     # See if this is a logout request
     if len(parts) >= 2 and parts[1] == 'logout':
         if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
-            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
+            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin), file=sys.stdout)
         if mlist.AuthContextInfo(mm_cfg.AuthListModerator)[0]:
-            print(mlist.ZapCookie(mm_cfg.AuthListModerator))
-        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
+            print(mlist.ZapCookie(mm_cfg.AuthListModerator), file=sys.stdout)
+        print(mlist.ZapCookie(mm_cfg.AuthListAdmin), file=sys.stdout)
         Auth.loginpage(mlist, 'admindb', frontpage=1)
         return
 
@@ -257,7 +257,7 @@ def main():
                 '<b>%s</b>' % _('Logout')))
             doc.AddItem('</font></div>\n')
             doc.AddItem(mlist.GetMailmanFooter())
-            print(doc.Format())
+            print(doc.Format(), file=sys.stdout)
             mlist.Save()
     finally:
         mlist.Unlock()

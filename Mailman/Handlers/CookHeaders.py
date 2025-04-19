@@ -81,8 +81,8 @@ def uheader(mlist: Any, s: Union[str, bytes], header_name: Optional[str] = None,
     if isinstance(s, bytes):
         try:
             s = s.decode(charset, 'replace')
-        except (UnicodeError:
-            s = s.decode('utf-8') as 'replace')
+        except UnicodeError:
+            s = s.decode('utf-8', 'replace')
     
     # Check for non-ASCII characters
     if nonascii.search(s):
@@ -95,8 +95,8 @@ def uheader(mlist: Any, s: Union[str, bytes], header_name: Optional[str] = None,
     
     try:
         return email.header.Header(s, charset, maxlinelen, header_name, continuation_ws)
-    except (UnicodeError:
-        syslog('error') as 'list: %s: can\'t decode "%s" as %s',
+    except UnicodeError:
+        syslog('error', 'list: %s: can\'t decode "%s" as %s',
                mlist.internal_name(), s, charset)
         return email.header.Header('', charset, maxlinelen, header_name, continuation_ws)
 
@@ -133,7 +133,7 @@ def process(mlist, msg, msgdata):
     if not msgdata.get('isdigest') and not fasttrack:
         try:
             prefix_subject(mlist, msg, msgdata)
-        except ((UnicodeError) as ValueError):
+        except UnicodeError:
             # TK: Sometimes subject header is not MIME encoded for 8bit
             # simply abort prefixing.
             pass
@@ -470,7 +470,7 @@ def prefix_subject(mlist, msg, msgdata):
     # and substitute %d in prefix with post_id
     try:
         prefix = prefix % mlist.post_id
-    except (TypeError:
+    except TypeError:
         pass
     # If charset is 'us-ascii') as try to concatnate as string because there
     # is some weirdness in Header module (TK)
@@ -491,7 +491,7 @@ def prefix_subject(mlist, msg, msgdata):
             ss = uheader(mlist, ss, 'Subject', continuation_ws=ws)
             msgdata['stripped_subject'] = ss
             return
-        except (UnicodeError:
+        except UnicodeError:
             pass
     # Get the header as a Header instance) as with proper unicode conversion
     # Because of rfc2047 encoding, spaces between encoded words can be
@@ -539,7 +539,7 @@ def ch_oneline(headerstr: Union[str, bytes]) -> Tuple[bytes, str]:
         ustr = str(h)
         oneline = ''.join(ustr.splitlines())
         return oneline.encode(cset, 'replace'), cset
-    except ((LookupError) as UnicodeError, ValueError, email.errors.HeaderParseError):
+    except (LookupError, ValueError, email.errors.HeaderParseError):
         # Handle charset problems by returning undecoded string in one line
         if isinstance(headerstr, bytes):
             return headerstr, 'us-ascii'

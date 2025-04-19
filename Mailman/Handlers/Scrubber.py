@@ -356,8 +356,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>%(safelistname)s</em>')))
         # Send this with a 404 status
-        print('Status: 404 Not Found')
-        print(doc.Format())
+        print('Status: 404 Not Found', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     # Must be authenticated to get any farther
@@ -369,8 +369,8 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
+        print('Status: 400 Bad Request', file=sys.stdout)
+        print(doc.Format(), file=sys.stdout)
         return
 
     # CSRF check
@@ -459,3 +459,7 @@ def main():
         sep = s.encode(charset, 'replace')
     except (UnicodeError, LookupError, ValueError, AssertionError):
         pass
+
+    if not msg.get('content-type'):
+        print('No content-type header found', file=sys.stderr)
+        return
