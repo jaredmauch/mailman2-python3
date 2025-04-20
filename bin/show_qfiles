@@ -34,13 +34,13 @@ Example: show_qfiles qfiles/shunt/*.pck
 from __future__ import print_function
 
 import sys
-import getopt
+import argparse
 from pickle import load
 
 import paths
 from Mailman.i18n import C_
 
-
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -52,25 +52,16 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hq', ['help', 'quiet'])
-    except getopt.error as msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description='Show the contents of one or more Mailman queue files.')
+    parser.add_argument('qfiles', nargs='+', help='Queue files to display')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Don\'t print helpful message delimiters')
 
-    quiet = False
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-q', '--quiet'):
-            quiet = True
+    args = parser.parse_args()
 
-    if not args:
-        usage(1, "Not enough arguments")
-
-    for filename in args:
-        if not quiet:
+    for filename in args.qfiles:
+        if not args.quiet:
             print(('====================>', filename))
         fp = open(filename)
         if filename.endswith(".pck"):
@@ -84,6 +75,5 @@ def main():
             sys.stdout.write(fp.read())
 
 
-
 if __name__ == '__main__':
     main()

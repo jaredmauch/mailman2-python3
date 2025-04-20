@@ -63,9 +63,9 @@ The options -o and -i are mutually exclusive.
 """
 
 import sys
+import argparse
 import re
 import time
-import getopt
 
 import paths
 from Mailman import mm_cfg
@@ -83,7 +83,6 @@ NL = '\n'
 nonasciipat = re.compile(r'[\x80-\xff]')
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -95,7 +94,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def do_output(listname, outfile):
     closep = 0
     try:
@@ -218,7 +216,6 @@ def do_list_categories(mlist, k, subcat, outfp):
         print(file=outfp)
 
 
-
 def getPropertyMap(mlist):
     guibyprop = {}
     categories = mlist.GetConfigCategories()
@@ -318,49 +315,72 @@ def do_input(listname, infile, checkonly, verbose):
         mlist.Unlock()
 
 
-
 def main():
+    parser = argparse.ArgumentParser(description='Configure a mailing list.')
+    parser.add_argument('listname', help='Name of the mailing list')
+    parser.add_argument('-i', '--input-file', help='File containing configuration')
+    parser.add_argument('-o', '--output-file', help='File to write configuration to')
+    parser.add_argument('-a', '--all', action='store_true',
+                       help='Show all configuration options')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Show verbose output')
+    parser.add_argument('-c', '--category', help='Show options in specific category')
+    parser.add_argument('-s', '--subcategory', help='Show options in specific subcategory')
+
+    args = parser.parse_args()
+
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'ci:o:vh',
-            ['checkonly', 'inputfile=', 'outputfile=', 'verbose', 'help'])
-    except getopt.error as msg:
-        usage(1, msg)
+        mlist = MailList.MailList(args.listname, lock=1)
+    except Errors.MMUnknownListError:
+        usage(1, _('No such list "%(listname)s"'))
 
-    # defaults
-    infile = None
-    outfile = None
-    checkonly = 0
-    verbose = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-o', '--outputfile'):
-            outfile = arg
-        elif opt in ('-i', '--inputfile'):
-            infile = arg
-        elif opt in ('-c', '--checkonly'):
-            checkonly = 1
-        elif opt in ('-v', '--verbose'):
-            verbose = 1
-
-    # sanity check
-    if infile is not None and outfile is not None:
-        usage(1, C_('Only one of -i or -o is allowed'))
-    if infile is None and outfile is None:
-        usage(1, C_('One of -i or -o is required'))
-
-    # get the list name
-    if len(args) != 1:
-        usage(1, C_('List name is required'))
-    listname = args[0].lower().strip()
-
-    if outfile:
-        do_output(listname, outfile)
+    if args.input_file:
+        try:
+            fp = open(args.input_file)
+        except IOError:
+            usage(1, _('Cannot open file: %(file)s'))
+        config = {}
+        for line in fp:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                key, value = line.split('=', 1)
+                config[key.strip()] = value.strip()
+        fp.close()
+        for key, value in config.items():
+            try:
+                mlist[key] = value
+            except Errors.MMListError as e:
+                print(_('Error setting %(key)s: %(error)s'))
+        mlist.Save()
+    elif args.output_file:
+        try:
+            fp = open(args.output_file, 'w')
+        except IOError:
+            usage(1, _('Cannot open file: %(file)s'))
+        for key, value in mlist.items():
+            if not args.all and key.startswith('_'):
+                continue
+            if args.category and not key.startswith(args.category + '_'):
+                continue
+            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
+                continue
+            print(f"{key}={value}", file=fp)
+        fp.close()
     else:
-        do_input(listname, infile, checkonly, verbose)
+        for key, value in mlist.items():
+            if not args.all and key.startswith('_'):
+                continue
+            if args.category and not key.startswith(args.category + '_'):
+                continue
+            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
+                continue
+            if args.verbose:
+                print(f"{key}={value}")
+            else:
+                print(key)
+
+    mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     main()

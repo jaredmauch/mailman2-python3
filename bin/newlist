@@ -101,7 +101,7 @@ Note that listnames are forced to lowercase.
 import sys
 import os
 import getpass
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -132,65 +132,52 @@ def usage(code, msg=''):
 
 
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hqal:u:e:',
-                                   ['help', 'quiet', 'automate', 'language=',
-                                    'urlhost=', 'emailhost='])
-    except getopt.error as msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description='Create a new, unpopulated mailing list.')
+    parser.add_argument('listname', nargs='?', help='Name of the mailing list')
+    parser.add_argument('listadmin_addr', nargs='?', help='Email address of the list administrator')
+    parser.add_argument('admin_password', nargs='?', help='Initial list password')
+    parser.add_argument('-l', '--language', default=mm_cfg.DEFAULT_SERVER_LANGUAGE,
+                       help='Make the list\'s preferred language (two letter code)')
+    parser.add_argument('-u', '--urlhost', help='Gives the list\'s web interface host name')
+    parser.add_argument('-e', '--emailhost', help='Gives the list\'s email domain name')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Suppress prompt and notification')
+    parser.add_argument('-a', '--automate', action='store_true',
+                       help='Suppress prompt but still send notification')
 
-    lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
-    quiet = False
-    automate = False
-    urlhost = None
-    emailhost = None
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        if opt in ('-q', '--quiet'):
-            quiet = True
-        if opt in ('-a', '--automate'):
-            automate = True
-        if opt in ('-l', '--language'):
-            lang = arg
-        if opt in ('-u', '--urlhost'):
-            urlhost = arg
-        if opt in ('-e', '--emailhost'):
-            emailhost = arg
+    args = parser.parse_args()
 
     # Is the language known?
-    if lang not in mm_cfg.LC_DESCRIPTIONS.keys():
-        usage(1, C_(f'Unknown language: {lang}'))
+    if args.language not in mm_cfg.LC_DESCRIPTIONS.keys():
+        usage(1, C_(f'Unknown language: {args.language}'))
 
-    if len(args) > 0:
-        listname = args[0]
-    else:
+    listname = args.listname
+    if listname is None:
         listname = input('Enter the name of the list: ')
     listname = listname.lower()
 
     if '@' in listname:
         # note that --urlhost and --emailhost have precedence
         listname, domain = listname.split('@', 1)
-        urlhost = urlhost or domain
-        emailhost = emailhost or mm_cfg.VIRTUAL_HOSTS.get(domain, domain)
+        urlhost = args.urlhost or domain
+        emailhost = args.emailhost or mm_cfg.VIRTUAL_HOSTS.get(domain, domain)
+    else:
+        urlhost = args.urlhost or mm_cfg.DEFAULT_URL_HOST
+        emailhost = args.emailhost or \
+                    mm_cfg.VIRTUAL_HOSTS.get(urlhost, mm_cfg.DEFAULT_EMAIL_HOST)
 
-    urlhost = urlhost or mm_cfg.DEFAULT_URL_HOST
-    host_name = emailhost or \
-                mm_cfg.VIRTUAL_HOSTS.get(urlhost, mm_cfg.DEFAULT_EMAIL_HOST)
     web_page_url = mm_cfg.DEFAULT_URL_PATTERN % urlhost
 
     if Utils.list_exists(listname):
         usage(1, C_(f"List already exists: {listname}"))
 
-    if len(args) > 1:
-        owner_mail = args[1]
-    else:
+    owner_mail = args.listadmin_addr
+    if owner_mail is None:
         owner_mail = input(
             C_('Enter the email of the person running the list: '))
 
-    if len(args) > 2:
-        listpasswd = args[2]
-    else:
+    listpasswd = args.admin_password
+    if listpasswd is None:
         listpasswd = getpass.getpass(C_(f'Initial {listname} password: '))
     # List passwords cannot be empty
     listpasswd = listpasswd.strip()
@@ -206,12 +193,12 @@ def main():
         oldmask = os.umask(0o002)
         try:
             try:
-                if lang == mm_cfg.DEFAULT_SERVER_LANGUAGE:
-                    langs = [lang]
+                if args.language == mm_cfg.DEFAULT_SERVER_LANGUAGE:
+                    langs = [args.language]
                 else:
-                    langs = [lang, mm_cfg.DEFAULT_SERVER_LANGUAGE]
+                    langs = [args.language, mm_cfg.DEFAULT_SERVER_LANGUAGE]
                 mlist.Create(listname, owner_mail, pw, langs=langs,
-                             emailhost=host_name, urlhost=urlhost)
+                             emailhost=emailhost, urlhost=urlhost)
             finally:
                 os.umask(oldmask)
         except Errors.BadListNameError as s:
@@ -224,11 +211,11 @@ def main():
             usage(1, C_(f"List already exists: {listname}"))
 
         # Assign domain-specific attributes
-        mlist.host_name = host_name
+        mlist.host_name = emailhost
         mlist.web_page_url = web_page_url
 
         # And assign the preferred language
-        mlist.preferred_language = lang
+        mlist.preferred_language = args.language
 
         mlist.Save()
     finally:
@@ -241,10 +228,10 @@ def main():
         sys.modules[modname].create(mlist)
 
     # And send the notice to the list owner
-    if not quiet and not automate:
+    if not args.quiet and not args.automate:
         print(f"Hit enter to notify {listname} owner..."),
         sys.stdin.readline()
-    if not quiet:
+    if not args.quiet:
         siteowner = Utils.get_site_email(mlist.host_name, 'owner')
         text = Utils.maketext(
             'newlist.txt',
