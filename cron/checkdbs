@@ -29,7 +29,7 @@ Options:
 
 import sys
 import time
-import getopt
+import argparse
 
 import paths
 
@@ -55,31 +55,13 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 now = time.time()
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Check for pending admin requests and mail the list owners if necessary.')
+    return parser.parse_args()
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
-    if args:
-        usage(1)
+    args = parse_args()
 
     for name in Utils.list_names():
         # the list must be locked in order to open the requests database
@@ -131,8 +113,6 @@ def main():
             mlist.Unlock()
 
 
-
-
 def pending_requests(mlist):
     # Must return a byte string
     lcset = Utils.GetCharSet(mlist.preferred_language)
@@ -205,6 +185,5 @@ def auto_discard(mlist):
         mlist.Save()
     return discard_count
 
-
 if __name__ == '__main__':
     main()

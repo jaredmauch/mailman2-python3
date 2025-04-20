@@ -34,50 +34,36 @@ Options:
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import Utils
 from Mailman.i18n import C_
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__.replace('%', '%%')), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Reset the passwords for members of a mailing list.')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Print what the script is doing')
+    return parser.parse_args(args)
 
 
-
 def reset_pw(mlist, *args):
-    try:
-        opts, args = getopt.getopt(args, 'v', ['verbose'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    verbose = False
-    for opt, args in opts:
-        if opt in ('-v', '--verbose'):
-            verbose = True
+    args = parse_args(args)
 
     listname = mlist.internal_name()
-    if verbose:
+    if args.verbose:
         print(C_('Changing passwords for list: %(listname)s'))
 
     for member in mlist.getMembers():
         randompw = Utils.MakeRandomPassword()
         mlist.setMemberPassword(member, randompw)
-        if verbose:
+        if args.verbose:
             print(C_('New password for member %(member)40s: %(randompw)s'))
 
     mlist.Save()
 
 
-
 if __name__ == '__main__':
-    usage(0)
+    print(C_(__doc__.replace('%', '%%')))
+    sys.exit(0)

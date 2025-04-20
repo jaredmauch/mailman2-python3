@@ -33,14 +33,14 @@ from Mailman import Utils
 from Mailman.UserDesc import UserDesc
 from Mailman import mm_cfg
 from Mailman.i18n import _
-import getopt
+import argparse
 import re
 import time
 from stat import *
 from datetime import datetime, timedelta
 import gzip
 
-
+
 # sitemap priorities in age-in-weeks/priority/changefreq tuples
 priorities = ([1, 1.0, "daily"],
               [4, 1.0, "weekly"],
@@ -51,47 +51,25 @@ priorities = ([1, 1.0, "daily"],
               [300, 0.6, "never"],
               [400, 0.5, "never"])
 
-
+
 program = sys.argv[0]
 
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Build Sitemap files for an archive')
+    parser.add_argument('listname',
+                       help='The list to generate sitemaps for')
+    return parser.parse_args()
 
 
-
 def main():
-    listname = None
-
-    # TBD: can't use getopt with this command line syntax, which is broken and
-    # should be changed to be getopt compatible.
-    i = 1
-    while i < len(sys.argv):
-        opt = sys.argv[i]
-        if opt in ('-h', '--help'):
-            usage(0)
-        else:
-            try:
-                listname = sys.argv[i].lower()
-                i += 1
-            except IndexError:
-                usage(1, _('No listname given'))
-            break
-
-    if listname is None:
-        usage(1, _('Must have a listname'))
+    args = parse_args()
 
     # get the locked list object
     try:
-        mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
-        print _('No such list: %(listname)s')
+        mlist = MailList.MailList(args.listname.lower(), lock=0)
+    except Errors.MMListError as e:
+        print(_('No such list: %(listname)s'))
         sys.exit(1)
 
     rootdir = mlist.archive_dir()

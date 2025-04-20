@@ -41,7 +41,7 @@ Options:
 import sys
 import os
 import errno
-import getopt
+import argparse
 
 import paths
 # mm_cfg must be imported before the other modules, due to the side-effect of
@@ -65,46 +65,23 @@ PROGRAM = sys.argv[0]
 _ = i18n._
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
-
-
-
 def tounicode(s, enc):
     if isinstance(s, str):
         return s
     return unicode(s, enc, 'replace')
 
 
-
+def parse_args():
+    parser = argparse.ArgumentParser(description='Send password reminders for all lists to all users.')
+    parser.add_argument('-l', '--listname', action='append',
+                       help='Send password reminders for the named list only')
+    return parser.parse_args()
+
+
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:h',
-                                   ['listname=', 'help'])
-    except getopt.error as msg:
-        usage(1, msg)
+    args = parse_args()
 
-    if args:
-        usage(1)
-
-    listnames = None
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        if opt in ('-l', '--listname'):
-            if listnames is None:
-                listnames = [arg]
-            else:
-                listnames.append(arg)
-
+    listnames = args.listname
     if listnames is None:
         listnames = Utils.list_names()
 
@@ -237,6 +214,5 @@ def main():
                                   })
 
 
-
 if __name__ == '__main__':
     main()

@@ -58,7 +58,7 @@ be some path in the archives/private directory.  For example:
 
 import os
 import sys
-import getopt
+import argparse
 import shutil
 
 import paths
@@ -76,72 +76,37 @@ PROGRAM = sys.argv[0]
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    # Ensure PROGRAM is a string, not bytes
-    if isinstance(PROGRAM, bytes):
-        PROGRAM = PROGRAM.decode('utf-8', 'replace')
-    print(C_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Rebuild a list\'s archive.')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Make the archiver output less verbose')
+    parser.add_argument('--wipe', action='store_true',
+                       help='First wipe out the original archive before regenerating')
+    parser.add_argument('-s', '--start', type=int,
+                       help='Start indexing at article N, where article 0 is the first in the mbox')
+    parser.add_argument('-e', '--end', type=int,
+                       help='End indexing at article M')
+    parser.add_argument('listname',
+                       help='The name of the list to rebuild the archive for')
+    parser.add_argument('mbox', nargs='?',
+                       help='The path to a list\'s complete mbox archive')
+    return parser.parse_args()
 
 
 def main():
-    # get command line arguments
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hs:e:q',
-            ['help', 'start=', 'end=', 'quiet', 'wipe'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    start = None
-    end = None
-    verbose = 1
-    wipe = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-s', '--start'):
-            try:
-                start = int(arg)
-            except ValueError:
-                usage(1)
-        elif opt in ('-e', '--end'):
-            try:
-                end = int(arg)
-            except ValueError:
-                usage(1)
-        elif opt in ('-q', '--quiet'):
-            verbose = 0
-        elif opt == '--wipe':
-            wipe = 1
-
-    # grok arguments
-    if len(args) < 1:
-        usage(1, C_('listname is required'))
-    listname = args[0].lower().strip()
-
-    if len(args) < 2:
-        mbox = None
-    else:
-        mbox = args[1]
-
-    if len(args) > 2:
-        usage(1)
+    args = parse_args()
 
     # open the mailing list object
     mlist = None
     lock = None
     try:
         try:
-            mlist = MailList(listname)
+            mlist = MailList(args.listname.lower().strip())
         except Errors.MMListError as e:
-            usage(2, C_('No such list "%(listname)s"\n%(e)s'))
+            print(C_('No such list "%(listname)s"\n%(e)s'), file=sys.stderr)
+            sys.exit(2)
+
+        mbox = args.mbox
         if mbox is None:
             mbox = mlist.ArchiveFileName()
 
@@ -166,9 +131,10 @@ def main():
         try:
             fp = open(mbox)
         except IOError as msg:
-            usage(3, C_('Cannot open mbox file %(mbox)s: %(msg)s'))
+            print(C_('Cannot open mbox file %(mbox)s: %(msg)s'), file=sys.stderr)
+            sys.exit(3)
         # Maybe wipe the old archives
-        if wipe:
+        if args.wipe:
             if mlist.scrub_nondigest:
                 # TK: save the attachments dir because they are not in mbox
                 saved = 0
@@ -185,9 +151,9 @@ def main():
                 os.renames(savedir, atchdir)
 
         archiver = HyperArchive(mlist)
-        archiver.VERBOSE = verbose
+        archiver.VERBOSE = not args.quiet
         try:
-            archiver.processUnixMailbox(fp, start, end)
+            archiver.processUnixMailbox(fp, args.start, args.end)
         finally:
             archiver.close()
         fp.close()

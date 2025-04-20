@@ -38,7 +38,7 @@ import os
 import sys
 import time
 import errno
-import getopt
+import argparse
 import shutil
 import pickle
 import marshal
@@ -64,6 +64,13 @@ NOTFRESH = -1
 
 LMVFILE = os.path.join(mm_cfg.DATA_DIR, 'last_mailman_version')
 PROGRAM = sys.argv[0]
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Perform all necessary upgrades.')
+    parser.add_argument('-f', '--force', action='store_true',
+                       help='Force running the upgrade procedures')
+    return parser.parse_args()
 
 
 def calcversions():
@@ -725,99 +732,56 @@ def update_pending():
 
 
 def main():
-    errors = 0
-    # get rid of old stuff
-    print('getting rid of old source files')
-    for mod in ('Mailman/Archiver.py', 'Mailman/HyperArch.py',
-                'Mailman/HyperDatabase.py', 'Mailman/pipermail.py',
-                'Mailman/smtplib.py', 'Mailman/Cookie.py',
-                'bin/update_to_10b6', 'scripts/mailcmd',
-                'scripts/mailowner', 'mail/wrapper', 'Mailman/pythonlib',
-                'cgi-bin/archives', 'Mailman/MailCommandHandler'):
-        remove_old_sources(mod)
-    listnames = Utils.list_names()
-    if not listnames:
-        print('no lists == nothing to do, exiting')
-        return
-    #
-    # for people with web archiving, make sure the directories
-    # in the archiving are set with proper perms for b6.
-    #
-    if os.path.isdir("%s/public_html/archives" % mm_cfg.PREFIX):
-        print(C_("""\
-fixing all the perms on your old html archives to work with b6
-If your archives are big, this could take a minute or two..."""))
-        os.path.walk("%s/public_html/archives" % mm_cfg.PREFIX,
-                     archive_path_fixer, "")
-        print('done')
-    for listname in listnames:
-        # Ensure listname is a string
-        if isinstance(listname, bytes):
-            listname = listname.decode('utf-8', 'replace')
-        print('Updating mailing list: %s' % listname)
-        errors = errors + dolist(listname)
-        print()
-    print('Updating Usenet watermarks')
-    wmfile = os.path.join(mm_cfg.DATA_DIR, 'gate_watermarks')
     try:
-        fp = open(wmfile, 'rb')
-    except IOError:
-        print('- nothing to update here')
-    else:
-        d = marshal.load(fp)
-        fp.close()
-        for listname in d.keys():
-            if listname not in listnames:
-                # this list no longer exists
-                continue
-            mlist = MailList.MailList(listname, lock=0)
-            try:
-                mlist.Lock(0.5)
-            except TimeOutError:
-                print(C_(
-                    'WARNING: could not acquire lock for list: %(listname)s', file=sys.stderr))
-                errors = errors + 1
-            else:
-                # Pre 1.0b7 stored 0 in the gate_watermarks file to indicate
-                # that no gating had been done yet.  Without coercing this to
-                # None, the list could now suddenly get flooded.
-                mlist.usenet_watermark = d[listname] or None
-                mlist.Save()
-                mlist.Unlock()
-        os.unlink(wmfile)
-        print('- usenet watermarks updated and gate_watermarks removed')
-    # In Mailman 2.1, the pending database format and file name changed, but
-    # in Mailman 2.1.5 it changed again.  This should update all existing
-    # files to the 2.1.5 format.
-    update_pending()
-    # In Mailman 2.1, the qfiles directory has a different structure and a
-    # different content.  Also, in Mailman 2.1.5 we collapsed the message
-    # files from separate .msg (pickled Message objects) and .db (marshalled
-    # dictionaries) to a shared .pck file containing two pickles.
-    update_qfiles()
-    # This warning was necessary for the upgrade from 1.0b9 to 1.0b10.
-    # There's no good way of figuring this out for releases prior to 2.0beta2
-    # :(
+        args = parse_args()
+    except SystemExit:
+        usage(1)
+
+    # Calculate the versions
+    lastversion, thisversion = calcversions()
+
+    # If this is a fresh install, we don't need to do anything
+    if lastversion == FRESH:
+        print(C_('This appears to be a fresh installation.'))
+        print(C_('No upgrade is necessary.'))
+        sys.exit(0)
+
+    # If this is not a fresh install, but we can't determine the last version,
+    # we need to force the upgrade
     if lastversion == NOTFRESH:
-        print("""
+        if not args.force:
+            print(C_("""\
+This appears to be an existing installation, but I cannot determine the
+version number.  You must use the -f flag to force the upgrade."""))
+            sys.exit(1)
+        lastversion = 0x2000000  # 2.0.0
 
-NOTE NOTE NOTE NOTE NOTE
+    # If the versions match, we don't need to do anything
+    if lastversion == thisversion and not args.force:
+        print(C_('No upgrade is necessary.'))
+        sys.exit(0)
 
-    You are upgrading an existing Mailman installation, but I can't tell what
-    version you were previously running.
+    # If this is a downgrade, we need to force it
+    if lastversion > thisversion and not args.force:
+        print(C_("""\
+This appears to be a downgrade.  You must use the -f flag to force the
+downgrade."""))
+        sys.exit(1)
 
-    If you are upgrading from Mailman 1.0b9 or earlier you will need to
-    manually update your mailing lists.  For each mailing list you need to
-    copy the file templates/options.html lists/<listname>/options.html.
+    # Do the upgrade
+    print(C_('Upgrading from version %(lastversion)#x to %(thisversion)#x'))
+    upgrade(lastversion, thisversion)
 
-    However, if you have edited this file via the Web interface, you will have
-    to merge your changes into this file, otherwise you will lose your
-    changes.
+    # Save the new version
+    try:
+        fp = open(LMVFILE, 'w')
+        print('%x' % thisversion, file=fp)
+        fp.close()
+    except IOError as e:
+        print(C_('Could not save version number: %(error)s'), file=sys.stderr)
+        sys.exit(1)
 
-NOTE NOTE NOTE NOTE NOTE
-
-""")
-    return errors
+    print(C_('Upgrade complete.'))
 
 
 def usage(code, msg=''):
@@ -835,54 +799,5 @@ def usage(code, msg=''):
 
 
 if __name__ == '__main__':
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf',
-                                   ['help', 'force'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    if args:
-        usage(1, 'Unexpected arguments: %s' % args)
-
-    force = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-f', '--force'):
-            force = 1
-
-    # calculate the versions
-    lastversion, thisversion = calcversions()
-    hexlversion = hex(lastversion)
-    hextversion = hex(thisversion)
-    if lastversion == thisversion and not force:
-        # nothing to do
-        print ('No updates are necessary.')
-        sys.exit(0)
-    if lastversion > thisversion and not force:
-        print(C_("""\
-Downgrade detected, from version %(hexlversion)s to version %(hextversion)s
-This is probably not safe.
-Exiting."""))
-        sys.exit(1)
-    print(C_('Upgrading from version %(hexlversion)s to %(hextversion)s'))
-    errors = main()
-    if not errors:
-        # Record the version we just upgraded to
-        fp = open(LMVFILE, 'w')
-        fp.write(hex(mm_cfg.HEX_VERSION) + '\n')
-        fp.close()
-    else:
-        lockdir = mm_cfg.LOCK_DIR
-        print('''\
-
-ERROR:
-
-The locks for some lists could not be acquired.  This means that either
-Mailman was still active when you upgraded, or there were stale locks in the
-%(lockdir)s directory.
-
-You must put Mailman into a quiescent state and remove all stale locks, then
-re-run "make update" manually.  See the INSTALL and UPGRADE files for details.
-''')
+    main()
 

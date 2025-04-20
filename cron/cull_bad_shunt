@@ -41,7 +41,7 @@ import sys
 import stat
 import time
 import errno
-import getopt
+import argparse
 
 import paths
 # mm_cfg must be imported before the other modules, due to the side-effect of
@@ -57,7 +57,6 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -69,19 +68,13 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
-def main():
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'h', ['help'])
-    except getopt.error as msg:
-        usage(1, msg)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Cull bad and shunt queues, recommended once per day.')
+    return parser.parse_args()
 
-    if args:
-        usage(1)
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
+
+def main():
+    args = parse_args()
 
     if mm_cfg.BAD_SHUNT_STALE_AFTER <= 0:
         # Nothing to do
@@ -101,8 +94,8 @@ def main():
     for qdir in (mm_cfg.BADQUEUE_DIR, mm_cfg.SHUNTQUEUE_DIR):
         try:
             names = os.listdir(qdir)
-        except OSError, e:
-            if e.errno <> errno.ENOENT:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
                 # OK if qdir doesn't exist, else
                 raise
             continue
@@ -121,6 +114,5 @@ def main():
                 os.remove(pathname)
 
 
-
 if __name__ == '__main__':
     main()
