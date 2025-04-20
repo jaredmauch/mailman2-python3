@@ -64,6 +64,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__) % globals(), file=fd)
     if msg:
         print(msg, file=fd)
@@ -126,6 +129,25 @@ def main():
         while True:
             try:
                 obj = load(fp)
+                # Handle string/bytes conversion
+                if isinstance(obj, bytes):
+                    obj = obj.decode('utf-8', 'replace')
+                elif isinstance(obj, dict):
+                    new_obj = {}
+                    for k, v in obj.items():
+                        if isinstance(k, bytes):
+                            k = k.decode('utf-8', 'replace')
+                        if isinstance(v, bytes):
+                            v = v.decode('utf-8', 'replace')
+                        new_obj[k] = v
+                    obj = new_obj
+                elif isinstance(obj, list):
+                    new_obj = []
+                    for item in obj:
+                        if isinstance(item, bytes):
+                            item = item.decode('utf-8', 'replace')
+                        new_obj.append(item)
+                    obj = new_obj
             except EOFError:
                 if doprint:
                     print(C_('[----- end %(typename)s file -----]'))

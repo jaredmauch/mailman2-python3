@@ -175,7 +175,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     # Useful accessors
     #
     def internal_name(self):
-        return self._internal_name
+        name = self._internal_name
+        if isinstance(name, bytes):
+            name = name.decode('utf-8', 'replace')
+        return name
 
     def fullpath(self):
         return self._full_path
@@ -291,6 +294,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # TBD: is this a good choice of lifetime?
             lifetime = mm_cfg.LIST_LOCK_LIFETIME,
             withlogging = mm_cfg.LIST_LOCK_DEBUGGING)
+        # Ensure name is a string
+        if isinstance(name, bytes):
+            name = name.decode('utf-8', 'replace')
         self._internal_name = name
         if name:
             self._full_path = Site.get_listpath(name)
@@ -312,7 +318,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         """Assign default values - some will be overriden by stored state."""
         # Non-configurable list info
         if name:
-          self._internal_name = name
+            # Ensure name is a string
+            if isinstance(name, bytes):
+                name = name.decode('utf-8', 'replace')
+            self._internal_name = name
 
         # When was the list created?
         self.created_at = time.time()
@@ -600,7 +609,33 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         for key, value in list(self.__dict__.items()):
             if key[0] == '_' or type(value) is MethodType:
                 continue
-            dict[key] = value
+            # Ensure string values are properly encoded
+            if isinstance(value, str):
+                dict[key] = value
+            elif isinstance(value, bytes):
+                # Convert bytes to string if possible
+                try:
+                    dict[key] = value.decode('utf-8', 'replace')
+                except UnicodeDecodeError:
+                    dict[key] = value.decode('latin1', 'replace')
+            elif isinstance(value, list):
+                # Handle lists that might contain bytes
+                dict[key] = [
+                    v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
+                    for v in value
+                ]
+            elif type(value) is dict:
+                # Handle dicts that might contain bytes
+                new_dict = {}
+                for k, v in value.items():
+                    if isinstance(k, bytes):
+                        k = k.decode('utf-8', 'replace')
+                    if isinstance(v, bytes):
+                        v = v.decode('utf-8', 'replace')
+                    new_dict[k] = v
+                dict[key] = new_dict
+            else:
+                dict[key] = value
         # Make config.pck unreadable by `other', as it contains all the
         # list members' passwords (in clear text).
         omask = os.umask(0o007)
@@ -659,8 +694,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     dict_retval = marshal.load(fp)
                 elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
                     dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
-#                dict_retval = loadfunc(fp)
-
                 if not isinstance(dict_retval, dict):
                     return None, 'Load() expected to return a dictionary'
             except (EOFError, ValueError, TypeError, MemoryError,
@@ -705,6 +738,32 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             syslog('error', 'All %s fallbacks were corrupt, giving up',
                    self.internal_name())
             raise Errors.MMCorruptListDatabaseError(e)
+
+        # Ensure string values are properly decoded
+        for key, value in dict_retval.items():
+            if isinstance(value, bytes):
+                try:
+                    dict_retval[key] = value.decode('utf-8', 'replace')
+                except UnicodeDecodeError:
+                    # If UTF-8 fails, try latin1 as a fallback
+                    dict_retval[key] = value.decode('latin1', 'replace')
+            elif isinstance(value, list):
+                # Handle lists that might contain bytes
+                dict_retval[key] = [
+                    v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
+                    for v in value
+                ]
+            elif isinstance(value, dict):
+                # Handle dicts that might contain bytes
+                new_dict = {}
+                for k, v in value.items():
+                    if isinstance(k, bytes):
+                        k = k.decode('utf-8', 'replace')
+                    if isinstance(v, bytes):
+                        v = v.decode('utf-8', 'replace')
+                    new_dict[k] = v
+                dict_retval[key] = new_dict
+
         # Now, if we didn't end up using the primary database file, we want to
         # copy the fallback into the primary so that the logic in Save() will
         # still work.  For giggles, we'll copy it to a safety backup.  Note we
@@ -1123,7 +1182,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 subject = _('%(realname)s subscription notification')
             finally:
                 i18n.set_translation(otrans)
-            if isinstance(name, UnicodeType):
+            if isinstance(name, str):
                 name = name.encode(Utils.GetCharSet(lang), 'replace')
             text = Utils.maketext(
                 "adminsubscribeack.txt",
@@ -1328,7 +1387,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             name = self.getMemberName(newaddr)
             if name is None:
                 name = ''
-            if isinstance(name, UnicodeType):
+            if isinstance(name, str):
                 name = name.encode(Utils.GetCharSet(lang), 'replace')
             text = Utils.maketext(
                 'adminaddrchgack.txt',

@@ -23,7 +23,6 @@
 # -owner.
 
 
-
 # BAW: get rid of this when we Python 2.2 is a minimum requirement.
 
 import re
@@ -50,7 +49,6 @@ STOP = 1
 BADCMD = 2
 BADSUBJ = 3
 
-
 class Results:
     def __init__(self, mlist, msg, msgdata):
         self.mlist = mlist
@@ -198,7 +196,7 @@ To obtain instructions, send a message containing just the word "help".
         charset = Utils.GetCharSet(self.msgdata['lang'])
         encoded_resp = []
         for item in resp:
-            if isinstance(item, UnicodeType):
+            if isinstance(item, str):
                 item = item.encode(charset, 'replace')
             encoded_resp.append(item)
         results = MIMEText(NL.join(encoded_resp), _charset=charset)
@@ -233,7 +231,6 @@ To obtain instructions, send a message containing just the word "help".
         msg.send(self.mlist)
 
 
-
 class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
 

@@ -92,7 +92,6 @@ cre = re.compile(r'%\(([_a-z]\w*?)\)s?', re.IGNORECASE)
 dre = re.compile(r'(\${2})|\$([_a-z]\w*)|\${([_a-z]\w*)}', re.IGNORECASE)
 
 
-
 def list_exists(listname):
     """Return true iff list `listname' exists."""
     # The existance of any of the following file proves the list exists
@@ -122,11 +121,20 @@ def list_exists(listname):
 def list_names():
     """Return the names of all lists in default list directory."""
     # We don't currently support separate listings of virtual domains
-    return Site.get_listnames()
+    # Ensure LIST_DATA_DIR is a string
+    list_dir = mm_cfg.LIST_DATA_DIR
+    if isinstance(list_dir, bytes):
+        list_dir = list_dir.decode('utf-8', 'replace')
+    names = []
+    for name in os.listdir(list_dir):
+        if list_exists(name):
+            # Ensure we return strings, not bytes
+            if isinstance(name, bytes):
+                name = name.decode('utf-8', 'replace')
+            names.append(name)
+    return names
 
 
-
-# a much more naive implementation than say, Emacs's fill-paragraph!
 def wrap(text, column=70, honor_leading_ws=True):
     """Wrap and fill the text to the specified column.
 
@@ -201,7 +209,6 @@ def wrap(text, column=70, honor_leading_ws=True):
     return wrapped[:-2]
 
 
-
 def QuotePeriods(text):
     JOINER = '\n .\n'
     SEP = '\n.\n'
@@ -265,7 +272,6 @@ def ValidateEmail(s):
             raise Exception(Errors.MMHostileAddress, s)
 
 
-
 # Patterns which may be used to form malicious path to inject a new
 # line in the mailman error log. (TK: advisory by Moritz Naumann)
 CRNLpat = re.compile(r'[^\x21-\x7e]')
@@ -303,12 +309,10 @@ def GetPathPieces(envar='PATH_INFO'):
     return None
 
 
-
 def GetRequestMethod():
     return os.environ.get('REQUEST_METHOD')
 
 
-
 def ScriptURL(target, web_page_url=None, absolute=False):
     """target - scriptname only, nothing extra
     web_page_url - the list's configvar of the same name
@@ -337,7 +341,6 @@ def ScriptURL(target, web_page_url=None, absolute=False):
     return path + mm_cfg.CGIEXT
 
 
-
 def GetPossibleMatchingAddrs(name):
     """returns a sorted list of addresses that could possibly match
     a given name.
@@ -357,7 +360,6 @@ def GetPossibleMatchingAddrs(name):
     return res
 
 
-
 def List2Dict(L, foldcase=False):
     """Return a dict keyed by the entries in the list passed to it."""
     d = {}
@@ -370,7 +372,6 @@ def List2Dict(L, foldcase=False):
     return d
 
 
-
 _vowels = ('a', 'e', 'i', 'o', 'u')
 _consonants = ('b', 'c', 'd', 'f', 'g', 'h', 'k', 'm', 'n',
                'p', 'r', 's', 't', 'v', 'w', 'x', 'z')
@@ -441,7 +442,6 @@ def GetRandomSeed():
     return "%c%c" % tuple(map(mkletter, (chr1, chr2)))
 
 
-
 def set_global_password(pw, siteadmin=True):
     if siteadmin:
         filename = mm_cfg.SITE_PW_FILE
@@ -480,7 +480,6 @@ def check_global_password(response, siteadmin=True):
     return challenge == sha_new(response).hexdigest()
 
 
-
 _ampre = re.compile('&amp;((?:#[0-9]+|[a-z]+);)', re.IGNORECASE)
 def websafe(s, doubleescape=False):
     # If a user submits a form or URL with post data or query fragments
@@ -519,7 +518,6 @@ def nntpsplit(s):
     return s, 119
 
 
-
 # Just changing these two functions should be enough to control the way
 # that email address obscuring is handled.
 def ObscureEmail(addr, for_text=False):
@@ -539,7 +537,6 @@ def UnobscureEmail(addr):
     return addr.replace('--at--', '@')
 
 
-
 class OuterExit(Exception):
     pass
 
@@ -658,7 +655,6 @@ def maketext(templatefile, dict=None, raw=False, lang=None, mlist=None):
     return findtext(templatefile, dict, raw, lang, mlist)[0]
 
 
-
 ADMINDATA = {
     # admin keyword: (minimum #args, maximum #args)
     'confirm':     (1, 1),
@@ -715,7 +711,6 @@ def is_administrivia(msg):
     return False
 
 
-
 def GetRequestURI(fallback=None, escape=True):
     """Return the full virtual path this CGI script was invoked with.
 
@@ -740,7 +735,6 @@ def GetRequestURI(fallback=None, escape=True):
     return url
 
 
-
 # Wait on a dictionary of child pids
 def reap(kids, func=None, once=False):
     while kids:
@@ -763,7 +757,7 @@ def reap(kids, func=None, once=False):
         if once:
             break
 
-
+
 def GetLanguageDescr(lang):
     return mm_cfg.LC_DESCRIPTIONS[lang][0]
 
@@ -778,7 +772,6 @@ def IsLanguage(lang):
     return lang in mm_cfg.LC_DESCRIPTIONS
 
 
-
 def get_domain():
     host = os.environ.get('HTTP_HOST', os.environ.get('SERVER_NAME'))
     port = os.environ.get('SERVER_PORT')
@@ -804,7 +797,6 @@ def get_site_email(hostname=None, extra=None):
     return '%s-%s@%s' % (mm_cfg.MAILMAN_SITE_LIST, extra, hostname)
 
 
-
 # This algorithm crafts a guaranteed unique message-id.  The theory here is
 # that pid+listname+host will distinguish the message-id for every process on
 # the system, except when process ids wrap around.  To further distinguish
@@ -831,7 +823,6 @@ def midnight(date=None):
     return time.mktime(date + (0,)*5 + (-1,))
 
 
-
 # Utilities to convert from simplified $identifier substitutions to/from
 # standard Python $(identifier)s substititions.  The "Guido rules" for the
 # former are:
@@ -881,7 +872,6 @@ def percent_identifiers(s):
     return d
 
 
-
 # Utilities to canonicalize a string, which means un-HTML-ifying the string to
 # produce a Unicode string or an 8-bit string if all the characters are ASCII.
 def canonstr(s, lang=None):

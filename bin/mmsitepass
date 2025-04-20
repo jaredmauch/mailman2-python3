@@ -48,19 +48,20 @@ from Mailman import Utils
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(__doc__, file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ch',
@@ -100,6 +101,5 @@ def main():
         print('Password change failed.')
 
 
-
 if __name__ == '__main__':
     main()

@@ -76,19 +76,20 @@ PROGRAM = sys.argv[0]
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
     # get command line arguments
     try:
@@ -196,6 +197,6 @@ def main():
         if mlist:
             mlist.Unlock()
 
-
+
 if __name__ == '__main__':
     main()

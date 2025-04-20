@@ -64,19 +64,20 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
-
 def testfile(dbfile):
     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
         loadfunc = marshal.load
@@ -84,13 +85,35 @@ def testfile(dbfile):
         loadfunc = pickle.load
     else:
         assert 0
-    fp = open(dbfile)
+    fp = open(dbfile, 'rb')
     try:
-        loadfunc(fp)
+        data = loadfunc(fp)
+        # Handle string/bytes conversion
+        if isinstance(data, bytes):
+            data = data.decode('utf-8', 'replace')
+        elif isinstance(data, dict):
+            new_data = {}
+            for k, v in data.items():
+                if isinstance(k, bytes):
+                    k = k.decode('utf-8', 'replace')
+                if isinstance(v, bytes):
+                    v = v.decode('utf-8', 'replace')
+                elif isinstance(v, (list, tuple)):
+                    v = list(v)  # Convert tuple to list for modification
+                    for i, item in enumerate(v):
+                        if isinstance(item, bytes):
+                            v[i] = item.decode('utf-8', 'replace')
+                new_data[k] = v
+            data = new_data
+        elif isinstance(data, (list, tuple)):
+            data = list(data)  # Convert tuple to list for modification
+            for i, item in enumerate(data):
+                if isinstance(item, bytes):
+                    data[i] = item.decode('utf-8', 'replace')
     finally:
         fp.close()
 
-
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ahv',
@@ -148,6 +171,5 @@ def main():
                 print(C_('   %(file)s: okay'))
 
 
-
 if __name__ == '__main__':
     main()

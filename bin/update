@@ -66,7 +66,6 @@ LMVFILE = os.path.join(mm_cfg.DATA_DIR, 'last_mailman_version')
 PROGRAM = sys.argv[0]
 
 
-
 def calcversions():
     # Returns a tuple of (lastversion, thisversion).  If the last version
     # could not be determined, lastversion will be FRESH or NOTFRESH,
@@ -81,6 +80,9 @@ def calcversions():
         fp = open(LMVFILE, 'rb')
         data = fp.read()
         fp.close()
+        # Ensure data is a string
+        if isinstance(data, bytes):
+            data = data.decode('utf-8', 'replace')
         lastversion = int(data, 16)
     except (IOError, ValueError):
         pass
@@ -96,17 +98,19 @@ def calcversions():
     return (lastversion, thisversion)
 
 
-
 def makeabs(relpath):
     return os.path.join(mm_cfg.PREFIX, relpath)
 
 def make_varabs(relpath):
     return os.path.join(mm_cfg.VAR_PREFIX, relpath)
 
-
+
 def move_language_templates(mlist):
     listname = mlist.internal_name()
-    print(C_('Fixing language templates: %(listname)s'))
+    # Ensure listname is a string
+    if isinstance(listname, bytes):
+        listname = listname.decode('utf-8', 'replace')
+    print('Fixing language templates: %s' % listname)
     # Mailman 2.1 has a new cascading search for its templates, defined and
     # described in Utils.py:maketext().  Putting templates in the top level
     # templates/ subdir or the lists/<listname> subdir is deprecated and no
@@ -188,9 +192,12 @@ def move_language_templates(mlist):
                                        gtemplate + '.prev'))
 
 
-
 def dolist(listname):
     errors = 0
+    # Ensure listname is a string
+    if isinstance(listname, bytes):
+        listname = listname.decode('utf-8', 'replace')
+    print('Updating mailing list: %s' % listname)
     mlist = MailList.MailList(listname, lock=0)
     try:
         mlist.Lock(0.5)
@@ -265,7 +272,7 @@ to
 
 You can integrate that into the archives if you want by using the 'arch'
 script.
-""") % (mlist._internal_name, o_pri_mbox_file, o_pub_mbox_file,
+""") % (listname, o_pri_mbox_file, o_pub_mbox_file,
         o_pub_mbox_file))
             os.rename(o_pub_mbox_file, "%s.preb6" % (o_pub_mbox_file))
         else:
@@ -279,7 +286,7 @@ archive file (%s) as the active one, and renaming
 
 You can integrate that into the archives if you want by using the 'arch'
 script.
-""") % (mlist._internal_name, o_pub_mbox_file, o_pri_mbox_file,
+""") % (listname, o_pub_mbox_file, o_pri_mbox_file,
         o_pri_mbox_file))
             os.rename(o_pri_mbox_file, "%s.preb6" % (o_pri_mbox_file))
     #
@@ -377,7 +384,6 @@ script.
     return 0
 
 
-
 def archive_path_fixer(unused_arg, dir, files):
     # Passed to os.path.walk to fix the perms on old html archives.
     for f in files:
@@ -409,7 +415,7 @@ def remove_old_sources(module):
         except os.error as rest:
             print(C_("couldn't remove old file %(pyc)s -- %(rest)s"))
 
-
+
 def update_qfiles():
     print('updating old qfiles')
     prefix = str(time.time()) + '+'
@@ -457,7 +463,6 @@ def update_qfiles():
             print(C_('Warning!  Not a directory: %(dirpath)s'))
 
 
-
 # Implementations taken from the pre-2.1.5 Switchboard
 def ext_read(filename):
     fp = open(filename, 'rb')
@@ -465,6 +470,27 @@ def ext_read(filename):
     # Update from version 2 files
     if d.get('version', 0) == 2:
         del d['filebase']
+    
+    # Convert any bytes in the loaded data to strings
+    for key, value in list(d.items()):
+        if isinstance(key, bytes):
+            del d[key]
+            key = key.decode('utf-8', 'replace')
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
+        elif isinstance(value, list):
+            value = [v.decode('utf-8', 'replace') if isinstance(v, bytes) else v for v in value]
+        elif isinstance(value, dict):
+            new_dict = {}
+            for k, v in value.items():
+                if isinstance(k, bytes):
+                    k = k.decode('utf-8', 'replace')
+                if isinstance(v, bytes):
+                    v = v.decode('utf-8', 'replace')
+                new_dict[k] = v
+            value = new_dict
+        d[key] = value
+    
     # Do the reverse conversion (repr -> float)
     for attr in ['received_time']:
         try:
@@ -485,12 +511,6 @@ def dequeue(filebase):
     msgfile = os.path.join(filebase + '.msg')
     pckfile = os.path.join(filebase + '.pck')
     dbfile = os.path.join(filebase + '.db')
-    # Now we are going to read the message and metadata for the given
-    # filebase.  We want to read things in this order: first, the metadata
-    # file to find out whether the message is stored as a pickle or as
-    # plain text.  Second, the actual message file.  However, we want to
-    # first unlink the message file and then the .db file, because the
-    # qrunner only cues off of the .db file
     msg = None
     try:
         data = ext_read(dbfile)
@@ -498,12 +518,22 @@ def dequeue(filebase):
     except EnvironmentError as e:
         if e.errno != errno.ENOENT: raise
         data = {}
-    # Between 2.1b4 and 2.1b5, the `rejection-notice' key in the metadata
-    # was renamed to `rejection_notice', since dashes in the keys are not
-    # supported in METAFMT_ASCII.
+    
+    # Convert any bytes in the data dict to strings
+    for key, value in list(data.items()):
+        if isinstance(key, bytes):
+            del data[key]
+            key = key.decode('utf-8', 'replace')
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
+        data[key] = value
+    
+    # Between 2.1b4 and 2.1b5, the `rejection-notice` key in the metadata
+    # was renamed to `rejection_notice`
     if data.get('rejection-notice', None) is not None:
         data['rejection_notice'] = data['rejection-notice']
         del data['rejection-notice']
+    
     msgfp = None
     try:
         try:
@@ -513,6 +543,15 @@ def dequeue(filebase):
                 # There was no .db file. Is this a post 2.1.5 .pck?
                 try:
                     data = pickle.load(msgfp, fix_imports=True, encoding='latin1')
+                    # Convert any bytes in the loaded data to strings
+                    if isinstance(data, dict):
+                        for key, value in list(data.items()):
+                            if isinstance(key, bytes):
+                                del data[key]
+                                key = key.decode('utf-8', 'replace')
+                            if isinstance(value, bytes):
+                                value = value.decode('utf-8', 'replace')
+                            data[key] = value
                 except EOFError:
                     pass
             os.unlink(pckfile)
@@ -526,15 +565,10 @@ def dequeue(filebase):
             except EnvironmentError as e:
                 if e.errno != errno.ENOENT: raise
             except (email.errors.MessageParseError, ValueError) as e:
-                # This message was unparsable, most likely because its
-                # MIME encapsulation was broken.  For now, there's not
-                # much we can do about it.
                 print(C_('message is unparsable: %(filebase)s'))
                 msgfp.close()
                 msgfp = None
                 if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
-                    # Cheapo way to ensure the directory exists w/ the
-                    # proper permissions.
                     sb = Switchboard(mm_cfg.BADQUEUE_DIR)
                     os.rename(msgfile, os.path.join(
                         mm_cfg.BADQUEUE_DIR, filebase + '.txt'))
@@ -542,7 +576,6 @@ def dequeue(filebase):
                     os.unlink(msgfile)
                 msg = data = None
         except EOFError:
-            # For some reason the pckfile was empty.  Just delete it.
             print(C_('Warning!  Deleting empty .pck file: %(pckfile)s'))
             os.unlink(pckfile)
     finally:
@@ -551,7 +584,6 @@ def dequeue(filebase):
     return msg, data
 
 
-
 def update_pending():
     file20 = os.path.join(mm_cfg.DATA_DIR, 'pending_subscriptions.db')
     file214 = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
@@ -566,6 +598,21 @@ def update_pending():
         db = marshal.load(fp)
         # Convert to the pre-Mailman 2.1.5 format
         db = Pending._update(db)
+        # Convert any bytes to strings
+        if isinstance(db, dict):
+            new_db = {}
+            for key, value in db.items():
+                if isinstance(key, bytes):
+                    key = key.decode('utf-8', 'replace')
+                if isinstance(value, bytes):
+                    value = value.decode('utf-8', 'replace')
+                elif isinstance(value, (list, tuple)):
+                    value = list(value)  # Convert tuple to list for modification
+                    for i, v in enumerate(value):
+                        if isinstance(v, bytes):
+                            value[i] = v.decode('utf-8', 'replace')
+                new_db[key] = value
+            db = new_db
     if db is None:
         # Try to load the Mailman 2.1.x where x < 5, file
         try:
@@ -575,6 +622,21 @@ def update_pending():
         else:
             print('Updating Mailman 2.1.4 pending.pck database')
             db = pickle.load(fp, fix_imports=True, encoding='latin1')
+            # Convert any bytes to strings
+            if isinstance(db, dict):
+                new_db = {}
+                for key, value in db.items():
+                    if isinstance(key, bytes):
+                        key = key.decode('utf-8', 'replace')
+                    if isinstance(value, bytes):
+                        value = value.decode('utf-8', 'replace')
+                    elif isinstance(value, (list, tuple)):
+                        value = list(value)  # Convert tuple to list for modification
+                        for i, v in enumerate(value):
+                            if isinstance(v, bytes):
+                                value[i] = v.decode('utf-8', 'replace')
+                    new_db[key] = value
+                db = new_db
     if db is None:
         print('Nothing to do.')
         return
@@ -662,7 +724,6 @@ def update_pending():
         if e.errno != errno.ENOENT: raise
 
 
-
 def main():
     errors = 0
     # get rid of old stuff
@@ -690,9 +751,12 @@ If your archives are big, this could take a minute or two..."""))
                      archive_path_fixer, "")
         print('done')
     for listname in listnames:
-        print(C_('Updating mailing list: %(listname)s'))
+        # Ensure listname is a string
+        if isinstance(listname, bytes):
+            listname = listname.decode('utf-8', 'replace')
+        print('Updating mailing list: %s' % listname)
         errors = errors + dolist(listname)
-        print
+        print()
     print('Updating Usenet watermarks')
     wmfile = os.path.join(mm_cfg.DATA_DIR, 'gate_watermarks')
     try:
@@ -756,19 +820,20 @@ NOTE NOTE NOTE NOTE NOTE
     return errors
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__) % globals(), file=fd)
     if msg:
         print(msg, file=sys.stderr)
     sys.exit(code)
 
 
-
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hf',

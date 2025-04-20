@@ -63,7 +63,6 @@ DELTA = .0001
 MAX_BAK_COUNT = 3
 
 
-
 class Switchboard:
     def __init__(self, whichq, slice=None, numslices=1, recover=False):
         self.__whichq = whichq
@@ -96,6 +95,30 @@ class Switchboard:
         # of parallel qrunner processes.
         data = _metadata.copy()
         data.update(_kws)
+        
+        # Ensure metadata values are properly encoded
+        for key, value in list(data.items()):
+            if isinstance(key, bytes):
+                del data[key]
+                key = key.decode('utf-8', 'replace')
+            if isinstance(value, bytes):
+                value = value.decode('utf-8', 'replace')
+            elif isinstance(value, list):
+                value = [
+                    v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
+                    for v in value
+                ]
+            elif isinstance(value, dict):
+                new_dict = {}
+                for k, v in value.items():
+                    if isinstance(k, bytes):
+                        k = k.decode('utf-8', 'replace')
+                    if isinstance(v, bytes):
+                        v = v.decode('utf-8', 'replace')
+                    new_dict[k] = v
+                value = new_dict
+            data[key] = value
+        
         listname = data.get('listname', '--nolist--')
         # Get some data for the input to the sha hash
         now = time.time()

@@ -79,7 +79,7 @@ def usage(code, msg=''):
 
 
 def tounicode(s, enc):
-    if isinstance(s, UnicodeType):
+    if isinstance(s, str):
         return s
     return unicode(s, enc, 'replace')
 

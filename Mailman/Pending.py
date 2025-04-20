@@ -60,6 +60,13 @@ class Pending(object):
         assert self.Locked()
         # Load the database
         db = self.__load()
+        
+        # Ensure content is properly encoded
+        content = [
+            c.decode('utf-8', 'replace') if isinstance(c, bytes) else c
+            for c in content
+        ]
+        
         # Calculate a unique cookie.  Algorithm vetted by the Timbot.  time()
         # has high resolution on Linux, clock() on Windows.  random gives us
         # about 45 bits in Python 2.2, 53 bits on Python 2.3.  The time and

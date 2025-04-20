@@ -90,19 +90,20 @@ COMMASPACE = ', '
 AS_SUBPROC = 0
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
-
 def make_qrunner(name, slice, range, once=0):
     modulename = 'Mailman.Queue.' + name
     try:
@@ -127,7 +128,6 @@ def make_qrunner(name, slice, range, once=0):
     return qrunner
 
 
-
 def set_signals(loop):
     # Set up the SIGTERM handler for stopping the loop
     def sigterm_handler(signum, frame, loop=loop):
@@ -154,7 +154,6 @@ def set_signals(loop):
     signal.signal(signal.SIGHUP, sighup_handler)
 
 
-
 def main():
     global AS_SUBPROC
     try:
@@ -276,6 +275,5 @@ def main():
     sys.exit(loop.status)
 
 
-
 if __name__ == '__main__':
     main()

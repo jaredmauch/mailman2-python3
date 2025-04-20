@@ -38,9 +38,8 @@ CONTINUATION = ',\n '
 COMMASPACE = ', '
 MAXLINELEN = 78
 
-
 def _isunicode(s):
-    return isinstance(s, UnicodeType)
+    return isinstance(s, str)
 
 nonascii = re.compile(r'[^\s!-~]')
 
@@ -81,7 +80,6 @@ def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
         msg[name] = value
 
 
-
 def process(mlist, msg, msgdata):
     # Set the "X-Ack: no" header if noack flag is set.
     if msgdata.get('noack'):
