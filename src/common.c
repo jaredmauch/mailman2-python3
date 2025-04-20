@@ -215,7 +215,6 @@ int
 run_script(const char* script, int argc, char** argv, char** env)
 {
         const char envstr[] = "PYTHONPATH=";
-        const int envlen = strlen(envstr);
 
         int envcnt = 0;
         int i, j, status;
@@ -261,7 +260,7 @@ run_script(const char* script, int argc, char** argv, char** env)
                                 keep = 1;
                                 break;
                         }
-                        *k++;
+                        k++;
                 }
                 if (keep)
                         newenv[j++] = env[i];
