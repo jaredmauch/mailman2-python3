@@ -20,11 +20,9 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
 import time
 import signal
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import json
 
 from Mailman import mm_cfg
@@ -46,7 +44,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -74,9 +71,28 @@ def main():
 
     # See if the form data has a preferred language set, in which case, use it
     # for the results.  If not, use the list's preferred language.
-    cgidata = cgi.FieldStorage()
     try:
-        language = cgidata.getfirst('language', '')
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    try:
+        language = cgidata.get('language', [''])[0]
     except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -117,18 +133,17 @@ def main():
         mlist.Unlock()
 
 
-
 def process_form(mlist, doc, cgidata, lang):
     listowner = mlist.GetOwnerEmail()
     realname = mlist.real_name
     results = []
 
     # The email address being subscribed, required
-    email = cgidata.getfirst('email', '').strip()
+    email = cgidata.get('email', [''])[0].strip()
     if not email:
         results.append(_('You must supply a valid email address.'))
 
-    fullname = cgidata.getfirst('fullname', '')
+    fullname = cgidata.get('fullname', [''])[0]
     # Canonicalize the full name
     fullname = Utils.canonstr(fullname, lang)
     # Who was doing the subscribing?
@@ -141,7 +156,7 @@ def process_form(mlist, doc, cgidata, lang):
     if mm_cfg.RECAPTCHA_SECRET_KEY:
         request_data = urllib.parse.urlencode({
                 'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
-                'response': cgidata.getvalue('g-recaptcha-response', ''),
+                'response': cgidata.get('g-recaptcha-response', [''])[0],
                 'remoteip': remote})
         request_data = request_data.encode('utf-8')
         request = urllib.request.Request(
@@ -171,8 +186,8 @@ def process_form(mlist, doc, cgidata, lang):
             #        for our hash so it doesn't matter.
             remote1 = remote.rsplit(':', 1)[0]
         try:
-            ftime, fcaptcha_idx, fhash = cgidata.getfirst(
-                    'sub_form_token', '').split(':')
+            ftime, fcaptcha_idx, fhash = cgidata.get(
+                    'sub_form_token', [''])[0].split(':')
             then = int(ftime)
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
@@ -193,7 +208,7 @@ def process_form(mlist, doc, cgidata, lang):
             results.append(_('You must GET the form before submitting it.'))
         # Check captcha
         if isinstance(mm_cfg.CAPTCHAS, dict):
-            captcha_answer = cgidata.getvalue('captcha_answer', '')
+            captcha_answer = cgidata.get('captcha_answer', [''])[0]
             if not Utils.captcha_verify(
                     fcaptcha_idx, captcha_answer, mm_cfg.CAPTCHAS):
                 results.append(_(
@@ -203,8 +218,8 @@ def process_form(mlist, doc, cgidata, lang):
         syslog('mischief', 'Attempt to self subscribe %s: %s', email, remote)
         results.append(_('You may not subscribe a list to itself!'))
     # If the user did not supply a password, generate one for him
-    password = cgidata.getfirst('pw', '').strip()
-    confirmed = cgidata.getfirst('pw-conf', '').strip()
+    password = cgidata.get('pw', [''])[0].strip()
+    confirmed = cgidata.get('pw-conf', [''])[0].strip()
 
     if not password and not confirmed:
         password = Utils.MakeRandomPassword()
@@ -214,7 +229,7 @@ def process_form(mlist, doc, cgidata, lang):
         results.append(_('Your passwords did not match.'))
 
     # Get the digest option for the subscription.
-    digestflag = cgidata.getfirst('digest')
+    digestflag = cgidata.get('digest', [''])[0]
     if digestflag:
         try:
             digest = int(digestflag)
@@ -347,7 +362,6 @@ You have been successfully subscribed to the {realname} mailing list.""")
     print_results(mlist, results, doc, lang)
 
 
-
 def print_results(mlist, results, doc, lang):
     # The bulk of the document will come from the options.html template, which
     # includes its own html armor (head tags, etc.).  Suppress the head that

@@ -22,6 +22,7 @@ from builtins import object
 import sys
 import os
 import signal
+import urllib.parse
 import cgi
 
 from Mailman import mm_cfg
@@ -38,14 +39,32 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
     try:
-        cgidata.getfirst('doit', '')
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    try:
+        cgidata.get('doit', [''])[0]
     except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -83,29 +102,27 @@ def main():
     print(doc.Format())
 
 
-
 def process_request(doc, cgidata):
     # Lowercase the listname since this is treated as the "internal" name.
-    listname = cgidata.getfirst('listname', '').strip().lower()
-    owner    = cgidata.getfirst('owner', '').strip()
+    listname = cgidata.get('listname', [''])[0].strip().lower()
+    owner    = cgidata.get('owner', [''])[0].strip()
     try:
-        autogen  = int(cgidata.getfirst('autogen', '0'))
+        autogen  = int(cgidata.get('autogen', ['0'])[0])
     except ValueError:
         autogen = 0
     try:
-        notify  = int(cgidata.getfirst('notify', '0'))
+        notify  = int(cgidata.get('notify', ['0'])[0])
     except ValueError:
         notify = 0
     try:
-        moderate = int(cgidata.getfirst('moderate',
-                       mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
+        moderate = int(cgidata.get('moderate', ['0'])[0])
     except ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
-    password = cgidata.getfirst('password', '').strip()
-    confirm  = cgidata.getfirst('confirm', '').strip()
-    auth     = cgidata.getfirst('auth', '').strip()
-    langs    = cgidata.getvalue('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
+    password = cgidata.get('password', [''])[0].strip()
+    confirm  = cgidata.get('confirm', [''])[0].strip()
+    auth     = cgidata.get('auth', [''])[0].strip()
+    langs    = cgidata.get('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
 
     if not isinstance(langs, ListType):
         langs = [langs]
@@ -297,15 +314,13 @@ def process_request(doc, cgidata):
     doc.AddItem(table)
 
 
-
 # Because the cgi module blows
 class Dummy(object):
-    def getfirst(self, name, default):
+    def get(self, name, default):
         return default
 dummy = Dummy()
 
 
-
 def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
@@ -350,14 +365,14 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddRow([Center(Italic(_('List Identity')))])
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
 
-    listname = cgidata.getfirst('listname', '')
+    listname = cgidata.get('listname', [''])[0]
     # MAS: Don't websafe twice.  TextBox does it.
     ftable.AddRow([Label(_('Name of list:')),
                    TextBox('listname', listname)])
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
-    owner = cgidata.getfirst('owner', '')
+    owner = cgidata.get('owner', [''])[0]
     # MAS: Don't websafe twice.  TextBox does it.
     ftable.AddRow([Label(_('Initial list owner address:')),
                    TextBox('owner', owner)])
@@ -365,7 +380,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
     try:
-        autogen = int(cgidata.getfirst('autogen', '0'))
+        autogen = int(cgidata.get('autogen', ['0'])[0])
     except ValueError:
         autogen = 0
     ftable.AddRow([Label(_('Auto-generate initial list password?')),
@@ -375,25 +390,24 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
-    safepasswd = Utils.websafe(cgidata.getfirst('password', ''))
+    safepasswd = Utils.websafe(cgidata.get('password', [''])[0])
     ftable.AddRow([Label(_('Initial list password:')),
                    PasswordBox('password', safepasswd)])
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
-    safeconfirm = Utils.websafe(cgidata.getfirst('confirm', ''))
+    safeconfirm = Utils.websafe(cgidata.get('confirm', [''])[0])
     ftable.AddRow([Label(_('Confirm initial password:')),
                    PasswordBox('confirm', safeconfirm)])
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
     ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
     try:
-        notify = int(cgidata.getfirst('notify', '1'))
+        notify = int(cgidata.get('notify', ['1'])[0])
     except ValueError:
         notify = 1
     try:
-        moderate = int(cgidata.getfirst('moderate',
-                       mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
+        moderate = int(cgidata.get('moderate', ['0'])[0])
     except ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 

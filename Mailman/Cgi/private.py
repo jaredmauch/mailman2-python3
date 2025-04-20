@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import os
 import sys
-import cgi
+import urllib.parse
 import mimetypes
 
 from Mailman import mm_cfg
@@ -39,7 +39,6 @@ i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 SLASH = '/'
 
 
-
 def true_path(path):
     "Ensure that the path is safe by removing .."
     # Workaround for path traverse vulnerability.  Unsuccessful attempts will
@@ -48,14 +47,12 @@ def true_path(path):
     return SLASH.join(parts)[1:]
 
 
-
 def guess_type(url, strict):
     if hasattr(mimetypes, 'common_types'):
         return mimetypes.guess_type(url, strict)
     return mimetypes.guess_type(url)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -118,10 +115,19 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
-    cgidata = cgi.FieldStorage()
+    # Parse form data
     try:
-        username = cgidata.getfirst('username', '').strip()
-    except TypeError:
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -129,7 +135,9 @@ def main():
         print('Status: 400 Bad Request')
         print(doc.Format())
         return
-    password = cgidata.getfirst('password', '')
+
+    username = cgidata.get('username', [''])[0].strip()
+    password = cgidata.get('password', [''])[0]
 
     is_auth = 0
     realname = mlist.real_name

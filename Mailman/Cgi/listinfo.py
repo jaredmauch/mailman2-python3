@@ -23,8 +23,9 @@ from __future__ import print_function
 
 from builtins import str
 import os
-import cgi
+import urllib.parse
 import time
+import sys
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -39,7 +40,6 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
@@ -59,10 +59,18 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    cgidata = cgi.FieldStorage()
     try:
-        language = cgidata.getfirst('language')
-    except TypeError:
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -73,13 +81,13 @@ def main():
         print(doc.Format())
         return
 
+    language = cgidata.get('language', [None])[0]
     if not Utils.IsLanguage(language):
         language = mlist.preferred_language
     i18n.set_language(language)
     list_listinfo(mlist, language)
 
 
-
 def listinfo_overview(msg=''):
     # Present the general listinfo overview
     hostname = Utils.get_domain()
@@ -174,7 +182,6 @@ def listinfo_overview(msg=''):
     print(doc.Format())
 
 
-
 def list_listinfo(mlist, lang):
     # Generate list specific listinfo
     doc = HeadlessDocument()
@@ -282,6 +289,5 @@ def list_listinfo(mlist, lang):
     print(doc.Format())
 
 
-
 if __name__ == "__main__":
     main()

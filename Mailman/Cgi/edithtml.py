@@ -19,9 +19,10 @@
 from __future__ import print_function
 
 import os
-import cgi
+import urllib.parse
 import errno
 import re
+import sys
 
 from Mailman import Utils
 from Mailman import MailList
@@ -38,7 +39,6 @@ _ = i18n._
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
-
 def main():
     # Trick out pygettext since we want to mark template_data as translatable,
     # but we don't want to actually translate it here.
@@ -96,10 +96,18 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Must be authenticated to get any farther
-    cgidata = cgi.FieldStorage()
     try:
-        cgidata.getfirst('adminpw', '')
-    except TypeError:
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -112,19 +120,19 @@ def main():
     safe_params = ['VARHELP', 'adminpw', 'admlogin']
     params = list(cgidata.keys())
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
+    if cgidata.get('adminpw', [''])[0]:
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     # Editing the html for a list is limited to the list admin and site admin.
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
+                                 cgidata.get('adminpw', [''])[0]):
         if 'admlogin' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
@@ -141,7 +149,7 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    language = cgidata.getfirst('language', '')
+    language = cgidata.get('language', [''])[0]
     if language not in mlist.GetAvailableLanguages():
         language = mlist.preferred_language
     i18n.set_language(language)
@@ -190,7 +198,6 @@ def main():
         print(doc.Format())
 
 
-
 def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language
@@ -231,7 +238,6 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     doc.AddItem(form)
 
 
-
 def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
     if lang not in mlist.GetAvailableLanguages():
         lang = mlist.preferred_language

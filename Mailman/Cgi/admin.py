@@ -24,8 +24,7 @@ def cmp(a, b):
 import sys
 import os
 import re
-import cgi
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 import signal
 
 from email.utils import unquote, parseaddr, formataddr
@@ -81,10 +80,18 @@ def main():
     # pages are shown in that list's preferred language.
     i18n.set_language(mlist.preferred_language)
     # If the user is not authenticated, we're done.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
     try:
-        cgidata.getfirst('csrf_token', '')
-    except TypeError:
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -101,18 +108,18 @@ def main():
                    'legend']
     params = list(cgidata.keys())
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
                                   'admin')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
+    if cgidata.get('adminpw', [''])[0]:
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
+                                 cgidata.get('adminpw', [''])[0]):
         if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
@@ -157,9 +164,9 @@ def main():
     qsenviron = os.environ.get('QUERY_STRING')
     parsedqs = None
     if qsenviron:
-        parsedqs = cgi.parse_qs(qsenviron)
+        parsedqs = urllib.parse.parse_qs(qsenviron)
     if 'VARHELP' in cgidata:
-        varhelp = cgidata.getfirst('VARHELP')
+        varhelp = cgidata.get('VARHELP', [''])[0]
     elif parsedqs:
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
@@ -976,7 +983,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         # put into FieldStorage's keys :-(
         qsenviron = os.environ.get('QUERY_STRING')
         if qsenviron:
-            qs = cgi.parse_qs(qsenviron)
+            qs = urllib.parse.parse_qs(qsenviron)
             bucket = qs.get('letter', '0')[0].lower()
         keys = list(buckets.keys())
         keys.sort()
@@ -1179,7 +1186,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     parsedqs = 0
     qsenviron = os.environ.get('QUERY_STRING')
     if qsenviron:
-        qs = cgi.parse_qs(qsenviron).get('legend')
+        qs = urllib.parse.parse_qs(qsenviron).get('legend')
         if qs and type(qs) is list:
             qs = qs[0]
         if qs == 'yes':

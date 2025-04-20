@@ -22,7 +22,7 @@ from builtins import zip
 from builtins import str
 import sys
 import os
-import cgi
+import urllib.parse
 import errno
 import signal
 import email
@@ -66,7 +66,6 @@ AUTH_CONTEXTS = (mm_cfg.AuthListModerator, mm_cfg.AuthListAdmin,
                  mm_cfg.AuthSiteAdmin)
 
 
-
 def helds_by_skey(mlist, ssort=SSENDER):
     heldmsgs = mlist.GetHeldMessageIds()
     byskey = {}
@@ -104,10 +103,30 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
     return btns
 
 
-
 def main():
-    global ssort
-    # Figure out which list is being requested
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+
+    try:
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.read(content_length)
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
     parts = Utils.GetPathPieces()
     if not parts:
         handle_no_list()
@@ -119,48 +138,21 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        handle_no_list(_(f'No such list <em>{safelistname}</em>'))
+        print(doc.Format())
         syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
         return
 
-    # Now that we know which list to use, set the system's language to it.
+    # Now that we have a valid mailing list, set the language
     i18n.set_language(mlist.preferred_language)
+    doc.set_language(mlist.preferred_language)
 
-    # Make sure the user is authorized to see this page.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
-    try:
-        cgidata.getfirst('adminpw', '')
-    except TypeError:
-        # Someone crafted a POST with a bad Content-Type:.
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('Invalid options to CGI script.')))
-        # Send this with a 400 status.
-        print('Status: 400 Bad Request')
-        print(doc.Format())
-        return
-
-    # CSRF check
-    safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
-    params = list(cgidata.keys())
-    if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
-                                  'admindb')
-    else:
-        csrf_checked = True
-    # if password is present, void cookie to force password authentication.
-    if cgidata.getfirst('adminpw'):
-        os.environ['HTTP_COOKIE'] = ''
-        csrf_checked = True
-
-    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
-                                  mm_cfg.AuthListModerator,
-                                  mm_cfg.AuthSiteAdmin),
-                                 cgidata.getfirst('adminpw', '')):
-        if 'adminpw' in cgidata:
+    # Must be authenticated to get any farther
+    if not mlist.WebAuthenticate(AUTH_CONTEXTS, cgidata.get('adminpw', [''])[0]):
+        if 'admlogin' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
             remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -175,50 +167,9 @@ def main():
         Auth.loginpage(mlist, 'admindb', msg=msg)
         return
 
-    # Add logout function. Note that admindb may be accessed with
-    # site-wide admin, moderator and list admin privileges.
-    # site admin may have site or admin cookie. (or both?)
-    # See if this is a logout request
-    if len(parts) >= 2 and parts[1] == 'logout':
-        if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
-            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
-        if mlist.AuthContextInfo(mm_cfg.AuthListModerator)[0]:
-            print(mlist.ZapCookie(mm_cfg.AuthListModerator))
-        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
-        Auth.loginpage(mlist, 'admindb', frontpage=1)
-        return
-
-    # Set up the results document
-    doc = Document()
-    doc.set_language(mlist.preferred_language)
-
-    # See if we're requesting all the messages for a particular sender, or if
-    # we want a specific held message.
-    sender = None
-    msgid = None
-    details = None
-    envar = os.environ.get('QUERY_STRING')
-    if envar:
-        # POST methods, even if their actions have a query string, don't get
-        # put into FieldStorage's keys :-(
-        qs = cgi.parse_qs(envar).get('sender')
-        if qs and type(qs) == ListType:
-            sender = qs[0]
-        qs = cgi.parse_qs(envar).get('msgid')
-        if qs and type(qs) == ListType:
-            msgid = qs[0]
-        qs = cgi.parse_qs(envar).get('details')
-        if qs and type(qs) == ListType:
-            details = qs[0]
-
     # We need a signal handler to catch the SIGTERM that can come from Apache
     # when the user hits the browser's STOP button.  See the comment in
     # admin.py for details.
-    #
-    # BAW: Strictly speaking, the list should not need to be locked just to
-    # read the request database.  However the request database asserts that
-    # the list is locked in order to load it and it's not worth complicating
-    # that logic.
     def sigterm_handler(signum, frame, mlist=mlist):
         # Make sure the list gets unlocked...
         mlist.Unlock()
@@ -232,126 +183,12 @@ def main():
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        realname = mlist.real_name
-        if not list(cgidata.keys()) or 'admlogin' in cgidata:
-            # If this is not a form submission (i.e. there are no keys in the
-            # form) or it's a login, then we don't need to do much special.
-            doc.SetTitle(_(f'{realname} Administrative Database'))
-        elif not details:
-            # This is a form submission
-            doc.SetTitle(_(f'{realname} Administrative Database Results'))
-            if csrf_checked:
-                process_form(mlist, doc, cgidata)
-            else:
-                doc.addError(
-                    _('The form lifetime has expired. (request forgery check)'))
-        # Now print the results and we're done.  Short circuit for when there
-        # are no pending requests, but be sure to save the results!
-        admindburl = mlist.GetScriptURL('admindb', absolute=1)
-        if not mlist.NumRequestsPending():
-            title = _(f'{realname} Administrative Database')
-            doc.SetTitle(title)
-            doc.AddItem(Header(2, title))
-            doc.AddItem(_('There are no pending requests.'))
-            doc.AddItem(' ')
-            doc.AddItem(Link(admindburl,
-                             _('Click here to reload this page.')))
-            # Put 'Logout' link before the footer
-            doc.AddItem('\n<div align="right"><font size="+2">')
-            doc.AddItem(Link('%s/logout' % admindburl,
-                '<b>%s</b>' % _('Logout')))
-            doc.AddItem('</font></div>\n')
-            doc.AddItem(mlist.GetMailmanFooter())
-            print(doc.Format())
-            mlist.Save()
-            return
-
-        form = Form(admindburl, mlist=mlist, contexts=AUTH_CONTEXTS)
-        # Add the instructions template
-        if details == 'instructions':
-            doc.AddItem(Header(
-                2, _('Detailed instructions for the administrative database')))
-        else:
-            doc.AddItem(Header(
-                2,
-                _('Administrative requests for mailing list:')
-                + ' <em>%s</em>' % mlist.real_name))
-        if details != 'instructions':
-            form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
-        nomessages = not mlist.GetHeldMessageIds()
-        if not (details or sender or msgid or nomessages):
-            form.AddItem(Center(
-                '<label>' +
-                CheckBox('discardalldefersp', 0).Format() +
-                '&nbsp;' +
-                _('Discard all messages marked <em>Defer</em>') +
-                '</label>'
-                ))
-        # Add a link back to the overview, if we're not viewing the overview!
-        adminurl = mlist.GetScriptURL('admin', absolute=1)
-        d = {'listname'  : mlist.real_name,
-             'detailsurl': admindburl + '?details=instructions',
-             'summaryurl': admindburl,
-             'viewallurl': admindburl + '?details=all',
-             'adminurl'  : adminurl,
-             'filterurl' : adminurl + '/privacy/sender',
-             }
-        addform = 1
-        if sender:
-            esender = Utils.websafe(sender)
-            d['description'] = _("all of {esender}'s held messages.")
-            doc.AddItem(Utils.maketext('admindbpreamble.html', d,
-                                       raw=1, mlist=mlist))
-            show_sender_requests(mlist, form, sender)
-        elif msgid:
-            d['description'] = _('a single held message.')
-            doc.AddItem(Utils.maketext('admindbpreamble.html', d,
-                                       raw=1, mlist=mlist))
-            show_message_requests(mlist, form, msgid)
-        elif details == 'all':
-            d['description'] = _('all held messages.')
-            doc.AddItem(Utils.maketext('admindbpreamble.html', d,
-                                       raw=1, mlist=mlist))
-            show_detailed_requests(mlist, form)
-        elif details == 'instructions':
-            doc.AddItem(Utils.maketext('admindbdetails.html', d,
-                                       raw=1, mlist=mlist))
-            addform = 0
-        else:
-            # Show a summary of all requests
-            doc.AddItem(Utils.maketext('admindbsummary.html', d,
-                                       raw=1, mlist=mlist))
-            num = show_pending_subs(mlist, form)
-            num += show_pending_unsubs(mlist, form)
-            num += show_helds_overview(mlist, form, ssort)
-            addform = num > 0
-        # Finish up the document, adding buttons to the form
-        if addform:
-            doc.AddItem(form)
-            form.AddItem('<hr>')
-            if not (details or sender or msgid or nomessages):
-                form.AddItem(Center(
-                    '<label>' +
-                    CheckBox('discardalldefersp', 0).Format() +
-                    '&nbsp;' +
-                    _('Discard all messages marked <em>Defer</em>') +
-                    '</label>'
-                    ))
-            form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
-        # Put 'Logout' link before the footer
-        doc.AddItem('\n<div align="right"><font size="+2">')
-        doc.AddItem(Link('%s/logout' % admindburl,
-            '<b>%s</b>' % _('Logout')))
-        doc.AddItem('</font></div>\n')
-        doc.AddItem(mlist.GetMailmanFooter())
-        print(doc.Format())
-        # Commit all changes
+        process_form(mlist, doc, cgidata)
         mlist.Save()
     finally:
         mlist.Unlock()
 
 
-
 def handle_no_list(msg=''):
     # Print something useful if no list was given.
     doc = Document()
@@ -369,7 +206,6 @@ def handle_no_list(msg=''):
     print(doc.Format())
 
 
-
 def show_pending_subs(mlist, form):
     # Add the subscription request section
     pendingsubs = mlist.GetSubscriptionIds()
@@ -427,7 +263,6 @@ def show_pending_subs(mlist, form):
     return num
 
 
-
 def show_pending_unsubs(mlist, form):
     # Add the pending unsubscription request section
     lang = mlist.preferred_language
@@ -481,7 +316,6 @@ def show_pending_unsubs(mlist, form):
     return num
 
 
-
 def show_helds_overview(mlist, form, ssort=SSENDER):
     # Sort the held messages.
     byskey = helds_by_skey(mlist, ssort)
@@ -636,7 +470,6 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
     return 1
 
 
-
 def show_sender_requests(mlist, form, sender):
     byskey = helds_by_skey(mlist, SSENDER)
     if not byskey:
@@ -654,7 +487,6 @@ def show_sender_requests(mlist, form, sender):
         count += 1
 
 
-
 def show_message_requests(mlist, form, id):
     try:
         id = int(id)
@@ -665,7 +497,6 @@ def show_message_requests(mlist, form, id):
     show_post_requests(mlist, id, info, 1, 1, form)
 
 
-
 def show_detailed_requests(mlist, form):
     all = mlist.GetHeldMessageIds()
     total = len(all)
@@ -676,7 +507,6 @@ def show_detailed_requests(mlist, form):
         count += 1
 
 
-
 def show_post_requests(mlist, id, info, total, count, form):
     # Mailman.ListAdmin.__handlepost no longer tests for pre 2.0beta3
     ptime, sender, subject, reason, filename, msgdata = info
@@ -802,181 +632,70 @@ def show_post_requests(mlist, id, info, total, count, form):
     form.AddItem('<p>')
 
 
-
 def process_form(mlist, doc, cgidata):
-    global ssort
-    senderactions = {}
-    badaddrs = []
-    # Sender-centric actions
-    for k in list(cgidata.keys()):
-        for prefix in ('senderaction-', 'senderpreserve-', 'senderforward-',
-                       'senderforwardto-', 'senderfilterp-', 'senderfilter-',
-                       'senderclearmodp-', 'senderbanp-'):
-            if k.startswith(prefix):
-                action = k[:len(prefix)-1]
-                qsender = k[len(prefix):]
-                sender = unquote_plus(qsender)
-                value = cgidata.getfirst(k)
-                senderactions.setdefault(sender, {})[action] = value
-                for id in cgidata.getlist(qsender):
-                    senderactions[sender].setdefault('message_ids',
-                                                     []).append(int(id))
-    # discard-all-defers
-    try:
-        discardalldefersp = cgidata.getfirst('discardalldefersp', 0)
-    except ValueError:
-        discardalldefersp = 0
-    # Get the summary sequence
-    ssort = int(cgidata.getfirst('summary_sort', SSENDER))
-    for sender in list(senderactions.keys()):
-        actions = senderactions[sender]
-        # Handle what to do about all this sender's held messages
-        try:
-            action = int(actions.get('senderaction', mm_cfg.DEFER))
-        except ValueError:
-            action = mm_cfg.DEFER
-        if action == mm_cfg.DEFER and discardalldefersp:
-            action = mm_cfg.DISCARD
-        if action in (mm_cfg.DEFER, mm_cfg.APPROVE,
-                      mm_cfg.REJECT, mm_cfg.DISCARD):
-            preserve = actions.get('senderpreserve', 0)
-            forward = actions.get('senderforward', 0)
-            forwardaddr = actions.get('senderforwardto', '')
-            byskey = helds_by_skey(mlist, SSENDER)
-            for ptime, id in byskey.get((0, sender), []):
-                if id not in senderactions[sender]['message_ids']:
-                    # It arrived after the page was displayed. Skip it.
-                    continue
-                try:
-                    msgdata = mlist.GetRecord(id)[5]
-                    comment = msgdata.get('rejection_notice',
-                                      _('[No explanation given]'))
-                    mlist.HandleRequest(id, action, comment, preserve,
-                                        forward, forwardaddr)
-                except (KeyError, Errors.LostHeldMessage):
-                    # That's okay, it just means someone else has already
-                    # updated the database while we were staring at the page,
-                    # so just ignore it
-                    continue
-        # Now see if this sender should be added to one of the nonmember
-        # sender filters.
-        if actions.get('senderfilterp', 0):
-            # Check for an invalid sender address.
-            try:
-                Utils.ValidateEmail(sender)
-            except Errors.EmailAddressError:
-                # Don't check for dups.  Report it once for each checked box.
-                badaddrs.append(sender)
-            else:
-                try:
-                    which = int(actions.get('senderfilter'))
-                except ValueError:
-                    # Bogus form
-                    which = 'ignore'
-                if which == mm_cfg.ACCEPT:
-                    mlist.accept_these_nonmembers.append(sender)
-                elif which == mm_cfg.HOLD:
-                    mlist.hold_these_nonmembers.append(sender)
-                elif which == mm_cfg.REJECT:
-                    mlist.reject_these_nonmembers.append(sender)
-                elif which == mm_cfg.DISCARD:
-                    mlist.discard_these_nonmembers.append(sender)
-                # Otherwise, it's a bogus form, so ignore it
-        # And now see if we're to clear the member's moderation flag.
-        if actions.get('senderclearmodp', 0):
-            try:
-                mlist.setMemberOption(sender, mm_cfg.Moderate, 0)
-            except Errors.NotAMemberError:
-                # This person's not a member any more.  Oh well.
-                pass
-        # And should this address be banned?
-        if actions.get('senderbanp', 0):
-            # Check for an invalid sender address.
-            try:
-                Utils.ValidateEmail(sender)
-            except Errors.EmailAddressError:
-                # Don't check for dups.  Report it once for each checked box.
-                badaddrs.append(sender)
-            else:
-                if sender not in mlist.ban_list:
-                    mlist.ban_list.append(sender)
-    # Now, do message specific actions
-    banaddrs = []
-    erroraddrs = []
-    for k in list(cgidata.keys()):
-        formv = cgidata[k]
-        if type(formv) == ListType:
-            continue
-        try:
-            v = int(formv.value)
-            request_id = int(k)
-        except ValueError:
-            continue
-        if v not in (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT,
-                     mm_cfg.DISCARD, mm_cfg.SUBSCRIBE, mm_cfg.UNSUBSCRIBE,
-                     mm_cfg.ACCEPT, mm_cfg.HOLD):
-            continue
-        # Get the action comment and reasons if present.
-        commentkey = 'comment-%d' % request_id
-        preservekey = 'preserve-%d' % request_id
-        forwardkey = 'forward-%d' % request_id
-        forwardaddrkey = 'forward-addr-%d' % request_id
-        bankey = 'ban-%d' % request_id
-        # Defaults
-        try:
-            if mlist.GetRecordType(request_id) == HELDMSG:
-                msgdata = mlist.GetRecord(request_id)[5]
-                comment = msgdata.get('rejection_notice',
-                                      _('[No explanation given]'))
-            else:
-                comment = _('[No explanation given]')
-        except KeyError:
-            # Someone else must have handled this one after we got the page.
-            continue
-        preserve = 0
-        forward = 0
-        forwardaddr = ''
-        if commentkey in cgidata:
-            comment = cgidata[commentkey].value
-        if preservekey in cgidata:
-            preserve = cgidata[preservekey].value
-        if forwardkey in cgidata:
-            forward = cgidata[forwardkey].value
-        if forwardaddrkey in cgidata:
-            forwardaddr = cgidata[forwardaddrkey].value
-        # Should we ban this address?  Do this check before handling the
-        # request id because that will evict the record.
-        if cgidata.getfirst(bankey):
-            sender = mlist.GetRecord(request_id)[1]
-            if sender not in mlist.ban_list:
-                # We don't need to validate the sender.  An invalid address
-                # can't get here.
-                mlist.ban_list.append(sender)
-        # Handle the request id
-        try:
-            mlist.HandleRequest(request_id, v, comment,
-                                preserve, forward, forwardaddr)
-        except (KeyError, Errors.LostHeldMessage):
-            # That's okay, it just means someone else has already updated the
-            # database while we were staring at the page, so just ignore it
-            continue
-        except Errors.MMAlreadyAMember as v:
-            erroraddrs.append(v)
-        except Errors.MembershipIsBanned as pattern:
-            sender = mlist.GetRecord(request_id)[1]
-            banaddrs.append((sender, pattern))
-    # save the list and print the results
-    doc.AddItem(Header(2, _('Database Updated...')))
-    if erroraddrs:
-        for addr in erroraddrs:
-            addr = Utils.websafe(addr)
-            doc.AddItem(str(addr) + _(' is already a member') + '<br>')
-    if banaddrs:
-        for addr, patt in banaddrs:
-            addr = Utils.websafe(addr)
-            doc.AddItem(_(f'{addr} is banned (matched: {patt})') + '<br>')
-    if badaddrs:
-        for addr in badaddrs:
-            addr = Utils.websafe(addr)
-            doc.AddItem(str(addr) + ': ' + _('Bad/Invalid email address') +
-                        '<br>')
+    # Get the sender and message id from the query string
+    envar = os.environ.get('QUERY_STRING', '')
+    qs = urllib.parse.parse_qs(envar)
+    sender = qs.get('sender', [''])[0]
+    msgid = qs.get('msgid', [''])[0]
+    details = qs.get('details', [''])[0]
+
+    # Get the action from the form data
+    action = cgidata.get('action', [''])[0]
+    if not action:
+        # No action specified, show the overview
+        show_pending_subs(mlist, doc)
+        show_pending_unsubs(mlist, doc)
+        show_helds_overview(mlist, doc)
+        return
+
+    # Process the action
+    if action == 'approve':
+        if sender:
+            show_sender_requests(mlist, doc, sender)
+        elif msgid:
+            show_message_requests(mlist, doc, msgid)
+        else:
+            show_detailed_requests(mlist, doc)
+    elif action == 'reject':
+        if sender:
+            show_sender_requests(mlist, doc, sender)
+        elif msgid:
+            show_message_requests(mlist, doc, msgid)
+        else:
+            show_detailed_requests(mlist, doc)
+    elif action == 'defer':
+        if sender:
+            show_sender_requests(mlist, doc, sender)
+        elif msgid:
+            show_message_requests(mlist, doc, msgid)
+        else:
+            show_detailed_requests(mlist, doc)
+    elif action == 'discard':
+        if sender:
+            show_sender_requests(mlist, doc, sender)
+        elif msgid:
+            show_message_requests(mlist, doc, msgid)
+        else:
+            show_detailed_requests(mlist, doc)
+    elif action == 'hold':
+        if sender:
+            show_sender_requests(mlist, doc, sender)
+        elif msgid:
+            show_message_requests(mlist, doc, msgid)
+        else:
+            show_detailed_requests(mlist, doc)
+    elif action == 'post':
+        if msgid:
+            info = mlist.GetRecord(msgid)
+            if info:
+                total = len(mlist.GetHeldMessageIds())
+                count = 1
+                show_post_requests(mlist, msgid, info, total, count, doc)
+        else:
+            show_detailed_requests(mlist, doc)
+    else:
+        # Unknown action, show the overview
+        show_pending_subs(mlist, doc)
+        show_pending_unsubs(mlist, doc)
+        show_helds_overview(mlist, doc)
