@@ -346,11 +346,35 @@ def main():
                 key, value = line.split('=', 1)
                 config[key.strip()] = value.strip()
         fp.close()
-        for key, value in config.items():
-            try:
-                mlist[key] = value
-            except Errors.MMListError as e:
-                print(_('Error setting %(key)s: %(error)s'))
+        
+        # Get configuration items using GetConfigInfo()
+        for category in mm_cfg.ADMIN_CATEGORIES:
+            subcats = mlist.GetConfigSubCategories(category)
+            if subcats is None:
+                info = mlist.GetConfigInfo(category, None)
+                if info:
+                    for data in info[1:]:
+                        if not isinstance(data, Tuple):
+                            continue
+                        key = data[0]
+                        if key in config:
+                            try:
+                                setattr(mlist, key, config[key])
+                            except Errors.MMListError as e:
+                                print(_('Error setting %(key)s: %(error)s') % {'key': key, 'error': str(e)})
+            else:
+                for subcat, _ in subcats:
+                    info = mlist.GetConfigInfo(category, subcat)
+                    if info:
+                        for data in info[1:]:
+                            if not isinstance(data, Tuple):
+                                continue
+                            key = data[0]
+                            if key in config:
+                                try:
+                                    setattr(mlist, key, config[key])
+                                except Errors.MMListError as e:
+                                    print(_('Error setting %(key)s: %(error)s') % {'key': key, 'error': str(e)})
         mlist.Save()
     elif args.output_file:
         try:
