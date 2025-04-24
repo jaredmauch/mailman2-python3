@@ -344,13 +344,14 @@ def main():
 
     # Handle the command
     if args.command == 'start':
-        start_qrunners(args)
+        start_all_runners()
     elif args.command == 'stop':
-        stop_qrunners()
+        kill_watcher(signal.SIGTERM)
     elif args.command == 'restart':
-        restart_qrunners()
+        kill_watcher(signal.SIGINT)
+        start_all_runners()
     elif args.command == 'reopen':
-        reopen_logs()
+        kill_watcher(signal.SIGHUP)
     else:
         usage(1, C_('Unknown command: %(command)s'))
 
