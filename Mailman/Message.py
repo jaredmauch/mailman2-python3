@@ -69,6 +69,8 @@ class Message(email.message.Message):
 
     # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
     def __repr__(self):
+        if not hasattr(self, 'policy'):
+            self.policy = email._policybase.compat32
         return self.__str__()
 
     def __setstate__(self, d):

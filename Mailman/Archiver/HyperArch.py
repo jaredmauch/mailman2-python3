@@ -312,9 +312,11 @@ class Article(pipermail.Article):
             except binascii.Error:
                 body = None
             if body and charset != Utils.GetCharSet(self._lang):
+                if isinstance(charset, bytes):
+                    charset = charset.decode()
                 # decode body
                 try:
-                    body = str(body, charset)
+                    body = body.decode(charset)
                 except (UnicodeError, LookupError):
                     body = None
             if body:

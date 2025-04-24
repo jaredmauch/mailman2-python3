@@ -30,6 +30,7 @@ import errno
 #
 from . import pipermail
 from Mailman import LockFile
+from Mailman import Utils
 
 CACHESIZE = pipermail.CACHESIZE
 
@@ -297,7 +298,7 @@ class HyperDatabase(pipermail.Database):
         if msgid not in self.__cache:
             # get the pickled object out of the DumbBTree
             buf = self.articleIndex[msgid]
-            article = self.__cache[msgid] = pickle.loads(buf, fix_imports=True, encoding='latin1')
+            article = self.__cache[msgid] = Utils.load_pickle(buf)
             # For upgrading older archives
             article.setListIfUnset(self._mlist)
         else:
