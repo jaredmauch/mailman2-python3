@@ -461,3 +461,13 @@ class HTMLFormatter(object):
                 selected = mm_cfg.DEFAULT_SERVER_LANGUAGE
         # Return the widget
         return SelectOptions(varname, values, legend, selected)
+
+    def format(self, value, charset=None):
+        """Format a value for HTML output."""
+        if charset is None:
+            charset = self.charset
+        if isinstance(value, bytes):
+            value = value.decode(charset, 'replace')
+        elif not isinstance(value, str):
+            value = str(value)
+        return html.escape(value, quote=True)

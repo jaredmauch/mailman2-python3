@@ -699,3 +699,12 @@ def process_form(mlist, doc, cgidata):
         show_pending_subs(mlist, doc)
         show_pending_unsubs(mlist, doc)
         show_helds_overview(mlist, doc)
+
+
+def format_body(body, mcset, lcset):
+    """Format the message body for display."""
+    if isinstance(body, bytes):
+        body = body.decode(mcset, 'replace')
+    elif not isinstance(body, str):
+        body = str(body)
+    return body.encode(lcset, 'replace')

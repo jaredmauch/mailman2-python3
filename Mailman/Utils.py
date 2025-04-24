@@ -498,11 +498,9 @@ def websafe(s, doubleescape=False):
     if doubleescape:
         return html.escape(s, quote=True)
     else:
-        if type(s) is bytes:
+        if isinstance(s, bytes):
             s = s.decode(errors='ignore')
-        re.sub('&', '&amp', s)
-        # Don't double escape html entities
-        #return _ampre.sub(r'&\1', html.escape(s, quote=True))
+        s = re.sub('&', '&amp;', s)
         return html.escape(s, quote=True)
 
 
@@ -1205,21 +1203,17 @@ def suspiciousHTML(html):
 s_dict = {}
 
 def get_suffixes(url):
-    """This loads and parses the data from the url argument into s_dict for
-    use by get_org_dom."""
-    global s_dict
-    if s_dict:
-        return
-    if not url:
-        return
+    """Get the list of public suffixes from the given URL."""
     try:
         d = urllib.request.urlopen(url)
-    except urllib.error.URLError as e:
-        syslog('error',
-               'Unable to retrieve data from %s: %s',
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        syslog('error', 'Failed to fetch DMARC organizational domain data from %s: %s',
                url, e)
         return
     for line in d.readlines():
+        # Convert bytes to string if necessary
+        if isinstance(line, bytes):
+            line = line.decode('utf-8')
         if not line.strip() or line.startswith(' ') or line.startswith('//'):
             continue
         line = re.sub(' .*', '', line.strip())
@@ -1506,7 +1500,7 @@ def xml_to_unicode(s, cset):
     similar to canonstr above except for replacing invalid refs with the
     unicode replace character and recognizing \\u escapes.
     """
-    if isinstance(s, str):
+    if isinstance(s, bytes):
         us = s.decode(cset, 'replace')
         us = re.sub(u'&(#[0-9]+);', _invert_xml, us)
         us = re.sub(u'(?i)\\\\(u[a-f0-9]{4})', _invert_xml, us)
@@ -1519,12 +1513,15 @@ def banned_ip(ip):
         return False
     if have_ipaddress:
         try:
-            uip = str(ip, encoding='us-ascii', errors='replace')
-            ptr = ipaddress.ip_address(uip).reverse_pointer
+            if isinstance(ip, bytes):
+                ip = ip.decode('us-ascii', errors='replace')
+            ptr = ipaddress.ip_address(ip).reverse_pointer
         except ValueError:
             return False
         lookup = '{0}.zen.spamhaus.org'.format('.'.join(ptr.split('.')[:-2]))
     else:
+        if isinstance(ip, bytes):
+            ip = ip.decode('us-ascii', errors='replace')
         parts = ip.split('.')
         if len(parts) != 4:
             return False
@@ -1578,7 +1575,7 @@ def captcha_display(mlist, lang, captchas):
     box_html = mlist.FormatBox('captcha_answer', size=30)
     # Remember to encode the language in the index so that we can get it out
     # again!
-    return (websafe(question), box_html, lang + "-" + str(idx))
+    return (websafe(question), box_html, '{}-{}'.format(lang, idx))
 
 def captcha_verify(idx, given_answer, captchas):
     try:

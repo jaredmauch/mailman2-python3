@@ -26,6 +26,7 @@ from builtins import object
 import sys
 import os
 import codecs
+import logging
 
 from Mailman import mm_cfg
 from Mailman.Logging.Utils import _logexc
@@ -106,3 +107,11 @@ class Logger(object):
             return
         self.__get_f().close()
         self.__fp = None
+
+    def log(self, msg, level=logging.INFO):
+        """Log a message at the specified level."""
+        if isinstance(msg, bytes):
+            msg = msg.decode(self.__encoding, 'replace')
+        elif not isinstance(msg, str):
+            msg = str(msg)
+        self.logger.log(level, msg)

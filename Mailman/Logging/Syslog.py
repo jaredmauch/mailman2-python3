@@ -79,3 +79,13 @@ class _Syslog(object):
 
 
 syslog = _Syslog()
+
+def syslog(ident, msg, *args):
+    """Log a message to syslog."""
+    if isinstance(msg, bytes):
+        msg = msg.decode('iso-8859-1', 'replace')
+    elif not isinstance(msg, str):
+        msg = str(msg)
+    if args:
+        msg = msg % args
+    syslog.syslog(ident, msg)
