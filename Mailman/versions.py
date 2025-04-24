@@ -46,7 +46,6 @@ from Mailman.MemberAdaptor import UNKNOWN
 from Mailman.Logging.Syslog import syslog
 
 
-
 def Update(l, stored_state):
     "Dispose of old vars and user options, mapping to new ones when suitable."
     ZapOldVars(l)
@@ -57,7 +56,6 @@ def Update(l, stored_state):
     NewRequestsDatabase(l)
 
 
-
 def ZapOldVars(mlist):
     for name in ('num_spawns', 'filter_prog', 'clobber_date',
                  'public_archive_file_dir', 'private_archive_file_dir',
@@ -72,7 +70,6 @@ def ZapOldVars(mlist):
             delattr(mlist, name)
 
 
-
 uniqueval = []
 def UpdateOldVars(l, stored_state):
     """Transform old variable values into new ones, deleting old ones.
@@ -349,12 +346,12 @@ def UpdateOldVars(l, stored_state):
     # transfer the list data type for holding members and digest members
     # to the dict data type starting file format version 11
     #
-    if type(l.members) is ListType:
+    if type(l.members) is list:
         members = {}
         for m in l.members:
             members[m] = 1
         l.members = members
-    if type(l.digest_members) is ListType:
+    if type(l.digest_members) is list:
         dmembers = {}
         for dm in l.digest_members:
             dmembers[dm] = 1
@@ -416,7 +413,6 @@ def UpdateOldVars(l, stored_state):
                  mm_cfg.DEFAULT_FROM_IS_LIST)
 
 
-
 def NewVars(l):
     """Add defaults for these new variables if they don't exist."""
     def add_only_if_missing(attr, initval, l=l):
@@ -543,7 +539,6 @@ def NewVars(l):
                         mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE)
 
 
-
 def UpdateOldUsers(mlist):
     """Transform sense of changed user options."""
     # pre-1.0b11 to 1.0b11.  Force all keys in l.passwords to be lowercase
@@ -560,7 +555,6 @@ def UpdateOldUsers(mlist):
             del mlist.bounce_info[m]
 
 
-
 def CanonicalizeUserOptions(l):
     """Fix up the user options."""
     # I want to put a flag in the list database which tells this routine to
@@ -596,7 +590,6 @@ def CanonicalizeUserOptions(l):
     l.useropts_version = 1
 
 
-
 def NewRequestsDatabase(l):
     """With version 1.2, we use a new pending request database schema."""
     r = getattr(l, 'requests', {})
