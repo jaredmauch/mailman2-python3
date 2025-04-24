@@ -182,8 +182,7 @@ test -x / || exit 1"
   as_suggested="  as_lineno_1=";as_suggested=$as_suggested$LINENO;as_suggested=$as_suggested" as_lineno_1a=\$LINENO
   as_lineno_2=";as_suggested=$as_suggested$LINENO;as_suggested=$as_suggested" as_lineno_2a=\$LINENO
   eval 'test \"x\$as_lineno_1'\$as_run'\" != \"x\$as_lineno_2'\$as_run'\" &&
-  test \"x\`expr \$as_lineno_1'\$as_run' + 1\`\" = \"x\$as_lineno_2'\$as_run'\"' || exit 1
-test \$(( 1 + 1 )) = 2 || exit 1"
+  test \"x\`expr \$as_lineno_1'\$as_run' + 1\`\" = \"x\$as_lineno_2'\$as_run'\"' || exit 1"
   if (eval "$as_required") 2>/dev/null
 then :
   as_have_required=yes
@@ -644,8 +643,6 @@ ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 SCRIPTS
-EGREP
-GREP
 URLHOST
 MAILHOST
 CGIEXT
@@ -673,6 +670,7 @@ EMAILPKG
 MM_VERSION
 HAVE_NNTP_FALSE
 HAVE_NNTP_TRUE
+PYTHON
 with_python
 BUILD_DATE
 CONFIGURE_OPTS
@@ -2583,6 +2581,10 @@ fi
 
 fi
 
+# Set PYTHON variable for Makefile substitution
+PYTHON=$with_python
+
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking Python interpreter" >&5
 printf %s "checking Python interpreter... " >&6; }
 if test ! -x $with_python
@@ -4211,8 +4213,8 @@ printf "%s\n" "$USERNAME" >&6; }
 
 # User `mailman' must exist
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for user name \"$USERNAME\"" >&5
-printf %s "checking for user name \"$USERNAME\"... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for user name $USERNAME" >&5
+printf %s "checking for user name $USERNAME... " >&6; }
 
 # MAILMAN_USER == variable name
 # $USERNAME == user id to check for
@@ -4246,8 +4248,8 @@ then
   if test "$with_permcheck" = "yes"
   then
     as_fn_error $? "
-***** No \"$USERNAME\" user found!
-***** Your system must have a \"$USERNAME\" user defined
+***** No $USERNAME user found!
+***** Your system must have a $USERNAME user defined
 ***** (usually in your /etc/passwd file).  Please see the INSTALL
 ***** file for details." "$LINENO" 5
   fi
@@ -4278,8 +4280,8 @@ printf "%s\n" "$GROUPNAME" >&6; }
 
 # Target group must exist
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for group name \"$GROUPNAME\"" >&5
-printf %s "checking for group name \"$GROUPNAME\"... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for group name $GROUPNAME" >&5
+printf %s "checking for group name $GROUPNAME... " >&6; }
 
 # MAILMAN_GROUP == variable name
 # $GROUPNAME == user id to check for
@@ -4313,8 +4315,8 @@ then
   if test "$with_permcheck" = "yes"
   then
     as_fn_error $? "
-***** No \"$GROUPNAME\" group found!
-***** Your system must have a \"$GROUPNAME\" group defined
+***** No $GROUPNAME group found!
+***** Your system must have a $GROUPNAME group defined
 ***** (usually in your /etc/group file).  Please see the INSTALL
 ***** file for details." "$LINENO" 5
   fi
@@ -4425,7 +4427,7 @@ then
   if test "$with_permcheck" = "yes"
   then
     as_fn_error $? "
-***** No group name \"$with_mail_gid\" found for the mail wrapper program.
+***** No group name $with_mail_gid found for the mail wrapper program.
 ***** This is the group that your mail server will use to run Mailman's
 ***** programs.  You should specify an existing group with the
 ***** --with-mail-gid configure option, or use --without-permcheck to
@@ -4486,7 +4488,7 @@ then
   if test "$with_permcheck" = "yes"
   then
     as_fn_error $? "
-***** No group name \"$with_cgi_gid\" found for the CGI wrapper program.
+***** No group name $with_cgi_gid found for the CGI wrapper program.
 ***** This is the group that your web server will use to run Mailman's
 ***** programs.  You should specify an existing group with the
 ***** --with-cgi-gid configure option, or use --without-permcheck to
@@ -4654,8 +4656,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 fi
 
 # Checks for header files.
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
 ac_header= ac_cache=
 for ac_item in $ac_header_c_list
 do
@@ -4685,155 +4685,60 @@ then :
 printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
 
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
-printf %s "checking for grep that handles long lines and -e... " >&6; }
-if test ${ac_cv_path_GREP+y}
+ac_fn_c_check_header_compile "$LINENO" "stdio.h" "ac_cv_header_stdio_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdio_h" = xyes
 then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -z "$GREP"; then
-  ac_path_GREP_found=false
-  # Loop through the user's path and test for each of PROGNAME-LIST
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_prog in grep ggrep
-   do
-    for ac_exec_ext in '' $ac_executable_extensions; do
-      ac_path_GREP="$as_dir$ac_prog$ac_exec_ext"
-      as_fn_executable_p "$ac_path_GREP" || continue
-# Check for GNU ac_path_GREP and select it if it is found.
-  # Check for GNU $ac_path_GREP
-case `"$ac_path_GREP" --version 2>&1` in #(
-*GNU*)
-  ac_cv_path_GREP="$ac_path_GREP" ac_path_GREP_found=:;;
-#(
-*)
-  ac_count=0
-  printf %s 0123456789 >"conftest.in"
-  while :
-  do
-    cat "conftest.in" "conftest.in" >"conftest.tmp"
-    mv "conftest.tmp" "conftest.in"
-    cp "conftest.in" "conftest.nl"
-    printf "%s\n" 'GREP' >> "conftest.nl"
-    "$ac_path_GREP" -e 'GREP$' -e '-(cannot match)-' < "conftest.nl" >"conftest.out" 2>/dev/null || break
-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
-    as_fn_arith $ac_count + 1 && ac_count=$as_val
-    if test $ac_count -gt ${ac_path_GREP_max-0}; then
-      # Best one so far, save it but keep looking for a better one
-      ac_cv_path_GREP="$ac_path_GREP"
-      ac_path_GREP_max=$ac_count
-    fi
-    # 10*(2^10) chars as input seems more than enough
-    test $ac_count -gt 10 && break
-  done
-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-esac
+  printf "%s\n" "#define HAVE_STDIO_H 1" >>confdefs.h
 
-      $ac_path_GREP_found && break 3
-    done
-  done
-  done
-IFS=$as_save_IFS
-  if test -z "$ac_cv_path_GREP"; then
-    as_fn_error $? "no acceptable grep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
-  fi
-else
-  ac_cv_path_GREP=$GREP
 fi
- ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_GREP" >&5
-printf "%s\n" "$ac_cv_path_GREP" >&6; }
- GREP="$ac_cv_path_GREP"
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for egrep" >&5
-printf %s "checking for egrep... " >&6; }
-if test ${ac_cv_path_EGREP+y}
+ac_fn_c_check_header_compile "$LINENO" "stdlib.h" "ac_cv_header_stdlib_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdlib_h" = xyes
 then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if echo a | $GREP -E '(a|b)' >/dev/null 2>&1
-   then ac_cv_path_EGREP="$GREP -E"
-   else
-     if test -z "$EGREP"; then
-  ac_path_EGREP_found=false
-  # Loop through the user's path and test for each of PROGNAME-LIST
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_prog in egrep
-   do
-    for ac_exec_ext in '' $ac_executable_extensions; do
-      ac_path_EGREP="$as_dir$ac_prog$ac_exec_ext"
-      as_fn_executable_p "$ac_path_EGREP" || continue
-# Check for GNU ac_path_EGREP and select it if it is found.
-  # Check for GNU $ac_path_EGREP
-case `"$ac_path_EGREP" --version 2>&1` in #(
-*GNU*)
-  ac_cv_path_EGREP="$ac_path_EGREP" ac_path_EGREP_found=:;;
-#(
-*)
-  ac_count=0
-  printf %s 0123456789 >"conftest.in"
-  while :
-  do
-    cat "conftest.in" "conftest.in" >"conftest.tmp"
-    mv "conftest.tmp" "conftest.in"
-    cp "conftest.in" "conftest.nl"
-    printf "%s\n" 'EGREP' >> "conftest.nl"
-    "$ac_path_EGREP" 'EGREP$' < "conftest.nl" >"conftest.out" 2>/dev/null || break
-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
-    as_fn_arith $ac_count + 1 && ac_count=$as_val
-    if test $ac_count -gt ${ac_path_EGREP_max-0}; then
-      # Best one so far, save it but keep looking for a better one
-      ac_cv_path_EGREP="$ac_path_EGREP"
-      ac_path_EGREP_max=$ac_count
-    fi
-    # 10*(2^10) chars as input seems more than enough
-    test $ac_count -gt 10 && break
-  done
-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-esac
+  printf "%s\n" "#define HAVE_STDLIB_H 1" >>confdefs.h
 
-      $ac_path_EGREP_found && break 3
-    done
-  done
-  done
-IFS=$as_save_IFS
-  if test -z "$ac_cv_path_EGREP"; then
-    as_fn_error $? "no acceptable egrep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
-  fi
-else
-  ac_cv_path_EGREP=$EGREP
 fi
+ac_fn_c_check_header_compile "$LINENO" "string.h" "ac_cv_header_string_h" "$ac_includes_default"
+if test "x$ac_cv_header_string_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRING_H 1" >>confdefs.h
 
-   fi ;;
-esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_EGREP" >&5
-printf "%s\n" "$ac_cv_path_EGREP" >&6; }
- EGREP="$ac_cv_path_EGREP"
+ac_fn_c_check_header_compile "$LINENO" "inttypes.h" "ac_cv_header_inttypes_h" "$ac_includes_default"
+if test "x$ac_cv_header_inttypes_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
-         EGREP_TRADITIONAL=$EGREP
- ac_cv_path_EGREP_TRADITIONAL=$EGREP
+fi
+ac_fn_c_check_header_compile "$LINENO" "stdint.h" "ac_cv_header_stdint_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdint_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_STDINT_H 1" >>confdefs.h
 
+fi
+ac_fn_c_check_header_compile "$LINENO" "strings.h" "ac_cv_header_strings_h" "$ac_includes_default"
+if test "x$ac_cv_header_strings_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRINGS_H 1" >>confdefs.h
 
+fi
+ac_fn_c_check_header_compile "$LINENO" "sys/stat.h" "ac_cv_header_sys_stat_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_stat_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_SYS_STAT_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "sys/types.h" "ac_cv_header_sys_types_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_types_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_SYS_TYPES_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "unistd.h" "ac_cv_header_unistd_h" "$ac_includes_default"
+if test "x$ac_cv_header_unistd_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_UNISTD_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "syslog.h" "ac_cv_header_syslog_h" "$ac_includes_default"
 if test "x$ac_cv_header_syslog_h" = xyes
 then :
