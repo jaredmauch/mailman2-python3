@@ -158,9 +158,11 @@ def usage(code, msg=''):
 
 def kill_watcher(sig):
     try:
-        fp = open(mm_cfg.PIDFILE)
+        fp = open(mm_cfg.PIDFILE, 'rb')
         pidstr = fp.read()
         fp.close()
+        if isinstance(pidstr, bytes):
+            pidstr = pidstr.decode('utf-8', 'replace')
         pid = int(pidstr.strip())
     except (IOError, ValueError) as e:
         # For i18n convenience

@@ -357,27 +357,82 @@ def main():
             fp = open(args.output_file, 'w')
         except IOError:
             usage(1, _('Cannot open file: %(file)s'))
-        for key, value in mlist.items():
-            if not args.all and key.startswith('_'):
-                continue
-            if args.category and not key.startswith(args.category + '_'):
-                continue
-            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
-                continue
-            print(f"{key}={value}", file=fp)
+        # Get configuration items using GetConfigInfo()
+        for category in mm_cfg.ADMIN_CATEGORIES:
+            subcats = mlist.GetConfigSubCategories(category)
+            if subcats is None:
+                info = mlist.GetConfigInfo(category, None)
+                if info:
+                    for data in info[1:]:
+                        if not isinstance(data, Tuple):
+                            continue
+                        key = data[0]
+                        if not args.all and key.startswith('_'):
+                            continue
+                        if args.category and not key.startswith(args.category + '_'):
+                            continue
+                        if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
+                            continue
+                        value = getattr(mlist, key)
+                        print(f"{key}={value}", file=fp)
+            else:
+                for subcat, _ in subcats:
+                    info = mlist.GetConfigInfo(category, subcat)
+                    if info:
+                        for data in info[1:]:
+                            if not isinstance(data, Tuple):
+                                continue
+                            key = data[0]
+                            if not args.all and key.startswith('_'):
+                                continue
+                            if args.category and not key.startswith(args.category + '_'):
+                                continue
+                            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
+                                continue
+                            value = getattr(mlist, key)
+                            print(f"{key}={value}", file=fp)
         fp.close()
     else:
-        for key, value in mlist.items():
-            if not args.all and key.startswith('_'):
-                continue
-            if args.category and not key.startswith(args.category + '_'):
-                continue
-            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
-                continue
-            if args.verbose:
-                print(f"{key}={value}")
+        # Get configuration items using GetConfigInfo()
+        for category in mm_cfg.ADMIN_CATEGORIES:
+            subcats = mlist.GetConfigSubCategories(category)
+            if subcats is None:
+                info = mlist.GetConfigInfo(category, None)
+                if info:
+                    for data in info[1:]:
+                        if not isinstance(data, Tuple):
+                            continue
+                        key = data[0]
+                        if not args.all and key.startswith('_'):
+                            continue
+                        if args.category and not key.startswith(args.category + '_'):
+                            continue
+                        if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
+                            continue
+                        value = getattr(mlist, key)
+                        if args.verbose:
+                            print(f"{key}={value}")
+                        else:
+                            print(key)
             else:
-                print(key)
+                for subcat, _ in subcats:
+                    info = mlist.GetConfigInfo(category, subcat)
+                    if info:
+                        for data in info[1:]:
+                            if not isinstance(data, Tuple):
+                                continue
+                            key = data[0]
+                            if not args.all and key.startswith('_'):
+                                continue
+                            if args.category and not key.startswith(args.category + '_'):
+                                continue
+                            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
+                                continue
+                            value = getattr(mlist, key)
+                            if args.verbose:
+                                print(f"{key}={value}")
+                            else:
+                                print(key)
 
     mlist.Unlock()
 
