@@ -26,12 +26,10 @@ import quopri
 from Mailman.Logging.StampedLogger import StampedLogger
 
 
-
 # Global, shared logger instance.  All clients should use this object.
-syslog = None
+_syslog = None
 
 
-
 # Don't instantiate except below.
 class _Syslog(object):
     def __init__(self):
@@ -77,8 +75,15 @@ class _Syslog(object):
             logger.close()
         self._logfiles.clear()
 
+    def syslog(self, ident, msg):
+        """Log a message to syslog."""
+        if isinstance(msg, bytes):
+            msg = msg.decode('iso-8859-1', 'replace')
+        elif not isinstance(msg, str):
+            msg = str(msg)
+        self.write(ident, msg)
 
-syslog = _Syslog()
+_syslog = _Syslog()
 
 def syslog(ident, msg, *args):
     """Log a message to syslog."""
@@ -88,4 +93,4 @@ def syslog(ident, msg, *args):
         msg = str(msg)
     if args:
         msg = msg % args
-    syslog.syslog(ident, msg)
+    _syslog.syslog(ident, msg)
