@@ -221,26 +221,59 @@ def main():
     else:
         LogStdErr('error', 'qrunner', manual_reprime=0)
 
-    # Create the qrunners
-    qrunners = []
-    for runner, slice, range in runners:
-        qrunners.append(make_qrunner(runner, slice, range, args.once))
-
-    # Set up the signal handlers
-    for qrunner in qrunners:
-        set_signals(qrunner)
-
-    # Run the qrunners in round-robin fashion
-    while 1:
-        for qrunner in qrunners:
-            if qrunner.status is not None:
-                sys.exit(qrunner.status)
-            qrunner.run()
-            if qrunner.status is not None:
-                sys.exit(qrunner.status)
-        if args.once:
-            break
-        time.sleep(1)
+    # Fast track for one infinite runner
+    if len(runners) == 1 and not args.once:
+        qrunner = make_qrunner(*runners[0])
+        class Loop:
+            status = 0
+            def __init__(self, qrunner):
+                self.__qrunner = qrunner
+            def name(self):
+                return self.__qrunner.__class__.__name__
+            def stop(self):
+                self.__qrunner.stop()
+        loop = Loop(qrunner)
+        set_signals(loop)
+        # Now start up the main loop
+        syslog('qrunner', '%s qrunner started.', loop.name())
+        qrunner.run()
+        syslog('qrunner', '%s qrunner exiting.', loop.name())
+    else:
+        # Anything else we have to handle a bit more specially
+        qrunners = []
+        for runner, slice, range in runners:
+            qrunner = make_qrunner(runner, slice, range, args.once)
+            qrunners.append(qrunner)
+        # This class is used to manage the main loop
+        class Loop:
+            status = 0
+            def __init__(self):
+                self.__isdone = 0
+            def name(self):
+                return 'Main loop'
+            def stop(self):
+                self.__isdone = 1
+            def isdone(self):
+                return self.__isdone
+        loop = Loop()
+        set_signals(loop)
+        syslog('qrunner', 'Main qrunner loop started.')
+        while not loop.isdone():
+            for qrunner in qrunners:
+                # In case the SIGTERM came in the middle of this iteration
+                if loop.isdone():
+                    break
+                if args.verbose:
+                    syslog('qrunner', 'Now doing a %s qrunner iteration',
+                           qrunner.__class__.__bases__[0].__name__)
+                qrunner.run()
+            if args.once:
+                break
+            if mm_cfg.QRUNNER_SLEEP_TIME > 0:
+                time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
+        syslog('qrunner', 'Main qrunner loop exiting.')
+    # All done
+    sys.exit(loop.status)
 
 
 if __name__ == '__main__':
