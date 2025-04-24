@@ -131,74 +131,81 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(description='Create a new, unpopulated mailing list.')
-    parser.add_argument('listname', nargs='?', help='Name of the mailing list')
-    parser.add_argument('listadmin_addr', nargs='?', help='Email address of the list administrator')
-    parser.add_argument('admin_password', nargs='?', help='Initial list password')
-    parser.add_argument('-l', '--language', default=mm_cfg.DEFAULT_SERVER_LANGUAGE,
+    parser.add_argument('-l', '--language',
                        help='Make the list\'s preferred language (two letter code)')
-    parser.add_argument('-u', '--urlhost', help='Gives the list\'s web interface host name')
-    parser.add_argument('-e', '--emailhost', help='Gives the list\'s email domain name')
+    parser.add_argument('-u', '--urlhost',
+                       help='Gives the list\'s web interface host name')
+    parser.add_argument('-e', '--emailhost',
+                       help='Gives the list\'s email domain name')
     parser.add_argument('-q', '--quiet', action='store_true',
-                       help='Suppress prompt and notification')
+                       help='Suppress the prompt and notification')
     parser.add_argument('-a', '--automate', action='store_true',
-                       help='Suppress prompt but still send notification')
+                       help='Suppress the prompt but still send notification')
+    parser.add_argument('listname', nargs='?',
+                       help='Name of the list to create')
+    parser.add_argument('listadmin', nargs='?',
+                       help='Email address of the list administrator')
+    parser.add_argument('adminpass', nargs='?',
+                       help='Password for the list administrator')
+    return parser.parse_args()
 
-    args = parser.parse_args()
 
-    # Is the language known?
-    if args.language not in mm_cfg.LC_DESCRIPTIONS.keys():
-        usage(1, C_(f'Unknown language: {args.language}'))
+def main():
+    try:
+        args = parse_args()
+    except SystemExit:
+        usage(1)
 
-    listname = args.listname
-    if listname is None:
-        listname = input('Enter the name of the list: ')
-    listname = listname.lower()
-
-    if '@' in listname:
-        # note that --urlhost and --emailhost have precedence
-        listname, domain = listname.split('@', 1)
-        urlhost = args.urlhost or domain
-        emailhost = args.emailhost or mm_cfg.VIRTUAL_HOSTS.get(domain, domain)
+    # Get the list name
+    if not args.listname:
+        print(C_('Enter the name of the list: '), end='')
+        listname = sys.stdin.readline().strip()
     else:
-        urlhost = args.urlhost or mm_cfg.DEFAULT_URL_HOST
-        emailhost = args.emailhost or \
-                    mm_cfg.VIRTUAL_HOSTS.get(urlhost, mm_cfg.DEFAULT_EMAIL_HOST)
+        listname = args.listname
 
+    # Get the list admin's email address
+    if not args.listadmin:
+        print(C_('Enter the email of the person running the list: '), end='')
+        owner_mail = sys.stdin.readline().strip()
+    else:
+        owner_mail = args.listadmin
+
+    # Get the list admin's password
+    if not args.adminpass:
+        print(C_('Initial %(listname)s password: '), end='')
+        listpasswd = sys.stdin.readline().strip()
+    else:
+        listpasswd = args.adminpass
+
+    # Get the language
+    lang = args.language or mm_cfg.DEFAULT_SERVER_LANGUAGE
+    if lang not in mm_cfg.LC_DESCRIPTIONS:
+        usage(1, C_('Unknown language code: %(lang)s'))
+
+    # Get the host names
+    host_name = args.emailhost or mm_cfg.DEFAULT_EMAIL_HOST
+    urlhost = args.urlhost or mm_cfg.DEFAULT_URL_HOST
     web_page_url = mm_cfg.DEFAULT_URL_PATTERN % urlhost
 
-    if Utils.list_exists(listname):
-        usage(1, C_(f"List already exists: {listname}"))
-
-    owner_mail = args.listadmin_addr
-    if owner_mail is None:
-        owner_mail = input(
-            C_('Enter the email of the person running the list: '))
-
-    listpasswd = args.admin_password
-    if listpasswd is None:
-        listpasswd = getpass.getpass(C_(f'Initial {listname} password: '))
-    # List passwords cannot be empty
-    listpasswd = listpasswd.strip()
-    if not listpasswd:
-        usage(1, C_('The list password cannot be empty'))
-
-    mlist = MailList.MailList()
+    # Create the list
+    mlist = None
     try:
-        pw = Utils.sha_new(listpasswd.encode()).hexdigest()
-        # Guarantee that all newly created files have the proper permission.
-        # proper group ownership should be assured by the autoconf script
-        # enforcing that all directories have the group sticky bit set
-        oldmask = os.umask(0o002)
+        mlist = MailList.MailList(listname, lock=1)
         try:
+            pw = Utils.sha_new(listpasswd.encode()).hexdigest()
+            # Guarantee that all newly created files have the proper permission.
+            # proper group ownership should be assured by the autoconf script
+            # enforcing that all directories have the group sticky bit set
+            oldmask = os.umask(0o002)
             try:
-                if args.language == mm_cfg.DEFAULT_SERVER_LANGUAGE:
-                    langs = [args.language]
+                if lang == mm_cfg.DEFAULT_SERVER_LANGUAGE:
+                    langs = [lang]
                 else:
-                    langs = [args.language, mm_cfg.DEFAULT_SERVER_LANGUAGE]
+                    langs = [lang, mm_cfg.DEFAULT_SERVER_LANGUAGE]
                 mlist.Create(listname, owner_mail, pw, langs=langs,
-                             emailhost=emailhost, urlhost=urlhost)
+                             emailhost=host_name, urlhost=urlhost)
             finally:
                 os.umask(oldmask)
         except Errors.BadListNameError as s:
@@ -211,15 +218,16 @@ def main():
             usage(1, C_(f"List already exists: {listname}"))
 
         # Assign domain-specific attributes
-        mlist.host_name = emailhost
+        mlist.host_name = host_name
         mlist.web_page_url = web_page_url
 
         # And assign the preferred language
-        mlist.preferred_language = args.language
+        mlist.preferred_language = lang
 
         mlist.Save()
     finally:
-        mlist.Unlock()
+        if mlist:
+            mlist.Unlock()
 
     # Now do the MTA-specific list creation tasks
     if mm_cfg.MTA:
