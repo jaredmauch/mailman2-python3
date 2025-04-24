@@ -731,6 +731,35 @@ def update_pending():
         if e.errno != errno.ENOENT: raise
 
 
+def upgrade(lastversion, thisversion):
+    """Upgrade the Mailman installation from lastversion to thisversion."""
+    print(C_('Upgrading from version %(lastversion)#x to %(thisversion)#x'))
+    
+    # Get all the lists
+    names = Utils.list_names()
+    if not names:
+        print(C_('No lists found.  Nothing to do.'))
+        return
+    
+    # For each list, load it, call Update() on it, and save it
+    for name in names:
+        print(C_('Upgrading list: %(name)s'))
+        try:
+            mlist = MailList.MailList(name, lock=True)
+        except Exception as e:
+            print(C_('Error opening list %(name)s: %(e)s'), file=sys.stderr)
+            continue
+        
+        try:
+            from Mailman.versions import Update
+            Update(mlist, {'data_version': lastversion})
+            mlist.Save()
+        finally:
+            mlist.Unlock()
+    
+    print(C_('Upgrade complete.'))
+
+
 def main():
     try:
         args = parse_args()
@@ -769,7 +798,6 @@ downgrade."""))
         sys.exit(1)
 
     # Do the upgrade
-    print(C_('Upgrading from version %(lastversion)#x to %(thisversion)#x'))
     upgrade(lastversion, thisversion)
 
     # Save the new version
