@@ -47,6 +47,7 @@ class Runner:
         # Create the shunt switchboard
         self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
         self._stop = False
+        self.status = 0  # Add status attribute initialized to 0
 
     def __repr__(self):
         return '<%s at %s>' % (self.__class__.__name__, id(self))
