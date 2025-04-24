@@ -48,14 +48,38 @@ AC_MSG_CHECKING(Python interpreter)
 if test ! -x $with_python
 then
     AC_MSG_ERROR([
-
-***** No Python interpreter found!
-***** Try including the configure option
-***** --with-python=/path/to/python/interpreter])
+        Python interpreter not found at $with_python
+        Please specify the correct path to Python using --with-python
+    ])
 fi
-AC_SUBST(PYTHON)
-PYTHON=$with_python
-AC_MSG_RESULT($PYTHON)
+AC_MSG_RESULT($with_python)
+
+# Check for optional nntplib module
+AC_MSG_CHECKING(whether to enable NNTP support)
+AC_ARG_ENABLE(nntp,
+    [  --enable-nntp           enable NNTP support (requires python3-nntplib)],
+    [enable_nntp=$enableval],
+    [enable_nntp=no]
+)
+AC_MSG_RESULT($enable_nntp)
+
+if test "$enable_nntp" = "yes"; then
+    AC_MSG_CHECKING(for Python nntplib module)
+    $with_python -c "import nntplib" >/dev/null 2>&1
+    if test $? -ne 0
+    then
+        AC_MSG_ERROR([
+            Python nntplib module not found but NNTP support was requested
+            Please install python3-nntplib package
+            On Debian/Ubuntu: apt-get install python3-nntplib
+            On RHEL/CentOS: yum install python3-nntplib
+            Or disable NNTP support with --disable-nntp
+        ])
+    fi
+    AC_MSG_RESULT(found)
+    AC_DEFINE(HAVE_NNTP, 1, [Define if NNTP support is enabled])
+fi
+AM_CONDITIONAL([HAVE_NNTP], [test "$enable_nntp" = "yes"])
 
 # See if Python is new enough.
 AC_MSG_CHECKING(Python version)
@@ -66,24 +90,23 @@ try:
     v = sys.hexversion
 except AttributeError:
     v = 0
-if v >= 0x2040000:
+if v >= 0x3000000:
     s = sys.version.split()[0]
 else:
     s = ""
-fp = open("conftest.out", "w")
-fp.write("%s\n" % s)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % s)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 version=`cat conftest.out`
 rm -f conftest.out conftest.py
 if test -z "$version"
 then
     AC_MSG_ERROR([
 
-***** $PYTHON is too old (or broken)
-***** Python 2.4 or newer is required])
+***** $with_python is too old (or broken)
+***** Python 3.0 or newer is required])
 fi
 AC_MSG_RESULT($version)
 
@@ -96,12 +119,11 @@ try:
     res = 'ok'
 except ImportError:
     res = 'no'
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 havednspython=`cat conftest.out`
 rm -f conftest.out conftest.py
 if test "$havednspython" = "no"
@@ -127,22 +149,20 @@ except ImportError:
     res = "not ok"
 else:
     res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 needemailpkg=`cat conftest.out`
 rm -f conftest.out conftest.py
 
 cat > getver.py <<EOF
 from Mailman.Version import VERSION
-fp = open("getver.out", "w")
-fp.write("%s\n" % VERSION)
-fp.close()
+with open("getver.out", "w") as fp:
+    fp.write("%s\n" % VERSION)
 EOF
-$PYTHON getver.py
+$with_python getver.py
 MM_VERSION=`cat getver.out`
 rm -f getver.out getver.py
 AC_SUBST(MM_VERSION)
@@ -167,12 +187,11 @@ except LookupError:
     res = "not ok"
 else:
     res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 needjacodecs=`cat conftest.out`
 rm -f conftest.out conftest.py
 
@@ -196,12 +215,11 @@ except LookupError:
     res = "not ok"
 else:
     res = "ok"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 needkocodecs=`cat conftest.out`
 rm -f conftest.out conftest.py
 
@@ -239,19 +257,18 @@ else:
             res = "yes"
         else:
             res = "no"
-fp = open("conftest.out", "w")
-fp.write("%s\n" % res)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % res)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 havedistutils=`cat conftest.out`
 rm -f conftest.out conftest.py
 if test "$havedistutils" != "yes"
 then
     AC_MSG_ERROR([
 
-***** Distutils is not available or is incomplete for $PYTHON
+***** Distutils is not available or is incomplete for $with_python
 ***** If you installed Python from RPM (or other package manager)
 ***** be sure to install the -devel package, or install Python
 ***** from source.  See sec. 15.1 of the Installation Manual for
@@ -366,11 +383,10 @@ for group in "$2".split():
             break
     except KeyError:
         gname = ''
-fp = open("conftest.out", "w")
-fp.write("%s\n" % gname)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % gname)
 EOF
-    $PYTHON conftest.py
+    $with_python conftest.py
     $1=`cat conftest.out`
 fi
 changequote([, ])
@@ -398,11 +414,10 @@ for user in "$2".split():
             break
     except KeyError:
         uname = ''
-fp = open("conftest.out", "w")
-fp.write("%s\n" % uname)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write("%s\n" % uname)
 EOF
-    $PYTHON conftest.py
+    $with_python conftest.py
     $1=`cat conftest.out`
 fi
 changequote([, ])
@@ -500,12 +515,11 @@ if not problems:
     msg = "okay\n"
 else:
     msg = '***** ' + '\n***** '.join(problems) + '\n'
-fp = open("conftest.out", "w")
-fp.write(msg)
-fp.close()
+with open("conftest.out", "w") as fp:
+    fp.write(msg)
 EOF
 changequote([, ])
-$PYTHON conftest.py
+$with_python conftest.py
 status=`cat conftest.out`
 rm -f conftest.out conftest.py
 if test "$with_permcheck" = "yes"
@@ -625,12 +639,11 @@ cat > conftest.py <<EOF
 # python
 from socket import *
 fqdn = getfqdn()
-fp = open('conftest.out', 'w')
-print(fqdn, file=fp)
-print(fqdn, file=fp)
-fp.close()
+with open('conftest.out', 'w') as fp:
+    print(fqdn, file=fp)
+    print(fqdn, file=fp)
 EOF
-$PYTHON conftest.py
+$with_python conftest.py
 changequote([, ])
 AC_MSG_CHECKING(for default mail host name)
 if test -z "$MAILHOST"

@@ -20,7 +20,6 @@
 from builtins import str
 import re
 import socket
-import nntplib
 from io import StringIO
 
 import email
@@ -33,6 +32,12 @@ from Mailman import Utils
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
 
+# Only import nntplib if NNTP support is enabled
+try:
+    import nntplib
+    HAVE_NNTP = True
+except ImportError:
+    HAVE_NNTP = False
 
 # Matches our Mailman crafted Message-IDs.  See Utils.unique_message_id()
 mcre = re.compile(r"""
@@ -47,9 +52,13 @@ mcre = re.compile(r"""
     """, re.VERBOSE)
 
 
-
 class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
+
+    def __init__(self, slice=None, numslices=1):
+        if not HAVE_NNTP:
+            raise ImportError("NNTP support is not enabled. Please install python3-nntplib and reconfigure with --enable-nntp")
+        Runner.__init__(self, slice, numslices)
 
     def _dispose(self, mlist, msg, msgdata):
         # Make sure we have the most up-to-date state
@@ -87,7 +96,6 @@ class NewsRunner(Runner):
         return False
 
 
-
 def prepare_message(mlist, msg, msgdata):
     # If the newsgroup is moderated, we need to add this header for the Usenet
     # software to accept the posting, and not forward it on to the n.g.'s
