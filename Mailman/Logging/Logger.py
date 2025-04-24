@@ -69,10 +69,9 @@ class Logger(object):
                 try:
                     try:
                         f = codecs.open(
-                            self.__filename, 'a+', self.__encoding, 'replace',
-                            1)
+                            self.__filename, 'ab', self.__encoding, 'replace')
                     except LookupError:
-                        f = open(self.__filename, 'a+', 1)
+                        f = open(self.__filename, 'ab')
                     self.__fp = f
                 finally:
                     os.umask(ou)
