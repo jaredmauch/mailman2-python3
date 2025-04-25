@@ -25,6 +25,7 @@ import os
 import re
 import urllib.parse
 import signal
+import traceback
 
 from email.utils import unquote, parseaddr, formataddr
 
@@ -1408,116 +1409,67 @@ def submit_button(name='submit'):
 
 
 def change_options(mlist, category, subcat, cgidata, doc):
-    # This function processes the form submission from the web interface.
-    # Returns None if there are no changes, or a results document object.
-    def safeint(formvar, defaultval=None):
-        # Safely convert a form variable to an integer, returning defaultval if
-        # the conversion fails or the value is None.
-        if formvar is None:
-            return defaultval
-        try:
-            return int(formvar)
-        except ValueError:
-            return defaultval
-
-    # Handle the simple cases first
-    if not cgidata:
-        return None
-
-    # First handle global actions like mass subscription and mass removal
-    if category == 'members' and subcat == 'add':
-        mass_subscribe(mlist, doc)
-        return doc
-    elif category == 'members' and subcat == 'remove':
-        mass_remove(mlist, doc)
-        return doc
-    elif category == 'members' and subcat == 'change':
-        address_change(mlist, doc)
-        return doc
-    elif category == 'members' and subcat == 'sync':
-        mass_sync(mlist, doc)
-        return doc
-
-    # We are dealing with a dictionary of lists from parse_qs, so we need to get the first item
-    def get_value(key, default=''):
-        values = cgidata.get(key, [default])
-        return values[0] if values else default
-
-    # Get the password values for admin authentication
-    newpw = get_value('newpw')
-    confirmpw = get_value('newpw-confirm')
-    if newpw or confirmpw:
-        if newpw != confirmpw:
-            doc.addError(_('New administrator passwords did not match'))
-            return doc
-        # Set the password
-        mlist.password = newpw
-
-    # Get the moderator password values for authentication
-    newmodpw = get_value('newmodpw')
-    confirmmodpw = get_value('newmodpw-confirm')
-    if newmodpw or confirmmodpw:
-        if newmodpw != confirmmodpw:
-            doc.addError(_('New moderator passwords did not match'))
-            return doc
-        # Set the password
-        mlist.mod_password = newmodpw
-
-    # Process the rest of the options
+    """Change the list's options."""
     try:
-        categories = mlist.GetConfigCategories()
-        print(f"Debug: categories={categories}, type={type(categories)}")  # Debug line
-        if category not in categories:
-            print(f"Debug: category '{category}' not found in categories")  # Debug line
-            doc.addError(_(f'Invalid category: {category}'))
-            return doc
-            
-        category_data = categories[category]
-        print(f"Debug: category={category}, category_data={category_data}, type={type(category_data)}")  # Debug line
+        # Get the configuration categories
+        config_categories = mlist.GetConfigCategories()
         
-        if not isinstance(category_data, tuple):
-            print(f"Debug: category_data is not a tuple, it's {type(category_data)}")  # Debug line
-            doc.addError(_(f'Invalid category data type for {category}'))
-            return doc
-            
-        if len(category_data) < 2:
-            print(f"Debug: category_data tuple too short: {category_data}")  # Debug line
-            doc.addError(_(f'Invalid category data format for {category}'))
-            return doc
-            
-        gui = category_data[1]  # The second element is the GUI object
-        print(f"Debug: gui={gui}, type={type(gui)}")  # Debug line
+        # Log the configuration categories for debugging
+        syslog('debug', 'Configuration categories: %s', str(config_categories))
+        syslog('debug', 'Category type: %s', str(type(config_categories)))
+        if isinstance(config_categories, dict):
+            syslog('debug', 'Category keys: %s', str(list(config_categories.keys())))
+            for key, value in config_categories.items():
+                syslog('debug', 'Category %s type: %s, value: %s', 
+                       key, str(type(value)), str(value))
         
-        if not hasattr(gui, 'GetConfigInfo'):
-            print(f"Debug: gui object missing GetConfigInfo method")  # Debug line
-            doc.addError(_(f'Invalid GUI object for {category}'))
-            return doc
+        # Validate category exists
+        if category not in config_categories:
+            syslog('error', 'Invalid configuration category: %s', category)
+            doc.AddItem(mlist.ParseTags('adminerror.html',
+                                      {'error': 'Invalid configuration category'},
+                                      mlist.preferred_language))
+            return
             
-        options = gui.GetConfigInfo(mlist, category)
-        print(f"Debug: options={options}, type={type(options)}")  # Debug line
+        # Get the category object and validate it
+        category_obj = config_categories[category]
+        syslog('debug', 'Category object for %s: type=%s, value=%s', 
+               category, str(type(category_obj)), str(category_obj))
         
-        if options:
-            for item in options:
-                if not item:
+        if not hasattr(category_obj, 'items'):
+            syslog('error', 'Configuration category %s is invalid: %s', 
+                   category, str(type(category_obj)))
+            doc.AddItem(mlist.ParseTags('adminerror.html',
+                                      {'error': 'Invalid configuration category structure'},
+                                      mlist.preferred_language))
+            return
+            
+        # Process each item in the category
+        for item in category_obj.items:
+            try:
+                # Get the item's value from the form data
+                value = cgidata.get(item.name, None)
+                if value is None:
                     continue
-                # Get the variable name and its value
-                varname = item[0]
-                value = get_value(varname)
+                    
+                # Set the item's value
+                item.set(mlist, value)
                 
-                # Set the value based on its type
-                if value is not None:
-                    if item[1] in (mm_cfg.Radio, mm_cfg.Toggle, mm_cfg.Number):
-                        try:
-                            setattr(mlist, varname, int(value))
-                        except (ValueError, TypeError):
-                            setattr(mlist, varname, 0)
-                    else:
-                        setattr(mlist, varname, value)
+            except Exception as e:
+                syslog('error', 'Error setting %s.%s: %s', 
+                       category, item.name, str(e))
+                doc.AddItem(mlist.ParseTags('adminerror.html',
+                                          {'error': 'Error setting %s: %s' % 
+                                                   (item.name, str(e))},
+                                          mlist.preferred_language))
+                return
+                
+        # Save the changes
+        mlist.Save()
+        
     except Exception as e:
-        print(f"Debug: Exception in change_options: {str(e)}")  # Debug line
-        doc.addError(_(f'Error processing options: {str(e)}'))
-        return doc
-
-    # Save the changes
-    mlist.Save()
-    return doc
+        syslog('error', 'Error in change_options: %s\n%s', 
+               str(e), traceback.format_exc())
+        doc.AddItem(mlist.ParseTags('adminerror.html',
+                                  {'error': 'Internal error: %s' % str(e)},
+                                  mlist.preferred_language))
