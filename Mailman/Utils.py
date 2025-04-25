@@ -1292,84 +1292,30 @@ def IsDMARCProhibited(mlist, email):
             return x
     return False
 
-def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
-    """Check if the domain has a DMARC policy that prohibits forwarding.
-
-    This is a helper function for IsDMARCProhibited().  It checks if the
-    domain has a DMARC policy that prohibits forwarding.  The domain is
-    either the domain part of the email address, or the organizational
-    domain.
-
-    :param mlist: The mailing list.
-    :type mlist: MailList
-    :param email: The email address to check.
-    :type email: str
-    :param dmarc_domain: The domain to check for DMARC policy.
-    :type dmarc_domain: str
-    :param org: If True, the domain is an organizational domain.
-    :type org: bool
-    :return: True if the domain has a DMARC policy that prohibits forwarding.
-    :rtype: bool
+def _DMARCProhibited(mlist, email, domain):
+    """Check if the domain has a DMARC policy that prohibits sending.
     """
     try:
-        txt_recs = dns.resolver.resolve(dmarc_domain, 'TXT')
-    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer,
-            dns.resolver.NoNameservers, dns.resolver.Timeout,
-            DNSException):
+        import dns.resolver
+        import dns.exception
+    except ImportError:
         return False
-    if not txt_recs:
-        return False
-    # Be as robust as possible in parsing the result.
-    results_by_name = {}
-    cnames = {}
-    want_names = set([dmarc_domain + '.'])
-    for txt_rec in txt_recs.response.answer:
-        # Don't be fooled by an answer with uppercase in the name.
-        name = txt_rec.name.to_text().lower()
-        if txt_rec.rdtype == dns.rdatatype.CNAME:
-            cnames[name] = txt_rec.target.to_text()
-        if txt_rec.rdtype != dns.rdatatype.TXT:
-            continue
-        # Access the strings directly from the TXT record
-        results_by_name.setdefault(name, []).append(
-            "".join(txt_rec.strings))
-    expands = list(want_names)
-    seen = set(expands)
-    while expands:
-        item = expands.pop(0)
-        if item in cnames:
-            if cnames[item] in seen:
-                continue # cname loop
-            expands.append(cnames[item])
-            seen.add(cnames[item])
-            want_names.add(cnames[item])
-            want_names.discard(item)
-
-    if len(want_names) != 1:
-        syslog('error',
-               """multiple DMARC entries in results for %s,
-               using first one""" % dmarc_domain)
-    dmarc_txt = None
-    for name in want_names:
-        if name in results_by_name:
-            dmarc_txt = results_by_name[name][0]
-            break
-    if not dmarc_txt:
-        return False
-    # Parse the DMARC record.
     try:
-        dmarc = dict(item.split('=', 1)
-                    for item in dmarc_txt.split(';')
-                    if '=' in item)
-    except (ValueError, AttributeError):
-        return False
-    # Check if the policy is 'reject' or 'quarantine'.
-    if dmarc.get('p', '').lower() in ('reject', 'quarantine'):
-        return True
-    # Check if the subdomain policy is 'reject' or 'quarantine'.
-    if (not org and
-        dmarc.get('sp', '').lower() in ('reject', 'quarantine')):
-        return True
+        txt_rec = dns.resolver.resolve(domain, 'TXT')
+        # Newer versions of dnspython use strings property instead of strings attribute
+        txt_strings = txt_rec.strings if hasattr(txt_rec, 'strings') else [str(r) for r in txt_rec]
+        for txt in txt_strings:
+            if txt.startswith('v=DMARC1'):
+                # Parse the DMARC record
+                parts = txt.split(';')
+                for part in parts:
+                    part = part.strip()
+                    if part.startswith('p='):
+                        policy = part[2:].lower()
+                        if policy in ('reject', 'quarantine'):
+                            return True
+    except (dns.exception.DNSException, AttributeError):
+        pass
     return False
 
 
