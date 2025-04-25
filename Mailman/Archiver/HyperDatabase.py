@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -192,7 +191,6 @@ class DumbBTree(object):
         fp.close()
         self.unlock()
 
-
 # this is lifted straight out of pipermail with
 # the bsddb.btree replaced with above class.
 # didn't use inheritance because of all the

@@ -94,8 +94,11 @@ def process(res, args):
         # Watch for encoded names
         try:
             h = make_header(decode_header(realname))
-            # BAW: in Python 2.2, use just unicode(h)
-            realname = h.__unicode__()
+            # Get the realname from the header
+            try:
+                realname = str(h)
+            except UnicodeError:
+                realname = str(h, 'utf-8', 'replace')
         except UnicodeError:
             realname = u''
         # Coerce to byte string if uh contains only ascii

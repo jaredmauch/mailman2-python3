@@ -16,11 +16,6 @@
 # USA.
 
 """File-based logger, writes to named category files in mm_cfg.LOG_DIR."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from builtins import *
 from builtins import object
 import sys
@@ -37,7 +32,6 @@ from Mailman.Logging.Utils import _logexc
 LOG_ENCODING = 'iso-8859-1'
 
 
-
 class Logger(object):
     def __init__(self, category, nofail=1, immediate=0):
         """nofail says to fallback to sys.__stderr__ if write fails to

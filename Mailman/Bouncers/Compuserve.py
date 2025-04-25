@@ -18,19 +18,19 @@
 
 import re
 import email
+from email.iterators import body_line_iterator
 
 dcre = re.compile(r'your message could not be delivered', re.IGNORECASE)
 acre = re.compile(r'Invalid receiver address: (?P<addr>.*)')
 
 
-
 def process(msg):
     # simple state machine
     #    0 = nothing seen yet
     #    1 = intro line seen
     state = 0
     addrs = []
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in body_line_iterator(msg):
         if state == 0:
             mo = dcre.search(line)
             if mo:

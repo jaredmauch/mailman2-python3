@@ -26,7 +26,7 @@ import os
 import sys
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-import email.Utils
+import email.utils
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import Utils

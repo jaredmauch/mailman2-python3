@@ -20,13 +20,12 @@ Also do other manipulations of From:, Reply-To: and Cc: depending on
 list configuration.
 """
 
-from __future__ import nested_scopes
 import re
-
 from email.charset import Charset
 from email.header import Header, decode_header, make_header
 from email.utils import parseaddr, formataddr, getaddresses
 from email.errors import HeaderParseError
+from email.iterators import body_line_iterator
 
 from Mailman import i18n
 from Mailman import mm_cfg
@@ -362,7 +361,6 @@ def process(mlist, msg, msgdata):
         change_header(h, v, mlist, msg, msgdata)
 
 
-
 def prefix_subject(mlist, msg, msgdata):
     # Add the subject prefix unless the message is a digest or is being fast
     # tracked (e.g. internally crafted, delivered to a single user such as the
@@ -478,7 +476,6 @@ def prefix_subject(mlist, msg, msgdata):
     msgdata['stripped_subject'] = ss
 
 
-
 def ch_oneline(headerstr):
     # Decode header string in one line and convert into single charset
     # copied and modified from ToDigest.py and Utils.py

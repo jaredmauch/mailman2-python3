@@ -68,7 +68,7 @@ class Results:
         # Python 2.1's unicode() builtin doesn't call obj.__unicode__().
         subj = msg.get('subject', '')
         try:
-            subj = make_header(decode_header(subj)).__unicode__()
+            subj = str(make_header(decode_header(subj)))
             # TK: Currently we don't allow 8bit or multibyte in mail command.
             # MAS: However, an l10n 'Re:' may contain non-ascii so ignore it.
             subj = subj.encode('us-ascii', 'ignore')
@@ -191,8 +191,8 @@ To obtain instructions, send a message containing just the word "help".
             resp.append(_('\n- Ignored:'))
             resp.extend(indent(self.ignored))
         resp.append(_('\n- Done.\n\n'))
-        # Encode any unicode strings into the list charset, so we don't try to
-        # join unicode strings and invalid ASCII.
+        # Encode any strings into the list charset, so we don't try to
+        # join strings and invalid ASCII.
         charset = Utils.GetCharSet(self.msgdata['lang'])
         encoded_resp = []
         for item in resp:

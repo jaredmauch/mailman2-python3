@@ -83,7 +83,6 @@ OR = '|'
 class MailList(HTMLFormatter, Deliverer, ListAdmin,
                Archiver, Digester, SecurityManager, Bouncer, GatewayManager,
                Autoresponder, TopicMgr, Pending.Pending):
-
     #
     # A MailList object's basic Python object model support
     #
@@ -149,7 +148,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return '<mailing list "%s" %s at %x>' % (
             self.internal_name(), status, id(self))
 
-
     #
     # Lock management
     #
@@ -170,7 +168,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return self.__lock.locked()
 
 
-
     #
     # Useful accessors
     #
@@ -279,7 +276,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                                                                     errors)
 
 
-
     #
     # Instance and subcomponent initialization
     #
@@ -468,7 +464,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # automatic discarding
         self.max_days_to_hold = mm_cfg.DEFAULT_MAX_DAYS_TO_HOLD
 
-
     #
     # Web API support via administrative categories
     #
@@ -513,7 +508,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 if value:
                     return value
 
-
     #
     # List creation
     #
@@ -554,7 +548,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.available_languages = langs
 
 
-
     #
     # Database and filesystem I/O
     #
@@ -817,7 +810,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             shutil.copy(file, dfile)
             shutil.copy(file, dfile + '.safety')
 
-
     #
     # Sanity checks
     #
@@ -886,7 +878,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 goodtopics.append((name, pattern, desc, emptyflag))
         self.topics = goodtopics
 
-
     #
     # Membership management front-ends and assertion checks
     #
@@ -1399,7 +1390,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             msg = Message.OwnerNotification(self, subject, text)
             msg.send(self)
 
-
     #
     # Confirmation processing
     #
@@ -1486,7 +1476,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 approved = context.get('Approved', context.get('Approve'))
                 if not approved:
                     try:
-                        subpart = list(email.Iterators.typed_subpart_iterator(
+                        subpart = list(email.iterators.typed_subpart_iterator(
                             context, 'text', 'plain'))[0]
                     except IndexError:
                         subpart = None
@@ -1571,7 +1561,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         msg['Auto-Submitted'] = 'auto-generated'
         msg.send(self)
 
-
     #
     # Miscellaneous stuff
     #
@@ -1811,7 +1800,6 @@ bad regexp in bounce_matching_header line: %s
         return matched
 
 
-
     #
     # Multilingual (i18n) support
     #

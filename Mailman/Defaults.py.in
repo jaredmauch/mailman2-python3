@@ -18,7 +18,6 @@
 # USA.
 
 """Distributed default settings for significant Mailman config variables."""
-from __future__ import absolute_import
 
 # NEVER make site configuration changes to this file.  ALWAYS make them in
 # mm_cfg.py instead, in the designated area.  See the comments in that file

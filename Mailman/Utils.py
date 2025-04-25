@@ -31,8 +31,7 @@ import time
 import errno
 import base64
 import random
-import urllib
-import urllib.request, urllib.error
+import urllib.request, urllib.parse, urllib.error
 import html.entities
 import html
 import email.header

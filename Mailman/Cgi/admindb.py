@@ -29,6 +29,8 @@ import email
 import email.errors
 import time
 from urllib.parse import quote_plus, unquote_plus
+import re
+from email.iterators import body_line_iterator
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -549,7 +551,7 @@ def show_post_requests(mlist, id, info, total, count, form):
     chars = 0
     # A negative value means, include the entire message regardless of size
     limit = mm_cfg.ADMINDB_PAGE_TEXT_LIMIT
-    for line in email.Iterators.body_line_iterator(msg, decode=True):
+    for line in body_line_iterator(msg, decode=True):
         lines.append(line)
         chars += len(line)
         if chars >= limit > 0:

@@ -32,6 +32,8 @@ import email
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 import email.utils
+import re
+from email.iterators import body_line_iterator
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -47,7 +49,6 @@ def _(s):
     return s
 
 
-
 class ForbiddenPoster(Errors.HoldMessage):
     reason = _('Sender is explicitly forbidden')
     rejection = _('You are forbidden from posting messages to this list.')
@@ -114,7 +115,6 @@ class ModeratedNewsgroup(ModeratedPost):
 _ = i18n._
 
 
-
 def ackp(msg):
     ack = msg.get('x-ack', '').lower()
     precedence = msg.get('precedence', '').lower()
@@ -123,7 +123,6 @@ def ackp(msg):
     return 1
 
 
-
 def process(mlist, msg, msgdata):
     if msgdata.get('approved'):
         return
@@ -173,7 +172,7 @@ def process(mlist, msg, msgdata):
     # Is the message too big?
     if mlist.max_message_size > 0:
         bodylen = 0
-        for line in email.Iterators.body_line_iterator(msg):
+        for line in body_line_iterator(msg):
             bodylen += len(line)
         for part in msg.walk():
             if part.preamble:
@@ -191,7 +190,6 @@ def process(mlist, msg, msgdata):
         hold_for_approval(mlist, msg, msgdata, ModeratedNewsgroup)
 
 
-
 def hold_for_approval(mlist, msg, msgdata, exc):
     # BAW: This should really be tied into the email confirmation system so
     # that the message can be approved or denied via email as well as the

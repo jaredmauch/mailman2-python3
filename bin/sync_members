@@ -77,10 +77,8 @@ Where `options' are:
 """
 
 import sys
-
 import paths
-# Import this /after/ paths so that the sys.path is properly hacked
-import email.Utils
+import email.utils
 
 from Mailman import MailList
 from Mailman import Errors
@@ -206,7 +204,7 @@ def main():
             print(C_('Ignore  :  %(addr)30s'))
 
     # first filter out any invalid addresses
-    filemembers = email.Utils.getaddresses(filemembers)
+    filemembers = email.utils.getaddresses(filemembers)
     invalid = 0
     for name, addr in filemembers:
         try:
@@ -260,10 +258,12 @@ def main():
                 if not dryrun:
                     mlist.ApprovedAddMember(userdesc, welcome, notifyadmin)
                 # Avoid UnicodeError if name can't be decoded
-                if isinstance(name, str):
-                    name = unicode(name, errors='replace')
+                try:
+                    name = str(name, errors='replace')
+                except TypeError:
+                    name = str(name)
                 name = name.encode(enc, 'replace')
-                s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
+                s = email.utils.formataddr((name, addr)).encode(enc, 'replace')
                 print(C_('Added  : %(s)s'))
             except Errors.MMAlreadyAMember:
                 pass
@@ -285,10 +285,12 @@ def main():
                     # get rid of this member's entry
                     mlist.removeMember(addr)
             # Avoid UnicodeError if name can't be decoded
-            if isinstance(name, str):
-                name = unicode(name, errors='replace')
+            try:
+                name = str(name, errors='replace')
+            except TypeError:
+                name = str(name)
             name = name.encode(enc, 'replace')
-            s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
+            s = email.utils.formataddr((name, addr)).encode(enc, 'replace')
             print(C_('Removed: %(s)s'))
 
         mlist.Save()
