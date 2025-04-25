@@ -31,6 +31,7 @@ import copy
 import time
 import socket
 import smtplib
+from smtplib import SMTPException
 from base64 import b64encode
 
 from Mailman import mm_cfg

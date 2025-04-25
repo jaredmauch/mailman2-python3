@@ -45,7 +45,6 @@ HTML it can't be safely removed.
 del _
 
 
-
 def process(mlist, msg, msgdata):
     # Short circuits
     # Do not short circuit. The problem is SpamDetect comes before Approve.
@@ -84,6 +83,9 @@ def process(mlist, msg, msgdata):
             for lineno, line in zip(list(range(len(lines))), lines):
                 if line.strip():
                     break
+            # Decode bytes to string if needed
+            if isinstance(line, bytes):
+                line = line.decode('utf-8', errors='replace')
             i = line.find(':')
             if i >= 0:
                 name = line[:i]
