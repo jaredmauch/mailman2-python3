@@ -197,22 +197,10 @@ def process_form(mlist, doc, cgidata, lang):
         if ftime and now - then > mm_cfg.FORM_LIFETIME:
             results.append(_('The form is too old.  Please GET it again.'))
         if ftime and now - then < mm_cfg.SUBSCRIBE_FORM_MIN_TIME:
-            results.append(
-    _('Please take a few seconds to fill out the form before submitting it.'))
+            results.append(_('The form was submitted too quickly.  Please wait a moment and try again.'))
         if ftime and token != fhash:
-            results.append(
-                _("The hidden token didn't match.  Did your IP change?"))
-        if not ftime:
-            results.append(
-    _('There was no hidden token in your submission or it was corrupted.'))
-            results.append(_('You must GET the form before submitting it.'))
-        # Check captcha
-        if isinstance(mm_cfg.CAPTCHAS, dict):
-            captcha_answer = cgidata.get('captcha_answer', [''])[0]
-            if not Utils.captcha_verify(
-                    fcaptcha_idx, captcha_answer, mm_cfg.CAPTCHAS):
-                results.append(_(
-                    'This was not the right answer to the CAPTCHA question.'))
+            results.append(_('The form was tampered with.  Please GET it again.'))
+
     # Was an attempt made to subscribe the list to itself?
     if email == mlist.GetListEmail():
         syslog('mischief', 'Attempt to self subscribe %s: %s', email, remote)

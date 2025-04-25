@@ -54,7 +54,6 @@ OPTCOLUMNS = 11
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
-
 def main():
     # Try to find out which list is being administered
     parts = Utils.GetPathPieces()
@@ -257,7 +256,6 @@ def main():
         mlist.Unlock()
 
 
-
 def admin_overview(msg=''):
     # Show the administrative overview page, with the list of all the lists on
     # this host.  msg is an optional error message to display at the top of
@@ -361,7 +359,6 @@ def admin_overview(msg=''):
     print(doc.Format())
 
 
-
 def option_help(mlist, varhelp):
     # The html page document
     doc = Document()
@@ -435,7 +432,6 @@ def option_help(mlist, varhelp):
     print(doc.Format())
 
 
-
 def show_results(mlist, doc, category, subcat, cgidata):
     # Produce the results page
     adminurl = mlist.GetScriptURL('admin')
@@ -584,7 +580,6 @@ def show_results(mlist, doc, category, subcat, cgidata):
     doc.AddItem(mlist.GetMailmanFooter())
 
 
-
 def show_variables(mlist, category, subcat, cgidata, doc):
     options = mlist.GetConfigInfo(category, subcat)
 
@@ -632,7 +627,6 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     return table
 
 
-
 def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
     # Add a row to an options table with the item description and value.
     varname, kind, params, extra, descr, elaboration = \
@@ -649,7 +643,6 @@ def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
                       bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
 
 
-
 def get_item_characteristics(record):
     # Break out the components of an item description from its description
     # record:
@@ -670,7 +663,6 @@ def get_item_characteristics(record):
     return varname, kind, params, dependancies, descr, elaboration
 
 
-
 def get_item_gui_value(mlist, category, kind, varname, params, extra):
     """Return a representation of an item's settings."""
     # Give the category a chance to return the value for the variable
@@ -855,7 +847,6 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         assert 0, 'Bad gui widget type: %s' % kind
 
 
-
 def get_item_gui_description(mlist, category, subcat,
                              varname, descr, elaboration, detailsp):
     # Return the item's description, with link to details.
@@ -883,7 +874,6 @@ def get_item_gui_description(mlist, category, subcat,
     return text
 
 
-
 def membership_options(mlist, subcat, cgidata, doc, form):
     # Show the main stuff
     adminurl = mlist.GetScriptURL('admin', absolute=1)
@@ -930,7 +920,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 _('(help)')).Format()
     table.AddRow([Label(_(f'Find member {link}:')),
                   TextBox('findmember',
-                          value=cgidata.getfirst('findmember', '')),
+                          value=cgidata.get('findmember', [''])[0]),
                   SubmitButton('findmember_btn', _('Search...'))])
     container.AddItem(table)
     container.AddItem('<hr><p>')
@@ -943,7 +933,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     all = [_m.encode() for _m in mlist.getMembers()]
     all.sort(lambda x, y: cmp(x.lower(), y.lower()))
     # See if the query has a regular expression
-    regexp = cgidata.getfirst('findmember', '').strip()
+    regexp = cgidata.get('findmember', [''])[0].strip()
     try:
         regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
     except UnicodeDecodeError:
@@ -1226,7 +1216,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     return container
 
 
-
 def mass_subscribe(mlist, container):
     # MASS SUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1277,7 +1266,6 @@ def mass_subscribe(mlist, container):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
 
 
-
 def mass_remove(mlist, container):
     # MASS UNSUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1309,7 +1297,6 @@ def mass_remove(mlist, container):
     container.AddItem(Center(table))
 
 
-
 def address_change(mlist, container):
     # ADDRESS CHANGE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1341,7 +1328,6 @@ def address_change(mlist, container):
     container.AddItem(Center(table))
 
 
-
 def mass_sync(mlist, container):
     # MASS SYNC
     table = Table(width='90%')
@@ -1355,7 +1341,6 @@ def mass_sync(mlist, container):
     container.AddItem(Center(table))
 
 
-
 def password_inputs(mlist):
     adminurl = mlist.GetScriptURL('admin', absolute=1)
     table = Table(cellspacing=3, cellpadding=4)
@@ -1413,7 +1398,6 @@ no other.""")])
     return table
 
 
-
 def submit_button(name='submit'):
     table = Table(border=0, cellspacing=0, cellpadding=2)
     table.AddRow([Bold(SubmitButton(name, _('Submit Your Changes')))])
@@ -1421,400 +1405,80 @@ def submit_button(name='submit'):
     return table
 
 
-
 def change_options(mlist, category, subcat, cgidata, doc):
-    global _
+    # This function processes the form submission from the web interface.
+    # Returns None if there are no changes, or a results document object.
     def safeint(formvar, defaultval=None):
-        try:
-            return int(cgidata.getfirst(formvar))
-        except (ValueError, TypeError):
+        # Safely convert a form variable to an integer, returning defaultval if
+        # the conversion fails or the value is None.
+        if formvar is None:
             return defaultval
-    confirmed = 0
-    # Handle changes to the list moderator password.  Do this before checking
-    # the new admin password, since the latter will force a reauthentication.
-    new = cgidata.getfirst('newmodpw', '').strip()
-    confirm = cgidata.getfirst('confirmmodpw', '').strip()
-    if new or confirm:
-        if new == confirm:
-            mlist.mod_password = sha_new(new).hexdigest()
-            # No re-authentication necessary because the moderator's
-            # password doesn't get you into these pages.
-        else:
-            doc.addError(_('Moderator passwords did not match'))
-    # Handle changes to the list poster password.  Do this before checking
-    # the new admin password, since the latter will force a reauthentication.
-    new = cgidata.getfirst('newpostpw', '').strip()
-    confirm = cgidata.getfirst('confirmpostpw', '').strip()
-    if new or confirm:
-        if new == confirm:
-            mlist.post_password = sha_new(new).hexdigest()
-            # No re-authentication necessary because the poster's
-            # password doesn't get you into these pages.
-        else:
-            doc.addError(_('Poster passwords did not match'))
-    # Handle changes to the list administrator password
-    new = cgidata.getfirst('newpw', '').strip()
-    confirm = cgidata.getfirst('confirmpw', '').strip()
-    if new or confirm:
-        if new == confirm:
-            mlist.password = sha_new(new).hexdigest()
-            # Set new cookie
-            print(mlist.MakeCookie(mm_cfg.AuthListAdmin))
-        else:
-            doc.addError(_('Administrator passwords did not match'))
-    # Give the individual gui item a chance to process the form data
-    categories = mlist.GetConfigCategories()
-    label, gui = categories[category]
-    # BAW: We handle the membership page special... for now.
-    if category != 'members':
-        gui.handleForm(mlist, category, subcat, cgidata, doc)
-    # mass subscription, removal processing for members category
-    subscribers = ''
-    subscribers += cgidata.getfirst('subscribees', '')
-    subscribers += cgidata.getfirst('subscribees_upload', '')
-    if subscribers:
-        entries = [_f for _f in [n.strip() for n in subscribers.splitlines()] if _f]
-        send_welcome_msg = safeint('send_welcome_msg_to_this_batch',
-                                   mlist.send_welcome_msg)
-        send_admin_notif = safeint('send_notifications_to_list_owner',
-                                   mlist.admin_notify_mchanges)
-        # Default is to subscribe
-        subscribe_or_invite = safeint('subscribe_or_invite', 0)
-        invitation = cgidata.getfirst('invitation', '')
-        digest = mlist.digest_is_default
-        if not mlist.digestable:
-            digest = 0
-        if not mlist.nondigestable:
-            digest = 1
-        subscribe_errors = []
-        subscribe_success = []
-        # Now cruise through all the subscribees and do the deed.  BAW: we
-        # should limit the number of "Successfully subscribed" status messages
-        # we display.  Try uploading a file with 10k names -- it takes a while
-        # to render the status page.
-        for entry in entries:
-            safeentry = Utils.websafe(entry)
-            fullname, address = parseaddr(entry)
-            # Canonicalize the full name
-            fullname = Utils.canonstr(fullname, mlist.preferred_language)
-            userdesc = UserDesc(address, fullname,
-                                Utils.MakeRandomPassword(),
-                                digest, mlist.preferred_language)
-            try:
-                if subscribe_or_invite:
-                    if mlist.isMember(address):
-                        raise Errors.MMAlreadyAMember
-                    else:
-                        mlist.InviteNewMember(userdesc, invitation)
-                else:
-                    _ = D_
-                    whence = _('admin mass sub')
-                    _ = i18n._
-                    mlist.ApprovedAddMember(userdesc, send_welcome_msg,
-                                            send_admin_notif, invitation,
-                                            whence=whence)
-            except Errors.MMAlreadyAMember:
-                subscribe_errors.append((safeentry, _('Already a member')))
-            except Errors.MMBadEmailError:
-                if userdesc.address == '':
-                    subscribe_errors.append((_('&lt;blank line&gt;'),
-                                             _('Bad/Invalid email address')))
-                else:
-                    subscribe_errors.append((safeentry,
-                                             _('Bad/Invalid email address')))
-            except Errors.MMHostileAddress:
-                subscribe_errors.append(
-                    (safeentry, _('Hostile address (illegal characters)')))
-            except Errors.MembershipIsBanned as pattern:
-                subscribe_errors.append(
-                    (safeentry, _(f'Banned address (matched {pattern})')))
-            else:
-                member = Utils.uncanonstr(formataddr((fullname, address)))
-                subscribe_success.append(Utils.websafe(member))
-        if subscribe_success:
-            if subscribe_or_invite:
-                doc.AddItem(Header(5, _('Successfully invited:')))
-            else:
-                doc.AddItem(Header(5, _('Successfully subscribed:')))
-            doc.AddItem(UnorderedList(*subscribe_success))
-            doc.AddItem('<p>')
-        if subscribe_errors:
-            if subscribe_or_invite:
-                doc.AddItem(Header(5, _('Error inviting:')))
-            else:
-                doc.AddItem(Header(5, _('Error subscribing:')))
-            items = ['%s -- %s' % (x0, x1) for x0, x1 in subscribe_errors]
-            doc.AddItem(UnorderedList(*items))
-            doc.AddItem('<p>')
-    # Unsubscriptions
-    removals = ''
-    if 'unsubscribees' in cgidata:
-        removals += cgidata['unsubscribees'].value
-    if 'unsubscribees_upload' in cgidata and \
-           cgidata['unsubscribees_upload'].value:
-        removals += cgidata['unsubscribees_upload'].value
-    if removals:
-        names = [_f for _f in [n.strip() for n in removals.splitlines()] if _f]
-        send_unsub_notifications = safeint(
-            'send_unsub_notifications_to_list_owner',
-            mlist.admin_notify_mchanges)
-        userack = safeint(
-            'send_unsub_ack_to_this_batch',
-            mlist.send_goodbye_msg)
-        unsubscribe_errors = []
-        unsubscribe_success = []
-        for addr in names:
-            try:
-                _ = D_
-                whence = _('admin mass unsub')
-                _ = i18n._
-                mlist.ApprovedDeleteMember(
-                    addr, whence=whence,
-                    admin_notif=send_unsub_notifications,
-                    userack=userack)
-                unsubscribe_success.append(Utils.websafe(addr))
-            except Errors.NotAMemberError:
-                unsubscribe_errors.append(Utils.websafe(addr))
-        if unsubscribe_success:
-            doc.AddItem(Header(5, _('Successfully Unsubscribed:')))
-            doc.AddItem(UnorderedList(*unsubscribe_success))
-            doc.AddItem('<p>')
-        if unsubscribe_errors:
-            doc.AddItem(Header(3, Bold(FontAttr(
-                _('Cannot unsubscribe non-members:'),
-                color='#ff0000', size='+2')).Format()))
-            doc.AddItem(UnorderedList(*unsubscribe_errors))
-            doc.AddItem('<p>')
-    # Address Changes
-    if 'change_from' in cgidata:
-        change_from = cgidata.getfirst('change_from', '')
-        change_to = cgidata.getfirst('change_to', '')
-        schange_from = Utils.websafe(change_from)
-        schange_to = Utils.websafe(change_to)
-        success = False
-        msg = None
-        if not (change_from and change_to):
-            msg = _('You must provide both current and new addresses.')
-        elif change_from == change_to:
-            msg = _('Current and new addresses must be different.')
-        elif mlist.isMember(change_to):
-            # ApprovedChangeMemberAddress will just delete the old address
-            # and we don't want that here.
-            msg = _(f'{schange_to} is already a list member.')
-        else:
-            try:
-                Utils.ValidateEmail(change_to)
-            except (Errors.MMBadEmailError, Errors.MMHostileAddress):
-                msg = _(f'{schange_to} is not a valid email address.')
-        if msg:
-            doc.AddItem(Header(3, msg))
-            doc.AddItem('<p>')
-            return
         try:
-            mlist.ApprovedChangeMemberAddress(change_from, change_to, False)
-        except Errors.NotAMemberError:
-            msg = _(f'{schange_from} is not a member')
-        except Errors.MMAlreadyAMember:
-            msg = _(f'{schange_to} is already a member')
-        except Errors.MembershipIsBanned as pat:
-            spat = Utils.websafe(str(pat))
-            msg = _(f'{schange_to} matches banned pattern {spat}')
-        else:
-            msg = _(f'Address {schange_from} changed to {schange_to}')
-            success = True
-        doc.AddItem(Header(3, msg))
-        lang = mlist.getMemberLanguage(change_to)
-        otrans = i18n.get_translation()
-        i18n.set_language(lang)
-        list_name = mlist.getListAddress()
-        text = Utils.wrap(_(f"""The member address {change_from} on the
-{list_name} list has been changed to {change_to}.
-"""))
-        subject = _(f'{list_name} address change notice.')
-        i18n.set_translation(otrans)
-        if success and cgidata.getfirst('notice_old', '') == 'yes':
-            # Send notice to old address.
-            msg = Message.UserNotification(change_from,
-                mlist.GetOwnerEmail(),
-                text=text,
-                subject=subject,
-                lang=lang
-                )
-            msg.send(mlist)
-            doc.AddItem(Header(3, _(f'Notification sent to {schange_from}.')))
-        if success and cgidata.getfirst('notice_new', '') == 'yes':
-            # Send notice to new address.
-            msg = Message.UserNotification(change_to,
-                mlist.GetOwnerEmail(),
-                text=text,
-                subject=subject,
-                lang=lang
-                )
-            msg.send(mlist)
-            doc.AddItem(Header(3, _(f'Notification sent to {schange_to}.')))
-        doc.AddItem('<p>')
+            return int(formvar)
+        except ValueError:
+            return defaultval
 
-    # sync operation
-    memberlist = ''
-    memberlist += cgidata.getvalue('memberlist', '')
-    memberlist += cgidata.getvalue('memberlist_upload', '')
-    if memberlist:
-        # Browsers will convert special characters in the text box to HTML
-        # entities. We need to fix those.
-        def i_to_c(mo):
-            # Convert a matched string of digits to the corresponding unicode.
-            return chr(int(mo.group(1)))
-        def clean_input(x):
-            # Strip leading/trailing whitespace and convert numeric HTML
-            # entities.
-            return re.sub(r'&#(\d+);', i_to_c, x.strip())
-        entries = [_f for _f in [clean_input(n) for n in memberlist.splitlines()] if _f]
-        lc_addresses = [parseaddr(x)[1].lower() for x in entries
-                        if parseaddr(x)[1]]
-        subscribe_errors = []
-        subscribe_success = []
-        # First we add all the addresses that should be added to the list.
-        for entry in entries:
-            safeentry = Utils.websafe(entry)
-            fullname, address = parseaddr(entry)
-            if mlist.isMember(address):
-                continue
-            # Canonicalize the full name.
-            fullname = Utils.canonstr(fullname, mlist.preferred_language)
-            userdesc = UserDesc(address, fullname,
-                                Utils.MakeRandomPassword(),
-                                0, mlist.preferred_language)
-            try:
-                # Add a member if not yet member.
-                    mlist.ApprovedAddMember(userdesc, 0, 0, 0,
-                                            whence='admin sync members')
-            except Errors.MMBadEmailError:
-                if userdesc.address == '':
-                    subscribe_errors.append((_('&lt;blank line&gt;'),
-                                             _('Bad/Invalid email address')))
-                else:
-                    subscribe_errors.append((safeentry,
-                                             _('Bad/Invalid email address')))
-            except Errors.MMHostileAddress:
-                subscribe_errors.append(
-                    (safeentry, _('Hostile address (illegal characters)')))
-            except Errors.MembershipIsBanned as pattern:
-                subscribe_errors.append(
-                    (safeentry, _(f'Banned address (matched {pattern})')))
-            else:
-                member = Utils.uncanonstr(formataddr((fullname, address)))
-                subscribe_success.append(Utils.websafe(member))
+    # Handle the simple cases first
+    if not cgidata:
+        return None
 
-        # Then we remove the addresses not in our list.
-        unsubscribe_errors = []
-        unsubscribe_success = []
+    # First handle global actions like mass subscription and mass removal
+    if category == 'members' and subcat == 'add':
+        mass_subscribe(mlist, doc)
+        return doc
+    elif category == 'members' and subcat == 'remove':
+        mass_remove(mlist, doc)
+        return doc
+    elif category == 'members' and subcat == 'change':
+        address_change(mlist, doc)
+        return doc
+    elif category == 'members' and subcat == 'sync':
+        mass_sync(mlist, doc)
+        return doc
 
-        for entry in mlist.getMembers():
-            # If an entry is not found in the uploaded "entries" list, then
-            # remove the member.
-            if not(entry in lc_addresses):
+    # We are dealing with a dictionary of lists from parse_qs, so we need to get the first item
+    def get_value(key, default=''):
+        values = cgidata.get(key, [default])
+        return values[0] if values else default
+
+    # Get the password values for admin authentication
+    newpw = get_value('newpw')
+    confirmpw = get_value('newpw-confirm')
+    if newpw or confirmpw:
+        if newpw != confirmpw:
+            doc.addError(_('New administrator passwords did not match'))
+            return doc
+        # Set the password
+        mlist.password = newpw
+
+    # Get the moderator password values for authentication
+    newmodpw = get_value('newmodpw')
+    confirmmodpw = get_value('newmodpw-confirm')
+    if newmodpw or confirmmodpw:
+        if newmodpw != confirmmodpw:
+            doc.addError(_('New moderator passwords did not match'))
+            return doc
+        # Set the password
+        mlist.mod_password = newmodpw
+
+    # Process the rest of the options
+    for item in mlist.GetConfigCategories()[category].items:
+        if not item:
+            continue
+        # Get the variable name and its value
+        varname = item[0]
+        value = get_value(varname)
+        
+        # Set the value based on its type
+        if value is not None:
+            if item[1] in (mm_cfg.Radio, mm_cfg.Toggle, mm_cfg.Number):
                 try:
-                    mlist.ApprovedDeleteMember(entry, 0, 0)
-                except Errors.NotAMemberError:
-                    # This can happen if the address is illegal (i.e. can't be
-                    # parsed by email.utils.parseaddr()) but for legacy
-                    # reasons is in the database.  Use a lower level remove to
-                    # get rid of this member's entry
-                    mlist.removeMember(entry)
-                else:
-                    unsubscribe_success.append(Utils.websafe(entry))
-
-        if subscribe_success:
-            doc.AddItem(Header(5, _('Successfully subscribed:')))
-            doc.AddItem(UnorderedList(*subscribe_success))
-            doc.AddItem('<p>')
-        if subscribe_errors:
-            doc.AddItem(Header(5, _('Error subscribing:')))
-            items = ['%s -- %s' % (x0, x1) for x0, x1 in subscribe_errors]
-            doc.AddItem(UnorderedList(*items))
-            doc.AddItem('<p>')
-        if unsubscribe_success:
-            doc.AddItem(Header(5, _('Successfully Unsubscribed:')))
-            doc.AddItem(UnorderedList(*unsubscribe_success))
-            doc.AddItem('<p>')
-
-    # See if this was a moderation bit operation
-    if 'allmodbit_btn' in cgidata:
-        val = safeint('allmodbit_val')
-        if val not in (0, 1):
-            doc.addError(_('Bad moderation flag value'))
-        else:
-            for member in mlist.getMembers():
-                mlist.setMemberOption(member, mm_cfg.Moderate, val)
-    # do the user options for members category
-    if 'setmemberopts_btn' in cgidata and 'user' in cgidata:
-        user = cgidata['user']
-        if type(user) is ListType:
-            users = []
-            for ui in range(len(user)):
-                users.append(urllib.parse.unquote(user[ui].value))
-        else:
-            users = [urllib.parse.unquote(user.value)]
-        errors = []
-        removes = []
-        for user in users:
-            quser = urllib.parse.quote(user)
-            if '%s_unsub' % quser in cgidata:
-                try:
-                    _ = D_
-                    whence=_('member mgt page')
-                    _ = i18n._
-                    mlist.ApprovedDeleteMember(user, whence=whence)
-                    removes.append(user)
-                except Errors.NotAMemberError:
-                    errors.append((user, _('Not subscribed')))
-                continue
-            if not mlist.isMember(user):
-                doc.addError(_(f'Ignoring changes to deleted member: {user}'),
-                             tag=_('Warning: '))
-                continue
-            value = '%s_digest' % quser in cgidata
-            try:
-                mlist.setMemberOption(user, mm_cfg.Digests, value)
-            except (Errors.AlreadyReceivingDigests,
-                    Errors.AlreadyReceivingRegularDeliveries,
-                    Errors.CantDigestError,
-                    Errors.MustDigestError):
-                # BAW: Hmm...
-                pass
-
-            newname = cgidata.getfirst(quser+'_realname', '')
-            newname = Utils.canonstr(newname, mlist.preferred_language)
-            mlist.setMemberName(user, newname)
-
-            newlang = cgidata.getfirst(quser+'_language')
-            oldlang = mlist.getMemberLanguage(user)
-            if Utils.IsLanguage(newlang) and newlang != oldlang:
-                mlist.setMemberLanguage(user, newlang)
-
-            moderate = not not cgidata.getfirst(quser+'_mod')
-            mlist.setMemberOption(user, mm_cfg.Moderate, moderate)
-
-            # Set the `nomail' flag, but only if the user isn't already
-            # disabled (otherwise we might change BYUSER into BYADMIN).
-            if '%s_nomail' % quser in cgidata:
-                if mlist.getDeliveryStatus(user) == MemberAdaptor.ENABLED:
-                    mlist.setDeliveryStatus(user, MemberAdaptor.BYADMIN)
+                    setattr(mlist, varname, int(value))
+                except (ValueError, TypeError):
+                    setattr(mlist, varname, 0)
             else:
-                mlist.setDeliveryStatus(user, MemberAdaptor.ENABLED)
-            for opt in ('hide', 'ack', 'notmetoo', 'nodupes', 'plain'):
-                opt_code = mm_cfg.OPTINFO[opt]
-                if '%s_%s' % (quser, opt) in cgidata:
-                    mlist.setMemberOption(user, opt_code, 1)
-                else:
-                    mlist.setMemberOption(user, opt_code, 0)
-        # Give some feedback on who's been removed
-        if removes:
-            doc.AddItem(Header(5, _('Successfully Removed:')))
-            doc.AddItem(UnorderedList(*removes))
-            doc.AddItem('<p>')
-        if errors:
-            doc.AddItem(Header(5, _("Error Unsubscribing:")))
-            items = ['%s -- %s' % (x[0], x[1]) for x in errors]
-            doc.AddItem(UnorderedList(*tuple((items))))
-            doc.AddItem("<p>")
+                setattr(mlist, varname, value)
+
+    # Save the changes
+    mlist.Save()
+    return doc

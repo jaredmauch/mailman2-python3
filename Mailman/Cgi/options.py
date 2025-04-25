@@ -135,10 +135,7 @@ def main():
         print(doc.Format())
         return
 
-    # Set the language for the page.  If we're coming from the listinfo cgi,
-    # we might have a 'language' key in the cgi data.  That was an explicit
-    # preference to view the page in, so we should honor that here.  If that's
-    # not available, use the list's default language.
+    # Set the language for the page
     language = cgidata.get('language', [None])[0]
     if not Utils.IsLanguage(language):
         language = mlist.preferred_language
@@ -163,7 +160,6 @@ def main():
     # If a user submits a form or URL with post data or query fragments
     # with multiple occurrences of the same variable, we can get a list
     # here.  Be as careful as possible.
-    # This is no longer required because of getfirst() above, but leave it.
     if isinstance(user, list) or isinstance(user, tuple):
         if len(user) == 0:
             user = ''
