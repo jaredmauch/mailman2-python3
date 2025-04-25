@@ -57,14 +57,20 @@ class Connection(object):
     def __connect(self):
         self.__conn = smtplib.SMTP()
         self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
-        syslog('smtp', 'Connecting to SMTP server %s:%s', mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        # Ensure we have a valid hostname for TLS
+        helo_host = mm_cfg.SMTP_HELO_HOST
+        if not helo_host or helo_host.startswith('.'):
+            helo_host = mm_cfg.SMTPHOST
+        if not helo_host or helo_host.startswith('.'):
+            # If we still don't have a valid hostname, use localhost
+            helo_host = 'localhost'
+        syslog('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
+               mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, helo_host)
         self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        # Set the hostname for TLS
+        self.__conn._host = helo_host
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
-                # Ensure we have a valid hostname for TLS
-                helo_host = mm_cfg.SMTP_HELO_HOST
-                if not helo_host or helo_host.startswith('.'):
-                    helo_host = mm_cfg.SMTPHOST
                 syslog('smtp', 'Using TLS with hostname: %s', helo_host)
                 try:
                     # Use native TLS support
