@@ -493,7 +493,7 @@ def ch_oneline(headerstr):
                 cset = x[1]
                 break
         h = make_header(d)
-        ustr = h.__unicode__()
+        ustr = str(h)
         oneline = u''.join(ustr.splitlines())
         return oneline.encode(cset, 'replace'), cset
     except (LookupError, UnicodeError, ValueError, HeaderParseError):

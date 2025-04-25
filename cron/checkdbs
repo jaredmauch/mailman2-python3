@@ -157,7 +157,7 @@ Cause: %(reason)s"""))
         if isinstance(s, str):
             upending.append(s)
         else:
-            upending.append(unicode(s, charset, 'replace'))
+            upending.append(str(s, charset, 'replace'))
     # Make sure that the text we return from here can be encoded to a byte
     # string in the charset of the list's language.  This could fail if for
     # example, the request was pended while the list's language was French,
@@ -169,7 +169,7 @@ Cause: %(reason)s"""))
     if isinstance(text, str):
         return text.encode(outcodec, 'replace')
     # Be sure this is a byte string encodeable in the list's charset
-    utext = unicode(text, incodec, 'replace')
+    utext = str(text, incodec, 'replace')
     return utext.encode(outcodec, 'replace')
 
 def auto_discard(mlist):

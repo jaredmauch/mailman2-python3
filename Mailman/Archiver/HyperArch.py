@@ -86,7 +86,6 @@ if sys.platform == 'darwin':
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
 
-
 def html_quote(s, lang=None):
     repls = ( ('&', '&amp;'),
               ("<", '&lt;'),
@@ -166,7 +165,6 @@ nohtmlpat = re.compile(r'^\s*</HTML>\s*$', re.IGNORECASE)
 quotedpat = re.compile(r'^([>|:]|&gt;)+')
 
 
-
 # Like Utils.maketext() but with caching to improve performance.
 #
 # _templatefilepathcache is used to associate a (templatefile, lang, listname)
@@ -226,7 +224,6 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
     return Utils.uncanonstr(text, lang)
 
 
-
 # Note: I'm overriding most, if not all of the pipermail Article class
 #       here -ddm
 # The Article class encapsulates a single posting.  The attributes are:
@@ -444,7 +441,7 @@ class Article(pipermail.Article):
         # Convert 'field' into Unicode one line string.
         try:
             pairs = decode_header(field)
-            ustr = make_header(pairs).__unicode__()
+            ustr = str(make_header(pairs))
         except (LookupError, UnicodeError, ValueError, HeaderParseError):
             # assume list's language
             cset = Utils.GetCharSet(self._mlist.preferred_language)
@@ -616,7 +613,7 @@ class Article(pipermail.Article):
         except AttributeError:
             pass
 
-
+
 class HyperArchive(pipermail.T):
     __super_init = pipermail.T.__init__
     __super_update_archive = pipermail.T.update_archive

@@ -954,7 +954,7 @@ def oneline(s, cset):
     # Decode header string in one line and convert into specified charset
     try:
         h = email.header.make_header(email.header.decode_header(s))
-        ustr = h.__unicode__()
+        ustr = str(h)
         line = UEMPTYSTRING.join(ustr.splitlines())
         return line.encode(cset, 'replace')
     except (LookupError, UnicodeError, ValueError, HeaderParseError):

@@ -68,7 +68,7 @@ _ = i18n._
 def tounicode(s, enc):
     if isinstance(s, str):
         return s
-    return unicode(s, enc, 'replace')
+    return str(s, enc, 'replace')
 
 
 def parse_args():
