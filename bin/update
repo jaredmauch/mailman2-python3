@@ -46,12 +46,12 @@ import marshal
 import paths
 import email
 import email.errors
+from email.message import Message
 
 sys.path.append("@VAR_PREFIX@/Mailman")
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
-from Mailman import Message
 from Mailman import Pending
 from Mailman.LockFile import TimeOutError
 from Mailman.i18n import C_
@@ -567,7 +567,7 @@ def dequeue(filebase):
             msgfp = None
             try:
                 msgfp = open(msgfile, 'rb')
-                msg = email.message_from_file(msgfp, Message.Message)
+                msg = email.message_from_file(msgfp, Message)
                 os.unlink(msgfile)
             except EnvironmentError as e:
                 if e.errno != errno.ENOENT: raise

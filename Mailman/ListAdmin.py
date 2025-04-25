@@ -36,6 +36,7 @@ import email
 from email.mime.message import MIMEMessage
 from email.generator import Generator
 from email.utils import getaddresses
+from email.message import Message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -271,11 +272,11 @@ class ListAdmin(object):
         elif value == mm_cfg.APPROVE:
             # Approved.
             try:
-                msg = readMessage(path)
+                msg = email.message_from_file(fp, Message)
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
-            msg = readMessage(path)
+            msg = email.message_from_file(fp, Message)
             msgdata['approved'] = 1
             # adminapproved is used by the Emergency handler
             msgdata['adminapproved'] = 1
@@ -315,7 +316,7 @@ class ListAdmin(object):
             # since we don't want to share any state or information with the
             # normal delivery.
             try:
-                copy = readMessage(path)
+                copy = email.message_from_file(fp, Message)
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
@@ -613,7 +614,7 @@ def readMessage(path):
     fp = open(path, 'rb')
     try:
         if ext == '.txt':
-            msg = email.message_from_file(fp, Message.Message)
+            msg = email.message_from_file(fp, Message)
         else:
             assert ext == '.pck'
             msg = pickle.load(fp, fix_imports=True, encoding='latin1')

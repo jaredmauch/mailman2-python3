@@ -54,7 +54,7 @@ import os
 import re
 import errno
 
-from email.Parser import Parser
+from email.parser import Parser
 from email.utils import parseaddr
 
 from Mailman import mm_cfg
@@ -87,7 +87,6 @@ lre = re.compile(r"""
  """, re.VERBOSE | re.IGNORECASE)
 
 
-
 class MaildirRunner(Runner):
     # This class is much different than most runners because it pulls files
     # of a different format than what scripts/post and friends leaves.  The

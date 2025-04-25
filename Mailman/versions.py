@@ -36,6 +36,7 @@ run again until another version change is detected.
 from builtins import str
 from builtins import range
 import email
+from email.message import Message
 
 
 from Mailman import mm_cfg
@@ -613,7 +614,7 @@ def NewRequestsDatabase(l):
             for p in v:
                 author, text = p[2]
                 reason = p[3]
-                msg = email.message_from_string(text, Message.Message)
+                msg = email.message_from_string(text, Message)
                 l.HoldMessage(msg, reason)
             del r[k]
         elif k == 'add_member':

@@ -40,6 +40,7 @@ import email
 import errno
 import pickle
 import marshal
+from email.message import Message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -179,7 +180,7 @@ class Switchboard:
         finally:
             fp.close()
         if data.get('_parsemsg'):
-            msg = email.message_from_string(msg, Message.Message)
+            msg = email.message_from_string(msg, Message)
         return msg, data
 
     def finish(self, filebase, preserve=False):

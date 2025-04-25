@@ -20,7 +20,6 @@
 def cmp(a, b):
     return (a > b) - (a < b)
 
-#from future.builtins import cmp
 import sys
 import os
 import re

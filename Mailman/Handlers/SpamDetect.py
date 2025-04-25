@@ -70,18 +70,22 @@ def getDecodedHeaders(msg, lcset):
     question marks.
     """
     headers = []
-    for h in msg.get_all_headers():
-        try:
-            # Check if h is already a string
-            if isinstance(h, str):
-                uhdr = h
-            else:
-                # Try to decode as bytes
-                uhdr = h.decode('us-ascii', 'replace')
-            headers.append(uhdr)
-        except (UnicodeError, AttributeError):
-            # If we can't decode it, replace with question marks
-            headers.append('?' * len(h))
+    for name in msg.keys():
+        # Get all values for this header (could be multiple)
+        for value in msg.get_all(name, []):
+            try:
+                # Format as "Header: Value"
+                header_line = '%s: %s' % (name, value)
+                # Check if header_line is already a string
+                if isinstance(header_line, str):
+                    uhdr = header_line
+                else:
+                    # Try to decode as bytes
+                    uhdr = header_line.decode('us-ascii', 'replace')
+                headers.append(uhdr)
+            except (UnicodeError, AttributeError):
+                # If we can't decode it, replace with question marks
+                headers.append('?' * len(value))
     return '\n'.join(headers)
 
 

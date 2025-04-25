@@ -40,6 +40,7 @@ from types import *
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr
 from email.header import Header
+from email.message import Message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -1448,7 +1449,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Log file messages don't need to be i18n'd, but this is now in a
             # notice.
             _ = D_
-            if isinstance(context, Message.Message):
+            if isinstance(context, Message):
                 whence = _('email confirmation')
             else:
                 whence = _('web confirmation')
@@ -1469,7 +1470,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # header that does not match the list password, then we'll notify
             # the list administrator that they used the wrong password.
             # Otherwise it's an approval.
-            if isinstance(context, Message.Message):
+            if isinstance(context, Message):
                 # See if it's got an Approved: header, either in the headers,
                 # or in the first text/plain section of the response.  For
                 # robustness, we'll accept Approve: as well.
