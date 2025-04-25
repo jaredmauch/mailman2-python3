@@ -64,40 +64,25 @@ _ = i18n._
 
 
 
-def getDecodedHeaders(msg, cset='utf-8'):
-    """Returns a unicode containing all the headers of msg, unfolded and
-    RFC 2047 decoded, normalized and separated by new lines.
+def getDecodedHeaders(msg, lcset):
+    """Return a Unicode string containing all headers of msg, unfolded and RFC 2047
+    decoded.  If a header cannot be decoded, it is replaced with a string of
+    question marks.
     """
-    headers = u''
-    for h, v in list(msg.items()):
-        uvalue = u''
+    headers = []
+    for h in msg.get_all_headers():
         try:
-            v = decode_header(re.sub(r'\n\s', ' ', v))
-        except HeaderParseError:
-            v = [(v, 'us-ascii')]
-        for frag, cs in v:
-            if not cs:
-                cs = 'us-ascii'
-            try:
-                if isinstance(frag, str):
-                    # If it's already a string, just use it
-                    uvalue += frag
-                else:
-                    # If it's bytes, decode it
-                    uvalue += str(frag, cs, 'replace')
-            except LookupError:
-                # The encoding charset is unknown.  At this point, frag
-                # has been QP or base64 decoded into a byte string whose
-                # charset we don't know how to handle.  We will try to
-                # unicode it as iso-8859-1 which may result in a garbled
-                # mess, but we have to do something.
-                if isinstance(frag, str):
-                    uvalue += frag
-                else:
-                    uvalue += str(frag, 'iso-8859-1', 'replace')
-        uhdr = h.decode('us-ascii', 'replace')
-        headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
-    return headers
+            # Check if h is already a string
+            if isinstance(h, str):
+                uhdr = h
+            else:
+                # Try to decode as bytes
+                uhdr = h.decode('us-ascii', 'replace')
+            headers.append(uhdr)
+        except (UnicodeError, AttributeError):
+            # If we can't decode it, replace with question marks
+            headers.append('?' * len(h))
+    return '\n'.join(headers)
 
 
 

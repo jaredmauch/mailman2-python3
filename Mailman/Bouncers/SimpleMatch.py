@@ -18,7 +18,14 @@
 """Recognizes simple heuristically delimited bounces."""
 
 import re
-import email.Iterators
+import email
+from email.iterators import body_line_iterator
+from email.header import decode_header
+
+from Mailman import mm_cfg
+from Mailman import Utils
+from Mailman.Logging.Syslog import syslog
+from Mailman.Handlers.CookHeaders import change_header
 
 
 
@@ -224,7 +231,7 @@ def process(msg, patterns=None):
     # we process the message multiple times anyway.
     for scre, ecre, acre in patterns:
         state = 0
-        for line in email.Iterators.body_line_iterator(msg, decode=True):
+        for line in body_line_iterator(msg):
             if state == 0:
                 if scre.search(line):
                     state = 1
