@@ -67,20 +67,10 @@ class Connection(object):
                     helo_host = mm_cfg.SMTPHOST
                 syslog('smtp', 'Using TLS with hostname: %s', helo_host)
                 try:
-                    # Disable certificate validation
-                    import ssl
-                    context = ssl.create_default_context()
-                    context.check_hostname = False
-                    context.verify_mode = ssl.CERT_NONE
-                    self.__conn.starttls(context=context, server_hostname=helo_host)
+                    # Use native TLS support
+                    self.__conn.starttls()
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP TLS error: %s', e)
-                    self.quit()
-                    raise
-                try:
-                    self.__conn.ehlo(helo_host)
-                except SMTPException as e:
-                    syslog('smtp-failure', 'SMTP EHLO error: %s', e)
                     self.quit()
                     raise
             try:
@@ -92,7 +82,6 @@ class Connection(object):
             except smtplib.SMTPAuthenticationError as e:
                 syslog('smtp-failure', 'SMTP AUTH error: %s', e)
                 self.quit()
-                raise
             except smtplib.SMTPException as e:
                 syslog('smtp-failure',
                        'SMTP - no suitable authentication method found: %s', e)
