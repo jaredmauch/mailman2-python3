@@ -553,19 +553,31 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     # Database and filesystem I/O
     #
     def __save(self, dict):
-        # Save the file as a binary pickle, and rotate the old version to a
-        # backup file.  We must guarantee that config.pck is always valid so
-        # we never rotate unless the we've successfully written the temp file.
-        # We use pickle now because marshal is not guaranteed to be compatible
-        # between Python versions.
+        """Save the file as a binary pickle with atomic operations and backup."""
         fname = os.path.join(self.fullpath(), 'config.pck')
         fname_tmp = fname + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
         fname_last = fname + '.last'
+        fname_backup = fname + '.bak'
+
+        # First create a backup of the current file if it exists
+        if os.path.exists(fname):
+            try:
+                import shutil
+                shutil.copy2(fname, fname_backup)
+            except IOError:
+                pass  # Best effort backup
+
+        # Save to temporary file first
         fp = None
         try:
+            # Ensure directory exists
+            dirname = os.path.dirname(fname)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname, 0o755)
+
             fp = open(fname_tmp, 'wb')
-            # Use a binary format... it's more efficient.
-            pickle.dump(dict, fp, 1)
+            # Use protocol 2 for better compatibility
+            pickle.dump(dict, fp, protocol=2)
             fp.flush()
             if mm_cfg.SYNC_AFTER_WRITE:
                 os.fsync(fp.fileno())
@@ -574,21 +586,41 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             syslog('error',
                    'Failed config.pck write, retaining old state.\n%s', e)
             if fp is not None:
-                os.unlink(fname_tmp)
+                try:
+                    os.unlink(fname_tmp)
+                except OSError:
+                    pass
             raise
+
         # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
-        # as safely as possible.
+        # as safely as possible
         try:
-            # might not exist yet
-            os.unlink(fname_last)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        try:
-            # might not exist yet
-            os.link(fname, fname_last)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        os.rename(fname_tmp, fname)
+            # Remove old .last file if it exists
+            try:
+                os.unlink(fname_last)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+
+            # Try to create hard link to current file as .last
+            try:
+                os.link(fname, fname_last)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+
+            # Atomic rename of new file
+            os.rename(fname_tmp, fname)
+        except Exception as e:
+            # If anything goes wrong, try to restore from backup
+            syslog('error', 'Error during file rotation: %s', str(e))
+            if os.path.exists(fname_backup):
+                try:
+                    shutil.copy2(fname_backup, fname)
+                except IOError:
+                    pass
+            raise
+
         # Reset the timestamp
         self.__timestamp = os.path.getmtime(fname)
 
@@ -641,65 +673,64 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.CheckHTMLArchiveDir()
 
     def __load(self, dbfile):
-        # Attempt to load and unserialize the specified database file.  This
-        # could actually be a config.db (for pre-2.1alpha3) or config.pck,
-        # i.e. a marshal or a binary pickle.  Actually, it could also be a
-        # .last backup file if the primary storage file was corrupt.  The
-        # decision on whether to unpickle or unmarshal is based on the file
-        # extension, but we always save it using pickle (since only it, and
-        # not marshal is guaranteed to be compatible across Python versions).
-        #
-        # On success return a 2-tuple of (dictionary, None).  On error, return
-        # a 2-tuple of the form (None, errorobj).
+        """Load and validate a database file with improved error handling."""
+        # Determine the load function based on file extension
         if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
             loadfunc = marshal.load
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
             loadfunc = pickle.load
         else:
             assert 0, 'Bad database file name'
+
         try:
-            # Check the mod time of the file first.  If it matches our
-            # timestamp, then the state hasn't change since the last time we
-            # loaded it.  Otherwise open the file for loading, below.  If the
-            # file doesn't exist, we'll get an EnvironmentError with errno set
-            # to ENOENT (EnvironmentError is the base class of IOError and
-            # OSError).
-            # We test strictly less than here because the resolution is whole
-            # seconds and we have seen cases of the file being updated by
-            # another process in the same second.
-            # Even this is not sufficient in shared file system environments
-            # if there is time skew between servers.  In those cases, the test
-            # could be
-            # if mtime + MAX_SKEW < self.__timestamp:
-            # or the "if ...: return" just deleted.
+            # Check if we need to reload based on timestamp
             mtime = os.path.getmtime(dbfile)
             if mtime < self.__timestamp:
-                # File is not newer
                 return None, None
-            fp = open(dbfile, mode='rb')
+
+            # Load and validate the file
+            with open(dbfile, mode='rb') as fp:
+                try:
+                    if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
+                        dict_retval = marshal.load(fp)
+                    elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
+                        dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
+
+                    # Validate the loaded data
+                    if not isinstance(dict_retval, dict):
+                        return None, 'Load() expected to return a dictionary'
+
+                    # Convert any bytes to strings
+                    dict_retval = self.__convert_bytes_to_strings(dict_retval)
+
+                    return dict_retval, None
+
+                except (EOFError, ValueError, TypeError, MemoryError,
+                        pickle.PicklingError, pickle.UnpicklingError) as e:
+                    return None, e
+
         except EnvironmentError as e:
-            if e.errno != errno.ENOENT: raise
-            # The file doesn't exist yet
+            if e.errno != errno.ENOENT:
+                raise
             return None, e
-        now = int(time.time())
-        try:
+
+    def __convert_bytes_to_strings(self, data):
+        """Convert bytes to strings recursively in a data structure."""
+        if isinstance(data, bytes):
             try:
-                if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
-                    dict_retval = marshal.load(fp)
-                elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-                    dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
-                if not isinstance(dict_retval, dict):
-                    return None, 'Load() expected to return a dictionary'
-            except (EOFError, ValueError, TypeError, MemoryError,
-                    pickle.PicklingError, pickle.UnpicklingError) as e:
-                return None, e
-        finally:
-            fp.close()
-        # Update the timestamp.  We use current time here rather than mtime
-        # so the test above might succeed the next time.  And we get the time
-        # before unpickling in case it takes more than a second.  (LP: #266464)
-        self.__timestamp = now
-        return dict_retval, None
+                return data.decode('utf-8', 'replace')
+            except UnicodeDecodeError:
+                return data.decode('latin1', 'replace')
+        elif isinstance(data, list):
+            return [self.__convert_bytes_to_strings(item) for item in data]
+        elif isinstance(data, dict):
+            return {
+                self.__convert_bytes_to_strings(key): self.__convert_bytes_to_strings(value)
+                for key, value in data.items()
+            }
+        elif isinstance(data, tuple):
+            return tuple(self.__convert_bytes_to_strings(item) for item in data)
+        return data
 
     def Load(self, check_version=True):
         if not Utils.list_exists(self.internal_name()):

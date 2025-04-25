@@ -90,45 +90,130 @@ class Pending(object):
         return cookie
 
     def __load(self):
+        """Load the pending database with improved error handling and validation."""
+        backup_file = self.__pendfile + '.bak'
         try:
-            fp = open(self.__pendfile)
+            # Try loading the main file first
+            return self.__load_file(self.__pendfile)
+        except (pickle.UnpicklingError, EOFError, ValueError) as e:
+            # If main file is corrupt, try the backup
+            try:
+                if os.path.exists(backup_file):
+                    return self.__load_file(backup_file)
+            except Exception:
+                pass
+            # If both files are corrupt, start fresh
+            return {'evictions': {}, 'version': mm_cfg.PENDING_FILE_SCHEMA_VERSION}
+
+    def __load_file(self, filename):
+        """Load and validate a specific pending database file."""
+        try:
+            with open(filename, 'rb') as fp:
+                db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                
+                # Validate the loaded data
+                if not isinstance(db, dict):
+                    raise ValueError("Loaded data is not a dictionary")
+                
+                # Check version
+                if 'version' not in db:
+                    db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
+                elif db['version'] != mm_cfg.PENDING_FILE_SCHEMA_VERSION:
+                    # Handle version mismatch - could add migration logic here
+                    db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
+                
+                # Ensure evictions dict exists
+                if 'evictions' not in db:
+                    db['evictions'] = {}
+                
+                # Convert any bytes to strings
+                new_db = {}
+                for key, value in db.items():
+                    if isinstance(key, bytes):
+                        key = key.decode('utf-8', 'replace')
+                    if isinstance(value, bytes):
+                        value = value.decode('utf-8', 'replace')
+                    elif isinstance(value, (list, tuple)):
+                        value = list(value)  # Convert tuple to list for modification
+                        for i, v in enumerate(value):
+                            if isinstance(v, bytes):
+                                value[i] = v.decode('utf-8', 'replace')
+                    new_db[key] = value
+                
+                # Validate all entries have corresponding eviction times
+                for key in list(new_db.keys()):
+                    if key not in ('evictions', 'version'):
+                        if key not in new_db['evictions']:
+                            new_db['evictions'][key] = time.time() + mm_cfg.PENDING_REQUEST_LIFE
+                
+                return new_db
         except IOError as e:
-            if e.errno != errno.ENOENT: raise
-            return {'evictions': {}}
-        try:
-            return pickle.load(fp, fix_imports=True, encoding='latin1')
-        finally:
-            fp.close()
+            if e.errno != errno.ENOENT:
+                raise
+            return {'evictions': {}, 'version': mm_cfg.PENDING_FILE_SCHEMA_VERSION}
 
     def __save(self, db):
+        """Save the pending database with atomic operations and backup."""
+        # Clean up stale entries first
+        self.__cleanup_stale_entries(db)
+        
+        # Create backup of current file if it exists
+        if os.path.exists(self.__pendfile):
+            try:
+                import shutil
+                shutil.copy2(self.__pendfile, self.__pendfile + '.bak')
+            except IOError:
+                pass  # Best effort backup
+        
+        # Save to temporary file first
+        tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), int(time.time()))
+        omask = os.umask(0o007)
+        try:
+            # Ensure the directory exists
+            dirname = os.path.dirname(self.__pendfile)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname, 0o755)
+            
+            with open(tmpfile, 'wb') as fp:
+                pickle.dump(db, fp, protocol=2)  # Use protocol 2 for better compatibility
+                fp.flush()
+                os.fsync(fp.fileno())
+            
+            # Atomic rename
+            os.rename(tmpfile, self.__pendfile)
+            
+        except Exception as e:
+            # Clean up temp file if something went wrong
+            try:
+                os.unlink(tmpfile)
+            except OSError:
+                pass
+            raise e
+        finally:
+            os.umask(omask)
+
+    def __cleanup_stale_entries(self, db):
+        """Clean up stale entries from the database."""
         evictions = db['evictions']
         now = time.time()
+        
+        # Remove stale entries
         for cookie, data in list(db.items()):
             if cookie in ('evictions', 'version'):
                 continue
-            timestamp = evictions[cookie]
-            if now > timestamp:
-                # The entry is stale, so remove it.
+            timestamp = evictions.get(cookie)
+            if timestamp is None or now > timestamp:
                 del db[cookie]
-                del evictions[cookie]
-        # Clean out any bogus eviction entries.
+                if cookie in evictions:
+                    del evictions[cookie]
+        
+        # Clean up orphaned eviction entries
         for cookie in list(evictions.keys()):
             if cookie not in db:
                 del evictions[cookie]
+        
+        # Ensure version is set
         db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
-        tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
-        omask = os.umask(0o007)
-        try:
-            fp = open(tmpfile, 'wb')
-            try:
-                pickle.dump(db, fp)
-                fp.flush()
-                os.fsync(fp.fileno())
-            finally:
-                fp.close()
-            os.rename(tmpfile, self.__pendfile)
-        finally:
-            os.umask(omask)
 
     def pend_confirm(self, cookie, expunge=True):
         """Return data for cookie, or None if not found.

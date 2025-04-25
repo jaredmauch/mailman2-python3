@@ -286,21 +286,27 @@ class LockFile:
         calls, or because the lock was stolen out from under us), raise a
         NotLockedError, unless optional `unconditionally' is true.
         """
-        islocked = self.locked()
-        if not islocked and not unconditionally:
-            raise NotLockedError
-        # If we owned the lock, remove the global file, relinquishing it.
-        if islocked:
-            try:
-                os.unlink(self.__lockfile)
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
-        # Remove our tempfile
         try:
-            os.unlink(self.__tmpfname)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        self.__writelog('unlocked')
+            islocked = self.locked()
+            if not islocked and not unconditionally:
+                raise NotLockedError
+            # If we owned the lock, remove the global file, relinquishing it.
+            if islocked:
+                try:
+                    os.unlink(self.__lockfile)
+                except OSError as e:
+                    if e.errno != errno.ENOENT:
+                        raise
+            # Remove our tempfile
+            try:
+                os.unlink(self.__tmpfname)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+            self.__writelog('unlocked')
+        except Exception as e:
+            self.__writelog(f'Error during unlock: {str(e)}', important=True)
+            raise
 
     def locked(self):
         """Return true if we own the lock, false if we do not.
@@ -308,13 +314,12 @@ class LockFile:
         Checking the status of the lock resets the lock's lifetime, which
         helps avoid race conditions during the lock status test.
         """
-        # Discourage breaking the lock for a while.
         try:
+            # Discourage breaking the lock for a while.
             self.__touch()
         except OSError as e:
             if e.errno == errno.EPERM:
-                # We can't touch the file because we're not the owner.  I
-                # don't see how we can own the lock if we're not the owner.
+                # We can't touch the file because we're not the owner
                 return False
             else:
                 raise
@@ -327,8 +332,17 @@ class LockFile:
         self.unlock(unconditionally=True)
 
     def __del__(self):
+        """Clean up when the object is garbage collected."""
         if self.__owned:
-            self.finalize()
+            try:
+                self.finalize()
+            except Exception as e:
+                # Don't raise exceptions during garbage collection
+                # Just log if we can
+                try:
+                    self.__writelog(f'Error during cleanup: {str(e)}', important=True)
+                except:
+                    pass
 
     # Use these only if you're transfering ownership to a child process across
     # a fork.  Use at your own risk, but it should be race-condition safe.
@@ -377,11 +391,18 @@ class LockFile:
     # Private interface
     #
 
-    def __writelog(self, msg, important=0):
-        if self.__withlogging or important:
+    def __writelog(self, msg, important=False):
+        """Write a message to the log file."""
+        if not self.__withlogging and not important:
+            return
+        try:
             logf = _get_logfile()
             logf.write('%s %s\n' % (self.__logprefix, msg))
-            traceback.print_stack(file=logf)
+            if important:
+                traceback.print_stack(file=logf)
+        except Exception:
+            # Don't raise exceptions during logging
+            pass
 
     def __atomic_write(self, filename, content):
         """Atomically write content to a file using a temporary file."""
@@ -409,13 +430,14 @@ class LockFile:
             raise
 
     def __read(self):
+        """Read the lock file contents."""
         try:
-            fp = open(self.__lockfile)
-            filename = fp.read()
-            fp.close()
-            return filename
+            with open(self.__lockfile) as fp:
+                filename = fp.read()
+                return filename
         except EnvironmentError as e:
-            if e.errno != errno.ENOENT: raise
+            if e.errno != errno.ENOENT:
+                raise
             return None
 
     def __touch(self, filename=None):

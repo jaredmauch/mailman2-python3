@@ -31,6 +31,7 @@ import errno
 import pickle
 import marshal
 from io import StringIO
+import socket
 
 import email
 from email.mime.message import MIMEMessage
@@ -76,55 +77,129 @@ class ListAdmin(object):
         self.__filename = os.path.join(self.fullpath(), 'request.pck')
 
     def __opendb(self):
-        if self.__db is None:
-            assert self.Locked()
-            try:
-                fp = open(self.__filename, 'rb')
+        """Open the database file and load data with improved error handling."""
+        if self.__db is not None:
+            return
+
+        filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
+        filename_backup = filename + '.bak'
+
+        # Try loading the main file first
+        try:
+            with open(filename, 'rb') as fp:
                 try:
                     self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
-                finally:
-                    fp.close()
-            except IOError as e:
-                if e.errno != errno.ENOENT: raise
-                self.__db = {}
-                # put version number in new database
-                self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
+                    if not isinstance(self.__db, dict):
+                        raise ValueError("Database not a dictionary")
+                    return
+                except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
+                    syslog('error', 'Error loading pending.pck: %s', str(e))
+
+            # If we get here, the main file failed to load properly
+            if os.path.exists(filename_backup):
+                syslog('info', 'Attempting to load from backup file')
+                with open(filename_backup, 'rb') as fp:
+                    try:
+                        self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        if not isinstance(self.__db, dict):
+                            raise ValueError("Backup database not a dictionary")
+                        # Successfully loaded backup, restore it as main
+                        import shutil
+                        shutil.copy2(filename_backup, filename)
+                        return
+                    except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
+                        syslog('error', 'Error loading backup pending.pck: %s', str(e))
+
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                syslog('error', 'IOError loading pending.pck: %s', str(e))
+
+        # If we get here, both main and backup files failed or don't exist
+        self.__db = {}
 
     def __closedb(self):
-        if self.__db is not None:
-            assert self.Locked()
-            # Save the version number
-            self.__db['version'] = IGN, mm_cfg.REQUESTS_FILE_SCHEMA_VERSION
-            # Now save a temp file and do the tmpfile->real file dance.  BAW:
-            # should we be as paranoid as for the config.pck file?  Should we
-            # use pickle?
-            tmpfile = self.__filename + '.tmp'
-            omask = os.umask(0o007)
-            try:
-                fp = open(tmpfile, 'wb')
-                try:
-                    pickle.dump(self.__db, fp, 1)
-                    fp.flush()
-                    os.fsync(fp.fileno())
-                finally:
-                    fp.close()
-            finally:
-                os.umask(omask)
-            self.__db = None
-            # Do the dance
-            os.rename(tmpfile, self.__filename)
+        """Save the database with atomic operations and backup."""
+        if self.__db is None:
+            return
 
-    def __nextid(self):
-        assert self.Locked()
-        while True:
-            next = self.next_request_id
-            self.next_request_id += 1
-            if next not in self.__db:
-                break
-        return next
+        filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
+        filename_tmp = filename + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
+        filename_backup = filename + '.bak'
+
+        # First create a backup of the current file if it exists
+        if os.path.exists(filename):
+            try:
+                import shutil
+                shutil.copy2(filename, filename_backup)
+            except IOError as e:
+                syslog('error', 'Error creating backup: %s', str(e))
+
+        # Save to temporary file first
+        try:
+            # Ensure directory exists
+            dirname = os.path.dirname(filename)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname, 0o755)
+
+            with open(filename_tmp, 'wb') as fp:
+                # Use protocol 2 for better compatibility
+                pickle.dump(self.__db, fp, protocol=2)
+                fp.flush()
+                if hasattr(os, 'fsync'):
+                    os.fsync(fp.fileno())
+
+            # Atomic rename
+            os.rename(filename_tmp, filename)
+
+        except (IOError, OSError) as e:
+            syslog('error', 'Error saving pending.pck: %s', str(e))
+            # Try to clean up
+            try:
+                os.unlink(filename_tmp)
+            except OSError:
+                pass
+            raise
+
+        self.__db = None
+
+    def __validate_and_clean_db(self):
+        """Validate database entries and clean up invalid ones."""
+        if not self.__db:
+            return
+
+        now = time.time()
+        to_delete = []
+
+        for key, value in self.__db.items():
+            try:
+                # Check if value is a valid tuple/list with at least 2 elements
+                if not isinstance(value, (tuple, list)) or len(value) < 2:
+                    to_delete.append(key)
+                    continue
+
+                # Check if timestamp is valid
+                timestamp = value[1]
+                if not isinstance(timestamp, (int, float)) or timestamp < 0:
+                    to_delete.append(key)
+                    continue
+
+                # Remove expired entries
+                if timestamp < now:
+                    to_delete.append(key)
+                    continue
+
+            except (TypeError, IndexError):
+                to_delete.append(key)
+
+        # Remove invalid entries
+        for key in to_delete:
+            del self.__db[key]
 
     def SaveRequestsDb(self):
-        self.__closedb()
+        """Save the requests database with validation."""
+        if self.__db is not None:
+            self.__validate_and_clean_db()
+            self.__closedb()
 
     def NumRequestsPending(self):
         self.__opendb()
