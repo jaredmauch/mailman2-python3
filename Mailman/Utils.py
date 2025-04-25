@@ -608,7 +608,9 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
             for dir in searchdirs:
                 filename = os.path.join(dir, lang, templatefile)
                 try:
-                    fp = open(filename)
+                    # Use the appropriate encoding based on the language
+                    encoding = GetCharSet(lang)
+                    fp = open(filename, encoding=encoding)
                     raise OuterExit
                 except IOError as e:
                     if e.errno != errno.ENOENT: raise
@@ -621,7 +623,7 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         # you've got a really broken installation, must be there.
         try:
             filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
-            fp = open(filename)
+            fp = open(filename, encoding='utf-8')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!

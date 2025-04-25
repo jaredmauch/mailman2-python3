@@ -24,9 +24,10 @@ which is more convenient for use inside Mailman.
 import re
 from io import StringIO
 
-import email
-import email.generator
-import email.utils
+from email import __version__ as email_version
+from email.generator import Generator as EmailGenerator
+from email.message import Message as EmailMessage
+from email.utils import getaddresses
 from email.charset import Charset
 from email.header import Header
 
@@ -35,22 +36,21 @@ from Mailman import Utils
 
 COMMASPACE = ', '
 
-if hasattr(email, '__version__'):
-    mo = re.match(r'([\d.]+)', email.__version__)
+if hasattr(email_version, '__version__'):
+    mo = re.match(r'([\d.]+)', email_version)
 else:
     mo = re.match(r'([\d.]+)', '2.1.39') # XXX should use @@MM_VERSION@@ perhaps?
 VERSION = tuple([int(s) for s in mo.group().split('.')])
 
 
-
-class Generator(email.generator.Generator):
+class Generator(EmailGenerator):
     """Generates output from a Message object tree, keeping signatures.
 
        Headers will by default _not_ be folded in attachments.
     """
     def __init__(self, outfp, mangle_from_=True,
                  maxheaderlen=78, children_maxheaderlen=0):
-        email.generator.Generator.__init__(self, outfp,
+        EmailGenerator.__init__(self, outfp,
                 mangle_from_=mangle_from_, maxheaderlen=maxheaderlen)
         self.__children_maxheaderlen = children_maxheaderlen
 
@@ -60,12 +60,11 @@ class Generator(email.generator.Generator):
                 self.__children_maxheaderlen, self.__children_maxheaderlen)
 
 
-
-class Message(email.message.Message):
+class Message(EmailMessage):
     def __init__(self):
         # We need a version number so that we can optimize __setstate__()
         self.__version__ = VERSION
-        email.message.Message.__init__(self)
+        EmailMessage.__init__(self)
 
     # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
     def __repr__(self):
@@ -245,7 +244,6 @@ class Message(email.message.Message):
         return fp.getvalue()
 
 
-
 class UserNotification(Message):
     """Class for internally crafted messages."""
 
@@ -306,7 +304,6 @@ class UserNotification(Message):
                         **_kws)
 
 
-
 class OwnerNotification(UserNotification):
     """Like user notifications, but this message goes to the list owners."""
 
