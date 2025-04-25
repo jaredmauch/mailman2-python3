@@ -608,9 +608,15 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
             for dir in searchdirs:
                 filename = os.path.join(dir, lang, templatefile)
                 try:
-                    # Use the appropriate encoding based on the language
+                    # Open in binary mode and handle encoding explicitly
+                    fp = open(filename, 'rb')
+                    content = fp.read()
                     encoding = GetCharSet(lang)
-                    fp = open(filename, encoding=encoding)
+                    try:
+                        template = content.decode(encoding)
+                    except UnicodeDecodeError:
+                        # If the specified encoding fails, try UTF-8 with replacement
+                        template = content.decode('utf-8', errors='replace')
                     raise OuterExit
                 except IOError as e:
                     if e.errno != errno.ENOENT: raise
@@ -623,13 +629,19 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         # you've got a really broken installation, must be there.
         try:
             filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
-            fp = open(filename, encoding='utf-8')
+            fp = open(filename, 'rb')
+            content = fp.read()
+            try:
+                template = content.decode('utf-8')
+            except UnicodeDecodeError:
+                # If UTF-8 fails, try the language's charset
+                template = content.decode(GetCharSet('en'), errors='replace')
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
             raise Exception(IOError(errno.ENOENT, 'No template file found', templatefile))
-    template = fp.read()
-    fp.close()
+    if fp:
+        fp.close()
     text = template
     if dict is not None:
         try:
