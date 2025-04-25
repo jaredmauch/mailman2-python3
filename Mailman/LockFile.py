@@ -192,6 +192,11 @@ class LockFile:
         self.__logprefix = os.path.split(self.__lockfile)[1]
         # For transferring ownership across a fork.
         self.__owned = True
+        # Maximum number of retries for lock operations
+        self.__max_retries = 100
+        # NFS-specific settings
+        self.__nfs_retry_delay = 0.1
+        self.__nfs_max_retries = 5
 
     def __repr__(self):
         return '<LockFile %s: %s [%s: %ssec] pid=%s>' % (
@@ -226,87 +231,53 @@ class LockFile:
             raise NotLockedError('%s: %s' % (repr(self), self.__read()))
 
     def lock(self, timeout=0):
-        """Acquire the lock.
-
-        This blocks until the lock is acquired unless optional timeout is
-        greater than 0, in which case, a TimeOutError is raised when timeout
-        number of seconds (or possibly more) expires without lock acquisition.
-        Raises AlreadyLockedError if the lock is already set.
-        """
-        if timeout:
-            timeout_time = time.time() + timeout
-        # Make sure my temp lockfile exists, and that its contents are
-        # up-to-date (e.g. the temp file name, and the lock lifetime).
-        self.__write()
-        # TBD: This next call can fail with an EPERM.  I have no idea why, but
-        # I'm nervous about wrapping this in a try/except.  It seems to be a
-        # very rare occurence, only happens from cron, and (only?) on Solaris
-        # 2.6.
-        self.__touch()
-        self.__writelog('laying claim')
-        # for quieting the logging output
-        loopcount = -1
+        """Acquire the lock with improved timeout and interrupt handling."""
+        if self.locked():
+            raise AlreadyLockedError
+        # Set up the timeout
+        if timeout > 0:
+            endtime = time.time() + timeout
+        else:
+            endtime = None
+        # Try to acquire the lock
+        loopcount = 0
+        retry_count = 0
         while True:
-            loopcount += 1
-            # Create the hard link and test for exactly 2 links to the file
             try:
-                os.link(self.__tmpfname, self.__lockfile)
-                # If we got here, we know we know we got the lock, and never
-                # had it before, so we're done.  Just touch it again for the
-                # fun of it.
-                self.__writelog('got the lock')
-                self.__touch()
-                break
-            except OSError as e:
-                # The link failed for some reason, possibly because someone
-                # else already has the lock (i.e. we got an EEXIST), or for
-                # some other bizarre reason.
-                if e.errno == errno.ENOENT:
-                    # TBD: in some Linux environments, it is possible to get
-                    # an ENOENT, which is truly strange, because this means
-                    # that self.__tmpfname doesn't exist at the time of the
-                    # os.link(), but self.__write() is supposed to guarantee
-                    # that this happens!  I don't honestly know why this
-                    # happens, but for now we just say we didn't acquire the
-                    # lock, and try again next time.
-                    pass
-                elif e.errno != errno.EEXIST:
-                    # Something very bizarre happened.  Clean up our state and
-                    # pass the error on up.
-                    self.__writelog('unexpected link error: %s' % e,
+                # Check for timeout
+                if endtime and time.time() > endtime:
+                    raise TimeOutError
+                # Check for max retries
+                if retry_count >= self.__max_retries:
+                    self.__writelog('max retries exceeded', important=True)
+                    raise TimeOutError
+                # Try to acquire the lock
+                if self._take_possession():
+                    self.__writelog('locked')
+                    return
+                # Check if the lock is stale
+                if self.__releasetime() < time.time():
+                    # Yes, so break the lock.
+                    self.__break()
+                    self.__writelog('lifetime has expired, breaking',
                                     important=True)
-                    os.unlink(self.__tmpfname)
-                    raise
-                elif self.__linkcount() != 2:
-                    # Somebody's messin' with us!  Log this, and try again
-                    # later.  TBD: should we raise an exception?
-                    self.__writelog('unexpected linkcount: %d' %
-                                    self.__linkcount(), important=True)
-                elif self.__read() == self.__tmpfname:
-                    # It was us that already had the link.
-                    self.__writelog('already locked')
-                    raise AlreadyLockedError
-                # otherwise, someone else has the lock
-                pass
-            # We did not acquire the lock, because someone else already has
-            # it.  Have we timed out in our quest for the lock?
-            if timeout and timeout_time < time.time():
-                os.unlink(self.__tmpfname)
-                self.__writelog('timed out')
-                raise TimeOutError
-            # Okay, we haven't timed out, but we didn't get the lock.  Let's
-            # find if the lock lifetime has expired.
-            if time.time() > self.__releasetime() + CLOCK_SLOP:
-                # Yes, so break the lock.
-                self.__break()
-                self.__writelog('lifetime has expired, breaking',
-                                important=True)
-            # Okay, someone else has the lock, our claim hasn't timed out yet,
-            # and the expected lock lifetime hasn't expired yet.  So let's
-            # wait a while for the owner of the lock to give it up.
-            elif not loopcount % 100:
-                self.__writelog('waiting for claim')
-            self.__sleep()
+                # Wait a while for the owner of the lock to give it up
+                elif not loopcount % 100:
+                    self.__writelog('waiting for claim')
+                self.__sleep()
+                loopcount += 1
+                retry_count += 1
+            except KeyboardInterrupt:
+                # If we get a keyboard interrupt, clean up and re-raise
+                self.__writelog('interrupted while waiting for lock')
+                self.__cleanup()
+                raise
+            except Exception as e:
+                # Log any other exceptions but continue trying
+                self.__writelog(f'error while waiting for lock: {str(e)}')
+                self.__sleep()
+                loopcount += 1
+                retry_count += 1
 
     def unlock(self, unconditionally=False):
         """Unlock the lock.
@@ -412,15 +383,30 @@ class LockFile:
             logf.write('%s %s\n' % (self.__logprefix, msg))
             traceback.print_stack(file=logf)
 
-    def __write(self):
-        # Make sure it's group writable
-        oldmask = os.umask(0o002)
+    def __atomic_write(self, filename, content):
+        """Atomically write content to a file using a temporary file."""
+        tempname = filename + '.tmp'
         try:
-            fp = open(self.__tmpfname, 'w')
-            fp.write(self.__tmpfname)
-            fp.close()
-        finally:
-            os.umask(oldmask)
+            # Write to temporary file first
+            with open(tempname, 'w') as f:
+                f.write(content)
+            # Atomic rename
+            os.rename(tempname, filename)
+        except Exception as e:
+            # Clean up temp file if it exists
+            try:
+                os.unlink(tempname)
+            except OSError:
+                pass
+            raise e
+
+    def __write(self):
+        """Write the lock file atomically."""
+        try:
+            self.__atomic_write(self.__tmpfname, self.__tmpfname)
+        except OSError as e:
+            self.__writelog(f'error writing temp file: {str(e)}')
+            raise
 
     def __read(self):
         try:
@@ -441,56 +427,80 @@ class LockFile:
             if e.errno != errno.ENOENT: raise
 
     def __releasetime(self):
+        """Get release time with NFS safety."""
         try:
-            return os.stat(self.__lockfile)[ST_MTIME]
+            return self.__nfs_safe_stat(self.__lockfile)[ST_MTIME]
         except OSError as e:
-            if e.errno != errno.ENOENT: raise
+            if e.errno != errno.ENOENT:
+                raise
             return -1
 
     def __linkcount(self):
+        """Get link count with NFS safety."""
         try:
-            return os.stat(self.__lockfile)[ST_NLINK]
+            return self.__nfs_safe_stat(self.__lockfile)[ST_NLINK]
         except OSError as e:
-            if e.errno != errno.ENOENT: raise
+            if e.errno != errno.ENOENT:
+                raise
             return -1
 
     def __break(self):
-        # First, touch the global lock file.  This reduces but does not
-        # eliminate the chance for a race condition during breaking.  Two
-        # processes could both pass the test for lock expiry in lock() before
-        # one of them gets to touch the global lockfile.  This shouldn't be
-        # too bad because all they'll do in this function is wax the lock
-        # files, not claim the lock, and we can be defensive for ENOENTs
-        # here.
-        #
-        # Touching the lock could fail if the process breaking the lock and
-        # the process that claimed the lock have different owners.  We could
-        # solve this by set-uid'ing the CGI and mail wrappers, but I don't
-        # think it's that big a problem.
+        """Break a stale lock with improved error handling."""
         try:
-            self.__touch(self.__lockfile)
+            # First, touch the global lock file to reduce race conditions
+            self.__touch()
         except OSError as e:
-            if e.errno != errno.EPERM: raise
-        # Get the name of the old winner's temp file.
-        winner = self.__read()
-        # Remove the global lockfile, which actually breaks the lock.
+            if e.errno != errno.EPERM:
+                self.__writelog(f'error touching lock file: {str(e)}')
+                raise
+        # Remove the lock files
         try:
             os.unlink(self.__lockfile)
         except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        # Try to remove the old winner's temp file, since we're assuming the
-        # winner process has hung or died.  Don't worry too much if we can't
-        # unlink their temp file -- this doesn't wreck the locking algorithm,
-        # but will leave temp file turds laying around, a minor inconvenience.
+            if e.errno != errno.ENOENT:
+                self.__writelog(f'error removing lock file: {str(e)}')
+                raise
         try:
-            if winner:
-                os.unlink(winner)
+            os.unlink(self.__tmpfname)
         except OSError as e:
-            if e.errno != errno.ENOENT: raise
+            if e.errno != errno.ENOENT:
+                self.__writelog(f'error removing temp file: {str(e)}')
+                raise
+        self.__writelog('lock broken', important=True)
 
     def __sleep(self):
-        interval = random.random() * 2.0 + 0.01
-        time.sleep(interval)
+        """Sleep for a short interval, handling keyboard interrupts gracefully."""
+        try:
+            # Use a fixed interval with small jitter for more predictable behavior
+            interval = 0.1 + (random.random() * 0.1)  # 100-200ms
+            time.sleep(interval)
+        except KeyboardInterrupt:
+            # If we get a keyboard interrupt during sleep, raise it
+            raise
+        except Exception:
+            # For any other exception during sleep, just continue
+            pass
+
+    def __cleanup(self):
+        """Clean up any temporary files in case of error."""
+        try:
+            if os.path.exists(self.__tmpfname):
+                os.unlink(self.__tmpfname)
+        except OSError as e:
+            self.__writelog(f'error cleaning up temp file: {str(e)}')
+
+    def __nfs_safe_stat(self, filename):
+        """Perform NFS-safe stat operation with retries."""
+        for i in range(self.__nfs_max_retries):
+            try:
+                return os.stat(filename)
+            except OSError as e:
+                if e.errno == errno.ESTALE:
+                    # NFS stale file handle
+                    time.sleep(self.__nfs_retry_delay)
+                    continue
+                raise
+        raise OSError(errno.ESTALE, "NFS stale file handle after retries")
 
 
 
