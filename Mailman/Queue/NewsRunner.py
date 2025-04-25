@@ -64,9 +64,14 @@ class NewsRunner(Runner):
         if not mm_cfg.DEFAULT_NNTP_HOST:
             syslog('info', 'newsrunner not starting due to DEFAULT_NNTP_HOST not being set')
             return
+        # Initialize parent class first
         Runner.__init__(self, slice, numslices)
+        # Override the switchboard with our specific one
         from Mailman.Queue.Switchboard import Switchboard
-        self._switchboard = Switchboard(self.QDIR)
+        self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
+        # Initialize _kids if not already done by parent
+        if not hasattr(self, '_kids'):
+            self._kids = {}
 
     def _dispose(self, mlist, msg, msgdata):
         # Make sure we have the most up-to-date state
