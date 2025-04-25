@@ -244,12 +244,11 @@ def list_listinfo(mlist, lang):
                 '<input type="hidden" name="sub_form_token"'
                 ' value="%s:%s:%s">\n'
                 % (now, captcha_idx,
-                          Utils.sha_new(mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
+                          Utils.sha_new((mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
                           now + ":" +
                           captcha_idx + ":" +
                           mlist.internal_name() + ":" +
-                          remote
-                          ).encode('utf-8').hexdigest()
+                          remote).encode('utf-8')).hexdigest()
                     )
                 )
     # Roster form substitutions
