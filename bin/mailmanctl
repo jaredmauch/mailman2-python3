@@ -280,10 +280,16 @@ def start_all_runners():
     kids = {}
     for qrname, count in mm_cfg.QRUNNERS:
         for slice in range(count):
-            # queue runner name, slice, numslices, restart count
-            info = (qrname, slice, count, 0)
-            pid = start_runner(qrname, slice, count)
-            kids[pid] = info
+            try:
+                # queue runner name, slice, numslices, restart count
+                info = (qrname, slice, count, 0)
+                pid = start_runner(qrname, slice, count)
+                kids[pid] = info
+            except Exception as e:
+                # Log the failure but continue with other runners
+                syslog('error', 'Failed to start %s runner (slice %d): %s', 
+                       qrname, slice, str(e))
+                continue
     return kids
 
 
@@ -346,7 +352,19 @@ def main():
 
     # Handle the command
     if args.command == 'start':
-        start_all_runners()
+        try:
+            kids = start_all_runners()
+            # Write PID file only if at least one runner started successfully
+            if kids:
+                with open(mm_cfg.PIDFILE, 'w') as fp:
+                    fp.write(str(os.getpid()))
+                syslog('info', 'Started %d runners successfully', len(kids))
+            else:
+                syslog('error', 'No runners started successfully')
+                sys.exit(1)
+        except Exception as e:
+            syslog('error', 'Error during startup: %s', str(e))
+            sys.exit(1)
     elif args.command == 'stop':
         kill_watcher(signal.SIGTERM)
     elif args.command == 'restart':
