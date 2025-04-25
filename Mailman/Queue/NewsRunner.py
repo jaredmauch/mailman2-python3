@@ -65,6 +65,8 @@ class NewsRunner(Runner):
             syslog('info', 'newsrunner not starting due to DEFAULT_NNTP_HOST not being set')
             return
         Runner.__init__(self, slice, numslices)
+        from Mailman.Queue.Switchboard import Switchboard
+        self._switchboard = Switchboard(self.QDIR)
 
     def _dispose(self, mlist, msg, msgdata):
         # Make sure we have the most up-to-date state
@@ -78,6 +80,7 @@ class NewsRunner(Runner):
             try:
                 try:
                     nntp_host, nntp_port = Utils.nntpsplit(mlist.nntp_host)
+                    syslog('nntp', 'Connecting to NNTP server %s:%s', nntp_host, nntp_port)
                     conn = nntplib.NNTP(nntp_host, nntp_port,
                                         readermode=True,
                                         user=mm_cfg.NNTP_USERNAME,

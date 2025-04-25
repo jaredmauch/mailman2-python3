@@ -57,6 +57,7 @@ class Connection(object):
     def __connect(self):
         self.__conn = smtplib.SMTP()
         self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
+        syslog('smtp', 'Connecting to SMTP server %s:%s', mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
         self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
@@ -64,13 +65,14 @@ class Connection(object):
                 helo_host = mm_cfg.SMTP_HELO_HOST
                 if not helo_host or helo_host.startswith('.'):
                     helo_host = mm_cfg.SMTPHOST
+                syslog('smtp', 'Using TLS with hostname: %s', helo_host)
                 try:
                     # Disable certificate validation
                     import ssl
                     context = ssl.create_default_context()
                     context.check_hostname = False
                     context.verify_mode = ssl.CERT_NONE
-                    self.__conn.starttls(context=context)
+                    self.__conn.starttls(context=context, server_hostname=helo_host)
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
