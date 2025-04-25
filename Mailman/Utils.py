@@ -1293,107 +1293,83 @@ def IsDMARCProhibited(mlist, email):
     return False
 
 def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
+    """Check if the domain has a DMARC policy that prohibits forwarding.
 
+    This is a helper function for IsDMARCProhibited().  It checks if the
+    domain has a DMARC policy that prohibits forwarding.  The domain is
+    either the domain part of the email address, or the organizational
+    domain.
+
+    :param mlist: The mailing list.
+    :type mlist: MailList
+    :param email: The email address to check.
+    :type email: str
+    :param dmarc_domain: The domain to check for DMARC policy.
+    :type dmarc_domain: str
+    :param org: If True, the domain is an organizational domain.
+    :type org: bool
+    :return: True if the domain has a DMARC policy that prohibits forwarding.
+    :rtype: bool
+    """
     try:
-        resolver = dns.resolver.Resolver()
-        resolver.timeout = float(mm_cfg.DMARC_RESOLVER_TIMEOUT)
-        resolver.lifetime = float(mm_cfg.DMARC_RESOLVER_LIFETIME)
-        txt_recs = resolver.query(dmarc_domain, dns.rdatatype.TXT)
-    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
-        return 'continue'
-    except (dns.resolver.NoNameservers):
+        txt_recs = dns.resolver.resolve(dmarc_domain, 'TXT')
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer,
+            dns.resolver.NoNameservers, dns.resolver.Timeout,
+            DNSException):
+        return False
+    if not txt_recs:
+        return False
+    # Be as robust as possible in parsing the result.
+    results_by_name = {}
+    cnames = {}
+    want_names = set([dmarc_domain + '.'])
+    for txt_rec in txt_recs.response.answer:
+        # Don't be fooled by an answer with uppercase in the name.
+        name = txt_rec.name.to_text().lower()
+        if txt_rec.rdtype == dns.rdatatype.CNAME:
+            cnames[name] = txt_rec.target.to_text()
+        if txt_rec.rdtype != dns.rdatatype.TXT:
+            continue
+        # Access the strings directly from the TXT record
+        results_by_name.setdefault(name, []).append(
+            "".join(txt_rec.strings))
+    expands = list(want_names)
+    seen = set(expands)
+    while expands:
+        item = expands.pop(0)
+        if item in cnames:
+            if cnames[item] in seen:
+                continue # cname loop
+            expands.append(cnames[item])
+            seen.add(cnames[item])
+            want_names.add(cnames[item])
+            want_names.discard(item)
+
+    if len(want_names) != 1:
         syslog('error',
-               'DNSException: No Nameservers available for %s (%s)',
-               email, dmarc_domain)
-        # Typically this means a dnssec validation error.  Clients that don't
-        # perform validation *may* successfully see a _dmarc RR whereas a
-        # validating mailman server won't see the _dmarc RR.  We should
-        # mitigate this email to be safe.
+               """multiple DMARC entries in results for %s,
+               using first one""" % dmarc_domain)
+    dmarc_txt = None
+    for name in want_names:
+        if name in results_by_name:
+            dmarc_txt = results_by_name[name][0]
+            break
+    if not dmarc_txt:
+        return False
+    # Parse the DMARC record.
+    try:
+        dmarc = dict(item.split('=', 1)
+                    for item in dmarc_txt.split(';')
+                    if '=' in item)
+    except (ValueError, AttributeError):
+        return False
+    # Check if the policy is 'reject' or 'quarantine'.
+    if dmarc.get('p', '').lower() in ('reject', 'quarantine'):
         return True
-    except DNSException as e:
-        syslog('error',
-               'DNSException: Unable to query DMARC policy for %s (%s). %s',
-               email, dmarc_domain, e.__doc__)
-        # While we can't be sure what caused the error, there is potentially
-        # a DMARC policy record that we missed and that a receiver of the mail
-        # might see.  Thus, we should err on the side of caution and mitigate.
+    # Check if the subdomain policy is 'reject' or 'quarantine'.
+    if (not org and
+        dmarc.get('sp', '').lower() in ('reject', 'quarantine')):
         return True
-    else:
-        # Be as robust as possible in parsing the result.
-        results_by_name = {}
-        cnames = {}
-        want_names = set([dmarc_domain + '.'])
-        for txt_rec in txt_recs.response.answer:
-            # Don't be fooled by an answer with uppercase in the name.
-            name = txt_rec.name.to_text().lower()
-            if txt_rec.rdtype == dns.rdatatype.CNAME:
-                cnames[name] = (
-                    txt_rec.items[0].target.to_text())
-            if txt_rec.rdtype != dns.rdatatype.TXT:
-                continue
-            results_by_name.setdefault(name, []).append(
-                "".join(txt_rec.items[0].strings))
-        expands = list(want_names)
-        seen = set(expands)
-        while expands:
-            item = expands.pop(0)
-            if item in cnames:
-                if cnames[item] in seen:
-                    continue # cname loop
-                expands.append(cnames[item])
-                seen.add(cnames[item])
-                want_names.add(cnames[item])
-                want_names.discard(item)
-
-        if len(want_names) != 1:
-            syslog('error',
-                   """multiple DMARC entries in results for %s,
-                   processing each to be strict""",
-                   dmarc_domain)
-        for name in want_names:
-            if name not in results_by_name:
-                continue
-            dmarcs = [n for n in results_by_name[name] if n.startswith('v=DMARC1;')]
-            if len(dmarcs) == 0:
-                return 'continue'
-            if len(dmarcs) > 1:
-                syslog('error',
-                       """RRset of TXT records for %s has %d v=DMARC1 entries;
-                       ignoring them per RFC 7849""",
-                        dmarc_domain, len(dmarcs))
-                return False
-            for entry in dmarcs:
-                mo = re.search(r'\bsp=(\w*)\b', entry, re.IGNORECASE)
-                if org and mo:
-                    policy = mo.group(1).lower()
-                else:
-                    mo = re.search(r'\bp=(\w*)\b', entry, re.IGNORECASE)
-                    if mo:
-                        policy = mo.group(1).lower()
-                    else:
-                        continue
-                if policy == 'reject':
-                    syslog('vette',
-                      '%s: DMARC lookup for %s (%s) found p=reject in %s = %s',
-                      mlist.real_name,  email, dmarc_domain, name, entry)
-                    return True
-
-                if (mlist.dmarc_quarantine_moderation_action and
-                    policy == 'quarantine'):
-                    syslog('vette',
-                  '%s: DMARC lookup for %s (%s) found p=quarantine in %s = %s',
-                          mlist.real_name,  email, dmarc_domain, name, entry)
-                    return True
-
-                if (mlist.dmarc_none_moderation_action and
-                    mlist.dmarc_quarantine_moderation_action and
-                    mlist.dmarc_moderation_action in (1, 2) and
-                    policy == 'none'):
-                    syslog('vette',
-                  '%s: DMARC lookup for %s (%s) found p=none in %s = %s',
-                          mlist.real_name,  email, dmarc_domain, name, entry)
-                    return True
-
     return False
 
 
