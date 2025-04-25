@@ -59,6 +59,9 @@ class NewsRunner(Runner):
     def __init__(self, slice=None, numslices=1):
         if not HAVE_NNTP:
             raise ImportError("NNTP support is not enabled. Please install python3-nntplib and reconfigure with --enable-nntp")
+        if not mm_cfg.DEFAULT_NNTP_HOST:
+            syslog('info', 'newsrunner not starting due to DEFAULT_NNTP_HOST not being set')
+            return
         Runner.__init__(self, slice, numslices)
 
     def _dispose(self, mlist, msg, msgdata):
