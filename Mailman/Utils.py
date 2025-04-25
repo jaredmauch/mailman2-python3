@@ -589,14 +589,14 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
     #
     # Calculate the languages to scan
     languages = []
-    if lang:
+    if lang is not None:
         languages.append(lang)
-    if mlist:
+    if mlist is not None:
         languages.append(mlist.preferred_language)
     languages.append(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-    # Calculate the directories to scan
+    # Calculate the locations to scan
     searchdirs = []
-    if mlist:
+    if mlist is not None:
         searchdirs.append(mlist.fullpath())
         searchdirs.append(os.path.join(mm_cfg.TEMPLATE_DIR, mlist.host_name))
     searchdirs.append(os.path.join(mm_cfg.TEMPLATE_DIR, 'site'))
@@ -608,7 +608,6 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         for lang in languages:
             for dir in searchdirs:
                 filename = os.path.join(dir, lang, templatefile)
-                syslog('error', 'Attempting to read template file: %s', filename)
                 try:
                     # Open in binary mode
                     fp = open(filename, 'rb')
@@ -618,39 +617,25 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
                     
                     # First try to decode as Python 2 string (latin-1)
                     try:
-                        syslog('error', 'Attempting to decode %s as latin-1', filename)
                         template = content.decode('latin-1')
-                        syslog('error', 'Successfully decoded %s as latin-1', filename)
-                    except UnicodeDecodeError as e:
-                        syslog('error', 'Failed to decode %s as latin-1: %s', filename, str(e))
+                    except UnicodeDecodeError:
                         # If that fails, try the language's charset
                         encoding = GetCharSet(lang)
                         try:
-                            syslog('error', 'Attempting to decode %s as %s', filename, encoding)
                             template = content.decode(encoding)
-                            syslog('error', 'Successfully decoded %s as %s', filename, encoding)
-                        except UnicodeDecodeError as e:
-                            syslog('error', 'Failed to decode %s as %s: %s', filename, encoding, str(e))
+                        except UnicodeDecodeError:
                             # If that fails, try UTF-8 with replacement
                             try:
-                                syslog('error', 'Attempting to decode %s as UTF-8 with replacement', filename)
                                 template = content.decode('utf-8', errors='replace')
-                                syslog('error', 'Successfully decoded %s as UTF-8 with replacement', filename)
-                            except UnicodeDecodeError as e:
-                                syslog('error', 'Failed to decode %s as UTF-8: %s', filename, str(e))
+                            except UnicodeDecodeError:
                                 # If UTF-8 fails, try ISO-8859-1 as a last resort
-                                syslog('error', 'Attempting to decode %s as ISO-8859-1 with replacement', filename)
                                 template = content.decode('iso-8859-1', errors='replace')
-                                syslog('error', 'Successfully decoded %s as ISO-8859-1 with replacement', filename)
                     
                     if template is not None:
                         raise OuterExit
                 except IOError as e:
-                    if e.errno != errno.ENOENT: 
-                        syslog('error', 'IOError reading %s: %s', filename, str(e))
-                        raise
+                    if e.errno != errno.ENOENT: raise
                     # Okay, it doesn't exist, keep looping
-                    syslog('error', 'Template file not found: %s', filename)
                     if fp:
                         fp.close()
                         fp = None
@@ -660,34 +645,22 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         # Try one last time with the distro English template
         try:
             filename = os.path.join(mm_cfg.TEMPLATE_DIR, 'en', templatefile)
-            syslog('error', 'Attempting to read fallback English template: %s', filename)
             fp = open(filename, 'rb')
             content = fp.read()
             fp.close()
             fp = None
             try:
                 # First try Python 2 string format
-                syslog('error', 'Attempting to decode %s as latin-1', filename)
                 template = content.decode('latin-1')
-                syslog('error', 'Successfully decoded %s as latin-1', filename)
-            except UnicodeDecodeError as e:
-                syslog('error', 'Failed to decode %s as latin-1: %s', filename, str(e))
+            except UnicodeDecodeError:
                 try:
-                    syslog('error', 'Attempting to decode %s as UTF-8', filename)
                     template = content.decode('utf-8')
-                    syslog('error', 'Successfully decoded %s as UTF-8', filename)
-                except UnicodeDecodeError as e:
-                    syslog('error', 'Failed to decode %s as UTF-8: %s', filename, str(e))
+                except UnicodeDecodeError:
                     # If UTF-8 fails, try ISO-8859-1
-                    syslog('error', 'Attempting to decode %s as ISO-8859-1 with replacement', filename)
                     template = content.decode('iso-8859-1', errors='replace')
-                    syslog('error', 'Successfully decoded %s as ISO-8859-1 with replacement', filename)
         except IOError as e:
-            if e.errno != errno.ENOENT: 
-                syslog('error', 'IOError reading fallback template %s: %s', filename, str(e))
-                raise
+            if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
-            syslog('error', 'No template file found: %s', templatefile)
             raise Exception(IOError(errno.ENOENT, 'No template file found', templatefile))
     if fp:
         fp.close()

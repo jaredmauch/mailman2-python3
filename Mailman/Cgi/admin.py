@@ -669,7 +669,6 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
     value = None
     category_data = mlist.GetConfigCategories()[category]
     if isinstance(category_data, tuple):
-        # If it's a tuple, the first element is the category name and the second is the GUI object
         gui = category_data[1]
     if hasattr(gui, 'getValue'):
         value = gui.getValue(mlist, kind, varname, params)
@@ -1465,26 +1464,59 @@ def change_options(mlist, category, subcat, cgidata, doc):
         mlist.mod_password = newmodpw
 
     # Process the rest of the options
-    category_data = mlist.GetConfigCategories()[category]
-    gui = category_data[1]  # The second element is the GUI object
-    options = gui.GetConfigInfo(mlist, category)
-    if options:
-        for item in options:
-            if not item:
-                continue
-            # Get the variable name and its value
-            varname = item[0]
-            value = get_value(varname)
+    try:
+        categories = mlist.GetConfigCategories()
+        print(f"Debug: categories={categories}, type={type(categories)}")  # Debug line
+        if category not in categories:
+            print(f"Debug: category '{category}' not found in categories")  # Debug line
+            doc.addError(_(f'Invalid category: {category}'))
+            return doc
             
-            # Set the value based on its type
-            if value is not None:
-                if item[1] in (mm_cfg.Radio, mm_cfg.Toggle, mm_cfg.Number):
-                    try:
-                        setattr(mlist, varname, int(value))
-                    except (ValueError, TypeError):
-                        setattr(mlist, varname, 0)
-            else:
-                    setattr(mlist, varname, value)
+        category_data = categories[category]
+        print(f"Debug: category={category}, category_data={category_data}, type={type(category_data)}")  # Debug line
+        
+        if not isinstance(category_data, tuple):
+            print(f"Debug: category_data is not a tuple, it's {type(category_data)}")  # Debug line
+            doc.addError(_(f'Invalid category data type for {category}'))
+            return doc
+            
+        if len(category_data) < 2:
+            print(f"Debug: category_data tuple too short: {category_data}")  # Debug line
+            doc.addError(_(f'Invalid category data format for {category}'))
+            return doc
+            
+        gui = category_data[1]  # The second element is the GUI object
+        print(f"Debug: gui={gui}, type={type(gui)}")  # Debug line
+        
+        if not hasattr(gui, 'GetConfigInfo'):
+            print(f"Debug: gui object missing GetConfigInfo method")  # Debug line
+            doc.addError(_(f'Invalid GUI object for {category}'))
+            return doc
+            
+        options = gui.GetConfigInfo(mlist, category)
+        print(f"Debug: options={options}, type={type(options)}")  # Debug line
+        
+        if options:
+            for item in options:
+                if not item:
+                    continue
+                # Get the variable name and its value
+                varname = item[0]
+                value = get_value(varname)
+                
+                # Set the value based on its type
+                if value is not None:
+                    if item[1] in (mm_cfg.Radio, mm_cfg.Toggle, mm_cfg.Number):
+                        try:
+                            setattr(mlist, varname, int(value))
+                        except (ValueError, TypeError):
+                            setattr(mlist, varname, 0)
+                    else:
+                        setattr(mlist, varname, value)
+    except Exception as e:
+        print(f"Debug: Exception in change_options: {str(e)}")  # Debug line
+        doc.addError(_(f'Error processing options: {str(e)}'))
+        return doc
 
     # Save the changes
     mlist.Save()
