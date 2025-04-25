@@ -1462,7 +1462,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         mlist.mod_password = newmodpw
 
     # Process the rest of the options
-    for item in mlist.GetConfigCategories()[category].items:
+    for item in mlist.GetConfigCategories()[category].items():
         if not item:
             continue
         # Get the variable name and its value
