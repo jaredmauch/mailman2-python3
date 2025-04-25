@@ -68,7 +68,6 @@ def getDecodedHeaders(msg, cset='utf-8'):
     """Returns a unicode containing all the headers of msg, unfolded and
     RFC 2047 decoded, normalized and separated by new lines.
     """
-
     headers = u''
     for h, v in list(msg.items()):
         uvalue = u''
