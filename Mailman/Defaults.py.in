@@ -631,7 +631,7 @@ NNTP_USERNAME = None
 NNTP_PASSWORD = None
 
 # Set this if you have an NNTP server you prefer gatewayed lists to use.
-DEFAULT_NNTP_HOST = ''
+DEFAULT_NNTP_HOST = None
 
 # These variables controls how headers must be cleansed in order to be
 # accepted by your NNTP server.  Some servers like INN reject messages

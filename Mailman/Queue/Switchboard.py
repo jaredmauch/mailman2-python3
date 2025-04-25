@@ -40,7 +40,7 @@ import email
 import errno
 import pickle
 import marshal
-from email.message import Message
+from email.message import Message as EmailMessage
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -165,23 +165,25 @@ class Switchboard:
         return filebase
 
     def dequeue(self, filebase):
-        # Calculate the filename from the given filebase.
-        filename = os.path.join(self.__whichq, filebase + '.pck')
-        backfile = os.path.join(self.__whichq, filebase + '.bak')
-        # Read the message object and metadata.
-        fp = open(filename, 'rb')
-        # Move the file to the backup file name for processing.  If this
-        # process crashes uncleanly the .bak file will be used to re-instate
-        # the .pck file in order to try again.
-        os.rename(filename, backfile)
-        try:
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-            data = pickle.load(fp, fix_imports=True, encoding='latin1')
-        finally:
-            fp.close()
-        if data.get('_parsemsg'):
-            msg = email.message_from_string(msg, Message)
-        return msg, data
+        # Read the message data + metadata
+        data = self._get_envelope_data(filebase)
+        if data is None:
+            return None, None
+        msgdata = {}
+        # The first line is the message metadata
+        metadata = data.readline()
+        if not metadata:
+            return None, None
+        metadata = metadata.strip()
+        if metadata:
+            msgdata = self._parse_metadata(metadata)
+        # The rest is the message
+        msg = data.read()
+        if not msg:
+            return None, None
+        # Parse the message into an email object
+        msg = email.message_from_string(msg, EmailMessage)
+        return msg, msgdata
 
     def finish(self, filebase, preserve=False):
         bakfile = os.path.join(self.__whichq, filebase + '.bak')
