@@ -163,9 +163,15 @@ def set_signals(loop):
     # SIGHUP just tells us to close our log files.  They'll be
     # automatically reopened at the next log print :)
     def sighup_handler(signum, frame, loop=loop):
-        syslog.close()
-        syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
-               loop.name())
+        try:
+            syslog.close()
+            # Reopen syslog connection
+            syslog.open()
+            syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
+                   loop.name())
+        except Exception as e:
+            # Log any errors but don't let them propagate
+            print('Error in SIGHUP handler:', str(e), file=sys.stderr)
     signal.signal(signal.SIGHUP, sighup_handler)
 
 

@@ -60,6 +60,10 @@ class Connection(object):
         self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
+                # Ensure we have a valid hostname for TLS
+                helo_host = mm_cfg.SMTP_HELO_HOST
+                if not helo_host or helo_host.startswith('.'):
+                    helo_host = mm_cfg.SMTPHOST
                 try:
                     self.__conn.starttls()
                 except SMTPException as e:
@@ -67,7 +71,7 @@ class Connection(object):
                     self.quit()
                     raise
                 try:
-                    self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
+                    self.__conn.ehlo(helo_host)
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP EHLO error: %s', e)
                     self.quit()
