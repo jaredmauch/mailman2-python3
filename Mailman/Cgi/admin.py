@@ -53,7 +53,7 @@ OPTCOLUMNS = 11
 
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
-
+
 def main():
     # Try to find out which list is being administered
     parts = Utils.GetPathPieces()
@@ -255,7 +255,7 @@ def main():
         # we're already unlocked.
         mlist.Unlock()
 
-
+
 def admin_overview(msg=''):
     # Show the administrative overview page, with the list of all the lists on
     # this host.  msg is an optional error message to display at the top of
@@ -358,7 +358,7 @@ def admin_overview(msg=''):
     doc.AddItem(MailmanLogo())
     print(doc.Format())
 
-
+
 def option_help(mlist, varhelp):
     # The html page document
     doc = Document()
@@ -431,7 +431,7 @@ def option_help(mlist, varhelp):
     doc.AddItem(mlist.GetMailmanFooter())
     print(doc.Format())
 
-
+
 def show_results(mlist, doc, category, subcat, cgidata):
     # Produce the results page
     adminurl = mlist.GetScriptURL('admin')
@@ -579,7 +579,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
     doc.AddItem(form)
     doc.AddItem(mlist.GetMailmanFooter())
 
-
+
 def show_variables(mlist, category, subcat, cgidata, doc):
     options = mlist.GetConfigInfo(category, subcat)
 
@@ -626,7 +626,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
     return table
 
-
+
 def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
     # Add a row to an options table with the item description and value.
     varname, kind, params, extra, descr, elaboration = \
@@ -642,7 +642,7 @@ def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
     table.AddCellInfo(table.GetCurrentRowIndex(), 1,
                       bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
 
-
+
 def get_item_characteristics(record):
     # Break out the components of an item description from its description
     # record:
@@ -662,7 +662,7 @@ def get_item_characteristics(record):
         raise ValueError(f'Badly formed options entry:\n {record}')
     return varname, kind, params, dependancies, descr, elaboration
 
-
+
 def get_item_gui_value(mlist, category, kind, varname, params, extra):
     """Return a representation of an item's settings."""
     # Give the category a chance to return the value for the variable
@@ -671,8 +671,8 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
     if isinstance(category_data, tuple):
         # If it's a tuple, the first element is the category name and the second is the GUI object
         gui = category_data[1]
-        if hasattr(gui, 'getValue'):
-            value = gui.getValue(mlist, kind, varname, params)
+    if hasattr(gui, 'getValue'):
+        value = gui.getValue(mlist, kind, varname, params)
     # Filter out None, and volatile attributes
     if value is None and not varname.startswith('_'):
         value = getattr(mlist, varname)
@@ -849,7 +849,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
     else:
         assert 0, 'Bad gui widget type: %s' % kind
 
-
+
 def get_item_gui_description(mlist, category, subcat,
                              varname, descr, elaboration, detailsp):
     # Return the item's description, with link to details.
@@ -876,7 +876,7 @@ def get_item_gui_description(mlist, category, subcat,
         permanent state.</em>''')).Format()
     return text
 
-
+
 def membership_options(mlist, subcat, cgidata, doc, form):
     # Show the main stuff
     adminurl = mlist.GetScriptURL('admin', absolute=1)
@@ -1218,7 +1218,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         container.AddItem(footer + buttons.Format() + '<p>')
     return container
 
-
+
 def mass_subscribe(mlist, container):
     # MASS SUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1268,7 +1268,7 @@ def mass_subscribe(mlist, container):
                                   rows=10, cols='70%', wrap=None))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
 
-
+
 def mass_remove(mlist, container):
     # MASS UNSUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1299,7 +1299,7 @@ def mass_remove(mlist, container):
                   FileUpload('unsubscribees_upload', cols='50')])
     container.AddItem(Center(table))
 
-
+
 def address_change(mlist, container):
     # ADDRESS CHANGE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1330,7 +1330,7 @@ def address_change(mlist, container):
     table.AddCellInfo(table.GetCurrentRowIndex(), 2, bgcolor=GREY)
     container.AddItem(Center(table))
 
-
+
 def mass_sync(mlist, container):
     # MASS SYNC
     table = Table(width='90%')
@@ -1343,7 +1343,7 @@ def mass_sync(mlist, container):
                   FileUpload('memberlist_upload', cols='50')])
     container.AddItem(Center(table))
 
-
+
 def password_inputs(mlist):
     adminurl = mlist.GetScriptURL('admin', absolute=1)
     table = Table(cellspacing=3, cellpadding=4)
@@ -1400,14 +1400,14 @@ no other.""")])
     table.AddRow([ptable])
     return table
 
-
+
 def submit_button(name='submit'):
     table = Table(border=0, cellspacing=0, cellpadding=2)
     table.AddRow([Bold(SubmitButton(name, _('Submit Your Changes')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, align='middle')
     return table
 
-
+
 def change_options(mlist, category, subcat, cgidata, doc):
     # This function processes the form submission from the web interface.
     # Returns None if there are no changes, or a results document object.
@@ -1483,7 +1483,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                         setattr(mlist, varname, int(value))
                     except (ValueError, TypeError):
                         setattr(mlist, varname, 0)
-                else:
+            else:
                     setattr(mlist, varname, value)
 
     # Save the changes
