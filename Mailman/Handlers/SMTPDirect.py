@@ -65,7 +65,12 @@ class Connection(object):
                 if not helo_host or helo_host.startswith('.'):
                     helo_host = mm_cfg.SMTPHOST
                 try:
-                    self.__conn.starttls()
+                    # Disable certificate validation
+                    import ssl
+                    context = ssl.create_default_context()
+                    context.check_hostname = False
+                    context.verify_mode = ssl.CERT_NONE
+                    self.__conn.starttls(context=context)
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
