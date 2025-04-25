@@ -148,9 +148,10 @@ def usage(code, msg=''):
     else:
         fd = sys.stdout
     # Ensure PROGRAM is a string, not bytes
-    if isinstance(PROGRAM, bytes):
-        PROGRAM = PROGRAM.decode('utf-8', 'replace')
-    print(C_(__doc__), file=fd)
+    program = sys.argv[0]
+    if isinstance(program, bytes):
+        program = program.decode('utf-8', 'replace')
+    print(C_(__doc__) % {'PROGRAM': program}, file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
