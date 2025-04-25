@@ -24,10 +24,9 @@ which is more convenient for use inside Mailman.
 import re
 from io import StringIO
 
-from email import __version__ as email_version
-from email.generator import Generator as EmailGenerator
-from email.message import Message as EmailMessage
-from email.utils import getaddresses
+import email
+import email.generator
+import email.utils
 from email.charset import Charset
 from email.header import Header
 
@@ -36,21 +35,21 @@ from Mailman import Utils
 
 COMMASPACE = ', '
 
-if hasattr(email_version, '__version__'):
-    mo = re.match(r'([\d.]+)', email_version)
+if hasattr(email, '__version__'):
+    mo = re.match(r'([\d.]+)', email.__version__)
 else:
     mo = re.match(r'([\d.]+)', '2.1.39') # XXX should use @@MM_VERSION@@ perhaps?
 VERSION = tuple([int(s) for s in mo.group().split('.')])
 
 
-class Generator(EmailGenerator):
+class Generator(email.generator.Generator):
     """Generates output from a Message object tree, keeping signatures.
 
        Headers will by default _not_ be folded in attachments.
     """
     def __init__(self, outfp, mangle_from_=True,
                  maxheaderlen=78, children_maxheaderlen=0):
-        EmailGenerator.__init__(self, outfp,
+        email.generator.Generator.__init__(self, outfp,
                 mangle_from_=mangle_from_, maxheaderlen=maxheaderlen)
         self.__children_maxheaderlen = children_maxheaderlen
 
@@ -60,11 +59,11 @@ class Generator(EmailGenerator):
                 self.__children_maxheaderlen, self.__children_maxheaderlen)
 
 
-class Message(EmailMessage):
+class Message(email.message.Message):
     def __init__(self):
         # We need a version number so that we can optimize __setstate__()
         self.__version__ = VERSION
-        EmailMessage.__init__(self)
+        email.message.Message.__init__(self)
 
     # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
     def __repr__(self):

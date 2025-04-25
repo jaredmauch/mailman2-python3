@@ -233,51 +233,70 @@ class LockFile:
     def lock(self, timeout=0):
         """Acquire the lock with improved timeout and interrupt handling."""
         if self.locked():
+            self.__writelog('already locked', important=True)
             raise AlreadyLockedError
+
         # Set up the timeout
         if timeout > 0:
             endtime = time.time() + timeout
         else:
             endtime = None
+
         # Try to acquire the lock
         loopcount = 0
         retry_count = 0
+        last_log_time = 0
+
         while True:
             try:
                 # Check for timeout
                 if endtime and time.time() > endtime:
+                    self.__writelog('timeout while waiting for lock', important=True)
                     raise TimeOutError
+
                 # Check for max retries
                 if retry_count >= self.__max_retries:
                     self.__writelog('max retries exceeded', important=True)
                     raise TimeOutError
+
                 # Try to acquire the lock
                 if self._take_possession():
-                    self.__writelog('locked')
+                    self.__writelog('successfully acquired lock')
                     return
+
                 # Check if the lock is stale
-                if self.__releasetime() < time.time():
-                    # Yes, so break the lock.
+                releasetime = self.__releasetime()
+                current_time = time.time()
+                if releasetime < current_time:
+                    # Lock is stale, try to break it
+                    self.__writelog(f'stale lock detected (releasetime={releasetime}, current={current_time})', important=True)
                     self.__break()
-                    self.__writelog('lifetime has expired, breaking',
-                                    important=True)
-                # Wait a while for the owner of the lock to give it up
-                elif not loopcount % 100:
-                    self.__writelog('waiting for claim')
-                self.__sleep()
+                    self.__writelog('broke stale lock', important=True)
+                    # Try to acquire again immediately after breaking
+                    if self._take_possession():
+                        self.__writelog('acquired lock after breaking stale lock')
+                        return
+
+                # Log waiting status every 5 seconds
+                if current_time - last_log_time > 5:
+                    self.__writelog(f'waiting for lock (attempt {retry_count + 1}/{self.__max_retries})')
+                    last_log_time = current_time
+
+                # Sleep with better interrupt handling
+                try:
+                    time.sleep(0.1)  # Shorter sleep interval
+                except KeyboardInterrupt:
+                    self.__writelog('interrupted while waiting for lock', important=True)
+                    self.__cleanup()
+                    raise
+
                 loopcount += 1
                 retry_count += 1
-            except KeyboardInterrupt:
-                # If we get a keyboard interrupt, clean up and re-raise
-                self.__writelog('interrupted while waiting for lock')
+
+            except Exception as e:
+                self.__writelog(f'error while waiting for lock: {str(e)}', important=True)
                 self.__cleanup()
                 raise
-            except Exception as e:
-                # Log any other exceptions but continue trying
-                self.__writelog(f'error while waiting for lock: {str(e)}')
-                self.__sleep()
-                loopcount += 1
-                retry_count += 1
 
     def unlock(self, unconditionally=False):
         """Unlock the lock.
@@ -376,13 +395,58 @@ class LockFile:
         self.__writelog('transferred the lock')
 
     def _take_possession(self):
-        self.__tmpfname = tmpfname = '%s.%s.%d' % (
-            self.__lockfile, socket.gethostname(), os.getpid())
-        # Wait until the linkcount is 2, indicating the parent has completed
-        # the transfer.
-        while self.__linkcount() != 2 or self.__read() != tmpfname:
-            time.sleep(0.25)
-        self.__writelog('took possession of the lock')
+        """Try to take possession of the lock with detailed tracing."""
+        self.__writelog('attempting to take possession of lock', important=True)
+        self.__writelog(f'lock file: {self.__lockfile}', important=True)
+        self.__writelog(f'temp file: {self.__tmpfname}', important=True)
+        
+        try:
+            # Create our temp file
+            self.__writelog('creating temp file')
+            self.__write()
+            
+            # First check if lock file exists
+            try:
+                st = self.__nfs_safe_stat(self.__lockfile)
+                if st[ST_NLINK] == 0:
+                    self.__writelog('lock file exists but has no links')
+                    try:
+                        os.unlink(self.__lockfile)
+                    except OSError as e:
+                        if e.errno != errno.ENOENT:
+                            raise
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+            
+            # Try to create a hard link from our temp file to the lock file
+            self.__writelog('attempting to create hard link')
+            try:
+                os.link(self.__tmpfname, self.__lockfile)
+                self.__writelog('hard link created successfully')
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    self.__writelog('hard link already exists')
+                    return False
+                elif e.errno == errno.ENOENT:
+                    self.__writelog('lock file does not exist')
+                    return False
+                else:
+                    self.__writelog(f'unexpected error creating hard link: {str(e)}', important=True)
+                    raise
+            
+            # Double check our link count after a small delay to handle NFS
+            time.sleep(0.1)  # Small delay for NFS
+            if self.__linkcount() == 2:
+                self.__writelog('lock acquired successfully')
+                return True
+            
+            self.__writelog('lock acquisition failed')
+            return False
+            
+        except Exception as e:
+            self.__writelog(f'error in _take_possession: {str(e)}', important=True)
+            raise
 
     def _disown(self):
         self.__owned = False
@@ -392,12 +456,15 @@ class LockFile:
     #
 
     def __writelog(self, msg, important=False):
-        """Write a message to the log file."""
+        """Write a message to the log file with more context."""
         if not self.__withlogging and not important:
             return
         try:
             logf = _get_logfile()
-            logf.write('%s %s\n' % (self.__logprefix, msg))
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+            pid = os.getpid()
+            hostname = socket.gethostname()
+            logf.write(f'{timestamp} [{pid}@{hostname}] {self.__logprefix}: {msg}\n')
             if important:
                 traceback.print_stack(file=logf)
         except Exception:
@@ -422,11 +489,14 @@ class LockFile:
             raise e
 
     def __write(self):
-        """Write the lock file atomically."""
+        """Write the temp file with detailed tracing."""
         try:
-            self.__atomic_write(self.__tmpfname, self.__tmpfname)
-        except OSError as e:
-            self.__writelog(f'error writing temp file: {str(e)}')
+            self.__writelog('writing temp file')
+            with open(self.__tmpfname, 'w') as fp:
+                fp.write(self.__tmpfname)
+            self.__writelog('temp file written successfully')
+        except Exception as e:
+            self.__writelog(f'error writing temp file: {str(e)}', important=True)
             raise
 
     def __read(self):
@@ -458,37 +528,61 @@ class LockFile:
             return -1
 
     def __linkcount(self):
-        """Get link count with NFS safety."""
+        """Get the link count with detailed tracing."""
         try:
-            return self.__nfs_safe_stat(self.__lockfile)[ST_NLINK]
+            count = os.stat(self.__lockfile)[ST_NLINK]
+            self.__writelog(f'link count: {count}')
+            return count
         except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            return -1
+            if e.errno == errno.ENOENT:
+                self.__writelog('lock file does not exist')
+                return 0
+            self.__writelog(f'error getting link count: {str(e)}', important=True)
+            raise
 
     def __break(self):
         """Break a stale lock with improved error handling."""
         try:
-            # First, touch the global lock file to reduce race conditions
-            self.__touch()
-        except OSError as e:
-            if e.errno != errno.EPERM:
-                self.__writelog(f'error touching lock file: {str(e)}')
-                raise
-        # Remove the lock files
-        try:
-            os.unlink(self.__lockfile)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                self.__writelog(f'error removing lock file: {str(e)}')
-                raise
-        try:
-            os.unlink(self.__tmpfname)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                self.__writelog(f'error removing temp file: {str(e)}')
-                raise
-        self.__writelog('lock broken', important=True)
+            # Get the current owner's temp file
+            owner = self.__read()
+            if not owner:
+                self.__writelog('no owner found for lock file', important=True)
+                # If no owner is found, try to remove the lock file anyway
+                try:
+                    os.unlink(self.__lockfile)
+                    self.__writelog('removed orphaned lock file')
+                except OSError as e:
+                    if e.errno != errno.ENOENT:
+                        self.__writelog(f'error removing orphaned lock file: {str(e)}', important=True)
+                        raise
+                return
+
+            # Try to remove the lock file first
+            try:
+                os.unlink(self.__lockfile)
+                self.__writelog('removed lock file')
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    self.__writelog(f'error removing lock file: {str(e)}', important=True)
+                    raise
+
+            # Then try to remove the owner's temp file
+            try:
+                os.unlink(owner)
+                self.__writelog('removed owner temp file')
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    self.__writelog(f'error removing owner temp file: {str(e)}', important=True)
+                    # Don't raise here - we've already removed the lock file
+
+            self.__writelog('successfully broke lock', important=True)
+            
+            # Small delay after breaking lock to let NFS catch up
+            time.sleep(0.1)
+            
+        except Exception as e:
+            self.__writelog(f'error breaking lock: {str(e)}', important=True)
+            raise
 
     def __sleep(self):
         """Sleep for a short interval, handling keyboard interrupts gracefully."""
@@ -504,12 +598,12 @@ class LockFile:
             pass
 
     def __cleanup(self):
-        """Clean up any temporary files in case of error."""
+        """Clean up any temporary files."""
         try:
             if os.path.exists(self.__tmpfname):
                 os.unlink(self.__tmpfname)
-        except OSError as e:
-            self.__writelog(f'error cleaning up temp file: {str(e)}')
+        except Exception as e:
+            self.__writelog(f'error during cleanup: {str(e)}', important=True)
 
     def __nfs_safe_stat(self, filename):
         """Perform NFS-safe stat operation with retries."""

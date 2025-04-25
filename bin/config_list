@@ -66,6 +66,7 @@ import sys
 import argparse
 import re
 import time
+import logging
 
 import paths
 from Mailman import mm_cfg
@@ -75,6 +76,13 @@ from Mailman import Errors
 from Mailman import i18n
 
 from typing import Tuple
+
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='/tmp/mailman_config_list.log'
+)
 
 _ = i18n._
 C_ = i18n.C_
@@ -371,6 +379,7 @@ def do_input(listname, infile, checkonly, verbose):
 
 
 def main():
+    logging.debug("Starting config_list")
     parser = argparse.ArgumentParser(description='Configure a mailing list.')
     parser.add_argument('listname', help='Name of the mailing list')
     parser.add_argument('-i', '--input-file', help='File containing configuration')
@@ -383,100 +392,31 @@ def main():
     parser.add_argument('-s', '--subcategory', help='Show options in specific subcategory')
 
     args = parser.parse_args()
+    logging.debug(f"Parsed arguments: {args}")
 
     try:
+        logging.debug(f"Attempting to load list: {args.listname}")
         mlist = MailList.MailList(args.listname, lock=1)
+        logging.debug("Successfully loaded list")
     except Errors.MMUnknownListError:
+        logging.error(f"List not found: {args.listname}")
         usage(1, _('No such list "%(listname)s"'))
 
-    if args.input_file:
-        try:
-            fp = open(args.input_file)
-        except IOError:
-            usage(1, _('Cannot open file: %(file)s'))
-        config = {}
-        for line in fp:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                key, value = line.split('=', 1)
-                config[key.strip()] = value.strip()
-        fp.close()
+    try:
+        logging.debug("Getting configuration categories")
+        categories = mlist.GetConfigCategories()
+        logging.debug(f"Got categories: {list(categories.keys())}")
         
         # Get configuration items using GetConfigInfo()
         for category in mm_cfg.ADMIN_CATEGORIES:
+            logging.debug(f"Processing category: {category}")
             subcats = mlist.GetConfigSubCategories(category)
+            logging.debug(f"Got subcategories: {subcats}")
+            
             if subcats is None:
+                logging.debug(f"Getting config info for category {category}")
                 info = mlist.GetConfigInfo(category, None)
-                if info:
-                    for data in info[1:]:
-                        if not isinstance(data, Tuple):
-                            continue
-                        key = data[0]
-                        if key in config:
-                            try:
-                                setattr(mlist, key, config[key])
-                            except Errors.MMListError as e:
-                                print(_('Error setting %(key)s: %(error)s') % {'key': key, 'error': str(e)})
-            else:
-                for subcat, _ in subcats:
-                    info = mlist.GetConfigInfo(category, subcat)
-                    if info:
-                        for data in info[1:]:
-                            if not isinstance(data, Tuple):
-                                continue
-                            key = data[0]
-                            if key in config:
-                                try:
-                                    setattr(mlist, key, config[key])
-                                except Errors.MMListError as e:
-                                    print(_('Error setting %(key)s: %(error)s') % {'key': key, 'error': str(e)})
-        mlist.Save()
-    elif args.output_file:
-        try:
-            fp = open(args.output_file, 'w')
-        except IOError:
-            usage(1, _('Cannot open file: %(file)s'))
-        # Get configuration items using GetConfigInfo()
-        for category in mm_cfg.ADMIN_CATEGORIES:
-            subcats = mlist.GetConfigSubCategories(category)
-            if subcats is None:
-                info = mlist.GetConfigInfo(category, None)
-                if info:
-                    for data in info[1:]:
-                        if not isinstance(data, Tuple):
-                            continue
-                        key = data[0]
-                        if not args.all and key.startswith('_'):
-                            continue
-                        if args.category and not key.startswith(args.category + '_'):
-                            continue
-                        if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
-                            continue
-                        value = getattr(mlist, key)
-                        print(f"{key}={value}", file=fp)
-            else:
-                for subcat, _ in subcats:
-                    info = mlist.GetConfigInfo(category, subcat)
-                    if info:
-                        for data in info[1:]:
-                            if not isinstance(data, Tuple):
-                                continue
-                            key = data[0]
-                            if not args.all and key.startswith('_'):
-                                continue
-                            if args.category and not key.startswith(args.category + '_'):
-                                continue
-                            if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
-                                continue
-                            value = getattr(mlist, key)
-                            print(f"{key}={value}", file=fp)
-        fp.close()
-    else:
-        # Get configuration items using GetConfigInfo()
-        for category in mm_cfg.ADMIN_CATEGORIES:
-            subcats = mlist.GetConfigSubCategories(category)
-            if subcats is None:
-                info = mlist.GetConfigInfo(category, None)
+                logging.debug(f"Got config info: {info is not None}")
                 if info:
                     for data in info[1:]:
                         if not isinstance(data, Tuple):
@@ -495,7 +435,9 @@ def main():
                             print(key)
             else:
                 for subcat, _ in subcats:
+                    logging.debug(f"Getting config info for category {category}, subcategory {subcat}")
                     info = mlist.GetConfigInfo(category, subcat)
+                    logging.debug(f"Got config info: {info is not None}")
                     if info:
                         for data in info[1:]:
                             if not isinstance(data, Tuple):
@@ -513,7 +455,13 @@ def main():
                             else:
                                 print(key)
 
-    mlist.Unlock()
+    except Exception as e:
+        logging.error(f"Error occurred: {str(e)}", exc_info=True)
+        raise
+    finally:
+        logging.debug("Unlocking list")
+        mlist.Unlock()
+        logging.debug("Finished config_list")
 
 
 if __name__ == '__main__':
