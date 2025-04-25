@@ -667,9 +667,12 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
     """Return a representation of an item's settings."""
     # Give the category a chance to return the value for the variable
     value = None
-    label, gui = mlist.GetConfigCategories()[category]
-    if hasattr(gui, 'getValue'):
-        value = gui.getValue(mlist, kind, varname, params)
+    category_data = mlist.GetConfigCategories()[category]
+    if isinstance(category_data, tuple):
+        # If it's a tuple, the first element is the category name and the second is the GUI object
+        gui = category_data[1]
+        if hasattr(gui, 'getValue'):
+            value = gui.getValue(mlist, kind, varname, params)
     # Filter out None, and volatile attributes
     if value is None and not varname.startswith('_'):
         value = getattr(mlist, varname)
@@ -1462,22 +1465,29 @@ def change_options(mlist, category, subcat, cgidata, doc):
         mlist.mod_password = newmodpw
 
     # Process the rest of the options
-    for item in mlist.GetConfigCategories()[category].items():
-        if not item:
-            continue
-        # Get the variable name and its value
-        varname = item[0]
-        value = get_value(varname)
-        
-        # Set the value based on its type
-        if value is not None:
-            if item[1] in (mm_cfg.Radio, mm_cfg.Toggle, mm_cfg.Number):
-                try:
-                    setattr(mlist, varname, int(value))
-                except (ValueError, TypeError):
-                    setattr(mlist, varname, 0)
-            else:
-                setattr(mlist, varname, value)
+    category_data = mlist.GetConfigCategories()[category]
+    if isinstance(category_data, tuple):
+        # If it's a tuple, the first element is the category name and the second is the GUI object
+        gui = category_data[1]
+        if hasattr(gui, 'GetConfigInfo'):
+            options = gui.GetConfigInfo(mlist, category)
+            if options:
+                for item in options:
+                    if not item:
+                        continue
+                    # Get the variable name and its value
+                    varname = item[0]
+                    value = get_value(varname)
+                    
+                    # Set the value based on its type
+                    if value is not None:
+                        if item[1] in (mm_cfg.Radio, mm_cfg.Toggle, mm_cfg.Number):
+                            try:
+                                setattr(mlist, varname, int(value))
+                            except (ValueError, TypeError):
+                                setattr(mlist, varname, 0)
+                        else:
+                            setattr(mlist, varname, value)
 
     # Save the changes
     mlist.Save()
