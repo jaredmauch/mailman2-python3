@@ -52,7 +52,7 @@ your membership administrative address, %(addr)s.'''))
         else:
             umbrella = ''
         # get the text from the template
-        text += Utils.maketext(
+        text += str(Utils.maketext(
             'subscribeack.txt',
             {'real_name'   : self.real_name,
              'host_name'   : self.host_name,
@@ -63,7 +63,7 @@ your membership administrative address, %(addr)s.'''))
              'optionsurl'  : self.GetOptionsURL(name, absolute=True),
              'password'    : password,
              'user'        : self.getMemberCPAddress(name),
-             }, lang=pluser, mlist=self)
+             }, lang=pluser, mlist=self))
         if digest:
             digmode = _(' (Digest mode)')
         else:

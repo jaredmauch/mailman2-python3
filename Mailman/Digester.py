@@ -42,6 +42,8 @@ class Digester(object):
         self.digest_header = mm_cfg.DEFAULT_DIGEST_HEADER
         self.digest_footer = mm_cfg.DEFAULT_DIGEST_FOOTER
         self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY
+        self._new_volume = 0  # Initialize _new_volume to False
+        self.volume = 1  # Initialize volume to 1
         # Non-configurable.
         self.one_last_digest = {}
         self.digest_members = {}

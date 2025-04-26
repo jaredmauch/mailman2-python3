@@ -126,19 +126,25 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.Load()
 
     def __getattr__(self, name):
-        # Because we're using delegation, we want to be sure that attribute
-        # access to a delegated member function gets passed to the
-        # sub-objects.  This of course imposes a specific name resolution
-        # order.
+        # First check if the attribute exists on the instance itself
         try:
-            return getattr(self._memberadaptor, name)
+            return object.__getattribute__(self, name)
         except AttributeError:
-            for guicomponent in self._gui:
-                try:
-                    return getattr(guicomponent, name)
-                except AttributeError:
-                    pass
-            else:
+            # If not found on instance, try the delegation chain
+            try:
+                return getattr(self._memberadaptor, name)
+            except AttributeError:
+                for guicomponent in self._gui:
+                    try:
+                        return getattr(guicomponent, name)
+                    except AttributeError:
+                        pass
+                # Check mixin classes for the attribute
+                for baseclass in self.__class__.__bases__:
+                    try:
+                        return getattr(baseclass, name)
+                    except AttributeError:
+                        pass
                 raise AttributeError(name)
 
     def __repr__(self):
@@ -959,7 +965,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
                                 cookie)
         listname = self.real_name
-        text += Utils.maketext(
+        text += str(Utils.maketext(
             'invite.txt',
             {'email'      : invitee,
              'listname'   : listname,
@@ -968,7 +974,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
              'requestaddr': requestaddr,
              'cookie'     : cookie,
              'listowner'  : self.GetOwnerEmail(),
-             }, mlist=self)
+             }, mlist=self))
         sender = self.GetRequestEmail(cookie)
         msg = Message.UserNotification(
             invitee, sender,

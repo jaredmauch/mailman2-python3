@@ -400,7 +400,7 @@ class LockFile:
         Returns 0 if we successfully took possession of the lock file, -1 if we
         did not, and -2 if something very bad happened.
         """
-        self._logdebug('attempting to take possession of lock')
+        self.__writelog('attempting to take possession of lock')
         
         # First, clean up any stale temp files for all processes
         self.clean_stale_locks()
@@ -416,23 +416,23 @@ class LockFile:
             with open(tempfile, 'w') as fp:
                 fp.write('%d %s\n' % (os.getpid(), hostname))
         except OSError as e:
-            self._logdebug('could not create tempfile %s: %s', tempfile, e)
+            self.__writelog('could not create tempfile %s: %s' % (tempfile, e))
             return -2
 
         # Now try to link the tempfile to the lock file
         try:
             os.link(tempfile, self.__lockfile)
             # Link succeeded - we have the lock
-            self._logdebug('successfully linked tempfile to lock file')
+            self.__writelog('successfully linked tempfile to lock file')
             os.unlink(tempfile)
             return 0
         except OSError as e:
             # Link failed - see if lock exists and check if it's stale
-            self._logdebug('link to lock file failed: %s', e)
+            self.__writelog('link to lock file failed: %s' % e)
             try:
                 if not os.path.exists(self.__lockfile):
                     # Lock disappeared - try again
-                    self._logdebug('lock file disappeared, retrying')
+                    self.__writelog('lock file disappeared, retrying')
                     os.unlink(tempfile)
                     return -1
                 
@@ -446,13 +446,13 @@ class LockFile:
                             
                             # If the lock is from another host, we need to be more conservative
                             if lock_hostname != hostname:
-                                self._logdebug('lock owned by different host: %s', lock_hostname)
+                                self.__writelog('lock owned by different host: %s' % lock_hostname)
                                 os.unlink(tempfile)
                                 return -1
                             
                             # Check if process exists and is a Mailman process
                             if not self._is_pid_valid(pid):
-                                self._logdebug('found stale lock (pid %d)', pid)
+                                self.__writelog('found stale lock (pid %d)' % pid)
                                 try:
                                     os.unlink(self.__lockfile)
                                     os.unlink(tempfile)
@@ -467,7 +467,7 @@ class LockFile:
                                     with open(f'/proc/{pid}/cmdline') as f:
                                         cmdline = f.read()
                                         if 'mailman' not in cmdline.lower():
-                                            self._logdebug('breaking lock owned by non-Mailman process')
+                                            self.__writelog('breaking lock owned by non-Mailman process')
                                             os.unlink(self.__lockfile)
                                             os.unlink(tempfile)
                                             return -1
@@ -475,7 +475,7 @@ class LockFile:
                                     # Can't read process info - be conservative
                                     pass
                 except (ValueError, OSError) as e:
-                    self._logdebug('error reading lock: %s', e)
+                    self.__writelog('error reading lock: %s' % e)
                     # Lock file exists but is invalid - try to break it
                     try:
                         os.unlink(self.__lockfile)
@@ -484,7 +484,7 @@ class LockFile:
                     except OSError:
                         pass
             except OSError as e:
-                self._logdebug('error checking lock: %s', e)
+                self.__writelog('error checking lock: %s' % e)
                 try:
                     os.unlink(tempfile)
                 except OSError:
@@ -512,7 +512,7 @@ class LockFile:
                 with open(f'/proc/{pid}/status') as f:
                     status = f.read()
                     if 'State:' in status and 'Z (zombie)' in status:
-                        self._logdebug('found zombie process (pid %d)', pid)
+                        self.__writelog('found zombie process (pid %d)' % pid)
                         return False
             except (IOError, OSError):
                 pass
@@ -527,30 +527,30 @@ class LockFile:
         Returns 0 if we successfully broke the lock, -1 if we didn't, and -2 if
         something very bad happened.
         """
-        self._logdebug('breaking the lock')
+        self.__writelog('breaking the lock')
         try:
             if not os.path.exists(self.__lockfile):
-                self._logdebug('nothing to break -- lock file does not exist')
+                self.__writelog('nothing to break -- lock file does not exist')
                 return -1
             # Read the lock file to get the old PID
             try:
                 with open(self.__lockfile) as fp:
                     pid = int(fp.read().strip())
                 if not self._is_pid_valid(pid):
-                    self._logdebug('breaking stale lock owned by pid %d', pid)
+                    self.__writelog('breaking stale lock owned by pid %d' % pid)
                     os.unlink(self.__lockfile)
                     return 0
-                self._logdebug('lock is valid (pid %d)', pid)
+                self.__writelog('lock is valid (pid %d)' % pid)
                 return -1
             except (ValueError, OSError) as e:
-                self._logdebug('error reading lock: %s', e)
+                self.__writelog('error reading lock: %s' % e)
                 try:
                     os.unlink(self.__lockfile)
                     return 0
                 except OSError:
                     return -2
         except OSError as e:
-            self._logdebug('error breaking lock: %s', e)
+            self.__writelog('error breaking lock: %s' % e)
             return -2
 
     def clean_stale_locks(self):
@@ -559,7 +559,7 @@ class LockFile:
         This is a safe method that can be called to clean up stale lock files
         without attempting to acquire the lock.
         """
-        self._logdebug('cleaning stale locks')
+        self.__writelog('cleaning stale locks')
         try:
             # Check for the main lock file
             if os.path.exists(self.__lockfile):
@@ -573,13 +573,13 @@ class LockFile:
                             # Only clean locks from our host
                             if lock_hostname == socket.gethostname():
                                 if not self._is_pid_valid(pid):
-                                    self._logdebug('removing stale lock (pid %d)', pid)
+                                    self.__writelog('removing stale lock (pid %d)' % pid)
                                     try:
                                         os.unlink(self.__lockfile)
                                     except OSError:
                                         pass
                 except (ValueError, OSError) as e:
-                    self._logdebug('error checking lock, removing: %s', e)
+                    self.__writelog('error checking lock, removing: %s' % e)
                     try:
                         os.unlink(self.__lockfile)
                     except OSError:
@@ -596,14 +596,14 @@ class LockFile:
                             # Check if temp file is old (> 1 hour)
                             if time.time() - os.path.getmtime(filepath) > 3600:
                                 os.unlink(filepath)
-                                self._logdebug('removed old temp file: %s', filepath)
+                                self.__writelog('removed old temp file: %s' % filepath)
                         except OSError as e:
-                            self._logdebug('error removing temp file %s: %s', 
-                                         filepath, e)
+                            self.__writelog('error removing temp file %s: %s' % 
+                                         (filepath, e))
             except OSError as e:
-                self._logdebug('error listing directory: %s', e)
+                self.__writelog('error listing directory: %s' % e)
         except OSError as e:
-            self._logdebug('error cleaning locks: %s', e)
+            self.__writelog('error cleaning locks: %s' % e)
 
     #
     # Private interface

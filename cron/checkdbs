@@ -91,13 +91,13 @@ def main():
                 else:
                     text = ''
                 if count:
-                    text += Utils.maketext(
+                    text += str(Utils.maketext(
                         'checkdbs.txt',
                         {'count'    : count,
                          'host_name': mlist.host_name,
                          'adminDB'  : mlist.GetScriptURL('admindb', absolute=1),
                          'real_name': realname,
-                         }, mlist=mlist)
+                         }, mlist=mlist))
                     text += '\n' + pending_requests(mlist)
                     subject = _(
                         '%(count)d %(realname)s moderator request(s) waiting')
