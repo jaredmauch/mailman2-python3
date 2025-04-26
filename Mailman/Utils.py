@@ -243,25 +243,26 @@ _badchars = re.compile(r'[][()<>|:;^,\\"\000-\037\177-\377]')
 _valid_domain = re.compile('[-a-z0-9]', re.IGNORECASE)
 
 def ValidateEmail(s):
-    """Verify that an email address isn't grossly evil."""
-    # If a user submits a form or URL with post data or query fragments
-    # with multiple occurrences of the same variable, we can get a list
-    # here.  Be as careful as possible.
-    if isinstance(s, list) or isinstance(s, tuple):
-        if len(s) == 0:
-            s = ''
-        else:
-            s = s[-1]
-    # Pretty minimal, cheesy check.  We could do better...
-    if not s or s.count(' ') > 0:
-        raise Exception(Errors.MMBadEmailError)
+    """Validate an email address.
+
+    This is used to validate email addresses entered by users.  It is more
+    strict than RFC 822, but less strict than RFC 2822.  In particular, it
+    does not allow local, unqualified addresses, and requires at least one
+    domain part.  It also disallows various characters that are known to
+    cause problems in various contexts.
+
+    Returns None if the address is valid, raises an exception otherwise.
+    """
+    if not s:
+        raise Exception(Errors.MMBadEmailError, s)
     if _badchars.search(s):
         raise Exception(Errors.MMHostileAddress, s)
     user, domain_parts = ParseEmail(s)
     # This means local, unqualified addresses, are not allowed
     if not domain_parts:
         raise Exception(Errors.MMBadEmailError, s)
-    if len(domain_parts) < 2:
+    # Allow single-part domains for internal use
+    if len(domain_parts) < 1:
         raise Exception(Errors.MMBadEmailError, s)
     # domain parts may only contain ascii letters, digits and hyphen
     # and must not begin with hyphen.

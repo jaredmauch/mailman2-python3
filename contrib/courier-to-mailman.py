@@ -80,9 +80,9 @@ def main():
         listname = str.lower(local)
         types = (("-admin$", "admin"),
                          ("-bounces$", "bounces"),
-                         ("-bounces\+.*$", "bounces"),          # for VERP
+                         (r"-bounces\+.*$", "bounces"),          # for VERP
                          ("-confirm$", "confirm"),
-                         ("-confirm\+.*$", "confirm"),
+                         (r"-confirm\+.*$", "confirm"),
                          ("-join$", "join"),
                          ("-leave$", "leave"),
                          ("-owner$", "owner"),

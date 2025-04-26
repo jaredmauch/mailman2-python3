@@ -100,7 +100,7 @@ endef
 
 # Rules
 
-.PHONY: all build install clean distclean prepare-build
+.PHONY: all build install clean distclean prepare-build clean-pyc doinstall update langpack
 
 # Default target
 all: prepare-build
@@ -144,7 +144,7 @@ clean-pyc:
 	    find $(DESTDIR)$(prefix)/$$d -name "__pycache__" -type d -exec rm -rf {} +; \
 	done
 
-doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
+doinstall: install clean-pyc
 	@echo "Creating architecture independent directories..."
 	@for d in $(VAR_DIRS); \
 	do \
@@ -199,10 +199,10 @@ doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
 	done
 
 # Only run bin/update if we aren't installing in DESTDIR
-update:
+update: install
 	@(cd $(DESTDIR)$(prefix) ; test -n "$(DESTDIR)" || bin/update)
 
-clean: $(SUBDIRS)
+clean: clean-pyc
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) clean); \

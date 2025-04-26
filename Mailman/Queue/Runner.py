@@ -28,7 +28,7 @@ from Mailman import Utils
 from Mailman import Errors
 from Mailman import MailList
 from Mailman import i18n
-
+from Mailman.Message import Message as MailmanMessage
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
@@ -154,43 +154,49 @@ class Runner:
         # them out of our site though.
         #
         # Find out which mailing list this message is destined for.
-        listname = msgdata.get('listname')
-        if not listname:
-            listname = mm_cfg.MAILMAN_SITE_LIST
-        mlist = self._open_list(listname)
-        if not mlist:
-            syslog('error',
-                   'Dequeuing message destined for missing list: %s',
-                   listname)
-            self._shunt.enqueue(msg, msgdata)
-            return
-        # Now process this message, keeping track of any subprocesses that may
-        # have been spawned.  We'll reap those later.
-        #
-        # We also want to set up the language context for this message.  The
-        # context will be the preferred language for the user if a member of
-        # the list, or the list's preferred language.  However, we must take
-        # special care to reset the defaults, otherwise subsequent messages
-        # may be translated incorrectly.  BAW: I'm not sure I like this
-        # approach, but I can't think of anything better right now.
-        otranslation = i18n.get_translation()
-        sender = msg.get_sender()
-        if mlist:
-            lang = mlist.getMemberLanguage(sender)
-        else:
-            lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
-        i18n.set_language(lang)
-        msgdata['lang'] = lang
         try:
-            keepqueued = self._dispose(mlist, msg, msgdata)
-        finally:
-            i18n.set_translation(otranslation)
-        # Keep tabs on any child processes that got spawned.
-        kids = msgdata.get('_kids')
-        if kids:
-            self._kids.update(kids)
-        if keepqueued:
-            self._switchboard.enqueue(msg, msgdata)
+            # Convert email.message.Message to Mailman.Message if needed
+            if not isinstance(msg, MailmanMessage):
+                msg = MailmanMessage(msg)
+            sender = msg.get_sender()
+            listname = msgdata.get('listname')
+            if not listname:
+                listname = mm_cfg.MAILMAN_SITE_LIST
+            mlist = self._open_list(listname)
+            if not mlist:
+                syslog('error',
+                       'Dequeuing message destined for missing list: %s',
+                       listname)
+                self._shunt.enqueue(msg, msgdata)
+                return
+            # Now process this message, keeping track of any subprocesses that may
+            # have been spawned.  We'll reap those later.
+            #
+            # We also want to set up the language context for this message.  The
+            # context will be the preferred language for the user if a member of
+            # the list, or the list's preferred language.  However, we must take
+            # special care to reset the defaults, otherwise subsequent messages
+            # may be translated incorrectly.  BAW: I'm not sure I like this
+            # approach, but I can't think of anything better right now.
+            otranslation = i18n.get_translation()
+            if mlist:
+                lang = mlist.getMemberLanguage(sender)
+            else:
+                lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
+            i18n.set_language(lang)
+            msgdata['lang'] = lang
+            try:
+                keepqueued = self._dispose(mlist, msg, msgdata)
+            finally:
+                i18n.set_translation(otranslation)
+            # Keep tabs on any child processes that got spawned.
+            kids = msgdata.get('_kids')
+            if kids:
+                self._kids.update(kids)
+            if keepqueued:
+                self._switchboard.enqueue(msg, msgdata)
+        except Exception as e:
+            self._log(e)
 
     def _open_list(self, listname):
         # We no longer cache the list instances.  Because of changes to
