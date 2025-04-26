@@ -75,7 +75,7 @@ EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.fi
 PYTHON_FILES = $(shell find . -name "*.py")
 PYTHON_DIRS = $(shell find . -type d -name "Mailman")
 INSTALLED_SCRIPTS = $(shell find $(DESTDIR)$(prefix)/bin -type f -executable 2>/dev/null || true)
-SOURCE_SCRIPTS = $(shell find build/bin -type f -executable 2>/dev/null || true)
+SOURCE_SCRIPTS = $(shell find build/bin -type f -executable -name "*.py" 2>/dev/null || true)
 
 # Add this function to check for script mismatches
 define check_scripts
