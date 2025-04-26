@@ -21,8 +21,8 @@ AC_INIT
 AC_CONFIG_SRCDIR([src/common.h])
 
 # Store the configure command and arguments for reconfigure target
-CONFIGURE_CMD="\$0"
-CONFIGURE_ARGS="\$*"
+CONFIGURE_CMD=`echo "$0"`
+CONFIGURE_ARGS=`echo "$*"`
 AC_SUBST(CONFIGURE_CMD)
 AC_SUBST(CONFIGURE_ARGS)
 

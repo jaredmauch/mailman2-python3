@@ -106,16 +106,26 @@ endef
 
 # Rules
 
+.PHONY: all build install clean distclean reconfigure
+
+reconfigure:
+	@echo "Re-running configure with original arguments: $(CONFIGURE_ARGS)"
+	@if test -x config.status; then \
+		./config.status --recheck; \
+		./config.status; \
+	else \
+		if test -n "$(CONFIGURE_ARGS)"; then \
+			sh configure $(CONFIGURE_ARGS); \
+		else \
+			sh configure; \
+		fi; \
+	fi
+
 Makefile: Makefile.in
-	@if [ "$@" != "reconfigure" ]; then \
+	@if test "$(MAKECMDGOALS)" != "reconfigure"; then \
 		echo "ERROR: Makefile.in has been modified. Please re-run ./configure"; \
 		exit 1; \
 	fi
-
-# Target to re-run configure with original arguments
-reconfigure:
-	@echo "Re-running configure with original arguments: $(CONFIGURE_ARGS)"
-	cd $(srcdir) && $(CONFIGURE_CMD) $(CONFIGURE_ARGS)
 
 check-build-files:
 	@echo "Checking if build files are up to date..."
