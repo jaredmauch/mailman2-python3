@@ -107,8 +107,10 @@ endef
 # Rules
 
 Makefile: Makefile.in
-	@echo "ERROR: Makefile.in has been modified. Please re-run ./configure"
-	@exit 1
+	@if [ "$@" != "reconfigure" ]; then \
+		echo "ERROR: Makefile.in has been modified. Please re-run ./configure"; \
+		exit 1; \
+	fi
 
 # Target to re-run configure with original arguments
 reconfigure:
