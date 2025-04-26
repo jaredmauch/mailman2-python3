@@ -69,21 +69,67 @@ DIRSETGID=	chmod g+s
 
 DATE = $(shell python -c 'import time; print time.strftime("%d-%b-%Y"),')
 LANGPACK = README-I18N.en templates messages
-EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.files --exclude=*.old
+EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.files --exclude=*.old --exclude=msgfmt-python2.py --exclude=pygettext.py
+
+# Add these variables after the existing variable definitions
+PYTHON_FILES = $(shell find . -name "*.py")
+PYTHON_DIRS = $(shell find . -type d -name "Mailman")
+INSTALLED_SCRIPTS = $(shell find $(DESTDIR)$(prefix)/bin -type f -executable 2>/dev/null || true)
+SOURCE_SCRIPTS = $(shell find build/bin -type f -executable 2>/dev/null || true)
+
+# Add this function to check for script mismatches
+define check_scripts
+	@echo "Checking for script mismatches..."
+	@for script in $(INSTALLED_SCRIPTS); do \
+	    base_script=$$(basename $$script); \
+	    if [ ! -f build/bin/$$base_script ]; then \
+		echo "WARNING: Script $$base_script exists in installation but not in source"; \
+	    fi; \
+	done
+	@for script in $(SOURCE_SCRIPTS); do \
+	    base_script=$$(basename $$script); \
+	    case "$$base_script" in \
+		msgfmt-python2.py|pygettext.py) \
+		    ;; \
+		*) \
+		    if [ ! -f $(DESTDIR)$(prefix)/bin/$$base_script ]; then \
+			echo "WARNING: Script $$base_script exists in source but not in installation"; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+endef
 
 # Rules
 
-all: subdirs
+all: subdirs build-dir
+
+build-dir: $(PYTHON_FILES)
+	@echo "Updating build directory..."
+	@for d in $(SUBDIRS); \
+	do \
+	    dir=build/$$d; \
+	    if test ! -d $$dir; then \
+		$(srcdir)/mkinstalldirs $$dir; \
+	    fi; \
+	    for f in $$d/*; do \
+		if test -f $$f; then \
+		    if test ! -f build/$$f -o $$f -nt build/$$f; then \
+			cp -p $$f build/$$f; \
+		    fi; \
+		fi; \
+	    done; \
+	done
 
 subdirs: $(SUBDIRS)
 	for d in $(SUBDIRS); \
 	do \
-	    (cd $$d; $(MAKE)); \
+	    (cd $$d; $(MAKE) all); \
 	done
 
-install: doinstall update
+install: doinstall update check-scripts
 
-doinstall: $(SUBDIRS)
+doinstall: $(SUBDIRS) $(PYTHON_FILES)
 	@echo "Creating architecture independent directories..."
 	@for d in $(VAR_DIRS); \
 	do \
@@ -124,7 +170,10 @@ doinstall: $(SUBDIRS)
 	do \
 	    (cd $$d; $(MAKE) DESTDIR=$(DESTDIR) install); \
 	done
-	$(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/Mailman", ddir="$(prefix)/Mailman")'
+	@echo "Compiling Python files..."
+	@for d in $(PYTHON_DIRS); do \
+	    $(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/$$d", ddir="$(prefix)/$$d", force=1)'; \
+	done
 
 # Only run bin/update if we aren't installing in DESTDIR, as this
 # means there are probably no lists to deal with, and it wouldn't
@@ -132,12 +181,18 @@ doinstall: $(SUBDIRS)
 update:
 	@(cd $(DESTDIR)$(prefix) ; test -n "$(DESTDIR)" || bin/update)
 
+check-scripts:
+	$(check_scripts)
+
 clean: $(SUBDIRS)
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) clean); \
 	done
 	-rm -f update.log
+	-rm -rf build
+	-rm -f $(shell find . -name "*.pyc")
+	-rm -f $(shell find . -name "*.pyo")
 
 distclean: $(SUBDIRS)
 	@for d in $(SUBDIRS); \

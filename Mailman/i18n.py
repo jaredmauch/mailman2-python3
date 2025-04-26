@@ -114,16 +114,22 @@ def tolocale(s):
     global _ctype_charset
     if isinstance(s, str) or _ctype_charset is None:
         return s
-    source = _translation.charset ()
+    source = _translation.charset()
     if not source:
         return s
-    return str(s, source, 'replace').encode(_ctype_charset, 'replace')
+    # Handle string formatting before encoding
+    if isinstance(s, bytes):
+        s = s.decode('utf-8', 'replace')
+    return s.encode(_ctype_charset, 'replace').decode(_ctype_charset)
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
 else:
     def C_(s):
-        return tolocale(_(s, 2))
+        result = _(s, 2)
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', 'replace')
+        return tolocale(result)
 
     
 
