@@ -197,6 +197,8 @@ class LockFile:
         # NFS-specific settings
         self.__nfs_retry_delay = 0.1
         self.__nfs_max_retries = 5
+        # Backward compatibility for old code expecting _LockFile__break
+        self._LockFile__break = self._break
 
     def __repr__(self):
         return '<LockFile %s: %s [%s: %ssec] pid=%s>' % (

@@ -126,26 +126,34 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             self.Load()
 
     def __getattr__(self, name):
-        # First check if the attribute exists on the instance itself
+        # First check if the attribute exists in the instance's dictionary
+        if name in self.__dict__:
+            return self.__dict__[name]
+        # Then try the memberadaptor
         try:
-            return object.__getattribute__(self, name)
+            return getattr(self._memberadaptor, name)
         except AttributeError:
-            # If not found on instance, try the delegation chain
-            try:
-                return getattr(self._memberadaptor, name)
-            except AttributeError:
-                for guicomponent in self._gui:
-                    try:
-                        return getattr(guicomponent, name)
-                    except AttributeError:
-                        pass
-                # Check mixin classes for the attribute
-                for baseclass in self.__class__.__bases__:
-                    try:
-                        return getattr(baseclass, name)
-                    except AttributeError:
-                        pass
-                raise AttributeError(name)
+            # Try GUI components
+            for guicomponent in self._gui:
+                try:
+                    return getattr(guicomponent, name)
+                except AttributeError:
+                    pass
+            # Finally check mixin classes
+            for baseclass in self.__class__.__bases__:
+                try:
+                    # Get the attribute from the base class
+                    attr = getattr(baseclass, name)
+                    # If it's a method, bind it to this instance
+                    if callable(attr):
+                        return attr.__get__(self, self.__class__)
+                    # For non-method attributes, check if we have an instance value
+                    if hasattr(self, '_' + name):
+                        return getattr(self, '_' + name)
+                    return attr
+                except AttributeError:
+                    pass
+            raise AttributeError(name)
 
     def __repr__(self):
         if self.Locked():
@@ -319,6 +327,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def InitVars(self, name=None, admin='', crypted_password='',
                  urlhost=None):
         """Assign default values - some will be overriden by stored state."""
+        # Initialize mixin classes
+        for baseclass in self.__class__.__bases__:
+            if hasattr(baseclass, 'InitVars'):
+                baseclass.InitVars(self)
+
         # Non-configurable list info
         if name:
             # Ensure name is a string
@@ -330,7 +343,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.created_at = time.time()
 
         # Must save this state, even though it isn't configurable
-        self.volume = 1
         self.members = {} # self.digest_members is initted in mm_digest
         self.data_version = mm_cfg.DATA_FILE_VERSION
         self.last_post_time = 0
@@ -450,10 +462,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # 2-tuple of the date of the last autoresponse and the number of
         # autoresponses sent on that date.
         self.hold_and_cmd_autoresponses = {}
-        # Only one level of mixin inheritance allowed
-        for baseclass in self.__class__.__bases__:
-            if hasattr(baseclass, 'InitVars'):
-                baseclass.InitVars(self)
 
         # These need to come near the bottom because they're dependent on
         # other settings.
@@ -634,50 +642,54 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # First ensure we have the lock
         if not self.Locked():
             self.Lock()
-        # Refresh the lock, just to let other processes know we're still
-        # interested in it.
-        self.__lock.refresh()
-        # copy all public attributes to serializable dictionary
-        dict = {}
-        for key, value in list(self.__dict__.items()):
-            if key[0] == '_' or type(value) is MethodType:
-                continue
-            # Ensure string values are properly encoded
-            if isinstance(value, str):
-                dict[key] = value
-            elif isinstance(value, bytes):
-                # Convert bytes to string if possible
-                try:
-                    dict[key] = value.decode('utf-8', 'replace')
-                except UnicodeDecodeError:
-                    dict[key] = value.decode('latin1', 'replace')
-            elif isinstance(value, list):
-                # Handle lists that might contain bytes
-                dict[key] = [
-                    v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
-                    for v in value
-                ]
-            elif type(value) is dict:
-                # Handle dicts that might contain bytes
-                new_dict = {}
-                for k, v in value.items():
-                    if isinstance(k, bytes):
-                        k = k.decode('utf-8', 'replace')
-                    if isinstance(v, bytes):
-                        v = v.decode('utf-8', 'replace')
-                    new_dict[k] = v
-                dict[key] = new_dict
-            else:
-                dict[key] = value
-        # Make config.pck unreadable by `other', as it contains all the
-        # list members' passwords (in clear text).
-        omask = os.umask(0o007)
         try:
-            self.__save(dict)
+            # Only refresh if we have the lock
+            if self.Locked():
+                self.__lock.refresh()
+            # copy all public attributes to serializable dictionary
+            dict = {}
+            for key, value in list(self.__dict__.items()):
+                if key[0] == '_' or type(value) is MethodType:
+                    continue
+                # Ensure string values are properly encoded
+                if isinstance(value, str):
+                    dict[key] = value
+                elif isinstance(value, bytes):
+                    # Convert bytes to string if possible
+                    try:
+                        dict[key] = value.decode('utf-8', 'replace')
+                    except UnicodeDecodeError:
+                        dict[key] = value.decode('latin1', 'replace')
+                elif isinstance(value, list):
+                    # Handle lists that might contain bytes
+                    dict[key] = [
+                        v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
+                        for v in value
+                    ]
+                elif type(value) is dict:
+                    # Handle dicts that might contain bytes
+                    new_dict = {}
+                    for k, v in value.items():
+                        if isinstance(k, bytes):
+                            k = k.decode('utf-8', 'replace')
+                        if isinstance(v, bytes):
+                            v = v.decode('utf-8', 'replace')
+                        new_dict[k] = v
+                    dict[key] = new_dict
+                else:
+                    dict[key] = value
+            # Make config.pck unreadable by `other', as it contains all the
+            # list members' passwords (in clear text).
+            omask = os.umask(0o007)
+            try:
+                self.__save(dict)
+            finally:
+                os.umask(omask)
+                self.SaveRequestsDb()
+            self.CheckHTMLArchiveDir()
         finally:
-            os.umask(omask)
-            self.SaveRequestsDb()
-        self.CheckHTMLArchiveDir()
+            # Always unlock when we're done
+            self.Unlock()
 
     def __load(self, dbfile):
         """Load and validate a database file with improved error handling."""
