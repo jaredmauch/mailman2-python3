@@ -85,6 +85,9 @@ def main():
     mlists = []
     longest = 0
     for n in names:
+        # Ensure name is a string
+        if isinstance(n, bytes):
+            n = n.decode('utf-8', 'replace')
         try:
             mlist = MailList.MailList(n, lock=0)
         except Errors.MMUnknownListError:
@@ -100,22 +103,34 @@ def main():
                    re.IGNORECASE)):
             continue
         mlists.append(mlist)
-        longest = max(len(mlist.real_name), longest)
+        # Ensure real_name is a string
+        real_name = mlist.real_name
+        if isinstance(real_name, bytes):
+            real_name = real_name.decode('utf-8', 'replace')
+        longest = max(len(real_name), longest)
 
     if not mlists and not args.bare:
-        print(C_('No matching mailing lists found'))
+        print('No matching mailing lists found')
         return
 
     if not args.bare:
-        print(len(mlists), C_('matching mailing lists found:'))
+        print(len(mlists), 'matching mailing lists found:')
 
     format = '%%%ds - %%.%ds' % (longest, 77 - longest)
     for mlist in mlists:
         if args.bare:
-            print(mlist.internal_name())
+            name = mlist.internal_name()
+            if isinstance(name, bytes):
+                name = name.decode('utf-8', 'replace')
+            print(name)
         else:
-            description = mlist.description or C_('[no description available]')
-            print('   ', format % (mlist.real_name, description))
+            real_name = mlist.real_name
+            if isinstance(real_name, bytes):
+                real_name = real_name.decode('utf-8', 'replace')
+            description = mlist.description or '[no description available]'
+            if isinstance(description, bytes):
+                description = description.decode('utf-8', 'replace')
+            print('   ', format % (real_name, description))
 
 
 if __name__ == '__main__':

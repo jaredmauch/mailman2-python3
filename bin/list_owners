@@ -78,10 +78,15 @@ def main():
     bylist = {}
 
     for listname in listnames:
+        # Ensure listname is a string
+        if isinstance(listname, bytes):
+            listname = listname.decode('utf-8', 'replace')
         mlist = MailList(listname, lock=0)
         addrs = mlist.owner[:]
         if args.moderators:
             addrs.extend(mlist.moderator)
+        # Ensure addresses are strings
+        addrs = [addr.decode('utf-8', 'replace') if isinstance(addr, bytes) else addr for addr in addrs]
         bylist[listname] = addrs
 
     if args.with_listnames:

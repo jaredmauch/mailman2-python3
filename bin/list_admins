@@ -81,17 +81,22 @@ def main():
         listnames = Utils.list_names()
 
     for listname in listnames:
-       try:
-           mlist = MailList.MailList(listname, lock=0)
-       except Errors.MMListError as e:
-           print(C_('No such list: %(listname)s'))
-           continue
+        # Ensure listname is a string
+        if isinstance(listname, bytes):
+            listname = listname.decode('utf-8', 'replace')
+        try:
+            mlist = MailList.MailList(listname, lock=0)
+        except Errors.MMListError:
+            print('No such list: %s' % listname)
+            continue
 
-       if args.all_vhost and args.all_vhost != mlist.host_name:
-           continue
+        if args.all_vhost and args.all_vhost != mlist.host_name:
+            continue
 
-       owners = COMMASPACE.join(mlist.owner)
-       print(C_('List: %(listname)s, \tOwners: %(owners)s'))
+        # Ensure owners are strings
+        owners = [owner.decode('utf-8', 'replace') if isinstance(owner, bytes) else owner for owner in mlist.owner]
+        owners_str = ', '.join(owners)
+        print('List: %s, \tOwners: %s' % (listname, owners_str))
 
 
 if __name__ == '__main__':
