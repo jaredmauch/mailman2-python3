@@ -631,10 +631,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.__timestamp = os.path.getmtime(fname)
 
     def Save(self):
+        # First ensure we have the lock
+        if not self.Locked():
+            self.Lock()
         # Refresh the lock, just to let other processes know we're still
-        # interested in it.  This will raise a NotLockedError if we don't have
-        # the lock (which is a serious problem!).  TBD: do we need to be more
-        # defensive?
+        # interested in it.
         self.__lock.refresh()
         # copy all public attributes to serializable dictionary
         dict = {}
