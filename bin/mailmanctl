@@ -36,7 +36,7 @@ in the file data/master-qrunner.pid but you normally don't need to use this
 pid directly.  The `start', `stop', `restart', and `reopen' commands handle
 everything for you.
 
-Usage: %(PROGRAM)s [options] [ start | stop | restart | reopen ]
+Usage: %(PROGRAM)s [options] [ start | stop | restart | reopen | status ]
 
 Options:
 
@@ -90,6 +90,8 @@ Commands:
 
     reopen  - This will close all log files, causing them to be re-opened the
               next time a message is written to them
+
+    status  - Checks if all qrunners are running as expected.
 """
 
 import sys
@@ -129,7 +131,7 @@ LogStdErr('error', 'mailmanctl', manual_reprime=0)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Primary start-up and shutdown script for Mailman\'s qrunner daemon.')
-    parser.add_argument('command', choices=['start', 'stop', 'restart', 'reopen'],
+    parser.add_argument('command', choices=['start', 'stop', 'restart', 'reopen', 'status'],
                        help='Command to execute')
     parser.add_argument('-n', '--no-restart', action='store_true',
                        help='Don\'t restart the qrunners when they exit because of an error or a SIGINT')
@@ -328,6 +330,66 @@ def check_privs():
             'Run this program as root or as the %(name)s user, or use -u.'))
 
 
+def check_qrunner_status():
+    """Check if all qrunners are running as expected."""
+    # First check if the master process is running
+    try:
+        with open(mm_cfg.PIDFILE, 'r') as fp:
+            pid = int(fp.read().strip())
+        try:
+            os.kill(pid, 0)  # Check if process exists
+            print(C_('Master qrunner process is running (pid: %(pid)d)') % {'pid': pid})
+        except OSError:
+            print(C_('Master qrunner process is not running (stale pid file)'))
+            return False
+    except (IOError, ValueError):
+        print(C_('Master qrunner process is not running (no pid file)'))
+        return False
+
+    # Check if the lock file exists and is valid
+    try:
+        hostname, pid, tempfile = get_lock_data()
+        if hostname != socket.gethostname():
+            print(C_('Lock file is held by another host: %(hostname)s') % {'hostname': hostname})
+            return False
+        try:
+            os.kill(pid, 0)
+            print(C_('Lock file is valid (pid: %(pid)d)') % {'pid': pid})
+        except OSError:
+            print(C_('Lock file is stale (process %(pid)d not running)') % {'pid': pid})
+            return False
+    except (IOError, ValueError):
+        print(C_('No lock file found'))
+        return False
+
+    # Check if all expected qrunners are running
+    expected_runners = dict(mm_cfg.QRUNNERS)
+    running_runners = {}
+    
+    # Get all running qrunner processes
+    for line in os.popen('ps aux | grep qrunner | grep -v grep').readlines():
+        parts = line.split()
+        if len(parts) >= 12:  # Ensure we have enough parts
+            cmd = parts[10]  # The command is typically at index 10
+            if '--runner=' in cmd:
+                runner_name = cmd.split('--runner=')[1].split(':')[0]
+                running_runners[runner_name] = running_runners.get(runner_name, 0) + 1
+
+    # Compare expected vs running
+    all_running = True
+    for runner, count in expected_runners.items():
+        actual = running_runners.get(runner, 0)
+        if actual != count:
+            print(C_('%(runner)s: expected %(count)d instances, found %(actual)d') % 
+                  {'runner': runner, 'count': count, 'actual': actual})
+            all_running = False
+        else:
+            print(C_('%(runner)s: %(count)d instances running') % 
+                  {'runner': runner, 'count': count})
+
+    return all_running
+
+
 def main():
     try:
         args = parse_args()
@@ -352,7 +414,12 @@ def main():
             sys.exit(1)
 
     # Handle the command
-    if args.command == 'start':
+    if args.command == 'status':
+        if check_qrunner_status():
+            sys.exit(0)
+        else:
+            sys.exit(1)
+    elif args.command == 'start':
         try:
             # First, acquire the master mailmanctl lock
             lock = acquire_lock(args.stale_lock_cleanup)

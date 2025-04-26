@@ -58,22 +58,37 @@ class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
+        # Always initialize the parent class first
+        Runner.__init__(self, slice, numslices)
+        
+        # Check if NNTP support is available and configured
+        self._nntp_enabled = False
         if not HAVE_NNTP:
-            syslog('warning', 'NNTP support is not enabled. NewsRunner will not be started.')
+            syslog('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
             return
         if not mm_cfg.DEFAULT_NNTP_HOST:
-            syslog('info', 'newsrunner not starting due to DEFAULT_NNTP_HOST not being set')
+            syslog('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
             return
-        # Initialize parent class first
-        Runner.__init__(self, slice, numslices)
-        # Override the switchboard with our specific one
+            
+        # NNTP is available and configured, set up the switchboard
+        self._nntp_enabled = True
         from Mailman.Queue.Switchboard import Switchboard
         self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
         # Initialize _kids if not already done by parent
         if not hasattr(self, '_kids'):
             self._kids = {}
 
+    def _oneloop(self):
+        # If NNTP is not enabled, don't process any messages
+        if not self._nntp_enabled:
+            return 0
+        # Otherwise, proceed with normal processing
+        return Runner._oneloop(self)
+
     def _dispose(self, mlist, msg, msgdata):
+        # If NNTP is not enabled, requeue the message
+        if not self._nntp_enabled:
+            return True
         # Make sure we have the most up-to-date state
         mlist.Load()
         if not msgdata.get('prepped'):
