@@ -161,13 +161,23 @@ def usage(code, msg=''):
 def kill_watcher(sig):
     try:
         with open(mm_cfg.PIDFILE, 'r') as fp:
-            pid = int(fp.read().strip())
+            content = fp.read().strip().split()
+            if len(content) >= 2:
+                pid = int(content[0])
+                hostname = content[1]
+                if hostname != socket.gethostname():
+                    print(C_('PID file hostname mismatch: expected %(expected)s, got %(got)s') % 
+                          {'expected': socket.gethostname(), 'got': hostname}, file=sys.stderr)
+                    return
+            else:
+                raise ValueError('Invalid PID file format')
     except (IOError, ValueError) as e:
         # For i18n convenience
         pidfile = mm_cfg.PIDFILE
         print(C_('PID unreadable in: %(pidfile)s'), file=sys.stderr)
         print(e, file=sys.stderr)
         print(C_('Is qrunner even running?'), file=sys.stderr)
+        print(C_('Lock file path: %(lockfile)s') % {'lockfile': LOCKFILE}, file=sys.stderr)
         return
     try:
         os.kill(pid, sig)
