@@ -165,25 +165,44 @@ class Switchboard:
         return filebase
 
     def dequeue(self, filebase):
-        # Read the message data + metadata
-        data = self._get_envelope_data(filebase)
-        if data is None:
+        # Calculate the filename from the given filebase.
+        filename = os.path.join(self.__whichq, filebase + '.pck')
+        backfile = os.path.join(self.__whichq, filebase + '.bak')
+        
+        try:
+            # Move the file to the backup file name for processing.  If this
+            # process crashes uncleanly the .bak file will be used to re-instate
+            # the .pck file in order to try again.
+            os.rename(filename, backfile)
+            
+            # Read the message object and metadata.
+            with open(backfile, 'rb') as fp:
+                msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                try:
+                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Convert any bytes in the loaded data to strings
+                    if isinstance(data, dict):
+                        for key, value in list(data.items()):
+                            if isinstance(key, bytes):
+                                del data[key]
+                                key = key.decode('utf-8', 'replace')
+                            if isinstance(value, bytes):
+                                value = value.decode('utf-8', 'replace')
+                            data[key] = value
+                except EOFError:
+                    data = {}
+                    
+            if data.get('_parsemsg'):
+                msg = email.message_from_string(msg, EmailMessage)
+                
+            return msg, data
+            
+        except EnvironmentError as e:
+            if e.errno != errno.ENOENT:
+                raise
             return None, None
-        msgdata = {}
-        # The first line is the message metadata
-        metadata = data.readline()
-        if not metadata:
+        except (pickle.UnpicklingError, EOFError):
             return None, None
-        metadata = metadata.strip()
-        if metadata:
-            msgdata = self._parse_metadata(metadata)
-        # The rest is the message
-        msg = data.read()
-        if not msg:
-            return None, None
-        # Parse the message into an email object
-        msg = email.message_from_string(msg, EmailMessage)
-        return msg, msgdata
 
     def finish(self, filebase, preserve=False):
         bakfile = os.path.join(self.__whichq, filebase + '.bak')
