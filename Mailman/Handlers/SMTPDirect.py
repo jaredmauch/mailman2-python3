@@ -38,7 +38,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Handlers import Decorate
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import syslog as syslogger
 from Mailman.SafeDict import MsgSafeDict
 
 import email
@@ -48,7 +48,9 @@ from email.charset import Charset
 
 DOT = '.'
 
-
+# Initialize the syslogger
+syslog = syslogger()
+
 # Manage a connection to the SMTP server
 class Connection(object):
     def __init__(self):
@@ -100,6 +102,15 @@ class Connection(object):
         if self.__conn is None:
             self.__connect()
         try:
+            # Ensure msgtext is properly encoded as UTF-8
+            if isinstance(msgtext, str):
+                msgtext = msgtext.encode('utf-8')
+            # Convert recips to list if it's not already
+            if not isinstance(recips, list):
+                recips = [recips]
+            # Ensure envsender is a string
+            if isinstance(envsender, bytes):
+                envsender = envsender.decode('utf-8')
             results = self.__conn.sendmail(envsender, recips, msgtext)
         except smtplib.SMTPException:
             # For safety, close this connection.  The next send attempt will
@@ -125,7 +136,6 @@ class Connection(object):
         self.__conn = None
 
 
-
 def process(mlist, msg, msgdata):
     recips = msgdata.get('recips')
     if not recips:
@@ -264,7 +274,6 @@ def process(mlist, msg, msgdata):
         raise Errors.SomeRecipientsFailed(tempfailures, permfailures)
 
 
-
 def chunkify(recips, chunksize):
     # First do a simple sort on top level domain.  It probably doesn't buy us
     # much to try to sort on MX record -- that's the MTA's job.  We're just
@@ -313,7 +322,6 @@ def chunkify(recips, chunksize):
     return chunks
 
 
-
 def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
     for recip in msgdata['recips']:
         # We now need to stitch together the message with its header and
@@ -387,7 +395,6 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
         bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
 
 
-
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     # Do some final cleanup of the message header.  Start by blowing away
     # any the Sender: and Errors-To: headers so remote MTAs won't be
