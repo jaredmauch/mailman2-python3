@@ -335,20 +335,30 @@ def check_privs():
             'Run this program as root or as the %(name)s user, or use -u.'))
 
 
-def check_qrunner_status():
+def check_status():
     """Check if all qrunners are running as expected."""
     # First check if the master process is running
     try:
         with open(mm_cfg.PIDFILE, 'r') as fp:
-            pid = int(fp.read().strip())
+            content = fp.read().strip().split()
+            if len(content) >= 2:
+                pid = int(content[0])
+                hostname = content[1]
+                if hostname != socket.gethostname():
+                    print(C_('PID file hostname mismatch: expected %(expected)s, got %(got)s') % 
+                          {'expected': socket.gethostname(), 'got': hostname}, file=sys.stderr)
+                    return False
+            else:
+                raise ValueError('Invalid PID file format')
         try:
             os.kill(pid, 0)  # Check if process exists
             print(C_('Master qrunner process is running (pid: %(pid)d)') % {'pid': pid})
         except OSError:
             print(C_('Master qrunner process is not running (stale pid file)'))
             return False
-    except (IOError, ValueError):
+    except (IOError, ValueError) as e:
         print(C_('Master qrunner process is not running (no pid file)'))
+        print(e, file=sys.stderr)
         return False
 
     # Check if the lock file exists and is valid
@@ -420,7 +430,7 @@ def main():
 
     # Handle the command
     if args.command == 'status':
-        if check_qrunner_status():
+        if check_status():
             sys.exit(0)
         else:
             sys.exit(1)
@@ -453,9 +463,18 @@ def main():
                     # Verify PID file exists and contains correct PID
                     try:
                         with open(mm_cfg.PIDFILE, 'r') as fp:
-                            child_pid = int(fp.read().strip())
-                            if child_pid != pid:
-                                print(C_('Error: PID file contains incorrect PID'), file=sys.stderr)
+                            content = fp.read().strip().split()
+                            if len(content) >= 2:
+                                child_pid = int(content[0])
+                                child_hostname = content[1]
+                                if child_pid != pid:
+                                    print(C_('Error: PID file contains incorrect PID'), file=sys.stderr)
+                                    return
+                                if child_hostname != socket.gethostname():
+                                    print(C_('Error: PID file hostname mismatch'), file=sys.stderr)
+                                    return
+                            else:
+                                print(C_('Error: Invalid PID file format'), file=sys.stderr)
                                 return
                             
                             # Verify process is a Mailman process
@@ -489,7 +508,7 @@ def main():
                 omask = os.umask(6)
                 try:
                     with open(mm_cfg.PIDFILE, 'w') as fp:
-                        print(os.getpid(), file=fp)
+                        print('%d %s' % (os.getpid(), socket.gethostname()), file=fp)
                 finally:
                     os.umask(omask)
 

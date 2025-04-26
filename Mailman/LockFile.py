@@ -441,41 +441,54 @@ class LockFile:
                 # Check if the lock file is stale
                 try:
                     with open(self.__lockfile) as fp:
-                        content = fp.read().strip().split()
-                        if len(content) >= 2:
-                            pid = int(content[0])
-                            lock_hostname = content[1]
+                        current_tempfile = fp.read().strip()
+                        if not current_tempfile:
+                            self.__writelog('lock file is empty')
+                            os.unlink(self.__lockfile)
+                            os.unlink(tempfile)
+                            return -1
                             
-                            # If the lock is from another host, we need to be more conservative
-                            if lock_hostname != hostname:
-                                self.__writelog('lock owned by different host: %s' % lock_hostname)
+                        # Extract hostname and PID from temp file name
+                        parts = current_tempfile.split('.')
+                        if len(parts) < 3:
+                            self.__writelog('invalid lock file format')
+                            os.unlink(self.__lockfile)
+                            os.unlink(tempfile)
+                            return -1
+                            
+                        lock_hostname = '.'.join(parts[1:-1])
+                        pid = int(parts[-1])
+                            
+                        # If the lock is from another host, we need to be more conservative
+                        if lock_hostname != hostname:
+                            self.__writelog('lock owned by different host: %s' % lock_hostname)
+                            os.unlink(tempfile)
+                            return -1
+                            
+                        # Check if process exists and is a Mailman process
+                        if not self._is_pid_valid(pid):
+                            self.__writelog('found stale lock (pid %d)' % pid)
+                            try:
+                                os.unlink(self.__lockfile)
                                 os.unlink(tempfile)
                                 return -1
-                            
-                            # Check if process exists and is a Mailman process
-                            if not self._is_pid_valid(pid):
-                                self.__writelog('found stale lock (pid %d)' % pid)
-                                try:
-                                    os.unlink(self.__lockfile)
-                                    os.unlink(tempfile)
-                                    return -1
-                                except OSError:
-                                    # Someone else might have cleaned up
-                                    os.unlink(tempfile)
-                                    return -1
-                            else:
-                                # Process exists - check if it's a Mailman process
-                                try:
-                                    with open(f'/proc/{pid}/cmdline') as f:
-                                        cmdline = f.read()
-                                        if 'mailman' not in cmdline.lower():
-                                            self.__writelog('breaking lock owned by non-Mailman process')
-                                            os.unlink(self.__lockfile)
-                                            os.unlink(tempfile)
-                                            return -1
-                                except (IOError, OSError):
-                                    # Can't read process info - be conservative
-                                    pass
+                            except OSError:
+                                # Someone else might have cleaned up
+                                os.unlink(tempfile)
+                                return -1
+                        else:
+                            # Process exists - check if it's a Mailman process
+                            try:
+                                with open(f'/proc/{pid}/cmdline') as f:
+                                    cmdline = f.read()
+                                    if 'mailman' not in cmdline.lower():
+                                        self.__writelog('breaking lock owned by non-Mailman process')
+                                        os.unlink(self.__lockfile)
+                                        os.unlink(tempfile)
+                                        return -1
+                            except (IOError, OSError):
+                                # Can't read process info - be conservative
+                                pass
                 except (ValueError, OSError) as e:
                     self.__writelog('error reading lock: %s' % e)
                     # Lock file exists but is invalid - try to break it
@@ -537,7 +550,15 @@ class LockFile:
             # Read the lock file to get the old PID
             try:
                 with open(self.__lockfile) as fp:
-                    pid = int(fp.read().strip())
+                    content = fp.read().strip().split()
+                    if len(content) >= 2:
+                        pid = int(content[0])
+                        hostname = content[1]
+                        if hostname != socket.gethostname():
+                            self.__writelog('lock owned by different host: %s' % hostname)
+                            return -1
+                    else:
+                        pid = int(content[0])  # Try old format
                 if not self._is_pid_valid(pid):
                     self.__writelog('breaking stale lock owned by pid %d' % pid)
                     os.unlink(self.__lockfile)
