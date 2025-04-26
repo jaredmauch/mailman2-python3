@@ -620,9 +620,12 @@ class LockFile:
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
             pid = os.getpid()
             hostname = socket.gethostname()
-            logf.write(f'{timestamp} [{pid}@{hostname}] {self.__logprefix}: {msg}\n')
-            if important:
+            # Only print stack trace for actual errors, not for normal operations
+            if important and 'error' in msg.lower():
+                logf.write(f'{timestamp} [{pid}@{hostname}] {self.__logprefix}: {msg}\n')
                 traceback.print_stack(file=logf)
+            else:
+                logf.write(f'{timestamp} [{pid}@{hostname}] {self.__logprefix}: {msg}\n')
         except Exception:
             # Don't raise exceptions during logging
             pass
