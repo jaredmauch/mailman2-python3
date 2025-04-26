@@ -112,18 +112,18 @@ check-build-files:
 	    for f in $$d/*; do \
 		if test -f $$f; then \
 		    if test ! -f build/$$f -o build/$$f -ot $$f; then \
-			echo "ERROR: Source file $$f is newer than build/$$f"; \
-			echo "Please re-run ./configure to update build directory"; \
-			exit 1; \
+			echo "Updating build file: $$f"; \
+			cp $$f build/$$f; \
+			touch build/$$f; \
 		    fi; \
 		fi; \
 	    done; \
 	done
 	@for f in $(PYTHON_FILES); do \
 	    if test ! -f build/$$f -o build/$$f -ot $$f; then \
-		echo "ERROR: Source file $$f is newer than build/$$f"; \
-		echo "Please re-run ./configure to update build directory"; \
-		exit 1; \
+		echo "Updating build file: $$f"; \
+		cp $$f build/$$f; \
+		touch build/$$f; \
 	    fi; \
 	done
 
@@ -144,6 +144,7 @@ clean-pyc:
 	@for d in $(PYTHON_DIRS); do \
 	    find $(DESTDIR)$(prefix)/$$d -name "*.pyc" -delete; \
 	    find $(DESTDIR)$(prefix)/$$d -name "*.pyo" -delete; \
+	    find $(DESTDIR)$(prefix)/$$d -name "__pycache__" -type d -exec rm -rf {} +; \
 	done
 
 doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
@@ -187,6 +188,7 @@ doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
 	@for d in $(PYTHON_DIRS); do \
 	    find $$d -name "*.py" -type f -print0 | while IFS= read -r -d '' f; do \
 		install -D -m $(FILEMODE) "$$f" "$(DESTDIR)$(prefix)/$$f"; \
+		touch "$(DESTDIR)$(prefix)/$$f"; \
 	    done; \
 	done
 	@for d in $(SUBDIRS); \
@@ -195,6 +197,7 @@ doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
 	done
 	@echo "Compiling Python files..."
 	@for d in $(PYTHON_DIRS); do \
+	    echo "Compiling Python files in $$d..."; \
 	    $(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/$$d", ddir="$(prefix)/$$d", force=1, quiet=0)'; \
 	done
 
