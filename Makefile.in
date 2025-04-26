@@ -75,6 +75,16 @@ PYTHON_DIRS = $(shell find . -type d -name "Mailman")
 INSTALLED_SCRIPTS = $(shell find $(DESTDIR)$(prefix)/bin -type f -executable 2>/dev/null || true)
 SOURCE_SCRIPTS = $(shell find build/bin -type f -executable -name "*.py" 2>/dev/null || true)
 
+# Detect number of CPUs for parallel builds
+ifeq ($(shell uname -s),Darwin)
+  NPROCS := $(shell sysctl -n hw.ncpu)
+else
+  NPROCS := $(shell nproc 2>/dev/null || echo 1)
+endif
+
+# Default to using all available CPUs for parallel builds
+MAKEFLAGS += -j$(NPROCS)
+
 # Add this function to check for script mismatches
 define check_scripts
 	@echo "Checking for script mismatches..."

@@ -554,7 +554,7 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
         dict = {}
     # If lang is None, use the default language from mm_cfg
     if lang is None:
-        lang = mm_cfg.DEFAULT_LANGUAGE
+        lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
     # First try the list's language-specific template directory
     if lang and mlist:
         path = os.path.join(mlist.fullpath(), 'templates', lang, templatefile)
