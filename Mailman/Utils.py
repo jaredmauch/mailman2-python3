@@ -610,22 +610,40 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
 
 
 def maketext(templatefile, dict=None, raw=0, lang=None, mlist=None):
-    """Return the contents of the template file with substitutions made.
+    """Make text from a template file.
 
-    The template file is searched for in the following order:
-    1. In the list's language-specific template directory
-    2. In the site's language-specific template directory
-    3. In the list's default template directory
-    4. In the site's default template directory
+    Use this function to create text from the template file.  If dict is
+    provided, use it as the substitution mapping.  If mlist is provided use it
+    as the source for the substitution.  If both dict and mlist are provided,
+    dict values take precedence.  lang is the language code to find the
+    template in.  If raw is true, no substitution will be done on the text.
 
-    If the template is found, returns the contents of the file with the
-    substitutions made.  Otherwise returns None.
+    Returns the text, or None if an error occurred.
     """
-    text, path = findtext(templatefile, dict, raw, lang, mlist)
-    if text is None:
-        return None
-    if dict:
-        text = text % dict
+    # If no language was specified, use the list's preferred language
+    if lang is None and mlist is not None:
+        lang = mlist.preferred_language
+    # Find the template in the right language context
+    template = findtext(templatefile, raw=1, lang=lang, mlist=mlist)
+    if template is None:
+        syslog('error', 'Template file not found: %s (language: %s)',
+               templatefile, lang or 'default')
+        return ''  # Return empty string instead of None
+    if raw:
+        return template
+    # Make the text from the template
+    if dict is None:
+        dict = SafeDict()
+    if mlist:
+        dict.update(mlist.__dict__)
+    # Remove leading whitespace
+    template = '\n'.join([line.lstrip() for line in template.splitlines()])
+    try:
+        text = template % dict
+    except (ValueError, TypeError) as e:
+        syslog('error', 'Template interpolation error for %s: %s',
+               templatefile, str(e))
+        return ''  # Return empty string instead of None
     return text
 
 

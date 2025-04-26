@@ -395,61 +395,215 @@ class LockFile:
         self.__writelog('transferred the lock')
 
     def _take_possession(self):
-        """Try to take possession of the lock with detailed tracing."""
-        self.__writelog('attempting to take possession of lock', important=True)
-        self.__writelog(f'lock file: {self.__lockfile}', important=True)
-        self.__writelog(f'temp file: {self.__tmpfname}', important=True)
+        """Try to take possession of the lock file.
+
+        Returns 0 if we successfully took possession of the lock file, -1 if we
+        did not, and -2 if something very bad happened.
+        """
+        self._logdebug('attempting to take possession of lock')
+        
+        # First, clean up any stale temp files for all processes
+        self.clean_stale_locks()
+        
+        # Create a temp file with our PID and hostname
+        lockfile_dir = os.path.dirname(self.__lockfile)
+        hostname = socket.gethostname()
+        suffix = '.%s.%d' % (hostname, os.getpid())
+        tempfile = self.__lockfile + suffix
         
         try:
-            # Create our temp file
-            self.__writelog('creating temp file')
-            self.__write()
-            
-            # First check if lock file exists
+            # Write our PID and hostname to help with debugging
+            with open(tempfile, 'w') as fp:
+                fp.write('%d %s\n' % (os.getpid(), hostname))
+        except OSError as e:
+            self._logdebug('could not create tempfile %s: %s', tempfile, e)
+            return -2
+
+        # Now try to link the tempfile to the lock file
+        try:
+            os.link(tempfile, self.__lockfile)
+            # Link succeeded - we have the lock
+            self._logdebug('successfully linked tempfile to lock file')
+            os.unlink(tempfile)
+            return 0
+        except OSError as e:
+            # Link failed - see if lock exists and check if it's stale
+            self._logdebug('link to lock file failed: %s', e)
             try:
-                st = self.__nfs_safe_stat(self.__lockfile)
-                if st[ST_NLINK] == 0:
-                    self.__writelog('lock file exists but has no links')
+                if not os.path.exists(self.__lockfile):
+                    # Lock disappeared - try again
+                    self._logdebug('lock file disappeared, retrying')
+                    os.unlink(tempfile)
+                    return -1
+                
+                # Check if the lock file is stale
+                try:
+                    with open(self.__lockfile) as fp:
+                        content = fp.read().strip().split()
+                        if len(content) >= 2:
+                            pid = int(content[0])
+                            lock_hostname = content[1]
+                            
+                            # If the lock is from another host, we need to be more conservative
+                            if lock_hostname != hostname:
+                                self._logdebug('lock owned by different host: %s', lock_hostname)
+                                os.unlink(tempfile)
+                                return -1
+                            
+                            # Check if process exists and is a Mailman process
+                            if not self._is_pid_valid(pid):
+                                self._logdebug('found stale lock (pid %d)', pid)
+                                try:
+                                    os.unlink(self.__lockfile)
+                                    os.unlink(tempfile)
+                                    return -1
+                                except OSError:
+                                    # Someone else might have cleaned up
+                                    os.unlink(tempfile)
+                                    return -1
+                            else:
+                                # Process exists - check if it's a Mailman process
+                                try:
+                                    with open(f'/proc/{pid}/cmdline') as f:
+                                        cmdline = f.read()
+                                        if 'mailman' not in cmdline.lower():
+                                            self._logdebug('breaking lock owned by non-Mailman process')
+                                            os.unlink(self.__lockfile)
+                                            os.unlink(tempfile)
+                                            return -1
+                                except (IOError, OSError):
+                                    # Can't read process info - be conservative
+                                    pass
+                except (ValueError, OSError) as e:
+                    self._logdebug('error reading lock: %s', e)
+                    # Lock file exists but is invalid - try to break it
                     try:
                         os.unlink(self.__lockfile)
-                    except OSError as e:
-                        if e.errno != errno.ENOENT:
-                            raise
+                        os.unlink(tempfile)
+                        return -1
+                    except OSError:
+                        pass
             except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
-            
-            # Try to create a hard link from our temp file to the lock file
-            self.__writelog('attempting to create hard link')
+                self._logdebug('error checking lock: %s', e)
+                try:
+                    os.unlink(tempfile)
+                except OSError:
+                    pass
+                return -2
+                
+            # Lock exists and is valid - clean up and return
             try:
-                os.link(self.__tmpfname, self.__lockfile)
-                self.__writelog('hard link created successfully')
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    self.__writelog('hard link already exists')
-                    return False
-                elif e.errno == errno.ENOENT:
-                    self.__writelog('lock file does not exist')
-                    return False
-                else:
-                    self.__writelog(f'unexpected error creating hard link: {str(e)}', important=True)
-                    raise
-            
-            # Double check our link count after a small delay to handle NFS
-            time.sleep(0.1)  # Small delay for NFS
-            if self.__linkcount() == 2:
-                self.__writelog('lock acquired successfully')
-                return True
-            
-            self.__writelog('lock acquisition failed')
-            return False
-            
-        except Exception as e:
-            self.__writelog(f'error in _take_possession: {str(e)}', important=True)
-            raise
+                os.unlink(tempfile)
+            except OSError:
+                pass
+            return -1
 
-    def _disown(self):
-        self.__owned = False
+    def _is_pid_valid(self, pid):
+        """Check if a PID is still valid (process exists).
+        
+        Returns True if the process exists, False otherwise.
+        """
+        try:
+            # First check if process exists
+            os.kill(pid, 0)
+            
+            # On Linux, check if it's a zombie
+            try:
+                with open(f'/proc/{pid}/status') as f:
+                    status = f.read()
+                    if 'State:' in status and 'Z (zombie)' in status:
+                        self._logdebug('found zombie process (pid %d)', pid)
+                        return False
+            except (IOError, OSError):
+                pass
+                
+            return True
+        except OSError:
+            return False
+
+    def _break(self):
+        """Break the lock.
+
+        Returns 0 if we successfully broke the lock, -1 if we didn't, and -2 if
+        something very bad happened.
+        """
+        self._logdebug('breaking the lock')
+        try:
+            if not os.path.exists(self.__lockfile):
+                self._logdebug('nothing to break -- lock file does not exist')
+                return -1
+            # Read the lock file to get the old PID
+            try:
+                with open(self.__lockfile) as fp:
+                    pid = int(fp.read().strip())
+                if not self._is_pid_valid(pid):
+                    self._logdebug('breaking stale lock owned by pid %d', pid)
+                    os.unlink(self.__lockfile)
+                    return 0
+                self._logdebug('lock is valid (pid %d)', pid)
+                return -1
+            except (ValueError, OSError) as e:
+                self._logdebug('error reading lock: %s', e)
+                try:
+                    os.unlink(self.__lockfile)
+                    return 0
+                except OSError:
+                    return -2
+        except OSError as e:
+            self._logdebug('error breaking lock: %s', e)
+            return -2
+
+    def clean_stale_locks(self):
+        """Clean up any stale lock files for this lock.
+        
+        This is a safe method that can be called to clean up stale lock files
+        without attempting to acquire the lock.
+        """
+        self._logdebug('cleaning stale locks')
+        try:
+            # Check for the main lock file
+            if os.path.exists(self.__lockfile):
+                try:
+                    with open(self.__lockfile) as fp:
+                        content = fp.read().strip().split()
+                        if len(content) >= 2:
+                            pid = int(content[0])
+                            lock_hostname = content[1]
+                            
+                            # Only clean locks from our host
+                            if lock_hostname == socket.gethostname():
+                                if not self._is_pid_valid(pid):
+                                    self._logdebug('removing stale lock (pid %d)', pid)
+                                    try:
+                                        os.unlink(self.__lockfile)
+                                    except OSError:
+                                        pass
+                except (ValueError, OSError) as e:
+                    self._logdebug('error checking lock, removing: %s', e)
+                    try:
+                        os.unlink(self.__lockfile)
+                    except OSError:
+                        pass
+            
+            # Clean up any temp files
+            lockfile_dir = os.path.dirname(self.__lockfile)
+            base = os.path.basename(self.__lockfile)
+            try:
+                for filename in os.listdir(lockfile_dir):
+                    if filename.startswith(base + '.'):
+                        filepath = os.path.join(lockfile_dir, filename)
+                        try:
+                            # Check if temp file is old (> 1 hour)
+                            if time.time() - os.path.getmtime(filepath) > 3600:
+                                os.unlink(filepath)
+                                self._logdebug('removed old temp file: %s', filepath)
+                        except OSError as e:
+                            self._logdebug('error removing temp file %s: %s', 
+                                         filepath, e)
+            except OSError as e:
+                self._logdebug('error listing directory: %s', e)
+        except OSError as e:
+            self._logdebug('error cleaning locks: %s', e)
 
     #
     # Private interface
@@ -521,7 +675,7 @@ class LockFile:
     def __releasetime(self):
         """Get release time with NFS safety."""
         try:
-            return self.__nfs_safe_stat(self.__lockfile)[ST_MTIME]
+            return os.stat(self.__lockfile)[ST_MTIME]
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
@@ -538,50 +692,6 @@ class LockFile:
                 self.__writelog('lock file does not exist')
                 return 0
             self.__writelog(f'error getting link count: {str(e)}', important=True)
-            raise
-
-    def __break(self):
-        """Break a stale lock with improved error handling."""
-        try:
-            # Get the current owner's temp file
-            owner = self.__read()
-            if not owner:
-                self.__writelog('no owner found for lock file', important=True)
-                # If no owner is found, try to remove the lock file anyway
-                try:
-                    os.unlink(self.__lockfile)
-                    self.__writelog('removed orphaned lock file')
-                except OSError as e:
-                    if e.errno != errno.ENOENT:
-                        self.__writelog(f'error removing orphaned lock file: {str(e)}', important=True)
-                        raise
-                return
-
-            # Try to remove the lock file first
-            try:
-                os.unlink(self.__lockfile)
-                self.__writelog('removed lock file')
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    self.__writelog(f'error removing lock file: {str(e)}', important=True)
-                    raise
-
-            # Then try to remove the owner's temp file
-            try:
-                os.unlink(owner)
-                self.__writelog('removed owner temp file')
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    self.__writelog(f'error removing owner temp file: {str(e)}', important=True)
-                    # Don't raise here - we've already removed the lock file
-
-            self.__writelog('successfully broke lock', important=True)
-            
-            # Small delay after breaking lock to let NFS catch up
-            time.sleep(0.1)
-            
-        except Exception as e:
-            self.__writelog(f'error breaking lock: {str(e)}', important=True)
             raise
 
     def __sleep(self):
