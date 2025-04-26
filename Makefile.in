@@ -127,7 +127,15 @@ prepare-build:
 
 build: all
 	@echo "Building Python files..."
-	@$(PYTHON) -m compileall -q .
+	@if [ -d "build" ]; then \
+		$(PYTHON) -m compileall -q build; \
+		$(PYTHON) -m compileall -q build/Mailman; \
+		$(PYTHON) -m compileall -q build/bin; \
+		$(PYTHON) -m compileall -q build/scripts; \
+		$(PYTHON) -m compileall -q build/cron; \
+		$(PYTHON) -m compileall -q build/misc; \
+		$(PYTHON) -m compileall -q build/tests; \
+	fi
 	@echo "Build complete."
 
 install: build
@@ -139,10 +147,17 @@ install: build
 clean-pyc:
 	@echo "Cleaning Python bytecode files..."
 	@for d in $(PYTHON_DIRS); do \
-	    find $(DESTDIR)$(prefix)/$$d -name "*.pyc" -delete; \
-	    find $(DESTDIR)$(prefix)/$$d -name "*.pyo" -delete; \
-	    find $(DESTDIR)$(prefix)/$$d -name "__pycache__" -type d -exec rm -rf {} +; \
+	    if [ -d "$$d" ]; then \
+		find "$$d" -name "*.pyc" -delete 2>/dev/null || true; \
+		find "$$d" -name "*.pyo" -delete 2>/dev/null || true; \
+		find "$$d" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true; \
+	    fi; \
 	done
+	@if [ -d "build" ]; then \
+	    find build -name "*.pyc" -delete 2>/dev/null || true; \
+	    find build -name "*.pyo" -delete 2>/dev/null || true; \
+	    find build -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true; \
+	fi
 
 doinstall: install clean-pyc
 	@echo "Creating architecture independent directories..."
@@ -192,11 +207,6 @@ doinstall: install clean-pyc
 	do \
 	    (cd $$d; $(MAKE) DESTDIR=$(DESTDIR) install); \
 	done
-	@echo "Compiling Python files..."
-	@for d in $(PYTHON_DIRS); do \
-	    echo "Compiling Python files in $$d..."; \
-	    $(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/$$d", ddir="$(prefix)/$$d", force=1, quiet=0)'; \
-	done
 
 # Only run bin/update if we aren't installing in DESTDIR
 update: install
@@ -209,8 +219,8 @@ clean: clean-pyc
 	done
 	-rm -f update.log
 	-rm -rf build
-	-rm -f $(shell find . -name "*.pyc")
-	-rm -f $(shell find . -name "*.pyo")
+	-rm -f $(shell find . -name "*.pyc" 2>/dev/null || true)
+	-rm -f $(shell find . -name "*.pyo" 2>/dev/null || true)
 
 distclean: clean
 	@for d in $(SUBDIRS); \
