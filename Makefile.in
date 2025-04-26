@@ -136,17 +136,21 @@ check-build-files:
 	    fi; \
 	done
 
-all: check-build-files subdirs
-
-subdirs: $(SUBDIRS)
-	@for d in $(SUBDIRS); \
-	do \
-	    echo "Making in $$d"; \
-	    (cd $$d && $(MAKE) all); \
+all: src
+	@for d in $(SUBDIRS); do \
+		(cd $$d && $(MAKE) all) || exit 1; \
 	done
 
-install: subdirs check-scripts
-	$(MAKE) -C bin install
+build: all
+	@echo "Building Python files..."
+	@$(PYTHON) -m compileall -q .
+	@echo "Build complete."
+
+install: build
+	@for d in $(SUBDIRS); do \
+		(cd $$d && $(MAKE) install) || exit 1; \
+	done
+	@echo "Installation complete."
 
 clean-pyc:
 	@echo "Cleaning Python bytecode files..."
