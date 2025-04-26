@@ -120,7 +120,11 @@ def tolocale(s):
     # Handle string formatting before encoding
     if isinstance(s, bytes):
         s = s.decode('utf-8', 'replace')
-    return s.encode(_ctype_charset, 'replace').decode(_ctype_charset)
+    # Ensure we return a string, not bytes
+    result = s.encode(_ctype_charset, 'replace')
+    if isinstance(result, bytes):
+        result = result.decode(_ctype_charset)
+    return result
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
@@ -129,7 +133,11 @@ else:
         result = _(s, 2)
         if isinstance(result, bytes):
             result = result.decode('utf-8', 'replace')
-        return tolocale(result)
+        result = tolocale(result)
+        # Ensure the result is a string and not bytes
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', 'replace')
+        return result
 
     
 

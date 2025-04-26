@@ -106,35 +106,46 @@ Makefile: Makefile.in
 	@echo "ERROR: Makefile.in has been modified. Please re-run ./configure"
 	@exit 1
 
-all: subdirs build-dir
-
-build-dir: $(PYTHON_FILES)
-	@echo "Updating build directory..."
-	@for d in $(SUBDIRS); \
-	do \
-	    dir=build/$$d; \
-	    if test ! -d $$dir; then \
-		$(srcdir)/mkinstalldirs $$dir; \
-	    fi; \
+check-build-files:
+	@echo "Checking if build files are up to date..."
+	@for d in $(SUBDIRS); do \
 	    for f in $$d/*; do \
 		if test -f $$f; then \
-		    if test ! -f build/$$f -o $$f -nt build/$$f; then \
-			cp -p $$f build/$$f; \
+		    if test ! -f build/$$f -o build/$$f -ot $$f; then \
+			echo "ERROR: Source file $$f is newer than build/$$f"; \
+			echo "Please re-run ./configure to update build directory"; \
+			exit 1; \
 		    fi; \
 		fi; \
 	    done; \
 	done
+	@for f in $(PYTHON_FILES); do \
+	    if test ! -f build/$$f -o build/$$f -ot $$f; then \
+		echo "ERROR: Source file $$f is newer than build/$$f"; \
+		echo "Please re-run ./configure to update build directory"; \
+		exit 1; \
+	    fi; \
+	done
+
+all: check-build-files subdirs
 
 subdirs: $(SUBDIRS)
 	for d in $(SUBDIRS); \
 	do \
-	    (cd $$d; $(MAKE) all); \
+	    (cd $$d; $(MAKE)); \
 	done
 
 install: subdirs check-scripts
-	$(MAKE) -C build/bin install
+	$(MAKE) -C bin install
 
-doinstall: $(SUBDIRS) $(PYTHON_FILES)
+clean-pyc:
+	@echo "Cleaning Python bytecode files..."
+	@for d in $(PYTHON_DIRS); do \
+	    find $(DESTDIR)$(prefix)/$$d -name "*.pyc" -delete; \
+	    find $(DESTDIR)$(prefix)/$$d -name "*.pyo" -delete; \
+	done
+
+doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
 	@echo "Creating architecture independent directories..."
 	@for d in $(VAR_DIRS); \
 	do \
@@ -171,13 +182,19 @@ doinstall: $(SUBDIRS) $(PYTHON_FILES)
 	    else true; \
 	    fi; \
 	done
+	@echo "Installing Python files..."
+	@for d in $(PYTHON_DIRS); do \
+	    find $$d -name "*.py" -type f -print0 | while IFS= read -r -d '' f; do \
+		install -D -m $(FILEMODE) "$$f" "$(DESTDIR)$(prefix)/$$f"; \
+	    done; \
+	done
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) DESTDIR=$(DESTDIR) install); \
 	done
 	@echo "Compiling Python files..."
 	@for d in $(PYTHON_DIRS); do \
-	    $(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/$$d", ddir="$(prefix)/$$d", force=1)'; \
+	    $(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/$$d", ddir="$(prefix)/$$d", force=1, quiet=0)'; \
 	done
 
 # Only run bin/update if we aren't installing in DESTDIR, as this

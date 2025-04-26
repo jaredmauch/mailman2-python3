@@ -160,12 +160,8 @@ def usage(code, msg=''):
 
 def kill_watcher(sig):
     try:
-        fp = open(mm_cfg.PIDFILE, 'rb')
-        pidstr = fp.read()
-        fp.close()
-        if isinstance(pidstr, bytes):
-            pidstr = pidstr.decode('utf-8', 'replace')
-        pid = int(pidstr.strip())
+        with open(mm_cfg.PIDFILE, 'r') as fp:
+            pid = int(fp.read().strip())
     except (IOError, ValueError) as e:
         # For i18n convenience
         pidfile = mm_cfg.PIDFILE
@@ -482,9 +478,8 @@ def main():
                 # First, save our pid in a file for "mailmanctl stop" rendezvous
                 omask = os.umask(6)
                 try:
-                    fp = open(mm_cfg.PIDFILE, 'w')
-                    print(os.getpid(), file=fp)
-                    fp.close()
+                    with open(mm_cfg.PIDFILE, 'w') as fp:
+                        print(os.getpid(), file=fp)
                 finally:
                     os.umask(omask)
 
