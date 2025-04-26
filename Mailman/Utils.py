@@ -618,14 +618,8 @@ def maketext(templatefile, dict=None, raw=0, lang=None, mlist=None):
     as the source for the substitution.  If both dict and mlist are provided,
     dict values take precedence.  lang is the language code to find the
     template in.  If raw is true, no substitution will be done on the text.
-
-    Returns the text, or None if an error occurred.
     """
-    # If no language was specified, use the list's preferred language
-    if lang is None and mlist is not None:
-        lang = mlist.preferred_language
-    # Find the template in the right language context
-    template = findtext(templatefile, raw=1, lang=lang, mlist=mlist)
+    template, path = findtext(templatefile, dict, raw, lang, mlist)
     if template is None:
         syslog('error', 'Template file not found: %s (language: %s)',
                templatefile, lang or 'default')
@@ -638,7 +632,8 @@ def maketext(templatefile, dict=None, raw=0, lang=None, mlist=None):
     if mlist:
         dict.update(mlist.__dict__)
     # Remove leading whitespace
-    template = '\n'.join([line.lstrip() for line in template.splitlines()])
+    if isinstance(template, str):
+        template = '\n'.join([line.lstrip() for line in template.splitlines()])
     try:
         text = template % dict
     except (ValueError, TypeError) as e:
