@@ -102,6 +102,10 @@ endef
 
 # Rules
 
+Makefile: Makefile.in
+	@echo "ERROR: Makefile.in has been modified. Please re-run ./configure"
+	@exit 1
+
 all: subdirs build-dir
 
 build-dir: $(PYTHON_FILES)
@@ -127,7 +131,8 @@ subdirs: $(SUBDIRS)
 	    (cd $$d; $(MAKE) all); \
 	done
 
-install: doinstall update check-scripts
+install: subdirs check-scripts
+	$(MAKE) -C build/bin install
 
 doinstall: $(SUBDIRS) $(PYTHON_FILES)
 	@echo "Creating architecture independent directories..."
@@ -182,7 +187,7 @@ update:
 	@(cd $(DESTDIR)$(prefix) ; test -n "$(DESTDIR)" || bin/update)
 
 check-scripts:
-	$(check_scripts)
+	$(call check_scripts)
 
 clean: $(SUBDIRS)
 	@for d in $(SUBDIRS); \
