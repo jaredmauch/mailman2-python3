@@ -270,7 +270,7 @@ class LockFile:
                 if releasetime < current_time:
                     # Lock is stale, try to break it
                     self.__writelog(f'stale lock detected (releasetime={releasetime}, current={current_time})', important=True)
-                    self.__break()
+                    self._break()
                     self.__writelog('broke stale lock', important=True)
                     # Try to acquire again immediately after breaking
                     if self._take_possession():

@@ -374,6 +374,9 @@ class HTMLFormatter(object):
         else:
             charset = Utils.GetCharSet(lang)
         text = Utils.maketext(template, raw=1, lang=lang, mlist=self)
+        # Ensure we have a string to split
+        if isinstance(text, tuple):
+            text = text[0]  # Take the first element of the tuple
         parts = re.split('(</?[Mm][Mm]-[^>]*>)', text)
         i = 1
         while i < len(parts):
