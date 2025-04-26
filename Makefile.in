@@ -22,6 +22,10 @@
 
 SHELL=		/bin/sh
 
+# Store configure arguments for reconfigure target
+CONFIGURE_ARGS= @CONFIGURE_ARGS@
+CONFIGURE_CMD=  @CONFIGURE_CMD@
+
 VPATH=		@srcdir@
 srcdir=		@srcdir@
 bindir=		@bindir@
@@ -105,6 +109,11 @@ endef
 Makefile: Makefile.in
 	@echo "ERROR: Makefile.in has been modified. Please re-run ./configure"
 	@exit 1
+
+# Target to re-run configure with original arguments
+reconfigure:
+	@echo "Re-running configure with original arguments: $(CONFIGURE_ARGS)"
+	cd $(srcdir) && $(CONFIGURE_CMD) $(CONFIGURE_ARGS)
 
 check-build-files:
 	@echo "Checking if build files are up to date..."

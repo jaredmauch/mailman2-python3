@@ -674,6 +674,8 @@ PYTHON
 with_python
 BUILD_DATE
 CONFIGURE_OPTS
+CONFIGURE_ARGS
+CONFIGURE_CMD
 target_alias
 host_alias
 build_alias
@@ -2502,6 +2504,11 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
+
+# Store the configure command and arguments for reconfigure target
+CONFIGURE_CMD="\$0"
+CONFIGURE_ARGS="\$*"
 
 
 

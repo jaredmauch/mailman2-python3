@@ -20,6 +20,11 @@ AC_PREREQ([2.71])
 AC_INIT
 AC_CONFIG_SRCDIR([src/common.h])
 
+# Store the configure command and arguments for reconfigure target
+CONFIGURE_CMD="\$0"
+CONFIGURE_ARGS="\$*"
+AC_SUBST(CONFIGURE_CMD)
+AC_SUBST(CONFIGURE_ARGS)
 
 # /usr/local/mailman is the default installation directory
 AC_PREFIX_DEFAULT(/usr/local/mailman)
