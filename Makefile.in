@@ -22,28 +22,23 @@
 
 SHELL=		/bin/sh
 
-# Store configure arguments for reconfigure target
-CONFIGURE_ARGS= @CONFIGURE_ARGS@
-CONFIGURE_CMD=  @CONFIGURE_CMD@
-
-VPATH=		@srcdir@
-srcdir=		@srcdir@
-bindir=		@bindir@
-prefix=		@prefix@
-exec_prefix=	@exec_prefix@
-var_prefix=	@VAR_PREFIX@
+srcdir=		.
+bindir=		${exec_prefix}/bin
+prefix=		/usr/local/mailman
+exec_prefix=	${prefix}
+var_prefix=	/usr/local/mailman
 DESTDIR=
 
-CC=		@CC@
-INSTALL=	@INSTALL@
-PYTHON= 	@PYTHON@
+CC=		gcc
+INSTALL=	/usr/bin/install -c
+PYTHON= 	/usr/bin/python3
 
-DEFS=		@DEFS@
+DEFS=		-DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DHAVE_STRERROR=1 -DHAVE_SETREGID=1 -DHAVE_SYSLOG=1 -DHAVE_STDIO_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_STRINGS_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_UNISTD_H=1 -DSTDC_HEADERS=1 -DHAVE_STDIO_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_STRINGS_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_UNISTD_H=1 -DHAVE_SYSLOG_H=1 -DGETGROUPS_T=gid_t -DHAVE_VSNPRINTF=1
 
 # Customizable but not set by configure
 
-OPT=		@OPT@
-CFLAGS=		@CFLAGS@ $(OPT) $(DEFS)
+OPT=		-g -O2
+CFLAGS=		-g -O2 $(OPT) $(DEFS)
 
 VAR_DIRS= \
 	logs archives lists locks data spam qfiles \
@@ -60,7 +55,6 @@ ARCH_DEP_DIRS=	cgi-bin mail
 
 # Directories make should decend into
 SUBDIRS=	bin cron misc Mailman scripts src templates messages tests
-
 
 # Modes for directories and executables created by the install
 # process.  Default to group-writable directories but
@@ -106,51 +100,29 @@ endef
 
 # Rules
 
-.PHONY: all build install clean distclean reconfigure
+.PHONY: all build install clean distclean prepare-build
 
-reconfigure:
-	@echo "Re-running configure with original arguments: $(CONFIGURE_ARGS)"
-	@if test -x config.status; then \
-		./config.status --recheck; \
-		./config.status; \
-	else \
-		if test -n "$(CONFIGURE_ARGS)"; then \
-			sh configure $(CONFIGURE_ARGS); \
-		else \
-			sh configure; \
-		fi; \
-	fi
-
-Makefile: Makefile.in
-	@if test "$(MAKECMDGOALS)" != "reconfigure"; then \
-		echo "ERROR: Makefile.in has been modified. Please re-run ./configure"; \
-		exit 1; \
-	fi
-
-check-build-files:
-	@echo "Checking if build files are up to date..."
-	@for d in $(SUBDIRS); do \
-	    for f in $$d/*; do \
-		if test -f $$f; then \
-		    if test ! -f build/$$f -o build/$$f -ot $$f; then \
-			echo "Updating build file: $$f"; \
-			cp $$f build/$$f; \
-			touch build/$$f; \
-		    fi; \
-		fi; \
-	    done; \
-	done
-	@for f in $(PYTHON_FILES); do \
-	    if test ! -f build/$$f -o build/$$f -ot $$f; then \
-		echo "Updating build file: $$f"; \
-		cp $$f build/$$f; \
-		touch build/$$f; \
-	    fi; \
-	done
-
-all: src
+# Default target
+all: prepare-build
 	@for d in $(SUBDIRS); do \
 		(cd $$d && $(MAKE) all) || exit 1; \
+	done
+
+# Build directory preparation
+prepare-build:
+	@echo "Preparing build directory..."
+	@for d in $(SUBDIRS); do \
+		dir=build/$$d; \
+		if test ! -d $$dir; then \
+			$(srcdir)/mkinstalldirs $$dir; \
+		fi; \
+		for f in $$d/*; do \
+			if test -f $$f; then \
+				if test ! -f build/$$f -o $$f -nt build/$$f; then \
+					cp -p $$f build/$$f; \
+				fi; \
+			fi; \
+		done; \
 	done
 
 build: all
@@ -226,14 +198,9 @@ doinstall: $(SUBDIRS) $(PYTHON_FILES) clean-pyc
 	    $(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/$$d", ddir="$(prefix)/$$d", force=1, quiet=0)'; \
 	done
 
-# Only run bin/update if we aren't installing in DESTDIR, as this
-# means there are probably no lists to deal with, and it wouldn't
-# work anyway (because of import paths.)
+# Only run bin/update if we aren't installing in DESTDIR
 update:
 	@(cd $(DESTDIR)$(prefix) ; test -n "$(DESTDIR)" || bin/update)
-
-check-scripts:
-	$(call check_scripts)
 
 clean: $(SUBDIRS)
 	@for d in $(SUBDIRS); \
@@ -245,13 +212,12 @@ clean: $(SUBDIRS)
 	-rm -f $(shell find . -name "*.pyc")
 	-rm -f $(shell find . -name "*.pyo")
 
-distclean: $(SUBDIRS)
+distclean: clean
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) distclean); \
 	done
 	-rm -f config.cache config.log config.status Makefile
-	-rm -rf build
 
 langpack:
 	tar zcvf langpack-$(DATE).tgz $(EXCLUDES) $(LANGPACK)
