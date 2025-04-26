@@ -130,9 +130,10 @@ check-build-files:
 all: check-build-files subdirs
 
 subdirs: $(SUBDIRS)
-	for d in $(SUBDIRS); \
+	@for d in $(SUBDIRS); \
 	do \
-	    (cd $$d; $(MAKE)); \
+	    echo "Making in $$d"; \
+	    (cd $$d && $(MAKE) all); \
 	done
 
 install: subdirs check-scripts
