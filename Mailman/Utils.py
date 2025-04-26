@@ -621,8 +621,17 @@ def maketext(templatefile, dict=None, raw=0, lang=None, mlist=None):
     """
     template, path = findtext(templatefile, dict, raw, lang, mlist)
     if template is None:
-        syslog('error', 'Template file not found: %s (language: %s)',
-               templatefile, lang or 'default')
+        # Log all paths that were searched
+        paths = []
+        if lang and mlist:
+            paths.append(os.path.join(mlist.fullpath(), 'templates', lang, templatefile))
+        if lang:
+            paths.append(os.path.join(mm_cfg.TEMPLATE_DIR, lang, templatefile))
+        if mlist:
+            paths.append(os.path.join(mlist.fullpath(), 'templates', templatefile))
+        paths.append(os.path.join(mm_cfg.TEMPLATE_DIR, templatefile))
+        syslog('error', 'Template file not found: %s (language: %s). Searched paths: %s',
+               templatefile, lang or 'default', ', '.join(paths))
         return ''  # Return empty string instead of None
     if raw:
         return template
