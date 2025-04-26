@@ -561,12 +561,20 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
         if os.path.exists(path):
             try:
                 with open(path, 'rb') as fp:
-                    # Try UTF-8 first, fall back to latin1 if that fails
+                    raw_bytes = fp.read()
+                    # Try UTF-8 first
                     try:
-                        text = fp.read().decode('utf-8')
+                        text = raw_bytes.decode('utf-8')
+                        return text, path
                     except UnicodeDecodeError:
-                        text = fp.read().decode('latin1')
-                    return text, path
+                        # Try ISO-8859-1 next
+                        try:
+                            text = raw_bytes.decode('iso-8859-1')
+                            return text, path
+                        except UnicodeDecodeError:
+                            # Finally try latin1 as a last resort
+                            text = raw_bytes.decode('latin1')
+                            return text, path
             except IOError:
                 pass
     # Then try the site's language-specific template directory
@@ -575,12 +583,20 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
         if os.path.exists(path):
             try:
                 with open(path, 'rb') as fp:
-                    # Try UTF-8 first, fall back to latin1 if that fails
+                    raw_bytes = fp.read()
+                    # Try UTF-8 first
                     try:
-                        text = fp.read().decode('utf-8')
+                        text = raw_bytes.decode('utf-8')
+                        return text, path
                     except UnicodeDecodeError:
-                        text = fp.read().decode('latin1')
-                    return text, path
+                        # Try ISO-8859-1 next
+                        try:
+                            text = raw_bytes.decode('iso-8859-1')
+                            return text, path
+                        except UnicodeDecodeError:
+                            # Finally try latin1 as a last resort
+                            text = raw_bytes.decode('latin1')
+                            return text, path
             except IOError:
                 pass
     # Then try the list's default template directory
@@ -589,12 +605,20 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
         if os.path.exists(path):
             try:
                 with open(path, 'rb') as fp:
-                    # Try UTF-8 first, fall back to latin1 if that fails
+                    raw_bytes = fp.read()
+                    # Try UTF-8 first
                     try:
-                        text = fp.read().decode('utf-8')
+                        text = raw_bytes.decode('utf-8')
+                        return text, path
                     except UnicodeDecodeError:
-                        text = fp.read().decode('latin1')
-                    return text, path
+                        # Try ISO-8859-1 next
+                        try:
+                            text = raw_bytes.decode('iso-8859-1')
+                            return text, path
+                        except UnicodeDecodeError:
+                            # Finally try latin1 as a last resort
+                            text = raw_bytes.decode('latin1')
+                            return text, path
             except IOError:
                 pass
     # Finally try the site's default template directory
@@ -602,12 +626,20 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
     if os.path.exists(path):
         try:
             with open(path, 'rb') as fp:
-                # Try UTF-8 first, fall back to latin1 if that fails
+                raw_bytes = fp.read()
+                # Try UTF-8 first
                 try:
-                    text = fp.read().decode('utf-8')
+                    text = raw_bytes.decode('utf-8')
+                    return text, path
                 except UnicodeDecodeError:
-                    text = fp.read().decode('latin1')
-                return text, path
+                    # Try ISO-8859-1 next
+                    try:
+                        text = raw_bytes.decode('iso-8859-1')
+                        return text, path
+                    except UnicodeDecodeError:
+                        # Finally try latin1 as a last resort
+                        text = raw_bytes.decode('latin1')
+                        return text, path
         except IOError:
             pass
     return None, None
