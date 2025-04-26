@@ -743,6 +743,9 @@ def upgrade(lastversion, thisversion):
     
     # For each list, load it, call Update() on it, and save it
     for name in names:
+        # Ensure name is a string, not bytes
+        if isinstance(name, bytes):
+            name = name.decode('utf-8', 'replace')
         print(C_('Upgrading list: %(name)s'))
         try:
             mlist = MailList.MailList(name, lock=True)

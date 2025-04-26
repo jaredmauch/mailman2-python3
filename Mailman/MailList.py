@@ -712,15 +712,17 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 try:
                     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
                         dict_retval = marshal.load(fp)
+                        # Convert any bytes to strings for marshal-loaded data
+                        dict_retval = self.__convert_bytes_to_strings(dict_retval)
                     elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
+                        # Use latin1 encoding for pickle files to maintain compatibility
                         dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        # Convert any remaining bytes to strings
+                        dict_retval = self.__convert_bytes_to_strings(dict_retval)
 
                     # Validate the loaded data
                     if not isinstance(dict_retval, dict):
                         return None, 'Load() expected to return a dictionary'
-
-                    # Convert any bytes to strings
-                    dict_retval = self.__convert_bytes_to_strings(dict_retval)
 
                     return dict_retval, None
 
