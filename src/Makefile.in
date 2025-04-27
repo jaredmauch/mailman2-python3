@@ -27,6 +27,9 @@ srcdir= 	@srcdir@
 bindir= 	@bindir@
 DESTDIR=
 
+# Add build directory variable
+builddir = .
+
 CC=		@CC@
 CHMOD=  	@CHMOD@
 INSTALL=	@INSTALL@
@@ -92,28 +95,30 @@ PROGRAMS= $(CGI_PROGS) $(MAIL_PROGS) $(ALIAS_PROGS)
 
 all: $(PROGRAMS)
 
-mailman: $(srcdir)/mail-wrapper.c $(COMMONOBJS)
-	$(CC) -I. $(MAIL_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(srcdir)/mail-wrapper.c
+mailman: $(builddir)/mail-wrapper.c $(COMMONOBJS)
+	$(CC) -I. $(MAIL_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(builddir)/mail-wrapper.c
 
 #addaliases: $(srcdir)/alias-wrapper.c $(COMMONOBJS)
 #	$(CC) -I. $(ALIAS_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(srcdir)/alias-wrapper.c
 
-$(CGI_PROGS): $(srcdir)/cgi-wrapper.c $(COMMONOBJS)
-	$(CC) -DSCRIPT="\"$@\"" -I. $(CGI_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(srcdir)/cgi-wrapper.c
+$(CGI_PROGS): $(builddir)/cgi-wrapper.c $(COMMONOBJS)
+	$(CC) -DSCRIPT="\"$@\"" -I. $(CGI_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(builddir)/cgi-wrapper.c
 
 common.o: $(srcdir)/common.c $(srcdir)/common.h Makefile
-	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) $(srcdir)/common.c
+	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -o $@ $(srcdir)/common.c
 
 vsnprintf.o: $(srcdir)/vsnprintf.c Makefile
-	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) $(srcdir)/vsnprintf.c
+	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -o $@ $(srcdir)/vsnprintf.c
 
 install: all
+	@echo "Installing CGI programs..."
 	for f in $(CGI_PROGS); \
 	do \
 	    exe=$(DESTDIR)$(CGIDIR)/$$f$(CGIEXT); \
 	    $(INSTALL_PROGRAM) $$f $$exe; \
 	    $(DIRSETGID) $$exe; \
 	done
+	@echo "Installing mail programs..."
 	for f in $(MAIL_PROGS); \
 	do \
 	    $(INSTALL_PROGRAM) $$f $(DESTDIR)$(MAILDIR); \

@@ -39,6 +39,11 @@ Options:
         instead of the actual list members. Useful for testing the reminder
         format and content.
 
+    -v
+    --verbose
+        Verbose mode: Display message content and recipient information
+        before sending.
+
     -h/--help
         Print this message and exit.
 """
@@ -84,6 +89,8 @@ def parse_args():
                        help='Send password reminders for the named list only')
     parser.add_argument('-t', '--test', metavar='email',
                        help='Test mode: Send to specified email address instead of members')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Verbose mode: Display message content and recipient information')
     return parser.parse_args()
 
 
@@ -251,6 +258,24 @@ def main():
             if args.test:
                 # In test mode, add a test header
                 msg['X-Mailman-Test-Mode'] = 'yes'
+
+            if args.verbose:
+                print("\n=== Password Reminder Message ===")
+                print(f"To: {addr}")
+                print(f"From: {siteowner}")
+                print(f"Subject: {msg['Subject']}")
+                print("\nMessage Content:")
+                print("-" * 50)
+                print(text)
+                print("-" * 50)
+                if not args.test:
+                    print("\nPress Enter to send (or Ctrl+C to abort)...")
+                    try:
+                        input()
+                    except KeyboardInterrupt:
+                        print("\nAborted.")
+                        sys.exit(1)
+
             # We want to make this look like it's coming from the siteowner's
             # list, but we also want to be sure that the apparent host name is
             # the current virtual host.  Look in CookHeaders.py for why this
