@@ -63,6 +63,8 @@ def main():
         return
     # Get the list object
     listname = parts[0].lower()
+    if isinstance(listname, bytes):
+        listname = listname.decode('utf-8', 'replace')
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
@@ -265,6 +267,8 @@ def admin_overview(msg=''):
     # This page should be displayed in the server's default language, which
     # should have already been set.
     hostname = Utils.get_domain()
+    if isinstance(hostname, bytes):
+        hostname = hostname.decode('utf-8', 'replace')
     legend = _('%(hostname)s mailing lists - Admin Links') % {
         'hostname': hostname
     }
@@ -283,12 +287,20 @@ def admin_overview(msg=''):
     listnames.sort()
 
     for name in listnames:
+        if isinstance(name, bytes):
+            name = name.decode('utf-8', 'replace')
         try:
             mlist = MailList.MailList(name, lock=0)
         except Errors.MMUnknownListError:
             # The list could have been deleted by another process.
             continue
         if mlist.advertised:
+            real_name = mlist.real_name
+            if isinstance(real_name, bytes):
+                real_name = real_name.decode('utf-8', 'replace')
+            description = mlist.GetDescription()
+            if isinstance(description, bytes):
+                description = description.decode('utf-8', 'replace')
             if mm_cfg.VIRTUAL_HOST_OVERVIEW and (
                    mlist.web_page_url.find('/%(hostname)s/' % {'hostname': hostname}) == -1 and
                    mlist.web_page_url.find('/%(hostname)s:' % {'hostname': hostname}) == -1):
@@ -296,8 +308,8 @@ def admin_overview(msg=''):
                 continue
             else:
                 advertised.append((mlist.GetScriptURL('admin'),
-                                   mlist.real_name,
-                                   Utils.websafe(mlist.GetDescription())))
+                                   real_name,
+                                   Utils.websafe(description)))
     # Greeting depends on whether there was an error or not
     if msg:
         greeting = FontAttr(msg, color="ff5060", size="+1")
@@ -440,21 +452,16 @@ def show_results(mlist, doc, category, subcat, cgidata):
     adminurl = mlist.GetScriptURL('admin')
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
-
-    # Set up the document's headers
-    realname = mlist.real_name
-    if isinstance(realname, bytes):
-        realname = realname.decode('utf-8', 'replace')
     if isinstance(label, bytes):
         label = label.decode('utf-8', 'replace')
         
     doc.SetTitle(_('%(realname)s Administration (%(label)s)') % {
-        'realname': realname,
+        'realname': mlist.real_name,
         'label': label
     })
     doc.AddItem(Center(Header(2, _(
         '%(realname)s mailing list administration<br>%(label)s Section') % {
-            'realname': realname,
+            'realname': mlist.real_name,
             'label': label
         })))
     doc.AddItem('<hr>')
@@ -607,6 +614,8 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     # Get and portray the text label for the category.
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
+    if isinstance(label, bytes):
+        label = label.decode('utf-8', 'replace')
 
     table.AddRow([Center(Header(2, label))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
@@ -615,6 +624,8 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     # The very first item in the config info will be treated as a general
     # description if it is a string
     description = options[0]
+    if isinstance(description, bytes):
+        description = description.decode('utf-8', 'replace')
     if type(description) is str:
         table.AddRow([description])
         table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
@@ -770,10 +781,10 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             addtag   = 'topic_add_%02d' % i
             newtag   = 'topic_new_%02d' % i
             if empty:
-                table.AddRow([Center(Bold(_('Topic %(i)d'))),
+                table.AddRow([Center(Bold(_('Topic %(i)d')) % {'i': i}),
                               Hidden(newtag)])
             else:
-                table.AddRow([Center(Bold(_('Topic %(i)d'))),
+                table.AddRow([Center(Bold(_('Topic %(i)d')) % {'i': i}),
                               SubmitButton(deltag, _('Delete'))])
             table.AddRow([Label(_('Topic name:')),
                           TextBox(boxtag, value=name, size=30)])
@@ -796,6 +807,12 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         i = 1
         data = getattr(mlist, varname)
         for name, pattern, desc, empty in data:
+            if isinstance(name, bytes):
+                name = name.decode('utf-8', 'replace')
+            if isinstance(pattern, bytes):
+                pattern = pattern.decode('utf-8', 'replace')
+            if isinstance(desc, bytes):
+                desc = desc.decode('utf-8', 'replace')
             makebox(i, name, pattern, desc, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -820,10 +837,10 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             uptag     = 'hdrfilter_up_%02d' % i
             downtag   = 'hdrfilter_down_%02d' % i
             if empty:
-                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d'))),
+                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d')) % {'i': i}),
                               Hidden(newtag)])
             else:
-                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d'))),
+                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d')) % {'i': i}),
                               SubmitButton(deltag, _('Delete'))])
             table.AddRow([Label(_('Spam Filter Regexp:')),
                           TextArea(reboxtag, text=pattern,
@@ -860,6 +877,8 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         i = 1
         data = getattr(mlist, varname)
         for pattern, action, empty in data:
+            if isinstance(pattern, bytes):
+                pattern = pattern.decode('utf-8', 'replace')
             makebox(i, pattern, action, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -1300,7 +1319,7 @@ def mass_subscribe(mlist, container):
         RadioButtonArray('send_notifications_to_list_owner',
                          (_('No'), _('Yes')),
                          mlist.admin_notify_mchanges,
-                         values=(0,1))
+                         values=(0, 1))
         ])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, bgcolor=GREY)
     table.AddCellInfo(table.GetCurrentRowIndex(), 1, bgcolor=GREY)
