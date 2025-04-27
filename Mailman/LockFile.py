@@ -147,21 +147,24 @@ class LockFile:
         true.
 
     lock([timeout]):
-        Acquire the lock.  This blocks until the lock is acquired unless
-        optional timeout is greater than 0, in which case, a TimeOutError is
-        raised when timeout number of seconds (or possibly more) expires
-        without lock acquisition.  Raises AlreadyLockedError if the lock is
-        already set.
+        Acquire the lock.
+
+        This blocks until the lock is acquired unless optional timeout is
+        greater than 0, in which case, a TimeOutError is raised when timeout
+        number of seconds (or possibly more) expires without lock acquisition.
+        Raises AlreadyLockedError if the lock is already set.
 
     unlock([unconditionally]):
-        Relinquishes the lock.  Raises a NotLockedError if the lock is not
-        set, unless optional unconditionally is true.
+        Relinquishes the lock.
+
+        Raises a NotLockedError if the lock is not set, unless optional
+        unconditionally is true.
 
     locked():
-        Return true if the lock is set, otherwise false.  To avoid race
-        conditions, this refreshes the lock (on set locks).
+        Return true if the lock is set, otherwise false.
 
-    """
+        To avoid race conditions, this refreshes the lock (on set locks).
+        """
     # BAW: We need to watch out for two lock objects in the same process
     # pointing to the same lock file.  Without this, if you lock lf1 and do
     # not lock lf2, lf2.locked() will still return true.  NOTE: this gimmick
@@ -192,162 +195,25 @@ class LockFile:
         self.__logprefix = os.path.split(self.__lockfile)[1]
         # For transferring ownership across a fork.
         self.__owned = True
-        # Maximum number of retries for lock operations
-        self.__max_retries = 100
-        # NFS-specific settings
-        self.__nfs_retry_delay = 0.1
-        self.__nfs_max_retries = 5
-        # Backward compatibility for old code expecting _LockFile__break
-        self._LockFile__break = self._break
-
-    def __repr__(self):
-        return '<LockFile %s: %s [%s: %ssec] pid=%s>' % (
-            id(self), self.__lockfile,
-            self.locked() and 'locked' or 'unlocked',
-            self.__lifetime, os.getpid())
-
-    def set_lifetime(self, lifetime):
-        """Set a new lock lifetime.
-
-        This takes affect the next time the file is locked, but does not
-        refresh a locked file.
-        """
-        self.__lifetime = lifetime
-
-    def get_lifetime(self):
-        """Return the lock's lifetime."""
-        return self.__lifetime
-
-    def refresh(self, newlifetime=None, unconditionally=False):
-        """Refreshes the lifetime of a locked file.
-
-        Use this if you realize that you need to keep a resource locked longer
-        than you thought.  With optional newlifetime, set the lock's lifetime.
-        Raises NotLockedError if the lock is not set, unless optional
-        unconditionally flag is set to true.
-        """
-        if newlifetime is not None:
-            self.set_lifetime(newlifetime)
-        # Do we have the lock?  As a side effect, this refreshes the lock!
-        if not self.locked() and not unconditionally:
-            raise NotLockedError('%s: %s' % (repr(self), self.__read()))
-
-    def lock(self, timeout=0):
-        """Acquire the lock with improved timeout and interrupt handling."""
-        if self.locked():
-            self.__writelog('already locked', important=True)
-            raise AlreadyLockedError
-
-        # Set up the timeout
-        if timeout > 0:
-            endtime = time.time() + timeout
-        else:
-            endtime = None
-
-        # Try to acquire the lock
-        loopcount = 0
-        retry_count = 0
-        last_log_time = 0
-
-        while True:
-            try:
-                # Check for timeout
-                if endtime and time.time() > endtime:
-                    self.__writelog('timeout while waiting for lock', important=True)
-                    raise TimeOutError
-
-                # Check for max retries
-                if retry_count >= self.__max_retries:
-                    self.__writelog('max retries exceeded', important=True)
-                    raise TimeOutError
-
-                # Try to acquire the lock
-                if self._take_possession():
-                    self.__writelog('successfully acquired lock')
-                    return
-
-                # Check if the lock is stale
-                releasetime = self.__releasetime()
-                current_time = time.time()
-                if releasetime < current_time:
-                    # Lock is stale, try to break it
-                    self.__writelog(f'stale lock detected (releasetime={releasetime}, current={current_time})', important=True)
-                    self._break()
-                    self.__writelog('broke stale lock', important=True)
-                    # Try to acquire again immediately after breaking
-                    if self._take_possession():
-                        self.__writelog('acquired lock after breaking stale lock')
-                        return
-
-                # Log waiting status every 5 seconds
-                if current_time - last_log_time > 5:
-                    self.__writelog(f'waiting for lock (attempt {retry_count + 1}/{self.__max_retries})')
-                    last_log_time = current_time
-
-                # Sleep with better interrupt handling
-                try:
-                    time.sleep(0.1)  # Shorter sleep interval
-                except KeyboardInterrupt:
-                    self.__writelog('interrupted while waiting for lock', important=True)
-                    self.__cleanup()
-                    raise
-
-                loopcount += 1
-                retry_count += 1
-
-            except Exception as e:
-                self.__writelog(f'error while waiting for lock: {str(e)}', important=True)
-                self.__cleanup()
-                raise
-
-    def unlock(self, unconditionally=False):
-        """Unlock the lock.
-
-        If we don't already own the lock (either because of unbalanced unlock
-        calls, or because the lock was stolen out from under us), raise a
-        NotLockedError, unless optional `unconditionally' is true.
-        """
-        try:
-            islocked = self.locked()
-            if not islocked and not unconditionally:
-                raise NotLockedError
-            # If we owned the lock, remove the global file, relinquishing it.
-            if islocked:
-                try:
-                    os.unlink(self.__lockfile)
-                except OSError as e:
-                    if e.errno != errno.ENOENT:
-                        raise
-            # Remove our tempfile
-            try:
-                os.unlink(self.__tmpfname)
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
-            self.__writelog('unlocked')
-        except Exception as e:
-            self.__writelog(f'Error during unlock: {str(e)}', important=True)
-            raise
 
     def locked(self):
-        """Return true if we own the lock, false if we do not.
+        """Return true if the lock is set, otherwise false.
 
-        Checking the status of the lock resets the lock's lifetime, which
-        helps avoid race conditions during the lock status test.
+        To avoid race conditions, this refreshes the lock (on set locks).
         """
         try:
-            # Discourage breaking the lock for a while.
-            self.__touch()
-        except OSError as e:
-            if e.errno == errno.EPERM:
-                # We can't touch the file because we're not the owner
-                return False
-            else:
-                raise
-        # TBD: can the link count ever be > 2?
-        if self.__linkcount() != 2:
+            # Get the link count of our temp file
+            nlinks = self.__linkcount()
+            if nlinks == 2:
+                # We have the lock, refresh it
+                self.__touch()
+                return True
             return False
-        return self.__read() == self.__tmpfname
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                self.__writelog('stat failed: %s' % str(e), important=1)
+                raise
+            return False
 
     def finalize(self):
         self.unlock(unconditionally=True)
@@ -670,69 +536,51 @@ class LockFile:
             raise e
 
     def __write(self):
-        """Write the temp file with detailed tracing."""
+        """Write the lock file contents."""
+        # Make sure it's group writable
         try:
-            self.__writelog('writing temp file')
-            with open(self.__tmpfname, 'w') as fp:
-                fp.write(self.__tmpfname)
-            self.__writelog('temp file written successfully')
-        except Exception as e:
-            self.__writelog(f'error writing temp file: {str(e)}', important=True)
-            raise
+            os.chmod(self.__tmpfname, 0o664)
+        except OSError:
+            pass
+        self.__atomic_write(self.__tmpfname, self.__tmpfname)
 
     def __read(self):
         """Read the lock file contents."""
         try:
-            with open(self.__lockfile) as fp:
-                filename = fp.read()
-                return filename
-        except EnvironmentError as e:
+            with open(self.__lockfile, 'r') as fp:
+                return fp.read().strip()
+        except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-            return None
+            return ''
 
     def __touch(self, filename=None):
-        t = time.time() + self.__lifetime
+        """Touch the file to update its mtime."""
+        if filename is None:
+            filename = self.__tmpfname
         try:
-            # TBD: We probably don't need to modify atime, but this is easier.
-            os.utime(filename or self.__tmpfname, (t, t))
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-
-    def __releasetime(self):
-        """Get release time with NFS safety."""
-        try:
-            return os.stat(self.__lockfile)[ST_MTIME]
+            os.utime(filename, None)
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-            return -1
+
+    def __releasetime(self):
+        """Return the time when the lock should be released."""
+        try:
+            mtime = os.stat(self.__lockfile)[ST_MTIME]
+            return mtime + self.__lifetime + CLOCK_SLOP
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            return 0
 
     def __linkcount(self):
-        """Get the link count with detailed tracing."""
-        try:
-            count = os.stat(self.__lockfile)[ST_NLINK]
-            self.__writelog(f'link count: {count}')
-            return count
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                self.__writelog('lock file does not exist')
-                return 0
-            self.__writelog(f'error getting link count: {str(e)}', important=True)
-            raise
+        """Return the link count of our temp file."""
+        return os.stat(self.__tmpfname)[ST_NLINK]
 
     def __sleep(self):
-        """Sleep for a short interval, handling keyboard interrupts gracefully."""
-        try:
-            # Use a fixed interval with small jitter for more predictable behavior
-            interval = 0.1 + (random.random() * 0.1)  # 100-200ms
-            time.sleep(interval)
-        except KeyboardInterrupt:
-            # If we get a keyboard interrupt during sleep, raise it
-            raise
-        except Exception:
-            # For any other exception during sleep, just continue
-            pass
+        """Sleep for a random amount of time."""
+        time.sleep(random.random() * 0.1)
 
     def __cleanup(self):
         """Clean up any temporary files."""
@@ -754,6 +602,37 @@ class LockFile:
                     continue
                 raise
         raise OSError(errno.ESTALE, "NFS stale file handle after retries")
+
+    def __break(self):
+        """Break a stale lock.
+
+        First, touch the global lock file.  This reduces but does not
+        eliminate the chance for a race condition during breaking.  Two
+        processes could both pass the test for lock expiry in lock() before
+        one of them gets to touch the global lockfile.  This shouldn't be
+        too bad because all they'll do in this function is wax the lock
+        files, not claim the lock, and we can be defensive for ENOENTs
+        here.
+
+        Touching the lock could fail if the process breaking the lock and
+        the process that claimed the lock have different owners.  We could
+        solve this by set-uid'ing the CGI and mail wrappers, but I don't
+        think it's that big a problem.
+        """
+        self.__writelog('breaking lock')
+        try:
+            self.__touch(self.__lockfile)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                self.__writelog('touch failed: %s' % str(e), important=1)
+                raise
+        try:
+            os.unlink(self.__lockfile)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                self.__writelog('unlink failed: %s' % str(e), important=1)
+                raise
+        self.__writelog('lock broken')
 
 
 
