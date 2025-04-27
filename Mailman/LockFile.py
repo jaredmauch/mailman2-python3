@@ -441,23 +441,27 @@ class LockFile:
                 # Check if the lock file is stale
                 try:
                     with open(self.__lockfile) as fp:
-                        current_tempfile = fp.read().strip()
-                        if not current_tempfile:
+                        content = fp.read().strip().split()
+                        if not content:
                             self.__writelog('lock file is empty')
                             os.unlink(self.__lockfile)
                             os.unlink(tempfile)
                             return -1
                             
-                        # Extract hostname and PID from temp file name
-                        parts = current_tempfile.split('.')
-                        if len(parts) < 3:
-                            self.__writelog('invalid lock file format')
-                            os.unlink(self.__lockfile)
-                            os.unlink(tempfile)
-                            return -1
-                            
-                        lock_hostname = '.'.join(parts[1:-1])
-                        pid = int(parts[-1])
+                        # Parse PID and hostname from lock file
+                        if len(content) >= 2:
+                            pid = int(content[0])
+                            lock_hostname = content[1]
+                        else:
+                            # Try old format
+                            try:
+                                pid = int(content[0])
+                                lock_hostname = hostname  # Assume same host
+                            except (ValueError, IndexError):
+                                self.__writelog('invalid lock file format')
+                                os.unlink(self.__lockfile)
+                                os.unlink(tempfile)
+                                return -1
                             
                         # If the lock is from another host, we need to be more conservative
                         if lock_hostname != hostname:
@@ -551,20 +555,37 @@ class LockFile:
             try:
                 with open(self.__lockfile) as fp:
                     content = fp.read().strip().split()
+                    if not content:
+                        self.__writelog('lock file is empty')
+                        os.unlink(self.__lockfile)
+                        return 0
+                        
+                    # Parse PID and hostname from lock file
                     if len(content) >= 2:
                         pid = int(content[0])
-                        hostname = content[1]
-                        if hostname != socket.gethostname():
-                            self.__writelog('lock owned by different host: %s' % hostname)
+                        lock_hostname = content[1]
+                        if lock_hostname != socket.gethostname():
+                            self.__writelog('lock owned by different host: %s' % lock_hostname)
                             return -1
                     else:
-                        pid = int(content[0])  # Try old format
-                if not self._is_pid_valid(pid):
-                    self.__writelog('breaking stale lock owned by pid %d' % pid)
-                    os.unlink(self.__lockfile)
-                    return 0
-                self.__writelog('lock is valid (pid %d)' % pid)
-                return -1
+                        # Try old format
+                        try:
+                            pid = int(content[0])
+                        except (ValueError, IndexError):
+                            self.__writelog('invalid lock file format')
+                            os.unlink(self.__lockfile)
+                            return 0
+                            
+                    if not self._is_pid_valid(pid):
+                        self.__writelog('breaking stale lock owned by pid %d' % pid)
+                        # Add random delay between 1-10 seconds before breaking lock
+                        delay = random.uniform(1, 10)
+                        self.__writelog('waiting %.2f seconds before breaking lock' % delay)
+                        time.sleep(delay)
+                        os.unlink(self.__lockfile)
+                        return 0
+                    self.__writelog('lock is valid (pid %d)' % pid)
+                    return -1
             except (ValueError, OSError) as e:
                 self.__writelog('error reading lock: %s' % e)
                 try:
@@ -589,6 +610,12 @@ class LockFile:
                 try:
                     with open(self.__lockfile) as fp:
                         content = fp.read().strip().split()
+                        if not content:
+                            self.__writelog('lock file is empty')
+                            os.unlink(self.__lockfile)
+                            return
+                            
+                        # Parse PID and hostname from lock file
                         if len(content) >= 2:
                             pid = int(content[0])
                             lock_hostname = content[1]
@@ -601,8 +628,24 @@ class LockFile:
                                         os.unlink(self.__lockfile)
                                     except OSError:
                                         pass
+                        else:
+                            # Try old format
+                            try:
+                                pid = int(content[0])
+                                if not self._is_pid_valid(pid):
+                                    self.__writelog('removing stale lock (pid %d)' % pid)
+                                    try:
+                                        os.unlink(self.__lockfile)
+                                    except OSError:
+                                        pass
+                            except (ValueError, IndexError):
+                                self.__writelog('invalid lock file format')
+                                try:
+                                    os.unlink(self.__lockfile)
+                                except OSError:
+                                    pass
                 except (ValueError, OSError) as e:
-                    self.__writelog('error checking lock, removing: %s' % e)
+                    self.__writelog('error reading lock: %s' % e)
                     try:
                         os.unlink(self.__lockfile)
                     except OSError:
