@@ -35,7 +35,6 @@ import pickle
 from io import StringIO
 from collections import UserDict
 from urllib.parse import urlparse
-from types import *
 
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr

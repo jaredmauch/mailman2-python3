@@ -701,7 +701,7 @@ address.  Upon confirmation, any other mailing list containing the address
             # Some topics were selected.  topicnames can actually be a string
             # or a list of strings depending on whether more than one topic
             # was selected or not.
-            if not isinstance(topicnames, ListType):
+            if not isinstance(topicnames, list):
                 # Assume it was a bare string, so listify it
                 topicnames = [topicnames]
             # unquote the topic names

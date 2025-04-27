@@ -68,7 +68,6 @@ except ImportError:
         return all
 
 
-
 def guess_extension(ctype, ext):
     # mimetypes maps multiple extensions to the same type, e.g. .doc, .dot,
     # and .wiz are all mapped to application/msword.  This sucks for finding
@@ -148,7 +147,6 @@ def replace_payload_by_text(msg, text, charset):
     msg.set_payload(text, charset)
 
 
-
 def process(mlist, msg, msgdata=None):
     sanitize = mm_cfg.ARCHIVE_HTML_SANITIZER
     outer = True
@@ -206,7 +204,7 @@ An embedded and charset-unspecified text was scrubbed...
 Name: %(filename)s
 URL: %(url)s
 """), lcset)
-        elif ctype == 'text/html' and isinstance(sanitize, IntType):
+        elif ctype == 'text/html' and isinstance(sanitize, int):
             if sanitize == 0:
                 if outer:
                     raise DiscardMessage
@@ -398,7 +396,6 @@ URL: %(url)s
     return msg
 
 
-
 def makedirs(dir):
     # Create all the directories to store this attachment in
     try:
@@ -412,7 +409,6 @@ def makedirs(dir):
         if e.errno != errno.EEXIST: raise
 
 
-
 def save_attachment(mlist, msg, dir, filter_html=True):
     fsdir = os.path.join(mlist.archive_dir(), dir)
     makedirs(fsdir)
