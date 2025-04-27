@@ -135,13 +135,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             return getattr(self._memberadaptor, name)
         except AttributeError:
-        for guicomponent in self._gui:
-            try:
-                return getattr(guicomponent, name)
-            except AttributeError:
-                pass
-            else:
-        raise AttributeError(name)
+            for guicomponent in self._gui:
+                try:
+                    return getattr(guicomponent, name)
+                except AttributeError:
+                    pass
+            raise AttributeError(name)
 
     def __repr__(self):
         if self.Locked():
