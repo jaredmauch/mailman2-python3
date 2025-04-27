@@ -956,7 +956,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def Load(self):
         """Load the list's configuration."""
         try:
-            self.__load()
+            # Load the database
+            dict = self.__load()
+            
             # Validate language settings
             if not hasattr(self, 'preferred_language') or not self.preferred_language:
                 self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
@@ -965,6 +967,37 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Ensure preferred_language is in available_languages
             if self.preferred_language not in self.available_languages:
                 self.available_languages.append(self.preferred_language)
+                
+            # Initialize the member adaptor if not already done
+            if not hasattr(self, '_memberadaptor') or self._memberadaptor is None:
+                self._memberadaptor = OldStyleMemberships(self)
+                self._memberadaptor.Load()
+                
+            # Initialize all mixin classes and their attributes
+            try:
+                # First initialize the main class
+                self.InitVars()
+                
+                # Then initialize each mixin class
+                for baseclass in self.__class__.__bases__:
+                    if hasattr(baseclass, 'InitVars'):
+                        baseclass.InitVars(self)
+                        
+                # Finally, ensure all security-related attributes are initialized
+                from Mailman.SecurityManager import SecurityManager
+                if isinstance(self, SecurityManager):
+                    self.InitVars()
+                    
+                # Validate and normalize values
+                self.CheckValues()
+                
+                # Check version and update schema if necessary
+                self.CheckVersion(dict)
+                
+            except Exception as e:
+                syslog('error', 'Failed to initialize list %s: %s', self.internal_name(), e)
+                raise
+                
         except Errors.MMCorruptListDatabaseError as e:
             syslog('error', 'Failed to load list %s: %s', self.internal_name(), e)
             raise
