@@ -391,20 +391,22 @@ class HTMLFormatter(object):
         """Parse template tags and replace them with their values."""
         if lang is None:
             lang = self.preferred_language
+        # First read the template file
+        template_content, template_path = Utils.findtext(template, lang=lang, mlist=self)
+        if template_content is None:
+            mailman_log('error', 'Could not read template file: %s', template_path)
+            return ''
         result = []
         i = 0
-        # Log the template file path
-        template_path = os.path.join(mm_cfg.TEMPLATE_DIR, lang, template)
-        mailman_log('info', 'Attempting to load template file: %s', template_path)
-        while i < len(template):
-            if template[i] == '<' and i + 1 < len(template) and template[i + 1] == '%':
+        while i < len(template_content):
+            if template_content[i] == '<' and i + 1 < len(template_content) and template_content[i + 1] == '%':
                 # Found a tag start
-                j = template.find('%>', i + 2)
+                j = template_content.find('%>', i + 2)
                 if j == -1:
                     # No matching end tag
-                    result.append(template[i:])
+                    result.append(template_content[i:])
                     break
-                tag = template[i + 2:j].strip()
+                tag = template_content[i + 2:j].strip()
                 if tag in replacements:
                     value = replacements[tag]
                     if isinstance(value, str):
@@ -421,7 +423,7 @@ class HTMLFormatter(object):
                         result.append(str(value))
                 i = j + 2
             else:
-                result.append(template[i])
+                result.append(template_content[i])
                 i += 1
         return ''.join(result)
 
