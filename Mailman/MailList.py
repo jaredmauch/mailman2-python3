@@ -408,6 +408,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Must save this state, even though it isn't configurable
         self.members = {} # self.digest_members is initted in mm_digest
         self.digest_members = {}  # Initialize digest_members dictionary
+        self.digestable = True  # Initialize digestable flag
+        self.nondigestable = mm_cfg.DEFAULT_NONDIGESTABLE  # Initialize nondigestable flag
+        self.digest_volume = 1  # Initialize digest volume number
+        self.digest_issue = 1  # Initialize digest issue number
+        self.digest_last_sent_at = 0  # Initialize last digest send time
+        self.digest_next_due_at = 0  # Initialize next digest due time
+        self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY  # Initialize volume frequency
         self.data_version = mm_cfg.DATA_FILE_VERSION
         self.last_post_time = 0
 

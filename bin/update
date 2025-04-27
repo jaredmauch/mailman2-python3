@@ -752,8 +752,112 @@ def domsort(addr):
     return addr.split('@')[-1]
 
 
+def init_digest_vars(mlist):
+    """Initialize missing digest-related variables with default values."""
+    # List of digest variables and their default values
+    digest_vars = {
+        'digestable': True,
+        'nondigestable': mm_cfg.DEFAULT_NONDIGESTABLE,
+        'digest_volume': 1,
+        'digest_issue': 1,
+        'digest_last_sent_at': 0,
+        'digest_next_due_at': 0,
+        'digest_volume_frequency': mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY,
+        'digest_members': {},
+        'members': {},  # Regular members dictionary
+        'user_options': {},  # User preferences
+        'language': {},  # User language preferences
+        'usernames': {},  # Username mappings
+        'passwords': {},  # Password storage
+        'new_member_options': mm_cfg.DEFAULT_NEW_MEMBER_OPTIONS,
+        'respond_to_post_requests': mm_cfg.DEFAULT_RESPOND_TO_POST_REQUESTS,
+        'advertised': mm_cfg.DEFAULT_LIST_ADVERTISED,
+        'max_num_recipients': mm_cfg.DEFAULT_MAX_NUM_RECIPIENTS,
+        'max_message_size': mm_cfg.DEFAULT_MAX_MESSAGE_SIZE,
+        'host_name': mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST,
+        'web_page_url': mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST,
+        'owner': [],  # List owners
+        'moderator': [],  # List moderators
+        'reply_goes_to_list': mm_cfg.DEFAULT_REPLY_GOES_TO_LIST,
+        'reply_to_address': '',
+        'first_strip_reply_to': mm_cfg.DEFAULT_FIRST_STRIP_REPLY_TO,
+        'admin_immed_notify': mm_cfg.DEFAULT_ADMIN_IMMED_NOTIFY,
+        'admin_notify_mchanges': mm_cfg.DEFAULT_ADMIN_NOTIFY_MCHANGES,
+        'require_explicit_destination': mm_cfg.DEFAULT_REQUIRE_EXPLICIT_DESTINATION,
+        'acceptable_aliases': mm_cfg.DEFAULT_ACCEPTABLE_ALIASES,
+        'umbrella_list': mm_cfg.DEFAULT_UMBRELLA_LIST,
+        'umbrella_member_suffix': mm_cfg.DEFAULT_UMBRELLA_MEMBER_SUFFIX,
+        'regular_exclude_lists': mm_cfg.DEFAULT_REGULAR_EXCLUDE_LISTS,
+        'regular_exclude_ignore': mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE,
+        'regular_include_lists': mm_cfg.DEFAULT_REGULAR_INCLUDE_LISTS,
+        'send_reminders': mm_cfg.DEFAULT_SEND_REMINDERS,
+        'send_welcome_msg': mm_cfg.DEFAULT_SEND_WELCOME_MSG,
+        'send_goodbye_msg': mm_cfg.DEFAULT_SEND_GOODBYE_MSG,
+        'bounce_matching_headers': mm_cfg.DEFAULT_BOUNCE_MATCHING_HEADERS,
+        'header_filter_rules': [],
+        'from_is_list': mm_cfg.DEFAULT_FROM_IS_LIST,
+        'anonymous_list': mm_cfg.DEFAULT_ANONYMOUS_LIST,
+        'real_name': mlist.internal_name()[0].upper() + mlist.internal_name()[1:],
+        'description': '',
+        'info': '',
+        'welcome_msg': '',
+        'goodbye_msg': '',
+        'subscribe_policy': mm_cfg.DEFAULT_SUBSCRIBE_POLICY,
+        'subscribe_auto_approval': mm_cfg.DEFAULT_SUBSCRIBE_AUTO_APPROVAL,
+        'unsubscribe_policy': mm_cfg.DEFAULT_UNSUBSCRIBE_POLICY,
+        'private_roster': mm_cfg.DEFAULT_PRIVATE_ROSTER,
+        'obscure_addresses': mm_cfg.DEFAULT_OBSCURE_ADDRESSES,
+        'admin_member_chunksize': mm_cfg.DEFAULT_ADMIN_MEMBER_CHUNKSIZE,
+        'administrivia': mm_cfg.DEFAULT_ADMINISTRIVIA,
+        'drop_cc': mm_cfg.DEFAULT_DROP_CC,
+        'preferred_language': mm_cfg.DEFAULT_SERVER_LANGUAGE,
+        'available_languages': [],
+        'include_rfc2369_headers': 1,
+        'include_list_post_header': 1,
+        'include_sender_header': 1,
+        'filter_mime_types': mm_cfg.DEFAULT_FILTER_MIME_TYPES,
+        'pass_mime_types': mm_cfg.DEFAULT_PASS_MIME_TYPES,
+        'filter_filename_extensions': mm_cfg.DEFAULT_FILTER_FILENAME_EXTENSIONS,
+        'pass_filename_extensions': mm_cfg.DEFAULT_PASS_FILENAME_EXTENSIONS,
+        'filter_content': mm_cfg.DEFAULT_FILTER_CONTENT,
+        'collapse_alternatives': mm_cfg.DEFAULT_COLLAPSE_ALTERNATIVES,
+        'convert_html_to_plaintext': mm_cfg.DEFAULT_CONVERT_HTML_TO_PLAINTEXT,
+        'filter_action': mm_cfg.DEFAULT_FILTER_ACTION,
+        'personalize': 0,
+        'default_member_moderation': mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION,
+        'emergency': 0,
+        'member_verbosity_threshold': mm_cfg.DEFAULT_MEMBER_VERBOSITY_THRESHOLD,
+        'member_verbosity_interval': mm_cfg.DEFAULT_MEMBER_VERBOSITY_INTERVAL,
+        'member_moderation_action': 0,
+        'member_moderation_notice': '',
+        'dmarc_moderation_action': mm_cfg.DEFAULT_DMARC_MODERATION_ACTION,
+        'dmarc_quarantine_moderation_action': mm_cfg.DEFAULT_DMARC_QUARANTINE_MODERATION_ACTION,
+        'dmarc_none_moderation_action': mm_cfg.DEFAULT_DMARC_NONE_MODERATION_ACTION,
+        'dmarc_moderation_notice': '',
+        'dmarc_moderation_addresses': [],
+        'dmarc_wrapped_message_text': mm_cfg.DEFAULT_DMARC_WRAPPED_MESSAGE_TEXT,
+        'equivalent_domains': mm_cfg.DEFAULT_EQUIVALENT_DOMAINS,
+        'accept_these_nonmembers': [],
+        'hold_these_nonmembers': [],
+        'reject_these_nonmembers': [],
+        'discard_these_nonmembers': [],
+        'forward_auto_discards': mm_cfg.DEFAULT_FORWARD_AUTO_DISCARDS
+    }
+    
+    # Initialize any missing variables
+    for var, default in digest_vars.items():
+        if not hasattr(mlist, var):
+            print(C_('Initializing missing variable %(var)s for list %(listname)s') % {
+                'var': var,
+                'listname': mlist.internal_name()
+            })
+            setattr(mlist, var, default)
+
 def upgrade(mlist):
     """Upgrade the list to the current version."""
+    # Initialize any missing digest variables
+    init_digest_vars(mlist)
+    
     # Convert all email addresses to lowercase
     for addr in list(mlist.members):
         if addr != addr.lower():
