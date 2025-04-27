@@ -134,8 +134,15 @@ prepare-build:
 			fi; \
 		done; \
 	done
+	@echo "Creating Python build directories..."
+	@for d in Mailman scripts misc tests; do \
+		dir=build/$$d; \
+		if test ! -d $$dir; then \
+			$(srcdir)/mkinstalldirs $$dir; \
+		fi; \
+	done
 
-build: $(PYTHON) $(PYTHON_LIB)
+build: prepare-build
 	@echo "Building Python files..."
 	@if [ -d "build" ]; then \
 		$(PYTHON) -m compileall -q build; \

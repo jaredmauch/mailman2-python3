@@ -128,6 +128,11 @@ def main():
             host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
         byhost.setdefault(host, []).append(mlist)
 
+    # If we're in test mode and no lists were found, show a message
+    if args.test and not byhost:
+        print(f"No lists found for test email {args.test}")
+        sys.exit(0)
+
     # Now for each virtual host, collate the user information.  Each user
     # entry has the form (listaddr, password, optionsurl)
     for host in byhost.keys():
@@ -151,9 +156,13 @@ def main():
                             password = mlist.getMemberPassword(random_member)
                         except Errors.NotAMemberError:
                             # If we can't get the random member's password, skip this list
+                            if args.verbose:
+                                print(f"Skipping list {listaddr} - no valid passwords found")
                             continue
                     else:
                         # If no members, skip this list
+                        if args.verbose:
+                            print(f"Skipping list {listaddr} - no members found")
                         continue
                 try:
                     optionsurl = mlist.GetOptionsURL(member)
@@ -186,6 +195,11 @@ def main():
                     lang = mlist.getMemberLanguage(member)
                     info = (listaddr, password, optionsurl, lang)
                     userinfo.setdefault(member, []).append(info)
+
+        # If we're in test mode and no user info was collected, show a message
+        if args.test and not userinfo:
+            print(f"No valid list memberships found for test email {args.test}")
+            continue
 
         # Now that we've collected user information for this host, send each
         # user the password reminder.
