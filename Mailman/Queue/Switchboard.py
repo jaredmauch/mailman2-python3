@@ -162,6 +162,7 @@ class Switchboard:
                 del data[k]
         # We have to tell the dequeue() method whether to parse the message
         # object or not.
+        protocol = 2  # Use protocol 2 for Python 2/3 compatibility
         data['_parsemsg'] = (protocol == 0)
         # Write to the pickle file the message object and metadata.
         omask = os.umask(0o007)                     # -rw-rw----
