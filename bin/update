@@ -755,10 +755,20 @@ def upgrade(mlist):
             mlist.digest_members[addr.lower()] = mlist.digest_members[addr]
             del mlist.digest_members[addr]
             
-    for addr in list(mlist.owner):
-        if addr != addr.lower():
-            mlist.owner[addr.lower()] = mlist.owner[addr]
-            del mlist.owner[addr]
+    # Handle owner list differently since it's a list, not a dict
+    if hasattr(mlist, 'owner') and isinstance(mlist.owner, list):
+        new_owners = []
+        for addr in mlist.owner:
+            if isinstance(addr, str) and addr != addr.lower():
+                new_owners.append(addr.lower())
+            else:
+                new_owners.append(addr)
+        mlist.owner = new_owners
+    else:
+        for addr in list(mlist.owner):
+            if addr != addr.lower():
+                mlist.owner[addr.lower()] = mlist.owner[addr]
+                del mlist.owner[addr]
             
     # Handle moderator list differently since it's a list, not a dict
     if hasattr(mlist, 'moderator') and isinstance(mlist.moderator, list):
