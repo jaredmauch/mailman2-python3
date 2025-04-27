@@ -517,11 +517,27 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return None
 
     def GetConfigInfo(self, category, subcat=None):
+        """Get configuration information for a category and optional subcategory.
+        
+        Args:
+            category: The configuration category to get info for
+            subcat: Optional subcategory to filter by
+            
+        Returns:
+            A list of configuration items, or None if not found
+        """
         for gui in self._gui:
             if hasattr(gui, 'GetConfigInfo'):
-                value = gui.GetConfigInfo(self, category, subcat)
-                if value:
-                    return value
+                try:
+                    value = gui.GetConfigInfo(self, category, subcat)
+                    if value:
+                        return value
+                except (AttributeError, KeyError) as e:
+                    # Log the error but continue trying other GUIs
+                    syslog('error', 'Error getting config info for %s/%s: %s',
+                           category, subcat, str(e))
+                    continue
+        return None
 
     #
     # List creation

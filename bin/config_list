@@ -401,26 +401,40 @@ def main():
     except Errors.MMUnknownListError:
         logging.error(f"List not found: {args.listname}")
         usage(1, _('No such list "%(listname)s"'))
+        return
 
     try:
         logging.debug("Getting configuration categories")
         categories = mlist.GetConfigCategories()
+        if not categories:
+            logging.error("No configuration categories found")
+            print(_("No configuration categories available"))
+            return
+            
         logging.debug(f"Got categories: {list(categories.keys())}")
         
         # Get configuration items using GetConfigInfo()
         for category in mm_cfg.ADMIN_CATEGORIES:
             logging.debug(f"Processing category: {category}")
+            if category not in categories:
+                logging.warning(f"Category {category} not found in available categories")
+                continue
+                
             subcats = mlist.GetConfigSubCategories(category)
             logging.debug(f"Got subcategories: {subcats}")
             
             if subcats is None:
                 logging.debug(f"Getting config info for category {category}")
                 info = mlist.GetConfigInfo(category, None)
+                if not info:
+                    logging.warning(f"No configuration info found for category {category}")
+                    continue
+                    
                 logging.debug(f"Got config info: {info is not None}")
-                if info:
-                    for data in info[1:]:
-                        if not isinstance(data, Tuple):
-                            continue
+                for data in info[1:]:
+                    if not isinstance(data, Tuple):
+                        continue
+                    try:
                         key = data[0]
                         if not args.all and key.startswith('_'):
                             continue
@@ -428,20 +442,33 @@ def main():
                             continue
                         if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
                             continue
-                        value = getattr(mlist, key)
+                            
+                        # Use getattr with a default value instead of direct access
+                        value = getattr(mlist, key, None)
+                        if value is None:
+                            logging.warning(f"Configuration item {key} not found")
+                            continue
+                            
                         if args.verbose:
                             print(f"{key}={value}")
                         else:
                             print(key)
+                    except Exception as e:
+                        logging.error(f"Error processing configuration item: {str(e)}")
+                        continue
             else:
                 for subcat, _ in subcats:
                     logging.debug(f"Getting config info for category {category}, subcategory {subcat}")
                     info = mlist.GetConfigInfo(category, subcat)
+                    if not info:
+                        logging.warning(f"No configuration info found for category {category}, subcategory {subcat}")
+                        continue
+                        
                     logging.debug(f"Got config info: {info is not None}")
-                    if info:
-                        for data in info[1:]:
-                            if not isinstance(data, Tuple):
-                                continue
+                    for data in info[1:]:
+                        if not isinstance(data, Tuple):
+                            continue
+                        try:
                             key = data[0]
                             if not args.all and key.startswith('_'):
                                 continue
@@ -449,11 +476,20 @@ def main():
                                 continue
                             if args.subcategory and not key.startswith(args.category + '_' + args.subcategory + '_'):
                                 continue
-                            value = getattr(mlist, key)
+                                
+                            # Use getattr with a default value instead of direct access
+                            value = getattr(mlist, key, None)
+                            if value is None:
+                                logging.warning(f"Configuration item {key} not found")
+                                continue
+                                
                             if args.verbose:
                                 print(f"{key}={value}")
                             else:
                                 print(key)
+                        except Exception as e:
+                            logging.error(f"Error processing configuration item: {str(e)}")
+                            continue
 
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}", exc_info=True)
