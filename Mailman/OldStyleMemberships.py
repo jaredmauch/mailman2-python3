@@ -45,6 +45,10 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def __init__(self, mlist):
         self.__mlist = mlist
 
+    def GetMailmanHeader(self):
+        """Return the standard Mailman header HTML for this list."""
+        return self.__mlist.GetMailmanHeader()
+
     def CheckValues(self):
         """Check that all member values are valid.
         

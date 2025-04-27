@@ -450,15 +450,18 @@ class HTMLFormatter(object):
         mailman_log('debug', 'Processed template %s, final length: %d bytes', template, len(final_result))
         return final_result
 
-    # This needs to wait until after the list is inited, so let's build it
-    # when it's needed only.
-    def GetStandardReplacements(self, lang=None):
-        """Get standard replacements for templates."""
+    def GetStandardReplacements(self, lang=None, replacements=None):
+        """Get the standard replacements for this list."""
+        if replacements is None:
+            replacements = {}
         if lang is None:
             lang = self.preferred_language
-            mailman_log('debug', 'Using preferred language for replacements: %s', lang)
+        try:
+            replacements['<mm-header>'] = self.GetMailmanHeader()
+        except Exception as e:
+            mailman_log('error', 'Error getting Mailman header: %s', str(e))
+            replacements['<mm-header>'] = ''
         
-        replacements = {}
         try:
             # Add basic list information
             replacements['<mm-list-name>'] = self.real_name
@@ -468,7 +471,6 @@ class HTMLFormatter(object):
             
             # Add header and footer
             mailman_log('debug', 'Adding header and footer replacements')
-            replacements['<mm-header>'] = self.GetMailmanHeader()
             replacements['<mm-footer>'] = self.GetMailmanFooter()
             
             # Add language selection
