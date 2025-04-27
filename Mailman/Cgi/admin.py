@@ -541,7 +541,8 @@ def show_results(mlist, doc, category, subcat, cgidata):
                     Bold(label).Format() +
                     UnorderedList(*subcat_items).Format())
             else:
-                categorylinks.AddItem(Link(url, Bold('[%s]' % label)))
+                formatted_label = '[%s]' % label
+                categorylinks.AddItem(Link(url, Bold(formatted_label)))
         else:
             categorylinks.AddItem(Link(url, label))
         counter += 1
@@ -651,6 +652,8 @@ def show_variables(mlist, category, subcat, cgidata, doc):
             # treated as section headers - centered and italicized...
             if isinstance(item, bytes):
                 item = item.decode('latin1', 'replace')
+            formatted_text = '[%s]' % item
+            item = Bold(formatted_text).Format()
             table.AddRow([Center(Italic(item))])
             table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         else:
@@ -812,11 +815,13 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             addtag   = 'topic_add_%02d' % i
             newtag   = 'topic_new_%02d' % i
             if empty:
-                table.AddRow([Center(Bold(_('Topic %(i)d')) % {'i': i}),
-                              Hidden(newtag)])
+                topic_text = _('Topic %(i)d') % {'i': i}
+                table.AddRow([Center(Bold(topic_text)),
+                            Hidden(newtag)])
             else:
-                table.AddRow([Center(Bold(_('Topic %(i)d')) % {'i': i}),
-                              SubmitButton(deltag, _('Delete'))])
+                topic_text = _('Topic %(i)d') % {'i': i}
+                table.AddRow([Center(Bold(topic_text)),
+                            SubmitButton(deltag, _('Delete'))])
             table.AddRow([Label(_('Topic name:')),
                           TextBox(boxtag, value=name, size=30)])
             table.AddRow([Label(_('Regexp:')),
@@ -868,10 +873,10 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             uptag     = 'hdrfilter_up_%02d' % i
             downtag   = 'hdrfilter_down_%02d' % i
             if empty:
-                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d')) % {'i': i}),
+                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d') % {'i': i})),
                               Hidden(newtag)])
             else:
-                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d')) % {'i': i}),
+                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d') % {'i': i})),
                               SubmitButton(deltag, _('Delete'))])
             table.AddRow([Label(_('Spam Filter Regexp:')),
                           TextArea(reboxtag, text=pattern,
@@ -1090,13 +1095,12 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     allcnt = len(all)
     if bucket:
         membercnt = len(members)
-        usertable.AddRow([Center(Italic(_('%(allcnt)d members total, %(membercnt)d shown') % {
-            'allcnt': allcnt,
-            'membercnt': membercnt
-        }))])
+        count_text = _('%(allcnt)d members total, %(membercnt)d shown') % {
+            'allcnt': len(all), 'membercnt': len(members)}
+        usertable.AddRow([Center(Italic(count_text))])
     else:
         usertable.AddRow([Center(Italic(_('%(allcnt)d members total') % {
-            'allcnt': allcnt
+            'allcnt': len(all)
         }))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
                           usertable.GetCurrentCellIndex(),
@@ -1118,10 +1122,14 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 url = url.encode(Utils.GetCharSet(mlist.preferred_language),
                                  errors='ignore')
             if letter == bucket:
-                show = Bold('[%(letter)s]' % {'letter': letter.upper()}).Format()
+                # Do this in two steps to get it to work properly with the
+                # translatable title.
+                formatted_text = '[%s]' % letter.upper()
+                text = Bold(formatted_text).Format()
             else:
-                show = letter.upper()
-            cells.append(Link(url, show).Format())
+                formatted_label = '[%s]' % letter.upper()
+                text = Link(url, Bold(formatted_label)).Format()
+            cells.append(text)
         joiner = '&nbsp;'*2 + '\n'
         usertable.AddRow([Center(joiner.join(cells))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
@@ -1159,12 +1167,18 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         fullname = Utils.uncanonstr(mlist.getMemberName(addr),
                                     mlist.preferred_language)
         name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
-        cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format()
-                        + '<div class="hidden">' + _('unsub') + '</div>'),
-                 link.Format() + '<br>' +
-                 name +
-                 Hidden('user', qaddr).Format(),
-                 ]
+        cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format())]
+
+        digest_name = '%(qaddr)s_digest' % {'qaddr': qaddr}
+        if addr not in mlist.getRegularMemberKeys():
+            cells.append(Center(CheckBox(digest_name, 'off', 0).Format()))
+        else:
+            cells.append(Center(CheckBox(digest_name, 'on', 1).Format()))
+
+        language_name = '%(qaddr)s_language' % {'qaddr': qaddr}
+        cells.append(Center(SelectOptions(language_name, mlist.GetAvailableLanguages(),
+                                          selected=mlist.getMemberLanguage(addr)).Format()))
+
         # Do the `mod' option
         if mlist.getMemberOption(addr, mm_cfg.Moderate):
             value = 'on'
@@ -1196,36 +1210,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 checked = 0
             box = CheckBox('%(qaddr)s_%(opt)s' % {'qaddr': qaddr, 'opt': opt}, value, checked)
             cells.append(Center(box.Format() + extra))
-        # This code is less efficient than the original which did a has_key on
-        # the underlying dictionary attribute.  This version is slower and
-        # less memory efficient.  It points to a new MemberAdaptor interface
-        # method.
-        extra = '<div class="hidden">' + _('digest') + '</div>'
-        if addr in mlist.getRegularMemberKeys():
-            cells.append(Center(CheckBox('%(qaddr)s_digest' % {'qaddr': qaddr}, 'off', 0).Format()
-                                + extra))
-        else:
-            cells.append(Center(CheckBox('%(qaddr)s_digest' % {'qaddr': qaddr}, 'on', 1).Format()
-                                + extra))
-        if mlist.getMemberOption(addr, mm_cfg.OPTINFO['plain']):
-            value = 'on'
-            checked = 1
-        else:
-            value = 'off'
-            checked = 0
-        cells.append(Center(CheckBox(
-                            '%(qaddr)s_plain' % {'qaddr': qaddr}, value, checked).Format()
-                            + '<div class="hidden">' + _('plain') + '</div>'))
-        # User's preferred language
-        langpref = mlist.getMemberLanguage(addr)
-        langs = mlist.GetAvailableLanguages()
-        langdescs = [_(Utils.GetLanguageDescr(lang)) for lang in langs]
-        try:
-            selected = langs.index(langpref)
-        except ValueError:
-            selected = 0
-        cells.append(Center(SelectOptions('%(qaddr)s_language' % {'qaddr': qaddr}, langs,
-                                          langdescs, selected)).Format())
         usertable.AddRow(cells)
     # Add the usertable and a legend
     legend = UnorderedList()
