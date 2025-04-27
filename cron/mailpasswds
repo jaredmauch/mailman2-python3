@@ -302,7 +302,7 @@ def main():
                     text += "\n\n[TEST MODE] This is a test password reminder message."
                 msg = Message.UserNotification(
                     addr, siteowner,
-                    _('%(host)s mailing list memberships reminder'),
+                    _('%(host)s mailing list memberships reminder') % {'host': str(host)},
                     text.encode(enc, 'replace'), poplang)
                 # Note that text must be encoded into 'enc' because unicode
                 # cause error within email module in some language (Japanese).
