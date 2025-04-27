@@ -184,12 +184,12 @@ def listinfo_overview(msg=''):
     print(doc.Format())
 
 
-def list_listinfo(mlist, lang):
+def list_listinfo(mlist, language):
     # Generate list specific listinfo
     doc = HeadlessDocument()
-    doc.set_language(lang)
+    doc.set_language(language)
 
-    replacements = mlist.GetStandardReplacements(lang)
+    replacements = mlist.GetStandardReplacements(language)
 
     if not mlist.digestable or not mlist.nondigestable:
         replacements['<mm-digest-radio-button>'] = ""
@@ -223,7 +223,7 @@ def list_listinfo(mlist, lang):
         # render CAPTCHA, if configured
         if isinstance(mm_cfg.CAPTCHAS, dict) and 'en' in mm_cfg.CAPTCHAS:
             (captcha_question, captcha_box, captcha_idx) = \
-                Utils.captcha_display(mlist, lang, mm_cfg.CAPTCHAS)
+                Utils.captcha_display(mlist, language, mm_cfg.CAPTCHAS)
             pre_question = _(
                     """Please answer the following question to prove that
                     you are not a bot:"""
@@ -248,20 +248,19 @@ def list_listinfo(mlist, lang):
                 )
     # Roster form substitutions
     replacements['<mm-roster-form-start>'] = mlist.FormatFormStart('roster')
-    replacements['<mm-roster-option>'] = mlist.FormatRosterOptionForUser(lang)
+    replacements['<mm-roster-option>'] = mlist.FormatRosterOptionForUser(language)
     # Options form substitutions
     replacements['<mm-options-form-start>'] = mlist.FormatFormStart('options')
-    replacements['<mm-editing-options>'] = mlist.FormatEditingOption(lang)
+    replacements['<mm-editing-options>'] = mlist.FormatEditingOption(language)
     replacements['<mm-info-button>'] = SubmitButton('UserOptions',
                                                     _('Edit Options')).Format()
     # If only one language is enabled for this mailing list, omit the choice
     # buttons.
-    if len(mlist.GetAvailableLanguages()) == 1:
-        displang = ''
+    if len(mlist.available_languages) == 1:
+        listlangs = _(Utils.GetLanguageDescr(mlist.preferred_language))
     else:
-        displang = mlist.FormatButton('displang-button',
-                                      text = _("View this page in"))
-    replacements['<mm-displang-box>'] = displang
+        listlangs = mlist.GetLangSelectBox(language).Format()
+    replacements['<mm-displang-box>'] = listlangs
     replacements['<mm-lang-form-start>'] = mlist.FormatFormStart('listinfo')
     replacements['<mm-fullname-box>'] = mlist.FormatBox('fullname', size=30)
     # If reCAPTCHA is enabled, display its user interface
@@ -274,12 +273,12 @@ def list_listinfo(mlist, lang):
             </script>
             <div class="g-recaptcha" data-sitekey="%s"></div>
             </td></tr>"""
-            % (noscript, lang, mm_cfg.RECAPTCHA_SITE_KEY))
+            % (noscript, language, mm_cfg.RECAPTCHA_SITE_KEY))
     else:
         replacements['<mm-recaptcha-ui>'] = ''
 
     # Do the expansion.
-    doc.AddItem(mlist.ParseTags('listinfo.html', replacements, lang))
+    doc.AddItem(mlist.ParseTags('listinfo.html', replacements, language))
     print(doc.Format())
 
 
