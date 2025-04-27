@@ -246,9 +246,31 @@ class Switchboard:
                         if e.errno != errno.EEXIST: raise
                 finally:
                     os.umask(omask)
+                
+                # Verify source file exists before moving
+                if not os.path.exists(bakfile):
+                    syslog('error', 'Source backup file does not exist: %s', bakfile)
+                    return
+                    
+                # Move the file and verify
                 os.rename(bakfile, psvfile)
+                if not os.path.exists(psvfile):
+                    syslog('error', 'Failed to move backup file to shunt queue: %s -> %s',
+                           bakfile, psvfile)
+                else:
+                    syslog('info', 'Successfully moved backup file to shunt queue: %s -> %s',
+                           bakfile, psvfile)
             else:
+                # Verify file exists before unlinking
+                if not os.path.exists(bakfile):
+                    syslog('error', 'Backup file does not exist for unlinking: %s', bakfile)
+                    return
+                    
                 os.unlink(bakfile)
+                if os.path.exists(bakfile):
+                    syslog('error', 'Failed to unlink backup file: %s', bakfile)
+                else:
+                    syslog('info', 'Successfully unlinked backup file: %s', bakfile)
         except EnvironmentError as e:
             syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    bakfile, e)
