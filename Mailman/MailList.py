@@ -407,6 +407,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
 
         # Must save this state, even though it isn't configurable
         self.members = {} # self.digest_members is initted in mm_digest
+        self.digest_members = {}  # Initialize digest_members dictionary
         self.data_version = mm_cfg.DATA_FILE_VERSION
         self.last_post_time = 0
 
