@@ -42,7 +42,18 @@ def _safeparser(fp):
 
 class Mailbox(mailbox.mbox):
     def __init__(self, fp):
+        # In Python 3, we need to ensure the file pointer is properly initialized
+        if not hasattr(fp, 'mode'):
+            # If fp is a string path, open it
+            if isinstance(fp, str):
+                fp = open(fp, 'ab+')
+            else:
+                # If it's a file-like object without a mode, wrap it
+                fp = open(fp, 'ab+')
+        # Initialize the parent class
         mailbox.mbox.__init__(self, fp, _safeparser)
+        # Ensure fp is set as an instance variable
+        self.fp = fp
 
     # msg should be an rfc822 message or a subclass.
     def AppendMessage(self, msg):
@@ -55,16 +66,16 @@ class Mailbox(mailbox.mbox):
             # returned, since it differs per platform.
             pass
         else:
-            if self.fp.read(1) != '\n':
-                self.fp.write('\n')
+            if self.fp.read(1) != b'\n':
+                self.fp.write(b'\n')
         # Seek to the last char of the mailbox
         self.fp.seek(0, 2)
         # Create a Generator instance to write the message to the file
-        g = Generator(self.fp)
+        g = Generator(self.fp, mangle_from_=False, maxheaderlen=0)
         g.flatten(msg, unixfrom=True)
         # Add one more trailing newline for separation with the next message
         # to be appended to the mbox.
-        print(file=self.fp)
+        self.fp.write(b'\n')
 
 
 

@@ -62,22 +62,85 @@ _ = i18n._
 UEMPTYSTRING = u''
 EMPTYSTRING = ''
 
+def decode_header_value(value, lcset):
+    """Decode an email header value properly."""
+    if not value:
+        return ''
+    try:
+        # Handle encoded-word format
+        decoded = []
+        for part, charset in decode_header(value):
+            if isinstance(part, bytes):
+                try:
+                    decoded.append(part.decode(charset or lcset, 'replace'))
+                except (UnicodeError, LookupError):
+                    decoded.append(part.decode('utf-8', 'replace'))
+            else:
+                decoded.append(part)
+        return ''.join(decoded)
+    except Exception:
+        return str(value)
+
 def to_cset_out(text, lcset):
     """Convert text to output charset.
     
     Handles both str and bytes input, ensuring proper encoding for output.
+    Returns a properly encoded string, not bytes.
     """
+    if text is None:
+        return ''
+        
     ocset = Charset(lcset).get_output_charset() or lcset
     
     if isinstance(text, str):
-        return text.encode(ocset, 'replace')
+        try:
+            return text
+        except (UnicodeError, LookupError):
+            return text.encode('utf-8', 'replace').decode('utf-8')
     elif isinstance(text, bytes):
         try:
-            return text.decode(lcset, 'replace').encode(ocset, 'replace')
+            return text.decode(lcset, 'replace')
         except (UnicodeError, LookupError):
-            return text.decode('utf-8', 'replace').encode(ocset, 'replace')
+            try:
+                return text.decode('utf-8', 'replace')
+            except (UnicodeError, LookupError):
+                return str(text)
     else:
-        return str(text).encode(ocset, 'replace')
+        return str(text)
+
+def process_message_body(msg, lcset):
+    """Process a message body, handling MIME parts and encoding properly."""
+    if msg.is_multipart():
+        parts = []
+        for part in msg.walk():
+            if part.get_content_maintype() == 'multipart':
+                continue
+            try:
+                payload = part.get_payload(decode=True)
+                if isinstance(payload, bytes):
+                    charset = part.get_content_charset(lcset)
+                    try:
+                        text = payload.decode(charset or lcset, 'replace')
+                    except (UnicodeError, LookupError):
+                        text = payload.decode('utf-8', 'replace')
+                else:
+                    text = str(payload)
+                parts.append(text)
+            except Exception as e:
+                parts.append('[Part could not be decoded]')
+        return '\n\n'.join(parts)
+    else:
+        try:
+            payload = msg.get_payload(decode=True)
+            if isinstance(payload, bytes):
+                charset = msg.get_content_charset(lcset)
+                try:
+                    return payload.decode(charset or lcset, 'replace')
+                except (UnicodeError, LookupError):
+                    return payload.decode('utf-8', 'replace')
+            return str(payload)
+        except Exception:
+            return '[Message body could not be decoded]'
 
 def process(mlist, msg, msgdata):
     """Process a message for digest delivery.
@@ -95,7 +158,7 @@ def process(mlist, msg, msgdata):
     try:
         # Open file in binary mode for proper handling of line endings
         with open(mboxfile, 'ab+') as mboxfp:
-            mbox = Mailbox(mboxfile)  # Use path instead of file object
+            mbox = Mailbox(mboxfp)  # Pass file object directly
             mbox.AppendMessage(msg)
             
             # Calculate size and check threshold
@@ -108,15 +171,12 @@ def process(mlist, msg, msgdata):
                 except Exception as e:
                     syslog('error', 'Error sending digest: %s', str(e))
                     syslog('error', 'Traceback: %s', traceback.format_exc())
+                    # Don't re-raise to allow message to be processed
     finally:
         os.umask(omask)
 
 def send_digests(mlist, mboxfp):
-    """Send digests for the mailing list.
-    
-    This function handles the creation and sending of both MIME and RFC 1153
-    format digests. All text handling is done with proper encoding awareness.
-    """
+    """Send digests for the mailing list."""
     # Set up the digest state
     volume = mlist.volume
     issue = mlist.next_digest_number
@@ -139,7 +199,7 @@ def send_digests(mlist, mboxfp):
     mimemsg['Message-ID'] = Utils.unique_message_id(mlist)
     
     # Set up the RFC 1153 digest
-    plainmsg = StringIO()
+    plainmsg = StringIO()  # Use StringIO for text output
     rfc1153msg = email.message.Message()
     rfc1153msg['From'] = mlist.GetRequestEmail()
     rfc1153msg['Subject'] = Header(digestid, lcset, header_name='Subject')
@@ -166,14 +226,16 @@ def send_digests(mlist, mboxfp):
         
     # Add masthead to both digest formats
     mimemsg.attach(MIMEText(mastheadtxt, _charset=lcset))
-    print(mastheadtxt, file=plainmsg)
+    plainmsg.write(to_cset_out(mastheadtxt, lcset_out))
+    plainmsg.write('\n')
     
     # Process the mbox
     mbox = Mailbox(mboxfp)
     
     # Add a table of contents for RFC 1153 digests
-    print(separator70, file=plainmsg)
-    print(_('Today\'s Topics:\n'), file=plainmsg)
+    plainmsg.write(to_cset_out(separator70, lcset_out))
+    plainmsg.write('\n')
+    plainmsg.write(to_cset_out(_('Today\'s Topics:\n'), lcset_out))
     
     # Process each message
     msg_num = 1
@@ -182,47 +244,54 @@ def send_digests(mlist, mboxfp):
             continue
             
         try:
-            cset = msg.get_content_charset(lcset)
-            subject = msg.get('subject', _('(no subject)'))
+            subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)
             subject = Utils.oneline(subject, lcset)
             
             # Add to table of contents
-            print('%2d. %s' % (msg_num, subject), file=plainmsg)
+            plainmsg.write('%2d. %s\n' % (msg_num, to_cset_out(subject, lcset_out)))
             
             # Add the message to both digest formats
             mimemsg.attach(MIMEMessage(msg))
             
-            print('\n%s\n%s %d\n%s\n' % (separator30, _('Message'), msg_num,
-                  separator30), file=plainmsg)
-            print('Date:', msg['date'], file=plainmsg)
-            print('From:', msg['from'], file=plainmsg)
-            print('Subject:', subject, file=plainmsg)
-            print('\n', file=plainmsg)
+            # Add message header
+            plainmsg.write('\n')
+            plainmsg.write(to_cset_out(separator30, lcset_out))
+            plainmsg.write('\n')
+            plainmsg.write(to_cset_out(_('Message %d\n' % msg_num), lcset_out))
+            plainmsg.write(to_cset_out(separator30, lcset_out))
+            plainmsg.write('\n')
             
+            # Add message metadata
+            for header in ('date', 'from', 'subject'):
+                value = decode_header_value(msg.get(header, ''), lcset)
+                plainmsg.write('%s: %s\n' % (header.capitalize(), to_cset_out(value, lcset_out)))
+            plainmsg.write('\n')
+            
+            # Add message body
             try:
-                body = msg.get_payload(decode=True)
-                if isinstance(body, bytes):
-                    body = body.decode(cset or 'utf-8', 'replace')
-                print(body, file=plainmsg)
+                body = process_message_body(msg, lcset)
+                plainmsg.write(to_cset_out(body, lcset_out))
+                plainmsg.write('\n')
             except Exception as e:
-                print(_('[Message body could not be decoded]\n'), file=plainmsg)
-                syslog('error', 'Message %d digest payload error: %s',
-                       msg_num, str(e))
+                plainmsg.write(to_cset_out(_('[Message body could not be decoded]\n'), lcset_out))
+                syslog('error', 'Message %d digest payload error: %s', msg_num, str(e))
             
             msg_num += 1
             
         except Exception as e:
-            syslog('error', 'Digest message %d processing error: %s',
-                   msg_num, str(e))
+            syslog('error', 'Digest message %d processing error: %s', msg_num, str(e))
             syslog('error', 'Traceback: %s', traceback.format_exc())
+            continue
     
     # Finish up the RFC 1153 digest
-    print('\n%s\n%s\n' % (separator70, _('End of Digest')), file=plainmsg)
-    plaintext = plainmsg.getvalue()
-    plainmsg.close()
+    plainmsg.write('\n')
+    plainmsg.write(to_cset_out(separator70, lcset_out))
+    plainmsg.write('\n')
+    plainmsg.write(to_cset_out(_('End of Digest\n'), lcset_out))
     
     # Set the RFC 1153 message body
-    rfc1153msg.set_payload(plaintext, charset=lcset)
+    rfc1153msg.set_payload(plainmsg.getvalue(), charset=lcset)
+    plainmsg.close()
     
     # Send both digests
     send_digest_final(mlist, mimemsg, rfc1153msg, volume, issue)
