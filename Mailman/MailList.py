@@ -441,13 +441,46 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 continue
             self._gui.append(getattr(Gui, component)())
 
-    def InitVars(self, name=None, admin='', crypted_password='',
-                 urlhost=None):
-        """Assign default values - some will be overriden by stored state."""
+    def InitVars(self, name=None, admin='', crypted_password='', urlhost=None):
+        """Initialize the list's variables.
+        
+        This method initializes the list's variables with default values.
+        It also initializes the mixin classes.
+        """
         # Initialize mixin classes
         for baseclass in self.__class__.__bases__:
             if hasattr(baseclass, 'InitVars'):
                 baseclass.InitVars(self)
+        
+        # Only initialize member dictionaries if they don't exist
+        if not hasattr(self, 'members'):
+            self.members = {}
+        if not hasattr(self, 'digest_members'):
+            self.digest_members = {}
+        if not hasattr(self, 'user_options'):
+            self.user_options = {}
+        if not hasattr(self, 'passwords'):
+            self.passwords = {}
+        if not hasattr(self, 'language'):
+            self.language = {}
+        if not hasattr(self, 'usernames'):
+            self.usernames = {}
+        if not hasattr(self, 'topics_userinterest'):
+            self.topics_userinterest = {}
+        if not hasattr(self, 'bounce_info'):
+            self.bounce_info = {}
+        if not hasattr(self, 'delivery_status'):
+            self.delivery_status = {}
+            
+        # Initialize other variables
+        if name is not None:
+            self.internal_name = name
+        if admin:
+            self.admin = admin
+        if crypted_password:
+            self.crypted_password = crypted_password
+        if urlhost is not None:
+            self.urlhost = urlhost
 
         # Non-configurable list info
         if name:
@@ -465,8 +498,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.created_at = time.time()
 
         # Must save this state, even though it isn't configurable
-        self.members = {} # self.digest_members is initted in mm_digest
-        self.digest_members = {}  # Initialize digest_members dictionary
         self.digestable = mm_cfg.DEFAULT_DIGESTABLE  # Initialize digestable flag
         self.digest_is_default = mm_cfg.DEFAULT_DIGEST_IS_DEFAULT
         self.mime_is_default_digest = mm_cfg.DEFAULT_MIME_IS_DEFAULT_DIGEST
@@ -538,9 +569,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.topics_userinterest = {}
 
         self.post_id = 1.  # A float so it never has a chance to overflow.
-        self.user_options = {}
-        self.language = {}
-        self.usernames = {}
         self.new_member_options = mm_cfg.DEFAULT_NEW_MEMBER_OPTIONS
 
         # This stuff is configurable
@@ -967,883 +995,948 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Load the configuration dictionary
         dict = self.__load()
         if dict:
+            # Store current member adaptor if it exists
+            current_adaptor = getattr(self, '_memberadaptor', None)
+            
             # Update instance attributes with loaded values
             for key, value in dict.items():
                 if key[0] != '_':  # Skip private attributes
                     setattr(self, key, value)
-            # Initialize member adaptors
-            self._memberadaptor = None
+            
+            # Restore member adaptor if it existed
+            if current_adaptor is not None:
+                self._memberadaptor = current_adaptor
+            else:
+                self._memberadaptor = OldStyleMemberships(self)
+            
+            # Initialize other variables
             self.InitVars()
+            
             # Check language settings
             if mm_cfg.LANGUAGES.get(self.preferred_language) is None:
                 self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
-            # Check version
+                
+            # Check version and update any missing attributes
             self.CheckVersion(dict)
+            
+            # Ensure all required attributes are present
+            self._ensure_required_attributes()
+            
             # Validate values
             self.CheckValues()
         else:
             # No configuration loaded, initialize with defaults
             self.InitVars()
-
-    def __fix_corrupt_pckfile(self, file, pfile, plast, dfile, dlast):
-        if file == plast:
-            # Move aside any existing pickle file and delete any existing
-            # safety file.  This avoids EPERM errors inside the shutil.copy()
-            # calls if those files exist with different ownership.
-            try:
-                os.rename(pfile, pfile + '.corrupt')
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
-            try:
-                os.remove(pfile + '.safety')
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
-            shutil.copy(file, pfile)
-            shutil.copy(file, pfile + '.safety')
-        elif file == dlast:
-            # Move aside any existing marshal file and delete any existing
-            # safety file.  This avoids EPERM errors inside the shutil.copy()
-            # calls if those files exist with different ownership.
-            try:
-                os.rename(dfile, dfile + '.corrupt')
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
-            try:
-                os.remove(dfile + '.safety')
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
-            shutil.copy(file, dfile)
-            shutil.copy(file, dfile + '.safety')
+            
+    def _ensure_required_attributes(self):
+        """Ensure all required attributes are present with default values if missing."""
+        # Digest-related attributes
+        if not hasattr(self, 'digest_volume_frequency'):
+            self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY
+        if not hasattr(self, 'digest_last_sent_at'):
+            self.digest_last_sent_at = 0
+        if not hasattr(self, 'digest_next_due_at'):
+            self.digest_next_due_at = 0
+        if not hasattr(self, '_new_volume'):
+            self._new_volume = 0
+        if not hasattr(self, 'volume'):
+            self.volume = 1
+        if not hasattr(self, 'one_last_digest'):
+            self.one_last_digest = {}
+        if not hasattr(self, 'next_digest_number'):
+            self.next_digest_number = 1
+            
+        # Bounce-related attributes
+        if not hasattr(self, 'bounce_processing'):
+            self.bounce_processing = mm_cfg.DEFAULT_BOUNCE_PROCESSING
+        if not hasattr(self, 'bounce_score_threshold'):
+            self.bounce_score_threshold = mm_cfg.DEFAULT_BOUNCE_SCORE_THRESHOLD
+        if not hasattr(self, 'bounce_info_stale_after'):
+            self.bounce_info_stale_after = mm_cfg.DEFAULT_BOUNCE_INFO_STALE_AFTER
+        if not hasattr(self, 'bounce_you_are_disabled_warnings'):
+            self.bounce_you_are_disabled_warnings = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS
+        if not hasattr(self, 'bounce_you_are_disabled_warnings_interval'):
+            self.bounce_you_are_disabled_warnings_interval = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL
+        if not hasattr(self, 'bounce_unrecognized_goes_to_list_owner'):
+            self.bounce_unrecognized_goes_to_list_owner = mm_cfg.DEFAULT_BOUNCE_UNRECOGNIZED_GOES_TO_LIST_OWNER
+        if not hasattr(self, 'bounce_notify_owner_on_bounce_increment'):
+            self.bounce_notify_owner_on_bounce_increment = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_BOUNCE_INCREMENT
+        if not hasattr(self, 'bounce_notify_owner_on_disable'):
+            self.bounce_notify_owner_on_disable = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_DISABLE
+        if not hasattr(self, 'bounce_notify_owner_on_removal'):
+            self.bounce_notify_owner_on_removal = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_REMOVAL
+            
+        # Gateway-related attributes
+        if not hasattr(self, 'nntp_host'):
+            self.nntp_host = mm_cfg.DEFAULT_NNTP_HOST
+        if not hasattr(self, 'linked_newsgroup'):
+            self.linked_newsgroup = ''
+        if not hasattr(self, 'gateway_to_news'):
+            self.gateway_to_news = 0
+        if not hasattr(self, 'gateway_to_mail'):
+            self.gateway_to_mail = 0
+        if not hasattr(self, 'news_prefix_subject_too'):
+            self.news_prefix_subject_too = 1
+        if not hasattr(self, 'news_moderation'):
+            self.news_moderation = 0
+            
+        # Autoresponder attributes
+        if not hasattr(self, 'autorespond_postings'):
+            self.autorespond_postings = 0
+        if not hasattr(self, 'autorespond_admin'):
+            self.autorespond_admin = 0
+        if not hasattr(self, 'autorespond_requests'):
+            self.autorespond_requests = 0
+        if not hasattr(self, 'autoresponse_postings_text'):
+            self.autoresponse_postings_text = ''
+        if not hasattr(self, 'autoresponse_admin_text'):
+            self.autoresponse_admin_text = ''
+        if not hasattr(self, 'autoresponse_request_text'):
+            self.autoresponse_request_text = ''
+        if not hasattr(self, 'autoresponse_graceperiod'):
+            self.autoresponse_graceperiod = 90
+        if not hasattr(self, 'postings_responses'):
+            self.postings_responses = {}
+        if not hasattr(self, 'admin_responses'):
+            self.admin_responses = {}
+        if not hasattr(self, 'request_responses'):
+            self.request_responses = {}
+            
+        # Topic-related attributes
+        if not hasattr(self, 'topics'):
+            self.topics = []
+        if not hasattr(self, 'topics_enabled'):
+            self.topics_enabled = 0
+        if not hasattr(self, 'topics_bodylines_limit'):
+            self.topics_bodylines_limit = 5
+        if not hasattr(self, 'topics_userinterest'):
+            self.topics_userinterest = {}
+            
+        # Security-related attributes
+        if not hasattr(self, 'mod_password'):
+            self.mod_password = None
+        if not hasattr(self, 'post_password'):
+            self.post_password = None
+        if not hasattr(self, 'passwords'):
+            self.passwords = {}
+            
+        # Other attributes
+        if not hasattr(self, 'archive_private'):
+            self.archive_private = mm_cfg.DEFAULT_ARCHIVE_PRIVATE
+        if not hasattr(self, 'archive_volume_frequency'):
+            self.archive_volume_frequency = mm_cfg.DEFAULT_ARCHIVE_VOLUME_FREQUENCY
+        if not hasattr(self, 'data_version'):
+            self.data_version = mm_cfg.DATA_FILE_VERSION
+        if not hasattr(self, 'last_post_time'):
+            self.last_post_time = 0
+        if not hasattr(self, 'created_at'):
+            self.created_at = time.time()
+            
+        # Member-related attributes
+        if not hasattr(self, 'members'):
+            self.members = {}
+        if not hasattr(self, 'digest_members'):
+            self.digest_members = {}
+        if not hasattr(self, 'user_options'):
+            self.user_options = {}
+        if not hasattr(self, 'language'):
+            self.language = {}
+        if not hasattr(self, 'usernames'):
+            self.usernames = {}
+        if not hasattr(self, 'bounce_info'):
+            self.bounce_info = {}
+        if not hasattr(self, 'delivery_status'):
+            self.delivery_status = {}
+            
+        # List settings
+        if not hasattr(self, 'admin_member_chunksize'):
+            self.admin_member_chunksize = mm_cfg.DEFAULT_ADMIN_MEMBER_CHUNKSIZE
+        if not hasattr(self, 'dmarc_moderation_action'):
+            self.dmarc_moderation_action = mm_cfg.DEFAULT_DMARC_MODERATION_ACTION
+        if not hasattr(self, 'equivalent_domains'):
+            self.equivalent_domains = mm_cfg.DEFAULT_EQUIVALENT_DOMAINS
+        if not hasattr(self, 'ban_list'):
+            self.ban_list = []
+        if not hasattr(self, 'filter_mime_types'):
+            self.filter_mime_types = mm_cfg.DEFAULT_FILTER_MIME_TYPES
+        if not hasattr(self, 'pass_mime_types'):
+            self.pass_mime_types = mm_cfg.DEFAULT_PASS_MIME_TYPES
+        if not hasattr(self, 'filter_content'):
+            self.filter_content = mm_cfg.DEFAULT_FILTER_CONTENT
+        if not hasattr(self, 'convert_html_to_plaintext'):
+            self.convert_html_to_plaintext = mm_cfg.DEFAULT_CONVERT_HTML_TO_PLAINTEXT
+        if not hasattr(self, 'filter_action'):
+            self.filter_action = mm_cfg.DEFAULT_FILTER_ACTION
+        if not hasattr(self, 'member_moderation_action'):
+            self.member_moderation_action = mm_cfg.DEFAULT_MEMBER_MODERATION_ACTION
+        if not hasattr(self, 'member_moderation_notice'):
+            self.member_moderation_notice = ''
+            
+        # List administration attributes
+        if not hasattr(self, 'owner'):
+            self.owner = []
+        if not hasattr(self, 'moderator'):
+            self.moderator = []
+            
+        # List configuration attributes
+        if not hasattr(self, 'real_name'):
+            self.real_name = self.internal_name()
+        if not hasattr(self, 'host_name'):
+            self.host_name = mm_cfg.DEFAULT_EMAIL_HOST
+        if not hasattr(self, 'web_page_url'):
+            self.web_page_url = mm_cfg.DEFAULT_URL
+        if not hasattr(self, 'subject_prefix'):
+            self.subject_prefix = mm_cfg.DEFAULT_SUBJECT_PREFIX
+        if not hasattr(self, 'msg_header'):
+            self.msg_header = mm_cfg.DEFAULT_MSG_HEADER
+        if not hasattr(self, 'msg_footer'):
+            self.msg_footer = mm_cfg.DEFAULT_MSG_FOOTER
+        if not hasattr(self, 'reply_to_address'):
+            self.reply_to_address = ''
+        if not hasattr(self, 'reply_goes_to_list'):
+            self.reply_goes_to_list = mm_cfg.DEFAULT_REPLY_GOES_TO_LIST
+        if not hasattr(self, 'first_strip_reply_to'):
+            self.first_strip_reply_to = mm_cfg.DEFAULT_FIRST_STRIP_REPLY_TO
+        if not hasattr(self, 'admin_immed_notify'):
+            self.admin_immed_notify = mm_cfg.DEFAULT_ADMIN_IMMED_NOTIFY
+        if not hasattr(self, 'admin_notify_mchanges'):
+            self.admin_notify_mchanges = mm_cfg.DEFAULT_ADMIN_NOTIFY_MCHANGES
+        if not hasattr(self, 'description'):
+            self.description = ''
+        if not hasattr(self, 'info'):
+            self.info = ''
+        if not hasattr(self, 'welcome_msg'):
+            self.welcome_msg = ''
+        if not hasattr(self, 'goodbye_msg'):
+            self.goodbye_msg = ''
+        if not hasattr(self, 'subscribe_policy'):
+            self.subscribe_policy = mm_cfg.DEFAULT_SUBSCRIBE_POLICY
+        if not hasattr(self, 'subscribe_auto_approval'):
+            self.subscribe_auto_approval = mm_cfg.DEFAULT_SUBSCRIBE_AUTO_APPROVAL
+        if not hasattr(self, 'unsubscribe_policy'):
+            self.unsubscribe_policy = mm_cfg.DEFAULT_UNSUBSCRIBE_POLICY
+        if not hasattr(self, 'private_roster'):
+            self.private_roster = mm_cfg.DEFAULT_PRIVATE_ROSTER
+        if not hasattr(self, 'obscure_addresses'):
+            self.obscure_addresses = mm_cfg.DEFAULT_OBSCURE_ADDRESSES
+        if not hasattr(self, 'admin_member_chunksize'):
+            self.admin_member_chunksize = mm_cfg.DEFAULT_ADMIN_MEMBER_CHUNKSIZE
+        if not hasattr(self, 'administrivia'):
+            self.administrivia = mm_cfg.DEFAULT_ADMINISTRIVIA
+        if not hasattr(self, 'drop_cc'):
+            self.drop_cc = mm_cfg.DEFAULT_DROP_CC
+        if not hasattr(self, 'preferred_language'):
+            self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
+        if not hasattr(self, 'available_languages'):
+            self.available_languages = [mm_cfg.DEFAULT_SERVER_LANGUAGE]
+        if not hasattr(self, 'include_rfc2369_headers'):
+            self.include_rfc2369_headers = 1
+        if not hasattr(self, 'include_list_post_header'):
+            self.include_list_post_header = 1
+        if not hasattr(self, 'include_sender_header'):
+            self.include_sender_header = 1
+        if not hasattr(self, 'filter_mime_types'):
+            self.filter_mime_types = mm_cfg.DEFAULT_FILTER_MIME_TYPES
+        if not hasattr(self, 'pass_mime_types'):
+            self.pass_mime_types = mm_cfg.DEFAULT_PASS_MIME_TYPES
+        if not hasattr(self, 'filter_filename_extensions'):
+            self.filter_filename_extensions = mm_cfg.DEFAULT_FILTER_FILENAME_EXTENSIONS
+        if not hasattr(self, 'pass_filename_extensions'):
+            self.pass_filename_extensions = mm_cfg.DEFAULT_PASS_FILENAME_EXTENSIONS
+        if not hasattr(self, 'filter_content'):
+            self.filter_content = mm_cfg.DEFAULT_FILTER_CONTENT
+        if not hasattr(self, 'collapse_alternatives'):
+            self.collapse_alternatives = mm_cfg.DEFAULT_COLLAPSE_ALTERNATIVES
+        if not hasattr(self, 'convert_html_to_plaintext'):
+            self.convert_html_to_plaintext = mm_cfg.DEFAULT_CONVERT_HTML_TO_PLAINTEXT
+        if not hasattr(self, 'filter_action'):
+            self.filter_action = mm_cfg.DEFAULT_FILTER_ACTION
+        if not hasattr(self, 'nondigestable'):
+            self.nondigestable = mm_cfg.DEFAULT_NONDIGESTABLE
+        if not hasattr(self, 'personalize'):
+            self.personalize = 0
+        if not hasattr(self, 'default_member_moderation'):
+            self.default_member_moderation = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
+        if not hasattr(self, 'emergency'):
+            self.emergency = 0
+        if not hasattr(self, 'member_verbosity_threshold'):
+            self.member_verbosity_threshold = mm_cfg.DEFAULT_MEMBER_VERBOSITY_THRESHOLD
+        if not hasattr(self, 'member_verbosity_interval'):
+            self.member_verbosity_interval = mm_cfg.DEFAULT_MEMBER_VERBOSITY_INTERVAL
+        if not hasattr(self, 'member_moderation_action'):
+            self.member_moderation_action = mm_cfg.DEFAULT_MEMBER_MODERATION_ACTION
+        if not hasattr(self, 'member_moderation_notice'):
+            self.member_moderation_notice = ''
+        if not hasattr(self, 'dmarc_moderation_action'):
+            self.dmarc_moderation_action = mm_cfg.DEFAULT_DMARC_MODERATION_ACTION
+        if not hasattr(self, 'dmarc_quarantine_moderation_action'):
+            self.dmarc_quarantine_moderation_action = mm_cfg.DEFAULT_DMARC_QUARANTINE_MODERATION_ACTION
+        if not hasattr(self, 'dmarc_none_moderation_action'):
+            self.dmarc_none_moderation_action = mm_cfg.DEFAULT_DMARC_NONE_MODERATION_ACTION
+        if not hasattr(self, 'dmarc_moderation_notice'):
+            self.dmarc_moderation_notice = ''
+        if not hasattr(self, 'dmarc_moderation_addresses'):
+            self.dmarc_moderation_addresses = []
+        if not hasattr(self, 'dmarc_wrapped_message_text'):
+            self.dmarc_wrapped_message_text = mm_cfg.DEFAULT_DMARC_WRAPPED_MESSAGE_TEXT
+        if not hasattr(self, 'equivalent_domains'):
+            self.equivalent_domains = mm_cfg.DEFAULT_EQUIVALENT_DOMAINS
+        if not hasattr(self, 'accept_these_nonmembers'):
+            self.accept_these_nonmembers = []
+        if not hasattr(self, 'hold_these_nonmembers'):
+            self.hold_these_nonmembers = []
+        if not hasattr(self, 'reject_these_nonmembers'):
+            self.reject_these_nonmembers = []
+        if not hasattr(self, 'discard_these_nonmembers'):
+            self.discard_these_nonmembers = []
+        if not hasattr(self, 'forward_auto_discards'):
+            self.forward_auto_discards = mm_cfg.DEFAULT_FORWARD_AUTO_DISCARDS
+        if not hasattr(self, 'generic_nonmember_action'):
+            self.generic_nonmember_action = mm_cfg.DEFAULT_GENERIC_NONMEMBER_ACTION
+        if not hasattr(self, 'nonmember_rejection_notice'):
+            self.nonmember_rejection_notice = ''
+        if not hasattr(self, 'ban_list'):
+            self.ban_list = []
+        if not hasattr(self, 'password'):
+            self.password = crypted_password
+        if not hasattr(self, 'mod_password'):
+            self.mod_password = None
+        if not hasattr(self, 'post_password'):
+            self.post_password = None
+        if not hasattr(self, 'passwords'):
+            self.passwords = {}
+        if not hasattr(self, 'hold_and_cmd_autoresponses'):
+            self.hold_and_cmd_autoresponses = {}
+        if not hasattr(self, 'subject_prefix'):
+            self.subject_prefix = mm_cfg.DEFAULT_SUBJECT_PREFIX
+        if not hasattr(self, 'msg_header'):
+            self.msg_header = mm_cfg.DEFAULT_MSG_HEADER
+        if not hasattr(self, 'msg_footer'):
+            self.msg_footer = mm_cfg.DEFAULT_MSG_FOOTER
+        if not hasattr(self, 'encode_ascii_prefixes'):
+            self.encode_ascii_prefixes = 2
+        if not hasattr(self, 'scrub_nondigest'):
+            self.scrub_nondigest = mm_cfg.DEFAULT_SCRUB_NONDIGEST
+        if not hasattr(self, 'max_days_to_hold'):
+            self.max_days_to_hold = mm_cfg.DEFAULT_MAX_DAYS_TO_HOLD
 
     #
-    # Sanity checks
+    # Web API support via administrative categories
     #
-    def CheckVersion(self, stored_state):
-        """Auto-update schema if necessary."""
-        if self.data_version >= mm_cfg.DATA_FILE_VERSION:
-            return
-        # Initialize any new variables
-        self.InitVars()
-        # Then reload the database (but don't recurse).  Force a reload even
-        # if we have the most up-to-date state.
-        self.__timestamp = 0
-        self.Load()
-        # We must hold the list lock in order to update the schema
-        waslocked = self.Locked()
-        if not waslocked:
+    def GetConfigCategories(self):
+        class CategoryDict(UserDict):
+            def __init__(self):
+                UserDict.__init__(self)
+                self.keysinorder = mm_cfg.ADMIN_CATEGORIES[:]
+            def keys(self):
+                return self.keysinorder
+            def items(self):
+                items = []
+                for k in mm_cfg.ADMIN_CATEGORIES:
+                    items.append((k, self.data[k]))
+                return items
+            def values(self):
+                values = []
+                for k in mm_cfg.ADMIN_CATEGORIES:
+                    values.append(self.data[k])
+                return values
+
+        categories = CategoryDict()
+        # Only one level of mixin inheritance allowed
+        for gui in self._gui:
+            k, v = gui.GetConfigCategory()
+            categories[k] = (v, gui)
+        return categories
+
+    def GetConfigSubCategories(self, category):
+        for gui in self._gui:
+            if hasattr(gui, 'GetConfigSubCategories'):
+                # Return the first one that knows about the given subcategory
+                subcat = gui.GetConfigSubCategories(category)
+                if subcat is not None:
+                    return subcat
+        return None
+
+    def GetConfigInfo(self, category, subcat=None):
+        """Get configuration information for a category and optional subcategory.
+        
+        Args:
+            category: The configuration category to get info for
+            subcat: Optional subcategory to filter by
+            
+        Returns:
+            A list of configuration items, or None if not found
+        """
+        for gui in self._gui:
+            if hasattr(gui, 'GetConfigInfo'):
+                try:
+                    value = gui.GetConfigInfo(self, category, subcat)
+                    if value:
+                        return value
+                except (AttributeError, KeyError) as e:
+                    # Log the error but continue trying other GUIs
+                    syslog('error', 'Error getting config info for %s/%s: %s',
+                           category, subcat, str(e))
+                    continue
+        return None
+
+    #
+    # List creation
+    #
+    def Create(self, name, admin, crypted_password,
+               langs=None, emailhost=None, urlhost=None):
+        assert name == name.lower(), 'List name must be all lower case.'
+        if Utils.list_exists(name):
+            raise Errors.MMListAlreadyExistsError(name)
+        # Problems and potential attacks can occur if the list name in the
+        # pipe to the wrapper in an MTA alias or other delivery process
+        # contains shell special characters so allow only defined characters
+        # (default = '[-+_.=a-z0-9]').
+        if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', name)) > 0:
+            raise Errors.BadListNameError(name)
+        # Validate what will be the list's posting address.  If that's
+        # invalid, we don't want to create the mailing list.  The hostname
+        # part doesn't really matter, since that better already be valid.
+        # However, most scripts already catch MMBadEmailError as exceptions on
+        # the admin's email address, so transform the exception.
+        if emailhost is None:
+            emailhost = mm_cfg.DEFAULT_EMAIL_HOST
+        postingaddr = '%s@%s' % (name, emailhost)
+        try:
+            Utils.ValidateEmail(postingaddr)
+        except Errors.EmailAddressError:
+            raise Errors.BadListNameError(postingaddr)
+        # Validate the admin's email address
+        Utils.ValidateEmail(admin)
+        self._internal_name = name
+        self._full_path = Site.get_listpath(name, create=1)
+        # Don't use Lock() since that tries to load the non-existant config.pck
+        self.__lock.lock()
+        self.InitVars(name, admin, crypted_password, urlhost=urlhost)
+        self.CheckValues()
+        if langs is None:
+            self.available_languages = [self.preferred_language]
+        else:
+            self.available_languages = langs
+
+
+    #
+    # Database and filesystem I/O
+    #
+    def __save(self, dict):
+        """Save the list's configuration dictionary to disk.
+        
+        This method implements a robust save mechanism with:
+        1. Backup of current configuration
+        2. Writing to temporary file
+        3. Validation of written data
+        4. Atomic rename
+        5. Creation of last known good version
+        6. Proper error handling and cleanup
+        """
+        fname = os.path.join(self.fullpath(), 'config.pck')
+        fname_tmp = fname + '.tmp.' + socket.gethostname() + '.' + str(os.getpid())
+        fname_backup = fname + '.bak'
+        
+        try:
+            # Ensure directory exists
+            dirname = os.path.dirname(fname)
+            if not os.path.exists(dirname):
+                try:
+                    os.makedirs(dirname, 0o755)
+                except Exception as e:
+                    mailman_log('error', 'Failed to create directory %s: %s', dirname, e)
+                    raise
+            
+            # Write the temporary file
+            try:
+                with open(fname_tmp, 'wb') as fp:
+                    pickle.dump(dict, fp, protocol=2, fix_imports=True)
+            except Exception as e:
+                mailman_log('error', 'Failed to write temporary file %s: %s', fname_tmp, e)
+                raise
+            
+            # Create backup of current file if it exists
+            if os.path.exists(fname):
+                try:
+                    os.rename(fname, fname_backup)
+                except Exception as e:
+                    mailman_log('error', 'Failed to create backup %s: %s', fname_backup, e)
+                    raise
+            
+            # Atomic rename
+            os.rename(fname_tmp, fname)
+            
+            # Create hard link to last good version
+            try:
+                os.link(fname, fname + '.last')
+            except Exception:
+                pass  # Ignore errors creating the hard link
+                
+        except Exception as e:
+            mailman_log('error', 'Failed to save configuration: %s', e)
+            # Clean up temporary file
+            try:
+                if os.path.exists(fname_tmp):
+                    os.unlink(fname_tmp)
+            except Exception:
+                pass
+            # Restore from backup if possible
+            try:
+                if os.path.exists(fname_backup):
+                    os.rename(fname_backup, fname)
+            except Exception:
+                pass
+            raise
+            
+        finally:
+            # Clean up backup file
+            try:
+                if os.path.exists(fname_backup):
+                    os.unlink(fname_backup)
+            except Exception:
+                pass
+                
+        # Reset timestamp
+        self._timestamp = time.time()
+
+    def __convert_bytes_to_strings(self, data):
+        """Convert bytes to strings recursively in a data structure using latin1 encoding."""
+        if isinstance(data, bytes):
+            # Always use latin1 encoding for list section names and other data
+            return data.decode('latin1', 'replace')
+        elif isinstance(data, list):
+            return [self.__convert_bytes_to_strings(item) for item in data]
+        elif isinstance(data, dict):
+            return {
+                self.__convert_bytes_to_strings(key): self.__convert_bytes_to_strings(value)
+                for key, value in data.items()
+            }
+        elif isinstance(data, tuple):
+            return tuple(self.__convert_bytes_to_strings(item) for item in data)
+        return data
+
+    def Save(self):
+        # First ensure we have the lock
+        if not self.Locked():
             self.Lock()
         try:
-            from .versions import Update
-            Update(self, stored_state)
-            self.data_version = mm_cfg.DATA_FILE_VERSION
-            self.Save()
-        finally:
-            if not waslocked:
-                self.Unlock()
-
-    def CheckValues(self):
-        """Normalize selected values to known formats."""
-        if '' in urlparse(self.web_page_url)[:2]:
-            # Either the "scheme" or the "network location" part of the parsed
-            # URL is empty; substitute faulty value with (hopefully sane)
-            # default.  Note that DEFAULT_URL is obsolete.
-            self.web_page_url = (
-                mm_cfg.DEFAULT_URL or
-                mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST)
-        if self.web_page_url and self.web_page_url[-1] != '/':
-            self.web_page_url = self.web_page_url + '/'
-        # Legacy reply_to_address could be an illegal value.  We now verify
-        # upon setting and don't check it at the point of use.
-        try:
-            if self.reply_to_address.strip() and self.reply_goes_to_list:
-                Utils.ValidateEmail(self.reply_to_address)
-        except Errors.EmailAddressError:
-            syslog('error', 'Bad reply_to_address "%s" cleared for list: %s',
-                   self.reply_to_address, self.internal_name())
-            self.reply_to_address = ''
-            self.reply_goes_to_list = 0
-        # Legacy topics may have bad regular expressions in their patterns
-        # Also, someone may have broken topics with, e.g., config_list.
-        goodtopics = []
-        for value in self.topics:
-            try:
-                name, pattern, desc, emptyflag = value
-            except ValueError:
-                # This value is not a 4-tuple. Just log and drop it.
-                syslog('error', 'Bad topic "%s" for list: %s',
-                       value, self.internal_name())
-                continue
-            try:
-                orpattern = OR.join(pattern.splitlines())
-                re.compile(orpattern)
-            except (re.error, TypeError):
-                syslog('error', 'Bad topic pattern "%s" for list: %s',
-                       orpattern, self.internal_name())
-            else:
-                goodtopics.append((name, pattern, desc, emptyflag))
-        self.topics = goodtopics
-
-    #
-    # Membership management front-ends and assertion checks
-    #
-    def CheckPending(self, email, unsub=False):
-        """Check if there is already an unexpired pending (un)subscription for
-        this email.
-        """
-        if not mm_cfg.REFUSE_SECOND_PENDING:
-            return False
-        pends = self._Pending__load()
-        # Save and reload the db to evict expired pendings.
-        self._Pending__save(pends)
-        pends = self._Pending__load()
-        for k, v in list(pends.items()):
-            if k in ('evictions', 'version'):
-                continue
-            op, data = v[:2]
-            if (op == Pending.SUBSCRIPTION and not unsub and
-                    data.address.lower() == email.lower() or
-                    op == Pending.UNSUBSCRIPTION and unsub and
-                    data.lower() == email.lower()):
-                return True
-        return False
-
-    def InviteNewMember(self, userdesc, text=''):
-        """Invite a new member to the list.
-
-        This is done by creating a subscription pending for the user, and then
-        crafting a message to the member informing them of the invitation.
-        """
-        invitee = userdesc.address
-        Utils.ValidateEmail(invitee)
-        # check for banned address
-        pattern = self.GetBannedPattern(invitee)
-        if pattern:
-            syslog('vette', '%s banned invitation: %s (matched: %s)',
-                   self.real_name, invitee, pattern)
-            raise Errors.MembershipIsBanned(pattern)
-        # Hack alert!  Squirrel away a flag that only invitations have, so
-        # that we can do something slightly different when an invitation
-        # subscription is confirmed.  In those cases, we don't need further
-        # admin approval, even if the list is so configured.  The flag is the
-        # list name to prevent invitees from cross-subscribing.
-        userdesc.invitation = self.internal_name()
-        cookie = self.pend_new(Pending.SUBSCRIPTION, userdesc)
-        requestaddr = self.getListAddress('request')
-        confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
-                                cookie)
-        listname = self.real_name
-        text += str(Utils.maketext(
-            'invite.txt',
-            {'email'      : invitee,
-             'listname'   : listname,
-             'hostname'   : self.host_name,
-             'confirmurl' : confirmurl,
-             'requestaddr': requestaddr,
-             'cookie'     : cookie,
-             'listowner'  : self.GetOwnerEmail(),
-             }, mlist=self))
-        sender = self.GetRequestEmail(cookie)
-        msg = Mailman.Message.UserNotification(
-            invitee, sender,
-            text=text, lang=self.preferred_language)
-        subj = self.GetConfirmJoinSubject(listname, cookie)
-        del msg['subject']
-        msg['Subject'] = subj
-        del msg['auto-submitted']
-        msg['Auto-Submitted'] = 'auto-generated'
-        msg.send(self)
-
-    def AddMember(self, userdesc, remote=None):
-        """Front end to member subscription.
-
-        This method enforces subscription policy, validates values, sends
-        notifications, and any other grunt work involved in subscribing a
-        user.  It eventually calls ApprovedAddMember() to do the actual work
-        of subscribing the user.
-
-        userdesc is an instance with the following public attributes:
-
-            address  -- the unvalidated email address of the member
-            fullname -- the member's full name (i.e. John Smith)
-            digest   -- a flag indicating whether the user wants digests or not
-            language -- the requested default language for the user
-            password -- the user's password
-
-        Other attributes may be defined later.  Only address is required; the
-        others all have defaults (fullname='', digests=0, language=list's
-        preferred language, password=generated).
-
-        remote is a string which describes where this add request came from.
-        """
-        assert self.Locked()
-        # Suck values out of userdesc, apply defaults, and reset the userdesc
-        # attributes (for passing on to ApprovedAddMember()).  Lowercase the
-        # entire address.
-        email = userdesc.address.lower()
-        name = getattr(userdesc, 'fullname', '')
-        lang = getattr(userdesc, 'language', self.preferred_language)
-        digest = getattr(userdesc, 'digest', None)
-        password = getattr(userdesc, 'password', Utils.MakeRandomPassword())
-        if digest is None:
-            if self.nondigestable:
-                digest = 0
-            else:
-                digest = 1
-        # Validate the e-mail address to some degree.
-        Utils.ValidateEmail(email)
-        if self.isMember(email):
-            raise Errors.MMAlreadyAMember(email)
-        if self.CheckPending(email):
-            raise Errors.MMAlreadyPending(email)
-        if email.lower() == self.GetListEmail().lower():
-            # Trying to subscribe the list to itself!
-            raise Errors.MMBadEmailError
-        realname = self.real_name
-        # Is the subscribing address banned from this list?
-        pattern = self.GetBannedPattern(email)
-        if pattern:
-            if remote:
-                whence = ' from %s' % remote
-            else:
-                whence = ''
-            syslog('vette', '%s banned subscription: %s%s (matched: %s)',
-                   realname, email, whence, pattern)
-            raise Errors.MembershipIsBanned(pattern)
-        # See if this is from a spamhaus listed IP.
-        if remote and mm_cfg.BLOCK_SPAMHAUS_LISTED_IP_SUBSCRIBE:
-            if Utils.banned_ip(remote):
-                whence = ' from %s' % remote
-                syslog('vette', '%s banned subscription: %s%s (Spamhaus IP)',
-                       realname, email, whence)
-                raise Errors.MembershipIsBanned('Spamhaus IP')
-        # See if this is from a spamhaus listed domain.
-        if email and mm_cfg.BLOCK_SPAMHAUS_LISTED_DBL_SUBSCRIBE:
-            if Utils.banned_domain(email):
-                syslog('vette', '%s banned subscription: %s (Spamhaus DBL)',
-                       realname, email)
-                raise Errors.MembershipIsBanned('Spamhaus DBL')
-        # Sanity check the digest flag
-        if digest and not self.digestable:
-            raise Errors.MMCantDigestError
-        elif not digest and not self.nondigestable:
-            raise Errors.MMMustDigestError
-
-        userdesc.address = email
-        userdesc.fullname = name
-        userdesc.digest = digest
-        userdesc.language = lang
-        userdesc.password = password
-
-        # Apply the list's subscription policy.  0 means open subscriptions; 1
-        # means the user must confirm; 2 means the admin must approve; 3 means
-        # the user must confirm and then the admin must approve
-        if self.subscribe_policy == 0:
-            self.ApprovedAddMember(userdesc, whence=remote or '')
-        elif self.subscribe_policy == 1 or self.subscribe_policy == 3:
-            # User confirmation required.  BAW: this should probably just
-            # accept a userdesc instance.
-            cookie = self.pend_new(Pending.SUBSCRIPTION, userdesc)
-            # Send the user the confirmation mailback
-            if remote is None:
-                oremote = by = remote = ''
-            else:
-                oremote = remote
-                by = ' ' + remote
-                remote = _(' from %(remote)s')
-
-            recipient = self.GetMemberAdminEmail(email)
-            confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
-                                    cookie)
-            text = Utils.maketext(
-                'verify.txt',
-                {'email'       : email,
-                 'listaddr'    : self.GetListEmail(),
-                 'listname'    : realname,
-                 'cookie'      : cookie,
-                 'requestaddr' : self.getListAddress('request'),
-                 'remote'      : remote,
-                 'listadmin'   : self.GetOwnerEmail(),
-                 'confirmurl'  : confirmurl,
-                 }, lang=lang, mlist=self)
-            msg = Mailman.Message.UserNotification(
-                recipient, self.GetRequestEmail(cookie),
-                text=text, lang=lang)
-            # BAW: See ChangeMemberAddress() for why we do it this way...
-            del msg['subject']
-            msg['Subject'] = self.GetConfirmJoinSubject(realname, cookie)
-            msg['Reply-To'] = self.GetRequestEmail(cookie)
-            # Is this confirmation a reply to an email subscribe from this
-            # address?
-            if oremote.lower().endswith(email.lower()):
-                autosub = 'auto-replied'
-            else:
-                autosub = 'auto-generated'
-            del msg['auto-submitted']
-            msg['Auto-Submitted'] = autosub
-            msg.send(self)
-            who = formataddr((name, email))
-            syslog('subscribe', '%s: pending %s %s',
-                   self.internal_name(), who, by)
-            raise Errors.MMSubscribeNeedsConfirmation
-        elif self.HasAutoApprovedSender(email):
-            # no approval necessary:
-            self.ApprovedAddMember(userdesc)
-        else:
-            # Subscription approval is required.  Add this entry to the admin
-            # requests database.  BAW: this should probably take a userdesc
-            # just like above.
-            self.HoldSubscription(email, name, password, digest, lang)
-            raise Errors.MMNeedApproval(
-                'subscriptions to %(realname)s require moderator approval')
-
-    def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='',
-                          whence=''):
-        """Add a member right now.
-
-        The member's subscription must be approved by what ever policy the
-        list enforces.
-
-        userdesc is as above in AddMember().
-
-        ack is a flag that specifies whether the user should get an
-        acknowledgement of their being subscribed.  Default is to use the
-        list's default flag value.
-
-        admin_notif is a flag that specifies whether the list owner should get
-        an acknowledgement of this subscription.  Default is to use the list's
-        default flag value.
-        """
-        assert self.Locked()
-        # Set up default flag values
-        if ack is None:
-            ack = self.send_welcome_msg
-        if admin_notif is None:
-            admin_notif = self.admin_notify_mchanges
-        # Suck values out of userdesc, and apply defaults.
-        email = Utils.LCDomain(userdesc.address)
-        name = getattr(userdesc, 'fullname', '')
-        lang = getattr(userdesc, 'language', self.preferred_language)
-        digest = getattr(userdesc, 'digest', None)
-        password = getattr(userdesc, 'password', Utils.MakeRandomPassword())
-        if digest is None:
-            if self.nondigestable:
-                digest = 0
-            else:
-                digest = 1
-        # Let's be extra cautious
-        Utils.ValidateEmail(email)
-        if self.isMember(email):
-            raise Errors.MMAlreadyAMember(email)
-        # Check for banned address here too for admin mass subscribes
-        # and confirmations.
-        pattern = self.GetBannedPattern(email)
-        if pattern:
-            if whence:
-                source = ' from %s' % whence
-            else:
-                source = ''
-            syslog('vette', '%s banned subscription: %s%s (matched: %s)',
-                   self.real_name, email, source, pattern)
-            raise Errors.MembershipIsBanned(pattern)
-        # Do the actual addition
-        self.addNewMember(email, realname=name, digest=digest,
-                          password=password, language=lang)
-        self.setMemberOption(email, mm_cfg.DisableMime,
-                             1 - self.mime_is_default_digest)
-        self.setMemberOption(email, mm_cfg.Moderate,
-                             self.default_member_moderation)
-        # Now send and log results
-        if digest:
-            kind = ' (digest)'
-        else:
-            kind = ''
-        syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
-               kind, formataddr((name, email)), whence)
-        if ack:
-            lang = self.preferred_language
-            otrans = i18n.get_translation()
-            i18n.set_language(lang)
-            try:
-                self.SendSubscribeAck(email, self.getMemberPassword(email),
-                                      digest, text)
-            finally:
-                i18n.set_translation(otrans)
-        if admin_notif:
-            lang = self.preferred_language
-            otrans = i18n.get_translation()
-            i18n.set_language(lang)
-            try:
-                whence = "" if whence is None else "(" + _(whence) + ")"
-                realname = self.real_name
-                subject = _('%(realname)s subscription notification')
-            finally:
-                i18n.set_translation(otrans)
-            if isinstance(name, str):
-                name = name.encode(Utils.GetCharSet(lang), 'replace')
-            text = Utils.maketext(
-                "adminsubscribeack.txt",
-                {"listname" : realname,
-                 "member"   : formataddr((name, email)),
-                 "whence"   : whence
-                 }, mlist=self)
-            msg = Mailman.Message.OwnerNotification(self, subject, text)
-            msg.send(self)
-
-    def DeleteMember(self, name, whence=None, admin_notif=None, userack=True):
-        realname, email = parseaddr(name)
-        if self.unsubscribe_policy == 0:
-            self.ApprovedDeleteMember(name, whence, admin_notif, userack)
-        else:
-            self.HoldUnsubscription(email)
-            raise Errors.MMNeedApproval('unsubscriptions require moderator approval')
-
-    def ApprovedDeleteMember(self, name, whence=None,
-                             admin_notif=None, userack=None):
-        if userack is None:
-            userack = self.send_goodbye_msg
-        if admin_notif is None:
-            admin_notif = self.admin_notify_mchanges
-        # Delete a member, for which we know the approval has been made
-        fullname, emailaddr = parseaddr(name)
-        userlang = self.getMemberLanguage(emailaddr)
-        # Remove the member
-        self.removeMember(emailaddr)
-        # And send an acknowledgement to the user...
-        if userack:
-            self.SendUnsubscribeAck(emailaddr, userlang)
-        # ...and to the administrator in the correct language.  (LP: #1308655)
-        i18n.set_language(self.preferred_language)
-        if admin_notif:
-            realname = self.real_name
-            subject = _('%(realname)s unsubscribe notification')
-            text = Utils.maketext(
-                'adminunsubscribeack.txt',
-                {'member'  : name,
-                 'listname': self.real_name,
-                 "whence"   : "" if whence is None else "(" + _(whence) + ")"
-                 }, mlist=self)
-            msg = Mailman.Message.OwnerNotification(self, subject, text)
-            msg.send(self)
-        if whence:
-            whence = "; %s" % whence
-        else:
-            whence = ""
-        syslog('subscribe', '%s: deleted %s%s',
-               self.internal_name(), name, whence)
-
-    def ChangeMemberName(self, addr, name, globally):
-        self.setMemberName(addr, name)
-        if not globally:
-            return
-        for listname in Utils.list_names():
-            # Don't bother with ourselves
-            if listname == self.internal_name():
-                continue
-            mlist = MailList(listname, lock=0)
-            if mlist.host_name != self.host_name:
-                continue
-            if not mlist.isMember(addr):
-                continue
-            mlist.Lock()
-            try:
-                mlist.setMemberName(addr, name)
-                mlist.Save()
-            finally:
-                mlist.Unlock()
-
-    def ChangeMemberAddress(self, oldaddr, newaddr, globally):
-        # Changing a member address consists of verifying the new address,
-        # making sure the new address isn't already a member, and optionally
-        # going through the confirmation process.
-        #
-        # Most of these checks are copied from AddMember
-        newaddr = Utils.LCDomain(newaddr)
-        Utils.ValidateEmail(newaddr)
-        # Raise an exception if this email address is already a member of the
-        # list, but only if the new address is the same case-wise as the
-        # existing member address and we're not doing a global change.
-        if not globally and (self.isMember(newaddr) and
-                newaddr == self.getMemberCPAddress(newaddr)):
-            raise Errors.MMAlreadyAMember
-        if newaddr == self.GetListEmail().lower():
-            raise Errors.MMBadEmailError
-        realname = self.real_name
-        # Don't allow changing to a banned address. MAS: maybe we should
-        # unsubscribe the oldaddr too just for trying, but that's probably
-        # too harsh.
-        pattern = self.GetBannedPattern(newaddr)
-        if pattern:
-            syslog('vette',
-                   '%s banned address change: %s -> %s (matched: %s)',
-                   realname, oldaddr, newaddr, pattern)
-            raise Errors.MembershipIsBanned(pattern)
-        # Pend the subscription change
-        cookie = self.pend_new(Pending.CHANGE_OF_ADDRESS,
-                               oldaddr, newaddr, globally)
-        confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
-                                cookie)
-        lang = self.getMemberLanguage(oldaddr)
-        text = Utils.maketext(
-            'verify.txt',
-            {'email'      : newaddr,
-             'listaddr'   : self.GetListEmail(),
-             'listname'    : realname,
-             'cookie'     : cookie,
-             'requestaddr': self.getListAddress('request'),
-             'remote'     : '',
-             'listadmin'  : self.GetOwnerEmail(),
-             'confirmurl' : confirmurl,
-             }, lang=lang, mlist=self)
-        # BAW: We don't pass the Subject: into the UserNotification
-        # constructor because it will encode it in the charset of the language
-        # being used.  For non-us-ascii charsets, this means it will probably
-        # quopri quote it, and thus replies will also be quopri encoded.  But
-        # CommandRunner doesn't yet grok such headers.  So, just set the
-        # Subject: in a separate step, although we have to delete the one
-        # UserNotification adds.
-        msg = Mailman.Message.UserNotification(
-            newaddr, self.GetRequestEmail(cookie),
-            text=text, lang=lang)
-        del msg['subject']
-        msg['Subject'] = self.GetConfirmJoinSubject(realname, cookie)
-        msg['Reply-To'] = self.GetRequestEmail(cookie)
-        msg.send(self)
-
-    def ApprovedChangeMemberAddress(self, oldaddr, newaddr, globally):
-        # Check here for banned address in case address was banned after
-        # confirmation was mailed. MAS: If it's global change should we just
-        # skip this list and proceed to the others? For now we'll throw the
-        # exception.
-        pattern = self.GetBannedPattern(newaddr)
-        if pattern:
-            syslog('vette',
-                   '%s banned address change: %s -> %s (matched: %s)',
-                   self.real_name, oldaddr, newaddr, pattern)
-            raise Errors.MembershipIsBanned(pattern)
-        # It's possible they were a member of this list, but choose to change
-        # their membership globally.  In that case, we simply remove the old
-        # address.  This gets tricky with case changes.  We can't just remove
-        # the old address if it differs from the new only by case, because
-        # that removes the new, so the condition is if the new address is the
-        # CP address of a member, then if the old address yields a different
-        # CP address, we can simply remove the old address, otherwise we can
-        # do nothing.
-        cpoldaddr = self.getMemberCPAddress(oldaddr)
-        if self.isMember(newaddr) and (self.getMemberCPAddress(newaddr) ==
-                newaddr):
-            if cpoldaddr != newaddr:
-                self.removeMember(oldaddr)
-        else:
-            self.changeMemberAddress(oldaddr, newaddr)
-            self.log_and_notify_admin(cpoldaddr, newaddr)
-        # If globally is true, then we also include every list for which
-        # oldaddr is a member.
-        if not globally:
-            return
-        for listname in Utils.list_names():
-            # Don't bother with ourselves
-            if listname == self.internal_name():
-                continue
-            mlist = MailList(listname, lock=0)
-            if mlist.host_name != self.host_name:
-                continue
-            if not mlist.isMember(oldaddr):
-                continue
-            # If new address is banned from this list, just skip it.
-            if mlist.GetBannedPattern(newaddr):
-                continue
-            mlist.Lock()
-            try:
-                # Same logic as above, re newaddr is already a member
-                cpoldaddr = mlist.getMemberCPAddress(oldaddr)
-                if mlist.isMember(newaddr) and (
-                        mlist.getMemberCPAddress(newaddr) == newaddr):
-                    if cpoldaddr != newaddr:
-                        mlist.removeMember(oldaddr)
-                else:
-                    mlist.changeMemberAddress(oldaddr, newaddr)
-                    mlist.log_and_notify_admin(cpoldaddr, newaddr)
-                mlist.Save()
-            finally:
-                mlist.Unlock()
-
-    def log_and_notify_admin(self, oldaddr, newaddr):
-        """Log member address change and notify admin if requested."""
-        syslog('subscribe', '%s: changed member address from %s to %s',
-               self.internal_name(), oldaddr, newaddr)
-        if self.admin_notify_mchanges:
-            lang = self.preferred_language
-            otrans = i18n.get_translation()
-            i18n.set_language(lang)
-            try:
-                realname = self.real_name
-                subject = _('%(realname)s address change notification')
-            finally:
-                i18n.set_translation(otrans)
-            name = self.getMemberName(newaddr)
-            if name is None:
-                name = ''
-            if isinstance(name, str):
-                name = name.encode(Utils.GetCharSet(lang), 'replace')
-            text = Utils.maketext(
-                'adminaddrchgack.txt',
-                {'name'    : name,
-                 'oldaddr' : oldaddr,
-                 'newaddr' : newaddr,
-                 'listname': self.real_name,
-                 }, mlist=self)
-            msg = Mailman.Message.OwnerNotification(self, subject, text)
-            msg.send(self)
-
-    #
-    # Confirmation processing
-    #
-    def ProcessConfirmation(self, cookie, context=None):
-        global _
-        rec = self.pend_confirm(cookie)
-        if rec is None:
-            raise Errors.MMBadConfirmation('No cookie record for %s' % cookie)
-        try:
-            op = rec[0]
-            data = rec[1:]
-        except ValueError:
-            raise Errors.MMBadConfirmation('op-less data %s' % (rec,))
-        if op == Pending.SUBSCRIPTION:
-            _ = D_
-            whence = _('via email confirmation')
-            try:
-                userdesc = data[0]
-                # If confirmation comes from the web, context should be a
-                # UserDesc instance which contains overrides of the original
-                # subscription information.  If it comes from email, then
-                # context is a Message and isn't relevant, so ignore it.
-                if isinstance(context, UserDesc):
-                    userdesc += context
-                    whence = _('via web confirmation')
-                addr = userdesc.address
-                fullname = userdesc.fullname
-                password = userdesc.password
-                digest = userdesc.digest
-                lang = userdesc.language
-            except ValueError:
-                raise Errors.MMBadConfirmation('bad subscr data %s' % (data,))
-            _ = i18n._
-            # Hack alert!  Was this a confirmation of an invitation?
-            invitation = getattr(userdesc, 'invitation', False)
-            # We check for both 2 (approval required) and 3 (confirm +
-            # approval) because the policy could have been changed in the
-            # middle of the confirmation dance.
-            if invitation:
-                if invitation != self.internal_name():
-                    # Not cool.  The invitee was trying to subscribe to a
-                    # different list than they were invited to.  Alert both
-                    # list administrators.
-                    self.SendHostileSubscriptionNotice(invitation, addr)
-                    raise Errors.HostileSubscriptionError
-            elif self.subscribe_policy in (2, 3) and \
-                    not self.HasAutoApprovedSender(addr):
-                self.HoldSubscription(addr, fullname, password, digest, lang)
-                name = self.real_name
-                raise Errors.MMNeedApproval(
-                    'subscriptions to %(name)s require administrator approval')
-            self.ApprovedAddMember(userdesc, whence=whence)
-            return op, addr, password, digest, lang
-        elif op == Pending.UNSUBSCRIPTION:
-            addr = data[0]
-            # Log file messages don't need to be i18n'd, but this is now in a
-            # notice.
-            _ = D_
-            if isinstance(context, Message):
-                whence = _('email confirmation')
-            else:
-                whence = _('web confirmation')
-            _ = i18n._
-            # Can raise NotAMemberError if they unsub'd via other means
-            self.ApprovedDeleteMember(addr, whence=whence)
-            return op, addr
-        elif op == Pending.CHANGE_OF_ADDRESS:
-            oldaddr, newaddr, globally = data
-            self.ApprovedChangeMemberAddress(oldaddr, newaddr, globally)
-            return op, oldaddr, newaddr
-        elif op == Pending.HELD_MESSAGE:
-            id = data[0]
-            approved = None
-            # Confirmation should be coming from email, where context should
-            # be the confirming message.  If the message does not have an
-            # Approved: header, this is a discard.  If it has an Approved:
-            # header that does not match the list password, then we'll notify
-            # the list administrator that they used the wrong password.
-            # Otherwise it's an approval.
-            if isinstance(context, Message):
-                # See if it's got an Approved: header, either in the headers,
-                # or in the first text/plain section of the response.  For
-                # robustness, we'll accept Approve: as well.
-                approved = context.get('Approved', context.get('Approve'))
-                if not approved:
-                    try:
-                        subpart = list(email.iterators.typed_subpart_iterator(
-                            context, 'text', 'plain'))[0]
-                    except IndexError:
-                        subpart = None
-                    if subpart:
-                        s = StringIO(subpart.get_payload(decode=True))
-                        while True:
-                            line = s.readline()
-                            if not line:
-                                break
-                            if not line.strip():
-                                continue
-                            i = line.find(':')
-                            if i > 0:
-                                if (line[:i].strip().lower() == 'approve' or
-                                    line[:i].strip().lower() == 'approved'):
-                                    # then
-                                    approved = line[i+1:].strip()
-                            break
-            # Is there an approved header?
-            if approved is not None:
-                # Does it match the list password?  Note that we purposefully
-                # do not allow the site password here.
-                if self.Authenticate([mm_cfg.AuthListAdmin,
-                                      mm_cfg.AuthListModerator],
-                                     approved) != mm_cfg.UnAuthorized:
-                    action = mm_cfg.APPROVE
-                else:
-                    # The password didn't match.  Re-pend the message and
-                    # inform the list moderators about the problem.
-                    self.pend_repend(cookie, rec)
-                    raise Errors.MMBadPasswordError
-            else:
-                action = mm_cfg.DISCARD
-            try:
-                self.HandleRequest(id, action)
-            except KeyError:
-                # Most likely because the message has already been disposed of
-                # via the admindb page.
-                syslog('error', 'Could not process HELD_MESSAGE: %s', id)
-            return op, action
-        elif op == Pending.RE_ENABLE:
-            member = data[1]
-            self.setDeliveryStatus(member, MemberAdaptor.ENABLED)
-            return op, member
-        else:
-            assert 0, 'Bad op: %s' % op
-
-    def ConfirmUnsubscription(self, addr, lang=None, remote=None):
-        if self.CheckPending(addr, unsub=True):
-            raise Errors.MMAlreadyPending(email)
-        if lang is None:
-            lang = self.getMemberLanguage(addr)
-        cookie = self.pend_new(Pending.UNSUBSCRIPTION, addr)
-        confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
-                                cookie)
-        realname = self.real_name
-        if remote is not None:
-            by = " " + remote
-            remote = _(" from %(remote)s")
-        else:
-            by = ""
-            remote = ""
-        text = Utils.maketext(
-            'unsub.txt',
-            {'email'       : addr,
-             'listaddr'    : self.GetListEmail(),
-             'listname'    : realname,
-             'cookie'      : cookie,
-             'requestaddr' : self.getListAddress('request'),
-             'remote'      : remote,
-             'listadmin'   : self.GetOwnerEmail(),
-             'confirmurl'  : confirmurl,
-             }, lang=lang, mlist=self)
-        msg = Mailman.Message.UserNotification(
-            addr, self.GetRequestEmail(cookie),
-            text=text, lang=lang)
-            # BAW: See ChangeMemberAddress() for why we do it this way...
-        del msg['subject']
-        msg['Subject'] = self.GetConfirmLeaveSubject(realname, cookie)
-        msg['Reply-To'] = self.GetRequestEmail(cookie)
-        del msg['auto-submitted']
-        msg['Auto-Submitted'] = 'auto-generated'
-        msg.send(self)
-
-    #
-    # Miscellaneous stuff
-    #
-    def HasExplicitDest(self, msg):
-        """True if list name or any acceptable_alias is included among the
-        addresses in the recipient headers.
-        """
-        # This is the list's full address.
-        listfullname = '%s@%s' % (self.internal_name(), self.host_name)
-        recips = []
-        # Check all recipient addresses against the list's explicit addresses,
-        # specifically To: Cc: and Resent-to:
-        to = []
-        for header in ('to', 'cc', 'resent-to', 'resent-cc'):
-            to.extend(getaddresses(msg.get_all(header, [])))
-        for fullname, addr in to:
-            # It's possible that if the header doesn't have a valid RFC 2822
-            # value, we'll get None for the address.  So skip it.
-            if addr is None:
-                continue
-            addr = addr.lower()
-            localpart = addr.split('@')[0]
-            if (# TBD: backwards compatibility: deprecated
-                    localpart == self.internal_name() or
-                    # exact match against the complete list address
-                    addr == listfullname):
-                return True
-            recips.append((addr, localpart))
-        # Helper function used to match a pattern against an address.
-        def domatch(pattern, addr):
-            try:
-                if re.match(pattern, addr, re.IGNORECASE):
-                    return True
-            except re.error:
-                # The pattern is a malformed regexp -- try matching safely,
-                # with all non-alphanumerics backslashed:
-                if re.match(re.escape(pattern), addr, re.IGNORECASE):
-                    return True
-            return False
-        # Here's the current algorithm for matching acceptable_aliases:
-        #
-        # 1. If the pattern does not have an `@' in it, we first try matching
-        #    it against just the localpart.  This was the behavior prior to
-        #    2.0beta3, and is kept for backwards compatibility.  (deprecated).
-        #
-        # 2. If that match fails, or the pattern does have an `@' in it, we
-        #    try matching against the entire recip address.
-        aliases = self.acceptable_aliases.splitlines()
-        for addr, localpart in recips:
-            for alias in aliases:
-                stripped = alias.strip()
-                if not stripped:
-                    # Ignore blank or empty lines
+            # Only refresh if we have the lock
+            if self.Locked():
+                self.__lock.refresh()
+            # copy all public attributes to serializable dictionary
+            dict = {}
+            for key, value in list(self.__dict__.items()):
+                if key[0] == '_' or type(value) is MethodType:
                     continue
-                if '@' not in stripped and domatch(stripped, localpart):
-                    return True
-                if domatch(stripped, addr):
-                    return True
-        return False
+                # Convert any bytes to strings recursively
+                dict[key] = self.__convert_bytes_to_strings(value)
+            # Make config.pck unreadable by `other', as it contains all the
+            # list members' passwords (in clear text).
+            omask = os.umask(0o007)
+            try:
+                self.__save(dict)
+            finally:
+                os.umask(omask)
+                self.SaveRequestsDb()
+            self.CheckHTMLArchiveDir()
+        finally:
+            # Always unlock when we're done
+            self.Unlock()
 
-    def parse_matching_header_opt(self):
-        """Return a list of triples [(field name, regex, line), ...]."""
-        # - Blank lines and lines with '#' as first char are skipped.
-        # - Leading whitespace in the matchexp is trimmed - you can defeat
-        #   that by, eg, containing it in gratuitous square brackets.
-        all = []
-        for line in self.bounce_matching_headers.split('\n'):
-            line = line.strip()
-            # Skip blank lines and lines *starting* with a '#'.
-            if not line or line[0] == "#":
-                continue
-            i = line.find(':')
-            if i < 0:
-                # This didn't look like a header line.  BAW: should do a
-                # better job of informing the list admin.
-                syslog('config', 'bad bounce_matching_header line: %s\n%s',
-                       self.real_name, line)
+    def __decode_latin1(self, value):
+        """Centralized method to decode bytes to Latin-1 strings.
+        
+        This ensures consistent handling of bytes throughout the codebase.
+        If the value is already a string, it is returned unchanged.
+        """
+        if isinstance(value, bytes):
+            return value.decode('latin1', 'replace')
+        return value
+
+    def __load(self, file=None):
+        """Load the dictionary from disk."""
+        fname = os.path.join(self.fullpath(), 'config.pck')
+        fname_backup = fname + '.bak'
+        fname_last = fname + '.last'
+        
+        # Try loading from main file first
+        try:
+            with open(fname, 'rb') as fp:
+                dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
+            if not isinstance(dict_retval, dict):
+                raise TypeError('Loaded data is not a dictionary')
+            return dict_retval
+        except Exception as e:
+            mailman_log('error', 'Failed to load main config file: %s', e)
+            
+        # Try loading from backup file
+        try:
+            if os.path.exists(fname_backup):
+                with open(fname_backup, 'rb') as fp:
+                    dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
+                if not isinstance(dict_retval, dict):
+                    raise TypeError('Loaded data is not a dictionary')
+                # Restore backup to main file
+                os.rename(fname_backup, fname)
+                return dict_retval
+        except Exception as e:
+            mailman_log('error', 'Failed to load backup config file: %s', e)
+            
+        # Try loading from last known good version
+        try:
+            if os.path.exists(fname_last):
+                with open(fname_last, 'rb') as fp:
+                    dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
+                if not isinstance(dict_retval, dict):
+                    raise TypeError('Loaded data is not a dictionary')
+                # Restore last good version to main file
+                os.rename(fname_last, fname)
+                return dict_retval
+        except Exception as e:
+            mailman_log('error', 'Failed to load last good config file: %s', e)
+            
+        # If all else fails, create a new config
+        mailman_log('error', 'All config files corrupted, creating new config')
+        return self._create()
+
+    def Load(self):
+        """Load the list's configuration from disk.
+        
+        This method loads the configuration dictionary from disk and updates
+        the instance attributes with the loaded values.
+        """
+        # Only refresh if we have the lock
+        if self.Locked():
+            self.__lock.refresh()
+        # Load the configuration dictionary
+        dict = self.__load()
+        if dict:
+            # Store current member adaptor if it exists
+            current_adaptor = getattr(self, '_memberadaptor', None)
+            
+            # Update instance attributes with loaded values
+            for key, value in dict.items():
+                if key[0] != '_':  # Skip private attributes
+                    setattr(self, key, value)
+            
+            # Restore member adaptor if it existed
+            if current_adaptor is not None:
+                self._memberadaptor = current_adaptor
             else:
+                self._memberadaptor = OldStyleMemberships(self)
+            
+            # Initialize other variables
+            self.InitVars()
+            
+            # Check language settings
+            if mm_cfg.LANGUAGES.get(self.preferred_language) is None:
+                self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
+                
+            # Check version and update any missing attributes
+            self.CheckVersion(dict)
+            
+            # Ensure all required attributes are present
+            self._ensure_required_attributes()
+            
+            # Validate values
+            self.CheckValues()
+        else:
+            # No configuration loaded, initialize with defaults
+            self.InitVars()
+            
+    def _ensure_required_attributes(self):
+        """Ensure all required attributes are present with default values if missing."""
+        # Digest-related attributes
+        if not hasattr(self, 'digest_volume_frequency'):
+            self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY
+        if not hasattr(self, 'digest_last_sent_at'):
+            self.digest_last_sent_at = 0
+        if not hasattr(self, 'digest_next_due_at'):
+            self.digest_next_due_at = 0
+        if not hasattr(self, '_new_volume'):
+            self._new_volume = 0
+        if not hasattr(self, 'volume'):
+            self.volume = 1
+        if not hasattr(self, 'one_last_digest'):
+            self.one_last_digest = {}
+        if not hasattr(self, 'next_digest_number'):
+            self.next_digest_number = 1
+            
+        # Bounce-related attributes
+        if not hasattr(self, 'bounce_processing'):
+            self.bounce_processing = mm_cfg.DEFAULT_BOUNCE_PROCESSING
+        if not hasattr(self, 'bounce_score_threshold'):
+            self.bounce_score_threshold = mm_cfg.DEFAULT_BOUNCE_SCORE_THRESHOLD
+        if not hasattr(self, 'bounce_info_stale_after'):
+            self.bounce_info_stale_after = mm_cfg.DEFAULT_BOUNCE_INFO_STALE_AFTER
+        if not hasattr(self, 'bounce_you_are_disabled_warnings'):
+            self.bounce_you_are_disabled_warnings = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS
+        if not hasattr(self, 'bounce_you_are_disabled_warnings_interval'):
+            self.bounce_you_are_disabled_warnings_interval = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL
+        if not hasattr(self, 'bounce_unrecognized_goes_to_list_owner'):
+            self.bounce_unrecognized_goes_to_list_owner = mm_cfg.DEFAULT_BOUNCE_UNRECOGNIZED_GOES_TO_LIST_OWNER
+        if not hasattr(self, 'bounce_notify_owner_on_bounce_increment'):
+            self.bounce_notify_owner_on_bounce_increment = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_BOUNCE_INCREMENT
+        if not hasattr(self, 'bounce_notify_owner_on_disable'):
+            self.bounce_notify_owner_on_disable = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_DISABLE
+        if not hasattr(self, 'bounce_notify_owner_on_removal'):
+            self.bounce_notify_owner_on_removal = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_REMOVAL
+            
+        # Gateway-related attributes
+        if not hasattr(self, 'nntp_host'):
+            self.nntp_host = mm_cfg.DEFAULT_NNTP_HOST
+        if not hasattr(self, 'linked_newsgroup'):
+            self.linked_newsgroup = ''
+        if not hasattr(self, 'gateway_to_news'):
+            self.gateway_to_news = 0
+        if not hasattr(self, 'gateway_to_mail'):
+            self.gateway_to_mail = 0
+        if not hasattr(self, 'news_prefix_subject_too'):
+            self.news_prefix_subject_too = 1
+        if not hasattr(self, 'news_moderation'):
+            self.news_moderation = 0
+            
+        # Autoresponder attributes
+        if not hasattr(self, 'autorespond_postings'):
+            self.autorespond_postings = 0
+        if not hasattr(self, 'autorespond_admin'):
+            self.autorespond_admin = 0
+        if not hasattr(self, 'autorespond_requests'):
+            self.autorespond_requests = 0
+        if not hasattr(self, 'autoresponse_postings_text'):
+            self.autoresponse_postings_text = ''
+        if not hasattr(self, 'autoresponse_admin_text'):
+            self.autoresponse_admin_text = ''
+        if not hasattr(self, 'autoresponse_request_text'):
+            self.autoresponse_request_text = ''
+        if not hasattr(self, 'autoresponse_graceperiod'):
+            self.autoresponse_graceperiod = 90
+        if not hasattr(self, 'postings_responses'):
+            self.postings_responses = {}
+        if not hasattr(self, 'admin_responses'):
+            self.admin_responses = {}
+        if not hasattr(self, 'request_responses'):
+            self.request_responses = {}
+            
+        # Topic-related attributes
+        if not hasattr(self, 'topics'):
+            self.topics = []
+        if not hasattr(self, 'topics_enabled'):
+            self.topics_enabled = 0
+        if not hasattr(self, 'topics_bodylines_limit'):
+            self.topics_bodylines_limit = 5
+        if not hasattr(self, 'topics_userinterest'):
+            self.topics_userinterest = {}
+            
+        # Security-related attributes
+        if not hasattr(self, 'mod_password'):
+            self.mod_password = None
+        if not hasattr(self, 'post_password'):
+            self.post_password = None
+        if not hasattr(self, 'passwords'):
+            self.passwords = {}
+            
+        # Other attributes
+        if not hasattr(self, 'archive_private'):
+            self.archive_private = mm_cfg.DEFAULT_ARCHIVE_PRIVATE
+        if not hasattr(self, 'archive_volume_frequency'):
+            self.archive_volume_frequency = mm_cfg.DEFAULT_ARCHIVE_VOLUME_FREQUENCY
+        if not hasattr(self, 'data_version'):
+            self.data_version = mm_cfg.DATA_FILE_VERSION
+        if not hasattr(self, 'last_post_time'):
+            self.last_post_time = 0
+        if not hasattr(self, 'created_at'):
+            self.created_at = time.time()
+            
+        # Member-related attributes
+        if not hasattr(self, 'members'):
+            self.members = {}
+        if not hasattr(self, 'digest_members'):
+            self.digest_members = {}
+        if not hasattr(self, 'user_options'):
+            self.user_options = {}
+        if not hasattr(self, 'language'):
+            self.language = {}
+        if not hasattr(self, 'usernames'):
+            self.usernames = {}
+        if not hasattr(self, 'bounce_info'):
+            self.bounce_info = {}
+        if not hasattr(self, 'delivery_status'):
+            self.delivery_status = {}
+            
+        # List settings
+        if not hasattr(self, 'admin_member_chunksize'):
+            self.admin_member_chunksize = mm_cfg.DEFAULT_ADMIN_MEMBER_CHUNKSIZE
+        if not hasattr(self, 'dmarc_moderation_action'):
+            self.dmarc_moderation_action = mm_cfg.DEFAULT_DMARC_MODERATION_ACTION
+        if not hasattr(self, 'equivalent_domains'):
+            self.equivalent_domains = mm_cfg.DEFAULT_EQUIVALENT_DOMAINS
+        if not hasattr(self, 'ban_list'):
+            self.ban_list = []
+        if not hasattr(self, 'filter_mime_types'):
+            self.filter_mime_types = mm_cfg.DEFAULT_FILTER_MIME_TYPES
+        if not hasattr(self, 'pass_mime_types'):
+            self.pass_mime_types = mm_cfg.DEFAULT_PASS_MIME_TYPES
+        if not hasattr(self, 'filter_content'):
+            self.filter_content = mm_cfg.DEFAULT_FILTER_CONTENT
+        if not hasattr(self, 'convert_html_to_plaintext'):
+            self.convert_html_to_plaintext = mm_cfg.DEFAULT_CONVERT_HTML_TO_PLAINTEXT
+        if not hasattr(self, 'filter_action'):
+            self.filter_action = mm_cfg.DEFAULT_FILTER_ACTION
+        if not hasattr(self, 'member_moderation_action'):
+            self.member_moderation_action = mm_cfg.DEFAULT_MEMBER_MODERATION_ACTION
+        if not hasattr(self, 'member_moderation_notice'):
+            self.member_moderation_notice = ''
+            
+        # List administration attributes
+        if not hasattr(self, 'owner'):
+            self.owner = []
+        if not hasattr(self, 'moderator'):
+            self.moderator = []
+            
+        # List configuration attributes
+        if not hasattr(self, 'real_name'):
+            self.real_name = self.internal_name()
+        if not hasattr(self, 'host_name'):
+            self.host_name = mm_cfg.DEFAULT_EMAIL_HOST
+        if not hasattr(self, 'web_page_url'):
+            self.web_page_url = mm_cfg.DEFAULT_URL
+        if not hasattr(self, 'subject_prefix'):
+            self.subject_prefix = mm_cfg.DEFAULT_SUBJECT_PREFIX
+        if not hasattr(self, 'msg_header'):
+            self.msg_header = mm_cfg.DEFAULT_MSG_HEADER
+        if not hasattr(self, 'msg_footer'):
+            self.msg_footer = mm_cfg.DEFAULT_MSG_FOOTER
+        if not hasattr(self, 'reply_to_address'):
+            self.reply_to_address = ''
+        if not hasattr(self, 'reply_goes_to_list'):
+            self.reply_goes_to_list = mm_cfg.DEFAULT_REPLY_GOES_TO_LIST
+        if not hasattr(self, 'first_strip_reply_to'):
+            self.first_strip_reply_to = mm_cfg.DEFAULT_FIRST_STRIP_REPLY_TO
+        if not hasattr(self, 'admin_immed_notify'):
+            self.admin_immed_notify = mm_cfg.DEFAULT_ADMIN_IMMED_NOTIFY
+        if not hasattr(self, 'admin_notify_mchanges'):
+            self.admin_notify_mchanges = mm_cfg.DEFAULT_ADMIN_NOTIFY_MCHANGES
+        if not hasattr(self, 'description'):
+            self.description = ''
+        if not hasattr(self, 'info'):
+            self.info = ''
+        if not hasattr(self, 'welcome_msg'):
+            self.welcome_msg = ''
+        if not hasattr(self, 'goodbye_msg'):
+            self.goodbye_msg = ''
+        if not hasattr(self, 'subscribe_policy'):
+            self.subscribe_policy = mm_cfg.DEFAULT_SUBSCRIBE_POLICY
+        if not hasattr(self, 'subscribe_auto_approval'):
+            self.subscribe_auto_approval = mm_cfg.DEFAULT_SUBSCRIBE_AUTO_APPROVAL
+        if not hasattr(self, 'unsubscribe_policy'):
+            self.unsubscribe_policy = mm_cfg.DEFAULT_UNSUBSCRIBE_POLICY
+        if not hasattr(self, 'private_roster'):
+            self.private_roster = mm_cfg.DEFAULT_PRIVATE_ROSTER
+        if not hasattr(self, 'obscure_addresses'):
+            self.obscure_addresses = mm_cfg.DEFAULT_OBSCURE_ADDRESSES
+        if not hasattr(self, 'admin_member_chunksize'):
+            self.admin_member_chunksize = mm_cfg.DEFAULT_ADMIN_MEMBER_CHUNKSIZE
+        if not hasattr(self, 'administrivia'):
+            self.administrivia = mm_cfg.DEFAULT_ADMINISTRIVIA
+        if not hasattr(self, 'drop_cc'):
+            self.drop_cc = mm_cfg.DEFAULT_DROP_CC
+        if not hasattr(self, 'preferred_language'):
+            self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
+        if not hasattr(self, 'available_languages'):
+            self.available_languages = [mm_cfg.DEFAULT_SERVER_LANGUAGE]
+        if not hasattr(self, 'include_rfc2369_headers'):
+            self.include_rfc2369_headers = 1
+        if not hasattr(self, 'include_list_post_header'):
+            self.include_list_post_header = 1
+        if not hasattr(self, 'include_sender_header'):
+            self.include_sender_header = 1
+        if not hasattr(self, 'filter_mime_types'):
+            self.filter_mime_types = mm_cfg.DEFAULT_FILTER_MIME_TYPES
+        if not hasattr(self, 'pass_mime_types'):
+            self.pass_mime_types = mm_cfg.DEFAULT_PASS_MIME_TYPES
+        if not hasattr(self, 'filter_filename_extensions'):
+            self.filter_filename_extensions = mm_cfg.DEFAULT_FILTER_FILENAME_EXTENSIONS
+        if not hasattr(self, 'pass_filename_extensions'):
+            self.pass_filename_extensions = mm_cfg.DEFAULT_PASS_FILENAME_EXTENSIONS
+        if not hasattr(self, 'filter_content'):
+            self.filter_content = mm_cfg.DEFAULT_FILTER_CONTENT
+        if not hasattr(self, 'collapse_alternatives'):
+            self.collapse_alternatives = mm_cfg.DEFAULT_COLLAPSE_ALTERNATIVES
+        if not hasattr(self, 'convert_html_to_plaintext'):
+            self.convert_html_to_plaintext = mm_cfg.DEFAULT_CONVERT_HTML_TO_PLAINTEXT
+        if not hasattr(self, 'filter_action'):
+            self.filter_action = mm_cfg.DEFAULT_FILTER_ACTION
+        if not hasattr(self, 'nondigestable'):
+            self.nondigestable = mm_cfg.DEFAULT_NONDIGESTABLE
+        if not hasattr(self, 'personalize'):
+            self.personalize = 0
+        if not hasattr(self, 'default_member_moderation'):
+            self.default_member_moderation = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
+        if not hasattr(self, 'emergency'):
+            self.emergency = 0
+        if not hasattr(self, 'member_verbosity_threshold'):
+            self.member_verbosity_threshold = mm_cfg.DEFAULT_MEMBER_VERBOSITY_THRESHOLD
+        if not hasattr(self, 'member_verbosity_interval'):
+            self.member_verbosity_interval = mm_cfg.DEFAULT_MEMBER_VERBOSITY_INTERVAL
+        if not hasattr(self, 'member_moderation_action'):
+            self.member_moderation_action = mm_cfg.DEFAULT_MEMBER_MODERATION_ACTION
+        if not hasattr(self, 'member_moderation_notice'):
+            self.member_moderation_notice = ''
+        if not hasattr(self, 'dmarc_moderation_action'):
+            self.dmarc_moderation_action = mm_cfg.DEFAULT_DMARC_MODERATION_ACTION
+        if not hasattr(self, 'dmarc_quarantine_moderation_action'):
+            self.dmarc_quarantine_moderation_action = mm_cfg.DEFAULT_DMARC_QUARANTINE_MODERATION_ACTION
+        if not hasattr(self, 'dmarc_none_moderation_action'):
+            self.dmarc_none_moderation_action = mm_cfg.DEFAULT_DMARC_NONE_MODERATION_ACTION
+        if not hasattr(self, 'dmarc_moderation_notice'):
+            self.dmarc_moderation_notice = ''
+        if not hasattr(self, 'dmarc_moderation_addresses'):
+            self.dmarc_moderation_addresses = []
+        if not hasattr(self, 'dmarc_wrapped_message_text'):
+            self.dmarc_wrapped_message_text = mm_cfg.DEFAULT_DMARC_WRAPPED_MESSAGE_TEXT
+        if not hasattr(self, 'equivalent_domains'):
+            self.equivalent_domains = mm_cfg.DEFAULT_EQUIVALENT_DOMAINS
+        if not hasattr(self, 'accept_these_nonmembers'):
+            self.accept_these_nonmembers = []
+        if not hasattr(self, 'hold_these_nonmembers'):
+            self.hold_these_nonmembers = []
+        if not hasattr(self, 'reject_these_nonmembers'):
+            self.reject_these_nonmembers = []
+        if not hasattr(self, 'discard_these_nonmembers'):
+            self.discard_these_nonmembers = []
+        if not hasattr(self, 'forward_auto_discards'):
+            self.forward_auto_discards = mm_cfg.DEFAULT_FORWARD_AUTO_DISCARDS
+        if not hasattr(self, 'generic_nonmember_action'):
+            self.generic_nonmember_action = mm_cfg.DEFAULT_GENERIC_NONMEMBER_ACTION
+        if not hasattr(self, 'nonmember_rejection_notice'):
+            self.nonmember_rejection_notice = ''
+        if not hasattr(self, 'ban_list'):
+            self.ban_list = []
+        if not hasattr(self, 'password'):
+            self.password = crypted_password
+        if not hasattr(self, 'mod_password'):
+            self.mod_password = None
+        if not hasattr(self, 'post_password'):
+            self.post_password = None
+        if not hasattr(self, 'passwords'):
+            self.passwords = {}
+        if not hasattr(self, 'hold_and_cmd_autoresponses'):
+            self.hold_and_cmd_autoresponses = {}
+        if not hasattr(self, 'subject_prefix'):
+            self.subject_prefix = mm_cfg.DEFAULT_SUBJECT_PREFIX
+        if not hasattr(self, 'msg_header'):
+            self.msg_header = mm_cfg.DEFAULT_MSG_HEADER
+        if not hasattr(self, 'msg_footer'):
+            self.msg_footer = mm_cfg.DEFAULT_MSG_FOOTER
+        if not hasattr(self, 'encode_ascii_prefixes'):
+            self.encode_ascii_prefixes = 2
+        if not hasattr(self, 'scrub_nondigest'):
+            self.scrub_nondigest = mm_cfg.DEFAULT_SCRUB_NONDIGEST
+        if not hasattr(self, 'max_days_to_hold'):
+            self.max_days_to_hold = mm_cfg.DEFAULT_MAX_DAYS_TO_HOLD
+        if not hasattr(self, 'max_num_recipients'):
                 header = line[:i]
                 value = line[i+1:].lstrip()
                 try:
