@@ -391,11 +391,20 @@ class HTMLFormatter(object):
         """Parse template tags and replace them with their values."""
         if lang is None:
             lang = self.preferred_language
+            mailman_log('debug', 'Using preferred language: %s', lang)
+        
         # First read the template file
+        mailman_log('debug', 'Attempting to load template: %s', template)
         template_content, template_path = Utils.findtext(template, lang=lang, mlist=self)
+        
         if template_content is None:
             mailman_log('error', 'Could not read template file: %s', template_path)
+            mailman_log('error', 'Template search path: %s', os.path.join(mm_cfg.TEMPLATE_DIR, lang, template))
             return ''
+        
+        mailman_log('debug', 'Successfully loaded template from: %s', template_path)
+        mailman_log('debug', 'Template content length: %d bytes', len(template_content))
+        
         result = []
         i = 0
         while i < len(template_content):
@@ -404,72 +413,78 @@ class HTMLFormatter(object):
                 j = template_content.find('%>', i + 2)
                 if j == -1:
                     # No matching end tag
+                    mailman_log('error', 'Unclosed tag in template %s at position %d', template, i)
                     result.append(template_content[i:])
                     break
                 tag = template_content[i + 2:j].strip()
+                mailman_log('debug', 'Found tag: %s', tag)
+                
                 if tag in replacements:
                     value = replacements[tag]
+                    mailman_log('debug', 'Replacing tag %s with value of type %s', tag, type(value))
+                    
                     if isinstance(value, str):
                         result.append(value)
                     elif isinstance(value, bytes):
-                        if lang:
-                            try:
-                                result.append(value.decode(lang, 'replace'))
-                            except (UnicodeError, LookupError):
-                                result.append(value.decode('utf-8', 'replace'))
-                        else:
+                        try:
+                            if lang:
+                                decoded = value.decode(lang, 'replace')
+                            else:
+                                decoded = value.decode('utf-8', 'replace')
+                            result.append(decoded)
+                        except (UnicodeError, LookupError) as e:
+                            mailman_log('error', 'Error decoding bytes for tag %s: %s', tag, str(e))
                             result.append(value.decode('utf-8', 'replace'))
                     else:
                         result.append(str(value))
+                else:
+                    mailman_log('warning', 'Tag %s not found in replacements', tag)
+                    result.append(f'<%%{tag}%%>')  # Keep the original tag if not found
+                
                 i = j + 2
             else:
                 result.append(template_content[i])
                 i += 1
-        return ''.join(result)
+        
+        final_result = ''.join(result)
+        mailman_log('debug', 'Processed template %s, final length: %d bytes', template, len(final_result))
+        return final_result
 
     # This needs to wait until after the list is inited, so let's build it
     # when it's needed only.
     def GetStandardReplacements(self, lang=None):
-        dmember_len = len(self.getDigestMemberKeys())
-        member_len = len(self.getRegularMemberKeys())
-        # If only one language is enabled for this mailing list, omit the
-        # language choice buttons.
-        if len(self.available_languages) == 1:
-            listlangs = _(Utils.GetLanguageDescr(self.preferred_language))
-        else:
-            listlangs = self.GetLangSelectBox(lang).Format()
-        if lang:
-            cset = Utils.GetCharSet(lang) or 'us-ascii'
-        else:
-            cset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
-        d = {
-            '<mm-mailman-footer>' : self.GetMailmanFooter(),
-            '<mm-list-name>' : self.real_name,
-            '<mm-email-user>' : self._internal_name,
-            '<mm-list-description>' :
-                Utils.websafe(self.GetDescription(cset)),
-            '<mm-list-info>' : 
-                '<!---->' + BR.join(self.info.split(NL)) + '<!---->',
-            '<mm-form-end>'  : self.FormatFormEnd(),
-            '<mm-archive>'   : self.FormatArchiveAnchor(),
-            '</mm-archive>'  : '</a>',
-            '<mm-list-subscription-msg>' : self.FormatSubscriptionMsg(),
-            '<mm-restricted-list-message>' : \
-                self.RestrictedListMessage(_('The current archive'),
-                                           self.archive_private),
-            '<mm-num-reg-users>' : str(member_len),
-            '<mm-num-digesters>' : str(dmember_len),
-            '<mm-num-members>' : str(member_len + dmember_len),
-            '<mm-posting-addr>' : '%s' % self.GetListEmail(),
-            '<mm-request-addr>' : '%s' % self.GetRequestEmail(),
-            '<mm-owner>' : self.GetOwnerEmail(),
-            '<mm-reminder>' : self.FormatReminder(self.preferred_language),
-            '<mm-host>' : self.host_name,
-            '<mm-list-langs>' : listlangs,
-            }
-        if mm_cfg.IMAGE_LOGOS:
-            d['<mm-favicon>'] = mm_cfg.IMAGE_LOGOS + mm_cfg.SHORTCUT_ICON
-        return d
+        """Get standard replacements for templates."""
+        if lang is None:
+            lang = self.preferred_language
+            mailman_log('debug', 'Using preferred language for replacements: %s', lang)
+        
+        replacements = {}
+        try:
+            # Add basic list information
+            replacements['<mm-list-name>'] = self.real_name
+            replacements['<mm-list-description>'] = self.description
+            replacements['<mm-list-info>'] = self.GetScriptURL('listinfo')
+            replacements['<mm-list-owner>'] = self.GetOwnerEmail()
+            
+            # Add header and footer
+            mailman_log('debug', 'Adding header and footer replacements')
+            replacements['<mm-header>'] = self.GetMailmanHeader()
+            replacements['<mm-footer>'] = self.GetMailmanFooter()
+            
+            # Add language selection
+            replacements['<mm-lang-select>'] = self.GetLangSelectBox(lang)
+            
+            # Add other standard replacements
+            replacements['<mm-host-name>'] = self.host_name
+            replacements['<mm-list-address>'] = self.GetListEmail()
+            
+            mailman_log('debug', 'Added %d standard replacements', len(replacements))
+            
+        except Exception as e:
+            mailman_log('error', 'Error getting standard replacements: %s', str(e))
+            mailman_log('error', 'Stack trace:', exc_info=True)
+        
+        return replacements
 
     def GetAllReplacements(self, lang=None, list_hidden=False):
         """

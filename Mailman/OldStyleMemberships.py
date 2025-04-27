@@ -45,6 +45,43 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def __init__(self, mlist):
         self.__mlist = mlist
 
+    def CheckValues(self):
+        """Check that all member values are valid.
+        
+        This method is called by the admin interface to ensure that all member
+        values are valid before displaying them. It should return True if all
+        values are valid, False otherwise.
+        """
+        try:
+            # Check that all members have valid email addresses
+            for member in self.getMembers():
+                if not Utils.ValidateEmail(member):
+                    return False
+            
+            # Check that all members have valid passwords
+            for member in self.getMembers():
+                if not self.getMemberPassword(member):
+                    return False
+            
+            # Check that all members have valid languages
+            for member in self.getMembers():
+                lang = self.getMemberLanguage(member)
+                if lang not in self.__mlist.available_languages:
+                    return False
+            
+            # Check that all members have valid delivery status
+            for member in self.getMembers():
+                status = self.getDeliveryStatus(member)
+                if status not in (MemberAdaptor.ENABLED, MemberAdaptor.UNKNOWN,
+                                MemberAdaptor.BYUSER, MemberAdaptor.BYADMIN,
+                                MemberAdaptor.BYBOUNCE):
+                    return False
+            
+            return True
+        except Exception as e:
+            mailman_log('error', 'Error checking member values: %s', str(e))
+            return False
+
     #
     # Read interface
     #
