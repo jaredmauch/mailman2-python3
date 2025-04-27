@@ -93,9 +93,10 @@
 # performed.  Results notifications are sent to the author of the message,
 # which all bounces pointing back to the -bounces address.
 
-
 import sys
 import os
+import time
+import traceback
 from io import StringIO
 
 from Mailman import mm_cfg
@@ -103,92 +104,124 @@ from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
+from Mailman.Utils import Utils
 
 
-
+class PipelineError(Exception):
+    """Exception raised when pipeline processing fails."""
+    pass
+
+
 class IncomingRunner(Runner):
     QDIR = mm_cfg.INQUEUE_DIR
 
     def _dispose(self, mlist, msg, msgdata):
-        # Try to get the list lock.
+        # Try to get the list lock with timeout
         try:
             mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
         except LockFile.TimeOutError:
-            # Oh well, try again later
+            syslog('warning', 'List lock timeout for %s', mlist.real_name)
             return 1
-        # Process the message through a handler pipeline.  The handler
-        # pipeline can actually come from one of three places: the message
-        # metadata, the mlist, or the global pipeline.
-        #
-        # If a message was requeued due to an uncaught exception, its metadata
-        # will contain the retry pipeline.  Use this above all else.
-        # Otherwise, if the mlist has a `pipeline' attribute, it should be
-        # used.  Final fallback is the global pipeline.
+
         try:
+            # Get and validate the pipeline
             pipeline = self._get_pipeline(mlist, msg, msgdata)
+            self._validate_pipeline(pipeline)
+            
             msgdata['pipeline'] = pipeline
             more = self._dopipeline(mlist, msg, msgdata, pipeline)
+            
             if not more:
                 del msgdata['pipeline']
-            mlist.Save()
+                
+            try:
+                mlist.Save(timeout=mm_cfg.SAVE_TIMEOUT)
+            except Exception as e:
+                syslog('error', 'Failed to save list %s: %s', mlist.real_name, str(e))
+                raise
+                
             return more
         finally:
-            mlist.Unlock()
+            try:
+                mlist.Unlock()
+            except Exception as e:
+                syslog('error', 'Failed to unlock list %s: %s', mlist.real_name, str(e))
 
-    # Overridable
     def _get_pipeline(self, mlist, msg, msgdata):
-        # We must return a copy of the list, otherwise, the first message that
-        # flows through the pipeline will empty it out!
+        # Return a copy of the pipeline to prevent modification of the original
         return msgdata.get('pipeline',
-                           getattr(mlist, 'pipeline',
-                                   mm_cfg.GLOBAL_PIPELINE))[:]
+                          getattr(mlist, 'pipeline',
+                                 mm_cfg.GLOBAL_PIPELINE))[:]
+
+    def _validate_pipeline(self, pipeline):
+        """Validate that all handlers in the pipeline exist and are importable."""
+        for handler in pipeline:
+            modname = 'Mailman.Handlers.' + handler
+            try:
+                __import__(modname)
+            except ImportError:
+                syslog('error', 'Invalid pipeline handler: %s', handler)
+                raise PipelineError('Invalid handler: %s' % handler)
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
-        while pipeline:
+        retry_count = 0
+        max_retries = getattr(mm_cfg, 'MAX_PIPELINE_RETRIES', 3)
+        
+        while pipeline and retry_count < max_retries:
             handler = pipeline.pop(0)
             modname = 'Mailman.Handlers.' + handler
-            __import__(modname)
+            
             try:
+                __import__(modname)
                 pid = os.getpid()
                 sys.modules[modname].process(mlist, msg, msgdata)
-                # Failsafe -- a child may have leaked through.
+                
                 if pid != os.getpid():
                     syslog('error', 'child process leaked thru: %s', modname)
+                    # Clean up child processes before exiting
+                    Utils.reap(self._kids, once=True)
                     os._exit(1)
+                    
             except Errors.DiscardMessage:
-                # Throw the message away; we need do nothing else with it.
-                # We do need to push the current handler back in the pipeline
-                # just in case the syslog call throws an exception and the
-                # message is shunted.
                 pipeline.insert(0, handler)
-                syslog('vette', """Message discarded, msgid: %s'
-        list: %s,
-        handler: %s""",
-                       msg.get('message-id', 'n/a'),
-                       mlist.real_name, handler)
+                syslog('info', 'Message discarded, msgid: %s, list: %s, handler: %s',
+                       msg.get('message-id', 'n/a'), mlist.real_name, handler)
                 return 0
+                
             except Errors.HoldMessage:
-                # Let the approval process take it from here.  The message no
-                # longer needs to be queued.
+                syslog('info', 'Message held for approval, msgid: %s, list: %s',
+                       msg.get('message-id', 'n/a'), mlist.real_name)
                 return 0
+                
             except Errors.RejectMessage as e:
-                # Log this.
-                # We do need to push the current handler back in the pipeline
-                # just in case the syslog call or BounceMessage throws an
-                # exception and the message is shunted.
                 pipeline.insert(0, handler)
-                syslog('vette', """Message rejected, msgid: %s
-        list: %s,
-        handler: %s,
-        reason: %s""",
-                       msg.get('message-id', 'n/a'),
-                       mlist.real_name, handler, e.notice())
+                syslog('info', 'Message rejected, msgid: %s, list: %s, handler: %s, reason: %s',
+                       msg.get('message-id', 'n/a'), mlist.real_name, handler, e.notice())
                 mlist.BounceMessage(msg, msgdata, e)
                 return 0
-            except:
-                # Push this pipeline module back on the stack, then re-raise
-                # the exception.
+                
+            except Exception as e:
                 pipeline.insert(0, handler)
-                raise
-        # We've successfully completed handling of this message
+                retry_count += 1
+                syslog('error', 'Pipeline error in handler %s: %s\nTraceback: %s',
+                       handler, str(e), traceback.format_exc())
+                if retry_count >= max_retries:
+                    raise
+                time.sleep(getattr(mm_cfg, 'PIPELINE_RETRY_DELAY', 5))
+                
+        if retry_count >= max_retries:
+            syslog('error', 'Pipeline failed after %d retries', max_retries)
+            raise PipelineError('Maximum retries exceeded')
+            
         return 0
+
+    def _cleanup(self):
+        """Clean up any resources used by the pipeline."""
+        # Clean up child processes
+        Utils.reap(self._kids, once=True)
+        # Close any open file descriptors
+        for fd in range(3, 1024):  # Skip stdin, stdout, stderr
+            try:
+                os.close(fd)
+            except OSError:
+                pass
