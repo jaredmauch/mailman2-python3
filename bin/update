@@ -760,10 +760,20 @@ def upgrade(mlist):
             mlist.owner[addr.lower()] = mlist.owner[addr]
             del mlist.owner[addr]
             
-    for addr in list(mlist.moderator):
-        if addr != addr.lower():
-            mlist.moderator[addr.lower()] = mlist.moderator[addr]
-            del mlist.moderator[addr]
+    # Handle moderator list differently since it's a list, not a dict
+    if hasattr(mlist, 'moderator') and isinstance(mlist.moderator, list):
+        new_moderators = []
+        for addr in mlist.moderator:
+            if isinstance(addr, str) and addr != addr.lower():
+                new_moderators.append(addr.lower())
+            else:
+                new_moderators.append(addr)
+        mlist.moderator = new_moderators
+    else:
+        for addr in list(mlist.moderator):
+            if addr != addr.lower():
+                mlist.moderator[addr.lower()] = mlist.moderator[addr]
+                del mlist.moderator[addr]
             
     for addr in list(mlist.bounce_info):
         if addr != addr.lower():
@@ -835,26 +845,49 @@ downgrade."""))
         sys.exit(1)
 
     # Process all mailing lists
-    for listname in Utils.list_names():
+    list_names = Utils.list_names()
+    print("Found %d lists to process" % len(list_names))
+    print("List names type: %s" % type(list_names))
+    
+    for listname in list_names:
         try:
+            print("\nProcessing list: %s (type: %s)" % (listname, type(listname)))
             # Ensure listname is a string, not bytes
             if isinstance(listname, bytes):
+                print("Converting bytes listname to string")
                 listname = listname.decode('utf-8', 'replace')
             listname = listname.lower()
+            print("Listname after conversion: %s (type: %s)" % (listname, type(listname)))
             
+            print("Creating MailList object...")
             mlist = MailList.MailList(listname, lock=0)
+            print("MailList object created successfully")
+            
             try:
+                print("Attempting to acquire lock...")
                 mlist.Lock(0.5)
+                print("Lock acquired, starting upgrade...")
                 # Do the upgrade
                 upgrade(mlist)
+                print("Upgrade completed, saving...")
                 mlist.Save()
+                print("Save completed")
             except TimeOutError:
                 print(C_('WARNING: could not acquire lock for list: %(listname)s') % {
                     'listname': listname
                 }, file=sys.stderr)
             finally:
+                print("Unlocking list...")
                 mlist.Unlock()
         except Exception as e:
+            print("\nDetailed error information:")
+            print("List name: %s" % listname)
+            print("List name type: %s" % type(listname))
+            print("Error type: %s" % type(e))
+            print("Error message: %s" % str(e))
+            import traceback
+            print("Traceback:")
+            traceback.print_exc()
             print(C_('Error processing list %(listname)s: %(error)s') % {
                 'listname': listname,
                 'error': str(e)
