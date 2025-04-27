@@ -1198,7 +1198,12 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             fullname = Utils.uncanonstr(mlist.getMemberName(addr),
                                         mlist.preferred_language)
             name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
-            cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format())]
+            cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format()
+                        + '<div class="hidden">' + _('unsub') + '</div>'),
+                    link.Format() + '<br>' +
+                    name +
+                    Hidden('user', qaddr).Format(),
+                    ]
         except Errors.NotAMemberError:
             # Skip addresses that are no longer members
             continue
