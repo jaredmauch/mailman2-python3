@@ -1160,9 +1160,18 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # Find the longest name in the list
     longest = 0
     if members:
-        names = [_f for _f in [mlist.getMemberName(s) for s in members] if _f]
+        names = []
+        for addr in members:
+            try:
+                name = mlist.getMemberName(addr) or ''
+                if name:
+                    names.append(name)
+            except Errors.NotAMemberError:
+                # Skip addresses that are no longer members
+                continue
         # Make the name field at least as long as the longest email address
-        longest = max([len(s) for s in names + members])
+        if names:
+            longest = max([len(s) for s in names + members])
     # Abbreviations for delivery status details
     ds_abbrevs = {MemberAdaptor.UNKNOWN : _('?'),
                   MemberAdaptor.BYUSER  : _('U'),
