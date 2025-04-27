@@ -14,7 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-"""Incoming queue runner."""
+"""Incoming message queue runner.
+
+This qrunner handles messages that are posted to the mailing list.  It is
+responsible for running the message through the pipeline of handlers.
+"""
 
 # A typical Mailman list exposes nine aliases which point to seven different
 # wrapped scripts.  E.g. for a list named `mylist', you'd have:
@@ -93,8 +97,8 @@
 # performed.  Results notifications are sent to the author of the message,
 # which all bounces pointing back to the -bounces address.
 
-import sys
 import os
+import sys
 import time
 import traceback
 from io import StringIO
@@ -137,7 +141,8 @@ class IncomingRunner(Runner):
             try:
                 mlist.Save(timeout=mm_cfg.SAVE_TIMEOUT)
             except Exception as e:
-                mailman_log('error', 'Failed to save list %s: %s', mlist.real_name, str(e))
+                mailman_log('error', 'Failed to save list %s: %s\nTraceback:\n%s', 
+                          mlist.real_name, str(e), traceback.format_exc())
                 raise
                 
             return more
@@ -145,7 +150,8 @@ class IncomingRunner(Runner):
             try:
                 mlist.Unlock()
             except Exception as e:
-                mailman_log('error', 'Failed to unlock list %s: %s', mlist.real_name, str(e))
+                mailman_log('error', 'Failed to unlock list %s: %s\nTraceback:\n%s', 
+                          mlist.real_name, str(e), traceback.format_exc())
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # Return a copy of the pipeline to prevent modification of the original
@@ -159,8 +165,9 @@ class IncomingRunner(Runner):
             modname = 'Mailman.Handlers.' + handler
             try:
                 __import__(modname)
-            except ImportError:
-                mailman_log('error', 'Invalid pipeline handler: %s', handler)
+            except ImportError as e:
+                mailman_log('error', 'Invalid pipeline handler: %s\nError: %s\nTraceback:\n%s', 
+                          handler, str(e), traceback.format_exc())
                 raise PipelineError('Invalid handler: %s' % handler)
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
@@ -209,7 +216,8 @@ class IncomingRunner(Runner):
                 
             except Exception as e:
                 pipeline.insert(0, handler)
-                mailman_log('error', 'Pipeline error in handler %s: %s', handler, str(e))
+                mailman_log('error', 'Pipeline error in handler %s: %s\nTraceback:\n%s', 
+                          handler, str(e), traceback.format_exc())
                 retry_count += 1
                 if retry_count >= max_retries:
                     mailman_log('error', 'Max retries exceeded for msgid: %s', msgid)
@@ -250,3 +258,23 @@ class IncomingRunner(Runner):
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
+                # Process the message
+                more = self._dispose(msgdata['listname'], msg, msgdata)
+                if more:
+                    # The message needs more processing, so enqueue it at the
+                    # end of the self._switchboard's queue.
+                    self._switchboard.enqueue(msg, msgdata)
+                else:
+                    # The message is done being processed by this qrunner, so
+                    # shunt it off to the next queue.
+                    self._shunt.enqueue(msg, msgdata)
+            except Exception as e:
+                mailman_log('error', 'Error processing queue file %s: %s\nTraceback:\n%s', 
+                          filebase, str(e), traceback.format_exc())
+                # Requeue the message for later processing
+                try:
+                    self._switchboard.enqueue(msg, msgdata)
+                except Exception as e:
+                    mailman_log('error', 'Failed to requeue message %s: %s\nTraceback:\n%s', 
+                              filebase, str(e), traceback.format_exc())
+        return len(files)
