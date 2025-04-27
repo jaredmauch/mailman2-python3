@@ -682,6 +682,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Reset the timestamp
         self.__timestamp = os.path.getmtime(fname)
 
+    def __convert_bytes_to_strings(self, data):
+        """Convert bytes to strings recursively in a data structure using latin1 encoding."""
+        if isinstance(data, bytes):
+            # Always use latin1 encoding for list section names and other data
+            return data.decode('latin1', 'replace')
+        elif isinstance(data, list):
+            return [self.__convert_bytes_to_strings(item) for item in data]
+        elif isinstance(data, dict):
+            return {
+                self.__convert_bytes_to_strings(key): self.__convert_bytes_to_strings(value)
+                for key, value in data.items()
+            }
+        elif isinstance(data, tuple):
+            return tuple(self.__convert_bytes_to_strings(item) for item in data)
+        return data
+
     def Save(self):
         # First ensure we have the lock
         if not self.Locked():
@@ -695,56 +711,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             for key, value in list(self.__dict__.items()):
                 if key[0] == '_' or type(value) is MethodType:
                     continue
-                # Ensure string values are properly encoded
-                if isinstance(value, str):
-                    # Convert email addresses to lowercase
-                    if key in ('members', 'digest_members', 'owner', 'moderator', 
-                             'bounce_info', 'delivery_status', 'user_options', 
-                             'language', 'usernames'):
-                        if isinstance(value, dict):
-                            new_dict = {}
-                            for k, v in value.items():
-                                if isinstance(k, str) and '@' in k:
-                                    new_dict[k.lower()] = v
-                                else:
-                                    new_dict[k] = v
-                            dict[key] = new_dict
-                        elif isinstance(value, list):
-                            dict[key] = [v.lower() if isinstance(v, str) and '@' in v else v for v in value]
-                        else:
-                            dict[key] = value
-                    else:
-                        dict[key] = value
-                elif isinstance(value, bytes):
-                    # Convert bytes to string if possible
-                    try:
-                        # Try UTF-8 first
-                        dict[key] = value.decode('utf-8', 'replace')
-                    except UnicodeDecodeError:
-                        try:
-                            # Try EUC-JP for Japanese text
-                            dict[key] = value.decode('euc-jp', 'replace')
-                        except UnicodeDecodeError:
-                            # Fall back to latin1
-                            dict[key] = value.decode('latin1', 'replace')
-                elif isinstance(value, list):
-                    # Handle lists that might contain bytes
-                    dict[key] = [
-                        v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
-                        for v in value
-                    ]
-                elif type(value) is dict:
-                    # Handle dicts that might contain bytes
-                    new_dict = {}
-                    for k, v in value.items():
-                        if isinstance(k, bytes):
-                            k = k.decode('utf-8', 'replace')
-                        if isinstance(v, bytes):
-                            v = v.decode('utf-8', 'replace')
-                        new_dict[k] = v
-                    dict[key] = new_dict
-                else:
-                    dict[key] = value
+                # Convert any bytes to strings recursively
+                dict[key] = self.__convert_bytes_to_strings(value)
             # Make config.pck unreadable by `other', as it contains all the
             # list members' passwords (in clear text).
             omask = os.umask(0o007)
@@ -802,22 +770,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 raise
             return None, e
 
-    def __convert_bytes_to_strings(self, data):
-        """Convert bytes to strings recursively in a data structure using latin1 encoding."""
-        if isinstance(data, bytes):
-            # Always use latin1 encoding for list section names and other data
-            return data.decode('latin1', 'replace')
-        elif isinstance(data, list):
-            return [self.__convert_bytes_to_strings(item) for item in data]
-        elif isinstance(data, dict):
-            return {
-                self.__convert_bytes_to_strings(key): self.__convert_bytes_to_strings(value)
-                for key, value in data.items()
-            }
-        elif isinstance(data, tuple):
-            return tuple(self.__convert_bytes_to_strings(item) for item in data)
-        return data
-
     def Load(self, check_version=True):
         if not Utils.list_exists(self.internal_name()):
             raise Errors.MMUnknownListError
@@ -850,37 +802,32 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                    self.internal_name())
             raise Errors.MMCorruptListDatabaseError(e)
 
-        # Ensure string values are properly decoded using latin1
-        for key, value in dict_retval.items():
-            # Handle the key first
-            if isinstance(key, bytes):
-                # Always use latin1 encoding for list section names
-                key = key.decode('latin1', 'replace')
-                # Update the dictionary with the decoded key
-                dict_retval[key] = dict_retval.pop(key)
-            
-            # Now handle the value
-            if isinstance(value, bytes):
-                # Always use latin1 encoding for list section values
-                dict_retval[key] = value.decode('latin1', 'replace')
-            elif isinstance(value, list):
-                # Handle lists that might contain bytes
-                dict_retval[key] = [
-                    v.decode('latin1', 'replace') if isinstance(v, bytes) else v
-                    for v in value
-                ]
-            elif isinstance(value, dict):
-                # Handle dicts that might contain bytes
-                new_dict = {}
-                for k, v in value.items():
-                    if isinstance(k, bytes):
-                        # Always use latin1 encoding for list section names
-                        k = k.decode('latin1', 'replace')
-                    if isinstance(v, bytes):
-                        # Always use latin1 encoding for list section values
-                        v = v.decode('latin1', 'replace')
-                    new_dict[k] = v
-                dict_retval[key] = new_dict
+        # Convert any bytes to strings recursively
+        dict_retval = self.__convert_bytes_to_strings(dict_retval)
+
+        # Now, if we didn't end up using the primary database file, we want to
+        # copy the fallback into the primary so that the logic in Save() will
+        # still work.  For giggles, we'll copy it to a safety backup.  Note we
+        # MUST do this with the underlying list lock acquired.
+        if file == plast or file == dlast:
+            syslog('error', 'fixing corrupt config file, using: %s', file)
+            unlock = True
+            try:
+                try:
+                    self.__lock.lock()
+                except LockFile.AlreadyLockedError:
+                    unlock = False
+                self.__fix_corrupt_pckfile(file, pfile, plast, dfile, dlast)
+            finally:
+                if unlock:
+                    self.__lock.unlock()
+
+        # Copy the loaded dictionary into the attributes of the current
+        # mailing list object, then run sanity check on the data.
+        self.__dict__.update(dict_retval)
+        if check_version:
+            self.CheckVersion(dict_retval)
+            self.CheckValues()
 
     def __fix_corrupt_pckfile(self, file, pfile, plast, dfile, dlast):
         if file == plast:
