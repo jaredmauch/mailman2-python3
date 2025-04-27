@@ -72,6 +72,32 @@ from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
 from Mailman.Message import OwnerNotification
 
+from builtins import str
+from builtins import object
+import os
+import time
+import errno
+import pickle
+import marshal
+from io import StringIO
+import socket
+from types import MethodType
+
+import email
+from email.mime.message import MIMEMessage
+from email.generator import Generator
+from email.utils import getaddresses
+import email.message
+
+from Mailman import mm_cfg
+from Mailman import Utils
+from Mailman import Message
+from Mailman import Errors
+from Mailman.UserDesc import UserDesc
+from Mailman.Queue.sbcache import get_switchboard
+from Mailman.Logging.Syslog import mailman_log
+from Mailman import i18n
+
 _ = i18n._
 def D_(s):
     return s
