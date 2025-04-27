@@ -980,3 +980,18 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     continue
                     
         return False
+
+    def _ListAdmin__nextid(self):
+        """Generate the next unique ID for a held message.
+        
+        Returns:
+            A string containing the next unique ID
+        """
+        # Get the current time in seconds since epoch
+        now = int(time.time())
+        # Get the next ID number
+        nextid = getattr(self, '_ListAdmin__nextid_counter', 0) + 1
+        # Store the next ID number
+        self._ListAdmin__nextid_counter = nextid
+        # Return a unique ID combining time and counter
+        return '%d.%d' % (now, nextid)
