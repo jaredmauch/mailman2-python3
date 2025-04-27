@@ -593,8 +593,12 @@ def main():
 
                         qrname, slice, count, restarts = kids[pid]
                         del kids[pid]
-                        syslog('qrunner', """\
-Master qrunner detected subprocess exit
+                        
+                        # Only log abnormal exits
+                        if killsig == signal.SIGTERM or \
+                           (exitstatus is not None and exitstatus != 120 and exitstatus != signal.SIGINT):
+                            syslog('qrunner', """\
+Master qrunner detected abnormal subprocess exit
 (pid: %d, sig: %s, sts: %s, class: %s, slice: %d/%d) %s""",
                                pid, killsig, exitstatus, qrname,
                                slice+1, count, restarting)

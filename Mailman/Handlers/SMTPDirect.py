@@ -55,44 +55,49 @@ class Connection(object):
         self.__conn = None
 
     def __connect(self):
-        self.__conn = smtplib.SMTP()
-        self.__conn.set_debuglevel(Mailman.mm_cfg.SMTPLIB_DEBUG_LEVEL)
-        # Ensure we have a valid hostname for TLS
-        helo_host = Mailman.mm_cfg.SMTP_HELO_HOST
-        if not helo_host or helo_host.startswith('.'):
-            helo_host = Mailman.mm_cfg.SMTPHOST
-        if not helo_host or helo_host.startswith('.'):
-            # If we still don't have a valid hostname, use localhost
-            helo_host = 'localhost'
-        Mailman.Logging.Syslog.mailman_log('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
-               Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT, helo_host)
-        self.__conn.connect(Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT)
-        # Set the hostname for TLS
-        self.__conn._host = helo_host
-        if Mailman.mm_cfg.SMTP_AUTH:
-            if Mailman.mm_cfg.SMTP_USE_TLS:
-                Mailman.Logging.Syslog.mailman_log('smtp', 'Using TLS with hostname: %s', helo_host)
+        try:
+            self.__conn = smtplib.SMTP()
+            self.__conn.set_debuglevel(Mailman.mm_cfg.SMTPLIB_DEBUG_LEVEL)
+            # Ensure we have a valid hostname for TLS
+            helo_host = Mailman.mm_cfg.SMTP_HELO_HOST
+            if not helo_host or helo_host.startswith('.'):
+                helo_host = Mailman.mm_cfg.SMTPHOST
+            if not helo_host or helo_host.startswith('.'):
+                # If we still don't have a valid hostname, use localhost
+                helo_host = 'localhost'
+            Mailman.Logging.Syslog.mailman_log('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
+                   Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT, helo_host)
+            self.__conn.connect(Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT)
+            # Set the hostname for TLS
+            self.__conn._host = helo_host
+            if Mailman.mm_cfg.SMTP_AUTH:
+                if Mailman.mm_cfg.SMTP_USE_TLS:
+                    Mailman.Logging.Syslog.mailman_log('smtp', 'Using TLS with hostname: %s', helo_host)
+                    try:
+                        # Use native TLS support
+                        self.__conn.starttls()
+                    except SMTPException as e:
+                        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s', e)
+                        self.quit()
+                        raise
                 try:
-                    # Use native TLS support
-                    self.__conn.starttls()
-                except SMTPException as e:
-                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s', e)
+                    self.__conn.login(Mailman.mm_cfg.SMTP_USER, Mailman.mm_cfg.SMTP_PASSWD)
+                except smtplib.SMTPHeloError as e:
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s', e)
                     self.quit()
                     raise
-            try:
-                self.__conn.login(Mailman.mm_cfg.SMTP_USER, Mailman.mm_cfg.SMTP_PASSWD)
-            except smtplib.SMTPHeloError as e:
-                Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s', e)
-                self.quit()
-                raise
-            except smtplib.SMTPAuthenticationError as e:
-                Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s', e)
-                self.quit()
-            except smtplib.SMTPException as e:
-                Mailman.Logging.Syslog.mailman_log('smtp-failure',
-                       'SMTP - no suitable authentication method found: %s', e)
-                self.quit()
-                raise
+                except smtplib.SMTPAuthenticationError as e:
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s', e)
+                    self.quit()
+                except smtplib.SMTPException as e:
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure',
+                           'SMTP - no suitable authentication method found: %s', e)
+                    self.quit()
+                    raise
+        except (socket.error, smtplib.SMTPException) as e:
+            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP connection error: %s', e)
+            self.quit()
+            raise
 
         self.__numsessions = Mailman.mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION
 
@@ -137,17 +142,21 @@ class Connection(object):
 def process(mlist, msg, msgdata):
     # Convert email.message.Message to Mailman.Message if needed
     if isinstance(msg, email.message.Message) and not isinstance(msg, Mailman.Message.Message):
-        mailman_msg = Mailman.Message.Message()
-        # Copy all attributes from the original message
-        for key, value in msg.items():
-            mailman_msg[key] = value
-        # Copy the payload
-        if msg.is_multipart():
-            for part in msg.get_payload():
-                mailman_msg.attach(part)
-        else:
-            mailman_msg.set_payload(msg.get_payload())
-        msg = mailman_msg
+        try:
+            mailman_msg = Mailman.Message.Message()
+            # Copy all attributes from the original message
+            for key, value in msg.items():
+                mailman_msg[key] = value
+            # Copy the payload
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    mailman_msg.attach(part)
+            else:
+                mailman_msg.set_payload(msg.get_payload())
+            msg = mailman_msg
+        except Exception as e:
+            Mailman.Logging.Syslog.mailman_log('error', 'Failed to convert message: %s', e)
+            raise
 
     recips = msgdata.get('recips')
     if not recips:
@@ -242,7 +251,8 @@ def process(mlist, msg, msgdata):
                         'listname': mlist.internal_name(),
                         'sender': origsender,
                         'chunksize': len(chunk),
-                        'time': time.time() - t0
+                        'time': time.time() - t0,
+                        'msg_message-id': msg.get('Message-ID', 'n/a')
                     })
 
     if refused:
@@ -341,75 +351,80 @@ def chunkify(recips, chunksize):
 
 def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
     for recip in msgdata['recips']:
-        # We now need to stitch together the message with its header and
-        # footer.  If we're VERPIng, we have to calculate the envelope sender
-        # for each recipient.  Note that the list of recipients must be of
-        # length 1.
-        #
-        # BAW: ezmlm includes the message number in the envelope, used when
-        # sending a notification to the user telling her how many messages
-        # they missed due to bouncing.  Neat idea.
-        msgdata['recips'] = [recip]
-        # Make a copy of the message and decorate + delivery that
-        msgcopy = copy.deepcopy(msg)
-        Mailman.Handlers.Decorate.process(mlist, msgcopy, msgdata)
-        # Calculate the envelope sender, which we may be VERPing
-        if msgdata.get('verp'):
-            bmailbox, bdomain = Mailman.Utils.ParseEmail(envsender)
-            rmailbox, rdomain = Mailman.Utils.ParseEmail(recip)
-            if rdomain is None:
-                # The recipient address is not fully-qualified.  We can't
-                # deliver it to this person, nor can we craft a valid verp
-                # header.  I don't think there's much we can do except ignore
-                # this recipient.
-                Mailman.Logging.Syslog.mailman_log('smtp', 'Skipping VERP delivery to unqual recip: %s',
-                       recip)
-                continue
-            d = {'bounces': bmailbox,
-                 'mailbox': rmailbox,
-                 'host'   : DOT.join(rdomain),
-                 }
-            envsender = '%s@%s' % ((Mailman.mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
-        if mlist.personalize == 2:
-            # When fully personalizing, we want the To address to point to the
-            # recipient, not to the mailing list
-            del msgcopy['to']
-            name = None
-            if mlist.isMember(recip):
-                name = mlist.getMemberName(recip)
-            if name:
-                # Convert the name to an email-safe representation.  If the
-                # name is a byte string, convert it first to Unicode, given
-                # the character set of the member's language, replacing bad
-                # characters for which we can do nothing about.  Once we have
-                # the name as Unicode, we can create a Header instance for it
-                # so that it's properly encoded for email transport.
-                charset = Mailman.Utils.GetCharSet(mlist.getMemberLanguage(recip))
-                if charset == 'us-ascii':
-                    # Since Header already tries both us-ascii and utf-8,
-                    # let's add something a bit more useful.
-                    charset = 'iso-8859-1'
-                charset = Charset(charset)
-                codec = charset.input_codec or 'ascii'
-                if not isinstance(name, str):
-                    name = str(name, codec, 'replace')
-                name = Header(name, charset).encode()
-                msgcopy['To'] = formataddr((name, recip))
-            else:
-                msgcopy['To'] = recip
-        # We can flag the mail as a duplicate for each member, if they've
-        # already received this message, as calculated by Message-ID.  See
-        # AvoidDuplicates.py for details.
-        del msgcopy['x-mailman-copy']
-        if recip in msgdata.get('add-dup-header', {}):
-            msgcopy['X-Mailman-Copy'] = 'yes'
-        # If desired, add the RCPT_BASE64_HEADER_NAME header
-        if len(Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
-            del msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME]
-            msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
-        # For the final delivery stage, we can just bulk deliver to a party of
-        # one. ;)
-        bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
+        try:
+            # We now need to stitch together the message with its header and
+            # footer.  If we're VERPIng, we have to calculate the envelope sender
+            # for each recipient.  Note that the list of recipients must be of
+            # length 1.
+            msgdata['recips'] = [recip]
+            # Make a copy of the message and decorate + delivery that
+            msgcopy = copy.deepcopy(msg)
+            Mailman.Handlers.Decorate.process(mlist, msgcopy, msgdata)
+            # Calculate the envelope sender, which we may be VERPing
+            if msgdata.get('verp'):
+                try:
+                    bmailbox, bdomain = Mailman.Utils.ParseEmail(envsender)
+                    rmailbox, rdomain = Mailman.Utils.ParseEmail(recip)
+                    if rdomain is None:
+                        # The recipient address is not fully-qualified.  We can't
+                        # deliver it to this person, nor can we craft a valid verp
+                        # header.  I don't think there's much we can do except ignore
+                        # this recipient.
+                        Mailman.Logging.Syslog.mailman_log('smtp', 'Skipping VERP delivery to unqual recip: %s',
+                               recip)
+                        continue
+                    d = {'bounces': bmailbox,
+                         'mailbox': rmailbox,
+                         'host'   : DOT.join(rdomain),
+                         }
+                    envsender = '%s@%s' % ((Mailman.mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
+                except Exception as e:
+                    Mailman.Logging.Syslog.mailman_log('error', 'Failed to parse email addresses for VERP: %s', e)
+                    continue
+            if mlist.personalize == 2:
+                # When fully personalizing, we want the To address to point to the
+                # recipient, not to the mailing list
+                del msgcopy['to']
+                name = None
+                if mlist.isMember(recip):
+                    name = mlist.getMemberName(recip)
+                if name:
+                    # Convert the name to an email-safe representation.  If the
+                    # name is a byte string, convert it first to Unicode, given
+                    # the character set of the member's language, replacing bad
+                    # characters for which we can do nothing about.  Once we have
+                    # the name as Unicode, we can create a Header instance for it
+                    # so that it's properly encoded for email transport.
+                    charset = Mailman.Utils.GetCharSet(mlist.getMemberLanguage(recip))
+                    if charset == 'us-ascii':
+                        # Since Header already tries both us-ascii and utf-8,
+                        # let's add something a bit more useful.
+                        charset = 'iso-8859-1'
+                    charset = Charset(charset)
+                    codec = charset.input_codec or 'ascii'
+                    if not isinstance(name, str):
+                        name = str(name, codec, 'replace')
+                    name = Header(name, charset).encode()
+                    msgcopy['To'] = formataddr((name, recip))
+                else:
+                    msgcopy['To'] = recip
+            # We can flag the mail as a duplicate for each member, if they've
+            # already received this message, as calculated by Message-ID.  See
+            # AvoidDuplicates.py for details.
+            if 'x-mailman-copy' in msgcopy:
+                del msgcopy['x-mailman-copy']
+            if recip in msgdata.get('add-dup-header', {}):
+                msgcopy['X-Mailman-Copy'] = 'yes'
+            # If desired, add the RCPT_BASE64_HEADER_NAME header
+            if len(Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
+                del msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME]
+                msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
+            # For the final delivery stage, we can just bulk deliver to a party of
+            # one. ;)
+            bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
+        except Exception as e:
+            Mailman.Logging.Syslog.mailman_log('error', 'Failed to process VERP delivery: %s', e)
+            continue
 
 
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
@@ -465,7 +480,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         msgtext = msgtext.encode('utf-8')
     refused = {}
     recips = msgdata['recips']
-    msgid = msg['message-id']
+    msgid = msg.get('Message-ID', 'n/a')
     try:
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
