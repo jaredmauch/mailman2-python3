@@ -1015,7 +1015,18 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     usertable = Table(width="90%", border='2')
     # The email addresses had /better/ be ASCII, but might be encoded in the
     # database as Unicodes.
-    all = [_m.encode() for _m in mlist.getMembers()]
+    all = []
+    for _m in mlist.getMembers():
+        try:
+            # Verify the member still exists
+            mlist.getMemberName(_m)
+            # Decode the email address as latin-1
+            if isinstance(_m, bytes):
+                _m = _m.decode('latin-1')
+            all.append(_m)
+        except Errors.NotAMemberError:
+            # Skip addresses that are no longer members
+            continue
     all.sort(key=lambda x: x.lower())
     # See if the query has a regular expression
     regexp = cgidata.get('findmember', [''])[0]
