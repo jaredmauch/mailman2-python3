@@ -21,6 +21,7 @@ from builtins import str
 import re
 import socket
 from io import StringIO
+import time
 
 import email
 from email.utils import getaddresses
@@ -70,7 +71,29 @@ class NewsRunner(Runner):
             mailman_log('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
             return
             
-        # NNTP is available and configured, set up the switchboard
+        # Check if any lists actually need NNTP support
+        from Mailman import Utils
+        from Mailman.MailList import MailList
+        from Mailman import Errors
+        
+        has_nntp_lists = False
+        for listname in Utils.list_names():
+            try:
+                mlist = MailList(listname, lock=False)
+                if mlist.nntp_host:
+                    has_nntp_lists = True
+                    break
+            except Errors.MMUnknownListError:
+                continue
+            finally:
+                if 'mlist' in locals():
+                    mlist.Unlock()
+                    
+        if not has_nntp_lists:
+            mailman_log('info', 'No lists require NNTP support. NewsRunner will not be started.')
+            return
+            
+        # NNTP is available, configured, and needed by at least one list
         self._nntp_enabled = True
         from Mailman.Queue.Switchboard import Switchboard
         self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
@@ -79,11 +102,22 @@ class NewsRunner(Runner):
             self._kids = {}
 
     def _oneloop(self):
-        # If NNTP is not enabled, don't process any messages
+        # If NNTP is not enabled, sleep for a while before checking again
         if not self._nntp_enabled:
-            return 0
-        # Otherwise, proceed with normal processing
-        return Runner._oneloop(self)
+            time.sleep(60)  # Check every minute if any lists need NNTP
+            return
+            
+        # Get one message from the queue
+        msg = self._switchboard.dequeue()
+        if msg is None:
+            return
+        # Process the message
+        try:
+            self._dopost(msg)
+        except Exception as e:
+            mailman_log('error', 'NewsRunner error: %s', str(e))
+            # Put the message back in the queue
+            self._switchboard.enqueue(msg)
 
     def _dispose(self, mlist, msg, msgdata):
         # If NNTP is not enabled, requeue the message
