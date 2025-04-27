@@ -985,7 +985,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         """Generate the next unique ID for a held message.
         
         Returns:
-            An integer containing the next unique ID
+            A tuple containing (timestamp, counter)
         """
         # Get the current time in seconds since epoch
         now = int(time.time())
@@ -993,7 +993,5 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         nextid = getattr(self, '_ListAdmin__nextid_counter', 0) + 1
         # Store the next ID number
         self._ListAdmin__nextid_counter = nextid
-        # Combine timestamp and counter into a single number
-        # Format: YYYYMMDDHHMMSS + counter (padded to 4 digits)
-        # This ensures the ID is always a number and maintains uniqueness
-        return int(f"{now}{nextid:04d}")
+        # Return a tuple of (timestamp, counter)
+        return (now, nextid)
