@@ -45,6 +45,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman import LockFile
+from Mailman.LockFile import NotLockedError, AlreadyLockedError, TimeOutError
 from Mailman.UserDesc import UserDesc
 
 # base classes
