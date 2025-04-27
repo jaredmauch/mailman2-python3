@@ -38,5 +38,8 @@ class RetryRunner(Runner):
         return False
 
     def _snooze(self, filecnt):
-        # We always want to snooze
-        time.sleep(self.SLEEPTIME)
+        # We always want to snooze, but check for stop flag periodically
+        for _ in range(self.SLEEPTIME):
+            if self._stop:
+                return
+            time.sleep(1)
