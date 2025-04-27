@@ -56,7 +56,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         return list(self.__mlist.members.keys())
 
     def getDigestMemberKeys(self):
-        return list(self.__mlist.digest_members.keys())
+        return list(self.__mlist.digest_members.keys()) if hasattr(self.__mlist, 'digest_members') else []
 
     def __get_cp_member(self, member):
         lcmember = member.lower()
