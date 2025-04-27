@@ -647,6 +647,8 @@ def show_variables(mlist, category, subcat, cgidata, doc):
             # The very first banner option (string in an options list) is
             # treated as a general description, while any others are
             # treated as section headers - centered and italicized...
+            if isinstance(item, bytes):
+                item = item.decode('utf-8', 'replace')
             table.AddRow([Center(Italic(item))])
             table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         else:
