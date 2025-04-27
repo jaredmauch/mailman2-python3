@@ -1972,7 +1972,7 @@ bad regexp in bounce_matching_header line: %s
         mail loops with email 'bots.
         """
         # language setting
-        if lang == None:
+        if lang is None:
             lang = self.preferred_language
         i18n.set_language(lang)
         # No limit

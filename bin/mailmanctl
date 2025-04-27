@@ -587,8 +587,8 @@ def main():
 
                         restarting = ''
                         if not args.no_restart:
-                            if (exitstatus == None and killsig != signal.SIGTERM) or \
-                               (killsig == None and exitstatus != signal.SIGTERM):
+                            if (exitstatus is None and killsig != signal.SIGTERM) or \
+                               (killsig is None and exitstatus != signal.SIGTERM):
                                 restarting = '[restarting]'
 
                         qrname, slice, count, restarts = kids[pid]

@@ -176,7 +176,7 @@ def process(mlist, msg, msgdata):
     inner.set_default_type(msg.get_default_type())
     if not copied:
         inner['Content-Type'] = inner.get_content_type()
-    if msg['mime-version'] == None:
+    if msg['mime-version'] is None:
         msg['MIME-Version'] = '1.0'
     # BAW: HACK ALERT.
     if hasattr(msg, '__version__'):

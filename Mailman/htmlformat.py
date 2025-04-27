@@ -162,7 +162,7 @@ class Table(object):
         for (key, val) in list(info.items()):
             if not key in valid_mods:
                 continue
-            if key == 'border' and val == None:
+            if key == 'border' and val is None:
                 output = output + ' BORDER'
                 continue
             else:

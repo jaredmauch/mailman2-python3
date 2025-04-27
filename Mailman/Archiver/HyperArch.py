@@ -1212,7 +1212,7 @@ class HyperArchive(pipermail.T):
             jr = emailpat.search(L)
             kr = urlpat.search(L)
             while jr is not None or kr is not None:
-                if jr == None:
+                if jr is None:
                     j = -1
                 else:
                     j = jr.start(0)
