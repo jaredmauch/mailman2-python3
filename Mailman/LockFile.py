@@ -640,6 +640,24 @@ class LockFile:
             # Sleep a bit before trying again
             self.__sleep()
 
+    def unlock(self, unconditionally=False):
+        """Relinquishes the lock.
+
+        Raises a NotLockedError if the lock is not set, unless optional
+        unconditionally is true.
+        """
+        if not unconditionally and not self.locked():
+            raise NotLockedError('Lock not set')
+        try:
+            # Remove the lock file
+            os.unlink(self.__lockfile)
+            # Clean up our temp file
+            self.__cleanup()
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                mailman_log('error', 'Error removing lock: %s', str(e))
+                raise
+
 
 # Unit test framework
 def _dochild():
