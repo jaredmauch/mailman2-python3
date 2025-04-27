@@ -296,7 +296,7 @@ class ListAdmin(object):
         msgsubject = msg.get('subject', _('(no subject)'))
         if not sender:
             sender = _('<missing>')
-        data = time.time(), sender, msgsubject, reason, filename, msgdata
+        data = (time.time(), sender, msgsubject, reason, filename, msgdata)
         self.__db[id] = (HELDMSG, data)
         return id
 
