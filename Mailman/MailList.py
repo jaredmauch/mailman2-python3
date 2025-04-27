@@ -123,9 +123,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 func(self)
         if lock:
             # This will load the database.
-            self.Lock()
+                self.Lock()
         else:
-            self.Load()
+                self.Load()
 
     def __getattr__(self, name):
         # Because we're using delegation, we want to be sure that attribute
@@ -135,13 +135,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             return getattr(self._memberadaptor, name)
         except AttributeError:
-            for guicomponent in self._gui:
-                try:
-                    return getattr(guicomponent, name)
-                except AttributeError:
-                    pass
+        for guicomponent in self._gui:
+            try:
+                return getattr(guicomponent, name)
+            except AttributeError:
+                pass
             else:
-                raise AttributeError(name)
+        raise AttributeError(name)
 
     def __repr__(self):
         if self.Locked():
@@ -332,7 +332,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         """Assign default values - some will be overriden by stored state."""
         # Non-configurable list info
         if name:
-          self._internal_name = name
+            self._internal_name = name
 
         # When was the list created?
         self.created_at = time.time()
@@ -601,7 +601,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                    'Failed config.pck write, retaining old state.\n%s', e)
             if fp is not None:
                 os.unlink(fname_tmp)
-            raise
+                    raise
         # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
         # as safely as possible.
         try:
@@ -614,7 +614,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             os.link(fname, fname_last)
         except OSError as e:
             if e.errno != errno.ENOENT: raise
-        os.rename(fname_tmp, fname)
+            os.rename(fname_tmp, fname)
         # Reset the timestamp
         self.__timestamp = os.path.getmtime(fname)
 
@@ -623,22 +623,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # interested in it.  This will raise a NotLockedError if we don't have
         # the lock (which is a serious problem!).  TBD: do we need to be more
         # defensive?
-        self.__lock.refresh()
-        # copy all public attributes to serializable dictionary
-        dict = {}
-        for key, value in list(self.__dict__.items()):
-            if key[0] == '_' or type(value) is MethodType:
-                continue
+                self.__lock.refresh()
+            # copy all public attributes to serializable dictionary
+            dict = {}
+            for key, value in list(self.__dict__.items()):
+                if key[0] == '_' or type(value) is MethodType:
+                    continue
             dict[key] = value
-        # Make config.pck unreadable by `other', as it contains all the
-        # list members' passwords (in clear text).
-        omask = os.umask(0o007)
-        try:
-            self.__save(dict)
-        finally:
-            os.umask(omask)
-            self.SaveRequestsDb()
-        self.CheckHTMLArchiveDir()
+            # Make config.pck unreadable by `other', as it contains all the
+            # list members' passwords (in clear text).
+            omask = os.umask(0o007)
+            try:
+                self.__save(dict)
+            finally:
+                os.umask(omask)
+                self.SaveRequestsDb()
+            self.CheckHTMLArchiveDir()
 
     def __load(self, dbfile):
         # Attempt to load and unserialize the specified database file.  This
@@ -679,7 +679,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Open the file in binary mode to avoid any text decoding
             fp = open(dbfile, 'rb')
         except EnvironmentError as e:
-            if e.errno != errno.ENOENT: raise
+                if e.errno != errno.ENOENT: raise
             # The file doesn't exist yet
             return None, e
 
@@ -717,7 +717,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 # non-existent, we want to return an empty dictionary.
                 if isinstance(e, EnvironmentError) and e.errno == errno.ENOENT:
                     dict = {}
-                else:
+            else:
                     raise Errors.MMCorruptListDatabaseError(self.internal_name())
         # Now update our current state with the database state.
         for k, v in list(dict.items()):
