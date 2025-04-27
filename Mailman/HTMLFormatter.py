@@ -464,7 +464,7 @@ class HTMLFormatter(object):
         
         try:
             # Add basic list information
-            replacements['<mm-list-name>'] = self.real_name
+            replacements['<MM-List-Name>'] = self.real_name
             replacements['<mm-list-description>'] = self.description
             replacements['<mm-list-info>'] = self.GetScriptURL('listinfo')
             replacements['<mm-list-owner>'] = self.GetOwnerEmail()
@@ -484,7 +484,6 @@ class HTMLFormatter(object):
             
         except Exception as e:
             mailman_log('error', 'Error getting standard replacements: %s', str(e))
-            mailman_log('error', 'Stack trace:', exc_info=True)
         
         return replacements
 
