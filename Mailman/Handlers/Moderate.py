@@ -30,10 +30,10 @@ from Mailman import Errors
 from Mailman.i18n import _
 from Mailman.Handlers import Hold
 from Mailman.Logging.Syslog import syslog
-from Mailman.MailList import MailList
 
+# Remove the MailList import from here since it's causing a circular dependency
+# from Mailman.MailList import MailList
 
-
 class ModeratedMemberPost(Hold.ModeratedPost):
     # BAW: I wanted to use the reason below to differentiate between this
     # situation and normal ModeratedPost reasons.  Greg Ward and Stonewall
@@ -45,9 +45,11 @@ class ModeratedMemberPost(Hold.ModeratedPost):
     # reason = _('Posts by member are currently quarantined for moderation')
     pass
 
-
-
 def process(mlist, msg, msgdata):
+    """Process a message for moderation."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     if msgdata.get('approved'):
         return
     # Is the poster a member or not?
@@ -134,9 +136,11 @@ def process(mlist, msg, msgdata):
     elif mlist.generic_nonmember_action == 3:
         do_discard(mlist, msg)
 
-
-
 def do_reject(mlist):
+    """Handle message rejection."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     listowner = mlist.GetOwnerEmail()
     if mlist.nonmember_rejection_notice:
         raise Errors.RejectMessage(Utils.wrap(_(mlist.nonmember_rejection_notice)))
@@ -147,9 +151,11 @@ mailing list and the list's policy is to prohibit non-members from posting to
 it.  If you think that your messages are being rejected in error, contact the
 mailing list owner at %(listowner)s.""")))
 
-
-
 def do_discard(mlist, msg):
+    """Handle message discarding."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     sender = msg.get_sender()
     # Do we forward auto-discards to the list owners?
     if mlist.forward_auto_discards:
