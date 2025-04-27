@@ -236,7 +236,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     # languages (the user's preferred and the list's preferred for the admin),
     # we need to play some i18n games here.  Since the current language
     # context ought to be set up for the user, let's craft his message first.
-    cookie = mlist.pend_new(Pending.HELD_MESSAGE, id)
+    cookie = mlist.pend_new(Pending.HELD_MESSAGE, (id,))
     if not fromusenet and ackp(msg) and mlist.respond_to_post_requests and \
            mlist.autorespondToSender(sender, mlist.getMemberLanguage(sender)):
         # Get a confirmation cookie
