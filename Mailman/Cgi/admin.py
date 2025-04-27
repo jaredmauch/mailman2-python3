@@ -796,7 +796,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         if params:
            values, legend, selected = params
         else:
-           values = mlist.GetAvailableLanguages()
+           values = mlist.available_languages
            legend = [Utils.GetLanguageDescr(lang) for lang in values]
            selected = values.index(mlist.preferred_language)
         return SelectOptions(varname, values, legend, selected)
@@ -1217,7 +1217,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             cells.append(Center(CheckBox(digest_name, 'on', 1).Format()))
 
         language_name = '%(qaddr)s_language' % {'qaddr': qaddr}
-        languages = mlist.GetAvailableLanguages()
+        languages = mlist.available_languages
         legends = [Utils.GetLanguageDescr(lang) for lang in languages]
         cells.append(Center(SelectOptions(language_name, languages, legends,
                                         selected=mlist.getMemberLanguage(addr)).Format()))

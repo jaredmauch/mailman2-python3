@@ -150,7 +150,7 @@ def main():
 
     # See if the user want to see this page in other language
     language = cgidata.get('language', [''])[0]
-    if language not in mlist.GetAvailableLanguages():
+    if language not in mlist.available_languages:
         language = mlist.preferred_language
     i18n.set_language(language)
     doc.set_language(language)
@@ -199,7 +199,7 @@ def main():
 
 
 def FormatHTML(mlist, doc, template_name, template_info, lang=None):
-    if lang not in mlist.GetAvailableLanguages():
+    if lang not in mlist.available_languages:
         lang = mlist.preferred_language
     lcset = Utils.GetCharSet(lang)
     doc.AddItem(Header(1,'%s:' % mlist.real_name))
@@ -216,7 +216,7 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
     doc.AddItem(FontSize("+1", backlink))
     doc.AddItem('<p>')
     doc.AddItem('<hr>')
-    if len(mlist.GetAvailableLanguages()) > 1:
+    if len(mlist.available_languages) > 1:
         langform = Form(mlist.GetScriptURL('edithtml') + '/' + template_name,
                         mlist=mlist, contexts=AUTH_CONTEXTS)
         langform.AddItem(
@@ -239,7 +239,7 @@ def FormatHTML(mlist, doc, template_name, template_info, lang=None):
 
 
 def ChangeHTML(mlist, cgi_info, template_name, doc, lang=None):
-    if lang not in mlist.GetAvailableLanguages():
+    if lang not in mlist.available_languages:
         lang = mlist.preferred_language
     if 'html_code' not in cgi_info:
         doc.AddItem(Header(3,_("Can't have empty html page.")))

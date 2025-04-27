@@ -114,7 +114,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberLanguage(self, member):
         lang = self.__mlist.language.get(
             member.lower(), self.__mlist.preferred_language)
-        if lang in self.__mlist.GetAvailableLanguages():
+        if lang in self.__mlist.available_languages:
             return lang
         return self.__mlist.preferred_language
 

@@ -305,7 +305,7 @@ def subscription_prompt(mlist, doc, cookie, userdesc):
         table.AddRow([Label(_('Receive digests?')),
                       RadioButtonArray('digests', (_('No'), _('Yes')),
                                        checked=digest, values=(0, 1))])
-    langs = mlist.GetAvailableLanguages()
+    langs = mlist.available_languages
     values = [_(Utils.GetLanguageDescr(l)) for l in langs]
     try:
         selected = langs.index(lang)
@@ -794,7 +794,6 @@ def reenable_confirm(mlist, doc, cookie):
         mlist.Unlock()
 
 
-
 def reenable_prompt(mlist, doc, cookie, list, member):
     title = _('Re-enable mailing list membership')
     doc.SetTitle(title)
