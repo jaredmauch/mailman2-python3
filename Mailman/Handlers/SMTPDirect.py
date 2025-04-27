@@ -429,6 +429,9 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     # using our as_string() method to not mangle From_ and not fold
     # sub-part headers possibly breaking signatures.
     msgtext = msg.as_string(mangle_from_=False)
+    # Ensure the message text is properly encoded as UTF-8
+    if isinstance(msgtext, str):
+        msgtext = msgtext.encode('utf-8')
     refused = {}
     recips = msgdata['recips']
     msgid = msg['message-id']

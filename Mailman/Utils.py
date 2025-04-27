@@ -449,9 +449,14 @@ def set_global_password(pw, siteadmin=True):
     # rw-r-----
     omask = os.umask(0o026)
     try:
-        fp = open(filename, 'w')
-        fp.write(sha_new(pw).hexdigest() + '\n')
-        fp.close()
+        # Use atomic write to prevent race conditions
+        temp_filename = filename + '.tmp'
+        with open(temp_filename, 'w') as fp:
+            fp.write(sha_new(pw).hexdigest() + '\n')
+        os.rename(temp_filename, filename)
+    except (IOError, OSError) as e:
+        syslog('error', 'Failed to write password file %s: %s', filename, str(e))
+        raise
     finally:
         os.umask(omask)
 
@@ -462,14 +467,16 @@ def get_global_password(siteadmin=True):
     else:
         filename = mm_cfg.LISTCREATOR_PW_FILE
     try:
-        fp = open(filename)
-        challenge = fp.read()[:-1]                # strip off trailing nl
-        fp.close()
+        with open(filename) as fp:
+            challenge = fp.read()[:-1]  # strip off trailing nl
+            if not challenge:
+                syslog('error', 'Empty password file: %s', filename)
+                return None
+            return challenge
     except IOError as e:
-        if e.errno != errno.ENOENT: raise
-        # It's okay not to have a site admin password, just return false
+        if e.errno != errno.ENOENT:
+            syslog('error', 'Error reading password file %s: %s', filename, str(e))
         return None
-    return challenge
 
 
 def check_global_password(response, siteadmin=True):
@@ -481,27 +488,61 @@ def check_global_password(response, siteadmin=True):
 
 _ampre = re.compile('&amp;((?:#[0-9]+|[a-z]+);)', re.IGNORECASE)
 def websafe(s, doubleescape=False):
-    # If a user submits a form or URL with post data or query fragments
-    # with multiple occurrences of the same variable, we can get a list
-    # here.  Be as careful as possible.
-    if isinstance(s, list) or isinstance(s, tuple):
-        if len(s) == 0:
-            s = ''
-        else:
-            s = s[-1]
-    if mm_cfg.BROKEN_BROWSER_WORKAROUND:
-        # Archiver can pass unicode here. Just skip them as the
-        # archiver escapes non-ascii anyway.
-        if isinstance(s, str):
-            for k in mm_cfg.BROKEN_BROWSER_REPLACEMENTS:
-                s = s.replace(k, mm_cfg.BROKEN_BROWSER_REPLACEMENTS[k])
+    """Convert a string to be safe for HTML output.
+    
+    This function handles:
+    - Lists/tuples (takes last element)
+    - Browser workarounds
+    - Double escaping
+    - Bytes decoding (including Python 2 style bytes)
+    - HTML escaping
+    """
+    if isinstance(s, (list, tuple)):
+        s = s[-1] if s else ''
+    
+    if mm_cfg.BROKEN_BROWSER_WORKAROUND and isinstance(s, str):
+        for k in mm_cfg.BROKEN_BROWSER_REPLACEMENTS:
+            s = s.replace(k, mm_cfg.BROKEN_BROWSER_REPLACEMENTS[k])
+    
+    if isinstance(s, bytes):
+        # First try to detect if this is a Python 2 style bytes file
+        # by checking for common Python 2 encodings
+        try:
+            # Try ASCII first as it's the most common Python 2 default
+            s = s.decode('ascii', errors='strict')
+        except UnicodeDecodeError:
+            try:
+                # Try UTF-8 next as it's common in Python 2 files
+                s = s.decode('utf-8', errors='strict')
+            except UnicodeDecodeError:
+                try:
+                    # Try ISO-8859-1 (latin1) which was common in Python 2
+                    s = s.decode('iso-8859-1', errors='strict')
+                except UnicodeDecodeError:
+                    # As a last resort, try to detect the encoding
+                    try:
+                        import chardet
+                        result = chardet.detect(s)
+                        if result['confidence'] > 0.8:
+                            s = s.decode(result['encoding'], errors='strict')
+                        else:
+                            # If we can't detect with confidence, fall back to latin1
+                            s = s.decode('latin1', errors='replace')
+                    except (ImportError, UnicodeDecodeError):
+                        # If all else fails, use replace to avoid errors
+                        s = s.decode('latin1', errors='replace')
+    
+    # First escape & to &amp; to prevent double escaping issues
+    s = s.replace('&', '&amp;')
+    
+    # Then use html.escape for the rest
+    s = html.escape(s, quote=True)
+    
+    # If double escaping is requested, escape again
     if doubleescape:
-        return html.escape(s, quote=True)
-    else:
-        if isinstance(s, bytes):
-            s = s.decode(errors='ignore')
-        s = re.sub('&', '&amp;', s)
-        return html.escape(s, quote=True)
+        s = html.escape(s, quote=True)
+    
+    return s
 
 
 def nntpsplit(s):
@@ -1361,44 +1402,41 @@ recentMemberPostings = {}
 clean_count = 0
 def IsVerboseMember(mlist, email):
     """For lists that request it, we keep track of recent posts by address.
-A message from an address to a list, if the list requests it, is remembered
-for a specified time whether or not the address is a list member, and if the
-address is a member and the member is over the threshold for the list, that
-fact is returned."""
-
-    global clean_count
+    A message from an address to a list, if the list requests it, is remembered
+    for a specified time whether or not the address is a list member, and if the
+    address is a member and the member is over the threshold for the list, that
+    fact is returned."""
+    global clean_count, recentMemberPostings
 
     if mlist.member_verbosity_threshold == 0:
         return False
 
     email = email.lower()
-
     now = time.time()
-    recentMemberPostings.setdefault(email,[]).append(now +
-                                       float(mlist.member_verbosity_interval)
-                                   )
-    x = list(range(len(recentMemberPostings[email])))
-    x.reverse()
-    for i in x:
-        if recentMemberPostings[email][i] < now:
-            del recentMemberPostings[email][i]
 
+    # Clean up old entries periodically
     clean_count += 1
     if clean_count >= mm_cfg.VERBOSE_CLEAN_LIMIT:
         clean_count = 0
-        for addr in list(recentMemberPostings.keys()):
-            x = list(range(len(recentMemberPostings[addr])))
-            x.reverse()
-            for i in x:
-                if recentMemberPostings[addr][i] < now:
-                    del recentMemberPostings[addr][i]
-            if not recentMemberPostings[addr]:
-                del recentMemberPostings[addr]
+        # Remove entries older than the maximum verbosity interval
+        max_age = max(mlist.member_verbosity_interval for mlist in mm_cfg.LISTS.values())
+        cutoff = now - max_age
+        recentMemberPostings = {
+            addr: [t for t in times if t > cutoff]
+            for addr, times in recentMemberPostings.items()
+            if any(t > cutoff for t in times)
+        }
+
+    # Add new posting time
+    recentMemberPostings.setdefault(email, []).append(now + float(mlist.member_verbosity_interval))
+
+    # Remove old times for this email
+    recentMemberPostings[email] = [t for t in recentMemberPostings[email] if t > now]
+
     if not mlist.isMember(email):
         return False
-    return (len(recentMemberPostings.get(email, [])) >
-                mlist.member_verbosity_threshold
-           )
+
+    return len(recentMemberPostings.get(email, [])) > mlist.member_verbosity_threshold
 
 
 def check_eq_domains(email, domains_list):
@@ -1466,39 +1504,95 @@ def xml_to_unicode(s, cset):
         return s
 
 def banned_ip(ip):
+    """Check if an IP address is in the Spamhaus blocklist.
+    
+    Supports both IPv4 and IPv6 addresses.
+    Returns True if the IP is in the blocklist, False otherwise.
+    """
     if not dns_resolver:
         return False
-    if have_ipaddress:
-        try:
-            if isinstance(ip, bytes):
-                ip = ip.decode('us-ascii', errors='replace')
-            ptr = ipaddress.ip_address(ip).reverse_pointer
-        except ValueError:
-            return False
-        lookup = '{0}.zen.spamhaus.org'.format('.'.join(ptr.split('.')[:-2]))
-    else:
+    
+    try:
         if isinstance(ip, bytes):
             ip = ip.decode('us-ascii', errors='replace')
-        parts = ip.split('.')
-        if len(parts) != 4:
+        
+        if have_ipaddress:
+            try:
+                ip_obj = ipaddress.ip_address(ip)
+                if isinstance(ip_obj, ipaddress.IPv4Address):
+                    # IPv4 format: 1.2.3.4 -> 4.3.2.1.zen.spamhaus.org
+                    parts = str(ip_obj).split('.')
+                    lookup = '{0}.{1}.{2}.{3}.zen.spamhaus.org'.format(
+                        parts[3], parts[2], parts[1], parts[0])
+                else:
+                    # IPv6 format: 2001:db8::1 -> 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.zen.spamhaus.org
+                    # Convert to reverse nibble format
+                    expanded = ip_obj.exploded.replace(':', '')
+                    lookup = '.'.join(reversed(expanded)) + '.zen.spamhaus.org'
+            except ValueError:
+                return False
+        else:
+            # Fallback for systems without ipaddress module
+            if ':' in ip:
+                # IPv6 address
+                try:
+                    # Basic IPv6 validation and conversion
+                    parts = ip.split(':')
+                    if len(parts) > 8:
+                        return False
+                    # Pad with zeros
+                    expanded = ''.join(part.zfill(4) for part in parts)
+                    lookup = '.'.join(reversed(expanded)) + '.zen.spamhaus.org'
+                except (ValueError, IndexError):
+                    return False
+            else:
+                # IPv4 address
+                parts = ip.split('.')
+                if len(parts) != 4:
+                    return False
+                try:
+                    if not all(0 <= int(part) <= 255 for part in parts):
+                        return False
+                    lookup = '{0}.{1}.{2}.{3}.zen.spamhaus.org'.format(
+                        parts[3], parts[2], parts[1], parts[0])
+                except ValueError:
+                    return False
+
+        # Set DNS resolver timeouts to prevent DoS
+        resolver = dns.resolver.Resolver()
+        resolver.timeout = 2.0  # 2 second timeout
+        resolver.lifetime = 4.0  # 4 second total lifetime
+        
+        try:
+            # Check for blocklist response
+            answers = resolver.resolve(lookup, 'A')
+            for rdata in answers:
+                if str(rdata).startswith('127.0.0.'):
+                    return True
+        except dns.resolver.NXDOMAIN:
+            # IP not found in blocklist
             return False
-        lookup = '{0}.{1}.{2}.{3}.zen.spamhaus.org'.format(parts[3],
-                                                           parts[2],
-                                                           parts[1],
-                                                           parts[0])
-    resolver = dns.resolver.Resolver()
-    try:
-        ans = resolver.query(lookup, dns.rdatatype.A)
-    except DNSException:
+        except dns.resolver.Timeout:
+            syslog('error', 'DNS timeout checking IP %s in Spamhaus', ip)
+            return False
+        except dns.resolver.NoAnswer:
+            syslog('error', 'No DNS answer for IP %s in Spamhaus', ip)
+            return False
+        except dns.exception.DNSException as e:
+            syslog('error', 'DNS error checking IP %s in Spamhaus: %s', ip, str(e))
+            return False
+            
+    except Exception as e:
+        syslog('error', 'Error checking IP %s in Spamhaus: %s', ip, str(e))
         return False
-    if not ans:
-        return False
-    text = ans.rrset.to_text()
-    if re.search(r'127\.0\.0\.[2-7]$', text, re.MULTILINE):
-        return True
+        
     return False
 
 def banned_domain(email):
+    """Check if a domain is in the Spamhaus Domain Block List (DBL).
+    
+    Returns True if the domain is in the blocklist, False otherwise.
+    """
     if not dns_resolver:
         return False
 
@@ -1507,17 +1601,37 @@ def banned_domain(email):
 
     lookup = '%s.dbl.spamhaus.org' % (domain)
 
+    # Set DNS resolver timeouts to prevent DoS
     resolver = dns.resolver.Resolver()
+    resolver.timeout = 2.0  # 2 second timeout
+    resolver.lifetime = 4.0  # 4 second total lifetime
+
     try:
-        ans = resolver.query(lookup, dns.rdatatype.A)
-    except DNSException:
+        # Use resolve() instead of query()
+        ans = resolver.resolve(lookup, 'A')
+        if not ans:
+            return False
+        # Newer versions of dnspython use strings property instead of strings attribute
+        text = ans.rrset.to_text() if hasattr(ans, 'rrset') else str(ans)
+        if re.search(r'127\.0\.1\.\d{1,3}$', text, re.MULTILINE):
+            if not re.search(r'127\.0\.1\.255$', text, re.MULTILINE):
+                return True
+    except dns.resolver.NXDOMAIN:
+        # Domain not found in blocklist
         return False
-    if not ans:
+    except dns.resolver.Timeout:
+        syslog('error', 'DNS timeout checking domain %s in Spamhaus DBL', domain)
         return False
-    text = ans.rrset.to_text()
-    if re.search(r'127\.0\.1\.\d{1,3}$', text, re.MULTILINE):
-        if not re.search(r'127\.0\.1\.255$', text, re.MULTILINE):
-            return True
+    except dns.resolver.NoAnswer:
+        syslog('error', 'No DNS answer for domain %s in Spamhaus DBL', domain)
+        return False
+    except dns.exception.DNSException as e:
+        syslog('error', 'DNS error checking domain %s in Spamhaus DBL: %s', domain, str(e))
+        return False
+    except Exception as e:
+        syslog('error', 'Unexpected error checking domain %s in Spamhaus DBL: %s', domain, str(e))
+        return False
+
     return False
 
 
@@ -1549,3 +1663,46 @@ def captcha_verify(idx, given_answer, captchas):
     # We append a `$` to emulate `re.fullmatch`.
     correct_answer_pattern = captchas[idx][1] + "$"
     return re.match(correct_answer_pattern, given_answer)
+
+def validate_ip_address(ip):
+    """Validate and normalize an IP address.
+    
+    Args:
+        ip: The IP address to validate.
+        
+    Returns:
+        A tuple of (is_valid, normalized_ip). If the IP is invalid,
+        normalized_ip will be None.
+    """
+    if not ip:
+        return False, None
+        
+    try:
+        if have_ipaddress:
+            ip_obj = ipaddress.ip_address(ip)
+            if isinstance(ip_obj, ipaddress.IPv4Address):
+                # For IPv4, drop last octet
+                parts = str(ip_obj).split('.')
+                return True, '.'.join(parts[:-1])
+            else:
+                # For IPv6, drop last 16 bits
+                expanded = ip_obj.exploded.replace(':', '')
+                return True, expanded[:-4]
+        else:
+            # Fallback for systems without ipaddress module
+            if ':' in ip:
+                # IPv6 address
+                parts = ip.split(':')
+                if len(parts) <= 8:
+                    # Pad with zeros and drop last 16 bits
+                    expanded = ''.join(part.zfill(4) for part in parts)
+                    return True, expanded[:-4]
+            else:
+                # IPv4 address
+                parts = ip.split('.')
+                if len(parts) == 4:
+                    return True, '.'.join(parts[:-1])
+    except (ValueError, IndexError):
+        pass
+        
+    return False, None

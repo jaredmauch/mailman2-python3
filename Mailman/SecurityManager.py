@@ -249,7 +249,9 @@ class SecurityManager(object):
         mac = sha_new(needs_hashing).hexdigest()
         # Create the cookie object.
         c = http.cookies.SimpleCookie()
-        c[key] = binascii.hexlify(marshal.dumps((issued, mac)))
+        # Ensure cookie value is a string, not bytes
+        cookie_value = binascii.hexlify(marshal.dumps((issued, mac))).decode('ascii')
+        c[key] = cookie_value
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
         parsed = urlparse(self.web_page_url)

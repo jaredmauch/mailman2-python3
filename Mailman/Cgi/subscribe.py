@@ -24,6 +24,7 @@ import time
 import signal
 import urllib.parse
 import json
+import ipaddress
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -34,6 +35,7 @@ from Mailman import Message
 from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Utils import validate_ip_address
 
 SLASH = '/'
 ERRORSEP = '\n\n<p>'
@@ -173,18 +175,26 @@ def process_form(mlist, doc, cgidata, lang):
             e_reason = e.reason
             results.append(_('reCAPTCHA could not be validated: {e_reason}'))
 
+    # Get and validate IP address
+    ip = os.environ.get('REMOTE_ADDR', '')
+    is_valid, normalized_ip = validate_ip_address(ip)
+    if not is_valid:
+        ip = ''
+    else:
+        ip = normalized_ip
+
     # Are we checking the hidden data?
     if mm_cfg.SUBSCRIBE_FORM_SECRET:
         now = int(time.time())
         # Try to accept a range in case of load balancers, etc.  (LP: #1447445)
-        if remote.find('.') >= 0:
+        if ip.find('.') >= 0:
             # ipv4 - drop last octet
-            remote1 = remote.rsplit('.', 1)[0]
+            remote1 = ip.rsplit('.', 1)[0]
         else:
             # ipv6 - drop last 16 (could end with :: in which case we just
             #        drop one : resulting in an invalid format, but it's only
             #        for our hash so it doesn't matter.
-            remote1 = remote.rsplit(':', 1)[0]
+            remote1 = ip.rsplit(':', 1)[0]
         try:
             ftime, fcaptcha_idx, fhash = cgidata.get(
                     'sub_form_token', [''])[0].split(':')
@@ -192,7 +202,8 @@ def process_form(mlist, doc, cgidata, lang):
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
             then = 0
-        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx + ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
+        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx +
+                        ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
         token = Utils.sha_new(needs_hashing).hexdigest()
         if ftime and now - then > mm_cfg.FORM_LIFETIME:
             results.append(_('The form is too old.  Please GET it again.'))

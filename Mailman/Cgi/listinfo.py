@@ -26,6 +26,7 @@ import os
 import urllib.parse
 import time
 import sys
+import ipaddress
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -34,6 +35,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
+from Mailman.Utils import validate_ip_address
 
 # Set up i18n
 _ = i18n._
@@ -211,20 +213,13 @@ def list_listinfo(mlist, lang):
     replacements['<mm-subscribe-form-start>'] = mlist.FormatFormStart(
         'subscribe')
     if mm_cfg.SUBSCRIBE_FORM_SECRET:
-        now = str(int(time.time()))
-        remote = os.environ.get('HTTP_FORWARDED_FOR',
-                 os.environ.get('HTTP_X_FORWARDED_FOR',
-                 os.environ.get('REMOTE_ADDR',
-                                'w.x.y.z')))
-        # Try to accept a range in case of load balancers, etc.  (LP: #1447445)
-        if remote.find('.') >= 0:
-            # ipv4 - drop last octet
-            remote = remote.rsplit('.', 1)[0]
+        # Get and validate IP address
+        ip = os.environ.get('REMOTE_ADDR', '')
+        is_valid, normalized_ip = validate_ip_address(ip)
+        if not is_valid:
+            ip = ''
         else:
-            # ipv6 - drop last 16 (could end with :: in which case we just
-            #        drop one : resulting in an invalid format, but it's only
-            #        for our hash so it doesn't matter.
-            remote = remote.rsplit(':', 1)[0]
+            ip = normalized_ip
         # render CAPTCHA, if configured
         if isinstance(mm_cfg.CAPTCHAS, dict) and 'en' in mm_cfg.CAPTCHAS:
             (captcha_question, captcha_box, captcha_idx) = \
@@ -243,12 +238,12 @@ def list_listinfo(mlist, lang):
         replacements['<mm-subscribe-form-start>'] += (
                 '<input type="hidden" name="sub_form_token"'
                 ' value="%s:%s:%s">\n'
-                % (now, captcha_idx,
+                % (time.time(), captcha_idx,
                           Utils.sha_new((mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
-                          now + ":" +
+                          str(time.time()) + ":" +
                           captcha_idx + ":" +
                           mlist.internal_name() + ":" +
-                          remote).encode('utf-8')).hexdigest()
+                          ip).encode('utf-8')).hexdigest()
                     )
                 )
     # Roster form substitutions
