@@ -408,21 +408,80 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Must save this state, even though it isn't configurable
         self.members = {} # self.digest_members is initted in mm_digest
         self.digest_members = {}  # Initialize digest_members dictionary
-        self.digestable = True  # Initialize digestable flag
+        self.digestable = mm_cfg.DEFAULT_DIGESTABLE  # Initialize digestable flag
+        self.digest_is_default = mm_cfg.DEFAULT_DIGEST_IS_DEFAULT
+        self.mime_is_default_digest = mm_cfg.DEFAULT_MIME_IS_DEFAULT_DIGEST
+        self.digest_size_threshhold = mm_cfg.DEFAULT_DIGEST_SIZE_THRESHHOLD
+        self.digest_send_periodic = mm_cfg.DEFAULT_DIGEST_SEND_PERIODIC
+        self.next_post_number = 1
+        self.digest_header = mm_cfg.DEFAULT_DIGEST_HEADER
+        self.digest_footer = mm_cfg.DEFAULT_DIGEST_FOOTER
+        self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY
+        self._new_volume = 0
+        self.volume = 1
+        self.one_last_digest = {}
+        self.next_digest_number = 1
         self.nondigestable = mm_cfg.DEFAULT_NONDIGESTABLE  # Initialize nondigestable flag
         self.digest_volume = 1  # Initialize digest volume number
         self.digest_issue = 1  # Initialize digest issue number
         self.digest_last_sent_at = 0  # Initialize last digest send time
         self.digest_next_due_at = 0  # Initialize next digest due time
-        self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY  # Initialize volume frequency
         self.data_version = mm_cfg.DATA_FILE_VERSION
         self.last_post_time = 0
+
+        # Initialize archiver-specific attributes
+        self.archive_private = mm_cfg.DEFAULT_ARCHIVE_PRIVATE
+        self.archive_volume_frequency = mm_cfg.DEFAULT_ARCHIVE_VOLUME_FREQUENCY
+
+        # Initialize security manager attributes
+        self.password = crypted_password
+        self.mod_password = None
+        self.post_password = None
+        self.passwords = {}
+
+        # Initialize bouncer attributes
+        self.bounce_processing = mm_cfg.DEFAULT_BOUNCE_PROCESSING
+        self.bounce_score_threshold = mm_cfg.DEFAULT_BOUNCE_SCORE_THRESHOLD
+        self.bounce_info_stale_after = mm_cfg.DEFAULT_BOUNCE_INFO_STALE_AFTER
+        self.bounce_you_are_disabled_warnings = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS
+        self.bounce_you_are_disabled_warnings_interval = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL
+        self.bounce_unrecognized_goes_to_list_owner = mm_cfg.DEFAULT_BOUNCE_UNRECOGNIZED_GOES_TO_LIST_OWNER
+        self.bounce_notify_owner_on_bounce_increment = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_BOUNCE_INCREMENT
+        self.bounce_notify_owner_on_disable = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_DISABLE
+        self.bounce_notify_owner_on_removal = mm_cfg.DEFAULT_BOUNCE_NOTIFY_OWNER_ON_REMOVAL
+        self.bounce_info = {}
+        self.delivery_status = {}
+
+        # Initialize gateway manager attributes
+        self.nntp_host = mm_cfg.DEFAULT_NNTP_HOST
+        self.linked_newsgroup = ''
+        self.gateway_to_news = 0
+        self.gateway_to_mail = 0
+        self.news_prefix_subject_too = 1
+        self.news_moderation = 0
+
+        # Initialize autoresponder attributes
+        self.autorespond_postings = 0
+        self.autorespond_admin = 0
+        self.autorespond_requests = 0
+        self.autoresponse_postings_text = ''
+        self.autoresponse_admin_text = ''
+        self.autoresponse_request_text = ''
+        self.autoresponse_graceperiod = 90  # days
+        self.postings_responses = {}
+        self.admin_responses = {}
+        self.request_responses = {}
+
+        # Initialize topic manager attributes
+        self.topics = []
+        self.topics_enabled = 0
+        self.topics_bodylines_limit = 5
+        self.topics_userinterest = {}
 
         self.post_id = 1.  # A float so it never has a chance to overflow.
         self.user_options = {}
         self.language = {}
         self.usernames = {}
-        self.passwords = {}
         self.new_member_options = mm_cfg.DEFAULT_NEW_MEMBER_OPTIONS
 
         # This stuff is configurable
