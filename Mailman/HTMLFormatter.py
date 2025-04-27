@@ -22,6 +22,7 @@ from builtins import map
 from builtins import object
 import time
 import re
+import os
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -391,6 +392,9 @@ class HTMLFormatter(object):
             lang = self.preferred_language
         result = []
         i = 0
+        # Log the template file path
+        template_path = os.path.join(mm_cfg.TEMPLATE_DIR, lang, template)
+        mailman_log('info', 'Attempting to load template file: %s', template_path)
         while i < len(template):
             if template[i] == '<' and i + 1 < len(template) and template[i + 1] == '%':
                 # Found a tag start
