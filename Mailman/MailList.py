@@ -880,3 +880,50 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     self.__dict__[newname] = self.__dict__.pop(oldname)
             # Convert the data version number
             self.data_version = mm_cfg.DATA_FILE_VERSION
+
+    def GetPattern(self, addr, patterns, at_list=None):
+        """Check if an address matches any of the patterns in the list.
+        
+        Args:
+            addr: The email address to check
+            patterns: List of patterns to check against
+            at_list: Optional name of the list for logging
+            
+        Returns:
+            True if the address matches any pattern, False otherwise
+        """
+        if not patterns:
+            return False
+            
+        # Convert addr to lowercase for case-insensitive matching
+        addr = addr.lower()
+        
+        # Check each pattern
+        for pattern in patterns:
+            # Skip empty patterns
+            if not pattern.strip():
+                continue
+                
+            # If pattern starts with @, it's a domain pattern
+            if pattern.startswith('@'):
+                domain = pattern[1:].lower()
+                if addr.endswith(domain):
+                    if at_list:
+                        syslog('vette', '%s matches domain pattern %s in %s',
+                               addr, pattern, at_list)
+                    return True
+            # Otherwise it's a regex pattern
+            else:
+                try:
+                    cre = re.compile(pattern, re.IGNORECASE)
+                    if cre.search(addr):
+                        if at_list:
+                            syslog('vette', '%s matches regex pattern %s in %s',
+                                   addr, pattern, at_list)
+                        return True
+                except re.error:
+                    syslog('error', 'Invalid regex pattern in %s: %s',
+                           at_list or 'patterns', pattern)
+                    continue
+                    
+        return False
