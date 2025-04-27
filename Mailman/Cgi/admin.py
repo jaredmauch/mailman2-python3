@@ -727,7 +727,16 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
           kind == mm_cfg.Host or kind == mm_cfg.Number):
         # Ensure value is a string, decoding bytes if necessary
         if isinstance(value, bytes):
-            value = value.decode('utf-8', 'replace')
+            try:
+                # Try UTF-8 first
+                value = value.decode('utf-8', 'replace')
+            except UnicodeDecodeError:
+                try:
+                    # Try EUC-JP for Japanese text
+                    value = value.decode('euc-jp', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to latin1
+                    value = value.decode('latin1', 'replace')
         return TextBox(varname, value, params)
     elif kind == mm_cfg.Text:
         if params:
@@ -736,7 +745,16 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             r, c = None, None
         # Ensure value is a string, decoding bytes if necessary
         if isinstance(value, bytes):
-            value = value.decode('utf-8', 'replace')
+            try:
+                # Try UTF-8 first
+                value = value.decode('utf-8', 'replace')
+            except UnicodeDecodeError:
+                try:
+                    # Try EUC-JP for Japanese text
+                    value = value.decode('euc-jp', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to latin1
+                    value = value.decode('latin1', 'replace')
         return TextArea(varname, value or '', r, c)
     elif kind in (mm_cfg.EmailList, mm_cfg.EmailListEx):
         if params:
@@ -745,7 +763,16 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             r, c = None, None
         # Ensure value is a string, decoding bytes if necessary
         if isinstance(value, bytes):
-            value = value.decode('utf-8', 'replace')
+            try:
+                # Try UTF-8 first
+                value = value.decode('utf-8', 'replace')
+            except UnicodeDecodeError:
+                try:
+                    # Try EUC-JP for Japanese text
+                    value = value.decode('euc-jp', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to latin1
+                    value = value.decode('latin1', 'replace')
         res = NL.join(value)
         return TextArea(varname, res, r, c, wrap='off')
     elif kind == mm_cfg.FileUpload:

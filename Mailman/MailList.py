@@ -673,9 +673,15 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 elif isinstance(value, bytes):
                     # Convert bytes to string if possible
                     try:
+                        # Try UTF-8 first
                         dict[key] = value.decode('utf-8', 'replace')
                     except UnicodeDecodeError:
-                        dict[key] = value.decode('latin1', 'replace')
+                        try:
+                            # Try EUC-JP for Japanese text
+                            dict[key] = value.decode('euc-jp', 'replace')
+                        except UnicodeDecodeError:
+                            # Fall back to latin1
+                            dict[key] = value.decode('latin1', 'replace')
                 elif isinstance(value, list):
                     # Handle lists that might contain bytes
                     dict[key] = [
