@@ -158,6 +158,25 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 syslog('error', 'Failed to load list %s: %s', name, e)
                 raise
 
+        # Initialize all mixin classes and their attributes
+        try:
+            # First initialize the main class
+            self.InitVars()
+            
+            # Then initialize each mixin class
+            for baseclass in self.__class__.__bases__:
+                if hasattr(baseclass, 'InitVars'):
+                    baseclass.InitVars(self)
+                    
+            # Finally, ensure all security-related attributes are initialized
+            from Mailman.SecurityManager import SecurityManager
+            if isinstance(self, SecurityManager):
+                self.InitVars()
+                
+        except Exception as e:
+            syslog('error', 'Failed to initialize list %s: %s', name, e)
+            raise
+
     def __getattr__(self, name):
         # First check if the attribute exists in the instance's dictionary
         if name in self.__dict__:
@@ -174,50 +193,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     pass
             return value
 
-        # List of attributes that require loading list data
-        list_data_attributes = {
-            # Core membership data
-            'members', 'digest_members', 'user_options', 'language', 
-            'usernames', 'bounce_info', 'delivery_status', 'passwords',
-            'topics', 'topics_userinterest',
-            
-            # Authentication and security
-            'password', 'mod_password', 'post_password', 'passwords',
-            'subscribe_auto_approval', 'subscribe_policy', 'unsubscribe_policy',
-            
-            # Member management
-            'ban_list', 'accept_these_nonmembers', 'hold_these_nonmembers',
-            'reject_these_nonmembers', 'discard_these_nonmembers',
-            'regular_exclude_lists', 'regular_include_lists',
-            
-            # List configuration
-            'owner', 'moderator', 'description', 'info', 'welcome_msg',
-            'goodbye_msg', 'subject_prefix', 'msg_header', 'msg_footer',
-            
-            # Archive settings
-            'archive_private', 'archive_volume_frequency',
-            
-            # Bounce handling
-            'bounce_processing', 'bounce_score_threshold',
-            'bounce_info_stale_after', 'bounce_you_are_disabled_warnings',
-            'bounce_you_are_disabled_warnings_interval',
-            'bounce_unrecognized_goes_to_list_owner',
-            'bounce_notify_owner_on_bounce_increment',
-            'bounce_notify_owner_on_disable',
-            'bounce_notify_owner_on_removal'
-        }
-
-        # Ensure list data is loaded if we're accessing list-specific attributes
-        if name in list_data_attributes:
-            try:
-                if not self.Locked():
-                    self.Lock()
-                self.Load()
-            except Exception as e:
-                syslog('error', 'Failed to load list data for %s: %s', 
-                       self.internal_name(), str(e))
-                raise AttributeError(name)
-
         # Then try the memberadaptor
         try:
             return getattr(self._memberadaptor, name)
@@ -231,42 +206,53 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             except AttributeError:
                 pass
 
-        # Finally check mixin classes
-        for baseclass in self.__class__.__bases__:
+        # Get the full method resolution order (MRO)
+        mro = self.__class__.__mro__
+        
+        # Try each class in the MRO (except object)
+        for cls in mro[1:]:  # Skip the first class (self.__class__)
             try:
-                # Get the attribute from the base class
-                attr = getattr(baseclass, name)
+                # Get the attribute from the class
+                attr = getattr(cls, name)
+                
                 # If it's a method, bind it to this instance
                 if callable(attr):
                     return attr.__get__(self, self.__class__)
+                    
                 # For non-method attributes, check if we have an instance value
                 if hasattr(self, '_' + name):
                     return getattr(self, '_' + name)
-                # If the attribute exists in the base class's instance dict, use that
-                if name in baseclass.__dict__:
+                    
+                # If the attribute exists in the class's dict, use that
+                if name in cls.__dict__:
                     return attr
+                    
                 # If we have an instance value, use that
                 if hasattr(self, name):
                     return getattr(self, name)
-                # If this is a mixin class, try to initialize the attribute
-                if hasattr(baseclass, 'InitVars'):
+                    
+                # If this class has InitVars, try to initialize the attribute
+                if hasattr(cls, 'InitVars'):
                     try:
-                        baseclass.InitVars(self)
+                        cls.InitVars(self)
                         if hasattr(self, name):
                             return getattr(self, name)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        syslog('error', 'Failed to initialize %s.%s: %s', 
+                               cls.__name__, name, str(e))
+                        continue
+                        
                 return attr
             except AttributeError:
-                pass
+                continue
 
         # If we get here, try to initialize through the main class's InitVars
         try:
             self.InitVars()
             if hasattr(self, name):
                 return getattr(self, name)
-        except Exception:
-            pass
+        except Exception as e:
+            syslog('error', 'Failed to initialize %s: %s', name, str(e))
 
         raise AttributeError(name)
 
