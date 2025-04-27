@@ -591,6 +591,55 @@ class LockFile:
                 raise
         mailman_log('debug', 'lock broken')
 
+    def lock(self, timeout=0):
+        """Acquire the lock.
+
+        This blocks until the lock is acquired unless optional timeout is
+        greater than 0, in which case, a TimeOutError is raised when timeout
+        number of seconds (or possibly more) expires without lock acquisition.
+        Raises AlreadyLockedError if the lock is already set.
+        """
+        if self.locked():
+            raise AlreadyLockedError('Lock already set')
+
+        start = time.time()
+        while True:
+            try:
+                # Create our temp file
+                with open(self.__tmpfname, 'w') as fp:
+                    fp.write(self.__tmpfname)
+                # Set group read-write permissions
+                os.chmod(self.__tmpfname, 0o660)
+                # Try to create a hard link
+                try:
+                    os.link(self.__tmpfname, self.__lockfile)
+                    # Success! We got the lock
+                    self.__touch()
+                    return
+                except OSError as e:
+                    if e.errno != errno.EEXIST:
+                        raise
+                    # Lock exists, check if it's stale
+                    try:
+                        releasetime = self.__releasetime()
+                        if time.time() > releasetime:
+                            # Lock is stale, try to break it
+                            self.__break()
+                            continue
+                    except OSError:
+                        # Lock file doesn't exist, try again
+                        continue
+            except OSError as e:
+                mailman_log('error', 'Error creating lock: %s', str(e))
+                raise
+
+            # Check timeout
+            if timeout > 0 and time.time() - start > timeout:
+                raise TimeOutError('Timeout waiting for lock')
+
+            # Sleep a bit before trying again
+            self.__sleep()
+
 
 # Unit test framework
 def _dochild():
