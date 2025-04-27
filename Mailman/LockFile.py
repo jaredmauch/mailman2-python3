@@ -111,11 +111,12 @@ class LockFile:
         Return the lock's lifetime.
 
     refresh([newlifetime[, unconditionally]]):
-        Refreshes the lifetime of a locked file.  Use this if you realize that
-        you need to keep a resource locked longer than you thought.  With
-        optional newlifetime, set the lock's lifetime.   Raises NotLockedError
-        if the lock is not set, unless optional unconditionally flag is set to
-        true.
+        Refreshes the lifetime of a locked file.
+
+        Use this if you realize that you need to keep a resource locked longer
+        than you thought. With optional newlifetime, set the lock's lifetime.
+        Raises NotLockedError if the lock is not set, unless optional
+        unconditionally flag is set to true.
 
     lock([timeout]):
         Acquire the lock.
@@ -657,6 +658,20 @@ class LockFile:
             if e.errno != errno.ENOENT:
                 mailman_log('error', 'Error removing lock: %s', str(e))
                 raise
+
+    def refresh(self, newlifetime=None, unconditionally=False):
+        """Refreshes the lifetime of a locked file.
+        
+        Use this if you realize that you need to keep a resource locked longer
+        than you thought. With optional newlifetime, set the lock's lifetime.
+        Raises NotLockedError if the lock is not set, unless optional
+        unconditionally flag is set to true.
+        """
+        if not unconditionally and not self.locked():
+            raise NotLockedError('Lock not set')
+        if newlifetime is not None:
+            self.__lifetime = newlifetime
+        self.__touch()
 
 
 # Unit test framework

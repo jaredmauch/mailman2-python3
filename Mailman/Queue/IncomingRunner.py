@@ -105,6 +105,7 @@ from io import StringIO
 import random
 import signal
 import os
+from email import message_from_string
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -112,6 +113,8 @@ from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import reap
+from Mailman import Utils
+from Mailman import Message
 
 
 class PipelineError(Exception):
@@ -122,9 +125,29 @@ class PipelineError(Exception):
 class IncomingRunner(Runner):
     QDIR = mm_cfg.INQUEUE_DIR
 
+    def __init__(self, slice=None, numslices=1):
+        Runner.__init__(self, slice, numslices)
+        # Track processed messages to prevent duplicates
+        self._processed_messages = set()
+        # Clean up old messages periodically
+        self._last_cleanup = time.time()
+        self._cleanup_interval = 3600  # Clean up every hour
+
     def _dispose(self, listname, msg, msgdata):
         # Import MailList here to avoid circular imports
         from Mailman.MailList import MailList
+
+        # Track message ID to prevent duplicates
+        msgid = msg.get('message-id', 'n/a')
+        if msgid in self._processed_messages:
+            mailman_log('error', 'Duplicate message detected: %s', msgid)
+            return 0
+
+        # Clean up old message IDs periodically
+        current_time = time.time()
+        if current_time - self._last_cleanup > self._cleanup_interval:
+            self._processed_messages.clear()
+            self._last_cleanup = current_time
 
         # Get the MailList object for the list name
         try:
@@ -133,33 +156,16 @@ class IncomingRunner(Runner):
             mailman_log('error', 'Failed to get list %s: %s', listname, str(e))
             return 0
 
-        # Try to get the list lock with exponential backoff
-        max_attempts = 3
-        base_delay = 1.0
-        attempt = 0
-        
-        while attempt < max_attempts:
-            try:
-                # Add a small random delay between attempts to prevent thundering herd
-                if attempt > 0:
-                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
-                    mailman_log('incoming', 'Retrying lock for %s after %.2f seconds (attempt %d/%d)',
-                          listname, delay, attempt + 1, max_attempts)
-                    time.sleep(delay)
-                
-                mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-                break
-            except LockFile.TimeOutError:
-                attempt += 1
-                if attempt >= max_attempts:
-                    mailman_log('error', 'Failed to acquire lock for %s after %d attempts',
-                          listname, max_attempts)
-                    return 1
-                continue
-            except Exception as e:
-                mailman_log('error', 'Unexpected error acquiring lock for %s: %s',
+        # Try to get the list lock with shorter timeout
+        try:
+            mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT / 2)
+        except LockFile.TimeOutError:
+            mailman_log('error', 'Lock timeout for %s', listname)
+            return 1
+        except Exception as e:
+            mailman_log('error', 'Unexpected error acquiring lock for %s: %s',
                       listname, str(e))
-                return 1
+            return 1
 
         # Process the message through a handler pipeline
         try:
@@ -168,6 +174,8 @@ class IncomingRunner(Runner):
             more = self._dopipeline(mlist, msg, msgdata, pipeline)
             if not more:
                 del msgdata['pipeline']
+                # Only add to processed messages if processing completed successfully
+                self._processed_messages.add(msgid)
             mlist.Save()
             return more
         except Exception as e:
@@ -187,6 +195,14 @@ class IncomingRunner(Runner):
                                    mm_cfg.GLOBAL_PIPELINE))[:]
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
+        # Validate pipeline state
+        if not pipeline:
+            mailman_log('error', 'Empty pipeline for message %s', msg.get('message-id', 'n/a'))
+            return 0
+        if 'pipeline' in msgdata and msgdata['pipeline'] != pipeline:
+            mailman_log('error', 'Pipeline state mismatch for message %s', msg.get('message-id', 'n/a'))
+            return 0
+
         while pipeline:
             handler = pipeline.pop(0)
             modname = 'Mailman.Handlers.' + handler
