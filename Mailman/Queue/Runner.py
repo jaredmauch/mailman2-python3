@@ -22,6 +22,7 @@ from builtins import object
 import time
 import traceback
 from io import StringIO
+from functools import wraps
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -29,7 +30,7 @@ from Mailman import Errors
 from Mailman import MailList
 from Mailman import i18n
 from Mailman.Message import Message
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log as log
 from Mailman.Queue.Switchboard import Switchboard
 
 import email.errors
@@ -48,6 +49,8 @@ class Runner:
         self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
         self._stop = False
         self.status = 0  # Add status attribute initialized to 0
+        self._error_count = 0  # Track consecutive errors
+        self._last_error_time = 0  # Track time of last error
 
     def __repr__(self):
         return '<%s at %s>' % (self.__class__.__name__, id(self))
@@ -81,6 +84,73 @@ class Runner:
             # subprocesses we've created and do any other necessary cleanups.
             self._cleanup()
 
+    def log_error(self, error_type, error, msg=None, mlist=None, **context):
+        """Structured error logging with context."""
+        context.update({
+            'runner': self.__class__.__name__,
+            'list': mlist.internal_name() if mlist else 'N/A',
+            'msg_id': msg.get('message-id', 'N/A') if msg else 'N/A',
+            'error_type': error_type,
+            'error': str(error)
+        })
+        log('error', '%(runner)s: %(error_type)s - list: %(list)s, msg: %(msg_id)s, error: %(error)s',
+            context)
+
+    def log_warning(self, warning_type, msg=None, mlist=None, **context):
+        """Structured warning logging with context."""
+        context.update({
+            'runner': self.__class__.__name__,
+            'list': mlist.internal_name() if mlist else 'N/A',
+            'msg_id': msg.get('message-id', 'N/A') if msg else 'N/A',
+            'warning_type': warning_type
+        })
+        log('warning', '%(runner)s: %(warning_type)s - list: %(list)s, msg: %(msg_id)s',
+            context)
+
+    def log_info(self, info_type, msg=None, mlist=None, **context):
+        """Structured info logging with context."""
+        context.update({
+            'runner': self.__class__.__name__,
+            'list': mlist.internal_name() if mlist else 'N/A',
+            'msg_id': msg.get('message-id', 'N/A') if msg else 'N/A',
+            'info_type': info_type
+        })
+        log('info', '%(runner)s: %(info_type)s - list: %(list)s, msg: %(msg_id)s',
+            context)
+
+    def _handle_error(self, exc, msg=None, mlist=None, preserve=True):
+        """Centralized error handling with circuit breaker."""
+        now = time.time()
+        
+        # Log the error with full context
+        self.log_error('unhandled_exception', exc, msg=msg, mlist=mlist)
+        
+        # Log full traceback
+        s = StringIO()
+        traceback.print_exc(file=s)
+        log('error', 'Traceback: %s', s.getvalue())
+        
+        # Circuit breaker logic
+        if now - self._last_error_time < 60:  # Within last minute
+            self._error_count += 1
+            if self._error_count >= 10:  # Too many errors in short time
+                log('error', '%s: Too many errors, stopping runner', self.__class__.__name__)
+                self.stop()
+        else:
+            self._error_count = 1
+        self._last_error_time = now
+        
+        # Handle message preservation
+        if preserve:
+            try:
+                msgdata = {'whichq': self._switchboard.whichq()}
+                new_filebase = self._shunt.enqueue(msg, msgdata)
+                log('error', '%s: Shunted message to: %s', self.__class__.__name__, new_filebase)
+            except Exception as e:
+                log('error', '%s: Failed to shunt message: %s', self.__class__.__name__, str(e))
+                return False
+        return True
+
     def _oneloop(self):
         # First, list all the files in our queue directory.
         # Switchboard.files() is guaranteed to hand us the files in FIFO
@@ -92,52 +162,22 @@ class Runner:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
-            except Exception as e:
-                # This used to just catch email.Errors.MessageParseError,
-                # but other problems can occur in message parsing, e.g.
-                # ValueError, and exceptions can occur in unpickling too.
-                # We don't want the runner to die, so we just log and skip
-                # this entry, but maybe preserve it for analysis.
-                self._log(e)
-                if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
-                    syslog('error',
-                           'Skipping and preserving unparseable message: %s',
-                           filebase)
-                    preserve = True
-                else:
-                    syslog('error',
-                           'Ignoring unparseable message: %s', filebase)
-                    preserve = False
+            except (email.errors.MessageParseError, ValueError) as e:
+                # Handle message parsing errors
+                self.log_error('message_parse_error', e, filebase=filebase)
+                preserve = mm_cfg.QRUNNER_SAVE_BAD_MESSAGES
                 self._switchboard.finish(filebase, preserve=preserve)
+                continue
+            except Exception as e:
+                # Handle other unexpected errors
+                self._handle_error(e, filebase=filebase)
+                self._switchboard.finish(filebase, preserve=True)
                 continue
             try:
                 self._onefile(msg, msgdata)
                 self._switchboard.finish(filebase)
             except Exception as e:
-                # All runners that implement _dispose() must guarantee that
-                # exceptions are caught and dealt with properly.  Still, there
-                # may be a bug in the infrastructure, and we do not want those
-                # to cause messages to be lost.  Any uncaught exceptions will
-                # cause the message to be stored in the shunt queue for human
-                # intervention.
-                self._log(e)
-                # Put a marker in the metadata for unshunting
-                msgdata['whichq'] = self._switchboard.whichq()
-                # It is possible that shunting can throw an exception, e.g. a
-                # permissions problem or a MemoryError due to a really large
-                # message.  Try to be graceful.
-                try:
-                    new_filebase = self._shunt.enqueue(msg, msgdata)
-                    syslog('error', 'SHUNTING: %s', new_filebase)
-                    self._switchboard.finish(filebase)
-                except Exception as e:
-                    # The message wasn't successfully shunted.  Log the
-                    # exception and try to preserve the original queue entry
-                    # for possible analysis.
-                    self._log(e)
-                    syslog('error',
-                           'SHUNTING FAILED, preserving original entry: %s',
-                           filebase)
+                if not self._handle_error(e, msg=msg, mlist=msgdata.get('listname')):
                     self._switchboard.finish(filebase, preserve=True)
             # Other work we want to do each time through the loop
             Utils.reap(self._kids, once=True)
@@ -169,14 +209,10 @@ class Runner:
                     mailman_msg.set_payload(msg.get_payload())
                 msg = mailman_msg
             sender = msg.get_sender()
-            listname = msgdata.get('listname')
-            if not listname:
-                listname = mm_cfg.MAILMAN_SITE_LIST
+            listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
             mlist = self._open_list(listname)
             if not mlist:
-                syslog('error',
-                       'Dequeuing message destined for missing list: %s',
-                       listname)
+                self.log_error('missing_list', 'List not found', msg=msg, listname=listname)
                 self._shunt.enqueue(msg, msgdata)
                 return
             # Now process this message, keeping track of any subprocesses that may
@@ -206,7 +242,7 @@ class Runner:
             if keepqueued:
                 self._switchboard.enqueue(msg, msgdata)
         except Exception as e:
-            self._log(e)
+            self._handle_error(e, msg=msg, mlist=mlist)
 
     def _open_list(self, listname):
         # We no longer cache the list instances.  Because of changes to
@@ -218,41 +254,9 @@ class Runner:
         try:
             mlist = MailList.MailList(listname, lock=False)
         except Errors.MMListError as e:
-            syslog('error', 'error opening list: %s\n%s', listname, e)
+            self.log_error('list_open_error', e, listname=listname)
             return None
         return mlist
-
-    def _log(self, exc):
-        syslog('error', 'Uncaught runner exception: %s', exc)
-        s = StringIO()
-        traceback.print_exc(file=s)
-        syslog('error', s.getvalue())
-
-    #
-    # Subclasses can override these methods.
-    #
-    def _cleanup(self):
-        """Clean up upon exit from the main processing loop.
-
-        Called when the Runner's main loop is stopped, this should perform
-        any necessary resource deallocation.  Its return value is irrelevant.
-        """
-        Utils.reap(self._kids)
-
-    def _dispose(self, mlist, msg, msgdata):
-        """Dispose of a single message destined for a mailing list.
-
-        Called for each message that the Runner is responsible for, this is
-        the primary overridable method for processing each message.
-        Subclasses, must provide implementation for this method.
-
-        mlist is the MailList instance this message is destined for.
-
-        msg is the Message object representing the message.
-
-        msgdata is a dictionary of message metadata.
-        """
-        raise NotImplementedError
 
     def _doperiodic(self):
         """Do some processing `every once in a while'.
@@ -285,3 +289,29 @@ class Runner:
         You could, for example, implement a throttling algorithm here.
         """
         return self._stop
+
+    #
+    # Subclasses can override these methods.
+    #
+    def _cleanup(self):
+        """Clean up upon exit from the main processing loop.
+
+        Called when the Runner's main loop is stopped, this should perform
+        any necessary resource deallocation.  Its return value is irrelevant.
+        """
+        Utils.reap(self._kids)
+
+    def _dispose(self, mlist, msg, msgdata):
+        """Dispose of a single message destined for a mailing list.
+
+        Called for each message that the Runner is responsible for, this is
+        the primary overridable method for processing each message.
+        Subclasses, must provide implementation for this method.
+
+        mlist is the MailList instance this message is destined for.
+
+        msg is the Message object representing the message.
+
+        msgdata is a dictionary of message metadata.
+        """
+        raise NotImplementedError
