@@ -427,7 +427,7 @@ class HTMLFormatter(object):
         member_len = len(self.getRegularMemberKeys())
         # If only one language is enabled for this mailing list, omit the
         # language choice buttons.
-        if len(self.GetAvailableLanguages()) == 1:
+        if len(self.available_languages) == 1:
             listlangs = _(Utils.GetLanguageDescr(self.preferred_language))
         else:
             listlangs = self.GetLangSelectBox(lang).Format()
@@ -480,7 +480,7 @@ class HTMLFormatter(object):
         if lang is None:
             lang = self.preferred_language
         # Figure out the available languages
-        values = self.GetAvailableLanguages()
+        values = self.available_languages
         legend = list(map(_, list(map(Utils.GetLanguageDescr, values))))
         try:
             selected = values.index(lang)
