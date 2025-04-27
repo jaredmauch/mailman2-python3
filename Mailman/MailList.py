@@ -600,20 +600,16 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                    'Failed config.pck write, retaining old state.\n%s', e)
             if fp is not None:
                 os.unlink(fname_tmp)
-                    raise
+            raise
         # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
         # as safely as possible.
         try:
             # might not exist yet
-            os.unlink(fname_last)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-        try:
-            # might not exist yet
             os.link(fname, fname_last)
         except OSError as e:
-            if e.errno != errno.ENOENT: raise
-            os.rename(fname_tmp, fname)
+            if e.errno != errno.ENOENT:
+                raise
+        os.rename(fname_tmp, fname)
         # Reset the timestamp
         self.__timestamp = os.path.getmtime(fname)
 
@@ -622,22 +618,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # interested in it.  This will raise a NotLockedError if we don't have
         # the lock (which is a serious problem!).  TBD: do we need to be more
         # defensive?
-                self.__lock.refresh()
-            # copy all public attributes to serializable dictionary
-            dict = {}
-            for key, value in list(self.__dict__.items()):
-                if key[0] == '_' or type(value) is MethodType:
-                    continue
+        self.__lock.refresh()
+        # copy all public attributes to serializable dictionary
+        dict = {}
+        for key, value in list(self.__dict__.items()):
+            if key[0] == '_' or type(value) is MethodType:
+                continue
             dict[key] = value
-            # Make config.pck unreadable by `other', as it contains all the
-            # list members' passwords (in clear text).
-            omask = os.umask(0o007)
-            try:
-                self.__save(dict)
-            finally:
-                os.umask(omask)
-                self.SaveRequestsDb()
-            self.CheckHTMLArchiveDir()
+        # Make config.pck unreadable by `other', as it contains all the
+        # list members' passwords (in clear text).
+        omask = os.umask(0o007)
+        try:
+            self.__save(dict)
+        finally:
+            os.umask(omask)
+            self.SaveRequestsDb()
+        self.CheckHTMLArchiveDir()
 
     def __load(self, dbfile):
         # Attempt to load and unserialize the specified database file.  This
@@ -678,7 +674,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Open the file in binary mode to avoid any text decoding
             fp = open(dbfile, 'rb')
         except EnvironmentError as e:
-                if e.errno != errno.ENOENT: raise
+            if e.errno != errno.ENOENT:
+                raise
             # The file doesn't exist yet
             return None, e
 
