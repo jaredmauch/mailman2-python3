@@ -174,6 +174,46 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     pass
             return value
 
+        # List of attributes that require loading list data
+        list_data_attributes = {
+            # Core membership data
+            'members', 'digest_members', 'user_options', 'language', 
+            'usernames', 'bounce_info', 'delivery_status', 'passwords',
+            'topics', 'topics_userinterest',
+            
+            # Member management
+            'ban_list', 'accept_these_nonmembers', 'hold_these_nonmembers',
+            'reject_these_nonmembers', 'discard_these_nonmembers',
+            'regular_exclude_lists', 'regular_include_lists',
+            
+            # List configuration
+            'owner', 'moderator', 'description', 'info', 'welcome_msg',
+            'goodbye_msg', 'subject_prefix', 'msg_header', 'msg_footer',
+            
+            # Archive settings
+            'archive_private', 'archive_volume_frequency',
+            
+            # Bounce handling
+            'bounce_processing', 'bounce_score_threshold',
+            'bounce_info_stale_after', 'bounce_you_are_disabled_warnings',
+            'bounce_you_are_disabled_warnings_interval',
+            'bounce_unrecognized_goes_to_list_owner',
+            'bounce_notify_owner_on_bounce_increment',
+            'bounce_notify_owner_on_disable',
+            'bounce_notify_owner_on_removal'
+        }
+
+        # Ensure list data is loaded if we're accessing list-specific attributes
+        if name in list_data_attributes:
+            try:
+                if not self.Locked():
+                    self.Lock()
+                self.Load()
+            except Exception as e:
+                syslog('error', 'Failed to load list data for %s: %s', 
+                       self.internal_name(), str(e))
+                raise AttributeError(name)
+
         # Then try the memberadaptor
         try:
             return getattr(self._memberadaptor, name)
@@ -187,59 +227,42 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             except AttributeError:
                 pass
 
-        # Check mixin classes in reverse MRO order to respect inheritance
-        for baseclass in reversed(self.__class__.__mro__[1:]):  # Skip self
+        # Finally check mixin classes
+        for baseclass in self.__class__.__bases__:
             try:
-                # First check if the attribute exists in the base class
-                if hasattr(baseclass, name):
-                    attr = getattr(baseclass, name)
-                    # If it's a method, bind it to this instance
-                    if callable(attr):
-                        return attr.__get__(self, self.__class__)
-                    # For non-method attributes, check if we have an instance value
-                    if hasattr(self, '_' + name):
-                        return getattr(self, '_' + name)
-                    # If the attribute exists in the base class's instance dict, use that
-                    if name in baseclass.__dict__:
-                        return attr
-                    # If we have an instance value, use that
-                    if hasattr(self, name):
-                        return getattr(self, name)
-                    # If this is a mixin class with InitVars, try to initialize
-                    if hasattr(baseclass, 'InitVars'):
-                        try:
-                            # Only initialize if we haven't done so before
-                            if not hasattr(self, '_' + name + '_initialized'):
-                                baseclass.InitVars(self)
-                                setattr(self, '_' + name + '_initialized', True)
-                                if hasattr(self, name):
-                                    return getattr(self, name)
-                        except Exception as e:
-                            syslog('error', 'Error initializing %s from %s: %s',
-                                   name, baseclass.__name__, str(e))
-                            continue
+                # Get the attribute from the base class
+                attr = getattr(baseclass, name)
+                # If it's a method, bind it to this instance
+                if callable(attr):
+                    return attr.__get__(self, self.__class__)
+                # For non-method attributes, check if we have an instance value
+                if hasattr(self, '_' + name):
+                    return getattr(self, '_' + name)
+                # If the attribute exists in the base class's instance dict, use that
+                if name in baseclass.__dict__:
                     return attr
+                # If we have an instance value, use that
+                if hasattr(self, name):
+                    return getattr(self, name)
+                # If this is a mixin class, try to initialize the attribute
+                if hasattr(baseclass, 'InitVars'):
+                    try:
+                        baseclass.InitVars(self)
+                        if hasattr(self, name):
+                            return getattr(self, name)
+                    except Exception:
+                        pass
+                return attr
             except AttributeError:
-                continue
+                pass
 
         # If we get here, try to initialize through the main class's InitVars
         try:
-            if not hasattr(self, '_' + name + '_initialized'):
-                self.InitVars()
-                setattr(self, '_' + name + '_initialized', True)
-                if hasattr(self, name):
-                    return getattr(self, name)
-        except Exception as e:
-            syslog('error', 'Error initializing %s from main class: %s',
-                   name, str(e))
-
-        # If we still don't have the attribute, check if it's a property
-        for baseclass in reversed(self.__class__.__mro__[1:]):
-            try:
-                if name in baseclass.__dict__ and isinstance(baseclass.__dict__[name], property):
-                    return baseclass.__dict__[name].__get__(self, self.__class__)
-            except Exception:
-                continue
+            self.InitVars()
+            if hasattr(self, name):
+                return getattr(self, name)
+        except Exception:
+            pass
 
         raise AttributeError(name)
 
