@@ -168,11 +168,11 @@ def process(mlist, msg, msgdata):
     try:
         omask = os.umask(0o007)
         try:
-            # Open file in binary mode for proper handling of line endings
-            with open(mboxfile, 'ab+') as mboxfp:
-                # Pass the file path to Mailbox, not the file object
-                mbox = Mailbox(mboxfile)
-                mbox.AppendMessage(msg)
+            # Open file in text mode with proper encoding
+            with open(mboxfile, 'a+', encoding='utf-8') as mboxfp:
+                # Convert message to string format
+                msg_str = str(msg)
+                mboxfp.write(msg_str + '\n')
                 
                 # Calculate size and check threshold
                 mboxfp.flush()
@@ -253,59 +253,96 @@ def send_digests(mlist, mboxpath):
     plainmsg.write(to_cset_out(mastheadtxt, lcset_out))
     plainmsg.write('\n')
     
-    # Process the mbox
-    mbox = Mailbox(mboxpath)  # Use path instead of file object
-    
-    # Add a table of contents for RFC 1153 digests
-    plainmsg.write(to_cset_out(separator70, lcset_out))
-    plainmsg.write('\n')
-    plainmsg.write(to_cset_out(_('Today\'s Topics:\n'), lcset_out))
-    
-    # Process each message
-    msg_num = 1
-    for msg in mbox:
-        if msg is None:
-            continue
+    # Process the mbox file
+    try:
+        with open(mboxpath, 'r', encoding='utf-8') as mboxfp:
+            msg_num = 1
+            current_msg = []
+            for line in mboxfp:
+                if line.startswith('From '):
+                    if current_msg:
+                        # Process the previous message
+                        msg_str = ''.join(current_msg)
+                        try:
+                            msg = email.message_from_string(msg_str, Mailman.Message.Message)
+                            if msg is None:
+                                continue
+                                
+                            subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)
+                            subject = Utils.oneline(subject, lcset)
+                            
+                            # Add to table of contents
+                            plainmsg.write('%2d. %s\n' % (msg_num, to_cset_out(subject, lcset_out)))
+                            
+                            # Add the message to both digest formats
+                            mimemsg.attach(MIMEMessage(msg))
+                            
+                            # Add message header
+                            plainmsg.write('\n')
+                            plainmsg.write(to_cset_out(separator30, lcset_out))
+                            plainmsg.write('\n')
+                            plainmsg.write(to_cset_out(_('Message %d\n' % msg_num), lcset_out))
+                            plainmsg.write(to_cset_out(separator30, lcset_out))
+                            plainmsg.write('\n')
+                            
+                            # Add message metadata
+                            for header in ('date', 'from', 'subject'):
+                                value = decode_header_value(msg.get(header, ''), lcset)
+                                plainmsg.write('%s: %s\n' % (header.capitalize(), to_cset_out(value, lcset_out)))
+                            plainmsg.write('\n')
+                            
+                            # Add message body
+                            try:
+                                body = process_message_body(msg, lcset)
+                                plainmsg.write(to_cset_out(body, lcset_out))
+                                plainmsg.write('\n')
+                            except Exception as e:
+                                plainmsg.write(to_cset_out(_('[Message body could not be decoded]\n'), lcset_out))
+                                syslog('error', 'Message %d digest payload error: %s', msg_num, str(e))
+                            
+                            msg_num += 1
+                        except Exception as e:
+                            syslog('error', 'Digest message %d processing error: %s', msg_num, str(e))
+                            syslog('error', 'Traceback: %s', traceback.format_exc())
+                    current_msg = [line]
+                else:
+                    current_msg.append(line)
             
-        try:
-            subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)
-            subject = Utils.oneline(subject, lcset)
-            
-            # Add to table of contents
-            plainmsg.write('%2d. %s\n' % (msg_num, to_cset_out(subject, lcset_out)))
-            
-            # Add the message to both digest formats
-            mimemsg.attach(MIMEMessage(msg))
-            
-            # Add message header
-            plainmsg.write('\n')
-            plainmsg.write(to_cset_out(separator30, lcset_out))
-            plainmsg.write('\n')
-            plainmsg.write(to_cset_out(_('Message %d\n' % msg_num), lcset_out))
-            plainmsg.write(to_cset_out(separator30, lcset_out))
-            plainmsg.write('\n')
-            
-            # Add message metadata
-            for header in ('date', 'from', 'subject'):
-                value = decode_header_value(msg.get(header, ''), lcset)
-                plainmsg.write('%s: %s\n' % (header.capitalize(), to_cset_out(value, lcset_out)))
-            plainmsg.write('\n')
-            
-            # Add message body
-            try:
-                body = process_message_body(msg, lcset)
-                plainmsg.write(to_cset_out(body, lcset_out))
-                plainmsg.write('\n')
-            except Exception as e:
-                plainmsg.write(to_cset_out(_('[Message body could not be decoded]\n'), lcset_out))
-                syslog('error', 'Message %d digest payload error: %s', msg_num, str(e))
-            
-            msg_num += 1
-            
-        except Exception as e:
-            syslog('error', 'Digest message %d processing error: %s', msg_num, str(e))
-            syslog('error', 'Traceback: %s', traceback.format_exc())
-            continue
+            # Process the last message
+            if current_msg:
+                msg_str = ''.join(current_msg)
+                try:
+                    msg = email.message_from_string(msg_str, Mailman.Message.Message)
+                    if msg is not None:
+                        # Process the last message (same code as above)
+                        subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)
+                        subject = Utils.oneline(subject, lcset)
+                        plainmsg.write('%2d. %s\n' % (msg_num, to_cset_out(subject, lcset_out)))
+                        mimemsg.attach(MIMEMessage(msg))
+                        plainmsg.write('\n')
+                        plainmsg.write(to_cset_out(separator30, lcset_out))
+                        plainmsg.write('\n')
+                        plainmsg.write(to_cset_out(_('Message %d\n' % msg_num), lcset_out))
+                        plainmsg.write(to_cset_out(separator30, lcset_out))
+                        plainmsg.write('\n')
+                        for header in ('date', 'from', 'subject'):
+                            value = decode_header_value(msg.get(header, ''), lcset)
+                            plainmsg.write('%s: %s\n' % (header.capitalize(), to_cset_out(value, lcset_out)))
+                        plainmsg.write('\n')
+                        try:
+                            body = process_message_body(msg, lcset)
+                            plainmsg.write(to_cset_out(body, lcset_out))
+                            plainmsg.write('\n')
+                        except Exception as e:
+                            plainmsg.write(to_cset_out(_('[Message body could not be decoded]\n'), lcset_out))
+                            syslog('error', 'Message %d digest payload error: %s', msg_num, str(e))
+                except Exception as e:
+                    syslog('error', 'Digest message %d processing error: %s', msg_num, str(e))
+                    syslog('error', 'Traceback: %s', traceback.format_exc())
+    except Exception as e:
+        syslog('error', 'Error reading digest mbox file: %s', str(e))
+        syslog('error', 'Traceback: %s', traceback.format_exc())
+        return
     
     # Finish up the RFC 1153 digest
     plainmsg.write('\n')
@@ -326,7 +363,7 @@ def send_digests(mlist, mboxpath):
     
     # Remove the mbox file
     try:
-        os.unlink(os.path.join(mlist.fullpath(), 'digest.mbox'))
+        os.unlink(mboxpath)
     except OSError as e:
         syslog('error', 'Failed to remove digest.mbox: %s', str(e))
 
