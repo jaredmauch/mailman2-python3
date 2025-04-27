@@ -144,21 +144,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             func = dict.get('extend')
             if func:
                 func(self)
-        if lock:
-            # This will load the database.
-            try:
-                self.Lock()
-            except Errors.MMCorruptListDatabaseError as e:
-                syslog('error', 'Failed to load list %s: %s', name, e)
-                raise
-        else:
-            try:
-                self.Load()
-            except Errors.MMCorruptListDatabaseError as e:
-                syslog('error', 'Failed to load list %s: %s', name, e)
-                raise
 
-        # Initialize all mixin classes and their attributes
+        # Initialize all mixin classes and their attributes first
         try:
             # First initialize the main class
             self.InitVars()
@@ -176,6 +163,20 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         except Exception as e:
             syslog('error', 'Failed to initialize list %s: %s', name, e)
             raise
+
+        if lock:
+            # This will load the database.
+            try:
+                self.Lock()
+            except Errors.MMCorruptListDatabaseError as e:
+                syslog('error', 'Failed to load list %s: %s', name, e)
+                raise
+        else:
+            try:
+                self.Load()
+            except Errors.MMCorruptListDatabaseError as e:
+                syslog('error', 'Failed to load list %s: %s', name, e)
+                raise
 
     def __getattr__(self, name):
         # First check if the attribute exists in the instance's dictionary
@@ -274,7 +275,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Must reload our database for consistency.  Watch out for lists that
             # don't exist.
             try:
-                self.Load()
+                if not self.Locked():
+                    self.Load()
             except Errors.MMCorruptListDatabaseError as e:
                 syslog('error', 'Failed to load list %s: %s', 
                        self.internal_name(), e)
@@ -954,56 +956,34 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return self._create()
 
     def Load(self):
-        """Load the list's configuration."""
-        try:
-            # Load the database
-            dict = self.__load()
-            
-            # Validate language settings
-            if not hasattr(self, 'preferred_language') or not self.preferred_language:
+        """Load the list's configuration from disk.
+        
+        This method loads the configuration dictionary from disk and updates
+        the instance attributes with the loaded values.
+        """
+        # Only refresh if we have the lock
+        if self.Locked():
+            self.__lock.refresh()
+        # Load the configuration dictionary
+        dict = self.__load()
+        if dict:
+            # Update instance attributes with loaded values
+            for key, value in dict.items():
+                if key[0] != '_':  # Skip private attributes
+                    setattr(self, key, value)
+            # Initialize member adaptors
+            self._memberadaptor = None
+            self.InitVars()
+            # Check language settings
+            if mm_cfg.LANGUAGES.get(self.preferred_language) is None:
                 self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
-            if not hasattr(self, 'available_languages') or not self.available_languages:
-                self.available_languages = [self.preferred_language]
-            # Ensure preferred_language is in available_languages
-            if self.preferred_language not in self.available_languages:
-                self.available_languages.append(self.preferred_language)
-                
-            # Initialize the member adaptor if not already done
-            if not hasattr(self, '_memberadaptor') or self._memberadaptor is None:
-                self._memberadaptor = OldStyleMemberships(self)
-                self._memberadaptor.Load()
-                
-            # Initialize all mixin classes and their attributes
-            try:
-                # First initialize the main class
-                self.InitVars()
-                
-                # Then initialize each mixin class
-                for baseclass in self.__class__.__bases__:
-                    if hasattr(baseclass, 'InitVars'):
-                        baseclass.InitVars(self)
-                        
-                # Finally, ensure all security-related attributes are initialized
-                from Mailman.SecurityManager import SecurityManager
-                if isinstance(self, SecurityManager):
-                    self.InitVars()
-                    
-                # Validate and normalize values
-                self.CheckValues()
-                
-                # Check version and update schema if necessary
-                self.CheckVersion(dict)
-                
-            except Exception as e:
-                syslog('error', 'Failed to initialize list %s: %s', self.internal_name(), e)
-                raise
-                
-        except Errors.MMCorruptListDatabaseError as e:
-            syslog('error', 'Failed to load list %s: %s', self.internal_name(), e)
-            raise
-        except Exception as e:
-            syslog('error', 'Unexpected error loading list %s: %s', self.internal_name(), e)
-            raise Errors.MMCorruptListDatabaseError(str(e))
+            # Check version
+            self.CheckVersion(dict)
+            # Validate values
+            self.CheckValues()
+        else:
+            # No configuration loaded, initialize with defaults
+            self.InitVars()
 
     def __fix_corrupt_pckfile(self, file, pfile, plast, dfile, dlast):
         if file == plast:

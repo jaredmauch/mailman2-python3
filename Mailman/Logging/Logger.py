@@ -43,21 +43,24 @@ class Logger(object):
         Otherwise, the file is created only when there are writes pending.
         """
         self.__filename = os.path.join(mm_cfg.LOG_DIR, category)
-        self.__fp = None
+        self._fp = None
         self.__nofail = nofail
         self.__encoding = LOG_ENCODING or sys.getdefaultencoding()
         if immediate:
             self.__get_f()
 
     def __del__(self):
-        self.close()
+        try:
+            self.close()
+        except:
+            pass
 
     def __repr__(self):
         return '<%s to %s>' % (self.__class__.__name__, repr(self.__filename))
 
     def __get_f(self):
-        if self.__fp:
-            return self.__fp
+        if self._fp:
+            return self._fp
         else:
             try:
                 ou = os.umask(0o07)
@@ -67,13 +70,13 @@ class Logger(object):
                             self.__filename, 'ab', self.__encoding, 'replace')
                     except LookupError:
                         f = open(self.__filename, 'ab')
-                    self.__fp = f
+                    self._fp = f
                 finally:
                     os.umask(ou)
             except IOError as e:
                 if self.__nofail:
                     _logexc(self, e)
-                    f = self.__fp = sys.__stderr__
+                    f = self._fp = sys.__stderr__
                 else:
                     raise
             return f
@@ -97,10 +100,12 @@ class Logger(object):
             self.write(l)
 
     def close(self):
-        if not self.__fp:
-            return
-        self.__get_f().close()
-        self.__fp = None
+        try:
+            if self._fp is not None:
+                self._fp.close()
+                self._fp = None
+        except:
+            pass
 
     def log(self, msg, level=logging.INFO):
         """Log a message at the specified level."""
