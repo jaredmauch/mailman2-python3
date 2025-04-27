@@ -614,11 +614,24 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.__timestamp = os.path.getmtime(fname)
 
     def Save(self):
+        """Save the mailing list's configuration to disk.
+        
+        This method refreshes the lock and saves all public attributes to disk.
+        It handles lock errors gracefully and ensures proper cleanup.
+        """
         # Refresh the lock, just to let other processes know we're still
         # interested in it.  This will raise a NotLockedError if we don't have
         # the lock (which is a serious problem!).  TBD: do we need to be more
         # defensive?
-        self.__lock.refresh()
+        try:
+            self.__lock.refresh()
+        except NotLockedError:
+            # Lock was lost, try to reacquire it
+            try:
+                self.__lock.lock(timeout=10)  # Give it 10 seconds to acquire
+            except (AlreadyLockedError, TimeOutError) as e:
+                syslog('error', 'Could not reacquire lock during Save(): %s', str(e))
+                raise
         # copy all public attributes to serializable dictionary
         dict = {}
         for key, value in list(self.__dict__.items()):

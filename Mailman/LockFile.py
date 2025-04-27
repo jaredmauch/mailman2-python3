@@ -417,105 +417,57 @@ class LockFile:
             # Write our PID and hostname to help with debugging
             with open(tempfile, 'w') as fp:
                 fp.write('%d %s\n' % (os.getpid(), hostname))
-        except OSError as e:
-            self.__writelog('could not create tempfile %s: %s' % (tempfile, e))
+            # Set group read-write permissions (660)
+            os.chmod(tempfile, 0o660)
+        except (IOError, OSError) as e:
+            self.__writelog('failed to create temp file: %s' % str(e))
             return -2
 
-        # Now try to link the tempfile to the lock file
+        # Try to create a hard link from the global lock file to our temp file
         try:
             os.link(tempfile, self.__lockfile)
-            # Link succeeded - we have the lock
-            self.__writelog('successfully linked tempfile to lock file')
-            os.unlink(tempfile)
-            return 0
         except OSError as e:
-            # Link failed - see if lock exists and check if it's stale
-            self.__writelog('link to lock file failed: %s' % e)
-            try:
-                if not os.path.exists(self.__lockfile):
-                    # Lock disappeared - try again
-                    self.__writelog('lock file disappeared, retrying')
-                    os.unlink(tempfile)
-                    return -1
-                
-                # Check if the lock file is stale
+            if e.errno == errno.EEXIST:
+                # Lock file exists, check if it's stale
                 try:
-                    with open(self.__lockfile) as fp:
-                        content = fp.read().strip().split()
-                        if not content:
-                            self.__writelog('lock file is empty')
-                            os.unlink(self.__lockfile)
-                            os.unlink(tempfile)
-                            return -1
-                            
-                        # Parse PID and hostname from lock file
-                        if len(content) >= 2:
-                            pid = int(content[0])
-                            lock_hostname = content[1]
-                        else:
-                            # Try old format
-                            try:
-                                pid = int(content[0])
-                                lock_hostname = hostname  # Assume same host
-                            except (ValueError, IndexError):
-                                self.__writelog('invalid lock file format')
-                                os.unlink(self.__lockfile)
-                                os.unlink(tempfile)
-                                return -1
-                            
-                        # If the lock is from another host, we need to be more conservative
-                        if lock_hostname != hostname:
-                            self.__writelog('lock owned by different host: %s' % lock_hostname)
-                            os.unlink(tempfile)
-                            return -1
-                            
-                        # Check if process exists and is a Mailman process
-                        if not self._is_pid_valid(pid):
-                            self.__writelog('found stale lock (pid %d)' % pid)
-                            try:
-                                os.unlink(self.__lockfile)
-                                os.unlink(tempfile)
-                                return -1
-                            except OSError:
-                                # Someone else might have cleaned up
-                                os.unlink(tempfile)
-                                return -1
-                        else:
-                            # Process exists - check if it's a Mailman process
-                            try:
-                                with open(f'/proc/{pid}/cmdline') as f:
-                                    cmdline = f.read()
-                                    if 'mailman' not in cmdline.lower():
-                                        self.__writelog('breaking lock owned by non-Mailman process')
-                                        os.unlink(self.__lockfile)
-                                        os.unlink(tempfile)
+                    with open(self.__lockfile, 'r') as fp:
+                        pid_host = fp.read().strip().split()
+                        if len(pid_host) == 2:
+                            pid = int(pid_host[0])
+                            if not self._is_pid_valid(pid):
+                                # Stale lock, try to break it
+                                self.__writelog('stale lock detected (pid=%d)' % pid)
+                                self._break()
+                                # Try to create the link again
+                                try:
+                                    os.link(tempfile, self.__lockfile)
+                                except OSError as e2:
+                                    if e2.errno == errno.EEXIST:
                                         return -1
-                            except (IOError, OSError):
-                                # Can't read process info - be conservative
-                                pass
-                except (ValueError, OSError) as e:
-                    self.__writelog('error reading lock: %s' % e)
-                    # Lock file exists but is invalid - try to break it
+                                    raise
+                            else:
+                                return -1
+                except (IOError, OSError, ValueError):
+                    # Error reading lock file or invalid PID, try to break it
+                    self.__writelog('error reading lock file, attempting to break')
+                    self._break()
                     try:
-                        os.unlink(self.__lockfile)
-                        os.unlink(tempfile)
-                        return -1
-                    except OSError:
-                        pass
-            except OSError as e:
-                self.__writelog('error checking lock: %s' % e)
-                try:
-                    os.unlink(tempfile)
-                except OSError:
-                    pass
-                return -2
-                
-            # Lock exists and is valid - clean up and return
-            try:
-                os.unlink(tempfile)
-            except OSError:
-                pass
-            return -1
+                        os.link(tempfile, self.__lockfile)
+                    except OSError as e2:
+                        if e2.errno == errno.EEXIST:
+                            return -1
+                        raise
+            else:
+                raise
+
+        # Success! Set group read-write permissions on the lock file
+        try:
+            os.chmod(self.__lockfile, 0o660)
+        except (IOError, OSError):
+            pass  # Don't fail if we can't set permissions
+
+        self.__writelog('successfully acquired lock')
+        return 0
 
     def _is_pid_valid(self, pid):
         """Check if a PID is still valid (process exists).
