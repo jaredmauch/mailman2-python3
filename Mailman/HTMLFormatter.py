@@ -337,10 +337,12 @@ class HTMLFormatter(object):
         else:
             full_url = base_url
         if mlist:
-            return (f"""<form method="POST" action="%s">
-<input type="hidden" name="csrf_token" value="%s">""" 
-                % (full_url, csrf_token(mlist, contexts, user)))
-        return ('<FORM Method=POST ACTION="%s">' % full_url)
+            token = csrf_token(mlist, contexts, user)
+            if token is None:
+                return '<FORM Method=POST ACTION="%s">' % full_url
+            return """<form method="POST" action="%s">
+<input type="hidden" name="csrf_token" value="%s">""" % (full_url, token)
+        return '<FORM Method=POST ACTION="%s">' % full_url
 
     def FormatArchiveAnchor(self):
         return '<a href="%s">' % self.GetBaseArchiveURL()

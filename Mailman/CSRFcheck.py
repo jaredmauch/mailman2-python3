@@ -52,7 +52,7 @@ def csrf_token(mlist, contexts, user=None):
     needs_hash = (secret + repr(issued)).encode('utf-8')
     mac = sha_new(needs_hash).hexdigest()
     keymac = '%s:%s' % (key, mac)
-    token = binascii.hexlify(marshal.dumps((issued, keymac)))
+    token = binascii.hexlify(marshal.dumps((issued, keymac))).decode('utf-8')
     return token
 
 def csrf_check(mlist, token, cgi_user=None):

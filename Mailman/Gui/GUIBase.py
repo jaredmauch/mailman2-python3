@@ -39,17 +39,18 @@ class GUIBase:
     def _getValidValue(self, mlist, property, wtype, val):
         # Coerce and validate the new value.
         #
+        # First convert any bytes to strings
+        if isinstance(val, bytes):
+            try:
+                val = val.decode('utf-8')
+            except UnicodeDecodeError:
+                val = val.decode('latin1')
         # Radio buttons and boolean toggles both have integral type
         if wtype in (mm_cfg.Radio, mm_cfg.Toggle):
             # Let ValueErrors propagate
             return int(val)
         # String and Text widgets both just return their values verbatim
         if wtype in (mm_cfg.String, mm_cfg.Text):
-            if isinstance(val, bytes):
-                try:
-                    return val.decode('utf-8')
-                except UnicodeDecodeError:
-                    return val.decode('latin1')
             return val
         # This widget contains a single email address
         if wtype == mm_cfg.Email:
@@ -57,11 +58,6 @@ class GUIBase:
             # be cleared.  This is currently the only mm_cfg.Email type widget
             # in the interface, so watch out if we ever add any new ones.
             if val:
-                if isinstance(val, bytes):
-                    try:
-                        val = val.decode('utf-8')
-                    except UnicodeDecodeError:
-                        val = val.decode('latin1')
                 # Let MMBadEmailError and MMHostileAddress propagate
                 Utils.ValidateEmail(val)
             return val
@@ -73,11 +69,6 @@ class GUIBase:
             # config_list input.  Sigh.
             if isinstance(val, ListType):
                 return val
-            if isinstance(val, bytes):
-                try:
-                    val = val.decode('utf-8')
-                except UnicodeDecodeError:
-                    val = val.decode('latin1')
             addrs = []
             bad_addrs = []
             for addr in [s.strip() for s in val.split(NL)]:
