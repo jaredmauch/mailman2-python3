@@ -53,6 +53,10 @@ from builtins import str
 import os
 import re
 import errno
+import time
+import email
+from email.utils import getaddresses
+from email.iterators import body_line_iterator
 
 from email.parser import Parser
 from email.utils import parseaddr
@@ -62,7 +66,7 @@ from Mailman import Utils
 import Mailman.Message
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 
 # We only care about the listname and the subq as in listname@ or
 # listname-request@
@@ -112,25 +116,26 @@ class MaildirRunner(Runner):
             if e.errno != errno.ENOENT: raise
             # Nothing's been delivered yet
             return 0
+            
         for file in files:
             srcname = os.path.join(self._dir, file)
             dstname = os.path.join(self._cur, file + ':1,P')
             xdstname = os.path.join(self._cur, file + ':1,X')
+            
             try:
                 os.rename(srcname, dstname)
             except OSError as e:
                 if e.errno == errno.ENOENT:
                     # Some other MaildirRunner beat us to it
                     continue
-                syslog('error', 'Could not rename maildir file: %s', srcname)
+                mailman_log('error', 'Could not rename maildir file: %s', srcname)
                 raise
+                
             # Now open, read, parse, and enqueue this message
+            fp = None
             try:
                 fp = open(dstname)
-                try:
-                    msg = self._parser.parse(fp)
-                finally:
-                    fp.close()
+                msg = self._parser.parse(fp)
                 # Now we need to figure out which queue of which list this
                 # message was destined for.  See verp_bounce() in
                 # BounceRunner.py for why we do things this way.
@@ -151,7 +156,7 @@ class MaildirRunner(Runner):
                 else:
                     # As far as we can tell, this message isn't destined for
                     # any list on the system.  What to do?
-                    syslog('error', 'Message apparently not for any list: %s',
+                    mailman_log('error', 'Message apparently not for any list: %s',
                            xdstname)
                     os.rename(dstname, xdstname)
                     continue
@@ -183,14 +188,38 @@ class MaildirRunner(Runner):
                     msgdata['torequest'] = 1
                     queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
                 else:
-                    syslog('error', 'Unknown sub-queue: %s', subq)
+                    mailman_log('error', 'Unknown sub-queue: %s', subq)
                     os.rename(dstname, xdstname)
                     continue
                 queue.enqueue(msg, msgdata)
                 os.unlink(dstname)
             except Exception as e:
                 os.rename(dstname, xdstname)
-                syslog('error', str(e))
+                mailman_log('error', str(e))
+            finally:
+                if fp:
+                    try:
+                        fp.close()
+                    except:
+                        pass
 
     def _cleanup(self):
         pass
+
+    def _dispose(self, mlist, msg, msgdata):
+        # Make sure we have the most up-to-date state
+        mlist.Load()
+        if not msgdata.get('prepped'):
+            prepare_message(mlist, msg, msgdata)
+        try:
+            # Process the maildir message
+            maildir_info = process_maildir(mlist, msg, msgdata)
+            if maildir_info:
+                mailman_log('maildir', 'Processed maildir for list "%s": %s',
+                          mlist.internal_name(), maildir_info)
+        except Exception as e:
+            # Some other exception occurred, which we definitely did not
+            # expect, so set this message up for requeuing.
+            self._log(e)
+            return True
+        return False

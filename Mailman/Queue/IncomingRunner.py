@@ -103,7 +103,7 @@ from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import Utils
 
 
@@ -120,7 +120,7 @@ class IncomingRunner(Runner):
         try:
             mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
         except LockFile.TimeOutError:
-            syslog('warning', 'List lock timeout for %s', mlist.real_name)
+            mailman_log('warning', 'List lock timeout for %s', mlist.real_name)
             return 1
 
         try:
@@ -137,7 +137,7 @@ class IncomingRunner(Runner):
             try:
                 mlist.Save(timeout=mm_cfg.SAVE_TIMEOUT)
             except Exception as e:
-                syslog('error', 'Failed to save list %s: %s', mlist.real_name, str(e))
+                mailman_log('error', 'Failed to save list %s: %s', mlist.real_name, str(e))
                 raise
                 
             return more
@@ -145,7 +145,7 @@ class IncomingRunner(Runner):
             try:
                 mlist.Unlock()
             except Exception as e:
-                syslog('error', 'Failed to unlock list %s: %s', mlist.real_name, str(e))
+                mailman_log('error', 'Failed to unlock list %s: %s', mlist.real_name, str(e))
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # Return a copy of the pipeline to prevent modification of the original
@@ -160,12 +160,19 @@ class IncomingRunner(Runner):
             try:
                 __import__(modname)
             except ImportError:
-                syslog('error', 'Invalid pipeline handler: %s', handler)
+                mailman_log('error', 'Invalid pipeline handler: %s', handler)
                 raise PipelineError('Invalid handler: %s' % handler)
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
         retry_count = 0
         max_retries = getattr(mm_cfg, 'MAX_PIPELINE_RETRIES', 3)
+        
+        # Log inbound message details
+        msgid = msg.get('message-id', 'n/a')
+        sender = msg.get('from', 'n/a')
+        subject = msg.get('subject', 'n/a')
+        mailman_log('info', 'Inbound message received - msgid: %s, list: %s, sender: %s, subject: %s',
+               msgid, mlist.real_name, sender, subject)
         
         while pipeline and retry_count < max_retries:
             handler = pipeline.pop(0)
@@ -177,43 +184,46 @@ class IncomingRunner(Runner):
                 sys.modules[modname].process(mlist, msg, msgdata)
                 
                 if pid != os.getpid():
-                    syslog('error', 'child process leaked thru: %s', modname)
+                    mailman_log('error', 'child process leaked thru: %s', modname)
                     # Clean up child processes before exiting
                     Utils.reap(self._kids, once=True)
                     os._exit(1)
                     
             except Errors.DiscardMessage:
                 pipeline.insert(0, handler)
-                syslog('info', 'Message discarded, msgid: %s, list: %s, handler: %s',
+                mailman_log('info', 'Message discarded, msgid: %s, list: %s, handler: %s',
                        msg.get('message-id', 'n/a'), mlist.real_name, handler)
                 return 0
                 
             except Errors.HoldMessage:
-                syslog('info', 'Message held for approval, msgid: %s, list: %s',
+                mailman_log('info', 'Message held for approval, msgid: %s, list: %s',
                        msg.get('message-id', 'n/a'), mlist.real_name)
                 return 0
                 
             except Errors.RejectMessage as e:
                 pipeline.insert(0, handler)
-                syslog('info', 'Message rejected, msgid: %s, list: %s, handler: %s, reason: %s',
+                mailman_log('info', 'Message rejected, msgid: %s, list: %s, handler: %s, reason: %s',
                        msg.get('message-id', 'n/a'), mlist.real_name, handler, e.notice())
                 mlist.BounceMessage(msg, msgdata, e)
                 return 0
                 
             except Exception as e:
                 pipeline.insert(0, handler)
+                mailman_log('error', 'Pipeline error in handler %s: %s', handler, str(e))
                 retry_count += 1
-                syslog('error', 'Pipeline error in handler %s: %s\nTraceback: %s',
-                       handler, str(e), traceback.format_exc())
                 if retry_count >= max_retries:
+                    mailman_log('error', 'Max retries exceeded for msgid: %s', msgid)
                     raise
-                time.sleep(getattr(mm_cfg, 'PIPELINE_RETRY_DELAY', 5))
+                time.sleep(1)  # Brief pause before retry
                 
-        if retry_count >= max_retries:
-            syslog('error', 'Pipeline failed after %d retries', max_retries)
-            raise PipelineError('Maximum retries exceeded')
+        # Log completion status
+        if len(pipeline) == 0:
+            mailman_log('info', 'Message processing completed - msgid: %s, list: %s', msgid, mlist.real_name)
+        else:
+            mailman_log('info', 'Message processing paused - msgid: %s, list: %s, remaining handlers: %s',
+                   msgid, mlist.real_name, ', '.join(pipeline))
             
-        return 0
+        return len(pipeline) > 0
 
     def _cleanup(self):
         """Clean up any resources used by the pipeline."""
@@ -225,3 +235,18 @@ class IncomingRunner(Runner):
                 os.close(fd)
             except OSError:
                 pass
+
+    def _oneloop(self):
+        # First, list all the files in our queue directory.
+        # Switchboard.files() is guaranteed to hand us the files in FIFO
+        # order.  Return an integer count of the number of files that were
+        # available for this qrunner to process.
+        files = self._switchboard.files()
+        mailman_log('debug', 'IncomingRunner: Found %d files in queue directory %s', len(files), self.QDIR)
+        for filebase in files:
+            try:
+                # Log the queue file being processed
+                mailman_log('debug', 'IncomingRunner: Processing queue file: %s', filebase)
+                # Ask the switchboard for the message and metadata objects
+                # associated with this filebase.
+                msg, msgdata = self._switchboard.dequeue(filebase)

@@ -85,7 +85,13 @@ class OutgoingRunner(Mailman.Queue.Runner.Runner, Mailman.Queue.BounceRunner.Bou
             raise
 
     def _dispose(self, mlist, msg, msgdata):
-        Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Processing message for list %s', mlist.internal_name())
+        # Log message details before processing
+        msgid = msg.get('message-id', 'n/a')
+        sender = msg.get('from', 'n/a')
+        subject = msg.get('subject', 'n/a')
+        Mailman.Logging.Syslog.mailman_log('info', 'OutgoingRunner: Starting delivery - msgid: %s, list: %s, sender: %s, subject: %s',
+               msgid, mlist.internal_name(), sender, subject)
+               
         # See if we should retry delivery of this message again.
         deliver_after = msgdata.get('deliver_after', 0)
         if time.time() < deliver_after:
@@ -104,7 +110,8 @@ class OutgoingRunner(Mailman.Queue.Runner.Runner, Mailman.Queue.BounceRunner.Bou
                 Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: child process leaked thru: %s', self._modname)
                 os._exit(1)
             self.__logged = False
-            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Message delivered successfully')
+            Mailman.Logging.Syslog.mailman_log('info', 'OutgoingRunner: Message delivered successfully - msgid: %s, list: %s',
+                   msgid, mlist.internal_name())
         except socket.error:
             # There was a problem connecting to the SMTP server.  Log this
             # once, but crank up our sleep time so we don't fill the error
@@ -114,30 +121,30 @@ class OutgoingRunner(Mailman.Queue.Runner.Runner, Mailman.Queue.BounceRunner.Bou
                 port = 'smtp'
             # Log this just once.
             if not self.__logged:
-                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Cannot connect to SMTP server %s on port %s',
-                       Mailman.mm_cfg.SMTPHOST, port)
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Cannot connect to SMTP server %s on port %s for msgid: %s',
+                       Mailman.mm_cfg.SMTPHOST, port, msgid)
                 self.__logged = True
             self._snooze(0)
             return True
         except Mailman.Errors.SomeRecipientsFailed as e:
-            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Some recipients failed: %s', str(e))
+            Mailman.Logging.Syslog.mailman_log('info', 'OutgoingRunner: Some recipients failed for msgid: %s - %s', msgid, str(e))
             # Handle local rejects of probe messages differently.
             if msgdata.get('probe_token') and e.permfailures:
-                Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Handling probe bounce')
+                Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Handling probe bounce for msgid: %s', msgid)
                 self._probe_bounce(mlist, msgdata['probe_token'])
             else:
                 # Delivery failed at SMTP time for some or all of the
                 # recipients.  Permanent failures are registered as bounces,
                 # but temporary failures are retried for later.
                 if e.permfailures:
-                    Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Queueing permanent failures as bounces')
+                    Mailman.Logging.Syslog.mailman_log('info', 'OutgoingRunner: Queueing permanent failures as bounces for msgid: %s', msgid)
                     self._queue_bounces(mlist.internal_name(), e.permfailures,
                                         msg)
                 # Move temporary failures to the qfiles/retry queue which will
                 # occasionally move them back here for another shot at
                 # delivery.
                 if e.tempfailures:
-                    Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Queueing temporary failures for retry')
+                    Mailman.Logging.Syslog.mailman_log('info', 'OutgoingRunner: Queueing temporary failures for retry for msgid: %s', msgid)
                     now = time.time()
                     recips = e.tempfailures
                     last_recip_count = msgdata.get('last_recip_count', 0)
@@ -147,7 +154,7 @@ class OutgoingRunner(Mailman.Queue.Runner.Runner, Mailman.Queue.BounceRunner.Bou
                         # delivery any longer.  BAW: is this the best
                         # disposition?
                         if now > deliver_until:
-                            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: No progress made, giving up on message')
+                            Mailman.Logging.Syslog.mailman_log('info', 'OutgoingRunner: No progress made, giving up on msgid: %s', msgid)
                             return False
                     else:
                         # Keep trying to delivery this message for a while
@@ -160,7 +167,7 @@ class OutgoingRunner(Mailman.Queue.Runner.Runner, Mailman.Queue.BounceRunner.Bou
                     msgdata['recips'] = recips
                     self.__retryq.enqueue(msg, msgdata)
         except Exception as e:
-            Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Unexpected error during message processing: %s', str(e))
+            Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Unexpected error during message processing for msgid: %s - %s', msgid, str(e))
             Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
             raise
         # We've successfully completed handling of this message

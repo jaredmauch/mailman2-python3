@@ -31,7 +31,7 @@ COMMASPACE = ', '
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman.Queue.Runner import Runner
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 
 # Only import nntplib if NNTP support is enabled
 try:
@@ -39,7 +39,7 @@ try:
     HAVE_NNTP = True
 except ImportError:
     HAVE_NNTP = False
-    syslog('warning', 'NNTP support is not enabled. NewsRunner will not be started.')
+    mailman_log('warning', 'NNTP support is not enabled. NewsRunner will not be started.')
 
 # Matches our Mailman crafted Message-IDs.  See Utils.unique_message_id()
 mcre = re.compile(r"""
@@ -64,10 +64,10 @@ class NewsRunner(Runner):
         # Check if NNTP support is available and configured
         self._nntp_enabled = False
         if not HAVE_NNTP:
-            syslog('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
+            mailman_log('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
             return
         if not mm_cfg.DEFAULT_NNTP_HOST:
-            syslog('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
+            mailman_log('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
             return
             
         # NNTP is available and configured, set up the switchboard
@@ -91,8 +91,13 @@ class NewsRunner(Runner):
             return True
         # Make sure we have the most up-to-date state
         mlist.Load()
-        if not msgdata.get('prepped'):
-            prepare_message(mlist, msg, msgdata)
+        try:
+            if not msgdata.get('prepped'):
+                prepare_message(mlist, msg, msgdata)
+        except Exception as e:
+            mailman_log('error', 'Failed to prepare message: %s', str(e))
+            return True
+            
         try:
             # Flatten the message object, sticking it in a StringIO object
             fp = StringIO(msg.as_string())
@@ -100,23 +105,32 @@ class NewsRunner(Runner):
             try:
                 try:
                     nntp_host, nntp_port = Utils.nntpsplit(mlist.nntp_host)
-                    syslog('nntp', 'Connecting to NNTP server %s:%s', nntp_host, nntp_port)
+                    mailman_log('nntp', 'Connecting to NNTP server %s:%s', nntp_host, nntp_port)
+                    # Add timeout
                     conn = nntplib.NNTP(nntp_host, nntp_port,
-                                        readermode=True,
-                                        user=mm_cfg.NNTP_USERNAME,
-                                        password=mm_cfg.NNTP_PASSWORD)
+                                      readermode=True,
+                                      user=mm_cfg.NNTP_USERNAME,
+                                      password=mm_cfg.NNTP_PASSWORD,
+                                      timeout=mm_cfg.NNTP_TIMEOUT)
                     conn.post(fp)
                 except nntplib.error_temp as e:
-                    syslog('error',
-                           '(NNTPDirect) NNTP error for list "%s": %s',
-                           mlist.internal_name(), e)
+                    mailman_log('error', 'Temporary NNTP error for list "%s": %s',
+                               mlist.internal_name(), e)
+                    return True  # Requeue for temporary errors
+                except nntplib.error_perm as e:
+                    mailman_log('error', 'Permanent NNTP error for list "%s": %s',
+                               mlist.internal_name(), e)
+                    return False  # Don't requeue for permanent errors
                 except socket.error as e:
-                    syslog('error',
-                           '(NNTPDirect) socket error for list "%s": %s',
-                           mlist.internal_name(), e)
+                    mailman_log('error', 'Socket error for list "%s": %s',
+                               mlist.internal_name(), e)
+                    return True
             finally:
                 if conn:
-                    conn.quit()
+                    try:
+                        conn.quit()
+                    except:
+                        pass
         except Exception as e:
             # Some other exception occurred, which we definitely did not
             # expect, so set this message up for requeuing.
