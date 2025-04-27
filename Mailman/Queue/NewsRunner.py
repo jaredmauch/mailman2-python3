@@ -107,13 +107,18 @@ class NewsRunner(Runner):
     def _oneloop(self):
         # If NNTP is not enabled, sleep for a while before checking again
         if not self._nntp_enabled:
-            time.sleep(60)  # Check every minute if any lists need NNTP
-            return
+            # Check the stop flag every second during sleep
+            for _ in range(60):
+                if self._stop:
+                    return 0
+                time.sleep(1)
+            return 0
             
         # Get one message from the queue
         msg = self._switchboard.dequeue()
         if msg is None:
-            return
+            return 0
+            
         # Process the message
         try:
             self._dopost(msg)
@@ -121,6 +126,7 @@ class NewsRunner(Runner):
             mailman_log('error', 'NewsRunner error: %s', str(e))
             # Put the message back in the queue
             self._switchboard.enqueue(msg)
+        return 1
 
     def _dispose(self, mlist, msg, msgdata):
         """Process a news message."""
@@ -183,6 +189,18 @@ class NewsRunner(Runner):
                 pass
             raise SwitchboardError('Could not save news message to %s: %s' %
                                  (filename, e))
+
+    def _cleanup(self):
+        """Clean up resources before termination."""
+        # Close any open NNTP connections
+        if hasattr(self, '_nntp_conn') and self._nntp_conn:
+            try:
+                self._nntp_conn.quit()
+            except Exception:
+                pass
+            self._nntp_conn = None
+        # Call parent cleanup
+        super(NewsRunner, self)._cleanup()
 
 
 def prepare_message(mlist, msg, msgdata):
