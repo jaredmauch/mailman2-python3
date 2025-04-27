@@ -204,9 +204,10 @@ def move_language_templates(mlist):
 
 def dolist(listname):
     errors = 0
-    # Ensure listname is a string
+    # Ensure listname is a string and convert to lowercase
     if isinstance(listname, bytes):
         listname = listname.decode('utf-8', 'replace')
+    listname = listname.lower()
     print('Updating mailing list: %s' % listname)
     mlist = MailList.MailList(listname, lock=0)
     try:
@@ -734,37 +735,64 @@ def update_pending():
         if e.errno != errno.ENOENT: raise
 
 
-def upgrade(lastversion, thisversion):
-    """Upgrade the Mailman installation from lastversion to thisversion."""
-    print(C_('Upgrading from version %(lastversion)#x to %(thisversion)#x'))
-    
-    # Get all the lists
-    names = Utils.list_names()
-    if not names:
-        print(C_('No lists found.  Nothing to do.'))
-        return
-    
-    # For each list, load it, call Update() on it, and save it
-    for name in names:
-        # Ensure name is a string, not bytes
-        if isinstance(name, bytes):
-            name = name.decode('utf-8', 'replace')
-        # Format the name directly as a string
-        print('Upgrading list: %s' % name)
-        try:
-            mlist = MailList.MailList(name, lock=True)
-        except Exception as e:
-            print(C_('Error opening list %(name)s: %(e)s'), file=sys.stderr)
-            continue
-        
-        try:
-            from Mailman.versions import Update
-            Update(mlist, {'data_version': lastversion})
-            mlist.Save()
-        finally:
-            mlist.Unlock()
-    
-    print(C_('Upgrade complete.'))
+def domsort(addr):
+    # Sort email addresses by domain name
+    return addr.split('@')[-1]
+
+
+def upgrade(mlist):
+    """Upgrade the list to the current version."""
+    # Convert all email addresses to lowercase
+    for addr in list(mlist.members):
+        if addr != addr.lower():
+            mlist.members[addr.lower()] = mlist.members[addr]
+            del mlist.members[addr]
+            
+    for addr in list(mlist.digest_members):
+        if addr != addr.lower():
+            mlist.digest_members[addr.lower()] = mlist.digest_members[addr]
+            del mlist.digest_members[addr]
+            
+    for addr in list(mlist.owner):
+        if addr != addr.lower():
+            mlist.owner[addr.lower()] = mlist.owner[addr]
+            del mlist.owner[addr]
+            
+    for addr in list(mlist.moderator):
+        if addr != addr.lower():
+            mlist.moderator[addr.lower()] = mlist.moderator[addr]
+            del mlist.moderator[addr]
+            
+    for addr in list(mlist.bounce_info):
+        if addr != addr.lower():
+            mlist.bounce_info[addr.lower()] = mlist.bounce_info[addr]
+            del mlist.bounce_info[addr]
+            
+    for addr in list(mlist.delivery_status):
+        if addr != addr.lower():
+            mlist.delivery_status[addr.lower()] = mlist.delivery_status[addr]
+            del mlist.delivery_status[addr]
+            
+    for addr in list(mlist.user_options):
+        if addr != addr.lower():
+            mlist.user_options[addr.lower()] = mlist.user_options[addr]
+            del mlist.user_options[addr]
+            
+    # Don't convert passwords to lowercase
+    # for addr in list(mlist.passwords):
+    #     if addr != addr.lower():
+    #         mlist.passwords[addr.lower()] = mlist.passwords[addr]
+    #         del mlist.passwords[addr]
+            
+    for addr in list(mlist.language):
+        if addr != addr.lower():
+            mlist.language[addr.lower()] = mlist.language[addr]
+            del mlist.language[addr]
+            
+    for addr in list(mlist.usernames):
+        if addr != addr.lower():
+            mlist.usernames[addr.lower()] = mlist.usernames[addr]
+            del mlist.usernames[addr]
 
 
 def main():
@@ -805,7 +833,7 @@ downgrade."""))
         sys.exit(1)
 
     # Do the upgrade
-    upgrade(lastversion, thisversion)
+    upgrade(mlist)
 
     # Save the new version
     try:

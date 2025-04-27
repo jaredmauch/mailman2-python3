@@ -210,50 +210,67 @@ def main():
 
     args = parser.parse_args()
 
+    # Get the list name
+    if not args.listname:
+        usage(1, _('You must specify a list name'))
+    listname = args.listname
+
+    # Get the list object
     try:
-        mlist = MailList.MailList(args.listname, lock=1)
+        mlist = MailList.MailList(listname, lock=1)
     except Errors.MMUnknownListError:
-        usage(1, _('No such list "%(listname)s"'))
+        usage(1, _('No such list: %(listname)s'))
 
-    if args.file:
-        try:
-            fp = open(args.file)
-        except IOError:
-            usage(1, _('Cannot open file: %(file)s'))
-        addrs = []
-        for line in fp:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                addrs.append(line)
-        fp.close()
+    # Get the members to add
+    members = []
+    if args.regular_members_file:
+        if args.regular_members_file == '-':
+            members = sys.stdin.read().splitlines()
+        else:
+            try:
+                with open(args.regular_members_file) as fp:
+                    members = fp.read().splitlines()
+            except IOError:
+                usage(1, _('Cannot open file: %(file)s') %
+                      {'file': args.regular_members_file})
+    elif args.digest_members_file:
+        if args.digest_members_file == '-':
+            members = sys.stdin.read().splitlines()
+        else:
+            try:
+                with open(args.digest_members_file) as fp:
+                    members = fp.read().splitlines()
+            except IOError:
+                usage(1, _('Cannot open file: %(file)s') %
+                      {'file': args.digest_members_file})
     else:
-        addrs = sys.stdin.read().splitlines()
+        usage(1, _('You must specify at least one of -r or -d'))
 
-    if not addrs:
-        usage(1, _('No addresses to add'))
-
-    # Process each address
-    for addr in addrs:
-        addr = addr.strip()
-        if not addr or addr.startswith('#'):
+    # Process each member
+    for member in members:
+        member = member.strip()
+        if not member or member.startswith('#'):
             continue
+        # Convert email address to lowercase
+        member = member.lower()
         try:
             if args.invite:
-                mlist.InviteNewMember(addr, args.text)
+                mlist.InviteNewMember(member, args.invite_msg_file)
             else:
-                mlist.AddMember(addr, args.regular, args.digest, args.moderate,
-                              args.text, args.userack, args.admin_notify,
-                              args.welcome_msg, args.language)
+                mlist.AddMember(member, args.regular, args.digest,
+                              args.moderate, args.text, args.userack,
+                              args.admin_notify, args.welcome_msg,
+                              args.language)
         except Errors.MMAlreadyAMember:
-            print(_('%(addr)s is already a member of %(listname)s'))
+            print(_('%(member)s is already a member of %(listname)s'))
         except Errors.MMHostileAddress:
-            print(_('%(addr)s is a hostile address'))
+            print(_('%(member)s is a hostile address'))
         except Errors.MMInvalidEmailAddress:
-            print(_('%(addr)s is not a valid email address'))
+            print(_('%(member)s is not a valid email address'))
         except Errors.MMBadEmailError:
-            print(_('%(addr)s is not a valid email address'))
+            print(_('%(member)s is not a valid email address'))
         except Errors.MMListError as e:
-            print(_('%(addr)s: %(error)s'))
+            print(_('%(member)s: %(error)s'))
 
     mlist.Save()
     mlist.Unlock()

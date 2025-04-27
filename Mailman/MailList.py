@@ -1102,8 +1102,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         assert self.Locked()
         # Suck values out of userdesc, apply defaults, and reset the userdesc
         # attributes (for passing on to ApprovedAddMember()).  Lowercase the
-        # addr's domain part.
-        email = Utils.LCDomain(userdesc.address)
+        # entire address.
+        email = userdesc.address.lower()
         name = getattr(userdesc, 'fullname', '')
         lang = getattr(userdesc, 'language', self.preferred_language)
         digest = getattr(userdesc, 'digest', None)

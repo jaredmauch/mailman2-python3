@@ -820,7 +820,7 @@ def process_form(mlist, cgidata, doc, form):
     email = cgidata.get('email', [''])[0]
     if isinstance(email, bytes):
         email = email.decode('utf-8', 'replace')
-    email = email.strip()
+    email = email.strip().lower()
     
     # Get the user's password
     password = cgidata.get('password', [''])[0]

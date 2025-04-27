@@ -38,43 +38,62 @@
 
 use strict;
 use warnings;
-
-use Getopt::Long;
+use feature 'say';
+use Getopt::Long qw(:config no_ignore_case bundling);
 use Log::Handler;
 use File::Temp qw(tempfile);
 use Email::Simple;
 use Email::Sender::Simple qw(try_to_sendmail);
 use Data::Dump qw(dump);
-
+use Pod::Usage;
 
 #----------------------- ENVIRONMENT-SPECIFIC VALUES --------------------------#
-my $DOMO_PATH              = '/opt/majordomo';
-my $DOMO_LIST_DIR          = "$DOMO_PATH/lists";
-my $MM_PATH                = '/usr/local/mailman';
-my $DOMO_ALIASES           = "$MM_PATH/majordomo/aliases";
-my $DOMO_CHECK_CONSISTENCY = "$MM_PATH/majordomo/check_consistency.txt";
-my $BOUNCED_OWNERS         = "/opt/mailman-2.1.14-1/uo/majordomo/" .
-                             "email_addresses_that_bounced.txt";
-my $TMP_DIR                = '/tmp';
-# Only import lists that have been active in the last N days.
-my $DOMO_INACTIVITY_LIMIT  = 548;   # Optional.  548 days = 18 months.
-# If set, overwrite Majordomo's "resend_host" and thus Mailman's "host_name".
-my $NEW_HOSTNAME           = '';  # Optional
-my $LANGUAGE               = 'en';  # Preferred language for all Mailman lists
-my $MAX_MSG_SIZE           = 20000;  # In KB. Used for the Mailman config.
-#------------------------------------------------------------------------------#
+my %config = (
+    DOMO_PATH              => '/opt/majordomo',
+    DOMO_LIST_DIR          => '/opt/majordomo/lists',
+    MM_PATH                => '/usr/local/mailman',
+    DOMO_ALIASES           => '/usr/local/mailman/majordomo/aliases',
+    DOMO_CHECK_CONSISTENCY => '/usr/local/mailman/majordomo/check_consistency.txt',
+    BOUNCED_OWNERS         => '/opt/mailman-2.1.14-1/uo/majordomo/email_addresses_that_bounced.txt',
+    TMP_DIR                => '/tmp',
+    DOMO_INACTIVITY_LIMIT  => 548,   # Optional.  548 days = 18 months.
+    NEW_HOSTNAME           => '',     # Optional
+    LANGUAGE               => 'en',   # Preferred language for all Mailman lists
+    MAX_MSG_SIZE          => 20000,  # In KB. Used for the Mailman config.
+);
+
+# Command line options
+my %opts = (
+    help          => 0,
+    stats         => 0,
+    subscribers   => 0,
+    email_notify  => 0,
+    email_test    => 0,
+);
+
+# Parse command line arguments
+GetOptions(
+    'help|h'          => \$opts{help},
+    'stats|s'         => \$opts{stats},
+    'subscribers|S'   => \$opts{subscribers},
+    'email-notify|e'  => \$opts{email_notify},
+    'email-test|t'    => \$opts{email_test},
+) or pod2usage(2);
+
+# Show help if requested
+pod2usage(1) if $opts{help};
 
 #
 # Global constants
 #
-my $MM_LIST_DIR    = "$MM_PATH/lists";
-my $MM_LIST_LISTS  = "$MM_PATH/bin/list_lists";
-my $MM_NEWLIST     = "$MM_PATH/bin/newlist";
-my $MM_CONFIGLIST  = "$MM_PATH/bin/config_list";
-my $MM_ADDMEMBERS  = "$MM_PATH/bin/add_members";
-my $MM_CHECK_PERMS = "$MM_PATH/bin/check_perms";
+my $MM_LIST_DIR    = "$config{MM_PATH}/lists";
+my $MM_LIST_LISTS  = "$config{MM_PATH}/bin/list_lists";
+my $MM_NEWLIST     = "$config{MM_PATH}/bin/newlist";
+my $MM_CONFIGLIST  = "$config{MM_PATH}/bin/config_list";
+my $MM_ADDMEMBERS  = "$config{MM_PATH}/bin/add_members";
+my $MM_CHECK_PERMS = "$config{MM_PATH}/bin/check_perms";
 my $SCRIPT_NAME    = $0 =~ /\/?(\b\w+\b)\.pl$/ ? $1 : '<script name>';
-my $LOG_FILE       = "$TMP_DIR/$SCRIPT_NAME.log";
+my $LOG_FILE       = "$config{TMP_DIR}/$SCRIPT_NAME.log";
 
 #
 # Global namespace
@@ -137,7 +156,7 @@ sub main {
 
       # Don't import lists that are pending deletion. This is a University of
       # Oregon customization, but it should be harmless for others.
-      if (-e "$DOMO_LIST_DIR/$listName.pendel") {
+      if (-e "$config{DOMO_LIST_DIR}/$listName.pendel") {
          $log->info("List $listName has a .pendel file. Skipping...");
          $domoStats->{'general_stats'}->{'Lists pending deletion'} += 1;
          next;
@@ -148,7 +167,7 @@ sub main {
          $log->notice("List $listName has been inactive for " .
                       "$inactiveLists->{$listName} days. Skipping...");
          $domoStats->{'general_stats'}->{'Lists inactive for more than ' .
-                                         "$DOMO_INACTIVITY_LIMIT days"} += 1;
+                                         "$config{DOMO_INACTIVITY_LIMIT} days"} += 1;
          next;
       }
 
@@ -226,7 +245,7 @@ sub preImportChecks {
       die "Error: Please run this script as user mailman (or root).\n";
    }
    # Check that the Majordomo and Mailman list directories exist.
-   for my $dir ($DOMO_LIST_DIR, $MM_LIST_DIR) {
+   for my $dir ($config{DOMO_LIST_DIR}, $MM_LIST_DIR) {
       if (not $dir or not -d $dir) {
          die "Error: Lists directory does not exist: $dir\n";
       }
@@ -237,23 +256,23 @@ sub preImportChecks {
          die "Error: Mailman binary doesn't exist: $bin\n";
       }
    }
-   # Check the path of $DOMO_CHECK_CONSISTENCY.
-   if ($DOMO_CHECK_CONSISTENCY and not -e $DOMO_CHECK_CONSISTENCY) {
+   # Check the path of $config{DOMO_CHECK_CONSISTENCY}.
+   if ($config{DOMO_CHECK_CONSISTENCY} and not -e $config{DOMO_CHECK_CONSISTENCY}) {
       die "Error: \$DOMO_CHECK_CONSISTENCY does not exist: " .
-          "$DOMO_CHECK_CONSISTENCY\nCorrect the value or set it to ''.\n";
+          "$config{DOMO_CHECK_CONSISTENCY}\nCorrect the value or set it to ''.\n";
    }
-   # If $DOMO_CHECK_CONSISTENCY exists, then so must $DOMO_ACTIVITY_LIMIT.
-   if ($DOMO_CHECK_CONSISTENCY and not $DOMO_INACTIVITY_LIMIT) {
+   # If $config{DOMO_CHECK_CONSISTENCY} exists, then so must $DOMO_ACTIVITY_LIMIT.
+   if ($config{DOMO_CHECK_CONSISTENCY} and not $config{DOMO_INACTIVITY_LIMIT}) {
       die "Error: \$DOMO_CHECK_CONSISTENCY exists but " .
           "\$DOMO_INACTIVITY_LIMIT does not.\nPlease set this value.\n";
    }
    # $LANGUAGE must be present and should only contain a-z.
-   if (not $LANGUAGE or $LANGUAGE !~ /[a-z]+/i) {
-      die "Error: \$LANGUAGE was not set or invalid: $LANGUAGE\n";
+   if (not $config{LANGUAGE} or $config{LANGUAGE} !~ /[a-z]+/i) {
+      die "Error: \$LANGUAGE was not set or invalid: $config{LANGUAGE}\n";
    }
    # $MAX_MSG_SIZE must be present and should really be above a minimum size.
-   if (not $MAX_MSG_SIZE or $MAX_MSG_SIZE < 5) {
-      die "Error: \$MAX_MSG_SIZE was not set or less than 5KB: $MAX_MSG_SIZE\n";
+   if (not $config{MAX_MSG_SIZE} or $config{MAX_MSG_SIZE} < 5) {
+      die "Error: \$MAX_MSG_SIZE was not set or less than 5KB: $config{MAX_MSG_SIZE}\n";
    }
 }
 
@@ -312,7 +331,7 @@ sub getDomoListsToImport {
    # If only one list was specified, validate and return that list.
    if ($opts->{'list'}) {
       my $listConfig = $opts->{'list'} . '.config';
-      my $listPath = "$DOMO_LIST_DIR/$listConfig";
+      my $listPath = "$config{DOMO_LIST_DIR}/$listConfig";
       if (not -e $listPath) {
          $log->die(crit => "Majordomo list config does not exist: $listPath");
       }
@@ -321,15 +340,15 @@ sub getDomoListsToImport {
    # $DOMO_LIST_DIR, ignoring digest lists (i.e. *-digest.config files).
    } elsif ($opts->{'all'}) {
       $log->info("Collecting all Majordomo list config files...");
-      opendir DIR, $DOMO_LIST_DIR or
-         $log->die("Can't open dir $DOMO_LIST_DIR: $!");
+      opendir DIR, config{DOMO_LIST_DIR} or
+         $log->die("Can't open dir $config{DOMO_LIST_DIR}: $!");
       # Don't get digest lists because these are not separate lists in Mailman.
       @domoListNames = grep !/\-digest$/,
                        map { /^([a-zA-Z0-9_\-]+)\.config$/ }
                        readdir DIR;
       closedir DIR;
       if (not @domoListNames) {
-         $log->die(crit => "No Majordomo configs found in $DOMO_LIST_DIR");
+         $log->die(crit => "No Majordomo configs found in $config{DOMO_LIST_DIR}");
       }
    # If we're here, --list or --all was not used, so exit.
    } else {
@@ -342,7 +361,7 @@ sub getDomoListsToImport {
 # Find all list owners from aliases and create a map of lists to aliases.
 sub getListToOwnerMap {
    my %listOwnerMap = ();
-   open ALIASES, $DOMO_ALIASES or $log->die("Can't open $DOMO_ALIASES: $!");
+   open ALIASES, config{DOMO_ALIASES} or $log->die("Can't open $config{DOMO_ALIASES}: $!");
    while (my $line = <ALIASES>) {
       if ($line =~ /^owner\-([^:]+):\s*(.*)$/) {
          my ($listName, $listOwners) = (strip($1), strip($2));
@@ -354,7 +373,7 @@ sub getListToOwnerMap {
             "'" . (join "', '", keys %ownersHash) . "'";
       }
    }
-   close ALIASES or $log->die("Can't close $DOMO_ALIASES: $!");
+   close ALIASES or $log->die("Can't close $config{DOMO_ALIASES}: $!");
 
    return \%listOwnerMap;
 }
@@ -371,11 +390,11 @@ sub getExistingLists {
 # of all Majordomo lists inactive beyond the specified $DOMO_INACTIVITY_LIMIT.
 sub getInactiveLists {
    my %lists = ();
-   if ($DOMO_CHECK_CONSISTENCY) {
-      for my $line (split /\n/, getFileTxt($DOMO_CHECK_CONSISTENCY)) {
+   if ($config{DOMO_CHECK_CONSISTENCY}) {
+      for my $line (split /\n/, getFileTxt($config{DOMO_CHECK_CONSISTENCY})) {
            
          if ($line =~ /(\S+) has been inactive for (\d+) days/) {
-            if ($2 >= $DOMO_INACTIVITY_LIMIT) {
+            if ($2 >= $config{DOMO_INACTIVITY_LIMIT}) {
                $lists{$1} = $2;
             }
          }
@@ -387,7 +406,7 @@ sub getInactiveLists {
 
 sub getBouncedOwners {
    my @bouncedOwners = ();
-   for my $line (split /\n/, getFileTxt($BOUNCED_OWNERS)) {
+   for my $line (split /\n/, getFileTxt($config{BOUNCED_OWNERS})) {
       if ($line =~ /Failed to send mail to (\S+)\./) {
          push @bouncedOwners, $1;
       }
@@ -685,7 +704,7 @@ EOF
 # listname.strip, and listname.hidden.
 sub getDomoConfig {
    my ($listName, $listOwnerMap) = @_;
-   my $listPath = "$DOMO_LIST_DIR/$listName";
+   my $listPath = "$config{DOMO_LIST_DIR}/$listName";
    # All of these values come from <listname>.config unless a comment
    # says otherwise.
    my %config = (
@@ -775,7 +794,7 @@ sub getDomoConfig {
                        "reference to restrict_post_emails...");
             push @postPermissions, "\@$restrictPostFilename";
          } else {
-            my @emails = getFileEmails("$DOMO_LIST_DIR/$restrictPostFilename");
+            my @emails = getFileEmails("$config{DOMO_LIST_DIR}/$restrictPostFilename");
             if (@emails) {
                push @postPermissions, @emails;
             }
@@ -833,7 +852,7 @@ sub getDomoConfig {
    #  (2) The (admin|approve)_passwd value itself in <listname>.config
    #  (3) <listname>.passwd file
    for my $passwdOption (qw/admin_passwd approve_passwd/) {
-      my $passwdFile = "$DOMO_LIST_DIR/$config{$passwdOption}";
+      my $passwdFile = "$config{DOMO_LIST_DIR}/$config{$passwdOption}";
       if (-e $passwdFile) {
          $config{$passwdOption} = getFileTxt($passwdFile,
                                              ('first_line_only' => 1));
@@ -930,7 +949,7 @@ sub getMailmanConfig {
       'generic_nonmember_action'  => 3,  # 3: discard
       'goodbye_msg'               => '',
       'header_filter_rules'       => '[]',
-      'host_name'                 => "'$NEW_HOSTNAME'",
+      'host_name'                 => "'$config{NEW_HOSTNAME}",
       'info'                      => '',
       'max_message_size'          => 100,  # KB (40 is Mailman's default)
       'moderator'                 => "[$domoConfig{'moderators'}]",
@@ -940,7 +959,7 @@ sub getMailmanConfig {
       'obscure_addresses'         => 1,  # This doesn't change below
       'owner'                     => "[$domoConfig{'aliases_owner'}]",
       'personalize'               => 0,
-      'preferred_language'        => "'$LANGUAGE'",
+      'preferred_language'        => "'$config{LANGUAGE}",
       'private_roster'            => 2,  # 0: open; 1: members; 2: admin
       'real_name'                 => "'$listName'",
       'reply_goes_to_list'        => 0,  # 0: poster, 1: list, 2: address
@@ -967,7 +986,7 @@ sub getMailmanConfig {
    }
 
    # Majordomo's "resend_host" => Mailman's "host_name"
-   if ($domoConfig{'resend_host'} and not $NEW_HOSTNAME) {
+   if ($domoConfig{'resend_host'} and not config{NEW_HOSTNAME}) {
       $mmConfig{'host_name'} = "'$domoConfig{'resend_host'}'";
    }
 
@@ -985,8 +1004,8 @@ sub getMailmanConfig {
    if ($domoConfig{'maxlength'}) {
       my $charsInOneKB = 500;  # 1KB = 500 characters
       $mmConfig{'max_message_size'} = $domoConfig{'maxlength'} / $charsInOneKB;
-      if ($mmConfig{'max_message_size'} > $MAX_MSG_SIZE) {
-         $mmConfig{'max_message_size'} = $MAX_MSG_SIZE;
+      if ($mmConfig{'max_message_size'} > config{MAX_MSG_SIZE}) {
+         $mmConfig{'max_message_size'} = config{MAX_MSG_SIZE};
       }
    }
 
@@ -1087,7 +1106,7 @@ sub createMailmanList {
    # Any additional owners will be added when configureMailmanList() is called.
    $ownerEmail = (split /,/, $ownerEmail)[0];
    $ownerEmail =~ s/['"\[\]]//g;
-   my $cmd = "$MM_NEWLIST -l $LANGUAGE -q $listName $ownerEmail " .
+   my $cmd = "$MM_NEWLIST -l $config{LANGUAGE} -q $listName $ownerEmail " .
              "'$listPassword' >> $LOG_FILE 2>&1";
    $log->debug("Calling $cmd...");
    system($cmd) == 0 or $log->die("Command failed: $!");
@@ -1390,12 +1409,12 @@ sub getFileEmails {
 # Undo any side-effects of this script (e.g. temporary files, permissions, etc).
 sub cleanUp {
    # Delete temporary config files.
-   $log->debug("Deleting $TMP_DIR/*.mm.* files...");
-   opendir DIR, $TMP_DIR or $log->die("Can't open dir $TMP_DIR: $!");
+   $log->debug("Deleting $config{TMP_DIR}/*.mm.* files...");
+   opendir DIR, config{TMP_DIR} or $log->die("Can't open dir $config{TMP_DIR}: $!");
    my @tmpFiles = grep { /\.mm\.[a-z]+$/i } readdir DIR;
-   closedir DIR or $log->die("Can't close dir $TMP_DIR: $!");
+   closedir DIR or $log->die("Can't close dir $config{TMP_DIR}: $!");
    for my $tmpFile (@tmpFiles) {
-      unlink "$TMP_DIR/$tmpFile";
+      unlink "$config{TMP_DIR}/$tmpFile";
    }
 
    # Fix permissions of newly created Mailman list files.

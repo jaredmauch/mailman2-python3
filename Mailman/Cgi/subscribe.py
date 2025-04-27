@@ -134,7 +134,7 @@ def process_form(mlist, doc, cgidata, lang):
     email = cgidata.get('email', [''])[0]
     if isinstance(email, bytes):
         email = email.decode('utf-8', 'replace')
-    email = email.strip()
+    email = email.strip().lower()
     if not email:
         results.append(_('You must supply a valid email address.'))
 
