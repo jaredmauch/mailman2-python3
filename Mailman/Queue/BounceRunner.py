@@ -93,9 +93,9 @@ class BounceMixin:
             finally:
                 os.umask(omask)
         for addr in addrs:
-            # Use protocol 3 for Python 3 compatibility and fix_imports for Python 2/3 compatibility
+            # Use protocol 2 for Python 2/3 compatibility and fix_imports for Python 2/3 compatibility
             pickle.dump((listname, addr, today, msg),
-                       self._bounce_events_fp, protocol=3, fix_imports=True)
+                       self._bounce_events_fp, protocol=2, fix_imports=True)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
         self._bouncecnt += len(addrs)
