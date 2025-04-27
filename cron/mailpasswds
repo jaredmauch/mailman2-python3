@@ -116,21 +116,35 @@ def main():
     # there's only one key in this dictionary: mm_cfg.DEFAULT_EMAIL_HOST.  The
     # values are lists of the unlocked MailList instances.
     byhost = {}
+    skipped_lists = []
     for listname in listnames:
-        mlist = MailList.MailList(listname, lock=0)
-        if not mlist.send_reminders:
+        try:
+            mlist = MailList.MailList(listname, lock=0)
+            if not mlist.send_reminders:
+                if args.verbose:
+                    print(f"Skipping list {listname} - password reminders disabled")
+                skipped_lists.append((listname, "password reminders disabled"))
+                continue
+            if mm_cfg.VIRTUAL_HOST_OVERVIEW:
+                host = mlist.host_name
+            else:
+                # See the note in Defaults.py concerning DEFAULT_HOST_NAME
+                # vs. DEFAULT_EMAIL_HOST.
+                host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
+            byhost.setdefault(host, []).append(mlist)
+        except Exception as e:
+            if args.verbose:
+                print(f"Error processing list {listname}: {str(e)}")
+            skipped_lists.append((listname, str(e)))
             continue
-        if mm_cfg.VIRTUAL_HOST_OVERVIEW:
-            host = mlist.host_name
-        else:
-            # See the note in Defaults.py concerning DEFAULT_HOST_NAME
-            # vs. DEFAULT_EMAIL_HOST.
-            host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
-        byhost.setdefault(host, []).append(mlist)
 
     # If we're in test mode and no lists were found, show a message
     if args.test and not byhost:
         print(f"No lists found for test email {args.test}")
+        if skipped_lists:
+            print("\nSkipped lists:")
+            for listname, reason in skipped_lists:
+                print(f"  {listname}: {reason}")
         sys.exit(0)
 
     # Now for each virtual host, collate the user information.  Each user
@@ -199,6 +213,10 @@ def main():
         # If we're in test mode and no user info was collected, show a message
         if args.test and not userinfo:
             print(f"No valid list memberships found for test email {args.test}")
+            if skipped_lists:
+                print("\nSkipped lists:")
+                for listname, reason in skipped_lists:
+                    print(f"  {listname}: {reason}")
             continue
 
         # Now that we've collected user information for this host, send each
