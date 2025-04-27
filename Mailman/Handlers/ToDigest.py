@@ -158,7 +158,8 @@ def process(mlist, msg, msgdata):
     try:
         # Open file in binary mode for proper handling of line endings
         with open(mboxfile, 'ab+') as mboxfp:
-            mbox = Mailbox(mboxfp)  # Pass file object directly
+            # Pass the file path to Mailbox, not the file object
+            mbox = Mailbox(mboxfile)
             mbox.AppendMessage(msg)
             
             # Calculate size and check threshold
@@ -167,15 +168,14 @@ def process(mlist, msg, msgdata):
             if (mlist.digest_size_threshhold > 0 and
                 size / 1024.0 >= mlist.digest_size_threshhold):
                 try:
-                    send_digests(mlist, mboxfp)
+                    send_digests(mlist, mboxfile)  # Pass path instead of file object
                 except Exception as e:
                     syslog('error', 'Error sending digest: %s', str(e))
                     syslog('error', 'Traceback: %s', traceback.format_exc())
-                    # Don't re-raise to allow message to be processed
     finally:
         os.umask(omask)
 
-def send_digests(mlist, mboxfp):
+def send_digests(mlist, mboxpath):
     """Send digests for the mailing list."""
     # Set up the digest state
     volume = mlist.volume
@@ -230,7 +230,7 @@ def send_digests(mlist, mboxfp):
     plainmsg.write('\n')
     
     # Process the mbox
-    mbox = Mailbox(mboxfp)
+    mbox = Mailbox(mboxpath)  # Use path instead of file object
     
     # Add a table of contents for RFC 1153 digests
     plainmsg.write(to_cset_out(separator70, lcset_out))

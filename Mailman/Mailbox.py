@@ -42,18 +42,29 @@ def _safeparser(fp):
 
 class Mailbox(mailbox.mbox):
     def __init__(self, fp):
-        # In Python 3, we need to ensure the file pointer is properly initialized
-        if not hasattr(fp, 'mode'):
-            # If fp is a string path, open it
-            if isinstance(fp, str):
-                fp = open(fp, 'ab+')
+        # In Python 3, we need to handle both file objects and paths
+        if hasattr(fp, 'read') and hasattr(fp, 'write'):
+            # It's a file object, get its path
+            if hasattr(fp, 'name'):
+                path = fp.name
             else:
-                # If it's a file-like object without a mode, wrap it
-                fp = open(fp, 'ab+')
-        # Initialize the parent class
-        mailbox.mbox.__init__(self, fp, _safeparser)
-        # Ensure fp is set as an instance variable
-        self.fp = fp
+                # Create a temporary file if we don't have a path
+                import tempfile
+                path = tempfile.mktemp()
+                with open(path, 'wb') as f:
+                    f.write(fp.read())
+                fp.seek(0)
+        else:
+            # It's a path string
+            path = fp
+            
+        # Initialize the parent class with the path
+        mailbox.mbox.__init__(self, path, _safeparser)
+        # Store the file object if we have one
+        if hasattr(fp, 'read') and hasattr(fp, 'write'):
+            self.fp = fp
+        else:
+            self.fp = open(path, 'ab+')
 
     # msg should be an rfc822 message or a subclass.
     def AppendMessage(self, msg):
