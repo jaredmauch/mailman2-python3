@@ -109,7 +109,6 @@ from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import reap
-from Mailman.MailList import MailList  # Add import for MailList
 
 
 class PipelineError(Exception):
@@ -121,6 +120,9 @@ class IncomingRunner(Runner):
     QDIR = mm_cfg.INQUEUE_DIR
 
     def _dispose(self, listname, msg, msgdata):
+        # Import MailList here to avoid circular imports
+        from Mailman.MailList import MailList
+
         # Get the MailList object for the list name
         try:
             mlist = MailList(listname, lock=False)
