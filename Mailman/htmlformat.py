@@ -48,12 +48,17 @@ NL = '\n'
 # Format an arbitrary object.
 def HTMLFormatObject(item, indent):
     "Return a presentation of an object, invoking their Format method if any."
+    if item is None:
+        return ''
     if type(item) == type(''):
         return item
     elif not hasattr(item, "Format"):
-        return repr(item)
+        return str(item)
     else:
-        return item.Format(indent)
+        result = item.Format(indent)
+        if result is None:
+            return ''
+        return str(result)
 
 def CaseInsensitiveKeyedDict(d):
     result = {}
@@ -176,6 +181,8 @@ class Table(object):
             output = output + self.ExtractCellInfo(my_info)
         item = self.cells[row][col]
         item_format = HTMLFormatObject(item, indent+4)
+        if not isinstance(item_format, str):
+            item_format = str(item_format)
         output = '%s>%s</td>' % (output, item_format)
         return output
 
@@ -469,8 +476,8 @@ class InputObj(object):
             output.append('CHECKED')
         output.append('>')
         ret = SPACE.join(output)
-        if self.type == 'TEXT' and isinstance(ret, str):
-            ret = ret.encode(charset, 'xmlcharrefreplace')
+        if self.type == 'TEXT' and isinstance(ret, bytes):
+            ret = ret.decode(charset, 'replace')
         return ret
 
 
@@ -522,8 +529,8 @@ class TextArea(object):
         if self.readonly:
             output += ' READONLY'
         output += '>%s</TEXTAREA>' % self.text
-        if isinstance(output, str):
-            output = output.encode(charset, 'xmlcharrefreplace')
+        if isinstance(output, bytes):
+            output = output.decode(charset, 'replace')
         return output
 
 class FileUpload(InputObj):
