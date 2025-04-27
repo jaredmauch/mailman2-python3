@@ -172,27 +172,11 @@ class MaildirRunner(Runner):
         pass
 
     def _dispose(self, mlist, msg, msgdata):
-        # Make sure we have the most up-to-date state
+        """Process the maildir message."""
         try:
-            mlist.Load()
-        except Errors.MMCorruptListDatabaseError as e:
-            mailman_log('error', 'Failed to load list %s: %s',
-                       mlist.internal_name(), e)
-            return False
+            # Process the maildir message
+            mlist.process_maildir(msg)
         except Exception as e:
-            mailman_log('error', 'Unexpected error loading list %s: %s',
-                       mlist.internal_name(), e)
-            return False
-
-        # Validate message headers
-        if not msg.get('message-id'):
-            mailman_log('error', 'Message missing Message-ID header')
-            return False
-
-        try:
-            # Process the message
-            return super()._dispose(mlist, msg, msgdata)
-        except Exception as e:
-            mailman_log('error', 'Error processing message %s: %s',
-                       msg.get('message-id', 'n/a'), e)
-            return False
+            mailman_log('error', 'Error processing maildir message for list %s: %s',
+                   mlist.internal_name(), str(e))
+            raise

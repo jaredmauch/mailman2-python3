@@ -48,9 +48,8 @@ import socket
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Message
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import sha_new
-from Mailman.Logging.MailmanLog import mailman_log
 
 # 20 bytes of all bits set, maximum sha.digest() value
 shamax = 0xffffffffffffffffffffffffffffffffffffffff

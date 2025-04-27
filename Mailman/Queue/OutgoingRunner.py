@@ -85,107 +85,14 @@ class OutgoingRunner(Runner, BounceMixin):
             raise
 
     def _dispose(self, mlist, msg, msgdata):
-        """Deliver a message to its intended recipients."""
-        msgid = msg.get('message-id', 'n/a')
-        sender = msg.get('from', 'n/a')
-        subject = msg.get('subject', 'n/a')
-        mailman_log('info', 'OutgoingRunner: Starting delivery - msgid: %s, list: %s, sender: %s, subject: %s',
-                   msgid, mlist.internal_name(), sender, subject)
-
-        # See if we should retry delivery of this message again
-        deliver_after = msgdata.get('deliver_after', 0)
-        if time.time() < deliver_after:
-            mailman_log('debug', 'OutgoingRunner: Message not ready for delivery yet, waiting until %s',
-                       time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(deliver_after)))
-            return True
-
-        # Make sure we have the most up-to-date state
-        mailman_log('debug', 'OutgoingRunner: Loading list state')
+        """Deliver the message to the list's members."""
         try:
-            mlist.Load()
-        except Errors.MMCorruptListDatabaseError as e:
-            mailman_log('error', 'OutgoingRunner: Failed to load list %s: %s',
-                       mlist.internal_name(), e)
-            return False
+            # Deliver the message
+            mlist.deliver(msg, msgdata)
         except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Unexpected error loading list %s: %s',
-                       mlist.internal_name(), e)
-            return False
-
-        try:
-            pid = os.getpid()
-            mailman_log('debug', 'OutgoingRunner: Attempting to deliver message')
-            self._func(mlist, msg, msgdata)
-            # Failsafe -- a child may have leaked through
-            if pid != os.getpid():
-                mailman_log('error', 'OutgoingRunner: child process leaked thru: %s', self._modname)
-                os._exit(1)
-            self.__logged = False
-            mailman_log('info', 'OutgoingRunner: Message delivered successfully - msgid: %s, list: %s',
-                   msgid, mlist.internal_name())
-            return False
-
-        except socket.error:
-            # There was a problem connecting to the SMTP server.  Log this
-            # once, but crank up our sleep time so we don't fill the error
-            # log.
-            port = mm_cfg.SMTPPORT
-            if port == 0:
-                port = 'smtp'
-            # Log this just once.
-            if not self.__logged:
-                mailman_log('error', 'OutgoingRunner: Cannot connect to SMTP server %s on port %s for msgid: %s',
-                       mm_cfg.SMTPHOST, port, msgid)
-                self.__logged = True
-            self._snooze(0)
-            return True
-
-        except Errors.SomeRecipientsFailed as e:
-            mailman_log('info', 'OutgoingRunner: Some recipients failed for msgid: %s - %s', msgid, str(e))
-            # Handle local rejects of probe messages differently.
-            if msgdata.get('probe_token') and e.permfailures:
-                mailman_log('debug', 'OutgoingRunner: Handling probe bounce for msgid: %s', msgid)
-                self._probe_bounce(mlist, msgdata['probe_token'])
-            else:
-                # Delivery failed at SMTP time for some or all of the
-                # recipients.  Permanent failures are registered as bounces,
-                # but temporary failures are retried for later.
-                if e.permfailures:
-                    mailman_log('info', 'OutgoingRunner: Queueing permanent failures as bounces for msgid: %s', msgid)
-                    self._queue_bounces(mlist.internal_name(), e.permfailures, msg)
-                # Move temporary failures to the qfiles/retry queue which will
-                # occasionally move them back here for another shot at
-                # delivery.
-                if e.tempfailures:
-                    mailman_log('info', 'OutgoingRunner: Queueing temporary failures for retry for msgid: %s', msgid)
-                    now = time.time()
-                    recips = e.tempfailures
-                    last_recip_count = msgdata.get('last_recip_count', 0)
-                    deliver_until = msgdata.get('deliver_until', now)
-                    if len(recips) == last_recip_count:
-                        # We didn't make any progress, so don't attempt
-                        # delivery any longer.  BAW: is this the best
-                        # disposition?
-                        if now > deliver_until:
-                            mailman_log('info', 'OutgoingRunner: No progress made, giving up on msgid: %s', msgid)
-                            return False
-                    else:
-                        # Keep trying to delivery this message for a while
-                        deliver_until = now + mm_cfg.DELIVERY_RETRY_PERIOD
-                    # Don't retry delivery too soon.
-                    deliver_after = now + mm_cfg.DELIVERY_RETRY_WAIT
-                    msgdata['deliver_after'] = deliver_after
-                    msgdata['last_recip_count'] = len(recips)
-                    msgdata['deliver_until'] = deliver_until
-                    msgdata['recips'] = recips
-                    self.__retryq.enqueue(msg, msgdata)
-
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Unexpected error during message processing for msgid: %s - %s', msgid, str(e))
-            mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+            mailman_log('error', 'Error delivering message to list %s: %s',
+                   mlist.internal_name(), str(e))
             raise
-        # We've successfully completed handling of this message
-        return False
 
     def _queue_bounces(self, mlist, msg, msgdata, failures):
         """Queue bounce messages for failed deliveries."""

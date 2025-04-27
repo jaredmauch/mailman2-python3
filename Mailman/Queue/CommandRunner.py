@@ -22,9 +22,6 @@
 # bounce messages (i.e. -admin or -bounces), nor does it handle mail to
 # -owner.
 
-
-# BAW: get rid of this when we Python 2.2 is a minimum requirement.
-
 import re
 import sys
 
@@ -66,14 +63,13 @@ class Results:
         self.lineno = 0
         self.subjcmdretried = 0
         self.respond = True
-        # Extract the subject header and do RFC 2047 decoding.  Note that
-        # Python 2.1's unicode() builtin doesn't call obj.__unicode__().
+        # Extract the subject header and do RFC 2047 decoding
         subj = msg.get('subject', '')
         try:
             subj = str(make_header(decode_header(subj)))
             # TK: Currently we don't allow 8bit or multibyte in mail command.
             # MAS: However, an l10n 'Re:' may contain non-ascii so ignore it.
-            subj = subj.encode('us-ascii', 'ignore')
+            subj = subj.encode('us-ascii', 'ignore').decode('us-ascii')
             # Always process the Subject: header first
             self.commands.append(subj)
         except (HeaderParseError, UnicodeError, LookupError):
@@ -97,7 +93,7 @@ class Results:
                            Utils.GetCharSet(self.msgdata['lang']),
                            errors='replace')
         # text/plain parts better have string payloads
-        assert isinstance(body, str) or isinstance(body, bytes)
+        assert isinstance(body, (str, bytes))
         lines = body.splitlines()
         # Use no more lines than specified
         self.commands.extend(lines[:mm_cfg.DEFAULT_MAIL_COMMANDS_MAX_LINES])
@@ -232,7 +228,6 @@ To obtain instructions, send a message containing just the word "help".
         msg.attach(orig)
         msg.send(self.mlist)
 
-
 class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
 
@@ -287,34 +282,3 @@ class CommandRunner(Runner):
                 mlist.Save()
         finally:
             mlist.Unlock()
-
-    def _dopending(self, mlist, op, data):
-        """Do the pending operation."""
-        try:
-            mlist.Load()
-        except Errors.MMCorruptListDatabaseError as e:
-            syslog('error', 'Failed to load list %s for pending operation: %s',
-                   mlist.internal_name(), e)
-            return False
-        except Exception as e:
-            syslog('error', 'Unexpected error loading list %s: %s',
-                   mlist.internal_name(), e)
-            return False
-
-        try:
-            # Process the pending operation
-            if op == Pending.SUBSCRIPTION:
-                mlist.ApprovedAddMember(data)
-            elif op == Pending.UNSUBSCRIPTION:
-                mlist.ApprovedDeleteMember(data)
-            elif op == Pending.CHANGE_OF_ADDRESS:
-                oldaddr, newaddr, globally = data
-                mlist.ApprovedChangeMemberAddress(oldaddr, newaddr, globally)
-            else:
-                syslog('error', 'Unknown pending operation: %s', op)
-                return False
-            return True
-        except Exception as e:
-            syslog('error', 'Failed to process pending operation for %s: %s',
-                   mlist.internal_name(), e)
-            return False

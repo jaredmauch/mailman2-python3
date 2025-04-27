@@ -110,7 +110,7 @@ from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import reap
 
 
@@ -130,7 +130,7 @@ class IncomingRunner(Runner):
         try:
             mlist = MailList(listname, lock=False)
         except Errors.MMListError as e:
-            syslog('error', 'Failed to get list %s: %s', listname, str(e))
+            mailman_log('error', 'Failed to get list %s: %s', listname, str(e))
             return 0
 
         # Try to get the list lock with exponential backoff
@@ -143,7 +143,7 @@ class IncomingRunner(Runner):
                 # Add a small random delay between attempts to prevent thundering herd
                 if attempt > 0:
                     delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
-                    syslog('incoming', 'Retrying lock for %s after %.2f seconds (attempt %d/%d)',
+                    mailman_log('incoming', 'Retrying lock for %s after %.2f seconds (attempt %d/%d)',
                           listname, delay, attempt + 1, max_attempts)
                     time.sleep(delay)
                 
@@ -152,12 +152,12 @@ class IncomingRunner(Runner):
             except LockFile.TimeOutError:
                 attempt += 1
                 if attempt >= max_attempts:
-                    syslog('error', 'Failed to acquire lock for %s after %d attempts',
+                    mailman_log('error', 'Failed to acquire lock for %s after %d attempts',
                           listname, max_attempts)
                     return 1
                 continue
             except Exception as e:
-                syslog('error', 'Unexpected error acquiring lock for %s: %s',
+                mailman_log('error', 'Unexpected error acquiring lock for %s: %s',
                       listname, str(e))
                 return 1
 
@@ -171,13 +171,13 @@ class IncomingRunner(Runner):
             mlist.Save()
             return more
         except Exception as e:
-            syslog('error', 'Error processing message for %s: %s', listname, str(e))
+            mailman_log('error', 'Error processing message for %s: %s', listname, str(e))
             return 1
         finally:
             try:
                 mlist.Unlock()
             except Exception as e:
-                syslog('error', 'Error unlocking %s: %s', listname, str(e))
+                mailman_log('error', 'Error unlocking %s: %s', listname, str(e))
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # We must return a copy of the list, otherwise, the first message that
@@ -202,7 +202,7 @@ class IncomingRunner(Runner):
                 # Check for process leaks
                 current_pid = os.getpid()
                 if current_pid != original_pid:
-                    syslog('error', 'Child process leaked through in handler %s: original_pid=%d, current_pid=%d',
+                    mailman_log('error', 'Child process leaked through in handler %s: original_pid=%d, current_pid=%d',
                           modname, original_pid, current_pid)
                     # Try to clean up any child processes
                     try:
@@ -222,13 +222,13 @@ class IncomingRunner(Runner):
                     pass
                 
                 if child_pids:
-                    syslog('debug', 'Cleaned up %d child processes from handler %s: %s',
+                    mailman_log('debug', 'Cleaned up %d child processes from handler %s: %s',
                           len(child_pids), modname, child_pids)
                     
             except Errors.DiscardMessage:
                 # Throw the message away; we need do nothing else with it.
                 pipeline.insert(0, handler)
-                syslog('vette', """Message discarded, msgid: %s'
+                mailman_log('vette', """Message discarded, msgid: %s'
         list: %s,
         handler: %s""",
                        msg.get('message-id', 'n/a'),
@@ -239,7 +239,7 @@ class IncomingRunner(Runner):
                 return 0
             except Errors.RejectMessage as e:
                 pipeline.insert(0, handler)
-                syslog('vette', """Message rejected, msgid: %s
+                mailman_log('vette', """Message rejected, msgid: %s
         list: %s,
         handler: %s,
         reason: %s""",
@@ -249,7 +249,7 @@ class IncomingRunner(Runner):
                 return 0
             except Exception as e:
                 # Log the full traceback for debugging
-                syslog('error', 'Error in handler %s: %s\n%s', modname, str(e),
+                mailman_log('error', 'Error in handler %s: %s\n%s', modname, str(e),
                       ''.join(traceback.format_exc()))
                 pipeline.insert(0, handler)
                 raise
@@ -275,7 +275,7 @@ class IncomingRunner(Runner):
         for filebase in files:
             try:
                 # Log that we're starting to process this file
-                syslog('incoming', 'Starting to process queue file: %s', filebase)
+                mailman_log('incoming', 'Starting to process queue file: %s', filebase)
                 
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
@@ -292,7 +292,7 @@ class IncomingRunner(Runner):
                     self._shunt.enqueue(msg, msgdata)
             except Exception as e:
                 # Log the error and requeue the message for later processing
-                syslog('error', 'Error processing queue file %s: %s', filebase, str(e))
+                mailman_log('error', 'Error processing queue file %s: %s', filebase, str(e))
                 try:
                     self._switchboard.enqueue(msg, msgdata)
                 except:

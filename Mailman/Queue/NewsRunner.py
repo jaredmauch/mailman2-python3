@@ -132,41 +132,14 @@ class NewsRunner(Runner):
         return 1
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process a news message."""
+        """Post the message to the newsgroup."""
         try:
-            # Load the list configuration
-            mlist.Load()
-        except Errors.MMCorruptListDatabaseError as e:
-            mailman_log('error', 'Failed to load list %s: %s',
-                       mlist.internal_name(), e)
-            return False
+            # Post the message to the newsgroup
+            mlist.post_to_news(msg)
         except Exception as e:
-            mailman_log('error', 'Unexpected error loading list %s: %s',
-                       mlist.internal_name(), e)
-            return False
-
-        # Validate message headers
-        if not msg.get('message-id'):
-            mailman_log('error', 'Message missing Message-ID header')
-            return False
-
-        try:
-            # Process the news message
-            if not self._process_news(mlist, msg, msgdata):
-                return False
-
-            # Queue the news for further processing
-            try:
-                self._queue_news(mlist.internal_name(), msg, msgdata)
-            except Exception as e:
-                mailman_log('error', 'Error queueing news: %s', e)
-                return False
-
-            return True
-        except Exception as e:
-            mailman_log('error', 'Error processing news %s: %s',
-                       msg.get('message-id', 'n/a'), e)
-            return False
+            mailman_log('error', 'Error posting message to newsgroup for list %s: %s',
+                   mlist.internal_name(), str(e))
+            raise
 
     def _queue_news(self, listname, msg, msgdata):
         """Queue a news message for processing."""
