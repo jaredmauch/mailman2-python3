@@ -61,7 +61,7 @@ check_command(char *command)
 
 
 int
-main(int argc, char** argv, char** env)
+main(int argc, char** argv, char** env __attribute__((unused)))
 {
         int status;
 

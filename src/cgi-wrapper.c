@@ -36,7 +36,7 @@ const char* parentgroup = LEGAL_PARENT_GROUP;
 
 
 int
-main(int argc, char** argv, char** env)
+main(int argc __attribute__((unused)), char** argv __attribute__((unused)), char** env)
 {
         int status;
         char* fake_argv[3];

@@ -184,29 +184,8 @@ def main():
                         if args.verbose:
                             print(f"  Found password for member")
                     except Errors.NotAMemberError:
-                        if args.verbose:
-                            print(f"  Member not found in list {mlist.internal_name()}")
-                        # For test mode, we'll use a real password from a random member
-                        members = mlist.getMembers()
-                        if members:
-                            # Get a random member's password
-                            random_member = random.choice(members)
-                            if args.verbose:
-                                print(f"  Trying random member: {random_member}")
-                            try:
-                                password = mlist.getMemberPassword(random_member)
-                                if args.verbose:
-                                    print(f"  Found password for random member")
-                            except Errors.NotAMemberError:
-                                # If we can't get the random member's password, skip this list
-                                if args.verbose:
-                                    print(f"  No valid passwords found for random member")
-                                continue
-                        else:
-                            # If no members, skip this list
-                            if args.verbose:
-                                print(f"  No members found in list")
-                            continue
+                        # Silently skip if not a member in test mode
+                        continue
                     try:
                         optionsurl = mlist.GetOptionsURL(member)
                         if args.verbose:
@@ -237,13 +216,13 @@ def main():
                     try:
                         password = mlist.getMemberPassword(member)
                     except Errors.NotAMemberError:
-                        # Here's a member with no passwords, which I think was
-                        # possible in older versions of Mailman.  Log this and
-                        # move on.
-                        syslog('error', 'password-less member %s for list %s',
-                               member, mlist.internal_name())
+                        # Silently skip members without passwords
                         continue
-                    optionsurl = mlist.GetOptionsURL(member)
+                    try:
+                        optionsurl = mlist.GetOptionsURL(member)
+                    except Errors.NotAMemberError:
+                        # If we can't get the options URL, use a default one
+                        optionsurl = f"{mlist.GetBaseURL()}/options/{mlist.internal_name()}"
                     lang = mlist.getMemberLanguage(member)
                     info = (listaddr, password, optionsurl, lang)
                     userinfo.setdefault(member, []).append(info)

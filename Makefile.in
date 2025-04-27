@@ -108,6 +108,17 @@ define check_scripts
 	done
 endef
 
+# Add this function to handle variable substitutions
+define substitute_vars
+	@echo "Substituting variables in $$1..."
+	@sed -e 's|@PYTHON@|$(PYTHON)|g' \
+	     -e 's|@prefix@|$(prefix)|g' \
+	     -e 's|@exec_prefix@|$(exec_prefix)|g' \
+	     -e 's|@bindir@|$(bindir)|g' \
+	     -e 's|@var_prefix@|$(var_prefix)|g' \
+	     $$1 > $$1.tmp && mv $$1.tmp $$1
+endef
+
 # Rules
 
 .PHONY: all build install clean distclean prepare-build clean-pyc doinstall update langpack
@@ -130,6 +141,13 @@ prepare-build:
 			if test -f $$f; then \
 				if test ! -f build/$$f -o $$f -nt build/$$f; then \
 					cp -p $$f build/$$f; \
+					# Check if file contains variables to substitute \
+					if grep -q '/usr/bin/python3\|/usr/local/mailman\|$${prefix}\|$${exec_prefix}/bin\|@var_prefix@' build/$$f; then \
+						sed -i 's|/usr/bin/python3|$(PYTHON)|g' build/$$f; \
+						sed -i 's|/usr/local/mailman|$(prefix)|g' build/$$f; \
+						sed -i 's|$${prefix}|$(exec_prefix)|g' build/$$f; \
+						sed -i 's|$${exec_prefix}/bin|$(bindir)|g' build/$$f; \
+					fi; \
 				fi; \
 			fi; \
 		done; \

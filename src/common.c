@@ -41,13 +41,13 @@ int running_as_cgi = 0;
 extern char *sys_errlist[];
 extern int sys_nerr;
 
-char* strerror(int errno)
+char* strerror(int errnum)
 {
-        if (errno < 0 || errno >= sys_nerr) {
+        if (errnum < 0 || errnum >= sys_nerr) {
                 return "unknown error";
         }
         else {
-                return sys_errlist[errno];
+                return sys_errlist[errnum];
         }
 }
 
