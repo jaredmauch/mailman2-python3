@@ -99,8 +99,9 @@ class NewsRunner(Runner):
             return True
             
         try:
-            # Flatten the message object, sticking it in a StringIO object
-            fp = StringIO(msg.as_string())
+            # Get message as bytes for Python 3 compatibility
+            msg_bytes = msg.as_bytes()
+            fp = StringIO(msg_bytes.decode('utf-8', errors='replace'))
             conn = None
             try:
                 try:
@@ -113,11 +114,11 @@ class NewsRunner(Runner):
                                       password=mm_cfg.NNTP_PASSWORD,
                                       timeout=mm_cfg.NNTP_TIMEOUT)
                     conn.post(fp)
-                except nntplib.error_temp as e:
+                except nntplib.NNTPTemporaryError as e:
                     mailman_log('error', 'Temporary NNTP error for list "%s": %s',
                                mlist.internal_name(), e)
                     return True  # Requeue for temporary errors
-                except nntplib.error_perm as e:
+                except nntplib.NNTPPermanentError as e:
                     mailman_log('error', 'Permanent NNTP error for list "%s": %s',
                                mlist.internal_name(), e)
                     return False  # Don't requeue for permanent errors

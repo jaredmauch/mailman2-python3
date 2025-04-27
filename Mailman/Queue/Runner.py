@@ -28,13 +28,13 @@ from Mailman import Utils
 from Mailman import Errors
 from Mailman import MailList
 from Mailman import i18n
-import Mailman.Message
+from Mailman.Message import Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
 import email.errors
 
-
+
 class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
@@ -156,8 +156,8 @@ class Runner:
         # Find out which mailing list this message is destined for.
         try:
             # Convert email.message.Message to Mailman.Message if needed
-            if not isinstance(msg, Mailman.Message.Message):
-                mailman_msg = Mailman.Message.Message()
+            if not isinstance(msg, Message):
+                mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
                     mailman_msg[key] = value

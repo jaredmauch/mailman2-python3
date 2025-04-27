@@ -370,30 +370,55 @@ class HTMLFormatter(object):
                      ' a reminder.')
         return ''
 
+    def format(self, value, charset=None):
+        """Format a value for HTML output."""
+        if value is None:
+            return ''
+        if isinstance(value, str):
+            return Utils.websafe(value)
+        if isinstance(value, bytes):
+            if charset is None:
+                charset = self.preferred_language
+            try:
+                return Utils.websafe(value.decode(charset, 'replace'))
+            except (UnicodeError, LookupError):
+                return Utils.websafe(value.decode('utf-8', 'replace'))
+        return str(value)
+
     def ParseTags(self, template, replacements, lang=None):
+        """Parse template tags and replace them with their values."""
         if lang is None:
-            charset = 'us-ascii'
-        else:
-            charset = Utils.GetCharSet(lang)
-        text = Utils.maketext(template, raw=1, lang=lang, mlist=self)
-        # Ensure we have a string to split
-        if isinstance(text, tuple):
-            text = text[0]  # Take the first element of the tuple
-        parts = re.split('(</?[Mm][Mm]-[^>]*>)', text)
-        i = 1
-        while i < len(parts):
-            tag = parts[i].lower()
-            if tag in replacements:
-                repl = replacements[tag]
-                if isinstance(repl, type(u'')):
-                    repl = repl.encode(charset, 'replace')
-                if type(repl) is bytes:
-                    repl = repl.decode()
-                parts[i] = repl
+            lang = self.preferred_language
+        result = []
+        i = 0
+        while i < len(template):
+            if template[i] == '<' and i + 1 < len(template) and template[i + 1] == '%':
+                # Found a tag start
+                j = template.find('%>', i + 2)
+                if j == -1:
+                    # No matching end tag
+                    result.append(template[i:])
+                    break
+                tag = template[i + 2:j].strip()
+                if tag in replacements:
+                    value = replacements[tag]
+                    if isinstance(value, str):
+                        result.append(value)
+                    elif isinstance(value, bytes):
+                        if lang:
+                            try:
+                                result.append(value.decode(lang, 'replace'))
+                            except (UnicodeError, LookupError):
+                                result.append(value.decode('utf-8', 'replace'))
+                        else:
+                            result.append(value.decode('utf-8', 'replace'))
+                    else:
+                        result.append(str(value))
+                i = j + 2
             else:
-                parts[i] = ''
-            i = i + 2
-        return EMPTYSTRING.join(parts)
+                result.append(template[i])
+                i += 1
+        return ''.join(result)
 
     # This needs to wait until after the list is inited, so let's build it
     # when it's needed only.
@@ -425,9 +450,9 @@ class HTMLFormatter(object):
             '<mm-restricted-list-message>' : \
                 self.RestrictedListMessage(_('The current archive'),
                                            self.archive_private),
-            '<mm-num-reg-users>' : repr(member_len),
-            '<mm-num-digesters>' : repr(dmember_len),
-            '<mm-num-members>' : repr(member_len + dmember_len),
+            '<mm-num-reg-users>' : str(member_len),
+            '<mm-num-digesters>' : str(dmember_len),
+            '<mm-num-members>' : str(member_len + dmember_len),
             '<mm-posting-addr>' : '%s' % self.GetListEmail(),
             '<mm-request-addr>' : '%s' % self.GetRequestEmail(),
             '<mm-owner>' : self.GetOwnerEmail(),
@@ -466,13 +491,3 @@ class HTMLFormatter(object):
                 selected = mm_cfg.DEFAULT_SERVER_LANGUAGE
         # Return the widget
         return SelectOptions(varname, values, legend, selected)
-
-    def format(self, value, charset=None):
-        """Format a value for HTML output."""
-        if charset is None:
-            charset = self.charset
-        if isinstance(value, bytes):
-            value = value.decode(charset, 'replace')
-        elif not isinstance(value, str):
-            value = str(value)
-        return html.escape(value, quote=True)

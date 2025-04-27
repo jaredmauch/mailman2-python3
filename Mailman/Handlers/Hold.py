@@ -195,7 +195,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     # that the message can be approved or denied via email as well as the
     # web.
     #
-    # Check if exc is a class (either old-style or new-style)
+    # Check if exc is a class (new-style in Python 3)
     if isinstance(exc, type):
         # Go ahead and instantiate it now.
         exc = exc()

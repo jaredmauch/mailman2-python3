@@ -68,8 +68,13 @@ def to_cset_out(text, lcset):
     ocset = Charset(lcset).get_output_charset() or lcset
     if isinstance(text, str):
         return text.encode(ocset, 'replace')
+    elif isinstance(text, bytes):
+        try:
+            return text.decode(lcset, 'replace').encode(ocset, 'replace')
+        except (UnicodeError, LookupError):
+            return text.decode('utf-8', 'replace').encode(ocset, 'replace')
     else:
-        return text.decode(lcset, 'replace').encode(ocset, 'replace')
+        return str(text).encode(ocset, 'replace')
 
 
 
@@ -81,36 +86,29 @@ def process(mlist, msg, msgdata):
     omask = os.umask(0o007)
     try:
         mboxfp = open(mboxfile, 'a+')
+        mbox = Mailbox(mboxfile)  # Use the path instead of the file object
+        mbox.AppendMessage(msg)
+        # Calculate the current size of the accumulation file.  This will not tell
+        # us exactly how big the MIME, rfc1153, or any other generated digest
+        # message will be, but it's the most easily available metric to decide
+        # whether the size threshold has been reached.
+        mboxfp.flush()
+        size = os.path.getsize(mboxfile)
+        if (mlist.digest_size_threshhold > 0 and
+            size / 1024.0 >= mlist.digest_size_threshhold):
+            # This is a bit of a kludge to get the mbox file moved to the digest
+            # queue directory.
+            try:
+                # Enclose in try/except here because a error in send_digest() can
+                # silently stop regular delivery.  Unsuccessful digest delivery
+                # should not stop regular delivery.
+                send_digests(mlist, mboxfp)
+            except Exception as e:
+                syslog('error', 'Error sending digest: %s', str(e))
     finally:
         os.umask(omask)
-    mbox = Mailbox(mboxfp)
-    mbox.AppendMessage(msg)
-    # Calculate the current size of the accumulation file.  This will not tell
-    # us exactly how big the MIME, rfc1153, or any other generated digest
-    # message will be, but it's the most easily available metric to decide
-    # whether the size threshold has been reached.
-    mboxfp.flush()
-    size = os.path.getsize(mboxfile)
-    if (mlist.digest_size_threshhold > 0 and
-        size / 1024.0 >= mlist.digest_size_threshhold):
-        # This is a bit of a kludge to get the mbox file moved to the digest
-        # queue directory.
-        try:
-            # Enclose in try/except here because a error in send_digest() can
-            # silently stop regular delivery.  Unsuccessful digest delivery
-            # should be tried again by cron and the site administrator will be
-            # notified of any error explicitly by the cron error message.
-            mboxfp.seek(0)
-            send_digests(mlist, mboxfp)
-            os.unlink(mboxfile)
-        except Exception as errmsg:
-            # Bare except is generally prohibited in Mailman, but we can't
-            # forecast what exceptions can occur here.
-            syslog('error', 'send_digests() failed: %s', errmsg)
-            s = StringIO()
-            traceback.print_exc(file=s)
-            syslog('error', s.getvalue())
-    mboxfp.close()
+        if 'mboxfp' in locals():
+            mboxfp.close()
 
 
 
@@ -256,48 +254,12 @@ def send_i18n_digests(mlist, mboxfp):
             username = addresses[0][0]
             if not username:
                 username = addresses[0][1]
-        if username:
-            username = ' (%s)' % username
-        # Put count and Wrap the toc subject line
-        wrapped = Utils.wrap('%2d. %s' % (msgcount, subject), 65)
-        slines = wrapped.split('\n')
-        # See if the user's name can fit on the last line
-        if len(slines[-1]) + len(username) > 70:
-            slines.append(username)
-        else:
-            slines[-1] += username
-        # Add this subject to the accumulating topics
-        first = True
-        for line in slines:
-            if first:
-                print(' ', line, file=toc)
-                first = False
-            else:
-                print('     ', line.lstrip(), file=toc)
-        # We do not want all the headers of the original message to leak
-        # through in the digest messages.  For this phase, we'll leave the
-        # same set of headers in both digests, i.e. those required in RFC 1153
-        # plus a couple of other useful ones.  We also need to reorder the
-        # headers according to RFC 1153.  Later, we'll strip out headers for
-        # for the specific MIME or plain digests.
-        keeper = {}
-        all_keepers = {}
-        for header in (mm_cfg.MIME_DIGEST_KEEP_HEADERS +
-                       mm_cfg.PLAIN_DIGEST_KEEP_HEADERS):
-            all_keepers[header] = True
-        all_keepers = list(all_keepers.keys())
-        for keep in all_keepers:
-            keeper[keep] = msg.get_all(keep, [])
-        # Now remove all unkempt headers :)
-        for header in list(msg.keys()):
-            del msg[header]
-        # And add back the kept header in the RFC 1153 designated order
-        for keep in all_keepers:
-            for field in keeper[keep]:
-                msg[keep] = field
-        # And a bit of extra stuff
-        msg['Message'] = repr(msgcount)
-        # Get the next message in the digest mailbox
+        if not username:
+            username = _('(unknown)')
+        # Add this message to the table of contents
+        print('(%d) %s' % (msgcount, subject), file=toc)
+        print('    %s' % username, file=toc)
+        # Get the next message
         msg = next(mbox)
     # Now we're finished with all the messages in the digest.  First do some
     # sanity checking and then on to adding the toc.
@@ -344,18 +306,17 @@ def send_i18n_digests(mlist, mboxfp):
         print(file=plainmsg)
         # If decoded payload is empty, this may be multipart message.
         # -- just stringfy it.
-        payload = msg.get_payload(decode=True) \
-                  or msg.as_string().split('\n\n',1)[1]
+        payload = msg.get_payload(decode=True)
+        if payload is None:
+            payload = msg.as_string().split('\n\n',1)[1]
         mcset = msg.get_content_charset('')
         if mcset and mcset != lcset and mcset != lcset_out:
             try:
-                payload = str(payload, mcset, 'replace'
-                          ).encode(lcset, 'replace')
+                payload = str(payload, mcset, 'replace').encode(lcset, 'replace')
             except (UnicodeError, LookupError):
                 # TK: Message has something unknown charset.
                 #     _out means charset in 'outer world'.
-                payload = str(payload, lcset_out, 'replace'
-                          ).encode(lcset, 'replace')
+                payload = str(payload, lcset_out, 'replace').encode(lcset, 'replace')
         print(payload, file=plainmsg)
         if not payload.endswith('\n'):
             print(file=plainmsg)

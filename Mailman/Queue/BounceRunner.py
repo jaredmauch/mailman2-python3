@@ -34,8 +34,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import LockFile
 from Mailman.Errors import NotAMemberError
-import Mailman.Message
-from Mailman.Message import UserNotification
+from Mailman.Message import Message, UserNotification
 from Mailman.Bouncer import _BounceInfo
 from Mailman.Bouncers import BouncerAPI
 from Mailman.Queue.Runner import Runner
@@ -45,7 +44,6 @@ from Mailman.i18n import _
 
 COMMASPACE = ', '
 
-
 class BounceMixin:
     def __init__(self):
         # Registering a bounce means acquiring the list lock, and it would be
@@ -91,34 +89,38 @@ class BounceMixin:
         if self._bounce_events_fp is None:
             omask = os.umask(0o006)
             try:
-                self._bounce_events_fp = open(self._bounce_events_file, 'a+b')
+                self._bounce_events_fp = open(self._bounce_events_file, 'ab')
             finally:
                 os.umask(omask)
         for addr in addrs:
+            # Use protocol 3 for Python 3 compatibility
             pickle.dump((listname, addr, today, msg),
-                         self._bounce_events_fp, 1)
+                       self._bounce_events_fp, protocol=3)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
         self._bouncecnt += len(addrs)
 
     def _register_bounces(self):
         mailman_log('bounce', '%s processing %s queued bounces',
-               self, self._bouncecnt)
+                   self, self._bouncecnt)
         # Read all the records from the bounce file, then unlink it.  Sort the
         # records by listname for more efficient processing.
         events = {}
         self._bounce_events_fp.seek(0)
         while True:
             try:
-                listname, addr, day, msg = pickle.load(self._bounce_events_fp, fix_imports=True, encoding='latin1')
-            except ValueError as e:
-                mailman_log('bounce', 'Error reading bounce events: %s', e)
-            except EOFError:
+                # Use protocol 3 for Python 3 compatibility
+                listname, addr, day, msg = pickle.load(self._bounce_events_fp)
+            except (EOFError, ValueError) as e:
+                if isinstance(e, ValueError):
+                    mailman_log('bounce', 'Error reading bounce events: %s', e)
                 break
             events.setdefault(listname, []).append((addr, day, msg))
         # Now register all events sorted by list
         for listname in list(events.keys()):
             mlist = self._open_list(listname)
+            if mlist is None:
+                continue
             mlist.Lock()
             try:
                 for addr, day, msg in events[listname]:
@@ -175,7 +177,6 @@ class BounceMixin:
                 mlist.Unlock()
 
 
-
 class BounceRunner(Runner, BounceMixin):
     QDIR = mm_cfg.BOUNCEQUEUE_DIR
 
@@ -281,7 +282,6 @@ class BounceRunner(Runner, BounceMixin):
         Runner._cleanup(self)
 
 
-
 def verp_bounce(mlist, msg):
     try:
         bmailbox, bdomain = Utils.ParseEmail(mlist.GetBouncesEmail())
@@ -312,7 +312,6 @@ def verp_bounce(mlist, msg):
     return []
 
 
-
 def verp_probe(mlist, msg):
     bmailbox, bdomain = Utils.ParseEmail(mlist.GetBouncesEmail())
     # Sadly not every MTA bounces VERP messages correctly, or consistently.
@@ -347,7 +346,6 @@ def verp_probe(mlist, msg):
     return None
 
 
-
 def maybe_forward(mlist, msg):
     # Does the list owner want to get non-matching bounce messages?
     # If not, simply discard it.

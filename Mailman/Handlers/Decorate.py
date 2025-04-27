@@ -40,7 +40,7 @@ def process(mlist, msg, msgdata):
         # Calculate the extra personalization dictionary.  Note that the
         # length of the recips list better be exactly 1.
         recips = msgdata.get('recips')
-        assert type(recips) == list and len(recips) == 1
+        assert isinstance(recips, list) and len(recips) == 1
         member = recips[0].lower()
         d['user_address'] = member
         try:

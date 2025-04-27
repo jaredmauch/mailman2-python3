@@ -353,7 +353,7 @@ def main():
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
         qs = cgidata.get('VARHELP')
-        if qs and type(qs) == list:
+        if qs and isinstance(qs, list):
             varhelp = qs[0]
     if varhelp:
         # Sanitize the topic name.

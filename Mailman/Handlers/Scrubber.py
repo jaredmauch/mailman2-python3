@@ -142,7 +142,7 @@ def replace_payload_by_text(msg, text, charset):
     del msg['content-type']
     del msg['content-transfer-encoding']
     if isinstance(charset, str):
-        # email 3.0.1 (python 2.4) doesn't like unicode
+        # Convert charset to bytes if needed
         charset = charset.encode('us-ascii')
     msg.set_payload(text, charset)
 
@@ -171,25 +171,11 @@ def process(mlist, msg, msgdata=None):
             # We need to choose a charset for the scrubbed message, so we'll
             # arbitrarily pick the charset of the first text/plain part in the
             # message.
-            # MAS: Also get the RFC 3676 stuff from this part. This seems to
-            # work OK for scrub_nondigest.  It will also work as far as
-            # scrubbing messages for the archive is concerned, but pipermail
-            # doesn't pay any attention to the RFC 3676 parameters.  The plain
-            # format digest is going to be a disaster in any case as some of
-            # messages will be format="flowed" and some not.  ToDigest creates
-            # its own Content-Type: header for the plain digest which won't
-            # have RFC 3676 parameters. If the message Content-Type: headers
-            # are retained for display in the digest, the parameters will be
-            # there for information, but not for the MUA. This is the best we
-            # can do without having get_payload() process the parameters.
             if charset is None:
                 charset = part.get_content_charset(lcset)
                 format = part.get_param('format')
                 delsp = part.get_param('delsp')
             # TK: if part is attached then check charset and scrub if none
-            # MAS: Content-Disposition is not a good test for 'attached'.
-            # RFC 2183 sec. 2.10 allows Content-Disposition on the main body.
-            # Make it specifically 'attachment'.
             if (part.get('content-disposition', '').lower() == 'attachment'
                     and not part.get_content_charset()):
                 omask = os.umask(0o002)
@@ -210,16 +196,12 @@ URL: %(url)s
                     raise DiscardMessage
                 replace_payload_by_text(part,
                                  _('HTML attachment scrubbed and removed'),
-                                 # Adding charset arg and removing content-type
-                                 # sets content-type to text/plain
                                  lcset)
             elif sanitize == 2:
                 # By leaving it alone, Pipermail will automatically escape it
                 pass
             elif sanitize == 3:
-                # Pull it out as an attachment but leave it unescaped.  This
-                # is dangerous, but perhaps useful for heavily moderated
-                # lists.
+                # Pull it out as an attachment but leave it unescaped
                 omask = os.umask(0o002)
                 try:
                     url = save_attachment(mlist, part, dir, filter_html=False)
@@ -230,13 +212,13 @@ An HTML attachment was scrubbed...
 URL: %(url)s
 """), lcset)
             else:
-                # HTML-escape it and store it as an attachment, but make it
-                # look a /little/ bit prettier. :(
-                payload = Utils.websafe(part.get_payload(decode=True))
+                # HTML-escape it and store it as an attachment
+                payload = part.get_payload(decode=True)
+                if isinstance(payload, bytes):
+                    payload = payload.decode('utf-8', 'replace')
+                payload = Utils.websafe(payload)
                 # For whitespace in the margin, change spaces into
-                # non-breaking spaces, and tabs into 8 of those.  Then use a
-                # mono-space font.  Still looks hideous to me, but then I'd
-                # just as soon discard them.
+                # non-breaking spaces, and tabs into 8 of those
                 def doreplace(s):
                     return s.expandtabs(8).replace(' ', '&nbsp;')
                 lines = [doreplace(s) for s in payload.split('\n')]

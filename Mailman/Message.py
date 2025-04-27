@@ -98,8 +98,8 @@ class Message(email.message.Message):
                 chunks = []
                 cchanged = 0
                 for s, charset in v._chunks:
-                    if type(charset) == str:
-                        charset = Charset(charset)
+                    if isinstance(charset, str):
+                        charset = charset.lower()
                         cchanged = 1
                     chunks.append((s, charset))
                 if cchanged:
