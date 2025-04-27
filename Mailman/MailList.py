@@ -636,67 +636,68 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     # Database and filesystem I/O
     #
     def __save(self, dict):
-        """Save the file as a binary pickle with atomic operations and backup."""
+        """Save the configuration to disk with validation."""
         fname = os.path.join(self.fullpath(), 'config.pck')
-        fname_tmp = fname + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
-        fname_last = fname + '.last'
+        fname_tmp = fname + '.tmp'
         fname_backup = fname + '.bak'
+        fname_last = fname + '.last'
 
-        # First create a backup of the current file if it exists
+        # Validate input
+        if not isinstance(dict, dict):
+            raise ValueError("Configuration must be a dictionary")
+
+        # Create backup of current file if it exists
         if os.path.exists(fname):
             try:
-                import shutil
                 shutil.copy2(fname, fname_backup)
-            except IOError:
-                pass  # Best effort backup
+            except IOError as e:
+                syslog('error', 'Failed to create backup: %s', e)
+                # Continue anyway - we'll try to save the new file
 
-        # Save to temporary file first
-        fp = None
+        # Write to temporary file first
         try:
             # Ensure directory exists
             dirname = os.path.dirname(fname)
             if not os.path.exists(dirname):
                 os.makedirs(dirname, 0o755)
 
-            fp = open(fname_tmp, 'wb')
-            # Use protocol 2 for better compatibility
-            pickle.dump(dict, fp, protocol=2)
-            fp.flush()
-            if mm_cfg.SYNC_AFTER_WRITE:
-                os.fsync(fp.fileno())
-            fp.close()
-        except IOError as e:
-            syslog('error',
-                   'Failed config.pck write, retaining old state.\n%s', e)
-            if fp is not None:
-                try:
-                    os.unlink(fname_tmp)
-                except OSError:
-                    pass
-            raise
+            # Write to temporary file
+            with open(fname_tmp, 'wb') as fp:
+                pickle.dump(dict, fp, protocol=2)
+                fp.flush()
+                if mm_cfg.SYNC_AFTER_WRITE:
+                    os.fsync(fp.fileno())
 
-        # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
-        # as safely as possible
-        try:
-            # Remove old .last file if it exists
+            # Validate the temporary file by trying to load it
             try:
-                os.unlink(fname_last)
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
+                with open(fname_tmp, 'rb') as fp:
+                    test_dict = pickle.load(fp)
+                    if not isinstance(test_dict, dict):
+                        raise ValueError("Invalid configuration format in temporary file")
+            except Exception as e:
+                syslog('error', 'Failed to validate temporary file: %s', e)
+                raise
 
-            # Try to create hard link to current file as .last
+            # If validation succeeds, perform atomic rename
+            os.rename(fname_tmp, fname)
+
+            # Create a hard link to the last good version
             try:
+                if os.path.exists(fname_last):
+                    os.unlink(fname_last)
                 os.link(fname, fname_last)
             except OSError as e:
                 if e.errno != errno.ENOENT:
-                    raise
+                    syslog('error', 'Failed to create last version link: %s', e)
 
-            # Atomic rename of new file
-            os.rename(fname_tmp, fname)
         except Exception as e:
-            # If anything goes wrong, try to restore from backup
-            syslog('error', 'Error during file rotation: %s', str(e))
+            syslog('error', 'Failed to save configuration: %s', e)
+            # Clean up temporary file
+            try:
+                os.unlink(fname_tmp)
+            except OSError:
+                pass
+            # Try to restore from backup if available
             if os.path.exists(fname_backup):
                 try:
                     shutil.copy2(fname_backup, fname)
@@ -761,49 +762,53 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             return value.decode('latin1', 'replace')
         return value
 
-    def __load(self, dbfile):
-        """Load and validate a database file with improved error handling."""
-        # Determine the load function based on file extension
-        if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
-            loadfunc = marshal.load
-        elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-            loadfunc = pickle.load
-        else:
-            assert 0, 'Bad database file name'
+    def __load(self):
+        """Load the configuration from disk."""
+        fname = os.path.join(self.fullpath(), 'config.pck')
+        fname_backup = fname + '.bak'
+        fname_last = fname + '.last'
 
+        # Try to load the main config file first
         try:
-            # Check if we need to reload based on timestamp
-            mtime = os.path.getmtime(dbfile)
-            if mtime < self.__timestamp:
-                return None, None
-
-            # Load and validate the file
-            with open(dbfile, mode='rb') as fp:
-                try:
-                    if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
-                        dict_retval = marshal.load(fp)
-                        # Convert any bytes to strings for marshal-loaded data
-                        dict_retval = self.__convert_bytes_to_strings(dict_retval)
-                    elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-                        # Use latin1 encoding for pickle files to maintain compatibility
-                        dict_retval = pickle.load(fp, fix_imports=True, encoding='latin1')
-                        # Convert any remaining bytes to strings using latin1
-                        dict_retval = self.__convert_bytes_to_strings(dict_retval)
-
+            if os.path.exists(fname):
+                with open(fname, 'rb') as fp:
+                    dict = pickle.load(fp)
                     # Validate the loaded data
-                    if not isinstance(dict_retval, dict):
-                        return None, 'Load() expected to return a dictionary'
+                    if not isinstance(dict, dict):
+                        raise ValueError("Invalid configuration format")
+                    return dict
+        except Exception as e:
+            syslog('error', 'Failed to load configuration: %s', e)
 
-                    return dict_retval, None
+        # If main file fails, try the backup
+        try:
+            if os.path.exists(fname_backup):
+                with open(fname_backup, 'rb') as fp:
+                    dict = pickle.load(fp)
+                    if not isinstance(dict, dict):
+                        raise ValueError("Invalid backup configuration format")
+                    # Restore the backup
+                    shutil.copy2(fname_backup, fname)
+                    return dict
+        except Exception as e:
+            syslog('error', 'Failed to load backup configuration: %s', e)
 
-                except (EOFError, ValueError, TypeError, MemoryError,
-                        pickle.PicklingError, pickle.UnpicklingError) as e:
-                    return None, e
+        # If backup fails, try the last known good version
+        try:
+            if os.path.exists(fname_last):
+                with open(fname_last, 'rb') as fp:
+                    dict = pickle.load(fp)
+                    if not isinstance(dict, dict):
+                        raise ValueError("Invalid last version configuration format")
+                    # Restore the last good version
+                    shutil.copy2(fname_last, fname)
+                    return dict
+        except Exception as e:
+            syslog('error', 'Failed to load last version configuration: %s', e)
 
-        except EnvironmentError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            return None, e
+        # If all else fails, create a new configuration
+        syslog('error', 'All configuration files corrupted, creating new configuration')
+        return self._create_default_config()
 
     def __convert_bytes_to_strings(self, obj):
         """Convert bytes to strings in a nested data structure.
