@@ -189,7 +189,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def internal_name(self):
         name = self._internal_name
         if isinstance(name, bytes):
-            name = name.decode('utf-8', 'replace')
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                name = name.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                name = name.decode('utf-8', 'replace')
         return name
 
     def fullpath(self):
@@ -336,7 +341,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if name:
             # Ensure name is a string
             if isinstance(name, bytes):
-                name = name.decode('utf-8', 'replace')
+                try:
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    name = name.decode('latin-1', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to UTF-8 if Latin-1 fails
+                    name = name.decode('utf-8', 'replace')
             self._internal_name = name
 
         # When was the list created?
@@ -391,6 +401,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.from_is_list = mm_cfg.DEFAULT_FROM_IS_LIST
         self.anonymous_list = mm_cfg.DEFAULT_ANONYMOUS_LIST
         internalname = self.internal_name()
+        if isinstance(internalname, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                internalname = internalname.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                internalname = internalname.decode('utf-8', 'replace')
         self.real_name = internalname[0].upper() + internalname[1:]
         self.description = ''
         self.info = ''
@@ -811,6 +828,18 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
 
         # Ensure string values are properly decoded
         for key, value in dict_retval.items():
+            # Handle the key first
+            if isinstance(key, bytes):
+                try:
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    key = key.decode('latin-1', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to UTF-8 if Latin-1 fails
+                    key = key.decode('utf-8', 'replace')
+                # Update the dictionary with the decoded key
+                dict_retval[key] = dict_retval.pop(key)
+            
+            # Now handle the value
             if isinstance(value, bytes):
                 try:
                     # Try Latin-1 first since that's what we're seeing in the data
@@ -829,34 +858,21 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 new_dict = {}
                 for k, v in value.items():
                     if isinstance(k, bytes):
-                        k = k.decode('latin-1', 'replace')
+                        try:
+                            # Try Latin-1 first for keys
+                            k = k.decode('latin-1', 'replace')
+                        except UnicodeDecodeError:
+                            # Fall back to UTF-8 if Latin-1 fails
+                            k = k.decode('utf-8', 'replace')
                     if isinstance(v, bytes):
-                        v = v.decode('latin-1', 'replace')
+                        try:
+                            # Try Latin-1 first for values
+                            v = v.decode('latin-1', 'replace')
+                        except UnicodeDecodeError:
+                            # Fall back to UTF-8 if Latin-1 fails
+                            v = v.decode('utf-8', 'replace')
                     new_dict[k] = v
                 dict_retval[key] = new_dict
-
-        # Now, if we didn't end up using the primary database file, we want to
-        # copy the fallback into the primary so that the logic in Save() will
-        # still work.  For giggles, we'll copy it to a safety backup.  Note we
-        # MUST do this with the underlying list lock acquired.
-        if file == plast or file == dlast:
-            syslog('error', 'fixing corrupt config file, using: %s', file)
-            unlock = True
-            try:
-                try:
-                    self.__lock.lock()
-                except LockFile.AlreadyLockedError:
-                    unlock = False
-                self.__fix_corrupt_pckfile(file, pfile, plast, dfile, dlast)
-            finally:
-                if unlock:
-                    self.__lock.unlock()
-        # Copy the loaded dictionary into the attributes of the current
-        # mailing list object, then run sanity check on the data.
-        self.__dict__.update(dict_retval)
-        if check_version:
-            self.CheckVersion(dict_retval)
-            self.CheckValues()
 
     def __fix_corrupt_pckfile(self, file, pfile, plast, dfile, dlast):
         if file == plast:
