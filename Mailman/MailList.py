@@ -173,20 +173,25 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 except UnicodeDecodeError:
                     pass
             return value
+
         # Then try the memberadaptor
         try:
             return getattr(self._memberadaptor, name)
         except AttributeError:
-            # Try GUI components
-            for guicomponent in self._gui:
-                try:
-                    return getattr(guicomponent, name)
-                except AttributeError:
-                    pass
-            # Finally check mixin classes
-            for baseclass in self.__class__.__bases__:
-                try:
-                    # Get the attribute from the base class
+            pass
+
+        # Try GUI components
+        for guicomponent in self._gui:
+            try:
+                return getattr(guicomponent, name)
+            except AttributeError:
+                pass
+
+        # Check mixin classes in reverse MRO order to respect inheritance
+        for baseclass in reversed(self.__class__.__mro__[1:]):  # Skip self
+            try:
+                # First check if the attribute exists in the base class
+                if hasattr(baseclass, name):
                     attr = getattr(baseclass, name)
                     # If it's a method, bind it to this instance
                     if callable(attr):
@@ -195,15 +200,48 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     if hasattr(self, '_' + name):
                         return getattr(self, '_' + name)
                     # If the attribute exists in the base class's instance dict, use that
-                    if hasattr(baseclass, name) and name in baseclass.__dict__:
+                    if name in baseclass.__dict__:
                         return attr
                     # If we have an instance value, use that
                     if hasattr(self, name):
                         return getattr(self, name)
+                    # If this is a mixin class with InitVars, try to initialize
+                    if hasattr(baseclass, 'InitVars'):
+                        try:
+                            # Only initialize if we haven't done so before
+                            if not hasattr(self, '_' + name + '_initialized'):
+                                baseclass.InitVars(self)
+                                setattr(self, '_' + name + '_initialized', True)
+                                if hasattr(self, name):
+                                    return getattr(self, name)
+                        except Exception as e:
+                            syslog('error', 'Error initializing %s from %s: %s',
+                                   name, baseclass.__name__, str(e))
+                            continue
                     return attr
-                except AttributeError:
-                    pass
-            raise AttributeError(name)
+            except AttributeError:
+                continue
+
+        # If we get here, try to initialize through the main class's InitVars
+        try:
+            if not hasattr(self, '_' + name + '_initialized'):
+                self.InitVars()
+                setattr(self, '_' + name + '_initialized', True)
+                if hasattr(self, name):
+                    return getattr(self, name)
+        except Exception as e:
+            syslog('error', 'Error initializing %s from main class: %s',
+                   name, str(e))
+
+        # If we still don't have the attribute, check if it's a property
+        for baseclass in reversed(self.__class__.__mro__[1:]):
+            try:
+                if name in baseclass.__dict__ and isinstance(baseclass.__dict__[name], property):
+                    return baseclass.__dict__[name].__get__(self, self.__class__)
+            except Exception:
+                continue
+
+        raise AttributeError(name)
 
     def __repr__(self):
         if self.Locked():
