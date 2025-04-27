@@ -1039,8 +1039,17 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             doc.addError(_('Bad regular expression: %(regexp)s') % {'regexp': regexp})
         else:
             # BAW: There's got to be a more efficient way of doing this!
-            names = [mlist.getMemberName(s) or '' for s in all]
-            all = [a for n, a in zip(names, all)
+            names = []
+            valid_members = []
+            for addr in all:
+                try:
+                    name = mlist.getMemberName(addr) or ''
+                    names.append(name)
+                    valid_members.append(addr)
+                except Errors.NotAMemberError:
+                    # Skip addresses that are no longer members
+                    continue
+            all = [a for n, a in zip(names, valid_members)
                    if cre.search(n) or cre.search(a)]
     chunkindex = None
     bucket = None
