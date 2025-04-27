@@ -28,6 +28,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MemberAdaptor
 from Mailman.htmlformat import *
+from Mailman.Logging.Syslog import mailman_log
 
 from Mailman.i18n import _
 
