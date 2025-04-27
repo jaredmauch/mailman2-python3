@@ -119,6 +119,8 @@ def main():
     skipped_lists = []
     for listname in listnames:
         try:
+            if args.verbose:
+                print(f"\nProcessing list: {listname}")
             mlist = MailList.MailList(listname, lock=0)
             if not mlist.send_reminders:
                 if args.verbose:
@@ -154,35 +156,51 @@ def main():
         userinfo = {}
         for mlist in byhost[host]:
             listaddr = mlist.GetListEmail()
+            if args.verbose:
+                print(f"\nProcessing list: {mlist.internal_name()}")
             # In test mode, we'll use the test email address for all lists
             if args.test:
                 member = args.test
                 try:
                     # Try to get the member's password if they are a member
+                    if args.verbose:
+                        print(f"  Checking membership for: {member}")
                     password = mlist.getMemberPassword(member)
+                    if args.verbose:
+                        print(f"  Found password for member")
                 except Errors.NotAMemberError:
+                    if args.verbose:
+                        print(f"  Member not found, trying random member")
                     # For test mode, we'll use a real password from a random member
                     members = mlist.getMembers()
                     if members:
                         # Get a random member's password
                         random_member = random.choice(members)
+                        if args.verbose:
+                            print(f"  Trying random member: {random_member}")
                         try:
                             password = mlist.getMemberPassword(random_member)
+                            if args.verbose:
+                                print(f"  Found password for random member")
                         except Errors.NotAMemberError:
                             # If we can't get the random member's password, skip this list
                             if args.verbose:
-                                print(f"Skipping list {listaddr} - no valid passwords found")
+                                print(f"  No valid passwords found for random member")
                             continue
                     else:
                         # If no members, skip this list
                         if args.verbose:
-                            print(f"Skipping list {listaddr} - no members found")
+                            print(f"  No members found in list")
                         continue
                 try:
                     optionsurl = mlist.GetOptionsURL(member)
+                    if args.verbose:
+                        print(f"  Got options URL: {optionsurl}")
                 except Errors.NotAMemberError:
                     # If we can't get the options URL, use a default one
                     optionsurl = f"{mlist.GetBaseURL()}/options/{mlist.internal_name()}"
+                    if args.verbose:
+                        print(f"  Using default options URL: {optionsurl}")
                 # Use the list's default language
                 lang = mlist.preferred_language
                 info = (listaddr, password, optionsurl, lang)
