@@ -698,18 +698,27 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         return RadioButtonArray(varname, params, checked, not extra)
     elif (kind == mm_cfg.String or kind == mm_cfg.Email or
           kind == mm_cfg.Host or kind == mm_cfg.Number):
+        # Ensure value is a string, decoding bytes if necessary
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
         return TextBox(varname, value, params)
     elif kind == mm_cfg.Text:
         if params:
             r, c = params
         else:
             r, c = None, None
+        # Ensure value is a string, decoding bytes if necessary
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
         return TextArea(varname, value or '', r, c)
     elif kind in (mm_cfg.EmailList, mm_cfg.EmailListEx):
         if params:
             r, c = params
         else:
             r, c = None, None
+        # Ensure value is a string, decoding bytes if necessary
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
         res = NL.join(value)
         return TextArea(varname, res, r, c, wrap='off')
     elif kind == mm_cfg.FileUpload:
