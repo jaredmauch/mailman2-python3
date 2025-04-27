@@ -1180,13 +1180,17 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                   }
     # Now populate the rows
     for addr in members:
-        qaddr = urllib.parse.quote(addr)
-        link = Link(mlist.GetOptionsURL(addr, obscure=1),
-                    mlist.getMemberCPAddress(addr))
-        fullname = Utils.uncanonstr(mlist.getMemberName(addr),
-                                    mlist.preferred_language)
-        name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
-        cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format())]
+        try:
+            qaddr = urllib.parse.quote(addr)
+            link = Link(mlist.GetOptionsURL(addr, obscure=1),
+                        mlist.getMemberCPAddress(addr))
+            fullname = Utils.uncanonstr(mlist.getMemberName(addr),
+                                        mlist.preferred_language)
+            name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
+            cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format())]
+        except Errors.NotAMemberError:
+            # Skip addresses that are no longer members
+            continue
 
         digest_name = '%(qaddr)s_digest' % {'qaddr': qaddr}
         if addr not in mlist.getRegularMemberKeys():
