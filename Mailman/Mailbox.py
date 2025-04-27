@@ -43,15 +43,33 @@ def _safeparser(fp):
 
 class BinaryGenerator(email.generator.Generator):
     """A generator that writes to a binary file."""
-    def write(self, s):
-        if isinstance(s, bytes):
-            # If we get bytes, decode to string first
-            try:
-                s = s.decode('utf-8', 'replace')
-            except UnicodeError:
-                s = s.decode('latin-1', 'replace')
-        # Now encode back to bytes for writing
-        self._fp.write(s.encode('utf-8', 'replace'))
+    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, *args, **kwargs):
+        # Create a text buffer that we'll write to first
+        self._buffer = StringIO()
+        super().__init__(self._buffer, mangle_from_, maxheaderlen, *args, **kwargs)
+        # Store the binary file object
+        self._binary_fp = outfp
+
+    def _write_lines(self, lines):
+        # Override to handle both string and bytes input
+        for line in lines:
+            if isinstance(line, bytes):
+                try:
+                    line = line.decode('utf-8', 'replace')
+                except UnicodeError:
+                    line = line.decode('latin-1', 'replace')
+            self._buffer.write(line)
+
+    def flatten(self, msg, unixfrom=False, linesep='\n'):
+        # Override to write the buffer contents to binary file
+        super().flatten(msg, unixfrom=unixfrom, linesep=linesep)
+        # Get the text content and encode it
+        content = self._buffer.getvalue()
+        # Reset the buffer
+        self._buffer.seek(0)
+        self._buffer.truncate()
+        # Write to binary file
+        self._binary_fp.write(content.encode('utf-8', 'replace'))
 
 
 class Mailbox(mailbox.mbox):
