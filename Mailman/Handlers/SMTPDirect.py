@@ -223,11 +223,12 @@ def process(mlist, msg, msgdata):
     # any catastrophic exceptions due to bogus format strings.
     if mm_cfg.SMTP_LOG_EVERY_MESSAGE:
         mailman_log(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
-                    mm_cfg.SMTP_LOG_EVERY_MESSAGE[1],
-                    mlist.internal_name(),
-                    origsender,
-                    len(chunk),
-                    time.time() - t0)
+                    mm_cfg.SMTP_LOG_EVERY_MESSAGE[1] % {
+                        'listname': mlist.internal_name(),
+                        'sender': origsender,
+                        'chunksize': len(chunk),
+                        'time': time.time() - t0
+                    })
 
     if refused:
         if mm_cfg.SMTP_LOG_REFUSED:
