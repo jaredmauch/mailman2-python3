@@ -222,8 +222,12 @@ def process(mlist, msg, msgdata):
     # still worthwhile doing the interpolation in syslog() because it'll catch
     # any catastrophic exceptions due to bogus format strings.
     if mm_cfg.SMTP_LOG_EVERY_MESSAGE:
-        mailman_log.write_ex(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
-                        mm_cfg.SMTP_LOG_EVERY_MESSAGE[1], kws=d)
+        mailman_log(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
+                    mm_cfg.SMTP_LOG_EVERY_MESSAGE[1],
+                    mlist.internal_name(),
+                    origsender,
+                    len(chunk),
+                    time.time() - t0)
 
     if refused:
         if mm_cfg.SMTP_LOG_REFUSED:
