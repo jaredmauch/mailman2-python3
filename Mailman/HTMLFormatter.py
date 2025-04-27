@@ -456,35 +456,56 @@ class HTMLFormatter(object):
             replacements = {}
         if lang is None:
             lang = self.preferred_language
+            
         try:
-            replacements['<mm-header>'] = self.GetMailmanHeader()
-        except Exception as e:
-            mailman_log('error', 'Error getting Mailman header: %s', str(e))
-            replacements['<mm-header>'] = ''
-        
-        try:
-            # Add basic list information
-            replacements['<MM-List-Name>'] = self.real_name
-            replacements['<mm-list-description>'] = self.description
-            replacements['<mm-list-info>'] = self.GetScriptURL('listinfo')
-            replacements['<mm-list-owner>'] = self.GetOwnerEmail()
+            # Get member counts
+            dmember_len = len(self.getDigestMemberKeys())
+            member_len = len(self.getRegularMemberKeys())
             
-            # Add header and footer
-            mailman_log('debug', 'Adding header and footer replacements')
-            replacements['<mm-footer>'] = self.GetMailmanFooter()
+            # Handle language selection
+            if len(self.GetAvailableLanguages()) == 1:
+                listlangs = _(Utils.GetLanguageDescr(self.preferred_language))
+            else:
+                listlangs = self.GetLangSelectBox(lang).Format()
+                
+            # Get charset
+            if lang:
+                cset = Utils.GetCharSet(lang) or 'us-ascii'
+            else:
+                cset = Utils.GetCharSet(self.preferred_language) or 'us-ascii'
+                
+            # Add all standard replacements
+            replacements.update({
+                '<MM-Mailman-Footer>': self.GetMailmanFooter(),
+                '<MM-List-Name>': self.real_name,
+                '<MM-Email-User>': self._internal_name,
+                '<MM-List-Description>': self.GetDescription(cset),
+                '<MM-List-Info>': '<!---->' + BR.join(self.info.split(NL)) + '<!---->',
+                '<MM-Form-End>': self.FormatFormEnd(),
+                '<MM-Archive>': self.FormatArchiveAnchor(),
+                '</MM-Archive>': '</a>',
+                '<MM-List-Subscription-Msg>': self.FormatSubscriptionMsg(),
+                '<MM-Restricted-List-Message>': self.RestrictedListMessage(_('The current archive'), self.archive_private),
+                '<MM-Num-Reg-Users>': repr(member_len),
+                '<MM-Num-Digesters>': repr(dmember_len),
+                '<MM-Num-Members>': repr(member_len + dmember_len),
+                '<MM-Posting-Addr>': '%s' % self.GetListEmail(),
+                '<MM-Request-Addr>': '%s' % self.GetRequestEmail(),
+                '<MM-Owner>': self.GetOwnerEmail(),
+                '<MM-Reminder>': self.FormatReminder(self.preferred_language),
+                '<MM-Host>': self.host_name,
+                '<MM-List-Langs>': listlangs,
+            })
             
-            # Add language selection
-            replacements['<mm-lang-select>'] = self.GetLangSelectBox(lang)
-            
-            # Add other standard replacements
-            replacements['<mm-host-name>'] = self.host_name
-            replacements['<mm-list-address>'] = self.GetListEmail()
-            
+            # Add favicon if configured
+            if mm_cfg.IMAGE_LOGOS:
+                replacements['<mm-favicon>'] = mm_cfg.IMAGE_LOGOS + mm_cfg.SHORTCUT_ICON
+                
             mailman_log('debug', 'Added %d standard replacements', len(replacements))
             
         except Exception as e:
             mailman_log('error', 'Error getting standard replacements: %s', str(e))
-        
+            
         return replacements
 
     def GetAllReplacements(self, lang=None, list_hidden=False):
