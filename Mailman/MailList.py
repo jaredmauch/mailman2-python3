@@ -525,6 +525,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Only one level of mixin inheritance allowed
         for gui in self._gui:
             k, v = gui.GetConfigCategory()
+            if isinstance(v, tuple):
+                syslog('error', 'Category %s has tuple value: %s', k, str(v))
             categories[k] = (v, gui)
         return categories
 
