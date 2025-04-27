@@ -67,6 +67,7 @@ import Mailman.Message
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import mailman_log
+import pickle
 
 # We only care about the listname and the subq as in listname@ or
 # listname-request@
@@ -106,120 +107,92 @@ class MaildirRunner(Runner):
         self._parser = Parser(Mailman.Message.Message)
 
     def _oneloop(self):
-        # Refresh this each time through the list.  BAW: could be too
-        # expensive.
-        listnames = Utils.list_names()
-        # Cruise through all the files currently in the new/ directory
+        """Process one batch of messages."""
         try:
-            files = os.listdir(self._dir)
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
-            # Nothing's been delivered yet
-            return 0
-            
-        for file in files:
-            srcname = os.path.join(self._dir, file)
-            dstname = os.path.join(self._cur, file + ':1,P')
-            xdstname = os.path.join(self._cur, file + ':1,X')
-            
+            # Get list of files in new directory
             try:
-                os.rename(srcname, dstname)
+                files = os.listdir(self._dir)
             except OSError as e:
-                if e.errno == errno.ENOENT:
-                    # Some other MaildirRunner beat us to it
-                    continue
-                mailman_log('error', 'Could not rename maildir file: %s', srcname)
-                raise
+                if e.errno != errno.ENOENT:
+                    mailman_log('error', 'Error reading maildir directory %s: %s',
+                              self._dir, e)
+                return
                 
-            # Now open, read, parse, and enqueue this message
-            fp = None
-            try:
-                fp = open(dstname)
-                msg = self._parser.parse(fp)
-                # Now we need to figure out which queue of which list this
-                # message was destined for.  See verp_bounce() in
-                # BounceRunner.py for why we do things this way.
-                vals = []
-                for header in ('delivered-to', 'envelope-to', 'apparently-to'):
-                    vals.extend(msg.get_all(header, []))
-                for field in vals:
-                    to = parseaddr(field)[1]
-                    if not to:
+            for filename in files:
+                try:
+                    # Skip non-files
+                    fullpath = os.path.join(self._dir, filename)
+                    if not os.path.isfile(fullpath):
                         continue
-                    mo = lre.match(to)
-                    if not mo:
-                        # This isn't an address we care about
-                        continue
-                    listname, subq = mo.group('listname', 'subq')
-                    if listname in listnames:
-                        break
-                else:
-                    # As far as we can tell, this message isn't destined for
-                    # any list on the system.  What to do?
-                    mailman_log('error', 'Message apparently not for any list: %s',
-                           xdstname)
-                    os.rename(dstname, xdstname)
-                    continue
-                # BAW: blech, hardcoded
-                msgdata = {'listname': listname}
-                # -admin is deprecated
-                if subq in ('bounces', 'admin'):
-                    queue = get_switchboard(mm_cfg.BOUNCEQUEUE_DIR)
-                elif subq == 'confirm':
-                    msgdata['toconfirm'] = 1
-                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-                elif subq in ('join', 'subscribe'):
-                    msgdata['tojoin'] = 1
-                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-                elif subq in ('leave', 'unsubscribe'):
-                    msgdata['toleave'] = 1
-                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-                elif subq == 'owner':
-                    msgdata.update({
-                        'toowner': 1,
-                        'envsender': Utils.get_site_email(extra='bounces'),
-                        'pipeline': mm_cfg.OWNER_PIPELINE,
-                        })
-                    queue = get_switchboard(mm_cfg.INQUEUE_DIR)
-                elif subq is None:
-                    msgdata['tolist'] = 1
-                    queue = get_switchboard(mm_cfg.INQUEUE_DIR)
-                elif subq == 'request':
-                    msgdata['torequest'] = 1
-                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-                else:
-                    mailman_log('error', 'Unknown sub-queue: %s', subq)
-                    os.rename(dstname, xdstname)
-                    continue
-                queue.enqueue(msg, msgdata)
-                os.unlink(dstname)
-            except Exception as e:
-                os.rename(dstname, xdstname)
-                mailman_log('error', str(e))
-            finally:
-                if fp:
+                        
+                    # Read and parse the file
                     try:
-                        fp.close()
-                    except:
-                        pass
+                        with open(fullpath, 'rb') as fp:
+                            # Use protocol 2 for Python 2/3 compatibility
+                            protocol = 2
+                            listname = pickle.load(fp, fix_imports=True, encoding='latin1')
+                            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                            msgdata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    except (pickle.UnpicklingError, EOFError) as e:
+                        mailman_log('error', 'Error unpickling maildir file %s: %s',
+                                  fullpath, e)
+                        continue
+                        
+                    # Validate message headers
+                    if not msg.get('message-id'):
+                        mailman_log('error', 'Message missing Message-ID header')
+                        continue
+                        
+                    # Process the message
+                    try:
+                        self._dispose(listname, msg, msgdata)
+                    except Exception as e:
+                        mailman_log('error', 'Error processing message %s: %s',
+                                  msg.get('message-id', 'n/a'), e)
+                        continue
+                        
+                    # Move file to cur directory
+                    try:
+                        os.rename(fullpath, os.path.join(self._cur, filename))
+                    except OSError as e:
+                        mailman_log('error', 'Error moving maildir file %s: %s',
+                                  fullpath, e)
+                        continue
+                        
+                except Exception as e:
+                    mailman_log('error', 'Error processing maildir file %s: %s',
+                              filename, e)
+                    continue
+                    
+        except Exception as e:
+            mailman_log('error', 'Error in maildir runner: %s', e)
+            return
 
     def _cleanup(self):
         pass
 
     def _dispose(self, mlist, msg, msgdata):
         # Make sure we have the most up-to-date state
-        mlist.Load()
-        if not msgdata.get('prepped'):
-            prepare_message(mlist, msg, msgdata)
         try:
-            # Process the maildir message
-            maildir_info = process_maildir(mlist, msg, msgdata)
-            if maildir_info:
-                mailman_log('maildir', 'Processed maildir for list "%s": %s',
-                          mlist.internal_name(), maildir_info)
+            mlist.Load()
+        except Errors.MMCorruptListDatabaseError as e:
+            mailman_log('error', 'Failed to load list %s: %s',
+                       mlist.internal_name(), e)
+            return False
         except Exception as e:
-            # Some other exception occurred, which we definitely did not
-            # expect, so set this message up for requeuing.
-            self._log(e)
-            return True
-        return False
+            mailman_log('error', 'Unexpected error loading list %s: %s',
+                       mlist.internal_name(), e)
+            return False
+
+        # Validate message headers
+        if not msg.get('message-id'):
+            mailman_log('error', 'Message missing Message-ID header')
+            return False
+
+        try:
+            # Process the message
+            return super()._dispose(mlist, msg, msgdata)
+        except Exception as e:
+            mailman_log('error', 'Error processing message %s: %s',
+                       msg.get('message-id', 'n/a'), e)
+            return False

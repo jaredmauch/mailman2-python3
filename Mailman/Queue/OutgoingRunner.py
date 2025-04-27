@@ -101,7 +101,16 @@ class OutgoingRunner(Runner, BounceMixin):
 
         # Make sure we have the most up-to-date state
         mailman_log('debug', 'OutgoingRunner: Loading list state')
-        mlist.Load()
+        try:
+            mlist.Load()
+        except Errors.MMCorruptListDatabaseError as e:
+            mailman_log('error', 'OutgoingRunner: Failed to load list %s: %s',
+                       mlist.internal_name(), e)
+            return False
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner: Unexpected error loading list %s: %s',
+                       mlist.internal_name(), e)
+            return False
 
         try:
             pid = os.getpid()

@@ -143,7 +143,7 @@ class ListAdmin(object):
 
             with open(filename_tmp, 'wb') as fp:
                 # Use protocol 2 for better compatibility
-                pickle.dump(self.__db, fp, protocol=2)
+                pickle.dump(self.__db, fp, protocol=2, fix_imports=True)
                 fp.flush()
                 if hasattr(os, 'fsync'):
                     os.fsync(fp.fileno())
@@ -272,7 +272,7 @@ class ListAdmin(object):
             fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'wb')
             try:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
-                    pickle.dump(msg, fp, 1)
+                    pickle.dump(msg, fp, protocol=2, fix_imports=True)
                 else:
                     g = Generator(fp)
                     g.flatten(msg, 1)

@@ -42,6 +42,8 @@ import pickle
 import marshal
 import email.message
 from email.message import Message as EmailMessage
+import hashlib
+import socket
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -125,7 +127,7 @@ class Switchboard:
         # Get some data for the input to the sha hash
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
-            protocol = 1
+            protocol = 2
             # Convert email.message.Message to Mailman.Message if needed
             if isinstance(_msg, email.message.Message) and not isinstance(_msg, Message.Message):
                 mailman_msg = Message.Message()
@@ -139,16 +141,15 @@ class Switchboard:
                 else:
                     mailman_msg.set_payload(_msg.get_payload())
                 _msg = mailman_msg
-            msgsave = pickle.dumps(_msg, protocol, fix_imports=True)
+            msgsave = pickle.dumps(_msg, protocol=2, fix_imports=True)
         else:
-            protocol = 0
-            msgsave = pickle.dumps(str(_msg), protocol, fix_imports=True)
+            protocol = 2
+            msgsave = pickle.dumps(str(_msg), protocol=2, fix_imports=True)
         hashfood = msgsave + listname.encode() + repr(now).encode()
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
         # the received time for this message (i.e. when it first showed up on
         # this system) and the sha hex digest.
-        #rcvtime = data.setdefault('received_time', now)
         rcvtime = data.setdefault('received_time', now)
         filebase = repr(rcvtime) + '+' + sha_new(hashfood).hexdigest()
         filename = os.path.join(self.__whichq, filebase + '.pck')
@@ -168,7 +169,7 @@ class Switchboard:
             fp = open(tmpfile, 'wb')
             try:
                 fp.write(msgsave)
-                pickle.dump(data, fp, protocol)
+                pickle.dump(data, fp, protocol=2, fix_imports=True)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:
@@ -328,7 +329,7 @@ class Switchboard:
                         protocol = 0
                     else:
                         protocol = 1
-                    pickle.dump(data, fp, protocol)
+                    pickle.dump(data, fp, protocol=2, fix_imports=True)
                     fp.truncate()
                     fp.flush()
                     os.fsync(fp.fileno())
@@ -347,3 +348,120 @@ class Switchboard:
                         os.rename(src, dst)
             finally:
                 fp.close()
+
+    def _enqueue(self, msg, metadata=None, _recips=None):
+        """Enqueue a message for delivery.
+        
+        This method implements a robust enqueue mechanism with:
+        1. Unique temporary filename
+        2. Atomic write
+        3. Validation of written data
+        4. Proper error handling and cleanup
+        """
+        # Create a unique filename
+        now = time.time()
+        hashbase = hashlib.md5(repr(now).encode()).hexdigest()
+        msginfo = msg.get('message-id', '')
+        if msginfo:
+            hashbase = hashlib.md5((hashbase + msginfo).encode()).hexdigest()
+        qfile = os.path.join(self.__whichq, hashbase + '.pck')
+        tmpfile = qfile + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
+        
+        # Prepare the data to be pickled
+        data = (msg, metadata or {}, _recips)
+        
+        try:
+            # Ensure directory exists with proper permissions
+            dirname = os.path.dirname(tmpfile)
+            if not os.path.exists(dirname):
+                try:
+                    os.makedirs(dirname, 0o755)
+                except Exception as e:
+                    syslog('error', 'Failed to create directory %s: %s', dirname, e)
+                    raise
+            
+            # Write to temporary file first
+            with open(tmpfile, 'wb') as fp:
+                pickle.dump(data, fp, protocol=2, fix_imports=True)
+                fp.flush()
+                if hasattr(os, 'fsync'):
+                    os.fsync(fp.fileno())
+            
+            # Validate the temporary file
+            try:
+                with open(tmpfile, 'rb') as fp:
+                    test_data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                if not isinstance(test_data, tuple) or len(test_data) != 3:
+                    raise TypeError('Loaded data is not a valid tuple')
+            except Exception as e:
+                syslog('error', 'Validation of temporary file failed: %s', e)
+                # Try to clean up
+                try:
+                    os.unlink(tmpfile)
+                except Exception:
+                    pass
+                raise
+            
+            # Atomic rename
+            try:
+                os.rename(tmpfile, qfile)
+            except Exception as e:
+                syslog('error', 'Failed to rename %s to %s: %s', tmpfile, qfile, e)
+                # Try to clean up
+                try:
+                    os.unlink(tmpfile)
+                except Exception:
+                    pass
+                raise
+            
+            # Set proper permissions
+            try:
+                os.chmod(qfile, 0o660)
+            except Exception as e:
+                syslog('warning', 'Failed to set permissions on %s: %s', qfile, e)
+                # Not critical, continue
+                
+        except Exception:
+            # Clean up any temporary files
+            try:
+                if os.path.exists(tmpfile):
+                    os.unlink(tmpfile)
+            except Exception:
+                pass
+            raise
+
+    def _dequeue(self, filename):
+        """Dequeue a message from the queue."""
+        try:
+            with open(filename, 'rb') as fp:
+                try:
+                    msgsave = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                except (pickle.UnpicklingError, EOFError) as e:
+                    raise SwitchboardError('Could not unpickle %s: %s' %
+                                         (filename, e))
+            # Try to unpickle the message
+            try:
+                msg = pickle.loads(msgsave, fix_imports=True, encoding='latin1')
+            except (pickle.UnpicklingError, EOFError) as e:
+                raise SwitchboardError('Could not unpickle message from %s: %s' %
+                                     (filename, e))
+            return msg, metadata
+        except (IOError, OSError) as e:
+            raise SwitchboardError('Could not read %s: %s' % (filename, e))
+
+    def _dequeue_metadata(self, filename):
+        """Dequeue just the metadata from the queue."""
+        try:
+            with open(filename, 'rb') as fp:
+                try:
+                    # Skip the message
+                    pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Get the metadata
+                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                except (pickle.UnpicklingError, EOFError) as e:
+                    raise SwitchboardError('Could not unpickle %s: %s' %
+                                         (filename, e))
+            return metadata
+        except (IOError, OSError) as e:
+            raise SwitchboardError('Could not read %s: %s' % (filename, e))

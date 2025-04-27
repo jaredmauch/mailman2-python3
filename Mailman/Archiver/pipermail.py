@@ -132,7 +132,7 @@ class Database(DatabaseInterface):
         temp2 = article.html_body
         article.body = []
         del article.html_body
-        self.articleIndex[article.msgid] = pickle.dumps(article)
+        self.articleIndex[article.msgid] = pickle.dumps(article, protocol=2, fix_imports=True)
         article.body = temp
         article.html_body = temp2
 
@@ -338,12 +338,29 @@ class T(object):
             f = open(os.path.join(self.basedir, 'pipermail.pck'), 'w')
         finally:
             os.umask(omask)
-        pickle.dump(self.getstate(), f)
+        pickle.dump(self.getstate(), f, protocol=2, fix_imports=True)
         f.close()
 
     def getstate(self):
-        # can override this in subclass
-        return self.__dict__
+        """Get the current state of the archive."""
+        try:
+            # Use protocol 2 for Python 2/3 compatibility
+            protocol = 2
+            return pickle.dumps(self.__dict__, protocol, fix_imports=True)
+        except Exception as e:
+            mailman_log('error', 'Error getting archive state: %s', e)
+            return None
+
+    def setstate(self, state):
+        """Set the state of the archive."""
+        try:
+            # Use protocol 2 for Python 2/3 compatibility
+            protocol = 2
+            self.__dict__ = pickle.loads(state, fix_imports=True, encoding='latin1')
+        except Exception as e:
+            mailman_log('error', 'Error setting archive state: %s', e)
+            return False
+        return True
 
     #
     # Private methods
@@ -612,49 +629,16 @@ class T(object):
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
-        archives = self.get_archives(article)
-        if not archives:
-            return
-        if type(archives) == type(''):
-            archives = [archives]
-
-        article.filename = filename = self.get_filename(article)
-        temp = self.format_article(article)
-        for arch in archives:
-            self.archive = arch # why do this???
-            archivedir = os.path.join(self.basedir, arch)
-            if arch not in self.archives:
-                self.new_archive(arch, archivedir)
-
-            # Write the HTML-ized article
-            self.write_article(arch, temp, os.path.join(archivedir,
-                                                        filename))
-
-            if 'author' in article.decoded:
-                author = fixAuthor(article.decoded['author'])
-            else:
-                author = fixAuthor(article.author)
-            if 'stripped' in article.decoded:
-                subject = article.decoded['stripped'].lower()
-            else:
-                subject = article.subject.lower()
-
-            article.parentID = parentID = self.get_parent_info(arch, article)
-            if parentID:
-                parent = self.database.getArticle(arch, parentID)
-                article.threadKey = (parent.threadKey + article.date + '.'
-                                     + str(article.sequence) + '-')
-            else:
-                article.threadKey = (article.date + '.'
-                                     + str(article.sequence) + '-')
-            key = article.threadKey, article.msgid
-
-            self.database.setThreadKey(arch, key, article.msgid)
-            self.database.addArticle(arch, temp, author=author,
-                                     subject=subject)
-
-            if arch not in self._dirty_archives:
-                self._dirty_archives.append(arch)
+        """Add an article to the archive."""
+        try:
+            # Use protocol 2 for Python 2/3 compatibility
+            protocol = 2
+            self.articleIndex[article.msgid] = pickle.dumps(article, protocol=2, fix_imports=True)
+            self.articleIndex.sync()
+        except Exception as e:
+            mailman_log('error', 'Error adding article %s: %s', article.msgid, e)
+            return False
+        return True
 
     def get_parent_info(self, archive, article):
         parentID = None

@@ -65,6 +65,24 @@ def parse_args():
     return parser.parse_args()
 
 
+def load_article(pckstr):
+    """Load an article from a pickle string with Python 2/3 compatibility."""
+    try:
+        return pickle.loads(pckstr, fix_imports=True, encoding='latin1')
+    except Exception as e:
+        print('Error loading article: %s' % e)
+        return None
+
+
+def save_article(article):
+    """Save an article to a pickle string with Python 2/3 compatibility."""
+    try:
+        return pickle.dumps(article, protocol=2, fix_imports=True)
+    except Exception as e:
+        print('Error saving article: %s' % e)
+        return None
+
+
 def main():
     args = parse_args()
 
@@ -75,12 +93,13 @@ def main():
         fp.close()
         newd = {}
         for key, pckstr in d.items():
-            article = pickle.loads(pckstr)
-            try:
-                del article.html_body
-            except AttributeError:
-                pass
-            newd[key] = pickle.dumps(article)
+            article = load_article(pckstr)
+            if article:
+                try:
+                    del article.html_body
+                except AttributeError:
+                    pass
+                newd[key] = save_article(article)
         fp = open(filename + '.tmp', 'wb')
         marshal.dump(newd, fp)
         fp.close()

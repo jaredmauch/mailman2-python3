@@ -155,7 +155,7 @@ class Pending(object):
 
             with open(filename_tmp, 'wb') as fp:
                 # Use protocol 2 for better compatibility
-                pickle.dump(db, fp, protocol=2)
+                pickle.dump(db, fp, protocol=2, fix_imports=True)
                 fp.flush()
                 if hasattr(os, 'fsync'):
                     os.fsync(fp.fileno())

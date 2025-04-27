@@ -62,11 +62,22 @@ def parse_args():
     return parser.parse_args()
 
 
+def load_pickle(fp):
+    """Load a pickle file with Python 2/3 compatibility."""
+    try:
+        return pickle.load(fp, fix_imports=True, encoding='latin1')
+    except Exception as e:
+        print('Error loading pickle file: %s' % e)
+        return None
+
+
 def testfile(dbfile):
+    # Use our safe loader
+    loadfunc = load_pickle
     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
         loadfunc = marshal.load
     elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-        loadfunc = pickle.load
+        loadfunc = load_pickle
     else:
         assert 0
     fp = open(dbfile, 'rb')

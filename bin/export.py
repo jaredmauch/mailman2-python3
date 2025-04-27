@@ -282,14 +282,13 @@ class XMLDumper(object):
                 # Get the archive file's metadata
                 metadata_file = os.path.join(archive_dir, filename + '.metadata')
                 if os.path.exists(metadata_file):
-                    with open(metadata_file, 'rb') as fp:
-                        metadata = pickle.load(fp)
-                        for key, value in metadata.items():
-                            if isinstance(key, bytes):
-                                key = key.decode('utf-8', 'replace')
-                            if isinstance(value, bytes):
-                                value = value.decode('utf-8', 'replace')
-                            self._element('metadata', str(value), name=key)
+                    metadata = self.load_metadata(metadata_file)
+                    for key, value in metadata.items():
+                        if isinstance(key, bytes):
+                            key = key.decode('utf-8', 'replace')
+                        if isinstance(value, bytes):
+                            value = value.decode('utf-8', 'replace')
+                        self._element('metadata', str(value), name=key)
                 self._pop_element('archive')
 
     def dump(self, listnames, password_scheme):
@@ -311,6 +310,17 @@ class XMLDumper(object):
     def close(self):
         while self._stack:
             self._pop_element()
+
+    def load_metadata(self, filename):
+        """Load metadata from a pickle file."""
+        try:
+            with open(filename, 'rb') as fp:
+                # Use protocol 2 for Python 2/3 compatibility
+                metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+            return metadata
+        except Exception as e:
+            print('Error loading metadata from %s: %s' % (filename, e))
+            return None
 
 
 

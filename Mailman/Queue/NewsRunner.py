@@ -22,6 +22,9 @@ import re
 import socket
 from io import StringIO
 import time
+import traceback
+import os
+import pickle
 
 import email
 from email.utils import getaddresses
@@ -120,58 +123,66 @@ class NewsRunner(Runner):
             self._switchboard.enqueue(msg)
 
     def _dispose(self, mlist, msg, msgdata):
-        # If NNTP is not enabled, requeue the message
-        if not self._nntp_enabled:
-            return True
-        # Make sure we have the most up-to-date state
-        mlist.Load()
+        """Process a news message."""
         try:
-            if not msgdata.get('prepped'):
-                prepare_message(mlist, msg, msgdata)
+            # Load the list configuration
+            mlist.Load()
+        except Errors.MMCorruptListDatabaseError as e:
+            mailman_log('error', 'Failed to load list %s: %s',
+                       mlist.internal_name(), e)
+            return False
         except Exception as e:
-            mailman_log('error', 'Failed to prepare message: %s', str(e))
-            return True
-            
+            mailman_log('error', 'Unexpected error loading list %s: %s',
+                       mlist.internal_name(), e)
+            return False
+
+        # Validate message headers
+        if not msg.get('message-id'):
+            mailman_log('error', 'Message missing Message-ID header')
+            return False
+
         try:
-            # Get message as bytes for Python 3 compatibility
-            msg_bytes = msg.as_bytes()
-            fp = StringIO(msg_bytes.decode('utf-8', errors='replace'))
-            conn = None
+            # Process the news message
+            if not self._process_news(mlist, msg, msgdata):
+                return False
+
+            # Queue the news for further processing
             try:
-                try:
-                    nntp_host, nntp_port = Utils.nntpsplit(mlist.nntp_host)
-                    mailman_log('nntp', 'Connecting to NNTP server %s:%s', nntp_host, nntp_port)
-                    # Add timeout
-                    conn = nntplib.NNTP(nntp_host, nntp_port,
-                                      readermode=True,
-                                      user=mm_cfg.NNTP_USERNAME,
-                                      password=mm_cfg.NNTP_PASSWORD,
-                                      timeout=mm_cfg.NNTP_TIMEOUT)
-                    conn.post(fp)
-                except nntplib.NNTPTemporaryError as e:
-                    mailman_log('error', 'Temporary NNTP error for list "%s": %s',
-                               mlist.internal_name(), e)
-                    return True  # Requeue for temporary errors
-                except nntplib.NNTPPermanentError as e:
-                    mailman_log('error', 'Permanent NNTP error for list "%s": %s',
-                               mlist.internal_name(), e)
-                    return False  # Don't requeue for permanent errors
-                except socket.error as e:
-                    mailman_log('error', 'Socket error for list "%s": %s',
-                               mlist.internal_name(), e)
-                    return True
-            finally:
-                if conn:
-                    try:
-                        conn.quit()
-                    except:
-                        pass
-        except Exception as e:
-            # Some other exception occurred, which we definitely did not
-            # expect, so set this message up for requeuing.
-            self._log(e)
+                self._queue_news(mlist.internal_name(), msg, msgdata)
+            except Exception as e:
+                mailman_log('error', 'Error queueing news: %s', e)
+                return False
+
             return True
-        return False
+        except Exception as e:
+            mailman_log('error', 'Error processing news %s: %s',
+                       msg.get('message-id', 'n/a'), e)
+            return False
+
+    def _queue_news(self, listname, msg, msgdata):
+        """Queue a news message for processing."""
+        # Create a unique filename
+        now = time.time()
+        filename = os.path.join(mm_cfg.NEWSQUEUE_DIR,
+                               '%d.%d.pck' % (os.getpid(), now))
+        
+        # Write the message and metadata to the pickle file
+        try:
+            # Use protocol 2 for Python 2/3 compatibility
+            protocol = 2
+            with open(filename, 'wb') as fp:
+                pickle.dump(listname, fp, protocol=2, fix_imports=True)
+                pickle.dump(msg, fp, protocol=2, fix_imports=True)
+                pickle.dump(msgdata, fp, protocol=2, fix_imports=True)
+            # Set the file's mode appropriately
+            os.chmod(filename, 0o660)
+        except (IOError, OSError) as e:
+            try:
+                os.unlink(filename)
+            except (IOError, OSError):
+                pass
+            raise SwitchboardError('Could not save news message to %s: %s' %
+                                 (filename, e))
 
 
 def prepare_message(mlist, msg, msgdata):

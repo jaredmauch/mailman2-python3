@@ -36,6 +36,8 @@ from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
 from Mailman import LockFile
+from Mailman import Errors
+from Mailman import Pending
 
 from email.header import decode_header, make_header, Header
 from email.errors import HeaderParseError
@@ -285,3 +287,34 @@ class CommandRunner(Runner):
                 mlist.Save()
         finally:
             mlist.Unlock()
+
+    def _dopending(self, mlist, op, data):
+        """Do the pending operation."""
+        try:
+            mlist.Load()
+        except Errors.MMCorruptListDatabaseError as e:
+            syslog('error', 'Failed to load list %s for pending operation: %s',
+                   mlist.internal_name(), e)
+            return False
+        except Exception as e:
+            syslog('error', 'Unexpected error loading list %s: %s',
+                   mlist.internal_name(), e)
+            return False
+
+        try:
+            # Process the pending operation
+            if op == Pending.SUBSCRIPTION:
+                mlist.ApprovedAddMember(data)
+            elif op == Pending.UNSUBSCRIPTION:
+                mlist.ApprovedDeleteMember(data)
+            elif op == Pending.CHANGE_OF_ADDRESS:
+                oldaddr, newaddr, globally = data
+                mlist.ApprovedChangeMemberAddress(oldaddr, newaddr, globally)
+            else:
+                syslog('error', 'Unknown pending operation: %s', op)
+                return False
+            return True
+        except Exception as e:
+            syslog('error', 'Failed to process pending operation for %s: %s',
+                   mlist.internal_name(), e)
+            return False

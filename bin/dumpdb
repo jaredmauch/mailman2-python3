@@ -73,6 +73,15 @@ def parse_args():
     return parser.parse_args()
 
 
+def load_pickle(fp):
+    """Load a pickle file with Python 2/3 compatibility."""
+    try:
+        return pickle.load(fp, fix_imports=True, encoding='latin1')
+    except Exception as e:
+        print('Error loading pickle file: %s' % e)
+        return None
+
+
 def main():
     args = parse_args()
 
@@ -96,7 +105,7 @@ def main():
         load = marshal.load
         typename = 'marshal'
     else:
-        load = pickle.load
+        load = load_pickle
         typename = 'pickle'
     fp = open(args.filename, 'rb')
     m = []
