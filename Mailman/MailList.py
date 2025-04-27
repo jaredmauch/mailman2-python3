@@ -827,6 +827,14 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         """Load the list's configuration."""
         try:
             self.__load()
+            # Validate language settings
+            if not hasattr(self, 'preferred_language') or not self.preferred_language:
+                self.preferred_language = mm_cfg.DEFAULT_SERVER_LANGUAGE
+            if not hasattr(self, 'available_languages') or not self.available_languages:
+                self.available_languages = [self.preferred_language]
+            # Ensure preferred_language is in available_languages
+            if self.preferred_language not in self.available_languages:
+                self.available_languages.append(self.preferred_language)
         except Errors.MMCorruptListDatabaseError as e:
             syslog('error', 'Failed to load list %s: %s', self.internal_name(), e)
             raise
