@@ -20,7 +20,7 @@
 
 import sys
 import mailbox
-from io import StringIO
+from io import StringIO, BytesIO
 
 import email
 from email.parser import Parser
@@ -81,14 +81,15 @@ class Mailbox(mailbox.mbox):
                 self.fp.write(b'\n')
         # Seek to the last char of the mailbox
         self.fp.seek(0, 2)
-        # Create a Generator instance to write the message to the file
-        g = Generator(self.fp, mangle_from_=False, maxheaderlen=0)
-        # Convert the message to bytes before writing
-        s = StringIO()
-        g.flatten(msg, unixfrom=True, linesep='\n')
-        self.fp.write(s.getvalue().encode('utf-8'))
+        
+        # Create a BytesIO buffer for the message
+        buf = BytesIO()
+        # Create a Generator instance to write the message to the buffer
+        g = Generator(buf, mangle_from_=False, maxheaderlen=0)
+        g.flatten(msg, unixfrom=True)
+        # Write the buffer contents to the file
+        self.fp.write(buf.getvalue().encode('utf-8'))
         # Add one more trailing newline for separation with the next message
-        # to be appended to the mbox.
         self.fp.write(b'\n')
 
 
