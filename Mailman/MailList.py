@@ -256,11 +256,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         regular member address to be their own administrative addresses.
 
         """
-        if not self.umbrella_list:
-            return member
-        else:
-            acct, host = tuple(member.split('@'))
-            return "%s%s@%s" % (acct, self.umbrella_member_suffix, host)
+        if self.umbrella_list:
+            return self.getListAddress('admin')
+        return member
 
     def GetScriptURL(self, scriptname, absolute=0):
         return Utils.ScriptURL(scriptname, self.web_page_url, absolute) + \
@@ -292,6 +290,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         return Utils.xml_to_unicode(self.description, mcset).encode(ccset,
                                                                     errors)
 
+    def GetAvailableLanguages(self):
+        """Return the list of available languages for this mailing list.
+        
+        This method ensures that the default server language is always included
+        and filters out any languages that aren't in LC_DESCRIPTIONS.
+        """
+        langs = self.available_languages
+        # If we don't add this, and the site admin has never added any
+        # language support to the list, then the general admin page may have a
+        # blank field where the list owner is supposed to chose the list's
+        # preferred language.
+        if mm_cfg.DEFAULT_SERVER_LANGUAGE not in langs:
+            langs.append(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+        # When testing, it's possible we've disabled a language, so just
+        # filter things out so we don't get tracebacks.
+        return [lang for lang in langs if lang in mm_cfg.LC_DESCRIPTIONS]
 
     #
     # Instance and subcomponent initialization
