@@ -39,7 +39,6 @@ def _safeparser(fp):
         return ''
 
 
-
 class Mailbox(mailbox.mbox):
     def __init__(self, fp):
         # In Python 3, we need to handle both file objects and paths
@@ -59,7 +58,7 @@ class Mailbox(mailbox.mbox):
             path = fp
             
         # Initialize the parent class with the path
-        mailbox.mbox.__init__(self, path, _safeparser)
+        super().__init__(path, _safeparser)
         # Store the file object if we have one
         if hasattr(fp, 'read') and hasattr(fp, 'write'):
             self.fp = fp
@@ -89,7 +88,6 @@ class Mailbox(mailbox.mbox):
         self.fp.write(b'\n')
 
 
-
 # This stuff is used by pipermail.py:processUnixMailbox().  It provides an
 # opportunity for the built-in archiver to scrub archived messages of nasty
 # things like attachments and such...
