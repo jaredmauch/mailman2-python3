@@ -786,7 +786,7 @@ def init_digest_vars(mlist):
         'require_explicit_destination': mm_cfg.DEFAULT_REQUIRE_EXPLICIT_DESTINATION,
         'acceptable_aliases': mm_cfg.DEFAULT_ACCEPTABLE_ALIASES,
         'umbrella_list': mm_cfg.DEFAULT_UMBRELLA_LIST,
-        'umbrella_member_suffix': mm_cfg.DEFAULT_UMBRELLA_MEMBER_SUFFIX,
+        'umbrella_member_suffix': mm_cfg.DEFAULT_UMBRELLA_MEMBER_ADMIN_SUFFIX,
         'regular_exclude_lists': mm_cfg.DEFAULT_REGULAR_EXCLUDE_LISTS,
         'regular_exclude_ignore': mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE,
         'regular_include_lists': mm_cfg.DEFAULT_REGULAR_INCLUDE_LISTS,
@@ -847,11 +847,27 @@ def init_digest_vars(mlist):
     # Initialize any missing variables
     for var, default in digest_vars.items():
         if not hasattr(mlist, var):
-            print(C_('Initializing missing variable %(var)s for list %(listname)s') % {
-                'var': var,
-                'listname': mlist.internal_name()
-            })
-            setattr(mlist, var, default)
+            try:
+                # If default is a call to mm_cfg, try to get the attribute
+                if isinstance(default, str) and 'mm_cfg.' in default:
+                    try:
+                        default = eval(default)
+                    except AttributeError:
+                        print(C_('Warning: mm_cfg attribute %(attr)s not found, using empty value') % {
+                            'attr': default.split('mm_cfg.')[1]
+                        })
+                        default = None
+                
+                print(C_('Initializing missing variable %(var)s for list %(listname)s') % {
+                    'var': var,
+                    'listname': mlist.internal_name()
+                })
+                setattr(mlist, var, default)
+            except Exception as e:
+                print(C_('Warning: Could not initialize %(var)s: %(error)s') % {
+                    'var': var,
+                    'error': str(e)
+                })
 
 def upgrade(mlist):
     """Upgrade the list to the current version."""
