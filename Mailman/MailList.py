@@ -549,17 +549,23 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         Returns:
             A list of configuration items, or None if not found
         """
-        for gui in self._gui:
-            if hasattr(gui, 'GetConfigInfo'):
-                try:
-                    value = gui.GetConfigInfo(self, category, subcat)
-                    if value:
-                        return value
-                except (AttributeError, KeyError) as e:
-                    # Log the error but continue trying other GUIs
-                    syslog('error', 'Error getting config info for %s/%s: %s',
-                           category, subcat, str(e))
-                    continue
+        # Get the category tuple from our categories dictionary
+        category_info = self.GetConfigCategories().get(category)
+        if not category_info:
+            syslog('error', 'Category %s not found in configuration', category)
+            return None
+            
+        # Extract the GUI object from the tuple (label, gui_object)
+        gui_object = category_info[1]
+        
+        try:
+            value = gui_object.GetConfigInfo(self, category, subcat)
+            if value:
+                return value
+        except (AttributeError, KeyError) as e:
+            # Log the error but continue trying other GUIs
+            syslog('error', 'Error getting config info for %s/%s: %s',
+                   category, subcat, str(e))
         return None
 
     #
