@@ -26,119 +26,118 @@ import traceback
 
 import email
 
-from Mailman import mm_cfg
+import Mailman.mm_cfg
 import Mailman.Message
-from Mailman.Message import UserNotification
-from Mailman import Errors
-from Mailman import LockFile
-from Mailman.Queue.Runner import Runner
-from Mailman.Queue.Switchboard import Switchboard
-from Mailman.Queue.BounceRunner import BounceMixin
-from Mailman.Logging.Syslog import mailman_log
+import Mailman.Errors
+import Mailman.LockFile
+import Mailman.Queue.Runner
+import Mailman.Queue.Switchboard
+import Mailman.Queue.BounceRunner
+import Mailman.Logging.Syslog
 
 # This controls how often _doperiodic() will try to deal with deferred
 # permanent failures.  It is a count of calls to _doperiodic()
 DEAL_WITH_PERMFAILURES_EVERY = 10
 
 
-class OutgoingRunner(Runner, BounceMixin):
-    QDIR = mm_cfg.OUTQUEUE_DIR
+class OutgoingRunner(Mailman.Queue.Runner.Runner, Mailman.Queue.BounceRunner.BounceMixin):
+    QDIR = Mailman.mm_cfg.OUTQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
-        mailman_log('debug', 'OutgoingRunner: Starting initialization')
+        Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Starting initialization')
         try:
-            Runner.__init__(self, slice, numslices)
-            mailman_log('debug', 'OutgoingRunner: Base Runner initialized')
+            Mailman.Queue.Runner.Runner.__init__(self, slice, numslices)
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Base Runner initialized')
             
-            BounceMixin.__init__(self)
-            mailman_log('debug', 'OutgoingRunner: BounceMixin initialized')
+            Mailman.Queue.BounceRunner.BounceMixin.__init__(self)
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: BounceMixin initialized')
             
             # We look this function up only at startup time
-            modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
-            mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', modname)
+            self._modname = 'Mailman.Handlers.' + Mailman.mm_cfg.DELIVERY_MODULE
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', self._modname)
             
             try:
-                mod = __import__(modname)
-                mailman_log('debug', 'OutgoingRunner: Successfully imported delivery module')
+                mod = __import__(self._modname)
+                Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Successfully imported delivery module')
             except ImportError as e:
-                mailman_log('error', 'OutgoingRunner: Failed to import delivery module %s: %s', modname, str(e))
-                mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Failed to import delivery module %s: %s', self._modname, str(e))
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
                 raise
                 
             try:
-                self._func = getattr(sys.modules[modname], 'process')
-                mailman_log('debug', 'OutgoingRunner: Successfully got process function from module')
+                self._func = getattr(sys.modules[self._modname], 'process')
+                Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Successfully got process function from module')
             except AttributeError as e:
-                mailman_log('error', 'OutgoingRunner: Failed to get process function from module %s: %s', modname, str(e))
-                mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Failed to get process function from module %s: %s', self._modname, str(e))
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
                 raise
                 
             # This prevents smtp server connection problems from filling up the
             # error log.  It gets reset if the message was successfully sent, and
             # set if there was a socket.error.
             self.__logged = False
-            mailman_log('debug', 'OutgoingRunner: Initializing retry queue')
-            self.__retryq = Switchboard(mm_cfg.RETRYQUEUE_DIR)
-            mailman_log('debug', 'OutgoingRunner: Initialization complete')
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Initializing retry queue')
+            self.__retryq = Mailman.Queue.Switchboard.Switchboard(Mailman.mm_cfg.RETRYQUEUE_DIR)
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Initialization complete')
         except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Initialization failed: %s', str(e))
-            mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+            Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Initialization failed: %s', str(e))
+            Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
             raise
 
     def _dispose(self, mlist, msg, msgdata):
-        mailman_log('debug', 'OutgoingRunner: Processing message for list %s', mlist.internal_name())
+        Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Processing message for list %s', mlist.internal_name())
         # See if we should retry delivery of this message again.
         deliver_after = msgdata.get('deliver_after', 0)
         if time.time() < deliver_after:
-            mailman_log('debug', 'OutgoingRunner: Message not ready for delivery yet, waiting until %s', 
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Message not ready for delivery yet, waiting until %s', 
                    time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(deliver_after)))
             return True
         # Make sure we have the most up-to-date state
-        mailman_log('debug', 'OutgoingRunner: Loading list state')
+        Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Loading list state')
         mlist.Load()
         try:
             pid = os.getpid()
-            mailman_log('debug', 'OutgoingRunner: Attempting to deliver message')
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Attempting to deliver message')
             self._func(mlist, msg, msgdata)
             # Failsafe -- a child may have leaked through.
             if pid != os.getpid():
-                mailman_log('error', 'OutgoingRunner: child process leaked thru: %s', modname)
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: child process leaked thru: %s', self._modname)
                 os._exit(1)
             self.__logged = False
-            mailman_log('debug', 'OutgoingRunner: Message delivered successfully')
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Message delivered successfully')
         except socket.error:
             # There was a problem connecting to the SMTP server.  Log this
             # once, but crank up our sleep time so we don't fill the error
             # log.
-            port = mm_cfg.SMTPPORT
+            port = Mailman.mm_cfg.SMTPPORT
             if port == 0:
                 port = 'smtp'
             # Log this just once.
             if not self.__logged:
-                mailman_log('error', 'OutgoingRunner: Cannot connect to SMTP server %s on port %s',
-                       mm_cfg.SMTPHOST, port)
+                Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Cannot connect to SMTP server %s on port %s',
+                       Mailman.mm_cfg.SMTPHOST, port)
                 self.__logged = True
             self._snooze(0)
             return True
-        except Errors.SomeRecipientsFailed as e:
-            mailman_log('debug', 'OutgoingRunner: Some recipients failed: %s', str(e))
+        except Mailman.Errors.SomeRecipientsFailed as e:
+            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Some recipients failed: %s', str(e))
             # Handle local rejects of probe messages differently.
             if msgdata.get('probe_token') and e.permfailures:
-                mailman_log('debug', 'OutgoingRunner: Handling probe bounce')
+                Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Handling probe bounce')
                 self._probe_bounce(mlist, msgdata['probe_token'])
             else:
                 # Delivery failed at SMTP time for some or all of the
                 # recipients.  Permanent failures are registered as bounces,
                 # but temporary failures are retried for later.
                 if e.permfailures:
-                    mailman_log('debug', 'OutgoingRunner: Queueing permanent failures as bounces')
+                    Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Queueing permanent failures as bounces')
                     self._queue_bounces(mlist.internal_name(), e.permfailures,
                                         msg)
                 # Move temporary failures to the qfiles/retry queue which will
                 # occasionally move them back here for another shot at
                 # delivery.
                 if e.tempfailures:
-                    mailman_log('debug', 'OutgoingRunner: Queueing temporary failures for retry')
+                    Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Queueing temporary failures for retry')
                     now = time.time()
                     recips = e.tempfailures
                     last_recip_count = msgdata.get('last_recip_count', 0)
@@ -148,29 +147,29 @@ class OutgoingRunner(Runner, BounceMixin):
                         # delivery any longer.  BAW: is this the best
                         # disposition?
                         if now > deliver_until:
-                            mailman_log('debug', 'OutgoingRunner: No progress made, giving up on message')
+                            Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: No progress made, giving up on message')
                             return False
                     else:
                         # Keep trying to delivery this message for a while
-                        deliver_until = now + mm_cfg.DELIVERY_RETRY_PERIOD
+                        deliver_until = now + Mailman.mm_cfg.DELIVERY_RETRY_PERIOD
                     # Don't retry delivery too soon.
-                    deliver_after = now + mm_cfg.DELIVERY_RETRY_WAIT
+                    deliver_after = now + Mailman.mm_cfg.DELIVERY_RETRY_WAIT
                     msgdata['deliver_after'] = deliver_after
                     msgdata['last_recip_count'] = len(recips)
                     msgdata['deliver_until'] = deliver_until
                     msgdata['recips'] = recips
                     self.__retryq.enqueue(msg, msgdata)
         except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Unexpected error during message processing: %s', str(e))
-            mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+            Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Unexpected error during message processing: %s', str(e))
+            Mailman.Logging.Syslog.mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
             raise
         # We've successfully completed handling of this message
         return False
 
-    _doperiodic = BounceMixin._doperiodic
+    _doperiodic = Mailman.Queue.BounceRunner.BounceMixin._doperiodic
 
     def _cleanup(self):
-        mailman_log('debug', 'OutgoingRunner: Starting cleanup')
-        BounceMixin._cleanup(self)
-        Runner._cleanup(self)
-        mailman_log('debug', 'OutgoingRunner: Cleanup complete')
+        Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Starting cleanup')
+        Mailman.Queue.BounceRunner.BounceMixin._cleanup(self)
+        Mailman.Queue.Runner.Runner._cleanup(self)
+        Mailman.Logging.Syslog.mailman_log('debug', 'OutgoingRunner: Cleanup complete')

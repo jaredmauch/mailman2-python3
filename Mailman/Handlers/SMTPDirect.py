@@ -34,12 +34,13 @@ import smtplib
 from smtplib import SMTPException
 from base64 import b64encode
 
-from Mailman import mm_cfg
-from Mailman import Utils
-from Mailman import Errors
-from Mailman.Handlers import Decorate
-from Mailman.Logging.Syslog import mailman_log
-from Mailman.SafeDict import MsgSafeDict
+import Mailman.mm_cfg
+import Mailman.Utils
+import Mailman.Errors
+import Mailman.Message
+import Mailman.Handlers.Decorate
+import Mailman.Logging.Syslog
+import Mailman.SafeDict
 
 import email
 from email.utils import formataddr
@@ -55,45 +56,45 @@ class Connection(object):
 
     def __connect(self):
         self.__conn = smtplib.SMTP()
-        self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
+        self.__conn.set_debuglevel(Mailman.mm_cfg.SMTPLIB_DEBUG_LEVEL)
         # Ensure we have a valid hostname for TLS
-        helo_host = mm_cfg.SMTP_HELO_HOST
+        helo_host = Mailman.mm_cfg.SMTP_HELO_HOST
         if not helo_host or helo_host.startswith('.'):
-            helo_host = mm_cfg.SMTPHOST
+            helo_host = Mailman.mm_cfg.SMTPHOST
         if not helo_host or helo_host.startswith('.'):
             # If we still don't have a valid hostname, use localhost
             helo_host = 'localhost'
-        mailman_log('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
-               mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, helo_host)
-        self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        Mailman.Logging.Syslog.mailman_log('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
+               Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT, helo_host)
+        self.__conn.connect(Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT)
         # Set the hostname for TLS
         self.__conn._host = helo_host
-        if mm_cfg.SMTP_AUTH:
-            if mm_cfg.SMTP_USE_TLS:
-                mailman_log('smtp', 'Using TLS with hostname: %s', helo_host)
+        if Mailman.mm_cfg.SMTP_AUTH:
+            if Mailman.mm_cfg.SMTP_USE_TLS:
+                Mailman.Logging.Syslog.mailman_log('smtp', 'Using TLS with hostname: %s', helo_host)
                 try:
                     # Use native TLS support
                     self.__conn.starttls()
                 except SMTPException as e:
-                    mailman_log('smtp-failure', 'SMTP TLS error: %s', e)
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
                     raise
             try:
-                self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
+                self.__conn.login(Mailman.mm_cfg.SMTP_USER, Mailman.mm_cfg.SMTP_PASSWD)
             except smtplib.SMTPHeloError as e:
-                mailman_log('smtp-failure', 'SMTP HELO error: %s', e)
+                Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s', e)
                 self.quit()
                 raise
             except smtplib.SMTPAuthenticationError as e:
-                mailman_log('smtp-failure', 'SMTP AUTH error: %s', e)
+                Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s', e)
                 self.quit()
             except smtplib.SMTPException as e:
-                mailman_log('smtp-failure',
+                Mailman.Logging.Syslog.mailman_log('smtp-failure',
                        'SMTP - no suitable authentication method found: %s', e)
                 self.quit()
                 raise
 
-        self.__numsessions = mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION
+        self.__numsessions = Mailman.mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION
 
     def sendmail(self, envsender, recips, msgtext):
         if self.__conn is None:
@@ -158,7 +159,7 @@ def process(mlist, msg, msgdata):
         if mlist:
             envsender = mlist.GetBouncesEmail()
         else:
-            envsender = Utils.get_site_email(extra='bounces')
+            envsender = Mailman.Utils.get_site_email(extra='bounces')
     # Time to split up the recipient list.  If we're personalizing or VERPing
     # then each chunk will have exactly one recipient.  We'll then hand craft
     # an envelope sender and stitch a message together in memory for each one
@@ -171,10 +172,10 @@ def process(mlist, msg, msgdata):
         chunks = [[recip] for recip in recips]
         msgdata['personalize'] = 1
         deliveryfunc = verpdeliver
-    elif mm_cfg.SMTP_MAX_RCPTS <= 0:
+    elif Mailman.mm_cfg.SMTP_MAX_RCPTS <= 0:
         chunks = [recips]
     else:
-        chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS)
+        chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS)
     # See if this is an unshunted message for which some were undelivered
     if 'undelivered' in msgdata:
         chunks = msgdata['undelivered']
@@ -182,7 +183,7 @@ def process(mlist, msg, msgdata):
     if deliveryfunc is None:
         # Be sure never to decorate the message more than once!
         if not msgdata.get('decorated'):
-            Decorate.process(mlist, msg, msgdata)
+            Mailman.Handlers.Decorate.process(mlist, msg, msgdata)
             msgdata['decorated'] = True
         deliveryfunc = bulkdeliver
     refused = {}
@@ -223,7 +224,7 @@ def process(mlist, msg, msgdata):
         msgdata['recips'] = origrecips
     # Log the successful post
     t1 = time.time()
-    d = MsgSafeDict(msg, {'time'    : t1-t0,
+    d = Mailman.SafeDict.MsgSafeDict(msg, {'time'    : t1-t0,
                           # BAW: Urg.  This seems inefficient.
                           'size'    : len(msg.as_string()),
                           '#recips' : len(recips),
@@ -235,9 +236,9 @@ def process(mlist, msg, msgdata):
     # concrete dictionary object; it does not allow a generic mapping.  It's
     # still worthwhile doing the interpolation in syslog() because it'll catch
     # any catastrophic exceptions due to bogus format strings.
-    if mm_cfg.SMTP_LOG_EVERY_MESSAGE:
-        mailman_log(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
-                    mm_cfg.SMTP_LOG_EVERY_MESSAGE[1] % {
+    if Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE:
+        Mailman.Logging.Syslog.mailman_log(Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
+                    Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[1] % {
                         'listname': mlist.internal_name(),
                         'sender': origsender,
                         'chunksize': len(chunk),
@@ -245,9 +246,9 @@ def process(mlist, msg, msgdata):
                     })
 
     if refused:
-        if mm_cfg.SMTP_LOG_REFUSED:
-            mailman_log.write_ex(mm_cfg.SMTP_LOG_REFUSED[0],
-                            mm_cfg.SMTP_LOG_REFUSED[1], kws=d)
+        if Mailman.mm_cfg.SMTP_LOG_REFUSED:
+            Mailman.Logging.Syslog.mailman_log.write_ex(Mailman.mm_cfg.SMTP_LOG_REFUSED[0],
+                            Mailman.mm_cfg.SMTP_LOG_REFUSED[1], kws=d)
 
     elif msgdata.get('tolist'):
         # Log the successful post, but only if it really was a post to the
@@ -255,9 +256,9 @@ def process(mlist, msg, msgdata):
         # -request addrs should never get here.  BAW: it may be useful to log
         # the other messages, but in that case, we should probably have a
         # separate configuration variable to control that.
-        if mm_cfg.SMTP_LOG_SUCCESS:
-            mailman_log.write_ex(mm_cfg.SMTP_LOG_SUCCESS[0],
-                            mm_cfg.SMTP_LOG_SUCCESS[1], kws=d)
+        if Mailman.mm_cfg.SMTP_LOG_SUCCESS:
+            Mailman.Logging.Syslog.mailman_log.write_ex(Mailman.mm_cfg.SMTP_LOG_SUCCESS[0],
+                            Mailman.mm_cfg.SMTP_LOG_SUCCESS[1], kws=d)
 
     # Process any failed deliveries.
     tempfailures = []
@@ -279,15 +280,15 @@ def process(mlist, msg, msgdata):
             # Deal with persistent transient failures by queuing them up for
             # future delivery.  TBD: this could generate lots of log entries!
             tempfailures.append(recip)
-        if mm_cfg.SMTP_LOG_EACH_FAILURE:
+        if Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE:
             d.update({'recipient': recip,
                       'failcode' : code,
                       'failmsg'  : smtpmsg})
-            mailman_log.write_ex(mm_cfg.SMTP_LOG_EACH_FAILURE[0],
-                            mm_cfg.SMTP_LOG_EACH_FAILURE[1], kws=d)
+            Mailman.Logging.Syslog.mailman_log.write_ex(Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE[0],
+                            Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE[1], kws=d)
     # Return the results
     if tempfailures or permfailures:
-        raise Errors.SomeRecipientsFailed(tempfailures, permfailures)
+        raise Mailman.Errors.SomeRecipientsFailed(tempfailures, permfailures)
 
 
 def chunkify(recips, chunksize):
@@ -351,24 +352,24 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
         msgdata['recips'] = [recip]
         # Make a copy of the message and decorate + delivery that
         msgcopy = copy.deepcopy(msg)
-        Decorate.process(mlist, msgcopy, msgdata)
+        Mailman.Handlers.Decorate.process(mlist, msgcopy, msgdata)
         # Calculate the envelope sender, which we may be VERPing
         if msgdata.get('verp'):
-            bmailbox, bdomain = Utils.ParseEmail(envsender)
-            rmailbox, rdomain = Utils.ParseEmail(recip)
+            bmailbox, bdomain = Mailman.Utils.ParseEmail(envsender)
+            rmailbox, rdomain = Mailman.Utils.ParseEmail(recip)
             if rdomain is None:
                 # The recipient address is not fully-qualified.  We can't
                 # deliver it to this person, nor can we craft a valid verp
                 # header.  I don't think there's much we can do except ignore
                 # this recipient.
-                mailman_log('smtp', 'Skipping VERP delivery to unqual recip: %s',
+                Mailman.Logging.Syslog.mailman_log('smtp', 'Skipping VERP delivery to unqual recip: %s',
                        recip)
                 continue
             d = {'bounces': bmailbox,
                  'mailbox': rmailbox,
                  'host'   : DOT.join(rdomain),
                  }
-            envsender = '%s@%s' % ((mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
+            envsender = '%s@%s' % ((Mailman.mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
         if mlist.personalize == 2:
             # When fully personalizing, we want the To address to point to the
             # recipient, not to the mailing list
@@ -383,7 +384,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                 # characters for which we can do nothing about.  Once we have
                 # the name as Unicode, we can create a Header instance for it
                 # so that it's properly encoded for email transport.
-                charset = Utils.GetCharSet(mlist.getMemberLanguage(recip))
+                charset = Mailman.Utils.GetCharSet(mlist.getMemberLanguage(recip))
                 if charset == 'us-ascii':
                     # Since Header already tries both us-ascii and utf-8,
                     # let's add something a bit more useful.
@@ -403,9 +404,9 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
         if recip in msgdata.get('add-dup-header', {}):
             msgcopy['X-Mailman-Copy'] = 'yes'
         # If desired, add the RCPT_BASE64_HEADER_NAME header
-        if len(mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
-            del msgcopy[mm_cfg.RCPT_BASE64_HEADER_NAME]
-            msgcopy[mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
+        if len(Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
+            del msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME]
+            msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
         # For the final delivery stage, we can just bulk deliver to a party of
         # one. ;)
         bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
@@ -469,11 +470,11 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
     except smtplib.SMTPRecipientsRefused as e:
-        mailman_log('smtp-failure', 'All recipients refused: %s, msgid: %s',
+        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'All recipients refused: %s, msgid: %s',
                e, msgid)
         refused = e.recipients
     except smtplib.SMTPResponseException as e:
-        mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
+        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
         # If this was a permanent failure, don't add the recipients to the
         # refused, because we don't want them to be added to failures.
@@ -489,7 +490,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # MTA not responding, or other socket problems, or any other kind of
         # SMTPException.  In that case, nothing got delivered, so treat this
         # as a temporary failure.
-        mailman_log('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
+        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
         error = str(e)
         for r in recips:
             refused[r] = (-1, error)
