@@ -181,6 +181,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             'usernames', 'bounce_info', 'delivery_status', 'passwords',
             'topics', 'topics_userinterest',
             
+            # Authentication and security
+            'password', 'mod_password', 'post_password', 'passwords',
+            'subscribe_auto_approval', 'subscribe_policy', 'unsubscribe_policy',
+            
             # Member management
             'ban_list', 'accept_these_nonmembers', 'hold_these_nonmembers',
             'reject_these_nonmembers', 'discard_these_nonmembers',
