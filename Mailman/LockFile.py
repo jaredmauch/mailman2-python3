@@ -69,41 +69,13 @@ import errno
 import random
 import traceback
 from stat import ST_NLINK, ST_MTIME
+from Mailman.Logging.Syslog import mailman_log
 
 # Units are floating-point seconds.
 DEFAULT_LOCK_LIFETIME  = 15
 # Allowable a bit of clock skew
 CLOCK_SLOP = 10
 
-
-# Figure out what logfile to use.  This is different depending on whether
-# we're running in a Mailman context or not.
-_logfile = None
-
-def _get_logfile():
-    global _logfile
-    if _logfile is None:
-        try:
-            from Mailman.Logging.StampedLogger import StampedLogger
-            _logfile = StampedLogger('locks')
-        except ImportError:
-            # not running inside Mailman
-            import tempfile
-            dir = os.path.split(tempfile.mktemp())[0]
-            path = os.path.join(dir, 'LockFile.log')
-            # open in line-buffered mode
-            class SimpleUserFile(object):
-                def __init__(self, path):
-                    self.__fp = open(path, 'a', 1)
-                    self.__prefix = '(%d) ' % os.getpid()
-                def write(self, msg):
-                    now = '%.3f' % time.time()
-                    self.__fp.write(self.__prefix + now + ' ' + msg)
-            _logfile = SimpleUserFile(path)
-    return _logfile
-
-
-
 # Exceptions that can be raised by this module
 class LockError(Exception):
     """Base class for all exceptions in this module."""
@@ -118,7 +90,6 @@ class TimeOutError(LockError):
     """The timeout interval elapsed before the lock succeeded."""
 
 
-
 class LockFile:
     """A portable way to lock resources by way of the file system.
 
@@ -211,12 +182,18 @@ class LockFile:
             return False
         except OSError as e:
             if e.errno != errno.ENOENT:
-                self.__writelog('stat failed: %s' % str(e), important=1)
+                mailman_log('error', 'stat failed: %s', str(e))
                 raise
             return False
 
     def finalize(self):
-        self.unlock(unconditionally=True)
+        """Clean up the lock file."""
+        try:
+            if self.locked():
+                self.unlock(unconditionally=True)
+        except Exception as e:
+            mailman_log('error', 'Error during finalize: %s', str(e))
+            raise
 
     def __del__(self):
         """Clean up when the object is garbage collected."""
@@ -227,7 +204,7 @@ class LockFile:
                 # Don't raise exceptions during garbage collection
                 # Just log if we can
                 try:
-                    self.__writelog(f'Error during cleanup: {str(e)}', important=True)
+                    mailman_log('error', 'Error during cleanup: %s', str(e))
                 except:
                     pass
 
@@ -260,7 +237,7 @@ class LockFile:
         # And do some sanity checks
         assert self.__linkcount() == 2
         assert self.locked()
-        self.__writelog('transferred the lock')
+        mailman_log('debug', 'transferred the lock')
 
     def _take_possession(self):
         """Try to take possession of the lock file.
@@ -268,7 +245,7 @@ class LockFile:
         Returns 0 if we successfully took possession of the lock file, -1 if we
         did not, and -2 if something very bad happened.
         """
-        self.__writelog('attempting to take possession of lock')
+        mailman_log('debug', 'attempting to take possession of lock')
         
         # First, clean up any stale temp files for all processes
         self.clean_stale_locks()
@@ -286,7 +263,7 @@ class LockFile:
             # Set group read-write permissions (660)
             os.chmod(tempfile, 0o660)
         except (IOError, OSError) as e:
-            self.__writelog('failed to create temp file: %s' % str(e))
+            mailman_log('error', 'failed to create temp file: %s', str(e))
             return -2
 
         # Try to create a hard link from the global lock file to our temp file
@@ -302,7 +279,7 @@ class LockFile:
                             pid = int(pid_host[0])
                             if not self._is_pid_valid(pid):
                                 # Stale lock, try to break it
-                                self.__writelog('stale lock detected (pid=%d)' % pid)
+                                mailman_log('debug', 'stale lock detected (pid=%d)', pid)
                                 self._break()
                                 # Try to create the link again
                                 try:
@@ -315,7 +292,7 @@ class LockFile:
                                 return -1
                 except (IOError, OSError, ValueError):
                     # Error reading lock file or invalid PID, try to break it
-                    self.__writelog('error reading lock file, attempting to break')
+                    mailman_log('error', 'error reading lock file, attempting to break')
                     self._break()
                     try:
                         os.link(tempfile, self.__lockfile)
@@ -332,7 +309,7 @@ class LockFile:
         except (IOError, OSError):
             pass  # Don't fail if we can't set permissions
 
-        self.__writelog('successfully acquired lock')
+        mailman_log('debug', 'successfully acquired lock')
         return 0
 
     def _is_pid_valid(self, pid):
@@ -349,7 +326,7 @@ class LockFile:
                 with open(f'/proc/{pid}/status') as f:
                     status = f.read()
                     if 'State:' in status and 'Z (zombie)' in status:
-                        self.__writelog('found zombie process (pid %d)' % pid)
+                        mailman_log('debug', 'found zombie process (pid %d)', pid)
                         return False
             except (IOError, OSError):
                 pass
@@ -364,17 +341,17 @@ class LockFile:
         Returns 0 if we successfully broke the lock, -1 if we didn't, and -2 if
         something very bad happened.
         """
-        self.__writelog('breaking the lock')
+        mailman_log('debug', 'breaking the lock')
         try:
             if not os.path.exists(self.__lockfile):
-                self.__writelog('nothing to break -- lock file does not exist')
+                mailman_log('debug', 'nothing to break -- lock file does not exist')
                 return -1
             # Read the lock file to get the old PID
             try:
                 with open(self.__lockfile) as fp:
                     content = fp.read().strip()
                     if not content:
-                        self.__writelog('lock file is empty')
+                        mailman_log('debug', 'lock file is empty')
                         os.unlink(self.__lockfile)
                         return 0
                         
@@ -385,40 +362,40 @@ class LockFile:
                             pid = int(parts[0])
                             lock_hostname = ' '.join(parts[1:])  # Handle hostnames with spaces
                             if lock_hostname != socket.gethostname():
-                                self.__writelog('lock owned by different host: %s' % lock_hostname)
+                                mailman_log('debug', 'lock owned by different host: %s', lock_hostname)
                                 return -1
                         else:
                             # Try old format
                             try:
                                 pid = int(content)
                             except ValueError:
-                                self.__writelog('invalid lock file format: %s' % content)
+                                mailman_log('debug', 'invalid lock file format: %s', content)
                                 os.unlink(self.__lockfile)
                                 return 0
                             
                         if not self._is_pid_valid(pid):
-                            self.__writelog('breaking stale lock owned by pid %d' % pid)
+                            mailman_log('debug', 'breaking stale lock owned by pid %d', pid)
                             # Add random delay between 1-10 seconds before breaking lock
                             delay = random.uniform(1, 10)
-                            self.__writelog('waiting %.2f seconds before breaking lock' % delay)
+                            mailman_log('debug', 'waiting %.2f seconds before breaking lock', delay)
                             time.sleep(delay)
                             os.unlink(self.__lockfile)
                             return 0
-                        self.__writelog('lock is valid (pid %d)' % pid)
+                        mailman_log('debug', 'lock is valid (pid %d)', pid)
                         return -1
                     except (ValueError, IndexError) as e:
-                        self.__writelog('error parsing lock content: %s' % str(e))
+                        mailman_log('error', 'error parsing lock content: %s', str(e))
                         os.unlink(self.__lockfile)
                         return 0
             except (ValueError, OSError) as e:
-                self.__writelog('error reading lock: %s' % e)
+                mailman_log('error', 'error reading lock: %s', e)
                 try:
                     os.unlink(self.__lockfile)
                     return 0
                 except OSError:
                     return -2
         except OSError as e:
-            self.__writelog('error breaking lock: %s' % e)
+            mailman_log('error', 'error breaking lock: %s', e)
             return -2
 
     def clean_stale_locks(self):
@@ -427,7 +404,7 @@ class LockFile:
         This is a safe method that can be called to clean up stale lock files
         without attempting to acquire the lock.
         """
-        self.__writelog('cleaning stale locks')
+        mailman_log('debug', 'cleaning stale locks')
         try:
             # Check for the main lock file
             if os.path.exists(self.__lockfile):
@@ -435,7 +412,7 @@ class LockFile:
                     with open(self.__lockfile) as fp:
                         content = fp.read().strip().split()
                         if not content:
-                            self.__writelog('lock file is empty')
+                            mailman_log('debug', 'lock file is empty')
                             os.unlink(self.__lockfile)
                             return
                             
@@ -447,7 +424,7 @@ class LockFile:
                             # Only clean locks from our host
                             if lock_hostname == socket.gethostname():
                                 if not self._is_pid_valid(pid):
-                                    self.__writelog('removing stale lock (pid %d)' % pid)
+                                    mailman_log('debug', 'removing stale lock (pid %d)', pid)
                                     try:
                                         os.unlink(self.__lockfile)
                                     except OSError:
@@ -457,19 +434,19 @@ class LockFile:
                             try:
                                 pid = int(content[0])
                                 if not self._is_pid_valid(pid):
-                                    self.__writelog('removing stale lock (pid %d)' % pid)
+                                    mailman_log('debug', 'removing stale lock (pid %d)', pid)
                                     try:
                                         os.unlink(self.__lockfile)
                                     except OSError:
                                         pass
                             except (ValueError, IndexError):
-                                self.__writelog('invalid lock file format')
+                                mailman_log('debug', 'invalid lock file format')
                                 try:
                                     os.unlink(self.__lockfile)
                                 except OSError:
                                     pass
                 except (ValueError, OSError) as e:
-                    self.__writelog('error reading lock: %s' % e)
+                    mailman_log('error', 'error reading lock: %s', e)
                     try:
                         os.unlink(self.__lockfile)
                     except OSError:
@@ -486,37 +463,17 @@ class LockFile:
                             # Check if temp file is old (> 1 hour)
                             if time.time() - os.path.getmtime(filepath) > 3600:
                                 os.unlink(filepath)
-                                self.__writelog('removed old temp file: %s' % filepath)
+                                mailman_log('debug', 'removed old temp file: %s', filepath)
                         except OSError as e:
-                            self.__writelog('error removing temp file %s: %s' % 
-                                         (filepath, e))
+                            mailman_log('error', 'error removing temp file %s: %s', filepath, e)
             except OSError as e:
-                self.__writelog('error listing directory: %s' % e)
+                mailman_log('error', 'error listing directory: %s', e)
         except OSError as e:
-            self.__writelog('error cleaning locks: %s' % e)
+            mailman_log('error', 'error cleaning locks: %s', e)
 
     #
     # Private interface
     #
-
-    def __writelog(self, msg, important=False):
-        """Write a message to the log file with more context."""
-        if not self.__withlogging and not important:
-            return
-        try:
-            logf = _get_logfile()
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-            pid = os.getpid()
-            hostname = socket.gethostname()
-            # Only print stack trace for actual errors, not for normal operations
-            if important and 'error' in msg.lower():
-                logf.write(f'{timestamp} [{pid}@{hostname}] {self.__logprefix}: {msg}\n')
-                traceback.print_stack(file=logf)
-            else:
-                logf.write(f'{timestamp} [{pid}@{hostname}] {self.__logprefix}: {msg}\n')
-        except Exception:
-            # Don't raise exceptions during logging
-            pass
 
     def __atomic_write(self, filename, content):
         """Atomically write content to a file using a temporary file."""
@@ -588,7 +545,7 @@ class LockFile:
             if os.path.exists(self.__tmpfname):
                 os.unlink(self.__tmpfname)
         except Exception as e:
-            self.__writelog(f'error during cleanup: {str(e)}', important=True)
+            mailman_log('error', 'error during cleanup: %s', str(e))
 
     def __nfs_safe_stat(self, filename):
         """Perform NFS-safe stat operation with retries."""
@@ -619,23 +576,22 @@ class LockFile:
         solve this by set-uid'ing the CGI and mail wrappers, but I don't
         think it's that big a problem.
         """
-        self.__writelog('breaking lock')
+        mailman_log('debug', 'breaking lock')
         try:
             self.__touch(self.__lockfile)
         except OSError as e:
             if e.errno != errno.ENOENT:
-                self.__writelog('touch failed: %s' % str(e), important=1)
+                mailman_log('error', 'touch failed: %s', str(e))
                 raise
         try:
             os.unlink(self.__lockfile)
         except OSError as e:
             if e.errno != errno.ENOENT:
-                self.__writelog('unlink failed: %s' % str(e), important=1)
+                mailman_log('error', 'unlink failed: %s', str(e))
                 raise
-        self.__writelog('lock broken')
+        mailman_log('debug', 'lock broken')
 
 
-
 # Unit test framework
 def _dochild():
     prefix = '[%d]' % os.getpid()
