@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import, division, unicode_literals
+
 #! @PYTHON@
 #
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
@@ -832,8 +834,31 @@ This appears to be a downgrade.  You must use the -f flag to force the
 downgrade."""))
         sys.exit(1)
 
-    # Do the upgrade
-    upgrade(mlist)
+    # Process all mailing lists
+    for listname in Utils.list_names():
+        try:
+            # Ensure listname is a string, not bytes
+            if isinstance(listname, bytes):
+                listname = listname.decode('utf-8', 'replace')
+            listname = listname.lower()
+            
+            mlist = MailList.MailList(listname, lock=0)
+            try:
+                mlist.Lock(0.5)
+                # Do the upgrade
+                upgrade(mlist)
+                mlist.Save()
+            except TimeOutError:
+                print(C_('WARNING: could not acquire lock for list: %(listname)s') % {
+                    'listname': listname
+                }, file=sys.stderr)
+            finally:
+                mlist.Unlock()
+        except Exception as e:
+            print(C_('Error processing list %(listname)s: %(error)s') % {
+                'listname': listname,
+                'error': str(e)
+            }, file=sys.stderr)
 
     # Save the new version
     try:
@@ -841,7 +866,7 @@ downgrade."""))
         print('%x' % thisversion, file=fp)
         fp.close()
     except IOError as e:
-        print(C_('Could not save version number: %(error)s'), file=sys.stderr)
+        print(C_('Could not save version number: %(error)s') % {'error': str(e)}, file=sys.stderr)
         sys.exit(1)
 
     print(C_('Upgrade complete.'))
