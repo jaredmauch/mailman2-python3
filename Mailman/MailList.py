@@ -697,7 +697,24 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     continue
                 # Ensure string values are properly encoded
                 if isinstance(value, str):
-                    dict[key] = value
+                    # Convert email addresses to lowercase
+                    if key in ('members', 'digest_members', 'owner', 'moderator', 
+                             'bounce_info', 'delivery_status', 'user_options', 
+                             'language', 'usernames'):
+                        if isinstance(value, dict):
+                            new_dict = {}
+                            for k, v in value.items():
+                                if isinstance(k, str) and '@' in k:
+                                    new_dict[k.lower()] = v
+                                else:
+                                    new_dict[k] = v
+                            dict[key] = new_dict
+                        elif isinstance(value, list):
+                            dict[key] = [v.lower() if isinstance(v, str) and '@' in v else v for v in value]
+                        else:
+                            dict[key] = value
+                    else:
+                        dict[key] = value
                 elif isinstance(value, bytes):
                     # Convert bytes to string if possible
                     try:
@@ -1943,3 +1960,24 @@ bad regexp in bounce_matching_header line: %s
         # When testing, it's possible we've disabled a language, so just
         # filter things out so we don't get tracebacks.
         return [lang for lang in langs if lang in mm_cfg.LC_DESCRIPTIONS]
+
+    def convert_member_addresses_to_lowercase(self):
+        """Convert all member email addresses to lowercase while preserving case for sending.
+        
+        This method ensures that all member addresses are stored in lowercase for lookups,
+        while maintaining the original case for sending messages.
+        """
+        if not self.Locked():
+            self.Lock()
+        try:
+            # Get all members
+            members = self.getMembers()
+            for member in members:
+                # Get the case-preserved address
+                cpe = self.getMemberCPAddress(member)
+                if cpe and cpe.lower() != cpe:
+                    # If the address isn't already lowercase, update it
+                    self.ChangeMemberAddress(cpe, cpe.lower(), globally=False)
+            self.Save()
+        finally:
+            self.Unlock()

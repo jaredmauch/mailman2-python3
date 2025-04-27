@@ -32,6 +32,9 @@ Options:
     -h/--help
         Print this text and exit.
 
+    -l/--lowercase
+        Convert all member email addresses to lowercase.
+
 Use this script to help you update to the latest release of Mailman from
 some previous version.  It knows about versions back to 1.0b4 (?).
 """
@@ -75,6 +78,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Perform all necessary upgrades.')
     parser.add_argument('-f', '--force', action='store_true',
                        help='Force running the upgrade procedures')
+    parser.add_argument('-l', '--lowercase', action='store_true',
+                       help='Convert all member email addresses to lowercase')
     return parser.parse_args()
 
 
@@ -218,6 +223,11 @@ def dolist(listname):
         print(C_('WARNING: could not acquire lock for list: '
                                 '%(listname)s'), file=sys.stderr)
         return 1
+
+    # Convert member addresses to lowercase if requested
+    if args.lowercase:
+        print('Converting member addresses to lowercase: %s' % listname)
+        mlist.convert_member_addresses_to_lowercase()
 
     # Sanity check the invariant that every BYBOUNCE disabled member must have
     # bounce information.  Some earlier betas broke this.  BAW: we're
