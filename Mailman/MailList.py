@@ -492,21 +492,32 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     # Web API support via administrative categories
     #
     def GetConfigCategories(self):
-        class CategoryDict(UserDict):
+        """Get configuration categories for the mailing list.
+        
+        Returns a custom dictionary-like object that maintains category order
+        according to mm_cfg.ADMIN_CATEGORIES. Each category is stored as a
+        tuple of (label, gui_object).
+        """
+        class CategoryDict(dict):
             def __init__(self):
-                UserDict.__init__(self)
+                super(CategoryDict, self).__init__()
                 self.keysinorder = mm_cfg.ADMIN_CATEGORIES[:]
+            
             def keys(self):
                 return self.keysinorder
+            
             def items(self):
                 items = []
                 for k in mm_cfg.ADMIN_CATEGORIES:
-                    items.append((k, self.data[k]))
+                    if k in self:
+                        items.append((k, self[k]))
                 return items
+            
             def values(self):
                 values = []
                 for k in mm_cfg.ADMIN_CATEGORIES:
-                    values.append(self.data[k])
+                    if k in self:
+                        values.append(self[k])
                 return values
 
         categories = CategoryDict()
