@@ -48,6 +48,19 @@ def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     # us-ascii then we use iso-8859-1 instead. If the string is ascii only
     # we use 'us-ascii' if another charset is specified.
     charset = Utils.GetCharSet(mlist.preferred_language)
+    
+    # Convert bytes to string if necessary
+    if isinstance(s, bytes):
+        try:
+            s = s.decode('ascii')
+        except UnicodeDecodeError:
+            # If it's not ASCII, try to decode with the list's charset
+            try:
+                s = s.decode(charset)
+            except UnicodeDecodeError:
+                # If that fails, try ISO-8859-1 as a fallback
+                s = s.decode('iso-8859-1', 'replace')
+    
     if nonascii.search(s):
         # use list charset but ...
         if charset == 'us-ascii':
