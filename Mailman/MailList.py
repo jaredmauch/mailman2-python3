@@ -128,7 +128,18 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def __getattr__(self, name):
         # First check if the attribute exists in the instance's dictionary
         if name in self.__dict__:
-            return self.__dict__[name]
+            value = self.__dict__[name]
+            # Check if the value is bytes that looks like Latin-1
+            if isinstance(value, bytes):
+                try:
+                    # Try to decode as Latin-1 to see if it's valid
+                    value.decode('latin-1')
+                    syslog('warning', 
+                           'Binary data that looks like Latin-1 string accessed: %s.%s = %r',
+                           self.internal_name(), name, value)
+                except UnicodeDecodeError:
+                    pass
+            return value
         # Then try the memberadaptor
         try:
             return getattr(self._memberadaptor, name)
