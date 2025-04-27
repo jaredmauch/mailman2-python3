@@ -769,6 +769,8 @@ def init_digest_vars(mlist):
         'language': {},  # User language preferences
         'usernames': {},  # Username mappings
         'passwords': {},  # Password storage
+        'bounce_info': {},  # Bounce information
+        'delivery_status': {},  # Delivery status information
         'new_member_options': mm_cfg.DEFAULT_NEW_MEMBER_OPTIONS,
         'respond_to_post_requests': mm_cfg.DEFAULT_RESPOND_TO_POST_REQUESTS,
         'advertised': mm_cfg.DEFAULT_LIST_ADVERTISED,
