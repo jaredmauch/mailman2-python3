@@ -873,80 +873,112 @@ def init_digest_vars(mlist):
 
 def upgrade(mlist):
     """Upgrade the list to the current version."""
-    # Initialize any missing digest variables
-    init_digest_vars(mlist)
-    
-    # Convert all email addresses to lowercase
-    for addr in list(mlist.members):
-        if addr != addr.lower():
-            mlist.members[addr.lower()] = mlist.members[addr]
-            del mlist.members[addr]
-            
-    for addr in list(mlist.digest_members):
-        if addr != addr.lower():
-            mlist.digest_members[addr.lower()] = mlist.digest_members[addr]
-            del mlist.digest_members[addr]
-            
-    # Handle owner list differently since it's a list, not a dict
-    if hasattr(mlist, 'owner') and isinstance(mlist.owner, list):
-        new_owners = []
-        for addr in mlist.owner:
-            if isinstance(addr, str) and addr != addr.lower():
-                new_owners.append(addr.lower())
-            else:
-                new_owners.append(addr)
-        mlist.owner = new_owners
-    else:
-        for addr in list(mlist.owner):
+    try:
+        # Initialize any missing digest variables
+        init_digest_vars(mlist)
+        
+        # Convert all email addresses to lowercase
+        for addr in list(mlist.members):
             if addr != addr.lower():
-                mlist.owner[addr.lower()] = mlist.owner[addr]
-                del mlist.owner[addr]
-            
-    # Handle moderator list differently since it's a list, not a dict
-    if hasattr(mlist, 'moderator') and isinstance(mlist.moderator, list):
-        new_moderators = []
-        for addr in mlist.moderator:
-            if isinstance(addr, str) and addr != addr.lower():
-                new_moderators.append(addr.lower())
-            else:
-                new_moderators.append(addr)
-        mlist.moderator = new_moderators
-    else:
-        for addr in list(mlist.moderator):
+                mlist.members[addr.lower()] = mlist.members[addr]
+                del mlist.members[addr]
+                
+        for addr in list(mlist.digest_members):
             if addr != addr.lower():
-                mlist.moderator[addr.lower()] = mlist.moderator[addr]
-                del mlist.moderator[addr]
-            
-    for addr in list(mlist.bounce_info):
-        if addr != addr.lower():
-            mlist.bounce_info[addr.lower()] = mlist.bounce_info[addr]
-            del mlist.bounce_info[addr]
-            
-    for addr in list(mlist.delivery_status):
-        if addr != addr.lower():
-            mlist.delivery_status[addr.lower()] = mlist.delivery_status[addr]
-            del mlist.delivery_status[addr]
-            
-    for addr in list(mlist.user_options):
-        if addr != addr.lower():
-            mlist.user_options[addr.lower()] = mlist.user_options[addr]
-            del mlist.user_options[addr]
-            
-    # Don't convert passwords to lowercase
-    # for addr in list(mlist.passwords):
-    #     if addr != addr.lower():
-    #         mlist.passwords[addr.lower()] = mlist.passwords[addr]
-    #         del mlist.passwords[addr]
-            
-    for addr in list(mlist.language):
-        if addr != addr.lower():
-            mlist.language[addr.lower()] = mlist.language[addr]
-            del mlist.language[addr]
-            
-    for addr in list(mlist.usernames):
-        if addr != addr.lower():
-            mlist.usernames[addr.lower()] = mlist.usernames[addr]
-            del mlist.usernames[addr]
+                mlist.digest_members[addr.lower()] = mlist.digest_members[addr]
+                del mlist.digest_members[addr]
+                
+        # Handle owner list differently since it's a list, not a dict
+        if hasattr(mlist, 'owner') and isinstance(mlist.owner, list):
+            new_owners = []
+            for addr in mlist.owner:
+                if isinstance(addr, str) and addr != addr.lower():
+                    new_owners.append(addr.lower())
+                else:
+                    new_owners.append(addr)
+            mlist.owner = new_owners
+        else:
+            for addr in list(mlist.owner):
+                if addr != addr.lower():
+                    mlist.owner[addr.lower()] = mlist.owner[addr]
+                    del mlist.owner[addr]
+                
+        # Handle moderator list differently since it's a list, not a dict
+        if hasattr(mlist, 'moderator') and isinstance(mlist.moderator, list):
+            new_moderators = []
+            for addr in mlist.moderator:
+                if isinstance(addr, str) and addr != addr.lower():
+                    new_moderators.append(addr.lower())
+                else:
+                    new_moderators.append(addr)
+            mlist.moderator = new_moderators
+        else:
+            for addr in list(mlist.moderator):
+                if addr != addr.lower():
+                    mlist.moderator[addr.lower()] = mlist.moderator[addr]
+                    del mlist.moderator[addr]
+                
+        for addr in list(mlist.bounce_info):
+            if addr != addr.lower():
+                mlist.bounce_info[addr.lower()] = mlist.bounce_info[addr]
+                del mlist.bounce_info[addr]
+                
+        for addr in list(mlist.delivery_status):
+            if addr != addr.lower():
+                mlist.delivery_status[addr.lower()] = mlist.delivery_status[addr]
+                del mlist.delivery_status[addr]
+                
+        for addr in list(mlist.user_options):
+            if addr != addr.lower():
+                mlist.user_options[addr.lower()] = mlist.user_options[addr]
+                del mlist.user_options[addr]
+                
+        # Don't convert passwords to lowercase
+        # for addr in list(mlist.passwords):
+        #     if addr != addr.lower():
+        #         mlist.passwords[addr.lower()] = mlist.passwords[addr]
+        #         del mlist.passwords[addr]
+                
+        for addr in list(mlist.language):
+            if addr != addr.lower():
+                mlist.language[addr.lower()] = mlist.language[addr]
+                del mlist.language[addr]
+                
+        for addr in list(mlist.usernames):
+            if addr != addr.lower():
+                mlist.usernames[addr.lower()] = mlist.usernames[addr]
+                del mlist.usernames[addr]
+
+        # Ensure the list directory exists
+        list_dir = os.path.dirname(mlist._full_path)
+        if not os.path.exists(list_dir):
+            print(C_('Creating list directory: %(dir)s') % {'dir': list_dir})
+            os.makedirs(list_dir, mode=0o2775)
+            # Set group ownership if possible
+            try:
+                import grp
+                mailman_gid = grp.getgrnam('mailman').gr_gid
+                os.chown(list_dir, -1, mailman_gid)
+            except (ImportError, KeyError):
+                pass
+
+        # Save the list configuration
+        try:
+            mlist.Save()
+        except (IOError, OSError) as e:
+            print(C_('Error saving list configuration: %(error)s') % {'error': str(e)})
+            # Try to save to a backup location
+            backup_path = os.path.join(list_dir, 'config.pck.bak')
+            try:
+                with open(backup_path, 'wb') as fp:
+                    pickle.dump(mlist.__dict__, fp, protocol=2, fix_imports=True)
+                print(C_('Saved backup configuration to %(path)s') % {'path': backup_path})
+            except Exception as e:
+                print(C_('Failed to save backup configuration: %(error)s') % {'error': str(e)})
+            raise
+    except Exception as e:
+        print(C_('Error during upgrade: %(error)s') % {'error': str(e)})
+        raise
 
 
 def main():

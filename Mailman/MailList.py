@@ -672,21 +672,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         6. Proper error handling and cleanup
         """
         fname = os.path.join(self.fullpath(), 'config.pck')
-        fname_tmp = fname + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
+        fname_tmp = fname + '.tmp.' + socket.gethostname() + '.' + str(os.getpid())
         fname_backup = fname + '.bak'
         
-        # Create backup of current file if it exists
-        if os.path.exists(fname):
-            try:
-                shutil.copy2(fname, fname_backup)
-            except Exception as e:
-                mailman_log('error', 'Failed to create backup of %s: %s', fname, e)
-                # Continue anyway - we'll try to restore from backup if needed
-        
-        # Write to temporary file first
         try:
-            # Ensure directory exists with proper permissions
-            dirname = os.path.dirname(fname_tmp)
+            # Ensure directory exists
+            dirname = os.path.dirname(fname)
             if not os.path.exists(dirname):
                 try:
                     os.makedirs(dirname, 0o755)
@@ -694,7 +685,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     mailman_log('error', 'Failed to create directory %s: %s', dirname, e)
                     raise
             
-            # Write with Python 2/3 compatible settings
+            # Write the temporary file
+            try:
+                with open(fname_tmp, 'wb') as fp:
+                    pickle.dump(dict, fp, protocol=2, fix_imports=True)
+            except Exception as e:
+                mailman_log('error', 'Failed to write temporary file %s: %s', fname_tmp, e)
+                raise
+            
+            # Create backup of current file if it exists
+            if os.path.exists(fname):
+                try:
+                    os.rename(fname, fname_backup)
+                except Exception as e:
+                    mailman_log('error', 'Failed to create backup %s: %s', fname_backup, e)
+                    raise
+            
             # Atomic rename
             os.rename(fname_tmp, fname)
             
