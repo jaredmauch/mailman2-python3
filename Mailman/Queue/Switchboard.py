@@ -40,6 +40,7 @@ import email
 import errno
 import pickle
 import marshal
+import email.message
 from email.message import Message as EmailMessage
 
 from Mailman import mm_cfg
@@ -125,6 +126,19 @@ class Switchboard:
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
             protocol = 1
+            # Convert email.message.Message to Mailman.Message if needed
+            if isinstance(_msg, email.message.Message) and not isinstance(_msg, Message.Message):
+                mailman_msg = Message.Message()
+                # Copy all attributes from the original message
+                for key, value in _msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if _msg.is_multipart():
+                    for part in _msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(_msg.get_payload())
+                _msg = mailman_msg
             msgsave = pickle.dumps(_msg, protocol, fix_imports=True)
         else:
             protocol = 0
@@ -194,6 +208,19 @@ class Switchboard:
                     
             if data.get('_parsemsg'):
                 msg = email.message_from_string(msg, EmailMessage)
+                # Convert to Mailman.Message if needed
+                if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
+                    mailman_msg = Message.Message()
+                    # Copy all attributes from the original message
+                    for key, value in msg.items():
+                        mailman_msg[key] = value
+                    # Copy the payload
+                    if msg.is_multipart():
+                        for part in msg.get_payload():
+                            mailman_msg.attach(part)
+                    else:
+                        mailman_msg.set_payload(msg.get_payload())
+                    msg = mailman_msg
                 
             return msg, data
             

@@ -42,12 +42,13 @@ from email.mime.message import MIMEMessage
 from email.utils import getaddresses, formatdate
 from email.header import decode_header, make_header, Header
 from email.charset import Charset
-from email.message import Message
+import email.message
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import i18n
 from Mailman import Errors
+import Mailman.Message
 from Mailman.Mailbox import Mailbox
 from Mailman.MemberAdaptor import ENABLED
 from Mailman.Handlers.Decorate import decorate
@@ -169,7 +170,7 @@ def send_i18n_digests(mlist, mboxfp):
     # Set things up for the MIME digest.  Only headers not added by
     # CookHeaders need be added here.
     # Date/Message-ID should be added here also.
-    mimemsg = Message()
+    mimemsg = email.message.Message()
     mimemsg['Content-Type'] = 'multipart/mixed'
     mimemsg['MIME-Version'] = '1.0'
     mimemsg['From'] = mlist.GetRequestEmail()
@@ -180,7 +181,7 @@ def send_i18n_digests(mlist, mboxfp):
     mimemsg['Message-ID'] = Utils.unique_message_id(mlist)
     # Set things up for the rfc1153 digest
     plainmsg = StringIO()
-    rfc1153msg = Message()
+    rfc1153msg = email.message.Message()
     rfc1153msg['From'] = mlist.GetRequestEmail()
     rfc1153msg['Subject'] = digestsubj
     rfc1153msg['To'] = mlist.GetListEmail()

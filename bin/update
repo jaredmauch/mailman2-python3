@@ -44,9 +44,9 @@ import pickle
 import marshal
 
 import paths
-import email
 import email.errors
-from email.message import Message
+import email.message
+import Mailman.Message
 
 sys.path.append("@VAR_PREFIX@/Mailman")
 from Mailman import mm_cfg
@@ -58,6 +58,9 @@ from Mailman.i18n import C_
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.OldStyleMemberships import OldStyleMemberships
 from Mailman.MemberAdaptor import BYBOUNCE, ENABLED
+from Mailman.Bouncer import _BounceInfo
+from Mailman.MemberAdaptor import UNKNOWN
+from Mailman.Logging.Syslog import syslog
 
 FRESH = 0
 NOTFRESH = -1
@@ -567,7 +570,7 @@ def dequeue(filebase):
             msgfp = None
             try:
                 msgfp = open(msgfile, 'rb')
-                msg = email.message_from_file(msgfp, Message)
+                msg = Mailman.Message.Message_from_file(msgfp)
                 os.unlink(msgfile)
             except EnvironmentError as e:
                 if e.errno != errno.ENOENT: raise

@@ -36,12 +36,12 @@ run again until another version change is detected.
 from builtins import str
 from builtins import range
 import email
-from email.message import Message
+import email.message
+import Mailman.Message
 
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
 from Mailman.Bouncer import _BounceInfo
 from Mailman.MemberAdaptor import UNKNOWN
 from Mailman.Logging.Syslog import syslog

@@ -22,7 +22,7 @@ X-Mailer: Internet Mail Service (5.5.2653.19)
 """
 
 import re
-from email.message import Message
+import email.message
 from io import StringIO
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
@@ -33,7 +33,7 @@ def find_textplain(msg):
         return msg
     if msg.is_multipart:
         for part in msg.get_payload():
-            if not isinstance(part, Message):
+            if not isinstance(part, email.message.Message):
                 continue
             ret = find_textplain(part)
             if ret:

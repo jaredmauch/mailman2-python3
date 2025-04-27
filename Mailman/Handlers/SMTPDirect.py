@@ -134,6 +134,20 @@ class Connection(object):
 
 
 def process(mlist, msg, msgdata):
+    # Convert email.message.Message to Mailman.Message if needed
+    if isinstance(msg, email.message.Message) and not isinstance(msg, Mailman.Message.Message):
+        mailman_msg = Mailman.Message.Message()
+        # Copy all attributes from the original message
+        for key, value in msg.items():
+            mailman_msg[key] = value
+        # Copy the payload
+        if msg.is_multipart():
+            for part in msg.get_payload():
+                mailman_msg.attach(part)
+        else:
+            mailman_msg.set_payload(msg.get_payload())
+        msg = mailman_msg
+
     recips = msgdata.get('recips')
     if not recips:
         # Nobody to deliver to!
@@ -398,6 +412,20 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
 
 
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
+    # Convert email.message.Message to Mailman.Message if needed
+    if isinstance(msg, email.message.Message) and not isinstance(msg, Mailman.Message.Message):
+        mailman_msg = Mailman.Message.Message()
+        # Copy all attributes from the original message
+        for key, value in msg.items():
+            mailman_msg[key] = value
+        # Copy the payload
+        if msg.is_multipart():
+            for part in msg.get_payload():
+                mailman_msg.attach(part)
+        else:
+            mailman_msg.set_payload(msg.get_payload())
+        msg = mailman_msg
+
     # Do some final cleanup of the message header.  Start by blowing away
     # any the Sender: and Errors-To: headers so remote MTAs won't be
     # tempted to delivery bounces there instead of our envelope sender

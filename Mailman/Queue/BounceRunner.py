@@ -31,6 +31,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import LockFile
 from Mailman.Errors import NotAMemberError
+import Mailman.Message
 from Mailman.Message import UserNotification
 from Mailman.Bouncer import _BounceInfo
 from Mailman.Bouncers import BouncerAPI

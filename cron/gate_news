@@ -38,7 +38,8 @@ import nntplib
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
 import email.errors
-from email.message import Message
+import email.message
+import Mailman.Message
 from email.parser import Parser
 
 from Mailman import mm_cfg

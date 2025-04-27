@@ -59,7 +59,7 @@ from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman.Message import Message
+import Mailman.Message
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import syslog
@@ -99,7 +99,7 @@ class MaildirRunner(Runner):
         self._stop = 0
         self._dir = os.path.join(mm_cfg.MAILDIR_DIR, 'new')
         self._cur = os.path.join(mm_cfg.MAILDIR_DIR, 'cur')
-        self._parser = Parser(Message)
+        self._parser = Parser(Mailman.Message.Message)
 
     def _oneloop(self):
         # Refresh this each time through the list.  BAW: could be too

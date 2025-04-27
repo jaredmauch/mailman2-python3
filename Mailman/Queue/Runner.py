@@ -28,7 +28,7 @@ from Mailman import Utils
 from Mailman import Errors
 from Mailman import MailList
 from Mailman import i18n
-from Mailman.Message import Message as MailmanMessage
+import Mailman.Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
@@ -156,8 +156,8 @@ class Runner:
         # Find out which mailing list this message is destined for.
         try:
             # Convert email.message.Message to Mailman.Message if needed
-            if not isinstance(msg, MailmanMessage):
-                mailman_msg = MailmanMessage()
+            if not isinstance(msg, Mailman.Message.Message):
+                mailman_msg = Mailman.Message.Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
                     mailman_msg[key] = value

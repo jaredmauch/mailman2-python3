@@ -40,7 +40,7 @@ from types import *
 import email.iterators
 from email.utils import getaddresses, formataddr, parseaddr
 from email.header import Header
-from email.message import Message
+import email.message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -71,6 +71,7 @@ from Mailman import Message
 from Mailman import Site
 from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
+from Mailman.Message import OwnerNotification
 
 _ = i18n._
 def D_(s):
@@ -79,7 +80,6 @@ def D_(s):
 EMPTYSTRING = ''
 OR = '|'
 
-
 # Use mixins here just to avoid having any one chunk be too large.
 class MailList(HTMLFormatter, Deliverer, ListAdmin,
                Archiver, Digester, SecurityManager, Bouncer, GatewayManager,
@@ -1013,7 +1013,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
              'listowner'  : self.GetOwnerEmail(),
              }, mlist=self))
         sender = self.GetRequestEmail(cookie)
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             invitee, sender,
             text=text, lang=self.preferred_language)
         subj = self.GetConfirmJoinSubject(listname, cookie)
@@ -1135,7 +1135,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                  'listadmin'   : self.GetOwnerEmail(),
                  'confirmurl'  : confirmurl,
                  }, lang=lang, mlist=self)
-            msg = Message.UserNotification(
+            msg = Mailman.Message.UserNotification(
                 recipient, self.GetRequestEmail(cookie),
                 text=text, lang=lang)
             # BAW: See ChangeMemberAddress() for why we do it this way...
@@ -1256,7 +1256,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                  "member"   : formataddr((name, email)),
                  "whence"   : whence
                  }, mlist=self)
-            msg = Message.OwnerNotification(self, subject, text)
+            msg = Mailman.Message.OwnerNotification(self, subject, text)
             msg.send(self)
 
     def DeleteMember(self, name, whence=None, admin_notif=None, userack=True):
@@ -1292,7 +1292,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                  'listname': self.real_name,
                  "whence"   : "" if whence is None else "(" + _(whence) + ")"
                  }, mlist=self)
-            msg = Message.OwnerNotification(self, subject, text)
+            msg = Mailman.Message.OwnerNotification(self, subject, text)
             msg.send(self)
         if whence:
             whence = "; %s" % whence
@@ -1357,7 +1357,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             'verify.txt',
             {'email'      : newaddr,
              'listaddr'   : self.GetListEmail(),
-             'listname'   : realname,
+             'listname'    : realname,
              'cookie'     : cookie,
              'requestaddr': self.getListAddress('request'),
              'remote'     : '',
@@ -1371,7 +1371,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # CommandRunner doesn't yet grok such headers.  So, just set the
         # Subject: in a separate step, although we have to delete the one
         # UserNotification adds.
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             newaddr, self.GetRequestEmail(cookie),
             text=text, lang=lang)
         del msg['subject']
@@ -1462,7 +1462,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                  'newaddr' : newaddr,
                  'listname': self.real_name,
                  }, mlist=self)
-            msg = Message.OwnerNotification(self, subject, text)
+            msg = Mailman.Message.OwnerNotification(self, subject, text)
             msg.send(self)
 
     #
@@ -1625,7 +1625,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
              'listadmin'   : self.GetOwnerEmail(),
              'confirmurl'  : confirmurl,
              }, lang=lang, mlist=self)
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             addr, self.GetRequestEmail(cookie),
             text=text, lang=lang)
             # BAW: See ChangeMemberAddress() for why we do it this way...
@@ -1781,7 +1781,7 @@ bad regexp in bounce_matching_header line: %s
                  'owneremail': self.GetOwnerEmail(),
                  },
                 lang=lang)
-            msg = Message.UserNotification(
+            msg = Mailman.Message.UserNotification(
                 sender, self.GetOwnerEmail(),
                 _('Last autoresponse notification for today'),
                 text, lang=lang)

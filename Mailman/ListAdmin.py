@@ -37,7 +37,7 @@ import email
 from email.mime.message import MIMEMessage
 from email.generator import Generator
 from email.utils import getaddresses
-from email.message import Message
+import email.message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -351,7 +351,19 @@ class ListAdmin(object):
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
-            msg = email.message_from_file(fp, Message)
+            # Convert to Mailman.Message if needed
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
+                mailman_msg = Message.Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
             msgdata['approved'] = 1
             # adminapproved is used by the Emergency handler
             msgdata['adminapproved'] = 1
@@ -395,6 +407,19 @@ class ListAdmin(object):
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
+            # Convert to Mailman.Message if needed
+            if isinstance(copy, email.message.Message) and not isinstance(copy, Message.Message):
+                mailman_msg = Message.Message()
+                # Copy all attributes from the original message
+                for key, value in copy.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if copy.is_multipart():
+                    for part in copy.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(copy.get_payload())
+                copy = mailman_msg
             # It's possible the addr is a comma separated list of addresses.
             addrs = getaddresses([addr])
             if len(addrs) == 1:
@@ -681,7 +706,6 @@ class ListAdmin(object):
         self.__closedb()
 
 
-
 def readMessage(path):
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
@@ -690,9 +714,35 @@ def readMessage(path):
     try:
         if ext == '.txt':
             msg = email.message_from_file(fp, Message)
+            # Convert to Mailman.Message if needed
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
+                mailman_msg = Message.Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
         else:
             assert ext == '.pck'
             msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            # Convert to Mailman.Message if needed
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
+                mailman_msg = Message.Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
     finally:
         fp.close()
     return msg

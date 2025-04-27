@@ -27,7 +27,8 @@ import traceback
 import email
 
 from Mailman import mm_cfg
-from Mailman import Message
+import Mailman.Message
+from Mailman.Message import UserNotification
 from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
