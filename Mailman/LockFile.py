@@ -554,38 +554,44 @@ class LockFile:
             # Read the lock file to get the old PID
             try:
                 with open(self.__lockfile) as fp:
-                    content = fp.read().strip().split()
+                    content = fp.read().strip()
                     if not content:
                         self.__writelog('lock file is empty')
                         os.unlink(self.__lockfile)
                         return 0
                         
                     # Parse PID and hostname from lock file
-                    if len(content) >= 2:
-                        pid = int(content[0])
-                        lock_hostname = content[1]
-                        if lock_hostname != socket.gethostname():
-                            self.__writelog('lock owned by different host: %s' % lock_hostname)
-                            return -1
-                    else:
-                        # Try old format
-                        try:
-                            pid = int(content[0])
-                        except (ValueError, IndexError):
-                            self.__writelog('invalid lock file format')
+                    try:
+                        parts = content.split()
+                        if len(parts) >= 2:
+                            pid = int(parts[0])
+                            lock_hostname = ' '.join(parts[1:])  # Handle hostnames with spaces
+                            if lock_hostname != socket.gethostname():
+                                self.__writelog('lock owned by different host: %s' % lock_hostname)
+                                return -1
+                        else:
+                            # Try old format
+                            try:
+                                pid = int(content)
+                            except ValueError:
+                                self.__writelog('invalid lock file format: %s' % content)
+                                os.unlink(self.__lockfile)
+                                return 0
+                            
+                        if not self._is_pid_valid(pid):
+                            self.__writelog('breaking stale lock owned by pid %d' % pid)
+                            # Add random delay between 1-10 seconds before breaking lock
+                            delay = random.uniform(1, 10)
+                            self.__writelog('waiting %.2f seconds before breaking lock' % delay)
+                            time.sleep(delay)
                             os.unlink(self.__lockfile)
                             return 0
-                            
-                    if not self._is_pid_valid(pid):
-                        self.__writelog('breaking stale lock owned by pid %d' % pid)
-                        # Add random delay between 1-10 seconds before breaking lock
-                        delay = random.uniform(1, 10)
-                        self.__writelog('waiting %.2f seconds before breaking lock' % delay)
-                        time.sleep(delay)
+                        self.__writelog('lock is valid (pid %d)' % pid)
+                        return -1
+                    except (ValueError, IndexError) as e:
+                        self.__writelog('error parsing lock content: %s' % str(e))
                         os.unlink(self.__lockfile)
                         return 0
-                    self.__writelog('lock is valid (pid %d)' % pid)
-                    return -1
             except (ValueError, OSError) as e:
                 self.__writelog('error reading lock: %s' % e)
                 try:

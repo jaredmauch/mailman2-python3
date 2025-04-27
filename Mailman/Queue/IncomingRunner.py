@@ -102,6 +102,9 @@ import sys
 import time
 import traceback
 from io import StringIO
+import random
+import signal
+import os
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -130,21 +133,35 @@ class IncomingRunner(Runner):
             syslog('error', 'Failed to get list %s: %s', listname, str(e))
             return 0
 
-        # Try to get the list lock.
-        try:
-            mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-        except LockFile.TimeOutError:
-            # Oh well, try again later
-            return 1
+        # Try to get the list lock with exponential backoff
+        max_attempts = 3
+        base_delay = 1.0
+        attempt = 0
+        
+        while attempt < max_attempts:
+            try:
+                # Add a small random delay between attempts to prevent thundering herd
+                if attempt > 0:
+                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    syslog('incoming', 'Retrying lock for %s after %.2f seconds (attempt %d/%d)',
+                          listname, delay, attempt + 1, max_attempts)
+                    time.sleep(delay)
+                
+                mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
+                break
+            except LockFile.TimeOutError:
+                attempt += 1
+                if attempt >= max_attempts:
+                    syslog('error', 'Failed to acquire lock for %s after %d attempts',
+                          listname, max_attempts)
+                    return 1
+                continue
+            except Exception as e:
+                syslog('error', 'Unexpected error acquiring lock for %s: %s',
+                      listname, str(e))
+                return 1
 
-        # Process the message through a handler pipeline.  The handler
-        # pipeline can actually come from one of three places: the message
-        # metadata, the mlist, or the global pipeline.
-        #
-        # If a message was requeued due to an uncaught exception, its metadata
-        # will contain the retry pipeline.  Use this above all else.
-        # Otherwise, if the mlist has a `pipeline' attribute, it should be
-        # used.  Final fallback is the global pipeline.
+        # Process the message through a handler pipeline
         try:
             pipeline = self._get_pipeline(mlist, msg, msgdata)
             msgdata['pipeline'] = pipeline
@@ -153,8 +170,14 @@ class IncomingRunner(Runner):
                 del msgdata['pipeline']
             mlist.Save()
             return more
+        except Exception as e:
+            syslog('error', 'Error processing message for %s: %s', listname, str(e))
+            return 1
         finally:
-            mlist.Unlock()
+            try:
+                mlist.Unlock()
+            except Exception as e:
+                syslog('error', 'Error unlocking %s: %s', listname, str(e))
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # We must return a copy of the list, otherwise, the first message that
@@ -169,17 +192,41 @@ class IncomingRunner(Runner):
             modname = 'Mailman.Handlers.' + handler
             __import__(modname)
             try:
-                pid = os.getpid()
+                # Store original PID and track child processes
+                original_pid = os.getpid()
+                child_pids = set()
+                
+                # Process the message
                 sys.modules[modname].process(mlist, msg, msgdata)
-                # Failsafe -- a child may have leaked through.
-                if pid != os.getpid():
-                    syslog('error', 'child process leaked thru: %s', modname)
+                
+                # Check for process leaks
+                current_pid = os.getpid()
+                if current_pid != original_pid:
+                    syslog('error', 'Child process leaked through in handler %s: original_pid=%d, current_pid=%d',
+                          modname, original_pid, current_pid)
+                    # Try to clean up any child processes
+                    try:
+                        os.kill(original_pid, signal.SIGTERM)
+                    except:
+                        pass
                     os._exit(1)
+                
+                # Clean up any child processes
+                try:
+                    while True:
+                        pid, status = os.waitpid(-1, os.WNOHANG)
+                        if pid == 0:
+                            break
+                        child_pids.add(pid)
+                except ChildProcessError:
+                    pass
+                
+                if child_pids:
+                    syslog('debug', 'Cleaned up %d child processes from handler %s: %s',
+                          len(child_pids), modname, child_pids)
+                    
             except Errors.DiscardMessage:
                 # Throw the message away; we need do nothing else with it.
-                # We do need to push the current handler back in the pipeline
-                # just in case the syslog call throws an exception and the
-                # message is shunted.
                 pipeline.insert(0, handler)
                 syslog('vette', """Message discarded, msgid: %s'
         list: %s,
@@ -188,14 +235,9 @@ class IncomingRunner(Runner):
                        mlist.internal_name(), handler)
                 return 0
             except Errors.HoldMessage:
-                # Let the approval process take it from here.  The message no
-                # longer needs to be queued.
+                # Let the approval process take it from here
                 return 0
             except Errors.RejectMessage as e:
-                # Log this.
-                # We do need to push the current handler back in the pipeline
-                # just in case the syslog call or BounceMessage throws an
-                # exception and the message is shunted.
                 pipeline.insert(0, handler)
                 syslog('vette', """Message rejected, msgid: %s
         list: %s,
@@ -205,12 +247,12 @@ class IncomingRunner(Runner):
                        mlist.internal_name(), handler, e.notice())
                 mlist.BounceMessage(msg, msgdata, e)
                 return 0
-            except:
-                # Push this pipeline module back on the stack, then re-raise
-                # the exception.
+            except Exception as e:
+                # Log the full traceback for debugging
+                syslog('error', 'Error in handler %s: %s\n%s', modname, str(e),
+                      ''.join(traceback.format_exc()))
                 pipeline.insert(0, handler)
                 raise
-        # We've successfully completed handling of this message
         return 0
 
     def _cleanup(self):
@@ -232,6 +274,9 @@ class IncomingRunner(Runner):
         files = self._switchboard.files()
         for filebase in files:
             try:
+                # Log that we're starting to process this file
+                syslog('incoming', 'Starting to process queue file: %s', filebase)
+                
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
@@ -246,7 +291,8 @@ class IncomingRunner(Runner):
                     # shunt it off to the next queue.
                     self._shunt.enqueue(msg, msgdata)
             except Exception as e:
-                # Requeue the message for later processing
+                # Log the error and requeue the message for later processing
+                syslog('error', 'Error processing queue file %s: %s', filebase, str(e))
                 try:
                     self._switchboard.enqueue(msg, msgdata)
                 except:
