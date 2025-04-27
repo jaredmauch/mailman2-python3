@@ -313,6 +313,7 @@ class Document(Container):
         if self.language and Utils.IsLanguage(self.language):
             charset = Utils.GetCharSet(self.language)
         output = ['Content-Type: text/html; charset=%s\n' % charset]
+        output.append('<!DOCTYPE html>')
         if not self.suppress_head:
             kws.setdefault('bgcolor', self.bgcolor)
             tab = ' ' * indent

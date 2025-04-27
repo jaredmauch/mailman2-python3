@@ -52,6 +52,7 @@ def loginpage(mlist, scriptname, msg='', frontpage=None):
     # Language stuff
     charset = Utils.GetCharSet(mlist.preferred_language)
     print('Content-type: text/html; charset=' + charset + '\n\n')
+    print('<!DOCTYPE html>')
     print(Utils.maketext(
         'admlogin.html',
         {'listname': mlist.real_name,

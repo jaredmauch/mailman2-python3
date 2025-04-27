@@ -180,6 +180,7 @@ def main():
         # Output the password form
         charset = Utils.GetCharSet(mlist.preferred_language)
         print('Content-type: text/html; charset=' + charset + '\n\n')
+        print('<!DOCTYPE html>')
         # Put the original full path in the authorization form, but avoid
         # trailing slash if we're not adding parts.  We add it below.
         action = mlist.GetScriptURL('private', absolute=1)
