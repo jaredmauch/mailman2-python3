@@ -20,6 +20,7 @@
 
 import sys
 import mailbox
+from io import StringIO
 
 import email
 from email.parser import Parser
@@ -82,7 +83,10 @@ class Mailbox(mailbox.mbox):
         self.fp.seek(0, 2)
         # Create a Generator instance to write the message to the file
         g = Generator(self.fp, mangle_from_=False, maxheaderlen=0)
-        g.flatten(msg, unixfrom=True)
+        # Convert the message to bytes before writing
+        s = StringIO()
+        g.flatten(msg, unixfrom=True, linesep='\n')
+        self.fp.write(s.getvalue().encode('utf-8'))
         # Add one more trailing newline for separation with the next message
         # to be appended to the mbox.
         self.fp.write(b'\n')

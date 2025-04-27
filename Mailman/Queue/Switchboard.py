@@ -312,8 +312,14 @@ class Switchboard:
                     os.fsync(fp.fileno())
                     if data['_bak_count'] >= MAX_BAK_COUNT:
                         syslog('error',
-                               '.bak file max count, preserving file: %s',
-                               filebase)
+                               'Backup file exceeded maximum retry count (%d). '
+                               'Moving to shunt queue: %s (original queue: %s, '
+                               'retry count: %d, last error: %s)',
+                               MAX_BAK_COUNT,
+                               filebase,
+                               self.__whichq,
+                               data['_bak_count'],
+                               data.get('_last_error', 'unknown'))
                         self.finish(filebase, preserve=True)
                     else:
                         os.rename(src, dst)
