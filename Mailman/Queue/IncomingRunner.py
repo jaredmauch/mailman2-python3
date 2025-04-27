@@ -108,7 +108,7 @@ from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
-from Mailman.Utils import Utils
+from Mailman.Utils import reap  # Import specific function instead of module
 
 
 class PipelineError(Exception):
@@ -193,7 +193,7 @@ class IncomingRunner(Runner):
                 if pid != os.getpid():
                     mailman_log('error', 'child process leaked thru: %s', modname)
                     # Clean up child processes before exiting
-                    Utils.reap(self._kids, once=True)
+                    reap(self._kids, once=True)
                     os._exit(1)
                     
             except Errors.DiscardMessage:
@@ -236,7 +236,7 @@ class IncomingRunner(Runner):
     def _cleanup(self):
         """Clean up any resources used by the pipeline."""
         # Clean up child processes
-        Utils.reap(self._kids, once=True)
+        reap(self._kids, once=True)
         # Close any open file descriptors
         for fd in range(3, 1024):  # Skip stdin, stdout, stderr
             try:
