@@ -157,7 +157,17 @@ class Runner:
         try:
             # Convert email.message.Message to Mailman.Message if needed
             if not isinstance(msg, MailmanMessage):
-                msg = MailmanMessage(msg)
+                mailman_msg = MailmanMessage()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
             sender = msg.get_sender()
             listname = msgdata.get('listname')
             if not listname:
