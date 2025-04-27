@@ -135,7 +135,7 @@ prepare-build:
 		done; \
 	done
 
-build: all
+build: $(PYTHON) $(PYTHON_LIB)
 	@echo "Building Python files..."
 	@if [ -d "build" ]; then \
 		$(PYTHON) -m compileall -q build; \
@@ -145,6 +145,13 @@ build: all
 		$(PYTHON) -m compileall -q build/cron; \
 		$(PYTHON) -m compileall -q build/misc; \
 		$(PYTHON) -m compileall -q build/tests; \
+		$(PYTHON) -O -m compileall -q build; \
+		$(PYTHON) -O -m compileall -q build/Mailman; \
+		$(PYTHON) -O -m compileall -q build/bin; \
+		$(PYTHON) -O -m compileall -q build/scripts; \
+		$(PYTHON) -O -m compileall -q build/cron; \
+		$(PYTHON) -O -m compileall -q build/misc; \
+		$(PYTHON) -O -m compileall -q build/tests; \
 	fi
 	@echo "Build complete."
 
