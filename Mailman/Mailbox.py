@@ -40,6 +40,14 @@ def _safeparser(fp):
         return ''
 
 
+class BinaryGenerator(email.generator.Generator):
+    """A generator that writes to a binary file."""
+    def write(self, s):
+        if isinstance(s, str):
+            s = s.encode('utf-8')
+        self._fp.write(s)
+
+
 class Mailbox(mailbox.mbox):
     def __init__(self, fp):
         # In Python 3, we need to handle both file objects and paths
@@ -81,14 +89,9 @@ class Mailbox(mailbox.mbox):
                 self.fp.write(b'\n')
         # Seek to the last char of the mailbox
         self.fp.seek(0, 2)
-        
-        # Create a BytesIO buffer for the message
-        buf = BytesIO()
-        # Create a Generator instance to write the message to the buffer
-        g = Generator(buf, mangle_from_=False, maxheaderlen=0)
+        # Create a BinaryGenerator instance to write the message to the file
+        g = BinaryGenerator(self.fp, mangle_from_=False, maxheaderlen=0)
         g.flatten(msg, unixfrom=True)
-        # Write the buffer contents to the file
-        self.fp.write(buf.getvalue().encode('utf-8'))
         # Add one more trailing newline for separation with the next message
         self.fp.write(b'\n')
 
