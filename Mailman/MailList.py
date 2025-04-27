@@ -927,3 +927,26 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     continue
                     
         return False
+
+    def HasExplicitDest(self, msg):
+        """Check if the message has an explicit destination.
+        
+        Args:
+            msg: The email message to check
+            
+        Returns:
+            True if the message has an explicit destination, False otherwise
+        """
+        # Check if the message has a To: or Cc: header
+        if msg.get('to') or msg.get('cc'):
+            return True
+            
+        # Check if the message has a Resent-To: or Resent-Cc: header
+        if msg.get('resent-to') or msg.get('resent-cc'):
+            return True
+            
+        # Check if the message has a Delivered-To: header
+        if msg.get('delivered-to'):
+            return True
+            
+        return False
