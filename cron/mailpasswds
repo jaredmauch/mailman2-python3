@@ -126,6 +126,12 @@ def main():
             if args.verbose:
                 print(f"\nProcessing list: {listname}")
             mlist = MailList.MailList(listname, lock=0)
+            # Handle potential bytes in list configuration
+            listname = tounicode(listname, 'latin-1')
+            if isinstance(mlist.real_name, bytes):
+                mlist.real_name = tounicode(mlist.real_name, 'latin-1')
+            if isinstance(mlist.internal_name(), bytes):
+                mlist.internal_name = tounicode(mlist.internal_name(), 'latin-1')
             if not mlist.send_reminders:
                 if args.verbose:
                     print(f"Skipping list {listname} - password reminders disabled")
@@ -134,13 +140,13 @@ def main():
             if mm_cfg.VIRTUAL_HOST_OVERVIEW:
                 host = mlist.host_name
                 if isinstance(host, bytes):
-                    host = tounicode(host, 'utf-8')
+                    host = tounicode(host, 'latin-1')
             else:
                 # See the note in Defaults.py concerning DEFAULT_HOST_NAME
                 # vs. DEFAULT_EMAIL_HOST.
                 host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
                 if isinstance(host, bytes):
-                    host = tounicode(host, 'utf-8')
+                    host = tounicode(host, 'latin-1')
             byhost.setdefault(host, []).append(mlist)
         except Exception as e:
             if args.verbose:
@@ -308,9 +314,12 @@ def main():
                 if args.test:
                     # In test mode, add a note that this is a test message
                     text += "\n\n[TEST MODE] This is a test password reminder message."
+                # Ensure host is properly decoded
+                if isinstance(host, bytes):
+                    host = tounicode(host, 'latin-1')
                 msg = Message.UserNotification(
                     addr, siteowner,
-                    _('%(host)s mailing list memberships reminder'),
+                    _('%(host)s mailing list memberships reminder') % {'host': host},
                     text.encode(enc, 'replace'), poplang)
                 # Note that text must be encoded into 'enc' because unicode
                 # cause error within email module in some language (Japanese).

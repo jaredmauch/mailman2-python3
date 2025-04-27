@@ -761,9 +761,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         """Convert bytes to strings recursively in a data structure."""
         if isinstance(data, bytes):
             try:
-                return data.decode('utf-8', 'replace')
+                # Try Latin-1 first since that's what we're seeing in the data
+                return data.decode('latin-1', 'replace')
             except UnicodeDecodeError:
-                return data.decode('latin1', 'replace')
+                # Fall back to UTF-8 if Latin-1 fails
+                return data.decode('utf-8', 'replace')
         elif isinstance(data, list):
             return [self.__convert_bytes_to_strings(item) for item in data]
         elif isinstance(data, dict):
@@ -811,14 +813,15 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         for key, value in dict_retval.items():
             if isinstance(value, bytes):
                 try:
-                    dict_retval[key] = value.decode('utf-8', 'replace')
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    dict_retval[key] = value.decode('latin-1', 'replace')
                 except UnicodeDecodeError:
-                    # If UTF-8 fails, try latin1 as a fallback
-                    dict_retval[key] = value.decode('latin1', 'replace')
+                    # Fall back to UTF-8 if Latin-1 fails
+                    dict_retval[key] = value.decode('utf-8', 'replace')
             elif isinstance(value, list):
                 # Handle lists that might contain bytes
                 dict_retval[key] = [
-                    v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
+                    v.decode('latin-1', 'replace') if isinstance(v, bytes) else v
                     for v in value
                 ]
             elif isinstance(value, dict):
@@ -826,9 +829,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 new_dict = {}
                 for k, v in value.items():
                     if isinstance(k, bytes):
-                        k = k.decode('utf-8', 'replace')
+                        k = k.decode('latin-1', 'replace')
                     if isinstance(v, bytes):
-                        v = v.decode('utf-8', 'replace')
+                        v = v.decode('latin-1', 'replace')
                     new_dict[k] = v
                 dict_retval[key] = new_dict
 
