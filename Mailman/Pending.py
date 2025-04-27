@@ -62,11 +62,11 @@ class Pending(object):
         # Load the database
         db = self.__load()
         
-        # Ensure content is properly encoded
-        content = [
+        # Ensure content is properly encoded and convert to tuple
+        content = tuple(
             c.decode('utf-8', 'replace') if isinstance(c, bytes) else c
             for c in content
-        ]
+        )
         
         # Calculate a unique cookie.  Algorithm vetted by the Timbot.  time()
         # has high resolution on Linux, clock() on Windows.  random gives us
