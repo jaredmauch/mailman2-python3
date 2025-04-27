@@ -43,7 +43,6 @@ try:
     HAVE_NNTP = True
 except ImportError:
     HAVE_NNTP = False
-    mailman_log('warning', 'NNTP support is not enabled. NewsRunner will not be started.')
 
 # Matches our Mailman crafted Message-IDs.  See Utils.unique_message_id()
 mcre = re.compile(r"""
@@ -68,10 +67,13 @@ class NewsRunner(Runner):
         # Check if NNTP support is available and configured
         self._nntp_enabled = False
         if not HAVE_NNTP:
-            mailman_log('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
+            # Only log if we're actually trying to start the runner
+            if slice is not None:
+                mailman_log('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
             return
         if not mm_cfg.DEFAULT_NNTP_HOST:
-            mailman_log('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
+            if slice is not None:
+                mailman_log('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
             return
             
         # Check if any lists actually need NNTP support
@@ -93,7 +95,8 @@ class NewsRunner(Runner):
                     mlist.Unlock()
                     
         if not has_nntp_lists:
-            mailman_log('info', 'No lists require NNTP support. NewsRunner will not be started.')
+            if slice is not None:
+                mailman_log('info', 'No lists require NNTP support. NewsRunner will not be started.')
             return
             
         # NNTP is available, configured, and needed by at least one list
