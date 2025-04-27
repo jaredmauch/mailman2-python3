@@ -950,3 +950,33 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             return True
             
         return False
+
+    def hasMatchingHeader(self, msg):
+        """Check if the message has any headers that match the bounce_matching_headers list.
+        
+        Args:
+            msg: The email message to check
+            
+        Returns:
+            True if any header matches, False otherwise
+        """
+        if not self.bounce_matching_headers:
+            return False
+            
+        # Check each header in the message
+        for header in msg.keys():
+            header_value = msg.get(header, '').lower()
+            # Check if this header matches any pattern in bounce_matching_headers
+            for pattern in self.bounce_matching_headers:
+                try:
+                    cre = re.compile(pattern, re.IGNORECASE)
+                    if cre.search(header_value):
+                        syslog('vette', 'Message header %s matches pattern %s',
+                               header, pattern)
+                        return True
+                except re.error:
+                    syslog('error', 'Invalid regex pattern in bounce_matching_headers: %s',
+                           pattern)
+                    continue
+                    
+        return False
