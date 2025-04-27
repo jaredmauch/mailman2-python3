@@ -235,7 +235,8 @@ class Switchboard:
                                 new_dict[k] = v
                             data[key] = new_dict
                     
-            if data.get('_parsemsg'):
+            # Always try to parse the message if it's a string
+            if isinstance(msg, str) or data.get('_parsemsg'):
                 try:
                     msg = email.message_from_string(msg, EmailMessage)
                     # Convert to Mailman.Message if needed
