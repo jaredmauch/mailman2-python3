@@ -33,6 +33,12 @@ Options:
         reminders are sent for all lists.  Multiple -l/--listname options are
         allowed.
 
+    -t email
+    --test=email
+        Test mode: Send password reminders to the specified email address
+        instead of the actual list members. Useful for testing the reminder
+        format and content.
+
     -h/--help
         Print this message and exit.
 """
@@ -42,6 +48,7 @@ import sys
 import os
 import errno
 import argparse
+import random
 
 import paths
 # mm_cfg must be imported before the other modules, due to the side-effect of
@@ -75,6 +82,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Send password reminders for all lists to all users.')
     parser.add_argument('-l', '--listname', action='append',
                        help='Send password reminders for the named list only')
+    parser.add_argument('-t', '--test', metavar='email',
+                       help='Test mode: Send to specified email address instead of members')
     return parser.parse_args()
 
 
@@ -119,26 +128,48 @@ def main():
         userinfo = {}
         for mlist in byhost[host]:
             listaddr = mlist.GetListEmail()
-            for member in mlist.getMembers():
-                # The user may have disabled reminders for this list
-                if mlist.getMemberOption(member,
-                                         mm_cfg.SuppressPasswordReminder):
-                    continue
-                # Group by the lower-cased address, since Mailman always
-                # treates person@dom.ain the same as PERSON@dom.ain.
+            # In test mode, we'll use the test email address for all lists
+            if args.test:
+                member = args.test
                 try:
                     password = mlist.getMemberPassword(member)
                 except Errors.NotAMemberError:
-                    # Here's a member with no passwords, which I think was
-                    # possible in older versions of Mailman.  Log this and
-                    # move on.
-                    syslog('error', 'password-less member %s for list %s',
-                           member, mlist.internal_name())
-                    continue
+                    # For test mode, we'll use a real password from a random member
+                    members = mlist.getMembers()
+                    if members:
+                        # Get a random member's password
+                        random_member = random.choice(members)
+                        password = mlist.getMemberPassword(random_member)
+                    else:
+                        # If no members, use a default password
+                        password = "password"
                 optionsurl = mlist.GetOptionsURL(member)
                 lang = mlist.getMemberLanguage(member)
                 info = (listaddr, password, optionsurl, lang)
                 userinfo.setdefault(member, []).append(info)
+            else:
+                # Normal mode - process all members
+                for member in mlist.getMembers():
+                    # The user may have disabled reminders for this list
+                    if mlist.getMemberOption(member,
+                                             mm_cfg.SuppressPasswordReminder):
+                        continue
+                    # Group by the lower-cased address, since Mailman always
+                    # treates person@dom.ain the same as PERSON@dom.ain.
+                    try:
+                        password = mlist.getMemberPassword(member)
+                    except Errors.NotAMemberError:
+                        # Here's a member with no passwords, which I think was
+                        # possible in older versions of Mailman.  Log this and
+                        # move on.
+                        syslog('error', 'password-less member %s for list %s',
+                               member, mlist.internal_name())
+                        continue
+                    optionsurl = mlist.GetOptionsURL(member)
+                    lang = mlist.getMemberLanguage(member)
+                    info = (listaddr, password, optionsurl, lang)
+                    userinfo.setdefault(member, []).append(info)
+
         # Now that we've collected user information for this host, send each
         # user the password reminder.
         for addr in userinfo.keys():
@@ -193,6 +224,9 @@ def main():
                 header = tounicode(header, enc)
                 # Add the table to the end so it doesn't get wrapped/filled
                 text += (header + '\n' + NL.join(table))
+                if args.test:
+                    # In test mode, add a note that this is a test message
+                    text += "\n\n[TEST MODE] This is a test password reminder message."
                 msg = Message.UserNotification(
                     addr, siteowner,
                     _('%(host)s mailing list memberships reminder'),
@@ -204,6 +238,9 @@ def main():
             msg['X-No-Archive'] = 'yes'
             del msg['auto-submitted']
             msg['Auto-Submitted'] = 'auto-generated'
+            if args.test:
+                # In test mode, add a test header
+                msg['X-Mailman-Test-Mode'] = 'yes'
             # We want to make this look like it's coming from the siteowner's
             # list, but we also want to be sure that the apparent host name is
             # the current virtual host.  Look in CookHeaders.py for why this
