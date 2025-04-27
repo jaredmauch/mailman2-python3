@@ -608,14 +608,19 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
                         text = raw_bytes.decode('utf-8')
                         return text, path
                     except UnicodeDecodeError:
-                        # Try ISO-8859-1 next
+                        # Try EUC-JP for Japanese text
                         try:
-                            text = raw_bytes.decode('iso-8859-1')
+                            text = raw_bytes.decode('euc-jp')
                             return text, path
                         except UnicodeDecodeError:
-                            # Finally try latin1 as a last resort
-                            text = raw_bytes.decode('latin1')
-                            return text, path
+                            # Try ISO-8859-1 next
+                            try:
+                                text = raw_bytes.decode('iso-8859-1')
+                                return text, path
+                            except UnicodeDecodeError:
+                                # Finally try latin1 as a last resort
+                                text = raw_bytes.decode('latin1')
+                                return text, path
             except IOError:
                 pass
     # Then try the site's language-specific template directory
@@ -630,14 +635,19 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
                         text = raw_bytes.decode('utf-8')
                         return text, path
                     except UnicodeDecodeError:
-                        # Try ISO-8859-1 next
+                        # Try EUC-JP for Japanese text
                         try:
-                            text = raw_bytes.decode('iso-8859-1')
+                            text = raw_bytes.decode('euc-jp')
                             return text, path
                         except UnicodeDecodeError:
-                            # Finally try latin1 as a last resort
-                            text = raw_bytes.decode('latin1')
-                            return text, path
+                            # Try ISO-8859-1 next
+                            try:
+                                text = raw_bytes.decode('iso-8859-1')
+                                return text, path
+                            except UnicodeDecodeError:
+                                # Finally try latin1 as a last resort
+                                text = raw_bytes.decode('latin1')
+                                return text, path
             except IOError:
                 pass
     # Then try the list's default template directory
@@ -652,14 +662,19 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
                         text = raw_bytes.decode('utf-8')
                         return text, path
                     except UnicodeDecodeError:
-                        # Try ISO-8859-1 next
+                        # Try EUC-JP for Japanese text
                         try:
-                            text = raw_bytes.decode('iso-8859-1')
+                            text = raw_bytes.decode('euc-jp')
                             return text, path
                         except UnicodeDecodeError:
-                            # Finally try latin1 as a last resort
-                            text = raw_bytes.decode('latin1')
-                            return text, path
+                            # Try ISO-8859-1 next
+                            try:
+                                text = raw_bytes.decode('iso-8859-1')
+                                return text, path
+                            except UnicodeDecodeError:
+                                # Finally try latin1 as a last resort
+                                text = raw_bytes.decode('latin1')
+                                return text, path
             except IOError:
                 pass
     # Finally try the site's default template directory
@@ -673,14 +688,19 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
                     text = raw_bytes.decode('utf-8')
                     return text, path
                 except UnicodeDecodeError:
-                    # Try ISO-8859-1 next
+                    # Try EUC-JP for Japanese text
                     try:
-                        text = raw_bytes.decode('iso-8859-1')
+                        text = raw_bytes.decode('euc-jp')
                         return text, path
                     except UnicodeDecodeError:
-                        # Finally try latin1 as a last resort
-                        text = raw_bytes.decode('latin1')
-                        return text, path
+                        # Try ISO-8859-1 next
+                        try:
+                            text = raw_bytes.decode('iso-8859-1')
+                            return text, path
+                        except UnicodeDecodeError:
+                            # Finally try latin1 as a last resort
+                            text = raw_bytes.decode('latin1')
+                            return text, path
         except IOError:
             pass
     return None, None

@@ -726,6 +726,16 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # Always unlock when we're done
             self.Unlock()
 
+    def __decode_latin1(self, value):
+        """Centralized method to decode bytes to Latin-1 strings.
+        
+        This ensures consistent handling of bytes throughout the codebase.
+        If the value is already a string, it is returned unchanged.
+        """
+        if isinstance(value, bytes):
+            return value.decode('latin1', 'replace')
+        return value
+
     def __load(self, dbfile):
         """Load and validate a database file with improved error handling."""
         # Determine the load function based on file extension
@@ -770,7 +780,23 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 raise
             return None, e
 
+    def __convert_bytes_to_strings(self, obj):
+        """Convert bytes to strings in a nested data structure.
+        
+        This method recursively processes lists, dictionaries, and tuples,
+        ensuring all bytes are decoded as Latin-1 strings.
+        """
+        if isinstance(obj, bytes):
+            return self.__decode_latin1(obj)
+        elif isinstance(obj, (list, tuple)):
+            return type(obj)(self.__convert_bytes_to_strings(x) for x in obj)
+        elif isinstance(obj, dict):
+            return {self.__decode_latin1(k): self.__convert_bytes_to_strings(v)
+                    for k, v in obj.items()}
+        return obj
+
     def Load(self, check_version=True):
+        """Load the list's configuration from disk."""
         if not Utils.list_exists(self.internal_name()):
             raise Errors.MMUnknownListError
         # We first try to load config.pck, which contains the up-to-date
