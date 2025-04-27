@@ -1023,7 +1023,8 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         regexp = regexp.decode('latin1', 'replace')
     regexp = regexp.strip()
     try:
-        regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
+        if isinstance(regexp, bytes):
+            regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
     except UnicodeDecodeError:
         # This is probably a non-ascii character and an English language
         # (ascii) list.  Even if we didn't throw the UnicodeDecodeError,
