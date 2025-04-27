@@ -268,7 +268,7 @@ def admin_overview(msg=''):
     # should have already been set.
     hostname = Utils.get_domain()
     if isinstance(hostname, bytes):
-        hostname = hostname.decode('utf-8', 'replace')
+        hostname = hostname.decode('latin1', 'replace')
     legend = _('%(hostname)s mailing lists - Admin Links') % {
         'hostname': hostname
     }
@@ -288,7 +288,7 @@ def admin_overview(msg=''):
 
     for name in listnames:
         if isinstance(name, bytes):
-            name = name.decode('utf-8', 'replace')
+            name = name.decode('latin1', 'replace')
         try:
             mlist = MailList.MailList(name, lock=0)
         except Errors.MMUnknownListError:
@@ -297,10 +297,10 @@ def admin_overview(msg=''):
         if mlist.advertised:
             real_name = mlist.real_name
             if isinstance(real_name, bytes):
-                real_name = real_name.decode('utf-8', 'replace')
+                real_name = real_name.decode('latin1', 'replace')
             description = mlist.GetDescription()
             if isinstance(description, bytes):
-                description = description.decode('utf-8', 'replace')
+                description = description.decode('latin1', 'replace')
             if mm_cfg.VIRTUAL_HOST_OVERVIEW and (
                    mlist.web_page_url.find('/%(hostname)s/' % {'hostname': hostname}) == -1 and
                    mlist.web_page_url.find('/%(hostname)s:' % {'hostname': hostname}) == -1):
@@ -310,6 +310,8 @@ def admin_overview(msg=''):
                 advertised.append((mlist.GetScriptURL('admin'),
                                    real_name,
                                    Utils.websafe(description)))
+        mlist.Unlock()
+
     # Greeting depends on whether there was an error or not
     if msg:
         greeting = FontAttr(msg, color="ff5060", size="+1")
@@ -453,7 +455,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
     if isinstance(label, bytes):
-        label = label.decode('utf-8', 'replace')
+        label = label.decode('latin1', 'replace')
         
     doc.SetTitle(_('%(realname)s Administration (%(label)s)') % {
         'realname': mlist.real_name,
@@ -615,7 +617,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
     if isinstance(label, bytes):
-        label = label.decode('utf-8', 'replace')
+        label = label.decode('latin1', 'replace')
 
     table.AddRow([Center(Header(2, label))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
@@ -625,7 +627,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     # description if it is a string
     description = options[0]
     if isinstance(description, bytes):
-        description = description.decode('utf-8', 'replace')
+        description = description.decode('latin1', 'replace')
     if type(description) is str:
         table.AddRow([description])
         table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
@@ -648,7 +650,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
             # treated as a general description, while any others are
             # treated as section headers - centered and italicized...
             if isinstance(item, bytes):
-                item = item.decode('utf-8', 'replace')
+                item = item.decode('latin1', 'replace')
             table.AddRow([Center(Italic(item))])
             table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         else:
@@ -837,11 +839,11 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         data = getattr(mlist, varname)
         for name, pattern, desc, empty in data:
             if isinstance(name, bytes):
-                name = name.decode('utf-8', 'replace')
+                name = name.decode('latin1', 'replace')
             if isinstance(pattern, bytes):
-                pattern = pattern.decode('utf-8', 'replace')
+                pattern = pattern.decode('latin1', 'replace')
             if isinstance(desc, bytes):
-                desc = desc.decode('utf-8', 'replace')
+                desc = desc.decode('latin1', 'replace')
             makebox(i, name, pattern, desc, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -907,7 +909,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         data = getattr(mlist, varname)
         for pattern, action, empty in data:
             if isinstance(pattern, bytes):
-                pattern = pattern.decode('utf-8', 'replace')
+                pattern = pattern.decode('latin1', 'replace')
             makebox(i, pattern, action, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -1013,7 +1015,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # See if the query has a regular expression
     regexp = cgidata.get('findmember', [''])[0]
     if isinstance(regexp, bytes):
-        regexp = regexp.decode('utf-8', 'replace')
+        regexp = regexp.decode('latin1', 'replace')
     regexp = regexp.strip()
     try:
         regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))

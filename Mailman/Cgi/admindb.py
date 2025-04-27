@@ -398,9 +398,9 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                     [_('<em>The sender is now a member of this list</em>')])
             left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         elif sender not in (mlist.accept_these_nonmembers +
-                            mlist.hold_these_nonmembers +
-                            mlist.reject_these_nonmembers +
-                            mlist.discard_these_nonmembers):
+                             mlist.hold_these_nonmembers +
+                             mlist.reject_these_nonmembers +
+                             mlist.discard_these_nonmembers):
             left.AddRow([
                 '<label>' +
                 CheckBox('senderfilterp-' + qsender, 1).Format() +
@@ -448,6 +448,8 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                 continue
             dispsubj = Utils.oneline(
                 subject, Utils.GetCharSet(mlist.preferred_language))
+            if isinstance(dispsubj, bytes):
+                dispsubj = dispsubj.decode('latin1', 'replace')
             t = Table(border=0)
             t.AddRow([Link(admindburl + '?msgid=%d' % id, '[%d]' % counter),
                       Bold(_('Subject:')),
@@ -456,6 +458,8 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             t.AddRow(['&nbsp;', Bold(_('Size:')), str(size) + _(' bytes')])
             if reason:
                 reason = _(reason)
+                if isinstance(reason, bytes):
+                    reason = reason.decode('latin1', 'replace')
             else:
                 reason = _('not available')
             t.AddRow(['&nbsp;', Bold(_('Reason:')), reason])
