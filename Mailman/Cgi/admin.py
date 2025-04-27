@@ -1006,15 +1006,15 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     container.AddItem(table)
     container.AddItem('<hr><p>')
     usertable = Table(width="90%", border='2')
-    # If there are more members than allowed by chunksize, then we split the
-    # membership up alphabetically.  Otherwise just display them all.
-    chunksz = mlist.admin_member_chunksize
     # The email addresses had /better/ be ASCII, but might be encoded in the
     # database as Unicodes.
     all = [_m.encode() for _m in mlist.getMembers()]
     all.sort(lambda x, y: cmp(x.lower(), y.lower()))
     # See if the query has a regular expression
-    regexp = cgidata.get('findmember', [''])[0].strip()
+    regexp = cgidata.get('findmember', [''])[0]
+    if isinstance(regexp, bytes):
+        regexp = regexp.decode('utf-8', 'replace')
+    regexp = regexp.strip()
     try:
         regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
     except UnicodeDecodeError:
@@ -1037,7 +1037,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     chunkindex = None
     bucket = None
     actionurl = None
-    if len(all) < chunksz:
+    if len(all) < mlist.admin_member_chunksize:
         members = all
     else:
         # Split them up alphabetically, and then split the alphabetical
@@ -1064,10 +1064,10 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             'adminurl': adminurl,
             'bucket': bucket
         }
-        if len(members) <= chunksz:
+        if len(members) <= mlist.admin_member_chunksize:
             form.set_action(action)
         else:
-            i, r = divmod(len(members), chunksz)
+            i, r = divmod(len(members), mlist.admin_member_chunksize)
             numchunks = i + (not not r * 1)
             # Now chunk them up
             chunkindex = 0
@@ -1078,7 +1078,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                     chunkindex = 0
                 if chunkindex < 0 or chunkindex > numchunks:
                     chunkindex = 0
-            members = members[chunkindex*chunksz:(chunkindex+1)*chunksz]
+            members = members[chunkindex*mlist.admin_member_chunksize:(chunkindex+1)*mlist.admin_member_chunksize]
             # And set the action URL
             form.set_action('%(action)s&chunk=%(chunkindex)s' % {
                 'action': action,
@@ -1301,8 +1301,8 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         for i in range(numchunks):
             if i == chunkindex:
                 continue
-            start = chunkmembers[i*chunksz]
-            end = chunkmembers[min((i+1)*chunksz, last)-1]
+            start = chunkmembers[i*mlist.admin_member_chunksize]
+            end = chunkmembers[min((i+1)*mlist.admin_member_chunksize, last)-1]
             thisurl = '%(url)schunk=%(i)d%(findfrag)s' % {
                 'url': url,
                 'i': i,

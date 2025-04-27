@@ -111,11 +111,6 @@ def main():
     # We need a signal handler to catch the SIGTERM that can come from Apache
     # when the user hits the browser's STOP button.  See the comment in
     # admin.py for details.
-    #
-    # BAW: Strictly speaking, the list should not need to be locked just to
-    # read the request database.  However the request database asserts that
-    # the list is locked in order to load it and it's not worth complicating
-    # that logic.
     def sigterm_handler(signum, frame, mlist=mlist):
         # Make sure the list gets unlocked...
         mlist.Unlock()
@@ -124,15 +119,10 @@ def main():
         # could be bad!
         sys.exit(0)
 
-    mlist.Lock()
-    try:
-        # Install the emergency shutdown signal handler
-        signal.signal(signal.SIGTERM, sigterm_handler)
+    # Install the emergency shutdown signal handler
+    signal.signal(signal.SIGTERM, sigterm_handler)
 
-        process_form(mlist, doc, cgidata, language)
-        mlist.Save()
-    finally:
-        mlist.Unlock()
+    process_form(mlist, doc, cgidata, language)
 
 
 def process_form(mlist, doc, cgidata, lang):
@@ -141,11 +131,16 @@ def process_form(mlist, doc, cgidata, lang):
     results = []
 
     # The email address being subscribed, required
-    email = cgidata.get('email', [''])[0].strip()
+    email = cgidata.get('email', [''])[0]
+    if isinstance(email, bytes):
+        email = email.decode('utf-8', 'replace')
+    email = email.strip()
     if not email:
         results.append(_('You must supply a valid email address.'))
 
     fullname = cgidata.get('fullname', [''])[0]
+    if isinstance(fullname, bytes):
+        fullname = fullname.decode('utf-8', 'replace')
     # Canonicalize the full name
     fullname = Utils.canonstr(fullname, lang)
     # Who was doing the subscribing?
@@ -156,9 +151,12 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Check reCAPTCHA submission, if enabled
     if mm_cfg.RECAPTCHA_SECRET_KEY:
+        recaptcha_response = cgidata.get('g-recaptcha-response', [''])[0]
+        if isinstance(recaptcha_response, bytes):
+            recaptcha_response = recaptcha_response.decode('utf-8', 'replace')
         request_data = urllib.parse.urlencode({
                 'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
-                'response': cgidata.get('g-recaptcha-response', [''])[0],
+                'response': recaptcha_response,
                 'remoteip': remote})
         request_data = request_data.encode('utf-8')
         request = urllib.request.Request(
@@ -196,8 +194,10 @@ def process_form(mlist, doc, cgidata, lang):
             #        for our hash so it doesn't matter.
             remote1 = ip.rsplit(':', 1)[0]
         try:
-            ftime, fcaptcha_idx, fhash = cgidata.get(
-                    'sub_form_token', [''])[0].split(':')
+            sub_form_token = cgidata.get('sub_form_token', [''])[0]
+            if isinstance(sub_form_token, bytes):
+                sub_form_token = sub_form_token.decode('utf-8', 'replace')
+            ftime, fcaptcha_idx, fhash = sub_form_token.split(':')
             then = int(ftime)
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
@@ -217,8 +217,15 @@ def process_form(mlist, doc, cgidata, lang):
         mailman_log('mischief', 'Attempt to self subscribe %s: %s', email, remote)
         results.append(_('You may not subscribe a list to itself!'))
     # If the user did not supply a password, generate one for him
-    password = cgidata.get('pw', [''])[0].strip()
-    confirmed = cgidata.get('pw-conf', [''])[0].strip()
+    password = cgidata.get('pw', [''])[0]
+    if isinstance(password, bytes):
+        password = password.decode('utf-8', 'replace')
+    password = password.strip()
+    
+    confirmed = cgidata.get('pw-conf', [''])[0]
+    if isinstance(confirmed, bytes):
+        confirmed = confirmed.decode('utf-8', 'replace')
+    confirmed = confirmed.strip()
 
     if not password and not confirmed:
         password = Utils.MakeRandomPassword()
@@ -229,6 +236,8 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Get the digest option for the subscription.
     digestflag = cgidata.get('digest', [''])[0]
+    if isinstance(digestflag, bytes):
+        digestflag = digestflag.decode('utf-8', 'replace')
     if digestflag:
         try:
             digest = int(digestflag)
@@ -266,12 +275,13 @@ may have to be first confirmed by you via email, or approved by the list
 moderator.  If confirmation is required, you will soon get a confirmation
 email which contains further instructions.""")
 
+    # Acquire the lock before attempting to add the member
+    mlist.Lock()
     try:
         userdesc = UserDesc(email, fullname, password, digest, lang)
         mlist.AddMember(userdesc, remote)
         results = ''
-    # Check for all the errors that mlist.AddMember can throw options on the
-    # web page for this cgi
+        mlist.Save()
     except Errors.MembershipIsBanned:
         results = _(f"""The email address you supplied is banned from this
         mailing list.  If you think this restriction is erroneous, please
@@ -357,6 +367,8 @@ to the list administrator at {listowner}.
         else:
             results = _(f"""\
 You have been successfully subscribed to the {realname} mailing list.""")
+    finally:
+        mlist.Unlock()
     # Show the results
     print_results(mlist, results, doc, lang)
 

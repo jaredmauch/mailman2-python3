@@ -814,7 +814,83 @@ address.  Upon confirmation, any other mailing list containing the address
     print(doc.Format())
 
 
-
+def process_form(mlist, cgidata, doc, form):
+    """Process the form submission."""
+    # Get the user's email address
+    email = cgidata.get('email', [''])[0]
+    if isinstance(email, bytes):
+        email = email.decode('utf-8', 'replace')
+    email = email.strip()
+    
+    # Get the user's password
+    password = cgidata.get('password', [''])[0]
+    if isinstance(password, bytes):
+        password = password.decode('utf-8', 'replace')
+    password = password.strip()
+    
+    # Get the user's full name
+    fullname = cgidata.get('fullname', [''])[0]
+    if isinstance(fullname, bytes):
+        fullname = fullname.decode('utf-8', 'replace')
+    fullname = fullname.strip()
+    
+    # Get the user's options
+    options = {}
+    for key in cgidata:
+        if key.startswith('option_'):
+            value = cgidata.get(key, [''])[0]
+            if isinstance(value, bytes):
+                value = value.decode('utf-8', 'replace')
+            options[key[7:]] = value.strip()
+            
+    # Validate the email address
+    if not email:
+        doc.addError(_('You must provide an email address'))
+        return
+        
+    if not Utils.ValidateEmail(email):
+        doc.addError(_('Invalid email address: %(email)s') % {'email': email})
+        return
+        
+    # Validate the password
+    if not password:
+        doc.addError(_('You must provide a password'))
+        return
+        
+    # Validate the full name
+    if not fullname:
+        doc.addError(_('You must provide your full name'))
+        return
+        
+    # Try to get the member
+    try:
+        member = mlist.getMember(email)
+    except Errors.NotAMemberError:
+        doc.addError(_('You are not a member of this list'))
+        return
+        
+    # Verify the password
+    if not mlist.Authenticate((email, password)):
+        doc.addError(_('Invalid password'))
+        return
+        
+    # Update the member's options
+    try:
+        mlist.Lock()
+        try:
+            member.setFullName(fullname)
+            for key, value in options.items():
+                member.setOption(key, value)
+        finally:
+            mlist.Unlock()
+    except Exception as e:
+        doc.addError(_('Error updating options: %(error)s') % {'error': str(e)})
+        return
+        
+    # Show success message
+    doc.addItem(_('Your options have been updated'))
+
+
 def options_page(mlist, doc, user, cpuser, userlang, message=''):
     # The bulk of the document will come from the options.html template, which
     # includes it's own html armor (head tags, etc.).  Suppress the head that
@@ -960,7 +1036,7 @@ You are subscribed to this list with the case-preserved address
         page_text = DIGRE.sub('', page_text)
     doc.AddItem(page_text)
 
-
+
 def loginpage(mlist, doc, user, lang):
     realname = mlist.real_name
     actionurl = mlist.GetScriptURL('options')
@@ -1045,7 +1121,6 @@ def loginpage(mlist, doc, user, lang):
     doc.AddItem(mlist.GetMailmanFooter())
 
 
-
 def lists_of_member(mlist, user):
     hostname = mlist.host_name
     onlists = []
@@ -1062,7 +1137,6 @@ def lists_of_member(mlist, user):
     return onlists
 
 
-
 def change_password(mlist, user, newpw, confirmpw):
     # This operation requires the list lock, so let's set up the signal
     # handling so the list lock will get released when the user hits the
@@ -1089,7 +1163,6 @@ def change_password(mlist, user, newpw, confirmpw):
         mlist.Unlock()
 
 
-
 def global_options(mlist, user, globalopts):
     # Is there anything to do?
     for attr in dir(globalopts):
@@ -1133,7 +1206,6 @@ def global_options(mlist, user, globalopts):
         mlist.Unlock()
 
 
-
 def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
     # Find out which topic the user wants to get details of
     reflist = varhelp.split('/')
