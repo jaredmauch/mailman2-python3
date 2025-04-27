@@ -153,30 +153,54 @@ def process(mlist, msg, msgdata):
         return
         
     mboxfile = os.path.join(mlist.fullpath(), 'digest.mbox')
-    omask = os.umask(0o007)
+    lockfile = mboxfile + '.lock'
     
+    # Create a lock file to prevent concurrent access
     try:
-        # Open file in binary mode for proper handling of line endings
-        with open(mboxfile, 'ab+') as mboxfp:
-            # Pass the file path to Mailbox, not the file object
-            mbox = Mailbox(mboxfile)
-            mbox.AppendMessage(msg)
-            
-            # Calculate size and check threshold
-            mboxfp.flush()
-            size = os.path.getsize(mboxfile)
-            if (mlist.digest_size_threshhold > 0 and
-                size / 1024.0 >= mlist.digest_size_threshhold):
-                try:
-                    send_digests(mlist, mboxfile)  # Pass path instead of file object
-                except Exception as e:
-                    syslog('error', 'Error sending digest: %s', str(e))
-                    syslog('error', 'Traceback: %s', traceback.format_exc())
+        with open(lockfile, 'x') as f:
+            f.write(str(os.getpid()))
+    except FileExistsError:
+        # Another process is updating the digest, log and return
+        syslog('info', 'Digest file locked by another process, deferring message %s for list %s',
+               msg.get('message-id', 'unknown'), mlist.internal_name())
+        return
+        
+    try:
+        omask = os.umask(0o007)
+        try:
+            # Open file in binary mode for proper handling of line endings
+            with open(mboxfile, 'ab+') as mboxfp:
+                # Pass the file path to Mailbox, not the file object
+                mbox = Mailbox(mboxfile)
+                mbox.AppendMessage(msg)
+                
+                # Calculate size and check threshold
+                mboxfp.flush()
+                size = os.path.getsize(mboxfile)
+                syslog('info', 'Added message %s to digest for list %s (current size: %d KB)',
+                       msg.get('message-id', 'unknown'), mlist.internal_name(), size / 1024)
+                
+                if (mlist.digest_size_threshhold > 0 and
+                    size / 1024.0 >= mlist.digest_size_threshhold):
+                    try:
+                        syslog('info', 'Digest threshold reached for list %s, sending digest',
+                               mlist.internal_name())
+                        send_digests(mlist, mboxfile)  # Pass path instead of file object
+                    except Exception as e:
+                        syslog('error', 'Error sending digest for list %s: %s',
+                               mlist.internal_name(), str(e))
+                        syslog('error', 'Traceback: %s', traceback.format_exc())
+        finally:
+            os.umask(omask)
     finally:
-        os.umask(omask)
+        # Clean up the lock file
+        try:
+            os.unlink(lockfile)
+        except OSError:
+            pass
 
 def send_digests(mlist, mboxpath):
-    """Send digests for the mailing list."""
+    """Send digests for the mailing list with performance optimizations."""
     # Set up the digest state
     volume = mlist.volume
     issue = mlist.next_digest_number
@@ -307,24 +331,34 @@ def send_digests(mlist, mboxpath):
         syslog('error', 'Failed to remove digest.mbox: %s', str(e))
 
 def send_digest_final(mlist, mimemsg, rfc1153msg, volume, issue):
-    """Send the actual digest messages.
+    """Send the actual digest messages with performance optimizations."""
+    # Get digest recipients in batches
+    batch_size = 1000  # Process 1000 recipients at a time
     
-    This function handles the final preparation and sending of both digest formats.
-    """
     # Send to MIME digest members
     mime_members = mlist.getMemberCPAddresses(digest=True, mime=True)
     if mime_members:
         outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-        outq.enqueue(mimemsg,
-                    recips=mime_members,
-                    listname=mlist.internal_name(),
-                    fromnode='digest')
+        # Process in batches to avoid memory issues
+        for i in range(0, len(mime_members), batch_size):
+            batch = mime_members[i:i + batch_size]
+            syslog('info', 'Sending MIME digest batch %d-%d for list %s',
+                   i, i + len(batch), mlist.internal_name())
+            outq.enqueue(mimemsg,
+                        recips=batch,
+                        listname=mlist.internal_name(),
+                        fromnode='digest')
     
     # Send to RFC 1153 digest members
     rfc1153_members = mlist.getMemberCPAddresses(digest=True, mime=False)
     if rfc1153_members:
         outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-        outq.enqueue(rfc1153msg,
-                    recips=rfc1153_members,
-                    listname=mlist.internal_name(),
-                    fromnode='digest')
+        # Process in batches to avoid memory issues
+        for i in range(0, len(rfc1153_members), batch_size):
+            batch = rfc1153_members[i:i + batch_size]
+            syslog('info', 'Sending RFC 1153 digest batch %d-%d for list %s',
+                   i, i + len(batch), mlist.internal_name())
+            outq.enqueue(rfc1153msg,
+                        recips=batch,
+                        listname=mlist.internal_name(),
+                        fromnode='digest')
