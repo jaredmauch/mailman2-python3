@@ -208,6 +208,13 @@ class Runner:
                 else:
                     mailman_msg.set_payload(msg.get_payload())
                 msg = mailman_msg
+
+            # Check for duplicate messages early
+            msgid = msg.get('message-id', 'n/a')
+            if hasattr(self, '_processed_messages') and msgid in self._processed_messages:
+                log('error', 'Duplicate message detected early: %s', msgid)
+                return
+
             sender = msg.get_sender()
             listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
             mlist = self._open_list(listname)
