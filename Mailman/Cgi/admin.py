@@ -797,7 +797,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
            values, legend, selected = params
         else:
            values = mlist.GetAvailableLanguages()
-           legend = list(map(_, list(map(Utils.GetLanguageDescr, values))))
+           legend = [Utils.GetLanguageDescr(lang) for lang in values]
            selected = values.index(mlist.preferred_language)
         return SelectOptions(varname, values, legend, selected)
     elif kind == mm_cfg.Topics:
@@ -1210,8 +1210,10 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             cells.append(Center(CheckBox(digest_name, 'on', 1).Format()))
 
         language_name = '%(qaddr)s_language' % {'qaddr': qaddr}
-        cells.append(Center(SelectOptions(language_name, mlist.GetAvailableLanguages(),
-                                          selected=mlist.getMemberLanguage(addr)).Format()))
+        languages = mlist.GetAvailableLanguages()
+        legends = [Utils.GetLanguageDescr(lang) for lang in languages]
+        cells.append(Center(SelectOptions(language_name, languages, legends,
+                                        selected=mlist.getMemberLanguage(addr)).Format()))
 
         # Do the `mod' option
         if mlist.getMemberOption(addr, mm_cfg.Moderate):
