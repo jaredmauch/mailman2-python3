@@ -25,9 +25,9 @@ immediately.
 TBD: This needs to be made more configurable and robust.
 """
 
-from builtins import str
-import re
+from __future__ import absolute_import, print_function, unicode_literals
 
+import re
 from unicodedata import normalize
 from email.errors import HeaderParseError
 from email.header import decode_header
@@ -46,7 +46,6 @@ def _(s):
     return s
 
 
-
 class SpamDetected(Errors.DiscardMessage):
     """The message contains known spam"""
 
@@ -63,7 +62,6 @@ class HeaderMatchHold(Errors.HoldMessage):
 _ = i18n._
 
 
-
 def getDecodedHeaders(msg, lcset):
     """Return a Unicode string containing all headers of msg, unfolded and RFC 2047
     decoded.  If a header cannot be decoded, it is replaced with a string of
@@ -76,20 +74,16 @@ def getDecodedHeaders(msg, lcset):
             try:
                 # Format as "Header: Value"
                 header_line = '%s: %s' % (name, value)
-                # Check if header_line is already a string
-                if isinstance(header_line, str):
-                    uhdr = header_line
-                else:
-                    # Try to decode as bytes
-                    uhdr = header_line.decode('us-ascii', 'replace')
-                headers.append(uhdr)
+                # Ensure we have a string
+                if isinstance(header_line, bytes):
+                    header_line = header_line.decode('utf-8', 'replace')
+                headers.append(header_line)
             except (UnicodeError, AttributeError):
                 # If we can't decode it, replace with question marks
-                headers.append('?' * len(value))
+                headers.append('?' * len(str(value)))
     return '\n'.join(headers)
 
 
-
 def process(mlist, msg, msgdata):
     # Before anything else, check DMARC if necessary.  We do this as early
     # as possible so reject/discard actions trump other holds/approvals and
@@ -98,7 +92,7 @@ def process(mlist, msg, msgdata):
     # discard actions.
     if not msgdata.get('toowner'):
         msgdata['from_is_list'] = 0
-        dn, addr = parseaddr(msg.get('from'))
+        dn, addr = parseaddr(msg.get('from', ''))
         if addr and mlist.dmarc_moderation_action > 0:
             if (mlist.GetPattern(addr, mlist.dmarc_moderation_addresses) or
                 Utils.IsDMARCProhibited(mlist, addr)):
@@ -144,6 +138,8 @@ error, contact the mailing list owner at %(listowner)s."""))
     for header, regex in mm_cfg.KNOWN_SPAMMERS:
         cre = re.compile(regex, re.IGNORECASE)
         for value in msg.get_all(header, []):
+            if isinstance(value, bytes):
+                value = value.decode('utf-8', 'replace')
             mo = cre.search(value)
             if mo:
                 # we've detected spam, so throw the message away
@@ -151,7 +147,7 @@ error, contact the mailing list owner at %(listowner)s."""))
     # Now do header_filter_rules
     # TK: Collect headers in sub-parts because attachment filename
     # extension may be a clue to possible virus/spam.
-    headers = u''
+    headers = ''
     # Get the character set of the lists preferred language for headers
     lcset = Utils.GetCharSet(mlist.preferred_language)
     for p in msg.walk():

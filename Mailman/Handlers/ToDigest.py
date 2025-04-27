@@ -16,7 +16,8 @@
 # USA.
 
 """Add the message to the list's current digest and possibly send it."""
-from __future__ import print_function
+
+from __future__ import absolute_import, print_function, unicode_literals
 
 # Messages are accumulated to a Unix mailbox compatible file containing all
 # the messages destined for the digest.  This file must be parsable by the
@@ -26,13 +27,12 @@ from __future__ import print_function
 # directory and the DigestRunner will craft the MIME, rfc1153, and
 # (eventually) URL-subject linked digests from the mbox.
 
-from builtins import str
 import os
 import re
 import copy
 import time
 import traceback
-from io import StringIO
+from io import StringIO, BytesIO
 
 from email.parser import Parser
 from email.generator import Generator
@@ -62,10 +62,13 @@ _ = i18n._
 UEMPTYSTRING = u''
 EMPTYSTRING = ''
 
-
 def to_cset_out(text, lcset):
-    # Convert text from unicode or lcset to output cset.
+    """Convert text to output charset.
+    
+    Handles both str and bytes input, ensuring proper encoding for output.
+    """
     ocset = Charset(lcset).get_output_charset() or lcset
+    
     if isinstance(text, str):
         return text.encode(ocset, 'replace')
     elif isinstance(text, bytes):
@@ -76,310 +79,183 @@ def to_cset_out(text, lcset):
     else:
         return str(text).encode(ocset, 'replace')
 
-
-
 def process(mlist, msg, msgdata):
-    # Short circuit non-digestable lists.
+    """Process a message for digest delivery.
+    
+    This function handles adding messages to the digest and sending the digest
+    when appropriate. All file operations use proper encoding handling.
+    """
+    # Short circuit non-digestable lists
     if not mlist.digestable or msgdata.get('isdigest'):
         return
+        
     mboxfile = os.path.join(mlist.fullpath(), 'digest.mbox')
     omask = os.umask(0o007)
+    
     try:
-        mboxfp = open(mboxfile, 'a+')
-        mbox = Mailbox(mboxfile)  # Use the path instead of the file object
-        mbox.AppendMessage(msg)
-        # Calculate the current size of the accumulation file.  This will not tell
-        # us exactly how big the MIME, rfc1153, or any other generated digest
-        # message will be, but it's the most easily available metric to decide
-        # whether the size threshold has been reached.
-        mboxfp.flush()
-        size = os.path.getsize(mboxfile)
-        if (mlist.digest_size_threshhold > 0 and
-            size / 1024.0 >= mlist.digest_size_threshhold):
-            # This is a bit of a kludge to get the mbox file moved to the digest
-            # queue directory.
-            try:
-                # Enclose in try/except here because a error in send_digest() can
-                # silently stop regular delivery.  Unsuccessful digest delivery
-                # should not stop regular delivery.
-                send_digests(mlist, mboxfp)
-            except Exception as e:
-                syslog('error', 'Error sending digest: %s', str(e))
+        # Open file in binary mode for proper handling of line endings
+        with open(mboxfile, 'ab+') as mboxfp:
+            mbox = Mailbox(mboxfile)  # Use path instead of file object
+            mbox.AppendMessage(msg)
+            
+            # Calculate size and check threshold
+            mboxfp.flush()
+            size = os.path.getsize(mboxfile)
+            if (mlist.digest_size_threshhold > 0 and
+                size / 1024.0 >= mlist.digest_size_threshhold):
+                try:
+                    send_digests(mlist, mboxfp)
+                except Exception as e:
+                    syslog('error', 'Error sending digest: %s', str(e))
+                    syslog('error', 'Traceback: %s', traceback.format_exc())
     finally:
         os.umask(omask)
-        if 'mboxfp' in locals():
-            mboxfp.close()
 
-
-
 def send_digests(mlist, mboxfp):
-    # Set the digest volume and time
-    if mlist.digest_last_sent_at:
-        bump = False
-        # See if we should bump the digest volume number
-        timetup = time.localtime(mlist.digest_last_sent_at)
-        now = time.localtime(time.time())
-        freq = mlist.digest_volume_frequency
-        if freq == 0 and timetup[0] < now[0]:
-            # Yearly
-            bump = True
-        elif freq == 1 and timetup[1] != now[1]:
-            # Monthly, but we take a cheap way to calculate this.  We assume
-            # that the clock isn't going to be reset backwards.
-            bump = True
-        elif freq == 2 and (timetup[1] % 4 != now[1] % 4):
-            # Quarterly, same caveat
-            bump = True
-        elif freq == 3:
-            # Once again, take a cheap way of calculating this
-            weeknum_last = int(time.strftime('%W', timetup))
-            weeknum_now = int(time.strftime('%W', now))
-            if weeknum_now > weeknum_last or timetup[0] > now[0]:
-                bump = True
-        elif freq == 4 and timetup[7] != now[7]:
-            # Daily
-            bump = True
-        if bump:
-            mlist.bump_digest_volume()
-    mlist.digest_last_sent_at = time.time()
-    # Wrapper around actually digest crafter to set up the language context
-    # properly.  All digests are translated to the list's preferred language.
-    otranslation = i18n.get_translation()
-    i18n.set_language(mlist.preferred_language)
-    try:
-        send_i18n_digests(mlist, mboxfp)
-    finally:
-        i18n.set_translation(otranslation)
-
-
-
-def send_i18n_digests(mlist, mboxfp):
-    mbox = Mailbox(mboxfp)
-    # Prepare common information (first lang/charset)
-    lang = mlist.preferred_language
-    lcset = Utils.GetCharSet(lang)
-    lcset_out = Charset(lcset).output_charset or lcset
-    # Common Information (contd)
-    realname = mlist.real_name
+    """Send digests for the mailing list.
+    
+    This function handles the creation and sending of both MIME and RFC 1153
+    format digests. All text handling is done with proper encoding awareness.
+    """
+    # Set up the digest state
     volume = mlist.volume
     issue = mlist.next_digest_number
     digestid = _('%(realname)s Digest, Vol %(volume)d, Issue %(issue)d')
-    digestsubj = Header(digestid, lcset, header_name='Subject')
-    # Set things up for the MIME digest.  Only headers not added by
-    # CookHeaders need be added here.
-    # Date/Message-ID should be added here also.
+    
+    # Get the list's preferred language and charset
+    lang = mlist.preferred_language
+    lcset = Utils.GetCharSet(lang)
+    lcset_out = Charset(lcset).output_charset or lcset
+    
+    # Create the digest messages
     mimemsg = email.message.Message()
     mimemsg['Content-Type'] = 'multipart/mixed'
     mimemsg['MIME-Version'] = '1.0'
     mimemsg['From'] = mlist.GetRequestEmail()
-    mimemsg['Subject'] = digestsubj
+    mimemsg['Subject'] = Header(digestid, lcset, header_name='Subject')
     mimemsg['To'] = mlist.GetListEmail()
     mimemsg['Reply-To'] = mlist.GetListEmail()
     mimemsg['Date'] = formatdate(localtime=1)
     mimemsg['Message-ID'] = Utils.unique_message_id(mlist)
-    # Set things up for the rfc1153 digest
+    
+    # Set up the RFC 1153 digest
     plainmsg = StringIO()
     rfc1153msg = email.message.Message()
     rfc1153msg['From'] = mlist.GetRequestEmail()
-    rfc1153msg['Subject'] = digestsubj
+    rfc1153msg['Subject'] = Header(digestid, lcset, header_name='Subject')
     rfc1153msg['To'] = mlist.GetListEmail()
     rfc1153msg['Reply-To'] = mlist.GetListEmail()
     rfc1153msg['Date'] = formatdate(localtime=1)
     rfc1153msg['Message-ID'] = Utils.unique_message_id(mlist)
+    
+    # Create the digest content
     separator70 = '-' * 70
     separator30 = '-' * 30
-    # In the rfc1153 digest, the masthead contains the digest boilerplate plus
-    # any digest header.  In the MIME digests, the masthead and digest header
-    # are separate MIME subobjects.  In either case, it's the first thing in
-    # the digest, and we can calculate it now, so go ahead and add it now.
+    
+    # Add masthead
     mastheadtxt = Utils.maketext(
         'masthead.txt',
-        {'real_name' :        mlist.real_name,
-         'got_list_email':    mlist.GetListEmail(),
-         'got_listinfo_url':  mlist.GetScriptURL('listinfo', absolute=1),
+        {'real_name': mlist.real_name,
+         'got_list_email': mlist.GetListEmail(),
+         'got_listinfo_url': mlist.GetScriptURL('listinfo', absolute=1),
          'got_request_email': mlist.GetRequestEmail(),
-         'got_owner_email':   mlist.GetOwnerEmail(),
-         }, mlist=mlist)
-    # MIME
-    masthead = MIMEText(mastheadtxt, _charset=lcset)
-    masthead['Content-Description'] = digestid
-    mimemsg.attach(masthead)
-    # RFC 1153
+         'got_owner_email': mlist.GetOwnerEmail(),
+        },
+        lang=lang,
+        mlist=mlist)
+        
+    # Add masthead to both digest formats
+    mimemsg.attach(MIMEText(mastheadtxt, _charset=lcset))
     print(mastheadtxt, file=plainmsg)
-    print(file=plainmsg)
-    # Now add the optional digest header but only if more than whitespace.
-    if re.sub(r'\s', '', mlist.digest_header):
-        headertxt = decorate(mlist, mlist.digest_header, _('digest header'))
-        # MIME
-        header = MIMEText(headertxt, _charset=lcset)
-        header['Content-Description'] = _('Digest Header')
-        mimemsg.attach(header)
-        # RFC 1153
-        print(headertxt, file=plainmsg)
-        print(file=plainmsg)
-    # Now we have to cruise through all the messages accumulated in the
-    # mailbox file.  We can't add these messages to the plainmsg and mimemsg
-    # yet, because we first have to calculate the table of contents
-    # (i.e. grok out all the Subjects).  Store the messages in a list until
-    # we're ready for them.
-    #
-    # Meanwhile prepare things for the table of contents
-    toc = StringIO()
-    print(_("Today's Topics:\n"), file=toc)
-    # Now cruise through all the messages in the mailbox of digest messages,
-    # building the MIME payload and core of the RFC 1153 digest.  We'll also
-    # accumulate Subject: headers and authors for the table-of-contents.
-    messages = []
-    msgcount = 0
-    msg = next(mbox)
-    while msg is not None:
-        if msg == '':
-            # It was an unparseable message
-            msg = next(mbox)
-            continue
-        msgcount += 1
-        messages.append(msg)
-        # Get the Subject header
-        msgsubj = msg.get('subject', _('(no subject)'))
-        subject = Utils.oneline(msgsubj, lcset)
-        # Don't include the redundant subject prefix in the toc
-        mo = re.match('(re:? *)?(%s)' % re.escape(mlist.subject_prefix),
-                      subject, re.IGNORECASE)
-        if mo:
-            subject = subject[:mo.start(2)] + subject[mo.end(2):]
-        username = ''
-        addresses = getaddresses([Utils.oneline(msg.get('from', ''), lcset)])
-        # Take only the first author we find
-        if isinstance(addresses, list) and addresses:
-            username = addresses[0][0]
-            if not username:
-                username = addresses[0][1]
-        if not username:
-            username = _('(unknown)')
-        # Add this message to the table of contents
-        print('(%d) %s' % (msgcount, subject), file=toc)
-        print('    %s' % username, file=toc)
-        # Get the next message
-        msg = next(mbox)
-    # Now we're finished with all the messages in the digest.  First do some
-    # sanity checking and then on to adding the toc.
-    if msgcount == 0:
-        # Why did we even get here?
-        return
-    toctext = to_cset_out(toc.getvalue(), lcset)
-    # MIME
-    tocpart = MIMEText(toctext, _charset=lcset)
-    tocpart['Content-Description']= _("Today's Topics (%(msgcount)d messages)")
-    mimemsg.attach(tocpart)
-    # RFC 1153
-    print(toctext, file=plainmsg)
-    print(file=plainmsg)
-    # For RFC 1153 digests, we now need the standard separator
+    
+    # Process the mbox
+    mbox = Mailbox(mboxfp)
+    
+    # Add a table of contents for RFC 1153 digests
     print(separator70, file=plainmsg)
-    print(file=plainmsg)
-    # Now go through and add each message
-    mimedigest = MIMEBase('multipart', 'digest')
-    mimemsg.attach(mimedigest)
-    first = True
-    for msg in messages:
-        # MIME.  Make a copy of the message object since the rfc1153
-        # processing scrubs out attachments.
-        mimedigest.attach(MIMEMessage(copy.deepcopy(msg)))
-        # rfc1153
-        if first:
-            first = False
-        else:
-            print(separator30, file=plainmsg)
-            print(file=plainmsg)
-        # Use Mailman.Handlers.Scrubber.process() to get plain text
+    print(_('Today\'s Topics:\n'), file=plainmsg)
+    
+    # Process each message
+    msg_num = 1
+    for msg in mbox:
+        if msg is None:
+            continue
+            
         try:
-            msg = scrubber(mlist, msg)
-        except Errors.DiscardMessage:
-            print(_('[Message discarded by content filter]'), file=plainmsg)
-            continue
-        # Honor the default setting
-        for h in mm_cfg.PLAIN_DIGEST_KEEP_HEADERS:
-            if msg[h]:
-                uh = Utils.wrap('%s: %s' % (h, Utils.oneline(msg[h], lcset)))
-                uh = '\n\t'.join(uh.split('\n'))
-                print(uh, file=plainmsg)
-        print(file=plainmsg)
-        # If decoded payload is empty, this may be multipart message.
-        # -- just stringfy it.
-        payload = msg.get_payload(decode=True)
-        if payload is None:
-            payload = msg.as_string().split('\n\n',1)[1]
-        mcset = msg.get_content_charset('')
-        if mcset and mcset != lcset and mcset != lcset_out:
+            cset = msg.get_content_charset(lcset)
+            subject = msg.get('subject', _('(no subject)'))
+            subject = Utils.oneline(subject, lcset)
+            
+            # Add to table of contents
+            print('%2d. %s' % (msg_num, subject), file=plainmsg)
+            
+            # Add the message to both digest formats
+            mimemsg.attach(MIMEMessage(msg))
+            
+            print('\n%s\n%s %d\n%s\n' % (separator30, _('Message'), msg_num,
+                  separator30), file=plainmsg)
+            print('Date:', msg['date'], file=plainmsg)
+            print('From:', msg['from'], file=plainmsg)
+            print('Subject:', subject, file=plainmsg)
+            print('\n', file=plainmsg)
+            
             try:
-                payload = str(payload, mcset, 'replace').encode(lcset, 'replace')
-            except (UnicodeError, LookupError):
-                # TK: Message has something unknown charset.
-                #     _out means charset in 'outer world'.
-                payload = str(payload, lcset_out, 'replace').encode(lcset, 'replace')
-        print(payload, file=plainmsg)
-        if not payload.endswith('\n'):
-            print(file=plainmsg)
-    # Now add the footer but only if more than whitespace.
-    if re.sub(r'\s', '', mlist.digest_footer):
-        footertxt = decorate(mlist, mlist.digest_footer, _('digest footer'))
-        # MIME
-        footer = MIMEText(footertxt, _charset=lcset)
-        footer['Content-Description'] = _('Digest Footer')
-        mimemsg.attach(footer)
-        # RFC 1153
-        # MAS: There is no real place for the digest_footer in an RFC 1153
-        # compliant digest, so add it as an additional message with
-        # Subject: Digest Footer
-        print(separator30, file=plainmsg)
-        print(file=plainmsg)
-        print('Subject: ' + _('Digest Footer'), file=plainmsg)
-        print(file=plainmsg)
-        print(footertxt, file=plainmsg)
-        print(file=plainmsg)
-        print(separator30, file=plainmsg)
-        print(file=plainmsg)
-    # Do the last bit of stuff for each digest type
-    signoff = _('End of ') + digestid
-    # MIME
-    # BAW: This stuff is outside the normal MIME goo, and it's what the old
-    # MIME digester did.  No one seemed to complain, probably because you
-    # won't see it in an MUA that can't display the raw message.  We've never
-    # got complaints before, but if we do, just wax this.  It's primarily
-    # included for (marginally useful) backwards compatibility.
-    mimemsg.postamble = signoff
-    # rfc1153
-    print(signoff, file=plainmsg)
-    print('*' * len(signoff), file=plainmsg)
-    # Do our final bit of housekeeping, and then send each message to the
-    # outgoing queue for delivery.
+                body = msg.get_payload(decode=True)
+                if isinstance(body, bytes):
+                    body = body.decode(cset or 'utf-8', 'replace')
+                print(body, file=plainmsg)
+            except Exception as e:
+                print(_('[Message body could not be decoded]\n'), file=plainmsg)
+                syslog('error', 'Message %d digest payload error: %s',
+                       msg_num, str(e))
+            
+            msg_num += 1
+            
+        except Exception as e:
+            syslog('error', 'Digest message %d processing error: %s',
+                   msg_num, str(e))
+            syslog('error', 'Traceback: %s', traceback.format_exc())
+    
+    # Finish up the RFC 1153 digest
+    print('\n%s\n%s\n' % (separator70, _('End of Digest')), file=plainmsg)
+    plaintext = plainmsg.getvalue()
+    plainmsg.close()
+    
+    # Set the RFC 1153 message body
+    rfc1153msg.set_payload(plaintext, charset=lcset)
+    
+    # Send both digests
+    send_digest_final(mlist, mimemsg, rfc1153msg, volume, issue)
+    
+    # Clean up
     mlist.next_digest_number += 1
-    virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-    # Calculate the recipients lists
-    plainrecips = []
-    mimerecips = []
-    drecips = mlist.getDigestMemberKeys() + list(mlist.one_last_digest.keys())
-    for user in mlist.getMemberCPAddresses(drecips):
-        # user might be None if someone who toggled off digest delivery
-        # subsequently unsubscribed from the mailing list.  Also, filter out
-        # folks who have disabled delivery.
-        if user is None or mlist.getDeliveryStatus(user) != ENABLED:
-            continue
-        # Otherwise, decide whether they get MIME or RFC 1153 digests
-        if mlist.getMemberOption(user, mm_cfg.DisableMime):
-            plainrecips.append(user)
-        else:
-            mimerecips.append(user)
-    # Zap this since we're now delivering the last digest to these folks.
-    mlist.one_last_digest.clear()
-    # MIME
-    virginq.enqueue(mimemsg,
-                    recips=mimerecips,
+    mlist.Save()
+    
+    # Remove the mbox file
+    try:
+        os.unlink(os.path.join(mlist.fullpath(), 'digest.mbox'))
+    except OSError as e:
+        syslog('error', 'Failed to remove digest.mbox: %s', str(e))
+
+def send_digest_final(mlist, mimemsg, rfc1153msg, volume, issue):
+    """Send the actual digest messages.
+    
+    This function handles the final preparation and sending of both digest formats.
+    """
+    # Send to MIME digest members
+    mime_members = mlist.getMemberCPAddresses(digest=True, mime=True)
+    if mime_members:
+        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        outq.enqueue(mimemsg,
+                    recips=mime_members,
                     listname=mlist.internal_name(),
-                    isdigest=True)
-    # RFC 1153
-    rfc1153msg.set_payload(to_cset_out(plainmsg.getvalue(), lcset), lcset)
-    virginq.enqueue(rfc1153msg,
-                    recips=plainrecips,
+                    fromnode='digest')
+    
+    # Send to RFC 1153 digest members
+    rfc1153_members = mlist.getMemberCPAddresses(digest=True, mime=False)
+    if rfc1153_members:
+        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        outq.enqueue(rfc1153msg,
+                    recips=rfc1153_members,
                     listname=mlist.internal_name(),
-                    isdigest=True)
+                    fromnode='digest')
