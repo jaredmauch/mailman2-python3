@@ -80,7 +80,11 @@ _ = i18n._
 def tounicode(s, enc):
     if isinstance(s, str):
         return s
-    return str(s, enc, 'replace')
+    try:
+        return str(s, enc, 'replace')
+    except (UnicodeDecodeError, LookupError):
+        # Try Latin-1 as fallback
+        return str(s, 'latin-1', 'replace')
 
 
 def parse_args():
@@ -129,10 +133,14 @@ def main():
                 continue
             if mm_cfg.VIRTUAL_HOST_OVERVIEW:
                 host = mlist.host_name
+                if isinstance(host, bytes):
+                    host = tounicode(host, 'utf-8')
             else:
                 # See the note in Defaults.py concerning DEFAULT_HOST_NAME
                 # vs. DEFAULT_EMAIL_HOST.
                 host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
+                if isinstance(host, bytes):
+                    host = tounicode(host, 'utf-8')
             byhost.setdefault(host, []).append(mlist)
         except Exception as e:
             if args.verbose:
@@ -302,7 +310,7 @@ def main():
                     text += "\n\n[TEST MODE] This is a test password reminder message."
                 msg = Message.UserNotification(
                     addr, siteowner,
-                    _('%(host)s mailing list memberships reminder') % {'host': str(host)},
+                    _('%(host)s mailing list memberships reminder'),
                     text.encode(enc, 'replace'), poplang)
                 # Note that text must be encoded into 'enc' because unicode
                 # cause error within email module in some language (Japanese).
