@@ -654,7 +654,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
             loadfunc = marshal.load
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-            loadfunc = pickle.load
+            loadfunc = lambda fp: pickle.load(fp, fix_imports=True, encoding='latin1')
         else:
             assert 0, 'Bad database file name'
         try:
