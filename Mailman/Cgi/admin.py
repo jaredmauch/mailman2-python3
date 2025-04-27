@@ -1192,6 +1192,8 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # Now populate the rows
     for addr in members:
         try:
+            if isinstance(addr, bytes):
+                addr = addr.decode('latin-1')
             qaddr = urllib.parse.quote(addr)
             link = Link(mlist.GetOptionsURL(addr, obscure=1),
                         mlist.getMemberCPAddress(addr))

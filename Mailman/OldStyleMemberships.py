@@ -129,7 +129,10 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
 
     def getMemberName(self, member):
         self.__assertIsMember(member)
-        return self.__mlist.usernames.get(member.lower())
+        name = self.__mlist.usernames.get(member.lower())
+        if isinstance(name, bytes):
+            name = name.decode('latin-1')
+        return name
 
     def getMemberTopics(self, member):
         self.__assertIsMember(member)
