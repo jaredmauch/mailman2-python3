@@ -189,6 +189,13 @@ def list_listinfo(mlist, language):
     doc = HeadlessDocument()
     doc.set_language(language)
 
+    # First load the template
+    template_content, template_path = Utils.findtext('listinfo.html', lang=language, mlist=mlist)
+    if template_content is None:
+        mailman_log('error', 'Could not load template file: %s', template_path)
+        return
+
+    # Then get replacements
     replacements = mlist.GetStandardReplacements(language)
 
     if not mlist.digestable or not mlist.nondigestable:
@@ -198,12 +205,10 @@ def list_listinfo(mlist, language):
         replacements['<mm-digest-question-end>'] = ' -->'
     else:
         replacements['<mm-digest-radio-button>'] = mlist.FormatDigestButton()
-        replacements['<mm-undigest-radio-button>'] = \
-                                                   mlist.FormatUndigestButton()
+        replacements['<mm-undigest-radio-button>'] = mlist.FormatUndigestButton()
         replacements['<mm-digest-question-start>'] = ''
         replacements['<mm-digest-question-end>'] = ''
-    replacements['<mm-plain-digests-button>'] = \
-                                              mlist.FormatPlainDigestsButton()
+    replacements['<mm-plain-digests-button>'] = mlist.FormatPlainDigestsButton()
     replacements['<mm-mime-digests-button>'] = mlist.FormatMimeDigestsButton()
     replacements['<mm-subscribe-box>'] = mlist.FormatBox('email', size=30)
     replacements['<mm-subscribe-button>'] = mlist.FormatButton(
@@ -248,7 +253,6 @@ def list_listinfo(mlist, language):
                 )
     # Roster form substitutions
     replacements['<mm-roster-form-start>'] = mlist.FormatFormStart('roster')
-    replacements['<mm-roster-option>'] = mlist.FormatRosterOptionForUser(language)
     # Options form substitutions
     replacements['<mm-options-form-start>'] = mlist.FormatFormStart('options')
     replacements['<mm-editing-options>'] = mlist.FormatEditingOption(language)
@@ -277,8 +281,26 @@ def list_listinfo(mlist, language):
     else:
         replacements['<mm-recaptcha-ui>'] = ''
 
-    # Do the expansion.
-    doc.AddItem(mlist.ParseTags('listinfo.html', replacements, language))
+    # Process the template with replacements
+    try:
+        # Ensure template content is unicode
+        if isinstance(template_content, bytes):
+            template_content = template_content.decode('utf-8', 'replace')
+        
+        # Process replacements
+        for key, value in replacements.items():
+            if isinstance(value, bytes):
+                value = value.decode('utf-8', 'replace')
+            template_content = template_content.replace(key, str(value))
+        
+        # Add the processed content to the document
+        doc.AddItem(template_content)
+        
+    except Exception as e:
+        mailman_log('error', 'Error processing template: %s', str(e))
+        return
+
+    # Print the formatted document
     print(doc.Format())
 
 
