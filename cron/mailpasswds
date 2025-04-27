@@ -132,6 +132,7 @@ def main():
             if args.test:
                 member = args.test
                 try:
+                    # Try to get the member's password if they are a member
                     password = mlist.getMemberPassword(member)
                 except Errors.NotAMemberError:
                     # For test mode, we'll use a real password from a random member
@@ -139,12 +140,21 @@ def main():
                     if members:
                         # Get a random member's password
                         random_member = random.choice(members)
-                        password = mlist.getMemberPassword(random_member)
+                        try:
+                            password = mlist.getMemberPassword(random_member)
+                        except Errors.NotAMemberError:
+                            # If we can't get the random member's password, skip this list
+                            continue
                     else:
-                        # If no members, use a default password
-                        password = "password"
-                optionsurl = mlist.GetOptionsURL(member)
-                lang = mlist.getMemberLanguage(member)
+                        # If no members, skip this list
+                        continue
+                try:
+                    optionsurl = mlist.GetOptionsURL(member)
+                except Errors.NotAMemberError:
+                    # If we can't get the options URL, use a default one
+                    optionsurl = f"{mlist.GetBaseURL()}/options/{mlist.internal_name()}"
+                # Use the list's default language
+                lang = mlist.preferred_language
                 info = (listaddr, password, optionsurl, lang)
                 userinfo.setdefault(member, []).append(info)
             else:
