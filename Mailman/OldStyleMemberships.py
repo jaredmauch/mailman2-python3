@@ -43,30 +43,30 @@ ISDIGEST = 2
 
 class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def __init__(self, mlist):
-        self._mlist = mlist
+        self.__mlist = mlist
 
     #
     # Read interface
     #
     def getMembers(self):
-        return list(self._mlist.members.keys()) + list(self._mlist.digest_members.keys())
+        return list(self.__mlist.members.keys()) + list(self.__mlist.digest_members.keys())
 
     def getRegularMemberKeys(self):
-        return list(self._mlist.members.keys())
+        return list(self.__mlist.members.keys())
 
     def getDigestMemberKeys(self):
-        return list(self._mlist.digest_members.keys()) if hasattr(self._mlist, 'digest_members') else []
+        return list(self.__mlist.digest_members.keys())
 
     def __get_cp_member(self, member):
         lcmember = member.lower()
         missing = []
-        val = self._mlist.members.get(lcmember, missing)
+        val = self.__mlist.members.get(lcmember, missing)
         if val is not missing:
             if type(val) == str:
                 return val, ISREGULAR
             else:
                 return lcmember, ISREGULAR
-        val = self._mlist.digest_members.get(lcmember, missing)
+        val = self.__mlist.digest_members.get(lcmember, missing)
         if val is not missing:
             if type(val) == str:
                 return val, ISDIGEST
@@ -96,7 +96,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         return [self.__get_cp_member(member)[0] for member in members]
 
     def getMemberPassword(self, member):
-        secret = self._mlist.passwords.get(member.lower())
+        secret = self.__mlist.passwords.get(member.lower())
         if secret is None:
             raise Exception(Errors.NotAMemberError, member)
         return secret
@@ -112,34 +112,31 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
             raise Exception(Errors.NotAMemberError, member)
 
     def getMemberLanguage(self, member):
-        lang = self._mlist.language.get(
-            member.lower(), self._mlist.preferred_language)
-        if lang in self._mlist.GetAvailableLanguages():
+        lang = self.__mlist.language.get(
+            member.lower(), self.__mlist.preferred_language)
+        if lang in self.__mlist.GetAvailableLanguages():
             return lang
-        return self._mlist.preferred_language
+        return self.__mlist.preferred_language
 
     def getMemberOption(self, member, flag):
         self.__assertIsMember(member)
         if flag == mm_cfg.Digests:
             cpaddr, where = self.__get_cp_member(member)
             return where == ISDIGEST
-        option = self._mlist.user_options.get(member.lower(), 0)
+        option = self.__mlist.user_options.get(member.lower(), 0)
         return not not (option & flag)
 
     def getMemberName(self, member):
         self.__assertIsMember(member)
-        name = self._mlist.usernames.get(member.lower())
-        if isinstance(name, bytes):
-            name = name.decode('latin-1')
-        return name
+        return self.__mlist.usernames.get(member.lower())
 
     def getMemberTopics(self, member):
         self.__assertIsMember(member)
-        return self._mlist.topics_userinterest.get(member.lower(), [])
+        return self.__mlist.topics_userinterest.get(member.lower(), [])
 
     def getDeliveryStatus(self, member):
         self.__assertIsMember(member)
-        return self._mlist.delivery_status.get(
+        return self.__mlist.delivery_status.get(
             member.lower(),
             # Values are tuples, so the default should also be a tuple.  The
             # second item will be ignored.
@@ -147,7 +144,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
 
     def getDeliveryStatusChangeTime(self, member):
         self.__assertIsMember(member)
-        return self._mlist.delivery_status.get(
+        return self.__mlist.delivery_status.get(
             member.lower(),
             # Values are tuples, so the default should also be a tuple.  The
             # second item will be ignored.
@@ -161,24 +158,24 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                 if self.getDeliveryStatus(member) in status]
 
     def getBouncingMembers(self):
-        return [member.lower() for member in list(self._mlist.bounce_info.keys())]
+        return [member.lower() for member in list(self.__mlist.bounce_info.keys())]
 
     def getBounceInfo(self, member):
         self.__assertIsMember(member)
-        return self._mlist.bounce_info.get(member.lower())
+        return self.__mlist.bounce_info.get(member.lower())
 
     #
     # Write interface
     #
     def addNewMember(self, member, **kws):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         # Make sure this address isn't already a member
         if self.isMember(member):
             raise Exception(Errors.MMAlreadyAMember, member)
         # Parse the keywords
         digest = 0
         password = Utils.MakeRandomPassword()
-        language = self._mlist.preferred_language
+        language = self.__mlist.preferred_language
         realname = None
         if 'digest' in kws:
             digest = kws['digest']
@@ -205,20 +202,20 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
             value = member
         member = member.lower()
         if digest:
-            self._mlist.digest_members[member] = value
+            self.__mlist.digest_members[member] = value
         else:
-            self._mlist.members[member] = value
+            self.__mlist.members[member] = value
         self.setMemberPassword(member, password)
 
         self.setMemberLanguage(member, language)
         if realname:
             self.setMemberName(member, realname)
         # Set the member's default set of options
-        if self._mlist.new_member_options:
-            self._mlist.user_options[member] = self._mlist.new_member_options
+        if self.__mlist.new_member_options:
+            self.__mlist.user_options[member] = self.__mlist.new_member_options
 
     def removeMember(self, member):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(member)
         # Delete the appropriate entries from the various MailList attributes.
         # Remember that not all of them will have an entry (only those with
@@ -228,24 +225,24 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                      'language',  'topics_userinterest',     'usernames',
                      'bounce_info', 'delivery_status',
                      ):
-            dict = getattr(self._mlist, attr)
+            dict = getattr(self.__mlist, attr)
             if memberkey in dict:
                 del dict[memberkey]
 
     def changeMemberAddress(self, member, newaddress, nodelete=0):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         # Make sure the old address is a member.  Assertions that the new
         # address is not already a member is done by addNewMember() below.
         self.__assertIsMember(member)
         # Get the old values
         memberkey = member.lower()
         fullname = self.getMemberName(memberkey)
-        flags = self._mlist.user_options.get(memberkey, 0)
+        flags = self.__mlist.user_options.get(memberkey, 0)
         digestsp = self.getMemberOption(memberkey, mm_cfg.Digests)
-        password = self._mlist.passwords.get(memberkey,
+        password = self.__mlist.passwords.get(memberkey,
                                               Utils.MakeRandomPassword())
         lang = self.getMemberLanguage(memberkey)
-        delivery = self._mlist.delivery_status.get(member.lower(),
+        delivery = self.__mlist.delivery_status.get(member.lower(),
                                               (MemberAdaptor.ENABLED,0))
         # First, possibly delete the old member
         if not nodelete:
@@ -255,25 +252,25 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
                           password=password, language=lang)
         # Set the entire options bitfield
         if flags:
-            self._mlist.user_options[newaddress.lower()] = flags
+            self.__mlist.user_options[newaddress.lower()] = flags
         # If this is a straightforward address change, i.e. nodelete = 0,
         # preserve the delivery status and time if BYUSER or BYADMIN
         if delivery[0] in (MemberAdaptor.BYUSER, MemberAdaptor.BYADMIN)\
           and not nodelete:
-            self._mlist.delivery_status[newaddress.lower()] = delivery
+            self.__mlist.delivery_status[newaddress.lower()] = delivery
 
     def setMemberPassword(self, memberkey, password):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(memberkey)
-        self._mlist.passwords[memberkey.lower()] = password
+        self.__mlist.passwords[memberkey.lower()] = password
 
     def setMemberLanguage(self, memberkey, language):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(memberkey)
-        self._mlist.language[memberkey.lower()] = language
+        self.__mlist.language[memberkey.lower()] = language
 
     def setMemberOption(self, member, flag, value):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(member)
         memberkey = member.lower()
         # There's one extra gotcha we have to deal with.  If the user is
@@ -283,38 +280,38 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         if flag == mm_cfg.Digests:
             if value:
                 # Be sure the list supports digest delivery
-                if not self._mlist.digestable:
+                if not self.__mlist.digestable:
                     raise Errors.CantDigestError
                 # The user is turning on digest mode
-                if memberkey in self._mlist.digest_members:
+                if memberkey in self.__mlist.digest_members:
                     raise Errors.AlreadyReceivingDigests(member)
-                cpuser = self._mlist.members.get(memberkey)
+                cpuser = self.__mlist.members.get(memberkey)
                 if cpuser is None:
                     raise Errors.NotAMemberError(member)
-                del self._mlist.members[memberkey]
-                self._mlist.digest_members[memberkey] = cpuser
+                del self.__mlist.members[memberkey]
+                self.__mlist.digest_members[memberkey] = cpuser
                 # If we recently turned off digest mode and are now
                 # turning it back on, the member may be in one_last_digest.
                 # If so, remove it so the member doesn't get a dup of the
                 # next digest.
-                if memberkey in self._mlist.one_last_digest:
-                    del self._mlist.one_last_digest[memberkey]
+                if memberkey in self.__mlist.one_last_digest:
+                    del self.__mlist.one_last_digest[memberkey]
             else:
                 # Be sure the list supports regular delivery
-                if not self._mlist.nondigestable:
+                if not self.__mlist.nondigestable:
                     raise Errors.MustDigestError
                 # The user is turning off digest mode
-                if memberkey in self._mlist.members:
+                if memberkey in self.__mlist.members:
                     raise Errors.AlreadyReceivingRegularDeliveries(member)
-                cpuser = self._mlist.digest_members.get(memberkey)
+                cpuser = self.__mlist.digest_members.get(memberkey)
                 if cpuser is None:
                     raise Errors.NotAMemberError(member)
-                del self._mlist.digest_members[memberkey]
-                self._mlist.members[memberkey] = cpuser
+                del self.__mlist.digest_members[memberkey]
+                self.__mlist.members[memberkey] = cpuser
                 # When toggling off digest delivery, we want to be sure to set
                 # things up so that the user receives one last digest,
                 # otherwise they may lose some email
-                self._mlist.one_last_digest[memberkey] = cpuser
+                self.__mlist.one_last_digest[memberkey] = cpuser
             # We don't need to touch user_options because the digest state
             # isn't kept as a bitfield flag.
             return
@@ -322,50 +319,50 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         # no options set (i.e. the value would be 0), then they have no entry
         # in the user_options dict.  We use setdefault() here, and then del
         # the entry below just to make things (questionably) cleaner.
-        self._mlist.user_options.setdefault(memberkey, 0)
+        self.__mlist.user_options.setdefault(memberkey, 0)
         if value:
-            self._mlist.user_options[memberkey] |= flag
+            self.__mlist.user_options[memberkey] |= flag
         else:
-            self._mlist.user_options[memberkey] &= ~flag
-        if not self._mlist.user_options[memberkey]:
-            del self._mlist.user_options[memberkey]
+            self.__mlist.user_options[memberkey] &= ~flag
+        if not self.__mlist.user_options[memberkey]:
+            del self.__mlist.user_options[memberkey]
 
     def setMemberName(self, member, realname):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(member)
-        self._mlist.usernames[member.lower()] = realname
+        self.__mlist.usernames[member.lower()] = realname
 
     def setMemberTopics(self, member, topics):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(member)
         memberkey = member.lower()
         if topics:
-            self._mlist.topics_userinterest[memberkey] = topics
+            self.__mlist.topics_userinterest[memberkey] = topics
         # if topics is empty, then delete the entry in this dictionary
-        elif memberkey in self._mlist.topics_userinterest:
-            del self._mlist.topics_userinterest[memberkey]
+        elif memberkey in self.__mlist.topics_userinterest:
+            del self.__mlist.topics_userinterest[memberkey]
 
     def setDeliveryStatus(self, member, status):
         assert status in (MemberAdaptor.ENABLED,  MemberAdaptor.UNKNOWN,
                           MemberAdaptor.BYUSER,   MemberAdaptor.BYADMIN,
                           MemberAdaptor.BYBOUNCE)
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(member)
         member = member.lower()
         if status == MemberAdaptor.ENABLED:
             # Enable by resetting their bounce info.
             self.setBounceInfo(member, None)
         else:
-            self._mlist.delivery_status[member] = (status, time.time())
+            self.__mlist.delivery_status[member] = (status, time.time())
 
     def setBounceInfo(self, member, info):
-        assert self._mlist.Locked()
+        assert self.__mlist.Locked()
         self.__assertIsMember(member)
         member = member.lower()
         if info is None:
-            if member in self._mlist.bounce_info:
-                del self._mlist.bounce_info[member]
-            if member in self._mlist.delivery_status:
-                del self._mlist.delivery_status[member]
+            if member in self.__mlist.bounce_info:
+                del self.__mlist.bounce_info[member]
+            if member in self.__mlist.delivery_status:
+                del self.__mlist.delivery_status[member]
         else:
-            self._mlist.bounce_info[member] = info
+            self.__mlist.bounce_info[member] = info
