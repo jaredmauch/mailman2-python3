@@ -194,6 +194,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     # For non-method attributes, check if we have an instance value
                     if hasattr(self, '_' + name):
                         return getattr(self, '_' + name)
+                    # If the attribute exists in the base class's instance dict, use that
+                    if hasattr(baseclass, name) and name in baseclass.__dict__:
+                        return attr
+                    # If we have an instance value, use that
+                    if hasattr(self, name):
+                        return getattr(self, name)
                     return attr
                 except AttributeError:
                     pass
