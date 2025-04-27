@@ -1016,7 +1016,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # The email addresses had /better/ be ASCII, but might be encoded in the
     # database as Unicodes.
     all = [_m.encode() for _m in mlist.getMembers()]
-    all.sort(lambda x, y: cmp(x.lower(), y.lower()))
+    all.sort(key=lambda x: x.lower())
     # See if the query has a regular expression
     regexp = cgidata.get('findmember', [''])[0]
     if isinstance(regexp, bytes):
