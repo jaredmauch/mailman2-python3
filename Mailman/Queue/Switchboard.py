@@ -44,6 +44,7 @@ import email.message
 from email.message import Message as EmailMessage
 import hashlib
 import socket
+import traceback
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -352,11 +353,22 @@ class Switchboard:
                 except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
+                    tb = traceback.format_exc()
                     mailman_log('error', 'Unpickling .bak exception: %s\n'
-                           + 'preserving file: %s', s, filebase)
+                           + 'Traceback:\n%s\n'
+                           + 'preserving file: %s', s, tb, filebase)
                     self.finish(filebase, preserve=True)
                 else:
                     data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
+                    data['_last_attempt'] = time.time()
+                    if '_error_history' not in data:
+                        data['_error_history'] = []
+                    if '_traceback' in data:
+                        data['_error_history'].append({
+                            'error': data.get('_last_error', 'unknown'),
+                            'traceback': data.get('_traceback', 'none'),
+                            'time': data.get('_last_attempt', 0)
+                        })
                     fp.seek(data_pos)
                     if data.get('_parsemsg'):
                         protocol = 0
@@ -366,16 +378,41 @@ class Switchboard:
                     fp.truncate()
                     fp.flush()
                     os.fsync(fp.fileno())
+                    
+                    # Log detailed information about the retry
+                    mailman_log('warning',
+                           'Message retry attempt %d/%d: %s (queue: %s, '
+                           'message-id: %s, listname: %s, recipients: %s, '
+                           'error: %s, last attempt: %s, traceback: %s)',
+                           data['_bak_count'],
+                           MAX_BAK_COUNT,
+                           filebase,
+                           self.__whichq,
+                           data.get('message-id', 'unknown'),
+                           data.get('listname', 'unknown'),
+                           data.get('recips', 'unknown'),
+                           data.get('_last_error', 'unknown'),
+                           time.ctime(data.get('_last_attempt', 0)),
+                           data.get('_traceback', 'none'))
+                    
                     if data['_bak_count'] >= MAX_BAK_COUNT:
                         mailman_log('error',
                                'Backup file exceeded maximum retry count (%d). '
                                'Moving to shunt queue: %s (original queue: %s, '
-                               'retry count: %d, last error: %s)',
+                               'retry count: %d, last error: %s, '
+                               'message-id: %s, listname: %s, '
+                               'recipients: %s, error history: %s, '
+                               'last traceback: %s)',
                                MAX_BAK_COUNT,
                                filebase,
                                self.__whichq,
                                data['_bak_count'],
-                               data.get('_last_error', 'unknown'))
+                               data.get('_last_error', 'unknown'),
+                               data.get('message-id', 'unknown'),
+                               data.get('listname', 'unknown'),
+                               data.get('recips', 'unknown'),
+                               data.get('_error_history', 'unknown'),
+                               data.get('_traceback', 'none'))
                         self.finish(filebase, preserve=True)
                     else:
                         os.rename(src, dst)
