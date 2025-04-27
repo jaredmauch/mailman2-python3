@@ -45,7 +45,7 @@ from Mailman import Message
 from Mailman import Errors
 from Mailman.UserDesc import UserDesc
 from Mailman.Queue.sbcache import get_switchboard
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman import i18n
 
 _ = i18n._
@@ -93,11 +93,11 @@ class ListAdmin(object):
                         raise ValueError("Database not a dictionary")
                     return
                 except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                    syslog('error', 'Error loading pending.pck: %s', str(e))
+                    mailman_log('error', 'Error loading pending.pck: %s', str(e))
 
             # If we get here, the main file failed to load properly
             if os.path.exists(filename_backup):
-                syslog('info', 'Attempting to load from backup file')
+                mailman_log('info', 'Attempting to load from backup file')
                 with open(filename_backup, 'rb') as fp:
                     try:
                         self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
@@ -108,11 +108,11 @@ class ListAdmin(object):
                         shutil.copy2(filename_backup, filename)
                         return
                     except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                        syslog('error', 'Error loading backup pending.pck: %s', str(e))
+                        mailman_log('error', 'Error loading backup pending.pck: %s', str(e))
 
         except IOError as e:
             if e.errno != errno.ENOENT:
-                syslog('error', 'IOError loading pending.pck: %s', str(e))
+                mailman_log('error', 'IOError loading pending.pck: %s', str(e))
 
         # If we get here, both main and backup files failed or don't exist
         self.__db = {}
@@ -132,7 +132,7 @@ class ListAdmin(object):
                 import shutil
                 shutil.copy2(filename, filename_backup)
             except IOError as e:
-                syslog('error', 'Error creating backup: %s', str(e))
+                mailman_log('error', 'Error creating backup: %s', str(e))
 
         # Save to temporary file first
         try:
@@ -152,7 +152,7 @@ class ListAdmin(object):
             os.rename(filename_tmp, filename)
 
         except (IOError, OSError) as e:
-            syslog('error', 'Error saving pending.pck: %s', str(e))
+            mailman_log('error', 'Error saving pending.pck: %s', str(e))
             # Try to clean up
             try:
                 os.unlink(filename_tmp)
@@ -365,7 +365,7 @@ class ListAdmin(object):
             # message directly here can lead to a huge delay in web
             # turnaround.  Log the moderation and add a header.
             msg['X-Mailman-Approved-At'] = email.utils.formatdate(localtime=1)
-            syslog('vette', '%s: held message approved, message-id: %s',
+            mailman_log('vette', '%s: held message approved, message-id: %s',
                    self.internal_name(),
                    msg.get('message-id', 'n/a'))
             # Stick the message back in the incoming queue for further
@@ -435,7 +435,7 @@ class ListAdmin(object):
                 }
             if comment:
                 note += '\n\tReason: ' + comment.replace('%', '%%')
-            syslog('vette', note)
+            mailman_log('vette', note)
         # Always unlink the file containing the message text.  It's not
         # necessary anymore, regardless of the disposition of the message.
         if status != DEFER:
@@ -467,7 +467,7 @@ class ListAdmin(object):
         #
         # TBD: this really shouldn't go here but I'm not sure where else is
         # appropriate.
-        syslog('vette', '%s: held subscription request from %s',
+        mailman_log('vette', '%s: held subscription request from %s',
                self.internal_name(), addr)
         # Possibly notify the administrator in default list language
         if self.admin_immed_notify:
@@ -497,13 +497,13 @@ class ListAdmin(object):
         if value == mm_cfg.DEFER:
             return DEFER
         elif value == mm_cfg.DISCARD:
-            syslog('vette', '%s: discarded subscription request from %s',
+            mailman_log('vette', '%s: discarded subscription request from %s',
                    self.internal_name(), addr)
         elif value == mm_cfg.REJECT:
             self.__refuse(_('Subscription request'), addr,
                           comment or _('[No reason given]'),
                           lang=lang)
-            syslog('vette', """%s: rejected subscription request from %s
+            mailman_log('vette', """%s: rejected subscription request from %s
 \tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
         else:
             # subscribe
@@ -529,7 +529,7 @@ class ListAdmin(object):
         id = self.__nextid()
         # All we need to do is save the unsubscribing address
         self.__db[id] = (UNSUBSCRIPTION, addr)
-        syslog('vette', '%s: held unsubscription request from %s',
+        mailman_log('vette', '%s: held unsubscription request from %s',
                self.internal_name(), addr)
         # Possibly notify the administrator of the hold
         if self.admin_immed_notify:
@@ -555,11 +555,11 @@ class ListAdmin(object):
         if value == mm_cfg.DEFER:
             return DEFER
         elif value == mm_cfg.DISCARD:
-            syslog('vette', '%s: discarded unsubscription request from %s',
+            mailman_log('vette', '%s: discarded unsubscription request from %s',
                    self.internal_name(), addr)
         elif value == mm_cfg.REJECT:
             self.__refuse(_('Unsubscription request'), addr, comment)
-            syslog('vette', """%s: rejected unsubscription request from %s
+            mailman_log('vette', """%s: rejected unsubscription request from %s
 \tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
         else:
             assert value == mm_cfg.UNSUBSCRIBE

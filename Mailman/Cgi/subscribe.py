@@ -34,7 +34,7 @@ from Mailman import i18n
 from Mailman import Message
 from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import validate_ip_address
 
 SLASH = '/'
@@ -68,7 +68,7 @@ def main():
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'subscribe: No such list "%s": %s\n', listname, e)
+        mailman_log('error', 'subscribe: No such list "%s": %s\n', listname, e)
         return
 
     # See if the form data has a preferred language set, in which case, use it
@@ -214,7 +214,7 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Was an attempt made to subscribe the list to itself?
     if email == mlist.GetListEmail():
-        syslog('mischief', 'Attempt to self subscribe %s: %s', email, remote)
+        mailman_log('mischief', 'Attempt to self subscribe %s: %s', email, remote)
         results.append(_('You may not subscribe a list to itself!'))
     # If the user did not supply a password, generate one for him
     password = cgidata.get('pw', [''])[0].strip()

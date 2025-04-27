@@ -75,8 +75,8 @@ class _Syslog(object):
             logger.close()
         self._logfiles.clear()
 
-    def syslog(self, ident, msg):
-        """Log a message to syslog."""
+    def mailman_log(self, ident, msg):
+        """Log a message to mailman's logging system."""
         if isinstance(msg, bytes):
             msg = msg.decode('iso-8859-1', 'replace')
         elif not isinstance(msg, str):
@@ -85,12 +85,15 @@ class _Syslog(object):
 
 _syslog = _Syslog()
 
-def syslog(ident, msg, *args):
-    """Log a message to syslog."""
+def mailman_log(ident, msg, *args):
+    """Log a message to mailman's logging system."""
     if isinstance(msg, bytes):
         msg = msg.decode('iso-8859-1', 'replace')
     elif not isinstance(msg, str):
         msg = str(msg)
     if args:
         msg = msg % args
-    _syslog.syslog(ident, msg)
+    _syslog.mailman_log(ident, msg)
+
+# For backward compatibility
+syslog = mailman_log

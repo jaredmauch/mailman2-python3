@@ -38,7 +38,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Handlers import Decorate
-from Mailman.Logging.Syslog import syslog as syslogger
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.SafeDict import MsgSafeDict
 
 import email
@@ -47,9 +47,6 @@ from email.header import Header
 from email.charset import Charset
 
 DOT = '.'
-
-# Initialize the syslogger
-syslog = syslogger()
 
 # Manage a connection to the SMTP server
 class Connection(object):
@@ -66,32 +63,32 @@ class Connection(object):
         if not helo_host or helo_host.startswith('.'):
             # If we still don't have a valid hostname, use localhost
             helo_host = 'localhost'
-        syslog('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
+        mailman_log('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
                mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, helo_host)
         self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
         # Set the hostname for TLS
         self.__conn._host = helo_host
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
-                syslog('smtp', 'Using TLS with hostname: %s', helo_host)
+                mailman_log('smtp', 'Using TLS with hostname: %s', helo_host)
                 try:
                     # Use native TLS support
                     self.__conn.starttls()
                 except SMTPException as e:
-                    syslog('smtp-failure', 'SMTP TLS error: %s', e)
+                    mailman_log('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
                     raise
             try:
                 self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
             except smtplib.SMTPHeloError as e:
-                syslog('smtp-failure', 'SMTP HELO error: %s', e)
+                mailman_log('smtp-failure', 'SMTP HELO error: %s', e)
                 self.quit()
                 raise
             except smtplib.SMTPAuthenticationError as e:
-                syslog('smtp-failure', 'SMTP AUTH error: %s', e)
+                mailman_log('smtp-failure', 'SMTP AUTH error: %s', e)
                 self.quit()
             except smtplib.SMTPException as e:
-                syslog('smtp-failure',
+                mailman_log('smtp-failure',
                        'SMTP - no suitable authentication method found: %s', e)
                 self.quit()
                 raise
@@ -225,12 +222,12 @@ def process(mlist, msg, msgdata):
     # still worthwhile doing the interpolation in syslog() because it'll catch
     # any catastrophic exceptions due to bogus format strings.
     if mm_cfg.SMTP_LOG_EVERY_MESSAGE:
-        syslog.write_ex(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
+        mailman_log.write_ex(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
                         mm_cfg.SMTP_LOG_EVERY_MESSAGE[1], kws=d)
 
     if refused:
         if mm_cfg.SMTP_LOG_REFUSED:
-            syslog.write_ex(mm_cfg.SMTP_LOG_REFUSED[0],
+            mailman_log.write_ex(mm_cfg.SMTP_LOG_REFUSED[0],
                             mm_cfg.SMTP_LOG_REFUSED[1], kws=d)
 
     elif msgdata.get('tolist'):
@@ -240,7 +237,7 @@ def process(mlist, msg, msgdata):
         # the other messages, but in that case, we should probably have a
         # separate configuration variable to control that.
         if mm_cfg.SMTP_LOG_SUCCESS:
-            syslog.write_ex(mm_cfg.SMTP_LOG_SUCCESS[0],
+            mailman_log.write_ex(mm_cfg.SMTP_LOG_SUCCESS[0],
                             mm_cfg.SMTP_LOG_SUCCESS[1], kws=d)
 
     # Process any failed deliveries.
@@ -267,7 +264,7 @@ def process(mlist, msg, msgdata):
             d.update({'recipient': recip,
                       'failcode' : code,
                       'failmsg'  : smtpmsg})
-            syslog.write_ex(mm_cfg.SMTP_LOG_EACH_FAILURE[0],
+            mailman_log.write_ex(mm_cfg.SMTP_LOG_EACH_FAILURE[0],
                             mm_cfg.SMTP_LOG_EACH_FAILURE[1], kws=d)
     # Return the results
     if tempfailures or permfailures:
@@ -345,7 +342,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                 # deliver it to this person, nor can we craft a valid verp
                 # header.  I don't think there's much we can do except ignore
                 # this recipient.
-                syslog('smtp', 'Skipping VERP delivery to unqual recip: %s',
+                mailman_log('smtp', 'Skipping VERP delivery to unqual recip: %s',
                        recip)
                 continue
             d = {'bounces': bmailbox,
@@ -439,11 +436,11 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
     except smtplib.SMTPRecipientsRefused as e:
-        syslog('smtp-failure', 'All recipients refused: %s, msgid: %s',
+        mailman_log('smtp-failure', 'All recipients refused: %s, msgid: %s',
                e, msgid)
         refused = e.recipients
     except smtplib.SMTPResponseException as e:
-        syslog('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
+        mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
         # If this was a permanent failure, don't add the recipients to the
         # refused, because we don't want them to be added to failures.
@@ -459,7 +456,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # MTA not responding, or other socket problems, or any other kind of
         # SMTPException.  In that case, nothing got delivered, so treat this
         # as a temporary failure.
-        syslog('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
+        mailman_log('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
         error = str(e)
         for r in recips:
             refused[r] = (-1, error)

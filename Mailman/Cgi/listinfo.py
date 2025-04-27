@@ -34,7 +34,7 @@ from Mailman import MailList
 from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import validate_ip_address
 
 # Set up i18n
@@ -57,7 +57,7 @@ def main():
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         listinfo_overview(_(f'No such list <em>{safelistname}</em>'))
-        syslog('error', 'listinfo: No such list "%s": %s', listname, e)
+        mailman_log('error', 'listinfo: No such list "%s": %s', listname, e)
         return
 
     # See if the user want to see this page in other language

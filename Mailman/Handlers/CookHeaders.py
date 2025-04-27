@@ -31,7 +31,7 @@ from Mailman import i18n
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman.i18n import _
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 
 CONTINUATION = ',\n '
 COMMASPACE = ', '
@@ -71,7 +71,7 @@ def uheader(mlist, s, header_name=None, continuation_ws=' ', maxlinelen=None):
     try:
         return Header(s, charset, maxlinelen, header_name, continuation_ws)
     except UnicodeError:
-        syslog('error', 'list: %s: can\'t decode "%s" as %s',
+        mailman_log('error', 'list: %s: can\'t decode "%s" as %s',
                mlist.internal_name(), s, charset)
         return Header('', charset, maxlinelen, header_name, continuation_ws)
 

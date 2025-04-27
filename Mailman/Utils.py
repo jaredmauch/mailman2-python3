@@ -51,7 +51,7 @@ from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import Site
 from Mailman.SafeDict import SafeDict
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 
 try:
     import hashlib
@@ -105,7 +105,7 @@ def list_exists(listname):
                  os.environ.get('HTTP_X_FORWARDED_FOR',
                  os.environ.get('REMOTE_ADDR',
                                 'unidentified origin')))
-        syslog('mischief',
+        mailman_log('mischief',
                'Hostile listname: listname=%s: remote=%s', listname, remote)
         return False
     basepath = Site.get_listpath(listname)
@@ -284,7 +284,7 @@ def GetPathPieces(envar='PATH_INFO'):
                                 'unidentified origin')))
         if CRNLpat.search(path):
             path = CRNLpat.split(path)[0]
-            syslog('error',
+            mailman_log('error',
                 'Warning: Possible malformed path attack domain=%s remote=%s',
                    get_domain(),
                    remote)
@@ -301,7 +301,7 @@ def GetPathPieces(envar='PATH_INFO'):
             else:
                 longest = 20
         if pieces and len(pieces[0]) > longest:
-            syslog('mischief',
+            mailman_log('mischief',
                'Hostile listname: listname=%s: remote=%s', pieces[0], remote)
             pieces[0] = pieces[0][:longest] + '...'
         return pieces
@@ -408,7 +408,7 @@ def Secure_MakeRandomPassword(length):
                         # We have no available source of cryptographically
                         # secure random characters.  Log an error and fallback
                         # to the user friendly passwords.
-                        syslog('error',
+                        mailman_log('error',
                                'urandom not available, passwords not secure')
                         return UserFriendly_MakeRandomPassword(length)
                 newbytes = os.read(fd, length - bytesread)
@@ -455,7 +455,7 @@ def set_global_password(pw, siteadmin=True):
             fp.write(sha_new(pw).hexdigest() + '\n')
         os.rename(temp_filename, filename)
     except (IOError, OSError) as e:
-        syslog('error', 'Failed to write password file %s: %s', filename, str(e))
+        mailman_log('error', 'Failed to write password file %s: %s', filename, str(e))
         raise
     finally:
         os.umask(omask)
@@ -470,12 +470,12 @@ def get_global_password(siteadmin=True):
         with open(filename) as fp:
             challenge = fp.read()[:-1]  # strip off trailing nl
             if not challenge:
-                syslog('error', 'Empty password file: %s', filename)
+                mailman_log('error', 'Empty password file: %s', filename)
                 return None
             return challenge
     except IOError as e:
         if e.errno != errno.ENOENT:
-            syslog('error', 'Error reading password file %s: %s', filename, str(e))
+            mailman_log('error', 'Error reading password file %s: %s', filename, str(e))
         return None
 
 
@@ -706,7 +706,7 @@ def maketext(templatefile, dict=None, raw=0, lang=None, mlist=None):
         if mlist:
             paths.append(os.path.join(mlist.fullpath(), 'templates', templatefile))
         paths.append(os.path.join(mm_cfg.TEMPLATE_DIR, templatefile))
-        syslog('error', 'Template file not found: %s (language: %s). Searched paths: %s',
+        mailman_log('error', 'Template file not found: %s (language: %s). Searched paths: %s',
                templatefile, lang or 'default', ', '.join(paths))
         return ''  # Return empty string instead of None
     if raw:
@@ -722,7 +722,7 @@ def maketext(templatefile, dict=None, raw=0, lang=None, mlist=None):
     try:
         text = template % dict
     except (ValueError, TypeError) as e:
-        syslog('error', 'Template interpolation error for %s: %s',
+        mailman_log('error', 'Template interpolation error for %s: %s',
                templatefile, str(e))
         return ''  # Return empty string instead of None
     return text
@@ -1283,7 +1283,7 @@ def get_suffixes(url):
     try:
         d = urllib.request.urlopen(url)
     except (urllib.error.URLError, urllib.error.HTTPError) as e:
-        syslog('error', 'Failed to fetch DMARC organizational domain data from %s: %s',
+        mailman_log('error', 'Failed to fetch DMARC organizational domain data from %s: %s',
                url, e)
         return
     for line in d.readlines():
@@ -1347,7 +1347,7 @@ def get_org_dom(domain):
 def IsDMARCProhibited(mlist, email):
     if not dns_resolver:
         # This is a problem; log it.
-        syslog('error',
+        mailman_log('error',
             'DNS lookup for dmarc_moderation_action for list %s not available',
             mlist.real_name)
         return False
@@ -1573,17 +1573,17 @@ def banned_ip(ip):
             # IP not found in blocklist
             return False
         except dns.resolver.Timeout:
-            syslog('error', 'DNS timeout checking IP %s in Spamhaus', ip)
+            mailman_log('error', 'DNS timeout checking IP %s in Spamhaus', ip)
             return False
         except dns.resolver.NoAnswer:
-            syslog('error', 'No DNS answer for IP %s in Spamhaus', ip)
+            mailman_log('error', 'No DNS answer for IP %s in Spamhaus', ip)
             return False
         except dns.exception.DNSException as e:
-            syslog('error', 'DNS error checking IP %s in Spamhaus: %s', ip, str(e))
+            mailman_log('error', 'DNS error checking IP %s in Spamhaus: %s', ip, str(e))
             return False
             
     except Exception as e:
-        syslog('error', 'Error checking IP %s in Spamhaus: %s', ip, str(e))
+        mailman_log('error', 'Error checking IP %s in Spamhaus: %s', ip, str(e))
         return False
         
     return False
@@ -1620,16 +1620,16 @@ def banned_domain(email):
         # Domain not found in blocklist
         return False
     except dns.resolver.Timeout:
-        syslog('error', 'DNS timeout checking domain %s in Spamhaus DBL', domain)
+        mailman_log('error', 'DNS timeout checking domain %s in Spamhaus DBL', domain)
         return False
     except dns.resolver.NoAnswer:
-        syslog('error', 'No DNS answer for domain %s in Spamhaus DBL', domain)
+        mailman_log('error', 'No DNS answer for domain %s in Spamhaus DBL', domain)
         return False
     except dns.exception.DNSException as e:
-        syslog('error', 'DNS error checking domain %s in Spamhaus DBL: %s', domain, str(e))
+        mailman_log('error', 'DNS error checking domain %s in Spamhaus DBL: %s', domain, str(e))
         return False
     except Exception as e:
-        syslog('error', 'Unexpected error checking domain %s in Spamhaus DBL: %s', domain, str(e))
+        mailman_log('error', 'Unexpected error checking domain %s in Spamhaus DBL: %s', domain, str(e))
         return False
 
     return False
