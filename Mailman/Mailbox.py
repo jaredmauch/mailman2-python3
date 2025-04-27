@@ -21,6 +21,7 @@
 import sys
 import mailbox
 from io import StringIO, BytesIO
+from types import MethodType
 
 import email
 from email.parser import Parser
@@ -43,9 +44,14 @@ def _safeparser(fp):
 class BinaryGenerator(email.generator.Generator):
     """A generator that writes to a binary file."""
     def write(self, s):
-        if isinstance(s, str):
-            s = s.encode('utf-8')
-        self._fp.write(s)
+        if isinstance(s, bytes):
+            # If we get bytes, decode to string first
+            try:
+                s = s.decode('utf-8', 'replace')
+            except UnicodeError:
+                s = s.decode('latin-1', 'replace')
+        # Now encode back to bytes for writing
+        self._fp.write(s.encode('utf-8', 'replace'))
 
 
 class Mailbox(mailbox.mbox):
