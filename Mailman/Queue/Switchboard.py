@@ -50,6 +50,7 @@ from Mailman import Utils
 from Mailman import Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
+from Mailman.Logging.MailmanLog import mailman_log
 
 # 20 bytes of all bits set, maximum sha.digest() value
 shamax = 0xffffffffffffffffffffffffffffffffffffffff
@@ -127,7 +128,6 @@ class Switchboard:
         # Get some data for the input to the sha hash
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
-            protocol = 2
             # Convert email.message.Message to Mailman.Message if needed
             if isinstance(_msg, email.message.Message) and not isinstance(_msg, Message.Message):
                 mailman_msg = Message.Message()
@@ -141,11 +141,12 @@ class Switchboard:
                 else:
                     mailman_msg.set_payload(_msg.get_payload())
                 _msg = mailman_msg
+            # Use protocol 2 for Python 2/3 compatibility
             msgsave = pickle.dumps(_msg, protocol=2, fix_imports=True)
         else:
-            protocol = 2
+            # Use protocol 2 for Python 2/3 compatibility
             msgsave = pickle.dumps(str(_msg), protocol=2, fix_imports=True)
-        hashfood = msgsave + listname.encode() + repr(now).encode()
+        hashfood = msgsave + listname.encode('utf-8') + repr(now).encode('utf-8')
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
         # the received time for this message (i.e. when it first showed up on
@@ -192,44 +193,76 @@ class Switchboard:
             
             # Read the message object and metadata.
             with open(backfile, 'rb') as fp:
-                msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                # Try loading with Python 3 protocol first
                 try:
-                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    # Convert any bytes in the loaded data to strings
-                    if isinstance(data, dict):
-                        for key, value in list(data.items()):
-                            if isinstance(key, bytes):
-                                del data[key]
-                                key = key.decode('utf-8', 'replace')
-                            if isinstance(value, bytes):
-                                value = value.decode('utf-8', 'replace')
+                    msg = pickle.load(fp, fix_imports=True)
+                    data = pickle.load(fp, fix_imports=True)
+                except (pickle.UnpicklingError, EOFError) as e:
+                    # If that fails, try with Python 2 protocol
+                    fp.seek(0)
+                    try:
+                        msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    except (pickle.UnpicklingError, EOFError) as e2:
+                        # The file is corrupted. Log the error and try to recover it.
+                        mailman_log('error', 'Failed to unpickle file %s: Python 3 error: %s, Python 2 error: %s',
+                               backfile, str(e), str(e2))
+                        self.recover_backup_files()
+                        return None, None
+                
+                # Convert any bytes in the loaded data to strings
+                if isinstance(data, dict):
+                    for key, value in list(data.items()):
+                        if isinstance(key, bytes):
+                            del data[key]
+                            key = key.decode('utf-8', 'replace')
                             data[key] = value
-                except EOFError:
-                    data = {}
+                        if isinstance(value, bytes):
+                            data[key] = value.decode('utf-8', 'replace')
+                        elif isinstance(value, list):
+                            data[key] = [
+                                v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
+                                for v in value
+                            ]
+                        elif isinstance(value, dict):
+                            new_dict = {}
+                            for k, v in value.items():
+                                if isinstance(k, bytes):
+                                    k = k.decode('utf-8', 'replace')
+                                if isinstance(v, bytes):
+                                    v = v.decode('utf-8', 'replace')
+                                new_dict[k] = v
+                            data[key] = new_dict
                     
             if data.get('_parsemsg'):
-                msg = email.message_from_string(msg, EmailMessage)
-                # Convert to Mailman.Message if needed
-                if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
-                    mailman_msg = Message.Message()
-                    # Copy all attributes from the original message
-                    for key, value in msg.items():
-                        mailman_msg[key] = value
-                    # Copy the payload
-                    if msg.is_multipart():
-                        for part in msg.get_payload():
-                            mailman_msg.attach(part)
-                    else:
-                        mailman_msg.set_payload(msg.get_payload())
-                    msg = mailman_msg
+                try:
+                    msg = email.message_from_string(msg, EmailMessage)
+                    # Convert to Mailman.Message if needed
+                    if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
+                        mailman_msg = Message.Message()
+                        # Copy all attributes from the original message
+                        for key, value in msg.items():
+                            mailman_msg[key] = value
+                        # Copy the payload
+                        if msg.is_multipart():
+                            for part in msg.get_payload():
+                                mailman_msg.attach(part)
+                        else:
+                            mailman_msg.set_payload(msg.get_payload())
+                        msg = mailman_msg
+                except Exception as e:
+                    mailman_log('error', 'Failed to parse message from file %s: %s', backfile, str(e))
+                    return None, None
                 
             return msg, data
             
         except EnvironmentError as e:
             if e.errno != errno.ENOENT:
+                mailman_log('error', 'Environment error processing file %s: %s', backfile, str(e))
                 raise
             return None, None
-        except (pickle.UnpicklingError, EOFError):
+        except Exception as e:
+            mailman_log('error', 'Unexpected error processing file %s: %s', backfile, str(e))
             return None, None
 
     def finish(self, filebase, preserve=False):
@@ -250,30 +283,30 @@ class Switchboard:
                 
                 # Verify source file exists before moving
                 if not os.path.exists(bakfile):
-                    syslog('error', 'Source backup file does not exist: %s', bakfile)
+                    mailman_log('error', 'Source backup file does not exist: %s', bakfile)
                     return
                     
                 # Move the file and verify
                 os.rename(bakfile, psvfile)
                 if not os.path.exists(psvfile):
-                    syslog('error', 'Failed to move backup file to shunt queue: %s -> %s',
+                    mailman_log('error', 'Failed to move backup file to shunt queue: %s -> %s',
                            bakfile, psvfile)
                 else:
-                    syslog('info', 'Successfully moved backup file to shunt queue: %s -> %s',
+                    mailman_log('info', 'Successfully moved backup file to shunt queue: %s -> %s',
                            bakfile, psvfile)
             else:
                 # Verify file exists before unlinking
                 if not os.path.exists(bakfile):
-                    syslog('error', 'Backup file does not exist for unlinking: %s', bakfile)
+                    mailman_log('error', 'Backup file does not exist for unlinking: %s', bakfile)
                     return
                     
                 os.unlink(bakfile)
                 if os.path.exists(bakfile):
-                    syslog('error', 'Failed to unlink backup file: %s', bakfile)
+                    mailman_log('error', 'Failed to unlink backup file: %s', bakfile)
                 else:
-                    syslog('info', 'Successfully unlinked backup file: %s', bakfile)
+                    mailman_log('info', 'Successfully unlinked backup file: %s', bakfile)
         except EnvironmentError as e:
-            syslog('error', 'Failed to unlink/preserve backup file: %s\n%s',
+            mailman_log('error', 'Failed to unlink/preserve backup file: %s\n%s',
                    bakfile, e)
 
     def files(self, extension='.pck'):
@@ -319,7 +352,7 @@ class Switchboard:
                 except Exception as s:
                     # If unpickling throws any exception, just log and
                     # preserve this entry
-                    syslog('error', 'Unpickling .bak exception: %s\n'
+                    mailman_log('error', 'Unpickling .bak exception: %s\n'
                            + 'preserving file: %s', s, filebase)
                     self.finish(filebase, preserve=True)
                 else:
@@ -334,7 +367,7 @@ class Switchboard:
                     fp.flush()
                     os.fsync(fp.fileno())
                     if data['_bak_count'] >= MAX_BAK_COUNT:
-                        syslog('error',
+                        mailman_log('error',
                                'Backup file exceeded maximum retry count (%d). '
                                'Moving to shunt queue: %s (original queue: %s, '
                                'retry count: %d, last error: %s)',
@@ -377,7 +410,7 @@ class Switchboard:
                 try:
                     os.makedirs(dirname, 0o755)
                 except Exception as e:
-                    syslog('error', 'Failed to create directory %s: %s', dirname, e)
+                    mailman_log('error', 'Failed to create directory %s: %s', dirname, e)
                     raise
             
             # Write to temporary file first
@@ -394,7 +427,7 @@ class Switchboard:
                 if not isinstance(test_data, tuple) or len(test_data) != 3:
                     raise TypeError('Loaded data is not a valid tuple')
             except Exception as e:
-                syslog('error', 'Validation of temporary file failed: %s', e)
+                mailman_log('error', 'Validation of temporary file failed: %s', e)
                 # Try to clean up
                 try:
                     os.unlink(tmpfile)
@@ -406,7 +439,7 @@ class Switchboard:
             try:
                 os.rename(tmpfile, qfile)
             except Exception as e:
-                syslog('error', 'Failed to rename %s to %s: %s', tmpfile, qfile, e)
+                mailman_log('error', 'Failed to rename %s to %s: %s', tmpfile, qfile, e)
                 # Try to clean up
                 try:
                     os.unlink(tmpfile)
@@ -418,7 +451,7 @@ class Switchboard:
             try:
                 os.chmod(qfile, 0o660)
             except Exception as e:
-                syslog('warning', 'Failed to set permissions on %s: %s', qfile, e)
+                mailman_log('warning', 'Failed to set permissions on %s: %s', qfile, e)
                 # Not critical, continue
                 
         except Exception:
