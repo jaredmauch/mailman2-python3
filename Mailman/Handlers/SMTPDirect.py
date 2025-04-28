@@ -233,12 +233,16 @@ def process(mlist, msg, msgdata):
         msgdata['recips'] = origrecips
     # Log the successful post
     t1 = time.time()
+    # Ensure listname is a string, not bytes
+    listname = mlist.internal_name()
+    if isinstance(listname, bytes):
+        listname = listname.decode('latin-1')
     d = Mailman.SafeDict.MsgSafeDict(msg, {'time'    : t1-t0,
                           # BAW: Urg.  This seems inefficient.
                           'size'    : len(msg.as_string()),
                           '#recips' : len(recips),
                           '#refused': len(refused),
-                          'listname': mlist.internal_name(),
+                          'listname': listname,
                           'sender'  : origsender,
                           })
     # We have to use the copy() method because extended call syntax requires a

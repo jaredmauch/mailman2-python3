@@ -324,7 +324,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             withlogging = mm_cfg.LIST_LOCK_DEBUGGING)
         # Ensure name is a string
         if isinstance(name, bytes):
-            name = name.decode('utf-8', 'replace')
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                name = name.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                name = name.decode('utf-8', 'replace')
         self._internal_name = name
         if name:
             self._full_path = Site.get_listpath(name)
@@ -638,7 +643,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
         # as safely as possible.
         try:
-            # might not exist yet
+            # Remove existing backup file if it exists
+            try:
+                os.unlink(fname_last)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+            # Create new backup file
             os.link(fname, fname_last)
         except OSError as e:
             if e.errno != errno.ENOENT:
