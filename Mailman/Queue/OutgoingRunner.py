@@ -95,20 +95,16 @@ class OutgoingRunner(Runner, BounceMixin):
             sender = msg.get('from', 'unknown')
             subject = msg.get('subject', 'no subject')
             
-            # Log detailed error information
+            # Log detailed error information with full traceback
             mailman_log('error', 
                 'Error delivering message to list %s\n'
                 'Message-ID: %s\n'
                 'From: %s\n'
                 'Subject: %s\n'
                 'Error: %s\n'
-                'Potential causes:\n'
-                '1. List configuration error\n'
-                '2. SMTP server connection issue\n'
-                '3. Message format error\n'
-                '4. Permission denied\n'
-                '5. Network timeout',
-                mlist.internal_name(), msgid, sender, subject, str(e))
+                'Traceback:\n%s',
+                mlist.internal_name(), msgid, sender, subject, str(e),
+                traceback.format_exc())
             raise
 
     def _queue_bounces(self, mlist, msg, msgdata, failures):
