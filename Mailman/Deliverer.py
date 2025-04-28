@@ -33,8 +33,31 @@ from Mailman.Logging.Syslog import syslog
 
 _ = i18n._
 
+import sys
+
 
 class Deliverer(object):
+    def deliver(self, msg, msgdata):
+        """Deliver a message to the list's members.
+        
+        Args:
+            msg: The message to deliver
+            msgdata: Additional message metadata
+            
+        This method delegates to the configured delivery module's process function.
+        """
+        # Import the delivery module
+        modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
+        try:
+            mod = __import__(modname)
+            process = getattr(sys.modules[modname], 'process')
+        except (ImportError, AttributeError) as e:
+            syslog('error', 'Failed to import delivery module %s: %s', modname, str(e))
+            raise
+            
+        # Process the message
+        process(self, msg, msgdata)
+
     def SendSubscribeAck(self, name, password, digest, text=''):
         pluser = self.getMemberLanguage(name)
         # Need to set this here to get the proper l10n of the Subject:
