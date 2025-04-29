@@ -93,6 +93,26 @@ class ListAdmin(object):
 
         def log_file_info(path):
             try:
+                # Log process identity information
+                euid = os.geteuid()
+                egid = os.getegid()
+                ruid = os.getuid()
+                rgid = os.getgid()
+                groups = os.getgroups()
+                
+                # Get group names for supplementary groups
+                group_names = []
+                for gid in groups:
+                    try:
+                        group_names.append(grp.getgrgid(gid)[0])
+                    except KeyError:
+                        group_names.append(f'gid {gid}')
+                
+                mailman_log('error', 
+                           'Process identity - EUID: %d, EGID: %d, RUID: %d, RGID: %d, Groups: %s',
+                           euid, egid, ruid, rgid, ', '.join(group_names))
+                
+                # Get file information
                 stat = os.stat(path)
                 mode = stat.st_mode
                 uid = stat.st_uid
@@ -138,7 +158,7 @@ class ListAdmin(object):
                 if mode & 0o002:  # World writable
                     mailman_log('error', 'File %s is world writable (mode %o)',
                                path, mode)
-                if mode & 0o020:  # Group writable but not owned by mailman group
+                if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
                     mailman_log('error', 'File %s is group writable but not owned by mailman group',
                                path)
             except OSError as e:
@@ -193,6 +213,26 @@ class ListAdmin(object):
 
         def log_file_info(path):
             try:
+                # Log process identity information
+                euid = os.geteuid()
+                egid = os.getegid()
+                ruid = os.getuid()
+                rgid = os.getgid()
+                groups = os.getgroups()
+                
+                # Get group names for supplementary groups
+                group_names = []
+                for gid in groups:
+                    try:
+                        group_names.append(grp.getgrgid(gid)[0])
+                    except KeyError:
+                        group_names.append(f'gid {gid}')
+                
+                mailman_log('error', 
+                           'Process identity - EUID: %d, EGID: %d, RUID: %d, RGID: %d, Groups: %s',
+                           euid, egid, ruid, rgid, ', '.join(group_names))
+                
+                # Get file information
                 stat = os.stat(path)
                 mode = stat.st_mode
                 uid = stat.st_uid
@@ -259,17 +299,17 @@ class ListAdmin(object):
         if os.path.exists(filename_backup):
             log_file_info(filename_backup)
 
-        # Try to create backup
+        # Try to create backup, but don't fail if we can't
         try:
             if os.path.exists(filename):
                 import shutil
                 shutil.copy2(filename, filename_backup)
         except (IOError, OSError) as e:
+            mailman_log('error', 'Could not create backup file %s: %s', filename_backup, str(e))
             log_file_info(filename)
             if os.path.exists(filename_backup):
                 log_file_info(filename_backup)
-            mailman_log('error', 'Error creating backup: %s', str(e))
-            raise PermissionError(f'Error creating backup: {str(e)}')
+            # Continue with save operation even if backup fails
 
         # Try to save the new file
         try:
