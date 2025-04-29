@@ -32,6 +32,8 @@ import pickle
 import marshal
 from io import StringIO
 import socket
+import pwd
+import grp
 
 import email
 from email.mime.message import MIMEMessage
@@ -84,6 +86,59 @@ class ListAdmin(object):
         filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
         filename_backup = filename + '.bak'
 
+        def log_file_info(path):
+            try:
+                stat = os.stat(path)
+                mode = stat.st_mode
+                uid = stat.st_uid
+                gid = stat.st_gid
+                
+                # Get current ownership info
+                try:
+                    current_user = pwd.getpwuid(uid)[0]
+                except KeyError:
+                    current_user = f'uid {uid}'
+                try:
+                    current_group = grp.getgrgid(gid)[0]
+                except KeyError:
+                    current_group = f'gid {gid}'
+                
+                # Get expected ownership info
+                try:
+                    expected_user = pwd.getpwnam(mm_cfg.MAILMAN_USER)[0]
+                    expected_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER)[2]
+                except KeyError:
+                    expected_user = f'user {mm_cfg.MAILMAN_USER}'
+                    expected_uid = None
+                
+                try:
+                    expected_group = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[0]
+                    expected_gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2]
+                except KeyError:
+                    expected_group = f'group {mm_cfg.MAILMAN_GROUP}'
+                    expected_gid = None
+                
+                # Log current and expected ownership
+                mailman_log('error', 
+                           'File %s: mode=%o, owner=%s (current) vs %s (expected), group=%s (current) vs %s (expected)',
+                           path, mode, current_user, expected_user, current_group, expected_group)
+                
+                # Log specific permission issues
+                if expected_uid is not None and uid != expected_uid:
+                    mailman_log('error', 'File %s has incorrect owner (uid %d vs expected %d)',
+                               path, uid, expected_uid)
+                if expected_gid is not None and gid != expected_gid:
+                    mailman_log('error', 'File %s has incorrect group (gid %d vs expected %d)',
+                               path, gid, expected_gid)
+                if mode & 0o002:  # World writable
+                    mailman_log('error', 'File %s is world writable (mode %o)',
+                               path, mode)
+                if mode & 0o020:  # Group writable but not owned by mailman group
+                    mailman_log('error', 'File %s is group writable but not owned by mailman group',
+                               path)
+            except OSError as e:
+                mailman_log('error', 'Could not stat %s: %s', path, str(e))
+
         # Try loading the main file first
         try:
             with open(filename, 'rb') as fp:
@@ -94,6 +149,7 @@ class ListAdmin(object):
                     return
                 except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
                     mailman_log('error', 'Error loading pending.pck: %s', str(e))
+                    log_file_info(filename)
 
             # If we get here, the main file failed to load properly
             if os.path.exists(filename_backup):
@@ -109,10 +165,14 @@ class ListAdmin(object):
                         return
                     except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
                         mailman_log('error', 'Error loading backup pending.pck: %s', str(e))
+                        log_file_info(filename_backup)
 
         except IOError as e:
             if e.errno != errno.ENOENT:
                 mailman_log('error', 'IOError loading pending.pck: %s', str(e))
+                log_file_info(filename)
+                if os.path.exists(filename_backup):
+                    log_file_info(filename_backup)
 
         # If we get here, both main and backup files failed or don't exist
         self.__db = {}
