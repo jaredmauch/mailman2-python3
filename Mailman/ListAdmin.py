@@ -88,7 +88,8 @@ class ListAdmin(object):
         if self.__db is not None:
             return
 
-        filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
+        # Use original file location
+        filename = os.path.join(self.fullpath(), 'request.pck')
         filename_backup = filename + '.bak'
 
         def log_file_info(path):
@@ -186,12 +187,13 @@ class ListAdmin(object):
         try:
             with open(filename, 'rb') as fp:
                 try:
+                    # Try to load with Python 2 compatibility
                     self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
                     if not isinstance(self.__db, dict):
                         raise ValueError("Database not a dictionary")
                     return
                 except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                    mailman_log('error', 'Error loading pending.pck: %s', str(e))
+                    mailman_log('error', 'Error loading request.pck: %s', str(e))
                     log_file_info(filename)
 
             # If we get here, the main file failed to load properly
@@ -199,6 +201,7 @@ class ListAdmin(object):
                 mailman_log('info', 'Attempting to load from backup file')
                 with open(filename_backup, 'rb') as fp:
                     try:
+                        # Try to load backup with Python 2 compatibility
                         self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
                         if not isinstance(self.__db, dict):
                             raise ValueError("Backup database not a dictionary")
@@ -207,12 +210,12 @@ class ListAdmin(object):
                         shutil.copy2(filename_backup, filename)
                         return
                     except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                        mailman_log('error', 'Error loading backup pending.pck: %s', str(e))
+                        mailman_log('error', 'Error loading backup request.pck: %s', str(e))
                         log_file_info(filename_backup)
 
         except IOError as e:
             if e.errno != errno.ENOENT:
-                mailman_log('error', 'IOError loading pending.pck: %s', str(e))
+                mailman_log('error', 'IOError loading request.pck: %s', str(e))
                 log_file_info(filename)
                 if os.path.exists(filename_backup):
                     log_file_info(filename_backup)
@@ -225,8 +228,9 @@ class ListAdmin(object):
         if self.__db is None:
             return
 
-        filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
-        filename_tmp = filename + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
+        # Use original file location
+        filename = os.path.join(self.fullpath(), 'request.pck')
+        filename_tmp = filename + '.tmp'
         filename_backup = filename + '.bak'
 
         def log_file_info(path):
@@ -349,16 +353,23 @@ class ListAdmin(object):
 
         # Try to save the new file
         try:
-            with open(filename_tmp, 'wb') as fp:
-                pickle.dump(self.__db, fp, protocol=0)
-                fp.flush()
-                os.fsync(fp.fileno())
-            os.rename(filename_tmp, filename)
+            # Set umask to ensure proper permissions
+            omask = os.umask(0o007)
+            try:
+                with open(filename_tmp, 'wb') as fp:
+                    # Use protocol 2 for Python 3 compatibility
+                    pickle.dump(self.__db, fp, protocol=2)
+                    fp.flush()
+                    os.fsync(fp.fileno())
+                # Ensure proper ownership before rename
+                os.chown(filename_tmp, 26029, 41)  # mailman:mailman
+                os.rename(filename_tmp, filename)
+            finally:
+                os.umask(omask)
         except (IOError, OSError) as e:
             log_file_info(filename_tmp)
             if os.path.exists(filename):
                 log_file_info(filename)
-            mailman_log('error', 'Error saving database: %s', str(e))
             raise PermissionError(f'Error saving database: {str(e)}')
 
         self.__db = None
