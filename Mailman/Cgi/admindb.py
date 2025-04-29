@@ -106,12 +106,7 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
 
 
 def main():
-    # Output content-type header first thing to ensure it's always sent
-    print('Content-type: text/html; charset=utf-8\n')
-    
-    doc = Document()
-    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-
+    # Parse form data first since we need it for authentication
     try:
         if os.environ.get('REQUEST_METHOD') == 'POST':
             content_length = int(os.environ.get('CONTENT_LENGTH', 0))
@@ -124,14 +119,20 @@ def main():
             query_string = os.environ.get('QUERY_STRING', '')
             cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
     except Exception:
-        # Someone crafted a POST with a bad Content-Type:.
+        # Someone crafted a POST with a bad Content-Type
+        print('Status: 400 Bad Request')
+        print('Content-type: text/html; charset=utf-8\n')
+        doc = Document()
+        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
-        # Send this with a 400 status.
-        print('Status: 400 Bad Request')
         print(doc.Format())
         return
 
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+
+    # Get the list name
     parts = Utils.GetPathPieces()
     if not parts:
         handle_no_list()
@@ -142,11 +143,11 @@ def main():
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
+        print('Status: 404 Not Found')
+        print('Content-type: text/html; charset=utf-8\n')
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
-        # Send this with a 404 status.
-        print('Status: 404 Not Found')
         print(doc.Format())
         syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
         return
