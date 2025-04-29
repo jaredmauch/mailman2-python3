@@ -106,6 +106,9 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
 
 
 def main():
+    # Output content-type header first thing to ensure it's always sent
+    print('Content-type: text/html; charset=utf-8\n')
+    
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
@@ -126,7 +129,6 @@ def main():
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
-        print('Content-type: text/html; charset=utf-8\n')
         print(doc.Format())
         return
 
@@ -145,7 +147,6 @@ def main():
         doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        print('Content-type: text/html; charset=utf-8\n')
         print(doc.Format())
         syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
         return
@@ -207,7 +208,6 @@ def handle_no_list(msg=''):
     doc.AddItem(_(f'You must specify a list name.  Here is the {link}'))
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
-    print('Content-type: text/html; charset=utf-8\n')
     print(doc.Format())
 
 
