@@ -54,7 +54,7 @@ _ = i18n._
 def D_(s):
     return s
 
-# Request types requiring admin approval
+# Constants for request types
 IGN = 0
 HELDMSG = 1
 SUBSCRIPTION = 2

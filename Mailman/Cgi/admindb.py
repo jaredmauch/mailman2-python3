@@ -39,7 +39,7 @@ from Mailman import Errors
 from Mailman import Message
 from Mailman import i18n
 from Mailman.Handlers.Moderate import ModeratedMemberPost
-from Mailman.ListAdmin import HELDMSG, ListAdmin
+from Mailman.ListAdmin import HELDMSG, ListAdmin, PermissionError
 from Mailman.ListAdmin import readMessage
 from Mailman.Cgi import Auth
 from Mailman.htmlformat import *
@@ -192,7 +192,7 @@ def main():
         try:
             process_form(mlist, doc, cgidata)
             mlist.Save()
-        except ListAdmin.PermissionError as e:
+        except PermissionError as e:
             # Handle permission errors gracefully
             print('Status: 500 Internal Server Error')
             print('Content-type: text/html; charset=utf-8\n')
