@@ -186,6 +186,59 @@ class ListAdmin(object):
         filename_tmp = filename + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
         filename_backup = filename + '.bak'
 
+        def log_file_info(path):
+            try:
+                stat = os.stat(path)
+                mode = stat.st_mode
+                uid = stat.st_uid
+                gid = stat.st_gid
+                
+                # Get current ownership info
+                try:
+                    current_user = pwd.getpwuid(uid)[0]
+                except KeyError:
+                    current_user = f'uid {uid}'
+                try:
+                    current_group = grp.getgrgid(gid)[0]
+                except KeyError:
+                    current_group = f'gid {gid}'
+                
+                # Get expected ownership info
+                try:
+                    expected_user = pwd.getpwnam(mm_cfg.MAILMAN_USER)[0]
+                    expected_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER)[2]
+                except KeyError:
+                    expected_user = f'user {mm_cfg.MAILMAN_USER}'
+                    expected_uid = None
+                
+                try:
+                    expected_group = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[0]
+                    expected_gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2]
+                except KeyError:
+                    expected_group = f'group {mm_cfg.MAILMAN_GROUP}'
+                    expected_gid = None
+                
+                # Log current and expected ownership
+                mailman_log('error', 
+                           'File %s: mode=%o, owner=%s (current) vs %s (expected), group=%s (current) vs %s (expected)',
+                           path, mode, current_user, expected_user, current_group, expected_group)
+                
+                # Log specific permission issues
+                if expected_uid is not None and uid != expected_uid:
+                    mailman_log('error', 'File %s has incorrect owner (uid %d vs expected %d)',
+                               path, uid, expected_uid)
+                if expected_gid is not None and gid != expected_gid:
+                    mailman_log('error', 'File %s has incorrect group (gid %d vs expected %d)',
+                               path, gid, expected_gid)
+                if mode & 0o002:  # World writable
+                    mailman_log('error', 'File %s is world writable (mode %o)',
+                               path, mode)
+                if mode & 0o020:  # Group writable but not owned by mailman group
+                    mailman_log('error', 'File %s is group writable but not owned by mailman group',
+                               path)
+            except OSError as e:
+                mailman_log('error', 'Could not stat %s: %s', path, str(e))
+
         # First create a backup of the current file if it exists
         if os.path.exists(filename):
             try:
@@ -193,6 +246,14 @@ class ListAdmin(object):
                 shutil.copy2(filename, filename_backup)
             except IOError as e:
                 mailman_log('error', 'Error creating backup: %s', str(e))
+                log_file_info(filename)
+                log_file_info(filename_backup)
+                # Also check parent directory permissions
+                try:
+                    parent_dir = os.path.dirname(filename)
+                    log_file_info(parent_dir)
+                except OSError as e:
+                    mailman_log('error', 'Could not stat parent directory %s: %s', parent_dir, str(e))
 
         # Save to temporary file first
         try:
@@ -213,6 +274,14 @@ class ListAdmin(object):
 
         except (IOError, OSError) as e:
             mailman_log('error', 'Error saving pending.pck: %s', str(e))
+            log_file_info(filename)
+            log_file_info(filename_tmp)
+            # Also check parent directory permissions
+            try:
+                parent_dir = os.path.dirname(filename)
+                log_file_info(parent_dir)
+            except OSError as e:
+                mailman_log('error', 'Could not stat parent directory %s: %s', parent_dir, str(e))
             # Try to clean up
             try:
                 os.unlink(filename_tmp)
