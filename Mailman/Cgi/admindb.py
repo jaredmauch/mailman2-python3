@@ -39,7 +39,7 @@ from Mailman import Errors
 from Mailman import Message
 from Mailman import i18n
 from Mailman.Handlers.Moderate import ModeratedMemberPost
-from Mailman.ListAdmin import HELDMSG
+from Mailman.ListAdmin import HELDMSG, ListAdmin
 from Mailman.ListAdmin import readMessage
 from Mailman.Cgi import Auth
 from Mailman.htmlformat import *
@@ -189,8 +189,21 @@ def main():
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        process_form(mlist, doc, cgidata)
-        mlist.Save()
+        try:
+            process_form(mlist, doc, cgidata)
+            mlist.Save()
+        except ListAdmin.PermissionError as e:
+            # Handle permission errors gracefully
+            print('Status: 500 Internal Server Error')
+            print('Content-type: text/html; charset=utf-8\n')
+            doc = Document()
+            doc.set_language(mlist.preferred_language)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Permission error while processing request.')))
+            doc.AddItem(_(f'The following error occurred: {str(e)}'))
+            doc.AddItem(_('Please contact the site administrator.'))
+            print(doc.Format())
+            return
     finally:
         mlist.Unlock()
 

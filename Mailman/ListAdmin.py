@@ -68,7 +68,12 @@ LOST = 2
 DASH = '-'
 NL = '\n'
 
-
+class PermissionError(Exception):
+    """Exception raised when there are permission issues with database operations."""
+    def __init__(self, message):
+        self.message = message
+        super().__init__(message)
+
 class ListAdmin(object):
     def InitVars(self):
         # non-configurable data
@@ -233,61 +238,52 @@ class ListAdmin(object):
                 if mode & 0o002:  # World writable
                     mailman_log('error', 'File %s is world writable (mode %o)',
                                path, mode)
-                if mode & 0o020:  # Group writable but not owned by mailman group
+                if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
                     mailman_log('error', 'File %s is group writable but not owned by mailman group',
                                path)
             except OSError as e:
                 mailman_log('error', 'Could not stat %s: %s', path, str(e))
 
-        # First create a backup of the current file if it exists
+        # First check if we can access the directory
+        try:
+            dirname = os.path.dirname(filename)
+            if os.path.exists(dirname):
+                log_file_info(dirname)
+        except OSError as e:
+            log_file_info(dirname)
+            raise PermissionError(f'Cannot access directory {dirname}: {str(e)}')
+
+        # Check existing files
         if os.path.exists(filename):
-            try:
+            log_file_info(filename)
+        if os.path.exists(filename_backup):
+            log_file_info(filename_backup)
+
+        # Try to create backup
+        try:
+            if os.path.exists(filename):
                 import shutil
                 shutil.copy2(filename, filename_backup)
-            except IOError as e:
-                mailman_log('error', 'Error creating backup: %s', str(e))
-                log_file_info(filename)
-                log_file_info(filename_backup)
-                # Also check parent directory permissions
-                try:
-                    parent_dir = os.path.dirname(filename)
-                    log_file_info(parent_dir)
-                except OSError as e:
-                    mailman_log('error', 'Could not stat parent directory %s: %s', parent_dir, str(e))
-
-        # Save to temporary file first
-        try:
-            # Ensure directory exists
-            dirname = os.path.dirname(filename)
-            if not os.path.exists(dirname):
-                os.makedirs(dirname, 0o755)
-
-            with open(filename_tmp, 'wb') as fp:
-                # Use protocol 2 for better compatibility
-                pickle.dump(self.__db, fp, protocol=2, fix_imports=True)
-                fp.flush()
-                if hasattr(os, 'fsync'):
-                    os.fsync(fp.fileno())
-
-            # Atomic rename
-            os.rename(filename_tmp, filename)
-
         except (IOError, OSError) as e:
-            mailman_log('error', 'Error saving pending.pck: %s', str(e))
             log_file_info(filename)
+            if os.path.exists(filename_backup):
+                log_file_info(filename_backup)
+            mailman_log('error', 'Error creating backup: %s', str(e))
+            raise PermissionError(f'Error creating backup: {str(e)}')
+
+        # Try to save the new file
+        try:
+            with open(filename_tmp, 'wb') as fp:
+                pickle.dump(self.__db, fp, protocol=0)
+                fp.flush()
+                os.fsync(fp.fileno())
+            os.rename(filename_tmp, filename)
+        except (IOError, OSError) as e:
             log_file_info(filename_tmp)
-            # Also check parent directory permissions
-            try:
-                parent_dir = os.path.dirname(filename)
-                log_file_info(parent_dir)
-            except OSError as e:
-                mailman_log('error', 'Could not stat parent directory %s: %s', parent_dir, str(e))
-            # Try to clean up
-            try:
-                os.unlink(filename_tmp)
-            except OSError:
-                pass
-            raise
+            if os.path.exists(filename):
+                log_file_info(filename)
+            mailman_log('error', 'Error saving database: %s', str(e))
+            raise PermissionError(f'Error saving database: {str(e)}')
 
         self.__db = None
 
