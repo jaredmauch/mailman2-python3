@@ -100,6 +100,24 @@ class ListAdmin(object):
                 rgid = os.getgid()
                 groups = os.getgroups()
                 
+                # Get user and group names
+                try:
+                    euser = pwd.getpwuid(euid)[0]
+                except KeyError:
+                    euser = f'uid {euid}'
+                try:
+                    egroup = grp.getgrgid(egid)[0]
+                except KeyError:
+                    egroup = f'gid {egid}'
+                try:
+                    ruser = pwd.getpwuid(ruid)[0]
+                except KeyError:
+                    ruser = f'uid {ruid}'
+                try:
+                    rgroup = grp.getgrgid(rgid)[0]
+                except KeyError:
+                    rgroup = f'gid {rgid}'
+                
                 # Get group names for supplementary groups
                 group_names = []
                 for gid in groups:
@@ -109,8 +127,8 @@ class ListAdmin(object):
                         group_names.append(f'gid {gid}')
                 
                 mailman_log('error', 
-                           'Process identity - EUID: %d, EGID: %d, RUID: %d, RGID: %d, Groups: %s',
-                           euid, egid, ruid, rgid, ', '.join(group_names))
+                           'Process identity - EUID: %d (%s), EGID: %d (%s), RUID: %d (%s), RGID: %d (%s), Groups: %s',
+                           euid, euser, egid, egroup, ruid, ruser, rgid, rgroup, ', '.join(group_names))
                 
                 # Get file information
                 stat = os.stat(path)
@@ -220,6 +238,24 @@ class ListAdmin(object):
                 rgid = os.getgid()
                 groups = os.getgroups()
                 
+                # Get user and group names
+                try:
+                    euser = pwd.getpwuid(euid)[0]
+                except KeyError:
+                    euser = f'uid {euid}'
+                try:
+                    egroup = grp.getgrgid(egid)[0]
+                except KeyError:
+                    egroup = f'gid {egid}'
+                try:
+                    ruser = pwd.getpwuid(ruid)[0]
+                except KeyError:
+                    ruser = f'uid {ruid}'
+                try:
+                    rgroup = grp.getgrgid(rgid)[0]
+                except KeyError:
+                    rgroup = f'gid {rgid}'
+                
                 # Get group names for supplementary groups
                 group_names = []
                 for gid in groups:
@@ -229,8 +265,8 @@ class ListAdmin(object):
                         group_names.append(f'gid {gid}')
                 
                 mailman_log('error', 
-                           'Process identity - EUID: %d, EGID: %d, RUID: %d, RGID: %d, Groups: %s',
-                           euid, egid, ruid, rgid, ', '.join(group_names))
+                           'Process identity - EUID: %d (%s), EGID: %d (%s), RUID: %d (%s), RGID: %d (%s), Groups: %s',
+                           euid, euser, egid, egroup, ruid, ruser, rgid, rgroup, ', '.join(group_names))
                 
                 # Get file information
                 stat = os.stat(path)
