@@ -356,25 +356,17 @@ class ListAdmin(object):
             # Set umask to ensure proper permissions
             omask = os.umask(0o007)
             try:
-                # Create temporary file in the same directory to inherit setgid
+                # Create temporary file - it will inherit directory's group due to setgid
                 with open(filename_tmp, 'wb') as fp:
                     pickle.dump(self.__db, fp, protocol=2)
                     fp.flush()
                     os.fsync(fp.fileno())
                 
-                # The file should inherit the directory's group due to setgid
-                # but let's verify and fix if needed
-                stat = os.stat(filename_tmp)
-                if stat.st_gid != 41:  # mailman group
-                    os.chown(filename_tmp, -1, 41)  # -1 means don't change owner
-                
-                # Now do the atomic rename
+                # Do the atomic rename - the file will keep its group from the directory
                 os.rename(filename_tmp, filename)
                 
-                # Verify final file ownership
-                stat = os.stat(filename)
-                if stat.st_gid != 41:  # mailman group
-                    os.chown(filename, -1, 41)  # -1 means don't change owner
+                # Log the result for debugging
+                log_file_info(filename)
             finally:
                 os.umask(omask)
         except (IOError, OSError) as e:
