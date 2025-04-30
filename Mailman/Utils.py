@@ -125,6 +125,12 @@ def list_names():
     return Site.get_listnames()
 
 
+def needs_unicode_escape_decode(s):
+    # Check for Unicode escape patterns (\uXXXX or \UXXXXXXXX)
+    unicode_escape_pattern = re.compile(r'\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}')
+    return bool(unicode_escape_pattern.search(s))
+
+
 
 # a much more naive implementation than say, Emacs's fill-paragraph!
 def wrap(text, column=70, honor_leading_ws=True):
