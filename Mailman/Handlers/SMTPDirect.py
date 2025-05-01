@@ -33,6 +33,7 @@ import socket
 import smtplib
 from smtplib import SMTPException
 from base64 import b64encode
+import traceback
 
 import Mailman.mm_cfg
 import Mailman.Utils
@@ -77,25 +78,30 @@ class Connection(object):
                         # Use native TLS support
                         self.__conn.starttls()
                     except SMTPException as e:
-                        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s', e)
+                        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s\n%s', 
+                               str(e), traceback.format_exc())
                         self.quit()
                         raise
                 try:
                     self.__conn.login(Mailman.mm_cfg.SMTP_USER, Mailman.mm_cfg.SMTP_PASSWD)
                 except smtplib.SMTPHeloError as e:
-                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s', e)
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s\n%s', 
+                           str(e), traceback.format_exc())
                     self.quit()
                     raise
                 except smtplib.SMTPAuthenticationError as e:
-                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s', e)
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s\n%s', 
+                           str(e), traceback.format_exc())
                     self.quit()
                 except smtplib.SMTPException as e:
                     Mailman.Logging.Syslog.mailman_log('smtp-failure',
-                           'SMTP - no suitable authentication method found: %s', e)
+                           'SMTP - no suitable authentication method found: %s\n%s', 
+                           str(e), traceback.format_exc())
                     self.quit()
                     raise
         except (socket.error, smtplib.SMTPException) as e:
-            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP connection error: %s', e)
+            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP connection error: %s\n%s', 
+                   str(e), traceback.format_exc())
             self.quit()
             raise
 
@@ -115,9 +121,11 @@ class Connection(object):
             if isinstance(envsender, bytes):
                 envsender = envsender.decode('utf-8')
             results = self.__conn.sendmail(envsender, recips, msgtext)
-        except smtplib.SMTPException:
+        except smtplib.SMTPException as e:
             # For safety, close this connection.  The next send attempt will
             # automatically re-open it.  Pass the exception on up.
+            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP sendmail error: %s\n%s', 
+                   str(e), traceback.format_exc())
             self.quit()
             raise
         # This session has been successfully completed.
@@ -155,7 +163,8 @@ def process(mlist, msg, msgdata):
                 mailman_msg.set_payload(msg.get_payload())
             msg = mailman_msg
         except Exception as e:
-            Mailman.Logging.Syslog.mailman_log('error', 'Failed to convert message: %s', e)
+            Mailman.Logging.Syslog.mailman_log('error', 'Failed to convert message: %s\n%s', 
+                   str(e), traceback.format_exc())
             raise
 
     recips = msgdata.get('recips')
@@ -220,11 +229,14 @@ def process(mlist, msg, msgdata):
             msgdata['recips'] = chunk
             try:
                 deliveryfunc(mlist, msg, msgdata, envsender, refused, conn)
-            except Exception:
+            except Exception as e:
                 # If /anything/ goes wrong, push the last chunk back on the
                 # undelivered list and re-raise the exception.  We don't know
                 # how many of the last chunk might receive the message, so at
                 # worst, everyone in this chunk will get a duplicate.  Sigh.
+                Mailman.Logging.Syslog.mailman_log('error', 
+                    'Delivery error for chunk: %s\nError: %s\n%s',
+                    chunk, str(e), traceback.format_exc())
                 chunks.append(chunk)
                 raise
         del msgdata['undelivered']
@@ -284,10 +296,16 @@ def process(mlist, msg, msgdata):
         if code >= 500 and code != 552:
             # A permanent failure
             permfailures.append(recip)
+            Mailman.Logging.Syslog.mailman_log('smtp-failure', 
+                'Permanent delivery failure for %s: code %s, message: %s',
+                recip, code, smtpmsg)
         else:
             # Deal with persistent transient failures by queuing them up for
             # future delivery.  TBD: this could generate lots of log entries!
             tempfailures.append(recip)
+            Mailman.Logging.Syslog.mailman_log('smtp-failure',
+                'Temporary delivery failure for %s: code %s, message: %s',
+                recip, code, smtpmsg)
         if Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE:
             d.update({'recipient': recip,
                       'failcode' : code,
