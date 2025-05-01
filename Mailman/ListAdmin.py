@@ -34,6 +34,7 @@ from io import StringIO
 import socket
 import pwd
 import grp
+import traceback
 
 import email
 from email.mime.message import MIMEMessage
@@ -706,122 +707,54 @@ class ListAdmin(object):
         self.__closedb()
 
     def log_file_info(self, path):
-        """Log detailed information about file permissions and ownership."""
+        """Log detailed information about a file's permissions and ownership."""
         try:
-            # Log process identity information
-            euid = os.geteuid()
-            egid = os.getegid()
-            ruid = os.getuid()
-            rgid = os.getgid()
-            groups = os.getgroups()
-            
-            # Get user and group names
-            try:
-                euser = pwd.getpwuid(euid)[0]
-            except KeyError:
-                euser = f'uid {euid}'
-            try:
-                egroup = grp.getgrgid(egid)[0]
-            except KeyError:
-                egroup = f'gid {egid}'
-            try:
-                ruser = pwd.getpwuid(ruid)[0]
-            except KeyError:
-                ruser = f'uid {ruid}'
-            try:
-                rgroup = grp.getgrgid(rgid)[0]
-            except KeyError:
-                rgroup = f'gid {rgid}'
-            
-            # Get group names for supplementary groups
-            group_names = []
-            for gid in groups:
-                try:
-                    group_names.append(grp.getgrgid(gid)[0])
-                except KeyError:
-                    group_names.append(f'gid {gid}')
-            
-            # Get current time with microseconds
-            now = time.time()
-            usecs = int((now - int(now)) * 1000000)
-            timestamp = time.strftime('%b %d %H:%M:%S', time.localtime(now))
-            
-            mailman_log('error', 
-                       '%s.%06d %d Process identity - EUID: %d (%s), EGID: %d (%s), RUID: %d (%s), RGID: %d (%s), Groups: %s',
-                       timestamp, usecs, os.getpid(),
-                       euid, euser, egid, egroup, ruid, ruser, rgid, rgroup, ', '.join(group_names))
-            
-            # Get file information
+            if not os.path.exists(path):
+                mailman_log('warning', 'File does not exist: %s', path)
+                return
+
             stat = os.stat(path)
             mode = stat.st_mode
             uid = stat.st_uid
             gid = stat.st_gid
-            
-            # Get current ownership info
+
+            # Get user and group names
             try:
-                current_user = pwd.getpwuid(uid)[0]
-            except KeyError:
-                current_user = f'uid {uid}'
+                import pwd
+                user = pwd.getpwuid(uid).pw_name
+            except (KeyError, ImportError):
+                user = str(uid)
+
             try:
-                current_group = grp.getgrgid(gid)[0]
-            except KeyError:
-                current_group = f'gid {gid}'
-            
-            # Get expected ownership info
-            try:
-                expected_user = pwd.getpwnam(mm_cfg.MAILMAN_USER)[0]
-                expected_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER)[2]
-            except KeyError:
-                expected_user = f'user {mm_cfg.MAILMAN_USER}'
-                expected_uid = None
-            
-            try:
-                expected_group = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[0]
-                expected_gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2]
-            except KeyError:
-                expected_group = f'group {mm_cfg.MAILMAN_GROUP}'
-                expected_gid = None
-            
-            # Log current and expected ownership
-            mailman_log('error', 
-                       '%s.%06d %d File %s: mode=%o, owner=%s (current) vs %s (expected), group=%s (current) vs %s (expected)',
-                       timestamp, usecs, os.getpid(),
-                       path, mode, current_user, expected_user, current_group, expected_group)
-            
-            # Check if we can actually access the file
-            can_access = False
-            access_error = None
-            try:
-                # Try to open the file for reading in binary mode
-                with open(path, 'rb') as f:
-                    can_access = True
-            except (IOError, OSError) as e:
-                access_error = str(e)
-            
-            # Log specific permission issues
-            if expected_uid is not None and uid != expected_uid:
-                mailman_log('error', '%s.%06d %d File %s has incorrect owner (uid %d (%s) vs expected %d (%s))%s',
-                           timestamp, usecs, os.getpid(),
-                           path, uid, current_user, expected_uid, expected_user,
-                           ' - but access is possible' if can_access else f' - access error: {access_error}')
-            if expected_gid is not None and gid != expected_gid:
-                mailman_log('error', '%s.%06d %d File %s has incorrect group (gid %d (%s) vs expected %d (%s))%s',
-                           timestamp, usecs, os.getpid(),
-                           path, gid, current_group, expected_gid, expected_group,
-                           ' - but access is possible' if can_access else f' - access error: {access_error}')
-            if mode & 0o002:  # World writable
-                mailman_log('error', '%s.%06d %d File %s is world writable (mode %o)',
-                           timestamp, usecs, os.getpid(),
-                           path, mode)
-            if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
-                mailman_log('error', '%s.%06d %d File %s is group writable but not owned by mailman group (current group: %s)%s',
-                           timestamp, usecs, os.getpid(),
-                           path, current_group,
-                           ' - but access is possible' if can_access else f' - access error: {access_error}')
-        except OSError as e:
-            mailman_log('error', '%s.%06d %d Could not stat %s: %s',
-                       timestamp, usecs, os.getpid(),
-                       path, str(e))
+                import grp
+                group = grp.getgrgid(gid).gr_name
+            except (KeyError, ImportError):
+                group = str(gid)
+
+            # Log file details
+            mailman_log('info', 'File %s: mode=%o, owner=%s (%d), group=%s (%d)',
+                       path, mode, user, uid, group, gid)
+
+            # Check for potential permission issues
+            if not os.access(path, os.R_OK):
+                mailman_log('warning', 'File %s is not readable', path)
+            if not os.access(path, os.W_OK):
+                mailman_log('warning', 'File %s is not writable', path)
+
+            # Check ownership against expected values
+            expected_uid = pwd.getpwnam('mailman').pw_uid
+            expected_gid = grp.getgrnam('mailman').gr_gid
+
+            if uid != expected_uid:
+                mailman_log('warning', 'File %s has incorrect owner (uid %d (%s) vs expected %d (mailman))',
+                           path, uid, user, expected_uid)
+            if gid != expected_gid:
+                mailman_log('warning', 'File %s has incorrect group (gid %d (%s) vs expected %d (mailman))',
+                           path, gid, group, expected_gid)
+
+        except Exception as e:
+            mailman_log('error', 'Error getting file info for %s: %s\n%s',
+                       path, str(e), traceback.format_exc())
 
 
 def readMessage(path):

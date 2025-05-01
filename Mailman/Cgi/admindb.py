@@ -108,8 +108,10 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
 
 def main():
     try:
-        # Log page load
+        # Log page load with process identity
         mailman_log('info', 'admindb: Page load started')
+        mailman_log('info', 'Process identity - EUID: %d, EGID: %d, RUID: %d, RGID: %d',
+                   os.geteuid(), os.getegid(), os.getuid(), os.getgid())
         
         # Initialize document early
         doc = Document()
@@ -211,6 +213,19 @@ def main():
                 doc.AddItem(_('Please contact the site administrator.'))
                 print(doc.Format())
                 mailman_log('error', 'admindb: Permission error: %s\n%s', str(e), traceback.format_exc())
+                return
+            except Exception as e:
+                # Log any other exceptions during form processing
+                print('Status: 500 Internal Server Error')
+                print('Content-type: text/html; charset=utf-8\n')
+                doc = Document()
+                doc.set_language(mlist.preferred_language)
+                doc.AddItem(Header(2, _("Error")))
+                doc.AddItem(Bold(_('An error occurred while processing the request.')))
+                doc.AddItem(_(f'The following error occurred: {str(e)}'))
+                doc.AddItem(_('Please contact the site administrator.'))
+                print(doc.Format())
+                mailman_log('error', 'admindb: Error processing form: %s\n%s', str(e), traceback.format_exc())
                 return
         finally:
             mlist.Unlock()
@@ -534,10 +549,33 @@ def show_message_requests(mlist, form, id):
     try:
         id = int(id)
         info = mlist.GetRecord(id)
-    except (ValueError, KeyError):
-        # BAW: print an error message?
+    except ValueError as e:
+        mailman_log('error', 'admindb: Invalid message ID "%s": %s\n%s', 
+                   id, str(e), traceback.format_exc())
+        form.AddItem(Header(2, _("Error")))
+        form.AddItem(Bold(_('Invalid message ID.')))
         return
-    show_post_requests(mlist, id, info, 1, 1, form)
+    except KeyError as e:
+        mailman_log('error', 'admindb: Message ID %d not found: %s\n%s', 
+                   id, str(e), traceback.format_exc())
+        form.AddItem(Header(2, _("Error")))
+        form.AddItem(Bold(_('Message not found.')))
+        return
+    except Exception as e:
+        mailman_log('error', 'admindb: Error getting message %d: %s\n%s', 
+                   id, str(e), traceback.format_exc())
+        form.AddItem(Header(2, _("Error")))
+        form.AddItem(Bold(_('Error retrieving message.')))
+        return
+
+    try:
+        show_post_requests(mlist, id, info, 1, 1, form)
+    except Exception as e:
+        mailman_log('error', 'admindb: Error showing message %d: %s\n%s', 
+                   id, str(e), traceback.format_exc())
+        form.AddItem(Header(2, _("Error")))
+        form.AddItem(Bold(_('Error displaying message.')))
+        return
 
 
 def show_detailed_requests(mlist, form):
