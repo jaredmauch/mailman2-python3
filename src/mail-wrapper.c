@@ -62,7 +62,7 @@ main(int argc, char** argv, char** env __attribute__((unused)))
 {
         int status;
 
-        /* Set global command line variables */
+        /* Set global command line variables for --test support */
         main_argc = argc;
         main_argv = argv;
 

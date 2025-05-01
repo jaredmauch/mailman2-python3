@@ -31,7 +31,8 @@
 #define LEGAL_PARENT_GROUP CGI_GROUP
 
 const char* parentgroup = LEGAL_PARENT_GROUP;
-const char* logident = "Mailman CGI wrapper";
+const char* logident = LOG_IDENT;
+char* script = SCRIPTNAME;
 
 /* List of valid CGI scripts */
 const char *VALID_SCRIPTS[] = {
@@ -62,27 +63,30 @@ int check_command(char *script)
 }
 
 int
-main(int argc, char** argv, char** env __attribute__((unused)))
+main(int argc __attribute__((unused)), char** argv __attribute__((unused)), char** env)
 {
         int status;
+        char* fake_argv[3];
 
-        /* Set global command line variables */
+        running_as_cgi = 1;
+
+        /* Set global command line variables for --test support */
         main_argc = argc;
         main_argv = argv;
 
-        /* sanity check arguments */
-        if (argc < 2)
-                fatal(logident, MAIL_USAGE_ERROR,
-                      "Usage: %s program [args...]", argv[0]);
-
-        if (!check_command(argv[1]))
-                fatal(logident, MAIL_ILLEGAL_COMMAND,
-                      "Illegal command: %s", argv[1]);
-
         check_caller(logident, parentgroup);
 
-        /* If we got here, everything must be OK */
-        status = run_script(argv[1], argc, argv, env);
+        /* For these CGI programs, we can ignore argc and argv since they
+         * don't contain anything useful. `script' will always be the driver
+         * program and argv will always just contain the name of the real
+         * script for the driver to import and execute (padded with two dummy
+         * values in argv[0] and argv[1] that are ignored by run_script()).
+         */
+        fake_argv[0] = NULL;
+        fake_argv[1] = NULL;
+        fake_argv[2] = script;
+
+        status = run_script("driver", 3, fake_argv, env);
         fatal(logident, status, "%s", strerror(errno));
         return status;
 }
