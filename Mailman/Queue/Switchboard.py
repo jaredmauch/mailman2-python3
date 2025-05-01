@@ -252,6 +252,27 @@ class Switchboard:
                                        filename, str(restore_e), traceback.format_exc())
                             self.recover_backup_files()
                             return None, None
+
+                # Validate message object
+                if isinstance(msg, str):
+                    mailman_log('error', 'Message object is a string instead of a proper message object in file %s', backfile)
+                    # Try to convert string to proper message object
+                    try:
+                        from email import message_from_string
+                        msg = message_from_string(msg)
+                    except Exception as e:
+                        mailman_log('error', 'Failed to convert string to message object: %s\nTraceback:\n%s',
+                               str(e), traceback.format_exc())
+                        # Move to shunt queue
+                        self.finish(filebase, preserve=True)
+                        return None, None
+
+                if not hasattr(msg, 'get'):
+                    mailman_log('error', 'Message object does not have get() method in file %s', backfile)
+                    # Move to shunt queue
+                    self.finish(filebase, preserve=True)
+                    return None, None
+
             except Exception as e:
                 mailman_log('error', 'Failed to read backup file %s: %s\nTraceback:\n%s',
                        backfile, str(e), traceback.format_exc())
