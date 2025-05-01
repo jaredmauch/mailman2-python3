@@ -98,7 +98,10 @@ def _(s, frame=1):
     tns = _translation.gettext(s)
     charset = _translation.charset()
     if not charset:
-        charset = 'us-ascii'
+        charset = 'latin-1'
+    # Ensure we return a string, not bytes
+    if isinstance(tns, bytes):
+        tns = tns.decode(charset, 'replace')
     for k, v in list(dict.items()):
         if isinstance(v, str):
             dict[k] = v.encode(charset, 'replace')
