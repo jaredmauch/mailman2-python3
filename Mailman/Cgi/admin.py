@@ -106,8 +106,8 @@ def main():
             doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
             doc.AddItem(Header(2, _("Error")))
             doc.AddItem(Bold(_('Invalid options to CGI script.')))
-            doc.AddItem(Pre(Utils.websafe(str(e))))
-            doc.AddItem(Pre(Utils.websafe(traceback.format_exc())))
+            doc.AddItem(Preformatted(Utils.websafe(str(e))))
+            doc.AddItem(Preformatted(Utils.websafe(traceback.format_exc())))
             # Send this with a 400 status.
             print('Status: 400 Bad Request')
             print(doc.Format())
@@ -162,6 +162,9 @@ def main():
         doc = Document()
         doc.set_language(mlist.preferred_language)
 
+        # Create the form
+        form = Form(mlist=mlist, contexts=AUTH_CONTEXTS)
+
         # Now dispatch to the appropriate handler
         if category == 'general':
             show_variables(mlist, category, subcat, cgidata, doc)
@@ -188,8 +191,8 @@ def main():
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('An unexpected error occurred.')))
-        doc.AddItem(Pre(Utils.websafe(str(e))))
-        doc.AddItem(Pre(Utils.websafe(traceback.format_exc())))
+        doc.AddItem(Preformatted(Utils.websafe(str(e))))
+        doc.AddItem(Preformatted(Utils.websafe(traceback.format_exc())))
         # Send this with a 500 status.
         print('Status: 500 Internal Server Error')
         print(doc.Format())
