@@ -170,6 +170,8 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberName(self, member):
         self.__assertIsMember(member)
         name = self.__mlist.usernames.get(member.lower())
+        if name is None:
+            return ''
         if isinstance(name, bytes):
             try:
                 # Try Latin-1 first since that's what we're seeing in the data
@@ -177,7 +179,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
             except UnicodeDecodeError:
                 # Fall back to UTF-8 if Latin-1 fails
                 name = name.decode('utf-8', 'replace')
-        return name
+        return str(name)
 
     def getMemberTopics(self, member):
         self.__assertIsMember(member)
@@ -379,7 +381,16 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def setMemberName(self, member, realname):
         assert self.__mlist.Locked()
         self.__assertIsMember(member)
-        self.__mlist.usernames[member.lower()] = realname
+        if realname is None:
+            realname = ''
+        if isinstance(realname, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                realname = realname.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                realname = realname.decode('utf-8', 'replace')
+        self.__mlist.usernames[member.lower()] = str(realname)
 
     def setMemberTopics(self, member, topics):
         assert self.__mlist.Locked()
