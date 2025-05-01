@@ -107,8 +107,6 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
 
 
 def output_error_page(status, title, message, details=None):
-    print('Status: %s' % status)
-    print('Content-type: text/html; charset=utf-8\n')
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
     doc.AddItem(Header(2, _(title)))
@@ -116,7 +114,6 @@ def output_error_page(status, title, message, details=None):
     if details:
         doc.AddItem(Preformatted(Utils.websafe(str(details))))
     doc.AddItem(_('Please contact the site administrator.'))
-    print(doc.Format())
     return doc
 
 
