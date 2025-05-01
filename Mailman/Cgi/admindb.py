@@ -117,7 +117,7 @@ def output_error_page(status, title, message, details=None):
         doc.AddItem(Preformatted(Utils.websafe(str(details))))
     doc.AddItem(_('Please contact the site administrator.'))
     print(doc.Format())
-    return
+    return doc
 
 
 def output_success_page(doc):
@@ -152,13 +152,14 @@ def main():
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
         except Exception as e:
             mailman_log('error', 'admindb: Invalid form data: %s\n%s', str(e), traceback.format_exc())
-            return output_error_page('400 Bad Request', 'Error', 'Invalid options to CGI script.')
+            doc = output_error_page('400 Bad Request', 'Error', 'Invalid options to CGI script.')
+            return output_success_page(doc)
 
         # Get the list name
         parts = Utils.GetPathPieces()
         if not parts:
-            handle_no_list()
-            return
+            doc = handle_no_list()
+            return output_success_page(doc)
 
         listname = parts[0].lower()
         mailman_log('info', 'admindb: Processing list "%s"', listname)
@@ -167,30 +168,34 @@ def main():
         listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
         if not os.path.exists(listdir):
             mailman_log('error', 'admindb: List directory does not exist: %s', listdir)
-            return output_error_page('404 Not Found', 'Error', 
+            doc = output_error_page('404 Not Found', 'Error', 
                                    'No such list <em>%s</em>' % Utils.websafe(listname),
                                    'The list directory does not exist.')
+            return output_success_page(doc)
 
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError as e:
             mailman_log('error', 'admindb: No such list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
-            return output_error_page('404 Not Found', 'Error',
+            doc = output_error_page('404 Not Found', 'Error',
                                    'No such list <em>%s</em>' % Utils.websafe(listname),
                                    'The list configuration could not be loaded.')
+            return output_success_page(doc)
         except PermissionError as e:
             mailman_log('error', 'admindb: Permission error accessing list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
-            return output_error_page('500 Internal Server Error', 'Error',
+            doc = output_error_page('500 Internal Server Error', 'Error',
                                    'Permission error accessing list <em>%s</em>' % Utils.websafe(listname),
                                    str(e))
+            return output_success_page(doc)
         except Exception as e:
             mailman_log('error', 'admindb: Unexpected error loading list "%s": %s\n%s',
                        listname, str(e), traceback.format_exc())
-            return output_error_page('500 Internal Server Error', 'Error',
+            doc = output_error_page('500 Internal Server Error', 'Error',
                                    'Error accessing list <em>%s</em>' % Utils.websafe(listname),
                                    str(e))
+            return output_success_page(doc)
 
         # Now that we know what list has been requested, all subsequent admin
         # pages are shown in that list's preferred language.
@@ -237,23 +242,26 @@ def main():
             except PermissionError as e:
                 mailman_log('error', 'admindb: Permission error processing form: %s\n%s',
                            str(e), traceback.format_exc())
-                return output_error_page('500 Internal Server Error', 'Error',
+                doc = output_error_page('500 Internal Server Error', 'Error',
                                        'Permission error while processing request',
                                        str(e))
+                return output_success_page(doc)
             except Exception as e:
                 mailman_log('error', 'admindb: Error processing form: %s\n%s',
                            str(e), traceback.format_exc())
-                return output_error_page('500 Internal Server Error', 'Error',
+                doc = output_error_page('500 Internal Server Error', 'Error',
                                        'Error processing request',
                                        str(e))
+                return output_success_page(doc)
         finally:
             mlist.Unlock()
     except Exception as e:
         mailman_log('error', 'admindb: Unexpected error: %s\n%s',
                    str(e), traceback.format_exc())
-        return output_error_page('500 Internal Server Error', 'Error',
+        doc = output_error_page('500 Internal Server Error', 'Error',
                                'An unexpected error occurred',
                                str(e))
+        return output_success_page(doc)
 
 
 def handle_no_list(msg=''):
@@ -271,9 +279,8 @@ def handle_no_list(msg=''):
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
     
-    # Use the centralized output function
-    return output_error_page('400 Bad Request', header, 
-                           _('You must specify a list name.  Here is the %s') % link)
+    # Return the document instead of outputting headers
+    return doc
 
 
 def show_pending_subs(mlist, form):
