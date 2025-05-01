@@ -106,6 +106,27 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
     return btns
 
 
+def output_error_page(status, title, message, details=None):
+    print('Status: %s' % status)
+    print('Content-type: text/html; charset=utf-8\n')
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+    doc.AddItem(Header(2, _(title)))
+    doc.AddItem(Bold(_(message)))
+    if details:
+        doc.AddItem(Preformatted(Utils.websafe(str(details))))
+    doc.AddItem(_('Please contact the site administrator.'))
+    print(doc.Format())
+    return
+
+
+def output_success_page(doc):
+    print('Status: 200 OK')
+    print('Content-type: text/html; charset=utf-8\n')
+    print(doc.Format())
+    return
+
+
 def main():
     try:
         # Log page load with process identity
@@ -116,26 +137,6 @@ def main():
         # Initialize document early
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        
-        # Always ensure we have proper content-type headers
-        def output_error_page(status, title, message, details=None):
-            print('Status: %s' % status)
-            print('Content-type: text/html; charset=utf-8\n')
-            doc = Document()
-            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-            doc.AddItem(Header(2, _(title)))
-            doc.AddItem(Bold(_(message)))
-            if details:
-                doc.AddItem(Preformatted(Utils.websafe(str(details))))
-            doc.AddItem(_('Please contact the site administrator.'))
-            print(doc.Format())
-            return
-
-        def output_success_page(doc):
-            print('Status: 200 OK')
-            print('Content-type: text/html; charset=utf-8\n')
-            print(doc.Format())
-            return
         
         # Parse form data first since we need it for authentication
         try:
