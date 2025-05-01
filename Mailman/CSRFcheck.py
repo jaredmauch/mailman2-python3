@@ -21,6 +21,7 @@ import time
 import urllib.parse
 import marshal
 import binascii
+import traceback
 
 from Mailman import mm_cfg
 from Mailman.Logging.Syslog import syslog
@@ -122,7 +123,23 @@ def csrf_check(mlist, token, cgi_user=None):
         key, secret = mlist.AuthContextInfo(context, user)
         assert key
         
-        mac = sha_new(secret + repr(issued)).hexdigest()
+        try:
+            # Ensure all values are properly encoded before hashing
+            if isinstance(secret, str):
+                secret = secret.encode('utf-8')
+            elif not isinstance(secret, bytes):
+                secret = str(secret).encode('utf-8')
+                
+            issued_str = str(issued)
+            if isinstance(issued_str, str):
+                issued_str = issued_str.encode('utf-8')
+                
+            mac = sha_new(secret + issued_str).hexdigest()
+        except (TypeError, UnicodeError) as e:
+            syslog('error', 'CSRF token validation failed with encoding error: %s. Secret type: %s, issued type: %s, secret value: %r, issued value: %r',
+                   str(e), type(secret), type(issued), secret, issued)
+            return False
+            
         age = time.time() - issued
         
         syslog('debug', 'CSRF token validation: context=%s, generated_mac=%s, age=%s seconds',
@@ -145,5 +162,6 @@ def csrf_check(mlist, token, cgi_user=None):
                    
         return False
     except (AssertionError, ValueError, TypeError) as e:
-        syslog('error', 'CSRF token validation failed with error: %s', str(e))
+        syslog('error', 'CSRF token validation failed with error: %s\nTraceback:\n%s',
+               str(e), ''.join(traceback.format_exc()))
         return False
