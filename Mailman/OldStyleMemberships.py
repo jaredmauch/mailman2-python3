@@ -169,7 +169,15 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
 
     def getMemberName(self, member):
         self.__assertIsMember(member)
-        return self.__mlist.usernames.get(member.lower())
+        name = self.__mlist.usernames.get(member.lower())
+        if isinstance(name, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                name = name.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                name = name.decode('utf-8', 'replace')
+        return name
 
     def getMemberTopics(self, member):
         self.__assertIsMember(member)
