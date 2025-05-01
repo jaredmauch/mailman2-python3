@@ -147,6 +147,20 @@ def main():
 
         listname = parts[0].lower()
         mailman_log('info', 'admindb: Processing list "%s"', listname)
+
+        # Check if list directory exists before trying to load
+        listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
+        if not os.path.exists(listdir):
+            print('Status: 404 Not Found')
+            print('Content-type: text/html; charset=utf-8\n')
+            safelistname = Utils.websafe(listname)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
+            doc.AddItem(_('The list directory does not exist.'))
+            print(doc.Format())
+            mailman_log('error', 'admindb: List directory does not exist: %s', listdir)
+            return
+
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError as e:
@@ -156,8 +170,23 @@ def main():
             safelistname = Utils.websafe(listname)
             doc.AddItem(Header(2, _("Error")))
             doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
+            doc.AddItem(_('The list configuration could not be loaded.'))
             print(doc.Format())
             mailman_log('error', 'admindb: No such list "%s": %s\n%s', 
+                       listname, e, traceback.format_exc())
+            return
+        except PermissionError as e:
+            # Handle permission errors
+            print('Status: 500 Internal Server Error')
+            print('Content-type: text/html; charset=utf-8\n')
+            safelistname = Utils.websafe(listname)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Permission error accessing list <em>{safelistname}</em>')))
+            doc.AddItem(_('The following error occurred:'))
+            doc.AddItem(Preformatted(Utils.websafe(str(e))))
+            doc.AddItem(_('Please contact the site administrator.'))
+            print(doc.Format())
+            mailman_log('error', 'admindb: Permission error accessing list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
             return
 

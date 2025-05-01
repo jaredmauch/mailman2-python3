@@ -93,23 +93,42 @@ class ListAdmin(object):
         filename = os.path.join(self.fullpath(), 'request.pck')
         filename_backup = filename + '.bak'
 
-        # Try to open the main file first
-        try:
-            with open(filename, 'rb') as fp:
-                self.__db = pickle.load(fp)
-        except (IOError, OSError, pickle.UnpicklingError):
-            # If that fails, try the backup
-            try:
-                with open(filename_backup, 'rb') as fp:
-                    self.__db = pickle.load(fp)
-            except (IOError, OSError, pickle.UnpicklingError):
-                # If both fail, start with empty database
-                self.__db = {}
-
         # Log file information for debugging
         self.log_file_info(filename)
         if os.path.exists(filename_backup):
             self.log_file_info(filename_backup)
+
+        # Try to open the main file first
+        try:
+            with open(filename, 'rb') as fp:
+                try:
+                    self.__db = pickle.load(fp)
+                    mailman_log('info', 'Successfully loaded request.pck for list %s', self.internal_name())
+                except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
+                    mailman_log('error', 'Error loading request.pck for list %s: %s\n%s',
+                               self.internal_name(), str(e), traceback.format_exc())
+                    # Try backup if main file failed
+                    if os.path.exists(filename_backup):
+                        mailman_log('info', 'Attempting to load from backup file')
+                        with open(filename_backup, 'rb') as backup_fp:
+                            try:
+                                self.__db = pickle.load(backup_fp)
+                                mailman_log('info', 'Successfully loaded backup request.pck for list %s',
+                                           self.internal_name())
+                                # Successfully loaded backup, restore it as main
+                                import shutil
+                                shutil.copy2(filename_backup, filename)
+                            except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
+                                mailman_log('error', 'Error loading backup request.pck for list %s: %s\n%s',
+                                           self.internal_name(), str(e), traceback.format_exc())
+                                self.__db = {}
+                    else:
+                        self.__db = {}
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                mailman_log('error', 'IOError loading request.pck for list %s: %s\n%s',
+                           self.internal_name(), str(e), traceback.format_exc())
+            self.__db = {}
 
     def __closedb(self):
         """Save the database with atomic operations and backup."""
@@ -738,23 +757,29 @@ class ListAdmin(object):
             # Check for potential permission issues
             if not os.access(path, os.R_OK):
                 mailman_log('warning', 'File %s is not readable', path)
+                raise PermissionError(f'File {path} is not readable')
             if not os.access(path, os.W_OK):
                 mailman_log('warning', 'File %s is not writable', path)
+                raise PermissionError(f'File {path} is not writable')
 
-            # Check ownership against expected values
-            expected_uid = pwd.getpwnam('mailman').pw_uid
-            expected_gid = grp.getgrnam('mailman').gr_gid
+            # Check ownership against expected values but only log warnings
+            try:
+                expected_uid = pwd.getpwnam('mailman').pw_uid
+                expected_gid = grp.getgrnam('mailman').gr_gid
 
-            if uid != expected_uid:
-                mailman_log('warning', 'File %s has incorrect owner (uid %d (%s) vs expected %d (mailman))',
-                           path, uid, user, expected_uid)
-            if gid != expected_gid:
-                mailman_log('warning', 'File %s has incorrect group (gid %d (%s) vs expected %d (mailman))',
-                           path, gid, group, expected_gid)
+                if uid != expected_uid:
+                    mailman_log('warning', 'File %s has incorrect owner (uid %d (%s) vs expected %d (mailman))',
+                               path, uid, user, expected_uid)
+                if gid != expected_gid:
+                    mailman_log('warning', 'File %s has incorrect group (gid %d (%s) vs expected %d (mailman))',
+                               path, gid, group, expected_gid)
+            except (KeyError, ImportError) as e:
+                mailman_log('warning', 'Could not check expected ownership for %s: %s', path, str(e))
 
         except Exception as e:
             mailman_log('error', 'Error getting file info for %s: %s\n%s',
                        path, str(e), traceback.format_exc())
+            raise  # Re-raise the exception to ensure it's caught by the caller
 
 
 def readMessage(path):
