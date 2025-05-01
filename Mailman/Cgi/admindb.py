@@ -117,6 +117,26 @@ def main():
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         
+        # Always ensure we have proper content-type headers
+        def output_error_page(status, title, message, details=None):
+            print('Status: %s' % status)
+            print('Content-type: text/html; charset=utf-8\n')
+            doc = Document()
+            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+            doc.AddItem(Header(2, _(title)))
+            doc.AddItem(Bold(_(message)))
+            if details:
+                doc.AddItem(Preformatted(Utils.websafe(str(details))))
+            doc.AddItem(_('Please contact the site administrator.'))
+            print(doc.Format())
+            return
+
+        def output_success_page(doc):
+            print('Status: 200 OK')
+            print('Content-type: text/html; charset=utf-8\n')
+            print(doc.Format())
+            return
+        
         # Parse form data first since we need it for authentication
         try:
             if os.environ.get('REQUEST_METHOD') == 'POST':
@@ -130,14 +150,8 @@ def main():
                 query_string = os.environ.get('QUERY_STRING', '')
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
         except Exception as e:
-            # Someone crafted a POST with a bad Content-Type
-            print('Status: 400 Bad Request')
-            print('Content-type: text/html; charset=utf-8\n')
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Invalid options to CGI script.')))
-            print(doc.Format())
             mailman_log('error', 'admindb: Invalid form data: %s\n%s', str(e), traceback.format_exc())
-            return
+            return output_error_page('400 Bad Request', 'Error', 'Invalid options to CGI script.')
 
         # Get the list name
         parts = Utils.GetPathPieces()
@@ -151,44 +165,31 @@ def main():
         # Check if list directory exists before trying to load
         listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
         if not os.path.exists(listdir):
-            print('Status: 404 Not Found')
-            print('Content-type: text/html; charset=utf-8\n')
-            safelistname = Utils.websafe(listname)
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
-            doc.AddItem(_('The list directory does not exist.'))
-            print(doc.Format())
             mailman_log('error', 'admindb: List directory does not exist: %s', listdir)
-            return
+            return output_error_page('404 Not Found', 'Error', 
+                                   'No such list <em>%s</em>' % Utils.websafe(listname),
+                                   'The list directory does not exist.')
 
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError as e:
-            # Avoid cross-site scripting attacks
-            print('Status: 404 Not Found')
-            print('Content-type: text/html; charset=utf-8\n')
-            safelistname = Utils.websafe(listname)
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
-            doc.AddItem(_('The list configuration could not be loaded.'))
-            print(doc.Format())
             mailman_log('error', 'admindb: No such list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
-            return
+            return output_error_page('404 Not Found', 'Error',
+                                   'No such list <em>%s</em>' % Utils.websafe(listname),
+                                   'The list configuration could not be loaded.')
         except PermissionError as e:
-            # Handle permission errors
-            print('Status: 500 Internal Server Error')
-            print('Content-type: text/html; charset=utf-8\n')
-            safelistname = Utils.websafe(listname)
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Permission error accessing list <em>{safelistname}</em>')))
-            doc.AddItem(_('The following error occurred:'))
-            doc.AddItem(Preformatted(Utils.websafe(str(e))))
-            doc.AddItem(_('Please contact the site administrator.'))
-            print(doc.Format())
             mailman_log('error', 'admindb: Permission error accessing list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
-            return
+            return output_error_page('500 Internal Server Error', 'Error',
+                                   'Permission error accessing list <em>%s</em>' % Utils.websafe(listname),
+                                   str(e))
+        except Exception as e:
+            mailman_log('error', 'admindb: Unexpected error loading list "%s": %s\n%s',
+                       listname, str(e), traceback.format_exc())
+            return output_error_page('500 Internal Server Error', 'Error',
+                                   'Error accessing list <em>%s</em>' % Utils.websafe(listname),
+                                   str(e))
 
         # Now that we know what list has been requested, all subsequent admin
         # pages are shown in that list's preferred language.
@@ -230,46 +231,28 @@ def main():
             try:
                 process_form(mlist, doc, cgidata)
                 mlist.Save()
+                # Output the success page with proper headers
+                return output_success_page(doc)
             except PermissionError as e:
-                # Handle permission errors gracefully
-                print('Status: 500 Internal Server Error')
-                print('Content-type: text/html; charset=utf-8\n')
-                doc = Document()
-                doc.set_language(mlist.preferred_language)
-                doc.AddItem(Header(2, _("Error")))
-                doc.AddItem(Bold(_('Permission error while processing request.')))
-                doc.AddItem(_(f'The following error occurred: {str(e)}'))
-                doc.AddItem(_('Please contact the site administrator.'))
-                print(doc.Format())
-                mailman_log('error', 'admindb: Permission error: %s\n%s', str(e), traceback.format_exc())
-                return
+                mailman_log('error', 'admindb: Permission error processing form: %s\n%s',
+                           str(e), traceback.format_exc())
+                return output_error_page('500 Internal Server Error', 'Error',
+                                       'Permission error while processing request',
+                                       str(e))
             except Exception as e:
-                # Log any other exceptions during form processing
-                print('Status: 500 Internal Server Error')
-                print('Content-type: text/html; charset=utf-8\n')
-                doc = Document()
-                doc.set_language(mlist.preferred_language)
-                doc.AddItem(Header(2, _("Error")))
-                doc.AddItem(Bold(_('An error occurred while processing the request.')))
-                doc.AddItem(_(f'The following error occurred: {str(e)}'))
-                doc.AddItem(_('Please contact the site administrator.'))
-                print(doc.Format())
-                mailman_log('error', 'admindb: Error processing form: %s\n%s', str(e), traceback.format_exc())
-                return
+                mailman_log('error', 'admindb: Error processing form: %s\n%s',
+                           str(e), traceback.format_exc())
+                return output_error_page('500 Internal Server Error', 'Error',
+                                       'Error processing request',
+                                       str(e))
         finally:
             mlist.Unlock()
     except Exception as e:
-        # Log any other exceptions
-        print('Status: 500 Internal Server Error')
-        print('Content-type: text/html; charset=utf-8\n')
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('An error occurred while processing the request.')))
-        doc.AddItem(_(f'The following error occurred: {str(e)}'))
-        doc.AddItem(_('Please contact the site administrator.'))
-        print(doc.Format())
-        mailman_log('error', 'admindb: Unexpected error: %s\n%s', str(e), traceback.format_exc())
+        mailman_log('error', 'admindb: Unexpected error: %s\n%s',
+                   str(e), traceback.format_exc())
+        return output_error_page('500 Internal Server Error', 'Error',
+                               'An unexpected error occurred',
+                               str(e))
 
 
 def handle_no_list(msg=''):
