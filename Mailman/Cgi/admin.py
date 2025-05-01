@@ -86,13 +86,19 @@ def main():
         if os.environ.get('REQUEST_METHOD') == 'POST':
             content_length = int(os.environ.get('CONTENT_LENGTH', 0))
             if content_length > 0:
-                form_data = sys.stdin.read(content_length)
+                form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
                 cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+                # Ensure all form values are properly decoded
+                for key in cgidata:
+                    cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
             else:
                 cgidata = {}
         else:
             query_string = os.environ.get('QUERY_STRING', '')
             cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+            # Ensure all form values are properly decoded
+            for key in cgidata:
+                cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
