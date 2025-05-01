@@ -751,67 +751,77 @@ def process_form(mlist, doc, cgidata):
             '<b>%s</b>' % _('Logout')))
         doc.AddItem('</font></div>\n')
         doc.AddItem(mlist.GetMailmanFooter())
-        return
+        # Output the success page with proper headers
+        return output_success_page(doc)
+
+    # Create a form for the overview
+    form = Form(mlist.GetScriptURL('admindb', absolute=1), mlist=mlist, contexts=AUTH_CONTEXTS)
+    form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
 
     # Get the action from the form data
     action = cgidata.get('action', [''])[0]
     if not action:
         # No action specified, show the overview
-        show_pending_subs(mlist, doc)
-        show_pending_unsubs(mlist, doc)
-        show_helds_overview(mlist, doc)
-        return
+        show_pending_subs(mlist, form)
+        show_pending_unsubs(mlist, form)
+        show_helds_overview(mlist, form)
+        doc.AddItem(form)
+        return output_success_page(doc)
 
     # Process the action
     if action == 'approve':
         if sender:
-            show_sender_requests(mlist, doc, sender)
+            show_sender_requests(mlist, form, sender)
         elif msgid:
-            show_message_requests(mlist, doc, msgid)
+            show_message_requests(mlist, form, msgid)
         else:
-            show_detailed_requests(mlist, doc)
+            show_detailed_requests(mlist, form)
     elif action == 'reject':
         if sender:
-            show_sender_requests(mlist, doc, sender)
+            show_sender_requests(mlist, form, sender)
         elif msgid:
-            show_message_requests(mlist, doc, msgid)
+            show_message_requests(mlist, form, msgid)
         else:
-            show_detailed_requests(mlist, doc)
+            show_detailed_requests(mlist, form)
     elif action == 'defer':
         if sender:
-            show_sender_requests(mlist, doc, sender)
+            show_sender_requests(mlist, form, sender)
         elif msgid:
-            show_message_requests(mlist, doc, msgid)
+            show_message_requests(mlist, form, msgid)
         else:
-            show_detailed_requests(mlist, doc)
+            show_detailed_requests(mlist, form)
     elif action == 'discard':
         if sender:
-            show_sender_requests(mlist, doc, sender)
+            show_sender_requests(mlist, form, sender)
         elif msgid:
-            show_message_requests(mlist, doc, msgid)
+            show_message_requests(mlist, form, msgid)
         else:
-            show_detailed_requests(mlist, doc)
+            show_detailed_requests(mlist, form)
     elif action == 'hold':
         if sender:
-            show_sender_requests(mlist, doc, sender)
+            show_sender_requests(mlist, form, sender)
         elif msgid:
-            show_message_requests(mlist, doc, msgid)
+            show_message_requests(mlist, form, msgid)
         else:
-            show_detailed_requests(mlist, doc)
+            show_detailed_requests(mlist, form)
     elif action == 'post':
         if msgid:
             info = mlist.GetRecord(msgid)
             if info:
                 total = len(mlist.GetHeldMessageIds())
                 count = 1
-                show_post_requests(mlist, msgid, info, total, count, doc)
+                show_post_requests(mlist, msgid, info, total, count, form)
         else:
-            show_detailed_requests(mlist, doc)
+            show_detailed_requests(mlist, form)
     else:
         # Unknown action, show the overview
-        show_pending_subs(mlist, doc)
-        show_pending_unsubs(mlist, doc)
-        show_helds_overview(mlist, doc)
+        show_pending_subs(mlist, form)
+        show_pending_unsubs(mlist, form)
+        show_helds_overview(mlist, form)
+
+    # Add the form to the document and output
+    doc.AddItem(form)
+    return output_success_page(doc)
 
 
 def format_body(body, mcset, lcset):
