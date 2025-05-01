@@ -790,21 +790,21 @@ class ListAdmin(object):
             
             # Log specific permission issues
             if expected_uid is not None and uid != expected_uid:
-                mailman_log('error', '%s.%06d %d File %s has incorrect owner (uid %d vs expected %d)',
+                mailman_log('error', '%s.%06d %d File %s has incorrect owner (uid %d (%s) vs expected %d (%s))',
                            timestamp, usecs, os.getpid(),
-                           path, uid, expected_uid)
+                           path, uid, current_user, expected_uid, expected_user)
             if expected_gid is not None and gid != expected_gid:
-                mailman_log('error', '%s.%06d %d File %s has incorrect group (gid %d vs expected %d)',
+                mailman_log('error', '%s.%06d %d File %s has incorrect group (gid %d (%s) vs expected %d (%s))',
                            timestamp, usecs, os.getpid(),
-                           path, gid, expected_gid)
+                           path, gid, current_group, expected_gid, expected_group)
             if mode & 0o002:  # World writable
                 mailman_log('error', '%s.%06d %d File %s is world writable (mode %o)',
                            timestamp, usecs, os.getpid(),
                            path, mode)
             if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
-                mailman_log('error', '%s.%06d %d File %s is group writable but not owned by mailman group',
+                mailman_log('error', '%s.%06d %d File %s is group writable but not owned by mailman group (current group: %s)',
                            timestamp, usecs, os.getpid(),
-                           path)
+                           path, current_group)
         except OSError as e:
             mailman_log('error', '%s.%06d %d Could not stat %s: %s',
                        timestamp, usecs, os.getpid(),
