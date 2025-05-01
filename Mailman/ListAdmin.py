@@ -104,6 +104,44 @@ class ListAdmin(object):
                 try:
                     self.__db = pickle.load(fp)
                     mailman_log('info', 'Successfully loaded request.pck for list %s', self.internal_name())
+                    
+                    # Log pending requests
+                    held_msgs = self.GetHeldMessageIds()
+                    pending_subs = self.GetSubscriptionIds()
+                    pending_unsubs = self.GetUnsubscriptionIds()
+                    
+                    if held_msgs:
+                        mailman_log('info', 'Pending held messages: %d', len(held_msgs))
+                        for id in held_msgs:
+                            try:
+                                info = self.GetRecord(id)
+                                if len(info) >= 2:  # Ensure we have at least time and sender
+                                    mailman_log('info', '  Message %d: from %s at %s', 
+                                              id, info[1], time.ctime(info[0]))
+                            except Exception as e:
+                                mailman_log('error', 'Error getting held message %d: %s', id, str(e))
+                    
+                    if pending_subs:
+                        mailman_log('info', 'Pending subscriptions: %d', len(pending_subs))
+                        for id in pending_subs:
+                            try:
+                                info = self.GetRecord(id)
+                                if len(info) >= 2:  # Ensure we have at least time and address
+                                    mailman_log('info', '  Subscription %d: %s at %s', 
+                                              id, info[1], time.ctime(info[0]))
+                            except Exception as e:
+                                mailman_log('error', 'Error getting subscription %d: %s', id, str(e))
+                    
+                    if pending_unsubs:
+                        mailman_log('info', 'Pending unsubscriptions: %d', len(pending_unsubs))
+                        for id in pending_unsubs:
+                            try:
+                                info = self.GetRecord(id)
+                                if len(info) >= 1:  # Ensure we have at least the address
+                                    mailman_log('info', '  Unsubscription %d: %s', id, info)
+                            except Exception as e:
+                                mailman_log('error', 'Error getting unsubscription %d: %s', id, str(e))
+                    
                 except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
                     mailman_log('error', 'Error loading request.pck for list %s: %s\n%s',
                                self.internal_name(), str(e), traceback.format_exc())
@@ -122,8 +160,16 @@ class ListAdmin(object):
                                 mailman_log('error', 'Error loading backup request.pck for list %s: %s\n%s',
                                            self.internal_name(), str(e), traceback.format_exc())
                                 self.__db = {}
+                            except Exception as e:
+                                mailman_log('error', 'Unexpected error loading backup request.pck for list %s: %s\n%s',
+                                           self.internal_name(), str(e), traceback.format_exc())
+                                self.__db = {}
                     else:
                         self.__db = {}
+                except Exception as e:
+                    mailman_log('error', 'Unexpected error loading request.pck for list %s: %s\n%s',
+                               self.internal_name(), str(e), traceback.format_exc())
+                    self.__db = {}
         except IOError as e:
             if e.errno != errno.ENOENT:
                 mailman_log('error', 'IOError loading request.pck for list %s: %s\n%s',
