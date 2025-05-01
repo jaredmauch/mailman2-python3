@@ -279,13 +279,40 @@ class ListAdmin(object):
         return ids
 
     def GetHeldMessageIds(self):
-        return self.__getmsgids(HELDMSG)
+        try:
+            self.__opendb()
+            ids = [k for k, (op, data) in list(self.__db.items()) if op == HELDMSG]
+            ids.sort()
+            return ids
+        except Exception as e:
+            mailman_log('error', 'Error getting held message IDs: %s\n%s', 
+                       str(e), traceback.format_exc())
+            # Return empty list on error to prevent cascading failures
+            return []
 
     def GetSubscriptionIds(self):
-        return self.__getmsgids(SUBSCRIPTION)
+        try:
+            self.__opendb()
+            ids = [k for k, (op, data) in list(self.__db.items()) if op == SUBSCRIPTION]
+            ids.sort()
+            return ids
+        except Exception as e:
+            mailman_log('error', 'Error getting subscription IDs: %s\n%s', 
+                       str(e), traceback.format_exc())
+            # Return empty list on error to prevent cascading failures
+            return []
 
     def GetUnsubscriptionIds(self):
-        return self.__getmsgids(UNSUBSCRIPTION)
+        try:
+            self.__opendb()
+            ids = [k for k, (op, data) in list(self.__db.items()) if op == UNSUBSCRIPTION]
+            ids.sort()
+            return ids
+        except Exception as e:
+            mailman_log('error', 'Error getting unsubscription IDs: %s\n%s', 
+                       str(e), traceback.format_exc())
+            # Return empty list on error to prevent cascading failures
+            return []
 
     def GetRecord(self, id):
         self.__opendb()
