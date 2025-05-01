@@ -56,14 +56,41 @@ AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 def main():
     try:
-        # Try to find out which list is being administered
+        # Log page load
+        mailman_log('info', 'admin: Page load started')
+        
+        # Parse form data first since we need it for authentication
+        try:
+            if os.environ.get('REQUEST_METHOD') == 'POST':
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                if content_length > 0:
+                    form_data = sys.stdin.read(content_length)
+                    cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+                else:
+                    cgidata = {}
+            else:
+                query_string = os.environ.get('QUERY_STRING', '')
+                cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+        except Exception as e:
+            # Someone crafted a POST with a bad Content-Type
+            print('Status: 400 Bad Request')
+            print('Content-type: text/html; charset=utf-8\n')
+            doc = Document()
+            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Invalid options to CGI script.')))
+            print(doc.Format())
+            mailman_log('error', 'admin: Invalid form data: %s\n%s', str(e), traceback.format_exc())
+            return
+
+        # Get the list name
         parts = Utils.GetPathPieces()
         if not parts:
-            # None, so just do the admin overview and be done with it
-            admin_overview()
+            handle_no_list()
             return
-        # Get the list object
+
         listname = parts[0].lower()
+        mailman_log('info', 'admin: Processing list "%s"', listname)
         if isinstance(listname, bytes):
             listname = listname.decode('utf-8', 'replace')
         try:
