@@ -34,8 +34,9 @@ from Mailman import Errors
 from Mailman import MemberAdaptor
 from Mailman import i18n
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import syslog, mailman_log
 from Mailman.CSRFcheck import csrf_check
+import traceback
 
 OR = '|'
 SLASH = '/'
@@ -97,7 +98,7 @@ def main():
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
-        syslog('error', 'options: No such list "%s": %s\n', listname, e)
+        mailman_log('error', 'options: No such list "%s": %s\n%s', listname, e, traceback.format_exc())
         return
 
     # The total contents of the user's response
@@ -119,6 +120,7 @@ def main():
         # Send this with a 400 status.
         print('Status: 400 Bad Request')
         print(doc.Format())
+        mailman_log('error', 'options: Invalid form data: %s\n%s', str(e), traceback.format_exc())
         return
 
     # CSRF check
@@ -248,9 +250,9 @@ def main():
                 # Public rosters
                 doc.addError(_('No such member: {safeuser}.'))
             else:
-                syslog('mischief',
-                       'Unsub attempt of non-member w/ private rosters: %s',
-                       user)
+                mailman_log('mischief',
+                       'Unsub attempt of non-member w/ private rosters: %s\n%s',
+                       user, traceback.format_exc())
                 if mlist.unsubscribe_policy:
                     doc.addError(msga, tag='')
                 else:
@@ -272,9 +274,9 @@ def main():
                 # Public rosters
                 doc.addError(_('No such member: {safeuser}.'))
             else:
-                syslog('mischief',
-                       'Reminder attempt of non-member w/ private rosters: %s',
-                       user)
+                mailman_log('mischief',
+                       'Reminder attempt of non-member w/ private rosters: %s\n%s',
+                       user, traceback.format_exc())
                 doc.addError(msg, tag='')
         loginpage(mlist, doc, user, language)
         print(doc.Format())
@@ -308,15 +310,15 @@ def main():
                      os.environ.get('HTTP_X_FORWARDED_FOR',
                      os.environ.get('REMOTE_ADDR',
                                     'unidentified origin')))
-            syslog('security',
-                 'Authorization failed (options): user=%s: list=%s: remote=%s',
-                   user, listname, remote)
+            mailman_log('security',
+                 'Authorization failed (options): user=%s: list=%s: remote=%s\n%s',
+                   user, listname, remote, traceback.format_exc())
             # So as not to allow membership leakage, prompt for the email
             # address and the password here.
             if mlist.private_roster != 0:
-                syslog('mischief',
-                       'Login failure with private rosters: %s from %s',
-                       user, remote)
+                mailman_log('mischief',
+                       'Login failure with private rosters: %s from %s\n%s',
+                       user, remote, traceback.format_exc())
                 user = None
             # give an HTTP 401 for authentication failure
             print('Status: 401 Unauthorized')

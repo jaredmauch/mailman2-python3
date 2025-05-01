@@ -39,7 +39,7 @@ from Mailman import i18n
 from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
 from Mailman.Cgi import Auth
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import sha_new
 from Mailman.CSRFcheck import csrf_check
 
@@ -76,8 +76,8 @@ def main():
             admin_overview(_('No such list <em>%(safelistname)s</em>') % {
                 'safelistname': safelistname
             })
-            syslog('error', 'admin: No such list "%s": %s\n',
-                   listname, e)
+            mailman_log('error', 'admin: No such list "%s": %s\n%s', 
+                       listname, e, traceback.format_exc())
             return
         # Now that we know what list has been requested, all subsequent admin
         # pages are shown in that list's preferred language.
@@ -111,7 +111,7 @@ def main():
             # Send this with a 400 status.
             print('Status: 400 Bad Request')
             print(doc.Format())
-            syslog('error', 'admin: Invalid options: %s\n%s', str(e), traceback.format_exc())
+            mailman_log('error', 'admin: Invalid options: %s\n%s', str(e), traceback.format_exc())
             return
 
         # CSRF check
@@ -139,9 +139,9 @@ def main():
                          os.environ.get('HTTP_X_FORWARDED_FOR',
                          os.environ.get('REMOTE_ADDR',
                                         'unidentified origin')))
-                syslog('security',
-                       'Authorization failed (admin): list=%s: remote=%s',
-                       listname, remote)
+                mailman_log('security',
+                          'Authorization failed (admin): list=%s: remote=%s\n%s',
+                          listname, remote, traceback.format_exc())
             else:
                 msg = ''
             Auth.loginpage(mlist, 'admin', msg=msg)
@@ -196,7 +196,7 @@ def main():
         # Send this with a 500 status.
         print('Status: 500 Internal Server Error')
         print(doc.Format())
-        syslog('error', 'admin: Unexpected error: %s\n%s', str(e), traceback.format_exc())
+        mailman_log('error', 'admin: Unexpected error: %s\n%s', str(e), traceback.format_exc())
 
 def admin_overview(msg=''):
     # Show the administrative overview page, with the list of all the lists on
@@ -1485,17 +1485,17 @@ def change_options(mlist, category, subcat, cgidata, doc):
         config_categories = mlist.GetConfigCategories()
         
         # Log the configuration categories for debugging
-        syslog('debug', 'Configuration categories: %s', str(config_categories))
-        syslog('debug', 'Category type: %s', str(type(config_categories)))
+        mailman_log('debug', 'Configuration categories: %s', str(config_categories))
+        mailman_log('debug', 'Category type: %s', str(type(config_categories)))
         if isinstance(config_categories, dict):
-            syslog('debug', 'Category keys: %s', str(list(config_categories.keys())))
+            mailman_log('debug', 'Category keys: %s', str(list(config_categories.keys())))
             for key, value in config_categories.items():
-                syslog('debug', 'Category %s type: %s, value: %s', 
+                mailman_log('debug', 'Category %s type: %s, value: %s', 
                        key, str(type(value)), str(value))
         
         # Validate category exists
         if category not in config_categories:
-            syslog('error', 'Invalid configuration category: %s', category)
+            mailman_log('error', 'Invalid configuration category: %s', category)
             doc.AddItem(mlist.ParseTags('adminerror.html',
                                       {'error': 'Invalid configuration category'},
                                       mlist.preferred_language))
@@ -1503,11 +1503,11 @@ def change_options(mlist, category, subcat, cgidata, doc):
             
         # Get the category object and validate it
         category_obj = config_categories[category]
-        syslog('debug', 'Category object for %s: type=%s, value=%s', 
+        mailman_log('debug', 'Category object for %s: type=%s, value=%s', 
                category, str(type(category_obj)), str(category_obj))
         
         if not hasattr(category_obj, 'items'):
-            syslog('error', 'Configuration category %s is invalid: %s', 
+            mailman_log('error', 'Configuration category %s is invalid: %s', 
                    category, str(type(category_obj)))
             doc.AddItem(mlist.ParseTags('adminerror.html',
                                       {'error': 'Invalid configuration category structure'},
@@ -1526,7 +1526,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 item.set(mlist, value)
                 
             except Exception as e:
-                syslog('error', 'Error setting %s.%s: %s', 
+                mailman_log('error', 'Error setting %s.%s: %s', 
                        category, item.name, str(e))
                 doc.AddItem(mlist.ParseTags('adminerror.html',
                                           {'error': 'Error setting %s: %s' % 
@@ -1538,7 +1538,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         mlist.Save()
         
     except Exception as e:
-        syslog('error', 'Error in change_options: %s\n%s', 
+        mailman_log('error', 'Error in change_options: %s\n%s', 
                str(e), traceback.format_exc())
         doc.AddItem(mlist.ParseTags('adminerror.html',
                                   {'error': 'Internal error: %s' % str(e)},

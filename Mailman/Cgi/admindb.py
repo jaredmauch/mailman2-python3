@@ -43,8 +43,9 @@ from Mailman.ListAdmin import HELDMSG, ListAdmin, PermissionError
 from Mailman.ListAdmin import readMessage
 from Mailman.Cgi import Auth
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import syslog, mailman_log
 from Mailman.CSRFcheck import csrf_check
+import traceback
 
 EMPTYSTRING = ''
 NL = '\n'
@@ -127,6 +128,7 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         print(doc.Format())
+        mailman_log('error', 'admindb: Invalid options: %s\n%s', str(e), traceback.format_exc())
         return
 
     doc = Document()
@@ -149,7 +151,7 @@ def main():
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
         print(doc.Format())
-        syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
+        mailman_log('error', 'admindb: No such list "%s": %s\n%s', listname, e, traceback.format_exc())
         return
 
     # Now that we have a valid mailing list, set the language
@@ -165,9 +167,9 @@ def main():
                      os.environ.get('HTTP_X_FORWARDED_FOR',
                      os.environ.get('REMOTE_ADDR',
                                     'unidentified origin')))
-            syslog('security',
-                   'Authorization failed (admindb): list=%s: remote=%s',
-                   listname, remote)
+            mailman_log('security',
+                       'Authorization failed (admindb): list=%s: remote=%s\n%s',
+                       listname, remote, traceback.format_exc())
         else:
             msg = ''
         Auth.loginpage(mlist, 'admindb', msg=msg)
@@ -203,6 +205,7 @@ def main():
             doc.AddItem(_(f'The following error occurred: {str(e)}'))
             doc.AddItem(_('Please contact the site administrator.'))
             print(doc.Format())
+            mailman_log('error', 'admindb: Permission error: %s\n%s', str(e), traceback.format_exc())
             return
     finally:
         mlist.Unlock()
