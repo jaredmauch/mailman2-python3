@@ -25,7 +25,7 @@ from email.mime.text import MIMEText
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-import Mailman.Message
+from Mailman.Message import Message
 from Mailman.i18n import _
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog

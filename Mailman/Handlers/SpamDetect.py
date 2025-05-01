@@ -39,6 +39,7 @@ from Mailman import i18n
 from Mailman import Utils
 from Mailman.Handlers.Hold import hold_for_approval
 from Mailman.Logging.Syslog import syslog
+from Mailman.Message import Message
 
 # First, play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.

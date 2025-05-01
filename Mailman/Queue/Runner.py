@@ -186,29 +186,76 @@ class Runner:
                 break
         return len(files)
 
-    def _onefile(self, msg, msgdata):
-        # Do some common sanity checking on the message metadata.  It's got to
-        # be destined for a particular mailing list.  This switchboard is used
-        # to shunt off badly formatted messages.  We don't want to just trash
-        # them because they may be fixable with human intervention.  Just get
-        # them out of our site though.
-        #
-        # Find out which mailing list this message is destined for.
+    def _validate_message(self, msg, msgdata=None):
+        """Validate and convert message to Mailman.Message.Message if needed.
+        
+        Args:
+            msg: The message object to validate
+            msgdata: Optional message metadata dictionary
+            
+        Returns:
+            tuple: (validated_msg, success)
+            where validated_msg is the converted message if successful,
+            and success is a boolean indicating if validation succeeded
+        """
         try:
-            # Convert email.message.Message to Mailman.Message if needed
-            if not isinstance(msg, Message):
-                mailman_msg = Message()
-                # Copy all attributes from the original message
-                for key, value in msg.items():
-                    mailman_msg[key] = value
-                # Copy the payload
-                if msg.is_multipart():
-                    for part in msg.get_payload():
-                        mailman_msg.attach(part)
-                else:
-                    mailman_msg.set_payload(msg.get_payload())
-                msg = mailman_msg
+            # Handle string messages
+            if isinstance(msg, str):
+                log('info', 'Converting string to Mailman.Message.Message')
+                try:
+                    from email import message_from_string
+                    msg = message_from_string(msg)
+                except Exception as e:
+                    log('error', 'Failed to convert string to message: %s\nTraceback:\n%s',
+                           str(e), traceback.format_exc())
+                    return None, False
 
+            # Convert to Mailman.Message.Message if needed
+            if not isinstance(msg, Message):
+                log('info', 'Converting email.message.Message to Mailman.Message.Message')
+                try:
+                    mailman_msg = Message()
+                    # Copy all attributes from the original message
+                    for key, value in msg.items():
+                        mailman_msg[key] = value
+                    # Copy the payload
+                    if msg.is_multipart():
+                        for part in msg.get_payload():
+                            mailman_msg.attach(part)
+                    else:
+                        mailman_msg.set_payload(msg.get_payload())
+                    msg = mailman_msg
+                    # Update msgdata references if needed
+                    if msgdata and 'msg' in msgdata:
+                        msgdata['msg'] = msg
+                except Exception as e:
+                    log('error', 'Failed to convert to Mailman.Message.Message: %s\nTraceback:\n%s',
+                           str(e), traceback.format_exc())
+                    return None, False
+
+            # Validate required Mailman.Message.Message methods
+            required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
+            for method in required_methods:
+                if not hasattr(msg, method):
+                    log('error', 'Message object missing required method %s', method)
+                    return None, False
+
+            return msg, True
+        except Exception as e:
+            log('error', 'Unexpected error during message validation: %s\nTraceback:\n%s',
+                   str(e), traceback.format_exc())
+            return None, False
+
+    def _onefile(self, msg, msgdata):
+        # Validate message type first
+        msg, success = self._validate_message(msg, msgdata)
+        if not success:
+            log('error', 'Message validation failed, moving to shunt queue')
+            self._shunt.enqueue(msg, msgdata)
+            return
+
+        # Do some common sanity checking on the message metadata
+        try:
             # Check for duplicate messages early
             msgid = msg.get('message-id', 'n/a')
             if hasattr(self, '_processed_messages') and msgid in self._processed_messages:

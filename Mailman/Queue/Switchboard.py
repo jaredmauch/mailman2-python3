@@ -48,7 +48,7 @@ import traceback
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import sha_new
 
@@ -267,8 +267,30 @@ class Switchboard:
                         self.finish(filebase, preserve=True)
                         return None, None
 
-                if not hasattr(msg, 'get'):
-                    mailman_log('error', 'Message object does not have get() method in file %s', backfile)
+                # Convert to Mailman.Message.Message if needed
+                if not isinstance(msg, Message.Message):
+                    try:
+                        mailman_log('info', 'Converting email.message.Message to Mailman.Message.Message')
+                        mailman_msg = Message.Message()
+                        # Copy all attributes from the original message
+                        for key, value in msg.items():
+                            mailman_msg[key] = value
+                        # Copy the payload
+                        if msg.is_multipart():
+                            for part in msg.get_payload():
+                                mailman_msg.attach(part)
+                        else:
+                            mailman_msg.set_payload(msg.get_payload())
+                        msg = mailman_msg
+                    except Exception as e:
+                        mailman_log('error', 'Failed to convert to Mailman.Message.Message: %s\nTraceback:\n%s',
+                               str(e), traceback.format_exc())
+                        # Move to shunt queue
+                        self.finish(filebase, preserve=True)
+                        return None, None
+
+                if not hasattr(msg, 'get_sender'):
+                    mailman_log('error', 'Message object does not have get_sender() method in file %s', backfile)
                     # Move to shunt queue
                     self.finish(filebase, preserve=True)
                     return None, None

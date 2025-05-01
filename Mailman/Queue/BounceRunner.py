@@ -191,6 +191,12 @@ class BounceRunner(Runner, BounceMixin):
                        mlist.internal_name(), e)
             return False
 
+        # Validate message type first
+        msg, success = self._validate_message(msg, msgdata)
+        if not success:
+            mailman_log('error', 'Message validation failed for bounce message')
+            return False
+
         # Validate message headers
         if not msg.get('message-id'):
             mailman_log('error', 'Message missing Message-ID header')

@@ -28,14 +28,12 @@ from email.parser import Parser
 from email.errors import MessageParseError
 
 from Mailman import mm_cfg
-import Mailman.Message
-from Mailman.Message import Generator
 from Mailman.Message import Message
 
 
 def _safeparser(fp):
     try:
-        return email.message_from_file(fp, Mailman.Message.Message)
+        return email.message_from_file(fp, Message)
     except MessageParseError:
         # Don't return None since that will stop a mailbox iterator
         return ''

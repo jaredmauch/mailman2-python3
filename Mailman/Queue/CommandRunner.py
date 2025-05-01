@@ -27,7 +27,7 @@ import sys
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman.Handlers import Replybot
 from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
@@ -232,6 +232,12 @@ class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
 
     def _dispose(self, mlist, msg, msgdata):
+        # Validate message type first
+        msg, success = self._validate_message(msg, msgdata)
+        if not success:
+            mailman_log('error', 'Message validation failed for command message')
+            return False
+
         # The policy here is similar to the Replybot policy.  If a message has
         # "Precedence: bulk|junk|list" and no "X-Ack: yes" header, we discard
         # it to prevent replybot response storms.

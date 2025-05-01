@@ -85,27 +85,21 @@ class OutgoingRunner(Runner, BounceMixin):
             raise
 
     def _dispose(self, mlist, msg, msgdata):
-        """Deliver the message to the list's members."""
+        """Process an outgoing message."""
         try:
-            # Deliver the message
-            mlist.deliver(msg, msgdata)
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                mailman_log('error', 'Message validation failed for outgoing message')
+                return False
+
+            # Process the message through the delivery module
+            self._func(mlist, msg, msgdata)
+            return True
         except Exception as e:
-            # Get message details for better error reporting
-            msgid = msg.get('message-id', 'n/a')
-            sender = msg.get('from', 'unknown')
-            subject = msg.get('subject', 'no subject')
-            
-            # Log detailed error information with full traceback
-            mailman_log('error', 
-                'Error delivering message to list %s\n'
-                'Message-ID: %s\n'
-                'From: %s\n'
-                'Subject: %s\n'
-                'Error: %s\n'
-                'Traceback:\n%s',
-                mlist.internal_name(), msgid, sender, subject, str(e),
-                traceback.format_exc())
-            raise
+            mailman_log('error', 'Error processing outgoing message for list %s: %s',
+                   mlist.internal_name(), str(e))
+            return False
 
     def _queue_bounces(self, mlist, msg, msgdata, failures):
         """Queue bounce messages for failed deliveries."""

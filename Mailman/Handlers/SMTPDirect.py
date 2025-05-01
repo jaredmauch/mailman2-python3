@@ -38,7 +38,7 @@ import traceback
 import Mailman.mm_cfg
 import Mailman.Utils
 import Mailman.Errors
-import Mailman.Message
+from Mailman.Message import Message
 import Mailman.Handlers.Decorate
 import Mailman.Logging.Syslog
 import Mailman.SafeDict
@@ -149,9 +149,9 @@ class Connection(object):
 
 def process(mlist, msg, msgdata):
     # Convert email.message.Message to Mailman.Message if needed
-    if isinstance(msg, email.message.Message) and not isinstance(msg, Mailman.Message.Message):
+    if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
         try:
-            mailman_msg = Mailman.Message.Message()
+            mailman_msg = Message()
             # Copy all attributes from the original message
             for key, value in msg.items():
                 mailman_msg[key] = value
@@ -445,8 +445,8 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
 
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     # Convert email.message.Message to Mailman.Message if needed
-    if isinstance(msg, email.message.Message) and not isinstance(msg, Mailman.Message.Message):
-        mailman_msg = Mailman.Message.Message()
+    if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+        mailman_msg = Message()
         # Copy all attributes from the original message
         for key, value in msg.items():
             mailman_msg[key] = value

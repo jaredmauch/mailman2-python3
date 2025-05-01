@@ -134,12 +134,19 @@ class NewsRunner(Runner):
     def _dispose(self, mlist, msg, msgdata):
         """Post the message to the newsgroup."""
         try:
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                mailman_log('error', 'Message validation failed for news message')
+                return False
+
             # Post the message to the newsgroup
             mlist.post_to_news(msg)
+            return True
         except Exception as e:
             mailman_log('error', 'Error posting message to newsgroup for list %s: %s',
                    mlist.internal_name(), str(e))
-            raise
+            return False
 
     def _queue_news(self, listname, msg, msgdata):
         """Queue a news message for processing."""

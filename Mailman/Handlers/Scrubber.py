@@ -35,7 +35,7 @@ from email.charset import Charset
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import LockFile
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman.Errors import DiscardMessage
 from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog

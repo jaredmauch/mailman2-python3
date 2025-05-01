@@ -67,7 +67,7 @@ from Mailman import Gui
 # other useful classes
 from Mailman import MemberAdaptor
 from Mailman.OldStyleMemberships import OldStyleMemberships
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Site
 from Mailman import i18n
 from Mailman.Logging.Syslog import syslog

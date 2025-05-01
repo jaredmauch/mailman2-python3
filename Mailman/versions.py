@@ -37,7 +37,7 @@ from builtins import str
 from builtins import range
 import email
 import email.message
-import Mailman.Message
+from Mailman.Message import Message
 
 
 from Mailman import mm_cfg

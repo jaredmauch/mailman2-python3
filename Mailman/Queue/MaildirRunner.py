@@ -63,7 +63,7 @@ from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
-import Mailman.Message
+from Mailman.Message import Message
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import mailman_log
@@ -104,7 +104,7 @@ class MaildirRunner(Runner):
         self._stop = 0
         self._dir = os.path.join(mm_cfg.MAILDIR_DIR, 'new')
         self._cur = os.path.join(mm_cfg.MAILDIR_DIR, 'cur')
-        self._parser = Parser(Mailman.Message.Message)
+        self._parser = Parser(Message)
 
     def _oneloop(self):
         """Process one batch of messages."""
@@ -174,9 +174,16 @@ class MaildirRunner(Runner):
     def _dispose(self, mlist, msg, msgdata):
         """Process the maildir message."""
         try:
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                mailman_log('error', 'Message validation failed for maildir message')
+                return False
+
             # Process the maildir message
             mlist.process_maildir(msg)
+            return True
         except Exception as e:
             mailman_log('error', 'Error processing maildir message for list %s: %s',
                    mlist.internal_name(), str(e))
-            raise
+            return False

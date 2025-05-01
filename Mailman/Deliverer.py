@@ -26,7 +26,7 @@ from email.mime.message import MIMEMessage
 from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import i18n
 from Mailman import Pending
 from Mailman.Logging.Syslog import syslog

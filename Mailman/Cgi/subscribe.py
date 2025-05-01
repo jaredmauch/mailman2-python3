@@ -31,7 +31,7 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import i18n
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import mailman_log

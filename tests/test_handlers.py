@@ -35,7 +35,7 @@ except ImportError:
 
 from Mailman import mm_cfg
 from Mailman.MailList import MailList
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Errors
 from Mailman import Pending
 from Mailman.Queue.Switchboard import Switchboard

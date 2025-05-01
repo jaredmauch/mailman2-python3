@@ -30,6 +30,12 @@ class RetryRunner(Runner):
         self.__outq = Switchboard(mm_cfg.OUTQUEUE_DIR)
 
     def _dispose(self, mlist, msg, msgdata):
+        # Validate message type first
+        msg, success = self._validate_message(msg, msgdata)
+        if not success:
+            mailman_log('error', 'Message validation failed for retry message')
+            return False
+
         # Move it to the out queue for another retry if it's time.
         deliver_after = msgdata.get('deliver_after', 0)
         if time.time() < deliver_after:

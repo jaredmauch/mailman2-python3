@@ -106,6 +106,7 @@ import random
 import signal
 import os
 from email import message_from_string
+from Mailman.Message import Message
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -202,6 +203,36 @@ class IncomingRunner(Runner):
         if 'pipeline' in msgdata and msgdata['pipeline'] != pipeline:
             mailman_log('error', 'Pipeline state mismatch for message %s', msg.get('message-id', 'n/a'))
             return 0
+
+        # Ensure message is a Mailman.Message.Message
+        if not isinstance(msg, Message):
+            try:
+                mailman_log('info', 'Converting email.message.Message to Mailman.Message.Message')
+                mailman_msg = Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
+                # Update msgdata references if needed
+                if 'msg' in msgdata:
+                    msgdata['msg'] = msg
+            except Exception as e:
+                mailman_log('error', 'Failed to convert message to Mailman.Message.Message: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+                return 0
+
+        # Validate required Mailman.Message.Message methods
+        required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
+        for method in required_methods:
+            if not hasattr(msg, method):
+                mailman_log('error', 'Message object missing required method %s', method)
+                return 0
 
         while pipeline:
             handler = pipeline.pop(0)

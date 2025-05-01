@@ -24,12 +24,11 @@ to send acks only after successful delivery.
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Errors
 from Mailman.i18n import _
 
 
-
 def process(mlist, msg, msgdata):
     # Extract the sender's address and find them in the user database
     sender = msgdata.get('original_sender', msg.get_sender())

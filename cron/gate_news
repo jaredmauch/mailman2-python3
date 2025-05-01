@@ -39,13 +39,12 @@ import paths
 # Import this /after/ paths so that the sys.path is properly hacked
 import email.errors
 import email.message
-import Mailman.Message
+from Mailman.Message import Message
 from email.parser import Parser
 
 from Mailman import mm_cfg
 from Mailman import MailList
 from Mailman import Utils
-from Mailman import Message
 from Mailman import LockFile
 from Mailman.i18n import _
 from Mailman.Queue.sbcache import get_switchboard

@@ -20,13 +20,12 @@
 import time
 
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman.i18n import _
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import syslog
 
 
-
 def process(mlist, msg, msgdata):
     # Normally, the replybot should get a shot at this message, but there are
     # some important short-circuits, mostly to suppress 'bot storms, at least

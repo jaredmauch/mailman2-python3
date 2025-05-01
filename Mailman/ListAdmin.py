@@ -44,7 +44,7 @@ import email.message
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Errors
 from Mailman.UserDesc import UserDesc
 from Mailman.Queue.sbcache import get_switchboard

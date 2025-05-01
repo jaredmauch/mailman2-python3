@@ -48,7 +48,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import i18n
 from Mailman import Errors
-import Mailman.Message
+from Mailman.Message import Message
 from Mailman.Mailbox import Mailbox
 from Mailman.MemberAdaptor import ENABLED
 from Mailman.Handlers.Decorate import decorate
@@ -264,7 +264,7 @@ def send_digests(mlist, mboxpath):
                         # Process the previous message
                         msg_str = ''.join(current_msg)
                         try:
-                            msg = email.message_from_string(msg_str, Mailman.Message.Message)
+                            msg = email.message_from_string(msg_str, Message)
                             if msg is None:
                                 continue
                                 
@@ -312,7 +312,7 @@ def send_digests(mlist, mboxpath):
             if current_msg:
                 msg_str = ''.join(current_msg)
                 try:
-                    msg = email.message_from_string(msg_str, Mailman.Message.Message)
+                    msg = email.message_from_string(msg_str, Message)
                     if msg is not None:
                         # Process the last message (same code as above)
                         subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)

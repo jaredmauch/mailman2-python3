@@ -31,7 +31,7 @@ from email.utils import unquote, parseaddr, formataddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import MemberAdaptor

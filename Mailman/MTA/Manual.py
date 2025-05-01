@@ -22,7 +22,7 @@ import email.utils
 from io import StringIO
 
 from Mailman import mm_cfg
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Utils
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import _, C_

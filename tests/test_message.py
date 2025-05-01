@@ -26,7 +26,7 @@ try:
 except ImportError:
     import paths
 
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Version
 from Mailman import Errors
 
