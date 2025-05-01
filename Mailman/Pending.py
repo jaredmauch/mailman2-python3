@@ -25,6 +25,7 @@ import errno
 import random
 import pickle
 import socket
+import traceback
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
@@ -104,7 +105,8 @@ class Pending(object):
                         return {}
                     return pickle.loads(data, fix_imports=True, encoding='latin1')
                 except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                    syslog('error', 'Error loading pending.pck: %s', str(e))
+                    syslog('error', 'Error loading pending.pck: %s\nTraceback:\n%s', 
+                           str(e), traceback.format_exc())
 
             # If we get here, the main file failed to load properly
             if os.path.exists(filename_backup):
@@ -120,11 +122,13 @@ class Pending(object):
                         shutil.copy2(filename_backup, filename)
                         return db
                     except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                        syslog('error', 'Error loading backup pending.pck: %s', str(e))
+                        syslog('error', 'Error loading backup pending.pck: %s\nTraceback:\n%s', 
+                               str(e), traceback.format_exc())
 
         except IOError as e:
             if e.errno != errno.ENOENT:
-                syslog('error', 'IOError loading pending.pck: %s', str(e))
+                syslog('error', 'IOError loading pending.pck: %s\nTraceback:\n%s', 
+                       str(e), traceback.format_exc())
 
         # If we get here, both main and backup files failed or don't exist
         return {}

@@ -792,8 +792,8 @@ class ListAdmin(object):
             can_access = False
             access_error = None
             try:
-                # Try to open the file for reading
-                with open(path, 'r') as f:
+                # Try to open the file for reading in binary mode
+                with open(path, 'rb') as f:
                     can_access = True
             except (IOError, OSError) as e:
                 access_error = str(e)
