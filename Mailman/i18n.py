@@ -102,9 +102,12 @@ def _(s, frame=1):
     # Ensure we return a string, not bytes
     if isinstance(tns, bytes):
         tns = tns.decode(charset, 'replace')
+    # Ensure all dictionary values are strings, not bytes
     for k, v in list(dict.items()):
-        if isinstance(v, str):
-            dict[k] = v.encode(charset, 'replace')
+        if isinstance(v, bytes):
+            dict[k] = v.decode(charset, 'replace')
+        elif not isinstance(v, str):
+            dict[k] = str(v)
     try:
         return tns % dict
     except (ValueError, TypeError):
