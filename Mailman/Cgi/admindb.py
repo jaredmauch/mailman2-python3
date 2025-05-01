@@ -736,6 +736,23 @@ def process_form(mlist, doc, cgidata):
     msgid = qs.get('msgid', [''])[0]
     details = qs.get('details', [''])[0]
 
+    # Check if there are any pending requests
+    if not mlist.NumRequestsPending():
+        title = _(f'{mlist.real_name} Administrative Database')
+        doc.SetTitle(title)
+        doc.AddItem(Header(2, title))
+        doc.AddItem(_('There are no pending requests.'))
+        doc.AddItem(' ')
+        admindburl = mlist.GetScriptURL('admindb', absolute=1)
+        doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
+        # Put 'Logout' link before the footer
+        doc.AddItem('\n<div align="right"><font size="+2">')
+        doc.AddItem(Link('%s/logout' % admindburl,
+            '<b>%s</b>' % _('Logout')))
+        doc.AddItem('</font></div>\n')
+        doc.AddItem(mlist.GetMailmanFooter())
+        return
+
     # Get the action from the form data
     action = cgidata.get('action', [''])[0]
     if not action:
