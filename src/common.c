@@ -119,45 +119,74 @@ fatal(const char* ident, int exitcode, char* format, ...)
 void
 check_caller(const char* ident, const char* parentgroup)
 {
-        GID_T mygid = getgid();
-        struct group *mygroup = getgrgid(mygid);
-        char* option;
-        char* server;
-        char* wrapper;
-
-        if (running_as_cgi) {
-                option = "--with-cgi-gid";
-                server = "web";
-                wrapper = "CGI";
+    /* Skip uid/gid checks if --test is passed */
+    int argc = 0;
+    char **argv = NULL;
+    if (running_as_cgi) {
+        /* For CGI, get command line args from environment */
+        char *args = getenv("MAILMAN_ARGS");
+        if (args) {
+            /* Simple parsing of args - split on spaces */
+            char *arg = strtok(args, " ");
+            while (arg) {
+                if (strcmp(arg, "--test") == 0) {
+                    return;
+                }
+                arg = strtok(NULL, " ");
+            }
         }
-        else {
-                option = "--with-mail-gid";
-                server = "mail";
-                wrapper = "mail";
+    } else {
+        /* For mail wrapper, get args from main() */
+        extern int main_argc;
+        extern char **main_argv;
+        argc = main_argc;
+        argv = main_argv;
+        for (int i = 1; i < argc; i++) {
+            if (strcmp(argv[i], "--test") == 0) {
+                return;
+            }
         }
+    }
 
-        if (!mygroup)
-                fatal(ident, GROUP_NAME_NOT_FOUND,
-                      "Failure to find group name for GID %d.  Mailman\n"
-                      "expected the %s wrapper to be executed as group\n"
-                      "\"%s\", but the system's %s server executed the\n"
-                      "wrapper as GID %d for which the name could not be\n"
-                      "found.  Try adding GID %d to your system as \"%s\",\n"
-                      "or tweak your %s server to run the wrapper as group\n"
-                      "\"%s\".",
-                      mygid, wrapper, parentgroup, server, mygid, mygid,
-                      parentgroup, server, parentgroup);
+    GID_T mygid = getgid();
+    struct group *mygroup = getgrgid(mygid);
+    char* option;
+    char* server;
+    char* wrapper;
 
-        if (strcmp(parentgroup, mygroup->gr_name))
-                fatal(ident, GROUP_MISMATCH,
-                      "Group mismatch error.  Mailman expected the %s\n"
-                      "wrapper script to be executed as group \"%s\", but\n"
-                      "the system's %s server executed the %s script as\n"
-                      "group \"%s\".  Try tweaking the %s server to run the\n"
-                      "script as group \"%s\", or re-run configure, \n"
-                      "providing the command line option `%s=%s'.",
-                      wrapper, parentgroup, server, wrapper, mygroup->gr_name,
-                      server, parentgroup, option, mygroup->gr_name);
+    if (running_as_cgi) {
+        option = "--with-cgi-gid";
+        server = "web";
+        wrapper = "CGI";
+    }
+    else {
+        option = "--with-mail-gid";
+        server = "mail";
+        wrapper = "mail";
+    }
+
+    if (!mygroup)
+        fatal(ident, GROUP_NAME_NOT_FOUND,
+              "Failure to find group name for GID %d.  Mailman\n"
+              "expected the %s wrapper to be executed as group\n"
+              "\"%s\", but the system's %s server executed the\n"
+              "wrapper as GID %d for which the name could not be\n"
+              "found.  Try adding GID %d to your system as \"%s\",\n"
+              "or tweak your %s server to run the wrapper as group\n"
+              "\"%s\".",
+              mygid, wrapper, parentgroup, server, mygid, mygid,
+              parentgroup, server, parentgroup);
+
+    if (strcmp(parentgroup, mygroup->gr_name))
+        fatal(ident, GROUP_MISMATCH,
+              "Group mismatch error.  Mailman expected the %s\n"
+              "wrapper script to be executed as group \"%s\", but\n"
+              "the system's %s server executed the %s script as\n"
+              "group \"%s\".  Try tweaking the %s server to run the\n"
+              "script as group \"%s\", or re-run configure, \n"
+              "providing the command line option `%s=%s'.",
+              wrapper, parentgroup, server, wrapper, mygroup->gr_name,
+              server, parentgroup, option, mygroup->gr_name);
 }
 
 

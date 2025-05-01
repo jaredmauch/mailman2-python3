@@ -111,6 +111,10 @@ def main():
         # Log page load
         mailman_log('info', 'admindb: Page load started')
         
+        # Initialize document early
+        doc = Document()
+        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+        
         # Parse form data first since we need it for authentication
         try:
             if os.environ.get('REQUEST_METHOD') == 'POST':
@@ -127,8 +131,6 @@ def main():
             # Someone crafted a POST with a bad Content-Type
             print('Status: 400 Bad Request')
             print('Content-type: text/html; charset=utf-8\n')
-            doc = Document()
-            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
             doc.AddItem(Header(2, _("Error")))
             doc.AddItem(Bold(_('Invalid options to CGI script.')))
             print(doc.Format())
@@ -150,16 +152,15 @@ def main():
             print('Status: 404 Not Found')
             print('Content-type: text/html; charset=utf-8\n')
             safelistname = Utils.websafe(listname)
-            doc = Document()
-            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
             doc.AddItem(Header(2, _("Error")))
             doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
             print(doc.Format())
-            mailman_log('error', 'admindb: No such list "%s": %s\n%s', listname, e, traceback.format_exc())
+            mailman_log('error', 'admindb: No such list "%s": %s\n%s', 
+                       listname, e, traceback.format_exc())
             return
 
-        # Now that we have a valid mailing list, set the language
-        i18n.set_language(mlist.preferred_language)
+        # Now that we know what list has been requested, all subsequent admin
+        # pages are shown in that list's preferred language.
         doc.set_language(mlist.preferred_language)
 
         # Must be authenticated to get any farther

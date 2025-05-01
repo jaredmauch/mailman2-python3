@@ -40,6 +40,7 @@ main(int argc __attribute__((unused)), char** argv __attribute__((unused)), char
 {
         int status;
         char* fake_argv[3];
+        char* args = getenv("MAILMAN_ARGS");
 
         running_as_cgi = 1;
         check_caller(logident, parentgroup);

@@ -59,6 +59,10 @@ def main():
         # Log page load
         mailman_log('info', 'admin: Page load started')
         
+        # Initialize document early
+        doc = Document()
+        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+        
         # Parse form data first since we need it for authentication
         try:
             if os.environ.get('REQUEST_METHOD') == 'POST':
@@ -75,8 +79,6 @@ def main():
             # Someone crafted a POST with a bad Content-Type
             print('Status: 400 Bad Request')
             print('Content-type: text/html; charset=utf-8\n')
-            doc = Document()
-            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
             doc.AddItem(Header(2, _("Error")))
             doc.AddItem(Bold(_('Invalid options to CGI script.')))
             print(doc.Format())
