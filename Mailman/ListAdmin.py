@@ -84,7 +84,7 @@ class ListAdmin(object):
         self.__filename = os.path.join(self.fullpath(), 'request.pck')
 
     def __opendb(self):
-        """Open the database file and load data with improved error handling."""
+        """Open the database file."""
         if self.__db is not None:
             return
 
@@ -92,136 +92,23 @@ class ListAdmin(object):
         filename = os.path.join(self.fullpath(), 'request.pck')
         filename_backup = filename + '.bak'
 
-        def log_file_info(path):
-            try:
-                # Log process identity information
-                euid = os.geteuid()
-                egid = os.getegid()
-                ruid = os.getuid()
-                rgid = os.getgid()
-                groups = os.getgroups()
-                
-                # Get user and group names
-                try:
-                    euser = pwd.getpwuid(euid)[0]
-                except KeyError:
-                    euser = f'uid {euid}'
-                try:
-                    egroup = grp.getgrgid(egid)[0]
-                except KeyError:
-                    egroup = f'gid {egid}'
-                try:
-                    ruser = pwd.getpwuid(ruid)[0]
-                except KeyError:
-                    ruser = f'uid {ruid}'
-                try:
-                    rgroup = grp.getgrgid(rgid)[0]
-                except KeyError:
-                    rgroup = f'gid {rgid}'
-                
-                # Get group names for supplementary groups
-                group_names = []
-                for gid in groups:
-                    try:
-                        group_names.append(grp.getgrgid(gid)[0])
-                    except KeyError:
-                        group_names.append(f'gid {gid}')
-                
-                mailman_log('error', 
-                           'Process identity - EUID: %d (%s), EGID: %d (%s), RUID: %d (%s), RGID: %d (%s), Groups: %s',
-                           euid, euser, egid, egroup, ruid, ruser, rgid, rgroup, ', '.join(group_names))
-                
-                # Get file information
-                stat = os.stat(path)
-                mode = stat.st_mode
-                uid = stat.st_uid
-                gid = stat.st_gid
-                
-                # Get current ownership info
-                try:
-                    current_user = pwd.getpwuid(uid)[0]
-                except KeyError:
-                    current_user = f'uid {uid}'
-                try:
-                    current_group = grp.getgrgid(gid)[0]
-                except KeyError:
-                    current_group = f'gid {gid}'
-                
-                # Get expected ownership info
-                try:
-                    expected_user = pwd.getpwnam(mm_cfg.MAILMAN_USER)[0]
-                    expected_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER)[2]
-                except KeyError:
-                    expected_user = f'user {mm_cfg.MAILMAN_USER}'
-                    expected_uid = None
-                
-                try:
-                    expected_group = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[0]
-                    expected_gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP)[2]
-                except KeyError:
-                    expected_group = f'group {mm_cfg.MAILMAN_GROUP}'
-                    expected_gid = None
-                
-                # Log current and expected ownership
-                mailman_log('error', 
-                           'File %s: mode=%o, owner=%s (current) vs %s (expected), group=%s (current) vs %s (expected)',
-                           path, mode, current_user, expected_user, current_group, expected_group)
-                
-                # Log specific permission issues
-                if expected_uid is not None and uid != expected_uid:
-                    mailman_log('error', 'File %s has incorrect owner (uid %d vs expected %d)',
-                               path, uid, expected_uid)
-                if expected_gid is not None and gid != expected_gid:
-                    mailman_log('error', 'File %s has incorrect group (gid %d vs expected %d)',
-                               path, gid, expected_gid)
-                if mode & 0o002:  # World writable
-                    mailman_log('error', 'File %s is world writable (mode %o)',
-                               path, mode)
-                if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
-                    mailman_log('error', 'File %s is group writable but not owned by mailman group',
-                               path)
-            except OSError as e:
-                mailman_log('error', 'Could not stat %s: %s', path, str(e))
-
-        # Try loading the main file first
+        # Try to open the main file first
         try:
             with open(filename, 'rb') as fp:
-                try:
-                    # Try to load with Python 2 compatibility
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    if not isinstance(self.__db, dict):
-                        raise ValueError("Database not a dictionary")
-                    return
-                except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                    mailman_log('error', 'Error loading request.pck: %s', str(e))
-                    log_file_info(filename)
-
-            # If we get here, the main file failed to load properly
-            if os.path.exists(filename_backup):
-                mailman_log('info', 'Attempting to load from backup file')
+                self.__db = pickle.load(fp)
+        except (IOError, OSError, pickle.UnpicklingError):
+            # If that fails, try the backup
+            try:
                 with open(filename_backup, 'rb') as fp:
-                    try:
-                        # Try to load backup with Python 2 compatibility
-                        self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
-                        if not isinstance(self.__db, dict):
-                            raise ValueError("Backup database not a dictionary")
-                        # Successfully loaded backup, restore it as main
-                        import shutil
-                        shutil.copy2(filename_backup, filename)
-                        return
-                    except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
-                        mailman_log('error', 'Error loading backup request.pck: %s', str(e))
-                        log_file_info(filename_backup)
+                    self.__db = pickle.load(fp)
+            except (IOError, OSError, pickle.UnpicklingError):
+                # If both fail, start with empty database
+                self.__db = {}
 
-        except IOError as e:
-            if e.errno != errno.ENOENT:
-                mailman_log('error', 'IOError loading request.pck: %s', str(e))
-                log_file_info(filename)
-                if os.path.exists(filename_backup):
-                    log_file_info(filename_backup)
-
-        # If we get here, both main and backup files failed or don't exist
-        self.__db = {}
+        # Log file information for debugging
+        self.log_file_info(filename)
+        if os.path.exists(filename_backup):
+            self.log_file_info(filename_backup)
 
     def __closedb(self):
         """Save the database with atomic operations and backup."""
@@ -243,10 +130,10 @@ class ListAdmin(object):
                     f.write('test')
                 os.unlink(test_file)
             except (IOError, OSError) as e:
-                log_file_info(dirname)
+                self.log_file_info(dirname)
                 raise PermissionError(f'Cannot write to directory {dirname}: {str(e)}')
         except OSError as e:
-            log_file_info(dirname)
+            self.log_file_info(dirname)
             raise PermissionError(f'Cannot access directory {dirname}: {str(e)}')
 
         # Try to save the new file
@@ -264,13 +151,13 @@ class ListAdmin(object):
                 os.rename(filename_tmp, filename)
                 
                 # Log the result for debugging
-                log_file_info(filename)
+                self.log_file_info(filename)
             finally:
                 os.umask(omask)
         except (IOError, OSError) as e:
-            log_file_info(filename_tmp)
+            self.log_file_info(filename_tmp)
             if os.path.exists(filename):
-                log_file_info(filename)
+                self.log_file_info(filename)
             raise PermissionError(f'Error saving database: {str(e)}')
 
         self.__db = None
