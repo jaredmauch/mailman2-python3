@@ -1055,6 +1055,8 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             for addr in all:
                 try:
                     name = mlist.getMemberName(addr) or ''
+                    if isinstance(name, bytes):
+                        name = name.decode('latin-1', 'replace')
                     names.append(name)
                     valid_members.append(addr)
                 except Errors.NotAMemberError:
@@ -1175,6 +1177,8 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         for addr in members:
             try:
                 name = mlist.getMemberName(addr) or ''
+                if isinstance(name, bytes):
+                    name = name.decode('latin-1', 'replace')
                 if name:
                     names.append(name)
             except Errors.NotAMemberError:
@@ -1197,8 +1201,10 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             qaddr = urllib.parse.quote(addr)
             link = Link(mlist.GetOptionsURL(addr, obscure=1),
                         mlist.getMemberCPAddress(addr))
-            fullname = Utils.uncanonstr(mlist.getMemberName(addr),
-                                        mlist.preferred_language)
+            fullname = mlist.getMemberName(addr)
+            if isinstance(fullname, bytes):
+                fullname = fullname.decode('latin-1', 'replace')
+            fullname = Utils.uncanonstr(fullname, mlist.preferred_language)
             name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
             cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format()
                         + '<div class="hidden">' + _('unsub') + '</div>'),
