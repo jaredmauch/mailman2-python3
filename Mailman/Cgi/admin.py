@@ -55,215 +55,145 @@ OPTCOLUMNS = 11
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 def main():
-    # Try to find out which list is being administered
-    parts = Utils.GetPathPieces()
-    if not parts:
-        # None, so just do the admin overview and be done with it
-        admin_overview()
-        return
-    # Get the list object
-    listname = parts[0].lower()
-    if isinstance(listname, bytes):
-        listname = listname.decode('utf-8', 'replace')
     try:
-        mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
-        # Avoid cross-site scripting attacks
-        safelistname = Utils.websafe(listname)
-        # Send this with a 404 status.
-        print('Status: 404 Not Found')
-        admin_overview(_('No such list <em>%(safelistname)s</em>') % {
-            'safelistname': safelistname
-        })
-        syslog('error', 'admin: No such list "%s": %s\n',
-               listname, e)
-        return
-    # Now that we know what list has been requested, all subsequent admin
-    # pages are shown in that list's preferred language.
-    i18n.set_language(mlist.preferred_language)
-    # If the user is not authenticated, we're done.
-    try:
-        if os.environ.get('REQUEST_METHOD') == 'POST':
-            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            if content_length > 0:
-                form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
-                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+        # Try to find out which list is being administered
+        parts = Utils.GetPathPieces()
+        if not parts:
+            # None, so just do the admin overview and be done with it
+            admin_overview()
+            return
+        # Get the list object
+        listname = parts[0].lower()
+        if isinstance(listname, bytes):
+            listname = listname.decode('utf-8', 'replace')
+        try:
+            mlist = MailList.MailList(listname, lock=0)
+        except Errors.MMListError as e:
+            # Avoid cross-site scripting attacks
+            safelistname = Utils.websafe(listname)
+            # Send this with a 404 status.
+            print('Status: 404 Not Found')
+            admin_overview(_('No such list <em>%(safelistname)s</em>') % {
+                'safelistname': safelistname
+            })
+            syslog('error', 'admin: No such list "%s": %s\n',
+                   listname, e)
+            return
+        # Now that we know what list has been requested, all subsequent admin
+        # pages are shown in that list's preferred language.
+        i18n.set_language(mlist.preferred_language)
+        # If the user is not authenticated, we're done.
+        try:
+            if os.environ.get('REQUEST_METHOD') == 'POST':
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                if content_length > 0:
+                    form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
+                    cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+                    # Ensure all form values are properly decoded
+                    for key in cgidata:
+                        cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
+                else:
+                    cgidata = {}
+            else:
+                query_string = os.environ.get('QUERY_STRING', '')
+                cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
                 # Ensure all form values are properly decoded
                 for key in cgidata:
                     cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
-            else:
-                cgidata = {}
+        except Exception as e:
+            # Someone crafted a POST with a bad Content-Type:.
+            doc = Document()
+            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Invalid options to CGI script.')))
+            doc.AddItem(Pre(Utils.websafe(str(e))))
+            doc.AddItem(Pre(Utils.websafe(traceback.format_exc())))
+            # Send this with a 400 status.
+            print('Status: 400 Bad Request')
+            print(doc.Format())
+            syslog('error', 'admin: Invalid options: %s\n%s', str(e), traceback.format_exc())
+            return
+
+        # CSRF check
+        safe_params = ['VARHELP', 'adminpw', 'admlogin',
+                       'letter', 'chunk', 'findmember',
+                       'legend']
+        params = list(cgidata.keys())
+        if set(params) - set(safe_params):
+            csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
+                                      'admin')
         else:
-            query_string = os.environ.get('QUERY_STRING', '')
-            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-            # Ensure all form values are properly decoded
-            for key in cgidata:
-                cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
-    except Exception:
-        # Someone crafted a POST with a bad Content-Type:.
+            csrf_checked = True
+        # if password is present, void cookie to force password authentication.
+        if cgidata.get('adminpw', [''])[0]:
+            os.environ['HTTP_COOKIE'] = ''
+            csrf_checked = True
+
+        if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                      mm_cfg.AuthSiteAdmin),
+                                     cgidata.get('adminpw', [''])[0]):
+            if 'adminpw' in cgidata:
+                # This is a re-authorization attempt
+                msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+                remote = os.environ.get('HTTP_FORWARDED_FOR',
+                         os.environ.get('HTTP_X_FORWARDED_FOR',
+                         os.environ.get('REMOTE_ADDR',
+                                        'unidentified origin')))
+                syslog('security',
+                       'Authorization failed (admin): list=%s: remote=%s',
+                       listname, remote)
+            else:
+                msg = ''
+            Auth.loginpage(mlist, 'admin', msg=msg)
+            return
+
+        # Which subcategory was requested?  Default is `general'
+        if len(parts) == 1:
+            category = 'general'
+            subcat = None
+        elif len(parts) == 2:
+            category = parts[1]
+            subcat = None
+        else:
+            category = parts[1]
+            subcat = parts[2]
+
+        # Create the document
+        doc = Document()
+        doc.set_language(mlist.preferred_language)
+
+        # Now dispatch to the appropriate handler
+        if category == 'general':
+            show_variables(mlist, category, subcat, cgidata, doc)
+        elif category == 'members':
+            membership_options(mlist, subcat, cgidata, doc, form)
+        elif category == 'passwords':
+            password_inputs(mlist)
+        elif category == 'options':
+            change_options(mlist, category, subcat, cgidata, doc)
+        elif category == 'help':
+            option_help(mlist, cgidata.get('VARHELP', [''])[0])
+        else:
+            doc.AddItem(Header(2, _('Error')))
+            doc.AddItem(Bold(_('No such category: %(category)s') % {
+                'category': category
+            }))
+
+        # Format and print the document
+        print(doc.Format())
+
+    except Exception as e:
+        # Catch any unhandled exceptions and display them properly
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('Invalid options to CGI script.')))
-        # Send this with a 400 status.
-        print('Status: 400 Bad Request')
+        doc.AddItem(Bold(_('An unexpected error occurred.')))
+        doc.AddItem(Pre(Utils.websafe(str(e))))
+        doc.AddItem(Pre(Utils.websafe(traceback.format_exc())))
+        # Send this with a 500 status.
+        print('Status: 500 Internal Server Error')
         print(doc.Format())
-        return
-
-    # CSRF check
-    safe_params = ['VARHELP', 'adminpw', 'admlogin',
-                   'letter', 'chunk', 'findmember',
-                   'legend']
-    params = list(cgidata.keys())
-    if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
-                                  'admin')
-    else:
-        csrf_checked = True
-    # if password is present, void cookie to force password authentication.
-    if cgidata.get('adminpw', [''])[0]:
-        os.environ['HTTP_COOKIE'] = ''
-        csrf_checked = True
-
-    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
-                                  mm_cfg.AuthSiteAdmin),
-                                 cgidata.get('adminpw', [''])[0]):
-        if 'adminpw' in cgidata:
-            # This is a re-authorization attempt
-            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
-            remote = os.environ.get('HTTP_FORWARDED_FOR',
-                     os.environ.get('HTTP_X_FORWARDED_FOR',
-                     os.environ.get('REMOTE_ADDR',
-                                    'unidentified origin')))
-            syslog('security',
-                   'Authorization failed (admin): list=%s: remote=%s',
-                   listname, remote)
-        else:
-            msg = ''
-        Auth.loginpage(mlist, 'admin', msg=msg)
-        return
-
-    # Which subcategory was requested?  Default is `general'
-    if len(parts) == 1:
-        category = 'general'
-        subcat = None
-    elif len(parts) == 2:
-        category = parts[1]
-        subcat = None
-    else:
-        category = parts[1]
-        subcat = parts[2]
-
-    # Is this a log-out request?
-    if category == 'logout':
-        # site-wide admin should also be able to logout.
-        if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
-            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
-        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
-        Auth.loginpage(mlist, 'admin', frontpage=1)
-        return
-
-    # Sanity check
-    if category not in list(mlist.GetConfigCategories().keys()):
-        category = 'general'
-
-    # Is the request for variable details?
-    varhelp = None
-    qsenviron = os.environ.get('QUERY_STRING')
-    parsedqs = None
-    if qsenviron:
-        parsedqs = urllib.parse.parse_qs(qsenviron)
-    if 'VARHELP' in cgidata:
-        varhelp = cgidata.get('VARHELP', [''])[0]
-    elif parsedqs:
-        # POST methods, even if their actions have a query string, don't get
-        # put into FieldStorage's keys :-(
-        qs = parsedqs.get('VARHELP')
-        if qs and type(qs) is list:
-            varhelp = qs[0]
-    if varhelp:
-        option_help(mlist, varhelp)
-        return
-
-    # The html page document
-    doc = Document()
-    doc.set_language(mlist.preferred_language)
-
-    # From this point on, the MailList object must be locked.  However, we
-    # must release the lock no matter how we exit.  try/finally isn't enough,
-    # because of this scenario: user hits the admin page which may take a long
-    # time to render; user gets bored and hits the browser's STOP button;
-    # browser shuts down socket; server tries to write to broken socket and
-    # gets a SIGPIPE.  Under Apache 1.3/mod_cgi, Apache catches this SIGPIPE
-    # (I presume it is buffering output from the cgi script), then turns
-    # around and SIGTERMs the cgi process.  Apache waits three seconds and
-    # then SIGKILLs the cgi process.  We /must/ catch the SIGTERM and do the
-    # most reasonable thing we can in as short a time period as possible.  If
-    # we get the SIGKILL we're screwed (because it's uncatchable and we'll
-    # have no opportunity to clean up after ourselves).
-    #
-    # This signal handler catches the SIGTERM, unlocks the list, and then
-    # exits the process.  The effect of this is that the changes made to the
-    # MailList object will be aborted, which seems like the only sensible
-    # semantics.
-    #
-    # BAW: This may not be portable to other web servers or cgi execution
-    # models.
-    def sigterm_handler(signum, frame, mlist=mlist):
-        # Make sure the list gets unlocked...
-        mlist.Unlock()
-        # ...and ensure we exit, otherwise race conditions could cause us to
-        # enter MailList.Save() while we're in the unlocked state, and that
-        # could be bad!
-        sys.exit(0)
-
-    mlist.Lock()
-    try:
-        # Install the emergency shutdown signal handler
-        signal.signal(signal.SIGTERM, sigterm_handler)
-
-        if list(cgidata.keys()):
-            if csrf_checked:
-                # There are options to change
-                change_options(mlist, category, subcat, cgidata, doc)
-            else:
-                doc.addError(
-                  _('The form lifetime has expired. (request forgery check)'))
-            # Let the list sanity check the changed values
-            mlist.CheckValues()
-        # Additional sanity checks
-        if not mlist.digestable and not mlist.nondigestable:
-            doc.addError(
-                _(f'''You have turned off delivery of both digest and
-                non-digest messages.  This is an incompatible state of
-                affairs.  You must turn on either digest delivery or
-                non-digest delivery or your mailing list will basically be
-                unusable.'''), tag=_('Warning: '))
-
-        dm = mlist.getDigestMemberKeys()
-        if not mlist.digestable and dm:
-            doc.addError(
-                _(f'''You have digest members, but digests are turned
-                off. Those people will not receive mail.
-                Affected member(s) %(dm)r.'''),
-                tag=_('Warning: '))
-        rm = mlist.getRegularMemberKeys()
-        if not mlist.nondigestable and rm:
-            doc.addError(
-                _(f'''You have regular list members but non-digestified mail is
-                turned off.  They will receive non-digestified mail until you
-                fix this problem. Affected member(s) %(rm)r.'''),
-                tag=_('Warning: '))
-        # Glom up the results page and print it out
-        show_results(mlist, doc, category, subcat, cgidata)
-        print(doc.Format())
-        mlist.Save()
-    finally:
-        # Now be sure to unlock the list.  It's okay if we get a signal here
-        # because essentially, the signal handler will do the same thing.  And
-        # unlocking is unconditional, so it's not an error if we unlock while
-        # we're already unlocked.
-        mlist.Unlock()
+        syslog('error', 'admin: Unexpected error: %s\n%s', str(e), traceback.format_exc())
 
 def admin_overview(msg=''):
     # Show the administrative overview page, with the list of all the lists on
