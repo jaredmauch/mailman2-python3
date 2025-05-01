@@ -19,6 +19,7 @@
  */
 
 #include "common.h"
+#include <ctype.h>
 
 /* Passed in by configure. */
 #define SCRIPTDIR PREFIX "/scripts/"         /* trailing slash */
@@ -30,6 +31,10 @@ char* python = PYTHON;
 
 /* Global variable used as a flag */
 int running_as_cgi = 0;
+
+/* Global variables for command line arguments */
+int main_argc = 0;
+char **main_argv = NULL;
 
 
 
@@ -119,33 +124,43 @@ fatal(const char* ident, int exitcode, char* format, ...)
 void
 check_caller(const char* ident, const char* parentgroup)
 {
-    /* Skip uid/gid checks if --test is passed */
-    int argc = 0;
-    char **argv = NULL;
+    /* Check for --test argument */
+    int skip_checks = 0;
+    
     if (running_as_cgi) {
         /* For CGI, get command line args from environment */
         char *args = getenv("MAILMAN_ARGS");
         if (args) {
-            /* Simple parsing of args - split on spaces */
-            char *arg = strtok(args, " ");
-            while (arg) {
-                if (strcmp(arg, "--test") == 0) {
-                    return;
+            /* Simple parsing of args - look for --test */
+            char *p = args;
+            while (*p) {
+                /* Skip whitespace */
+                while (*p && isspace(*p)) p++;
+                if (!*p) break;
+                
+                /* Check for --test */
+                if (strncmp(p, "--test", 6) == 0 && 
+                    (p[6] == '\0' || isspace(p[6]))) {
+                    skip_checks = 1;
+                    break;
                 }
-                arg = strtok(NULL, " ");
+                
+                /* Skip to next argument */
+                while (*p && !isspace(*p)) p++;
             }
         }
     } else {
         /* For mail wrapper, get args from main() */
-        extern int main_argc;
-        extern char **main_argv;
-        argc = main_argc;
-        argv = main_argv;
-        for (int i = 1; i < argc; i++) {
-            if (strcmp(argv[i], "--test") == 0) {
-                return;
+        for (int i = 1; i < main_argc; i++) {
+            if (strcmp(main_argv[i], "--test") == 0) {
+                skip_checks = 1;
+                break;
             }
         }
+    }
+    
+    if (skip_checks) {
+        return;
     }
 
     GID_T mygid = getgid();

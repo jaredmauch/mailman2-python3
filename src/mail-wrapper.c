@@ -28,8 +28,6 @@
 const char* parentgroup = LEGAL_PARENT_GROUP;
 const char* logident = "Mailman mail-wrapper";
 
-
-
 const char *VALID_COMMANDS[] = {
         "admin",
         "bounces",
@@ -59,11 +57,14 @@ check_command(char *command)
 }
 
 
-
 int
 main(int argc, char** argv, char** env __attribute__((unused)))
 {
         int status;
+
+        /* Set global command line variables */
+        main_argc = argc;
+        main_argv = argv;
 
         /* sanity check arguments */
         if (argc < 2)
@@ -83,7 +84,6 @@ main(int argc, char** argv, char** env __attribute__((unused)))
 }
 
 
-
 /*
  * Local Variables:
  * c-file-style: "python"
