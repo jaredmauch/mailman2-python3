@@ -338,7 +338,59 @@ class Switchboard:
                 if ext != extension:
                     continue
                 try:
-                    when, digest = filebase.split('+')
+                    # Validate file name format
+                    if '+' not in filebase:
+                        mailman_log('warning', 'Invalid file name format in queue directory (missing +): %s', f)
+                        # Try to recover by moving to shunt queue
+                        try:
+                            src = os.path.join(self.__whichq, f)
+                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                            os.rename(src, dst)
+                            mailman_log('info', 'Moved invalid file to shunt queue: %s -> %s', f, dst)
+                        except Exception as e:
+                            mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
+                                   f, str(e), traceback.format_exc())
+                        continue
+
+                    parts = filebase.split('+')
+                    if len(parts) != 2:
+                        mailman_log('warning', 'Invalid file name format in queue directory (wrong number of parts): %s', f)
+                        # Try to recover by moving to shunt queue
+                        try:
+                            src = os.path.join(self.__whichq, f)
+                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                            os.rename(src, dst)
+                            mailman_log('info', 'Moved invalid file to shunt queue: %s -> %s', f, dst)
+                        except Exception as e:
+                            mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
+                                   f, str(e), traceback.format_exc())
+                        continue
+
+                    when, digest = parts
+                    try:
+                        # Validate timestamp format
+                        float(when)
+                        # Validate digest format (should be hex)
+                        int(digest, 16)
+                    except ValueError as e:
+                        mailman_log('warning', 'Invalid file name format in queue directory (invalid timestamp/digest): %s: %s', f, str(e))
+                        # Try to recover by moving to shunt queue
+                        try:
+                            src = os.path.join(self.__whichq, f)
+                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                            os.rename(src, dst)
+                            mailman_log('info', 'Moved invalid file to shunt queue: %s -> %s', f, dst)
+                        except Exception as e:
+                            mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
+                                   f, str(e), traceback.format_exc())
+                        continue
+
                     # Throw out any files which don't match our bitrange.  BAW: test
                     # performance and end-cases of this algorithm.  MAS: both
                     # comparisons need to be <= to get complete range.
@@ -347,8 +399,8 @@ class Switchboard:
                         while key in times:
                             key += DELTA
                         times[key] = filebase
-                except ValueError as e:
-                    mailman_log('error', 'Invalid file name format in queue directory: %s: %s\nTraceback:\n%s',
+                except Exception as e:
+                    mailman_log('error', 'Unexpected error processing file %s: %s\nTraceback:\n%s',
                            f, str(e), traceback.format_exc())
                     continue
         except OSError as e:
@@ -375,7 +427,7 @@ class Switchboard:
                 # First check if the file is too old
                 try:
                     file_age = time.time() - os.path.getmtime(src)
-                    if file_age > mm_cfg.QUEUE_LIFETIME:
+                    if file_age > mm_cfg.FORM_LIFETIME:
                         mailman_log('warning',
                             'Backup file %s is too old (%d seconds), moving to shunt queue',
                             filebase, file_age)
