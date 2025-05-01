@@ -110,6 +110,7 @@ class ListAdmin(object):
                     pending_subs = self.GetSubscriptionIds()
                     pending_unsubs = self.GetUnsubscriptionIds()
                     
+                    mailman_log('info', 'Done checking on held_msgs, pending_subs, pending_unsubs for %s', self.internal_name())
                     if held_msgs:
                         mailman_log('info', 'Pending held messages: %d', len(held_msgs))
                         for id in held_msgs:
@@ -141,7 +142,8 @@ class ListAdmin(object):
                                     mailman_log('info', '  Unsubscription %d: %s', id, info)
                             except Exception as e:
                                 mailman_log('error', 'Error getting unsubscription %d: %s', id, str(e))
-                    
+                    mailman_log('info', 'done handling %s', self.internal_name())
+
                 except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
                     mailman_log('error', 'Error loading request.pck for list %s: %s\n%s',
                                self.internal_name(), str(e), traceback.format_exc())
