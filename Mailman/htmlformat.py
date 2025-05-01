@@ -309,7 +309,7 @@ class Document(Container):
         self.title = title
 
     def Format(self, indent=0, **kws):
-        charset = 'us-ascii'
+        charset = 'latin-1'
         if self.language and Utils.IsLanguage(self.language):
             charset = Utils.GetCharSet(self.language)
         output = ['Content-Type: text/html; charset=%s\n' % charset]
