@@ -269,7 +269,12 @@ def handle_no_list(msg=''):
     doc.AddItem(_(f'You must specify a list name.  Here is the {link}'))
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
+    
+    # Use the centralized output function
+    print('Status: 400 Bad Request')
+    print('Content-type: text/html; charset=utf-8\n')
     print(doc.Format())
+    return
 
 
 def show_pending_subs(mlist, form):
