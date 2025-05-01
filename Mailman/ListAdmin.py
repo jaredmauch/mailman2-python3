@@ -741,8 +741,14 @@ class ListAdmin(object):
                 except KeyError:
                     group_names.append(f'gid {gid}')
             
+            # Get current time with microseconds
+            now = time.time()
+            usecs = int((now - int(now)) * 1000000)
+            timestamp = time.strftime('%b %d %H:%M:%S', time.localtime(now))
+            
             mailman_log('error', 
-                       'Process identity - EUID: %d (%s), EGID: %d (%s), RUID: %d (%s), RGID: %d (%s), Groups: %s',
+                       '%s.%06d %d Process identity - EUID: %d (%s), EGID: %d (%s), RUID: %d (%s), RGID: %d (%s), Groups: %s',
+                       timestamp, usecs, os.getpid(),
                        euid, euser, egid, egroup, ruid, ruser, rgid, rgroup, ', '.join(group_names))
             
             # Get file information
@@ -778,24 +784,31 @@ class ListAdmin(object):
             
             # Log current and expected ownership
             mailman_log('error', 
-                       'File %s: mode=%o, owner=%s (current) vs %s (expected), group=%s (current) vs %s (expected)',
+                       '%s.%06d %d File %s: mode=%o, owner=%s (current) vs %s (expected), group=%s (current) vs %s (expected)',
+                       timestamp, usecs, os.getpid(),
                        path, mode, current_user, expected_user, current_group, expected_group)
             
             # Log specific permission issues
             if expected_uid is not None and uid != expected_uid:
-                mailman_log('error', 'File %s has incorrect owner (uid %d vs expected %d)',
+                mailman_log('error', '%s.%06d %d File %s has incorrect owner (uid %d vs expected %d)',
+                           timestamp, usecs, os.getpid(),
                            path, uid, expected_uid)
             if expected_gid is not None and gid != expected_gid:
-                mailman_log('error', 'File %s has incorrect group (gid %d vs expected %d)',
+                mailman_log('error', '%s.%06d %d File %s has incorrect group (gid %d vs expected %d)',
+                           timestamp, usecs, os.getpid(),
                            path, gid, expected_gid)
             if mode & 0o002:  # World writable
-                mailman_log('error', 'File %s is world writable (mode %o)',
+                mailman_log('error', '%s.%06d %d File %s is world writable (mode %o)',
+                           timestamp, usecs, os.getpid(),
                            path, mode)
             if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
-                mailman_log('error', 'File %s is group writable but not owned by mailman group',
+                mailman_log('error', '%s.%06d %d File %s is group writable but not owned by mailman group',
+                           timestamp, usecs, os.getpid(),
                            path)
         except OSError as e:
-            mailman_log('error', 'Could not stat %s: %s', path, str(e))
+            mailman_log('error', '%s.%06d %d Could not stat %s: %s',
+                       timestamp, usecs, os.getpid(),
+                       path, str(e))
 
 
 def readMessage(path):
