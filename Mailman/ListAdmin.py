@@ -788,23 +788,36 @@ class ListAdmin(object):
                        timestamp, usecs, os.getpid(),
                        path, mode, current_user, expected_user, current_group, expected_group)
             
+            # Check if we can actually access the file
+            can_access = False
+            access_error = None
+            try:
+                # Try to open the file for reading
+                with open(path, 'r') as f:
+                    can_access = True
+            except (IOError, OSError) as e:
+                access_error = str(e)
+            
             # Log specific permission issues
             if expected_uid is not None and uid != expected_uid:
-                mailman_log('error', '%s.%06d %d File %s has incorrect owner (uid %d (%s) vs expected %d (%s))',
+                mailman_log('error', '%s.%06d %d File %s has incorrect owner (uid %d (%s) vs expected %d (%s))%s',
                            timestamp, usecs, os.getpid(),
-                           path, uid, current_user, expected_uid, expected_user)
+                           path, uid, current_user, expected_uid, expected_user,
+                           ' - but access is possible' if can_access else f' - access error: {access_error}')
             if expected_gid is not None and gid != expected_gid:
-                mailman_log('error', '%s.%06d %d File %s has incorrect group (gid %d (%s) vs expected %d (%s))',
+                mailman_log('error', '%s.%06d %d File %s has incorrect group (gid %d (%s) vs expected %d (%s))%s',
                            timestamp, usecs, os.getpid(),
-                           path, gid, current_group, expected_gid, expected_group)
+                           path, gid, current_group, expected_gid, expected_group,
+                           ' - but access is possible' if can_access else f' - access error: {access_error}')
             if mode & 0o002:  # World writable
                 mailman_log('error', '%s.%06d %d File %s is world writable (mode %o)',
                            timestamp, usecs, os.getpid(),
                            path, mode)
             if mode & 0o020 and (expected_gid is None or gid != expected_gid):  # Group writable but not owned by mailman group
-                mailman_log('error', '%s.%06d %d File %s is group writable but not owned by mailman group (current group: %s)',
+                mailman_log('error', '%s.%06d %d File %s is group writable but not owned by mailman group (current group: %s)%s',
                            timestamp, usecs, os.getpid(),
-                           path, current_group)
+                           path, current_group,
+                           ' - but access is possible' if can_access else f' - access error: {access_error}')
         except OSError as e:
             mailman_log('error', '%s.%06d %d Could not stat %s: %s',
                        timestamp, usecs, os.getpid(),
