@@ -191,13 +191,21 @@ def kill_watcher(sig):
 
 def get_lock_data():
     # Return the hostname, pid, and tempfile
-    fp = open(LOCKFILE)
-    filename = os.path.split(fp.read().strip())[1]
-    fp.close()
-    parts = filename.split('.')
-    hostname = DOT.join(parts[1:-1])
-    pid = int(parts[-1])
-    return hostname, int(pid), filename
+    try:
+        fp = open(LOCKFILE)
+        filename = os.path.split(fp.read().strip())[1]
+        fp.close()
+        parts = filename.split('.')
+        hostname = DOT.join(parts[1:-1])
+        try:
+            pid = int(parts[-1])
+        except ValueError as e:
+            syslog('error', 'Invalid PID in lock file %s: %s', LOCKFILE, e)
+            raise Errors.LockError('Invalid PID in lock file')
+        return hostname, pid, filename
+    except IOError as e:
+        syslog('error', 'Could not read lock file %s: %s', LOCKFILE, e)
+        raise Errors.LockError('Could not read lock file')
 
 
 def qrunner_state():

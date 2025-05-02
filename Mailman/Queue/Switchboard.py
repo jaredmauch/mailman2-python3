@@ -416,9 +416,13 @@ class Switchboard:
                     when, digest = parts
                     try:
                         # Validate timestamp format
-                        float(when)
+                        when_float = float(when)
                         # Validate digest format (should be hex)
-                        int(digest, 16)
+                        try:
+                            digest_int = int(digest, 16)
+                        except ValueError as e:
+                            mailman_log('error', 'Invalid digest format in queue file %s: %s', f, e)
+                            raise
                     except ValueError as e:
                         mailman_log('warning', 'Invalid file name format in queue directory (invalid timestamp/digest): %s: %s', f, str(e))
                         # Try to recover by moving to shunt queue
@@ -437,8 +441,8 @@ class Switchboard:
                     # Throw out any files which don't match our bitrange.  BAW: test
                     # performance and end-cases of this algorithm.  MAS: both
                     # comparisons need to be <= to get complete range.
-                    if lower is None or (lower <= int(digest, 16) <= upper):
-                        key = float(when)
+                    if lower is None or (lower <= digest_int <= upper):
+                        key = when_float
                         while key in times:
                             key += DELTA
                         times[key] = filebase
