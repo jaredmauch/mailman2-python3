@@ -94,28 +94,49 @@ def testfile(dbfile, verbose=False):
                 print('  Number of entries: %d' % len(data))
                 if 'version' in data:
                     print('  Database version: %s' % data['version'])
-        # Handle string/bytes conversion
+        # Handle string/bytes conversion with better error handling
         if isinstance(data, bytes):
-            data = data.decode('utf-8', 'replace')
+            try:
+                data = data.decode('utf-8', 'replace')
+            except Exception as e:
+                if verbose:
+                    print('  Warning: Error decoding bytes: %s' % str(e))
+                data = str(data)
         elif isinstance(data, dict):
             new_data = {}
             for k, v in data.items():
-                if isinstance(k, bytes):
-                    k = k.decode('utf-8', 'replace')
-                if isinstance(v, bytes):
-                    v = v.decode('utf-8', 'replace')
-                elif isinstance(v, (list, tuple)):
-                    v = list(v)  # Convert tuple to list for modification
-                    for i, item in enumerate(v):
-                        if isinstance(item, bytes):
-                            v[i] = item.decode('utf-8', 'replace')
-                new_data[k] = v
+                try:
+                    if isinstance(k, bytes):
+                        k = k.decode('utf-8', 'replace')
+                    if isinstance(v, bytes):
+                        v = v.decode('utf-8', 'replace')
+                    elif isinstance(v, (list, tuple)):
+                        v = list(v)
+                        for i, item in enumerate(v):
+                            if isinstance(item, bytes):
+                                try:
+                                    v[i] = item.decode('utf-8', 'replace')
+                                except Exception as e:
+                                    if verbose:
+                                        print('  Warning: Error decoding list item: %s' % str(e))
+                                    v[i] = str(item)
+                    new_data[k] = v
+                except Exception as e:
+                    if verbose:
+                        print('  Warning: Error processing dictionary item: %s' % str(e))
+                    new_data[str(k)] = str(v)
             data = new_data
         elif isinstance(data, (list, tuple)):
-            data = list(data)  # Convert tuple to list for modification
+            data = list(data)
             for i, item in enumerate(data):
                 if isinstance(item, bytes):
-                    data[i] = item.decode('utf-8', 'replace')
+                    try:
+                        data[i] = item.decode('utf-8', 'replace')
+                    except Exception as e:
+                        if verbose:
+                            print('  Warning: Error decoding list item: %s' % str(e))
+                        data[i] = str(item)
+        return data
     except Exception as e:
         if verbose:
             print('  Error loading file: %s' % str(e))
