@@ -72,7 +72,7 @@ def load_pickle(fp):
         return None
 
 
-def testfile(dbfile, verbose=False):
+def testfile(dbfile, verbose=False, listname=None):
     # Use our safe loader
     loadfunc = load_pickle
     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
@@ -100,7 +100,8 @@ def testfile(dbfile, verbose=False):
                 data = data.decode('utf-8', 'replace')
             except Exception as e:
                 if verbose:
-                    print('  Warning: Error decoding bytes: %s' % str(e))
+                    print('  Warning: Error decoding bytes in %s for list %s: %s' % 
+                          (os.path.basename(dbfile), listname or 'unknown', str(e)))
                 data = str(data)
         elif isinstance(data, dict):
             new_data = {}
@@ -118,12 +119,14 @@ def testfile(dbfile, verbose=False):
                                     v[i] = item.decode('utf-8', 'replace')
                                 except Exception as e:
                                     if verbose:
-                                        print('  Warning: Error decoding list item: %s' % str(e))
+                                        print('  Warning: Error decoding list item in %s for list %s: %s' % 
+                                              (os.path.basename(dbfile), listname or 'unknown', str(e)))
                                     v[i] = str(item)
                     new_data[k] = v
                 except Exception as e:
                     if verbose:
-                        print('  Warning: Error processing dictionary item: %s' % str(e))
+                        print('  Warning: Error processing dictionary item in %s for list %s: %s' % 
+                              (os.path.basename(dbfile), listname or 'unknown', str(e)))
                     new_data[str(k)] = str(v)
             data = new_data
         elif isinstance(data, (list, tuple)):
@@ -134,12 +137,14 @@ def testfile(dbfile, verbose=False):
                         data[i] = item.decode('utf-8', 'replace')
                     except Exception as e:
                         if verbose:
-                            print('  Warning: Error decoding list item: %s' % str(e))
+                            print('  Warning: Error decoding list item in %s for list %s: %s' % 
+                                  (os.path.basename(dbfile), listname or 'unknown', str(e)))
                         data[i] = str(item)
         return data
     except Exception as e:
         if verbose:
-            print('  Error loading file: %s' % str(e))
+            print('  Error loading file %s for list %s: %s' % 
+                  (os.path.basename(dbfile), listname or 'unknown', str(e)))
         raise
     finally:
         fp.close()
@@ -202,7 +207,7 @@ def main():
             for dbfile in dbfiles:
                 if os.path.exists(dbfile):
                     try:
-                        testfile(dbfile, args.verbose)
+                        testfile(dbfile, args.verbose, listname)
                         if args.verbose:
                             print('  File %s: OK' % os.path.basename(dbfile))
                     except Exception as e:
