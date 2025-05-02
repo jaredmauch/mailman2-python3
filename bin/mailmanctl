@@ -237,10 +237,11 @@ def acquire_lock_1(force):
         if not force or qrunner_state():
             raise
         # Force removal of lock first
-        lock._disown()
+        lock._transfer_to(os.getpid())  # Transfer to current process
         hostname, pid, tempfile = get_lock_data()
         os.unlink(LOCKFILE)
-        os.unlink(os.path.join(mm_cfg.LOCK_DIR, tempfile))
+        if tempfile:
+            os.unlink(os.path.join(mm_cfg.LOCK_DIR, tempfile))
         return acquire_lock_1(force=0)
 
 
