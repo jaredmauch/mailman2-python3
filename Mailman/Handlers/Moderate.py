@@ -28,6 +28,7 @@ from Mailman import Utils
 from Mailman import Errors
 from Mailman.Handlers import Hold
 from Mailman import i18n
+from Mailman.i18n import _
 from Mailman.Message import Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Logging.Syslog import mailman_log
