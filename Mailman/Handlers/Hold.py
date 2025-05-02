@@ -35,7 +35,6 @@ import email.utils
 import re
 from email.iterators import body_line_iterator
 
-import Mailman
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors

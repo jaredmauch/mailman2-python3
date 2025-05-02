@@ -40,7 +40,6 @@ import pickle
 import email.message
 from email.message import Message
 
-import Mailman
 import Mailman.mm_cfg
 import Mailman.Utils
 import Mailman.Errors
