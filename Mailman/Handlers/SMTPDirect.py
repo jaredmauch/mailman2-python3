@@ -40,11 +40,12 @@ import pickle
 import email.message
 from email.message import Message
 
+import Mailman
 import Mailman.mm_cfg
 import Mailman.Utils
 import Mailman.Errors
 from Mailman.Message import Message
-import Mailman.Handlers.Decorate
+from Mailman.Handlers.Decorate import decorate
 import Mailman.Logging.Syslog
 import Mailman.SafeDict
 
