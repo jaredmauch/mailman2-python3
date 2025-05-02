@@ -83,29 +83,29 @@ class Connection(object):
                         # Use native TLS support
                         self.__conn.starttls()
                     except SMTPException as e:
-                        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s\n%s', 
+                        Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP TLS error: %s\nTraceback:\n%s', 
                                str(e), traceback.format_exc())
                         self.quit()
                         raise
                 try:
                     self.__conn.login(Mailman.mm_cfg.SMTP_USER, Mailman.mm_cfg.SMTP_PASSWD)
                 except smtplib.SMTPHeloError as e:
-                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s\n%s', 
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP HELO error: %s\nTraceback:\n%s', 
                            str(e), traceback.format_exc())
                     self.quit()
                     raise
                 except smtplib.SMTPAuthenticationError as e:
-                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s\n%s', 
+                    Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP AUTH error: %s\nTraceback:\n%s', 
                            str(e), traceback.format_exc())
                     self.quit()
                 except smtplib.SMTPException as e:
                     Mailman.Logging.Syslog.mailman_log('smtp-failure',
-                           'SMTP - no suitable authentication method found: %s\n%s', 
+                           'SMTP - no suitable authentication method found: %s\nTraceback:\n%s', 
                            str(e), traceback.format_exc())
                     self.quit()
                     raise
         except (socket.error, smtplib.SMTPException) as e:
-            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP connection error: %s\n%s', 
+            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP connection error: %s\nTraceback:\n%s', 
                    str(e), traceback.format_exc())
             self.quit()
             raise
@@ -129,7 +129,7 @@ class Connection(object):
         except smtplib.SMTPException as e:
             # For safety, close this connection.  The next send attempt will
             # automatically re-open it.  Pass the exception on up.
-            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP sendmail error: %s\n%s', 
+            Mailman.Logging.Syslog.mailman_log('smtp-failure', 'SMTP sendmail error: %s\nTraceback:\n%s', 
                    str(e), traceback.format_exc())
             self.quit()
             raise
@@ -153,50 +153,55 @@ class Connection(object):
 
 
 def process(mlist, msg, msgdata):
-    # Convert email.message.Message to Mailman.Message.Message if needed
-    if isinstance(msg, email.message.Message):
-        newmsg = Message()
-        # Copy attributes
-        for k, v in msg.items():
-            newmsg[k] = v
-        # Copy payload
-        if msg.is_multipart():
-            for part in msg.get_payload():
-                newmsg.attach(part)
-        else:
-            newmsg.set_payload(msg.get_payload())
-        msg = newmsg
+    try:
+        # Convert email.message.Message to Mailman.Message.Message if needed
+        if isinstance(msg, email.message.Message):
+            newmsg = Message()
+            # Copy attributes
+            for k, v in msg.items():
+                newmsg[k] = v
+            # Copy payload
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    newmsg.attach(part)
+            else:
+                newmsg.set_payload(msg.get_payload())
+            msg = newmsg
 
-    recips = msgdata.get('recips')
-    if not recips:
-        # Nobody to deliver to!
-        return
-    # Calculate the non-VERP envelope sender.
-    envsender = msgdata.get('envsender')
-    if envsender is None:
-        if mlist:
-            envsender = mlist.GetBouncesEmail()
+        recips = msgdata.get('recips')
+        if not recips:
+            # Nobody to deliver to!
+            return
+        # Calculate the non-VERP envelope sender.
+        envsender = msgdata.get('envsender')
+        if envsender is None:
+            if mlist:
+                envsender = mlist.GetBouncesEmail()
+            else:
+                envsender = Mailman.Utils.get_site_email(extra='bounces')
+        # Time to split up the recipient list.  If we're personalizing or VERPing
+        # then each chunk will have exactly one recipient.  We'll then hand craft
+        # an envelope sender and stitch a message together in memory for each one
+        # separately.  If we're not VERPing, then we'll chunkify based on
+        # SMTP_MAX_RCPTS.  Note that most MTAs have a limit on the number of
+        # recipients they'll swallow in a single transaction.
+        deliveryfunc = None
+        if ('personalize' not in msgdata or msgdata['personalize']) and (
+               msgdata.get('verp') or mlist.personalize):
+            chunks = [[recip] for recip in recips]
+            msgdata['personalize'] = 1
+            deliveryfunc = verpdeliver
+        elif Mailman.mm_cfg.SMTP_MAX_RCPTS <= 0:
+            chunks = [recips]
         else:
-            envsender = Mailman.Utils.get_site_email(extra='bounces')
-    # Time to split up the recipient list.  If we're personalizing or VERPing
-    # then each chunk will have exactly one recipient.  We'll then hand craft
-    # an envelope sender and stitch a message together in memory for each one
-    # separately.  If we're not VERPing, then we'll chunkify based on
-    # SMTP_MAX_RCPTS.  Note that most MTAs have a limit on the number of
-    # recipients they'll swallow in a single transaction.
-    deliveryfunc = None
-    if ('personalize' not in msgdata or msgdata['personalize']) and (
-           msgdata.get('verp') or mlist.personalize):
-        chunks = [[recip] for recip in recips]
-        msgdata['personalize'] = 1
-        deliveryfunc = verpdeliver
-    elif Mailman.mm_cfg.SMTP_MAX_RCPTS <= 0:
-        chunks = [recips]
-    else:
-        chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS)
-    # See if this is an unshunted message for which some were undelivered
-    if 'undelivered' in msgdata:
-        chunks = msgdata['undelivered']
+            chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS)
+        # See if this is an unshunted message for which some were undelivered
+        if 'undelivered' in msgdata:
+            chunks = msgdata['undelivered']
+    except Exception as e:
+        Mailman.Logging.Syslog.mailman_log('error', 'Error in SMTPDirect.process: %s\nTraceback:\n%s',
+               str(e), traceback.format_exc())
+        raise
     # If we're doing bulk delivery, then we can stitch up the message now.
     if deliveryfunc is None:
         # Be sure never to decorate the message more than once!

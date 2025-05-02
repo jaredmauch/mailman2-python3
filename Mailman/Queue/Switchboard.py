@@ -193,7 +193,7 @@ class Switchboard:
             os.close(lock_fd)
         except OSError as e:
             if e.errno == errno.EEXIST:
-                mailman_log('warning', 'Lock file exists for %s, waiting...', filename)
+                mailman_log('warning', 'Lock file exists for %s (full path: %s), waiting...', filename, lockfile)
                 # Wait for lock to be released
                 for _ in range(10):  # 10 attempts
                     try:
@@ -203,26 +203,26 @@ class Switchboard:
                     except OSError:
                         time.sleep(0.1)
                 else:
-                    mailman_log('error', 'Could not acquire lock for %s after 10 attempts', filename)
+                    mailman_log('error', 'Could not acquire lock for %s (full path: %s) after 10 attempts', filename, lockfile)
                     return None, None
             else:
-                mailman_log('error', 'Failed to create lock file %s: %s\nTraceback:\n%s',
-                       lockfile, str(e), traceback.format_exc())
+                mailman_log('error', 'Failed to create lock file %s (full path: %s): %s\nTraceback:\n%s',
+                       filename, lockfile, str(e), traceback.format_exc())
                 return None, None
         
         try:
             # Move the file to the backup file name for processing
             try:
                 if not os.path.exists(filename):
-                    mailman_log('error', 'Source file %s does not exist', filename)
+                    mailman_log('error', 'Source file %s (full path: %s) does not exist', filename, os.path.join(self.__whichq, filename))
                     return None, None
                 if os.path.exists(backfile):
-                    mailman_log('warning', 'Backup file %s already exists, removing old version', backfile)
+                    mailman_log('warning', 'Backup file %s (full path: %s) already exists, removing old version', backfile, os.path.join(self.__whichq, backfile))
                     os.unlink(backfile)
                 os.rename(filename, backfile)
             except OSError as e:
-                mailman_log('error', 'Failed to rename %s to %s: %s\nTraceback:\n%s',
-                       filename, backfile, str(e), traceback.format_exc())
+                mailman_log('error', 'Failed to rename %s to %s (full paths: %s -> %s): %s\nTraceback:\n%s',
+                       filename, backfile, os.path.join(self.__whichq, filename), os.path.join(self.__whichq, backfile), str(e), traceback.format_exc())
                 return None, None
             
             # Read the message object and metadata
@@ -383,7 +383,8 @@ class Switchboard:
                 try:
                     # Validate file name format
                     if '+' not in filebase:
-                        mailman_log('warning', 'Invalid file name format in queue directory (missing +): %s', f)
+                        full_path = os.path.join(self.__whichq, f)
+                        mailman_log('warning', 'Invalid file name format in queue directory (missing +): %s (full path: %s)', f, full_path)
                         # Try to recover by moving to shunt queue
                         try:
                             src = os.path.join(self.__whichq, f)
@@ -399,7 +400,8 @@ class Switchboard:
 
                     parts = filebase.split('+')
                     if len(parts) != 2:
-                        mailman_log('warning', 'Invalid file name format in queue directory (wrong number of parts): %s', f)
+                        full_path = os.path.join(self.__whichq, f)
+                        mailman_log('warning', 'Invalid file name format in queue directory (wrong number of parts): %s (full path: %s)', f, full_path)
                         # Try to recover by moving to shunt queue
                         try:
                             src = os.path.join(self.__whichq, f)
@@ -424,7 +426,8 @@ class Switchboard:
                             mailman_log('error', 'Invalid digest format in queue file %s: %s', f, e)
                             raise
                     except ValueError as e:
-                        mailman_log('warning', 'Invalid file name format in queue directory (invalid timestamp/digest): %s: %s', f, str(e))
+                        full_path = os.path.join(self.__whichq, f)
+                        mailman_log('warning', 'Invalid file name format in queue directory (invalid timestamp/digest): %s: %s (full path: %s)', f, str(e), full_path)
                         # Try to recover by moving to shunt queue
                         try:
                             src = os.path.join(self.__whichq, f)
@@ -498,7 +501,7 @@ class Switchboard:
                             tb = traceback.format_exc()
                             mailman_log('error', 'Unpickling .bak exception: %s\n'
                                    + 'Traceback:\n%s\n'
-                                   + 'preserving file: %s', s, tb, filebase)
+                                   + 'preserving file: %s (full path: %s)', s, tb, filebase, os.path.join(self.__whichq, filebase + '.bak'))
                             self.finish(filebase, preserve=True)
                             continue
                         
@@ -546,7 +549,7 @@ class Switchboard:
                                    'retry count: %d, last error: %s, '
                                    'message-id: %s, listname: %s, '
                                    'recipients: %s, error history: %s, '
-                                   'last traceback: %s)',
+                                   'last traceback: %s, full path: %s)',
                                    MAX_BAK_COUNT,
                                    filebase,
                                    self.__whichq,
@@ -556,20 +559,21 @@ class Switchboard:
                                    data.get('listname', 'unknown'),
                                    data.get('recips', 'unknown'),
                                    data.get('_error_history', 'unknown'),
-                                   data.get('_traceback', 'none'))
+                                   data.get('_traceback', 'none'),
+                                   os.path.join(self.__whichq, filebase + '.bak'))
                             self.finish(filebase, preserve=True)
                         else:
                             try:
                                 os.rename(src, dst)
                             except OSError as e:
-                                mailman_log('error', 'Failed to rename backup file %s: %s\nTraceback:\n%s',
-                                       filebase, str(e), traceback.format_exc())
+                                mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
+                                       filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
                                 self.finish(filebase, preserve=True)
                     finally:
                         fp.close()
                 except Exception as e:
-                    mailman_log('error', 'Failed to process backup file %s: %s\nTraceback:\n%s',
-                           filebase, str(e), traceback.format_exc())
+                    mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
+                           filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
                     continue
         except Exception as e:
             mailman_log('error', 'Failed to recover backup files: %s\nTraceback:\n%s',
@@ -602,7 +606,7 @@ class Switchboard:
             os.close(lock_fd)
         except OSError as e:
             if e.errno == errno.EEXIST:
-                mailman_log('warning', 'Lock file exists for %s, waiting...', qfile)
+                mailman_log('warning', 'Lock file exists for %s (full path: %s), waiting...', qfile, lockfile)
                 # Wait for lock to be released
                 for _ in range(10):  # 10 attempts
                     try:
@@ -612,11 +616,11 @@ class Switchboard:
                     except OSError:
                         time.sleep(0.1)
                 else:
-                    mailman_log('error', 'Could not acquire lock for %s after 10 attempts', qfile)
+                    mailman_log('error', 'Could not acquire lock for %s (full path: %s) after 10 attempts', qfile, lockfile)
                     raise
             else:
-                mailman_log('error', 'Failed to create lock file %s: %s\nTraceback:\n%s',
-                       lockfile, str(e), traceback.format_exc())
+                mailman_log('error', 'Failed to create lock file %s (full path: %s): %s\nTraceback:\n%s',
+                       qfile, lockfile, str(e), traceback.format_exc())
                 raise
         
         try:
@@ -626,8 +630,8 @@ class Switchboard:
                 try:
                     os.makedirs(dirname, 0o755)
                 except Exception as e:
-                    mailman_log('error', 'Failed to create directory %s: %s\nTraceback:\n%s',
-                           dirname, str(e), traceback.format_exc())
+                    mailman_log('error', 'Failed to create directory %s (full path: %s): %s\nTraceback:\n%s',
+                           dirname, os.path.abspath(dirname), str(e), traceback.format_exc())
                     raise
             
             # Write to temporary file first
@@ -638,8 +642,8 @@ class Switchboard:
                     if hasattr(os, 'fsync'):
                         os.fsync(fp.fileno())
             except Exception as e:
-                mailman_log('error', 'Failed to write temporary file %s: %s\nTraceback:\n%s',
-                       tmpfile, str(e), traceback.format_exc())
+                mailman_log('error', 'Failed to write temporary file %s (full path: %s): %s\nTraceback:\n%s',
+                       tmpfile, os.path.abspath(tmpfile), str(e), traceback.format_exc())
                 raise
             
             # Validate the temporary file
@@ -655,34 +659,34 @@ class Switchboard:
                 try:
                     os.unlink(tmpfile)
                 except Exception as cleanup_e:
-                    mailman_log('error', 'Failed to clean up temporary file %s: %s\nTraceback:\n%s',
-                           tmpfile, str(cleanup_e), traceback.format_exc())
+                    mailman_log('error', 'Failed to clean up temporary file %s (full path: %s): %s\nTraceback:\n%s',
+                           tmpfile, os.path.abspath(tmpfile), str(cleanup_e), traceback.format_exc())
                 raise
             
             # Atomic rename with existence check
             try:
                 if os.path.exists(qfile):
-                    mailman_log('warning', 'Target file %s already exists, removing old version', qfile)
+                    mailman_log('warning', 'Target file %s (full path: %s) already exists, removing old version', qfile, os.path.abspath(qfile))
                     os.unlink(qfile)
                 os.rename(tmpfile, qfile)
             except Exception as e:
-                mailman_log('error', 'Failed to rename %s to %s: %s\nTraceback:\n%s',
-                       tmpfile, qfile, str(e), traceback.format_exc())
+                mailman_log('error', 'Failed to rename %s to %s (full paths: %s -> %s): %s\nTraceback:\n%s',
+                       tmpfile, qfile, os.path.abspath(tmpfile), os.path.abspath(qfile), str(e), traceback.format_exc())
                 # Try to clean up
                 try:
                     if os.path.exists(tmpfile):
                         os.unlink(tmpfile)
                 except Exception as cleanup_e:
-                    mailman_log('error', 'Failed to clean up temporary file %s: %s\nTraceback:\n%s',
-                           tmpfile, str(cleanup_e), traceback.format_exc())
+                    mailman_log('error', 'Failed to clean up temporary file %s (full path: %s): %s\nTraceback:\n%s',
+                           tmpfile, os.path.abspath(tmpfile), str(cleanup_e), traceback.format_exc())
                 raise
             
             # Set proper permissions
             try:
                 os.chmod(qfile, 0o660)
             except Exception as e:
-                mailman_log('warning', 'Failed to set permissions on %s: %s\nTraceback:\n%s',
-                       qfile, str(e), traceback.format_exc())
+                mailman_log('warning', 'Failed to set permissions on %s (full path: %s): %s\nTraceback:\n%s',
+                       qfile, os.path.abspath(qfile), str(e), traceback.format_exc())
                 # Not critical, continue
                 
         finally:
