@@ -236,8 +236,13 @@ class LockFile:
         # Unlink the old winner, completing the transfer
         os.unlink(winner)
         # And do some sanity checks
-        assert self.__linkcount() == 2
-        assert self.locked()
+        link_count = self.__linkcount()
+        if link_count != 2:
+            mailman_log('error', 'Lock transfer failed: link count is %d, expected 2', link_count)
+            raise LockError('Lock transfer failed: link count is %d, expected 2' % link_count)
+        if not self.locked():
+            mailman_log('error', 'Lock transfer failed: lock not acquired')
+            raise LockError('Lock transfer failed: lock not acquired')
         mailman_log('debug', 'transferred the lock')
 
     def _take_possession(self):

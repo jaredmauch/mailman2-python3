@@ -73,13 +73,16 @@ def process(mlist, msg, msgdata):
         if mlist.getMemberOption(sender, mm_cfg.Moderate):
             # Note that for member_moderation_action, 0==Hold, 1=Reject,
             # 2==Discard
-            if mlist.member_moderation_action == 0:
+            member_moderation_action = mlist.member_moderation_action
+            if member_moderation_action not in (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT, mm_cfg.DISCARD, mm_cfg.HOLD):
+                raise ValueError(f'Invalid member_moderation_action: {member_moderation_action}')
+            if member_moderation_action == 0:
                 # Hold.  BAW: WIBNI we could add the member_moderation_notice
                 # to the notice sent back to the sender?
                 msgdata['sender'] = sender
                 Hold.hold_for_approval(mlist, msg, msgdata,
                                        ModeratedMemberPost)
-            elif mlist.member_moderation_action == 1:
+            elif member_moderation_action == 1:
                 # Reject
                 text = mlist.member_moderation_notice
                 if text:
@@ -88,7 +91,7 @@ def process(mlist, msg, msgdata):
                     # Use the default RejectMessage notice string
                     text = None
                 raise Errors.RejectMessage(text)
-            elif mlist.member_moderation_action == 2:
+            elif member_moderation_action == 2:
                 # Discard.  BAW: Again, it would be nice if we could send a
                 # discard notice to the sender
                 raise Errors.DiscardMessage
@@ -128,15 +131,17 @@ def process(mlist, msg, msgdata):
     # Okay, so the sender wasn't specified explicitly by any of the non-member
     # moderation configuration variables.  Handle by way of generic non-member
     # action.
-    assert 0 <= mlist.generic_nonmember_action <= 4
-    if mlist.generic_nonmember_action == 0 or msgdata.get('fromusenet'):
+    generic_nonmember_action = mlist.generic_nonmember_action
+    if not (0 <= generic_nonmember_action <= 4):
+        raise ValueError(f'Invalid generic_nonmember_action: {generic_nonmember_action}, must be between 0 and 4')
+    if generic_nonmember_action == 0 or msgdata.get('fromusenet'):
         # Accept
         return
-    elif mlist.generic_nonmember_action == 1:
+    elif generic_nonmember_action == 1:
         Hold.hold_for_approval(mlist, msg, msgdata, Hold.NonMemberPost)
-    elif mlist.generic_nonmember_action == 2:
+    elif generic_nonmember_action == 2:
         do_reject(mlist)
-    elif mlist.generic_nonmember_action == 3:
+    elif generic_nonmember_action == 3:
         do_discard(mlist, msg)
 
 def do_reject(mlist):

@@ -121,7 +121,8 @@ def csrf_check(mlist, token, cgi_user=None):
                 
         context = keydict.get(key)
         key, secret = mlist.AuthContextInfo(context, user)
-        assert key
+        if not key:
+            raise ValueError('Missing CSRF key')
         
         try:
             # Ensure all values are properly encoded before hashing

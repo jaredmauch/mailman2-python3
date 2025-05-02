@@ -55,7 +55,8 @@ class Pending(object):
     def pend_new(self, op, *content, **kws):
         """Create a new entry in the pending database, returning cookie for it.
         """
-        assert op in _ALLKEYS, 'op: %s' % op
+        if op not in _ALLKEYS:
+            raise ValueError(f'Invalid operation: {op}, must be one of {_ALLKEYS}')
         lifetime = kws.get('lifetime', mm_cfg.PENDING_REQUEST_LIFE)
         # We try the main loop several times. If we get a lock error somewhere
         # (for instance because someone broke the lock) we simply try again.

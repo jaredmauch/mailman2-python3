@@ -593,7 +593,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     #
     def Create(self, name, admin, crypted_password,
                langs=None, emailhost=None, urlhost=None):
-        assert name == name.lower(), 'List name must be all lower case.'
+        if name != name.lower():
+            raise ValueError('List name must be all lower case.')
         if Utils.list_exists(name):
             raise Errors.MMListAlreadyExistsError(name)
         # Problems and potential attacks can occur if the list name in the
@@ -724,7 +725,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
             loadfunc = lambda fp: pickle.load(fp, fix_imports=True, encoding='latin1')
         else:
-            assert 0, 'Bad database file name'
+            raise ValueError('Bad database file name')
         try:
             # Check the mod time of the file first.  If it matches our
             # timestamp, then the state hasn't change since the last time we

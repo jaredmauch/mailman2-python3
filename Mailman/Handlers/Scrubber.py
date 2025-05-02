@@ -124,7 +124,8 @@ def calculate_attachments_dir(mlist, msg, msgdata):
             # Best we can do I think
             month = day = year = 0
         datedir = '%04d%02d%02d' % (year, month, day)
-    assert datedir
+    if not datedir:
+        raise ValueError('Missing datedir parameter')
     # As for the msgid hash, we'll base this part on the Message-ID: so that
     # all attachments for the same message end up in the same directory (we'll
     # uniquify the filenames in that directory as needed).  We use the first 2

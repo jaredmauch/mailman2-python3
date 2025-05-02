@@ -40,7 +40,8 @@ def process(mlist, msg, msgdata):
         # Calculate the extra personalization dictionary.  Note that the
         # length of the recips list better be exactly 1.
         recips = msgdata.get('recips')
-        assert isinstance(recips, list) and len(recips) == 1
+        if not (isinstance(recips, list) and len(recips) == 1):
+            raise ValueError(f'Invalid recipients: expected list with one item, got {type(recips)} with {len(recips)} items')
         member = recips[0].lower()
         d['user_address'] = member
         try:

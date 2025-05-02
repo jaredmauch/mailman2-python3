@@ -52,6 +52,12 @@ class OutgoingRunner(Runner, BounceMixin):
             BounceMixin.__init__(self)
             mailman_log('debug', 'OutgoingRunner: BounceMixin initialized')
             
+            # Track processed messages to prevent duplicates
+            self._processed_messages = set()
+            # Clean up old messages periodically
+            self._last_cleanup = time.time()
+            self._cleanup_interval = 3600  # Clean up every hour
+            
             # We look this function up only at startup time
             self._modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
             mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', self._modname)
@@ -86,22 +92,47 @@ class OutgoingRunner(Runner, BounceMixin):
 
     def _dispose(self, mlist, msg, msgdata):
         """Process an outgoing message."""
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Check for duplicate messages
+        if msgid in self._processed_messages:
+            mailman_log('error', 'OutgoingRunner: Duplicate message detected: %s (file: %s)', msgid, filebase)
+            return False
+            
+        # Clean up old message IDs periodically
+        current_time = time.time()
+        if current_time - self._last_cleanup > self._cleanup_interval:
+            self._processed_messages.clear()
+            self._last_cleanup = current_time
+            
         try:
+            # Log start of processing
+            mailman_log('info', 'OutgoingRunner: Starting to process message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            
             # Validate message type first
             msg, success = self._validate_message(msg, msgdata)
             if not success:
-                mailman_log('error', 'Message validation failed for outgoing message')
+                mailman_log('error', 'Message validation failed for outgoing message %s', msgid)
                 return False
 
             # Process the message through the delivery module
             self._func(mlist, msg, msgdata)
+            
+            # Add to processed messages only after successful processing
+            self._processed_messages.add(msgid)
+            
+            # Log successful completion
+            mailman_log('info', 'OutgoingRunner: Successfully processed message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
             return True
         except Exception as e:
             # Enhanced error logging with more context
-            mailman_log('error', 'Error processing outgoing message for list %s: %s',
-                   mlist.internal_name(), str(e))
+            mailman_log('error', 'Error processing outgoing message %s for list %s: %s',
+                   msgid, mlist.internal_name(), str(e))
             mailman_log('error', 'Message details:')
-            mailman_log('error', '  Message ID: %s', msg.get('message-id', 'n/a'))
+            mailman_log('error', '  Message ID: %s', msgid)
             mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
             mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
             mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))

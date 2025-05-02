@@ -337,7 +337,8 @@ class ListAdmin(object):
         elif rtype == UNSUBSCRIPTION:
             status = self.__handleunsubscription(data, value, comment)
         else:
-            assert rtype == SUBSCRIPTION
+            if rtype != SUBSCRIPTION:
+                raise ValueError(f'Invalid request type: {rtype}, expected {SUBSCRIPTION}')
             status = self.__handlesubscription(data, value, comment)
         if status != DEFER:
             # BAW: Held message ids are linked to Pending cookies, allowing
@@ -415,7 +416,8 @@ class ListAdmin(object):
                 if path.endswith('.pck'):
                     msg = pickle.load(fp, fix_imports=True, encoding='latin1')
                 else:
-                    assert path.endswith('.txt'), '%s not .pck or .txt' % path
+                    if not path.endswith('.txt'):
+                        raise ValueError(f'Invalid file extension: {path} must end with .txt')
                     msg = fp.read()
             finally:
                 fp.close()
@@ -489,7 +491,8 @@ class ListAdmin(object):
                           sender, comment or _('[No reason given]'),
                           lang=lang)
         else:
-            assert value == mm_cfg.DISCARD
+            if value != mm_cfg.DISCARD:
+                raise ValueError(f'Invalid value: {value}, expected {mm_cfg.DISCARD}')
             # Discarded
             rejection = 'Discarded'
         # Forward the message
@@ -628,7 +631,8 @@ class ListAdmin(object):
 \tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
         else:
             # subscribe
-            assert value == mm_cfg.SUBSCRIBE
+            if value != mm_cfg.SUBSCRIBE:
+                raise ValueError(f'Invalid value: {value}, expected {mm_cfg.SUBSCRIBE}')
             try:
                 _ = D_
                 whence = _('via admin approval')
@@ -683,7 +687,8 @@ class ListAdmin(object):
             mailman_log('vette', """%s: rejected unsubscription request from %s
 \tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
         else:
-            assert value == mm_cfg.UNSUBSCRIBE
+            if value != mm_cfg.UNSUBSCRIBE:
+                raise ValueError(f'Invalid value: {value}, expected {mm_cfg.UNSUBSCRIBE}')
             try:
                 self.ApprovedDeleteMember(addr)
             except Errors.NotAMemberError:

@@ -93,7 +93,8 @@ class Results:
                            Utils.GetCharSet(self.msgdata['lang']),
                            errors='replace')
         # text/plain parts better have string payloads
-        assert isinstance(body, (str, bytes))
+        if not isinstance(body, (str, bytes)):
+            raise TypeError(f'Invalid body type: {type(body)}, expected str or bytes')
         lines = body.splitlines()
         # Use no more lines than specified
         self.commands.extend(lines[:mm_cfg.DEFAULT_MAIL_COMMANDS_MAX_LINES])
