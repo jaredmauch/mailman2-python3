@@ -246,7 +246,7 @@ class Bouncer(object):
              'owneraddr': siteowner,
              }, mlist=self)
         subject = _('Bounce action notification')
-        umsg = Message.UserNotification(self.GetOwnerEmail(),
+        umsg = Mailman.Message.UserNotification(self.GetOwnerEmail(),
                                         siteowner, subject,
                                         lang=self.preferred_language)
         # BAW: Be sure you set the type before trying to attach, or you'll get
@@ -315,7 +315,7 @@ class Bouncer(object):
              'owneraddr'  : self.GetOwnerEmail(),
              'reason'     : txtreason,
              }, lang=lang, mlist=self)
-        msg = Message.UserNotification(member, reqaddr, text=text, lang=lang)
+        msg = Mailman.Message.UserNotification(member, reqaddr, text=text, lang=lang)
         # BAW: See the comment in MailList.py ChangeMemberAddress() for why we
         # set the Subject this way.
         del msg['subject']
@@ -340,7 +340,7 @@ class Bouncer(object):
         else:
             notice = _(e.notice())
         # Currently we always craft bounces as MIME messages.
-        bmsg = Message.UserNotification(msg.get_sender(),
+        bmsg = Mailman.Message.UserNotification(msg.get_sender(),
                                         self.GetOwnerEmail(),
                                         subject,
                                         lang=self.preferred_language)

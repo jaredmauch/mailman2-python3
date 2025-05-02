@@ -186,7 +186,7 @@ def main():
             try:
                 hostname = mlist.host_name
                 adminurl = mlist.GetScriptURL('admin', absolute=1)
-                msg = Message.UserNotification(
+                msg = Mailman.Message.UserNotification(
                     mlist.owner[:], Utils.get_site_email(),
                     _('Your new %(listname)s list password'),
                     _('''\

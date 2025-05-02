@@ -333,7 +333,7 @@ moderator's decision when they get to your request.""")
             otrans = i18n.get_translation()
             i18n.set_language(mlang)
             try:
-                msg = Message.UserNotification(
+                msg = Mailman.Message.UserNotification(
                     mlist.getMemberCPAddress(email),
                     mlist.GetBouncesEmail(),
                     _('Mailman privacy alert'),

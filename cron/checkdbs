@@ -104,7 +104,7 @@ def main():
                 else:
                     subject = _(
                         '%(realname)s moderator request check result')
-                msg = Message.UserNotification(mlist.GetOwnerEmail(),
+                msg = Mailman.Message.UserNotification(mlist.GetOwnerEmail(),
                                                mlist.GetBouncesEmail(),
                                                subject, text,
                                                mlist.preferred_language)

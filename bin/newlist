@@ -256,7 +256,7 @@ def main():
         otrans = i18n.get_translation()
         i18n.set_language(mlist.preferred_language)
         try:
-            msg = Message.UserNotification(
+            msg = Mailman.Message.UserNotification(
                 owner_mail, siteowner,
                 _(f'Your new mailing list: {listname}'),
                 text, mlist.preferred_language)

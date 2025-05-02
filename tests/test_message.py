@@ -38,7 +38,7 @@ class TestSentMessage1(EmailBase):
     def test_user_notification(self):
         eq = self.assertEqual
         unless = self.failUnless
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             'aperson@dom.ain',
             '_xtest@dom.ain',
             'Your Test List',

@@ -102,7 +102,7 @@ def process(mlist, msg, msgdata):
         text = rtext
     # Wrap the response.
     text = Utils.wrap(text)
-    outmsg = Message.UserNotification(sender, mlist.GetBouncesEmail(),
+    outmsg = Mailman.Message.UserNotification(sender, mlist.GetBouncesEmail(),
                                       subject, text, mlist.preferred_language)
     outmsg['X-Mailer'] = _('The Mailman Replybot')
     # prevent recursions and mail loops!

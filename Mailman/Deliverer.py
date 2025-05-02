@@ -92,7 +92,7 @@ your membership administrative address, %(addr)s.'''))
         else:
             digmode = ''
         realname = self.real_name
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             self.GetMemberAdminEmail(name), self.GetRequestEmail(),
             _('Welcome to the "%(realname)s" mailing list%(digmode)s'),
             text, pluser)
@@ -102,7 +102,7 @@ your membership administrative address, %(addr)s.'''))
     def SendUnsubscribeAck(self, addr, lang):
         realname = self.real_name
         i18n.set_language(lang)
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             self.GetMemberAdminEmail(addr), self.GetBouncesEmail(),
             _('You have been unsubscribed from the %(realname)s mailing list'),
             Utils.wrap(self.goodbye_msg), lang)
@@ -151,7 +151,7 @@ your membership administrative address, %(addr)s.'''))
              'requestaddr': requestaddr,
              'owneraddr'  : self.GetOwnerEmail(),
             }, lang=lang, mlist=self)
-        msg = Message.UserNotification(recipient, adminaddr, subject, text,
+        msg = Mailman.Message.UserNotification(recipient, adminaddr, subject, text,
                                        lang)
         msg['X-No-Archive'] = 'yes'
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
@@ -165,7 +165,7 @@ your membership administrative address, %(addr)s.'''))
         text = MIMEText(Utils.wrap(text),
                         _charset=Utils.GetCharSet(self.preferred_language))
         attachment = MIMEMessage(msg)
-        notice = Message.OwnerNotification(
+        notice = Mailman.Message.OwnerNotification(
             self, subject, tomoderators=tomoderators)
         # Make it look like the message is going to the -owner address
         notice.set_type('multipart/mixed')
@@ -181,7 +181,7 @@ your membership administrative address, %(addr)s.'''))
         syslog('mischief', '%s was invited to %s but confirmed to %s',
                address, listname, selfname)
         # First send a notice to the attacked list
-        msg = Message.OwnerNotification(
+        msg = Mailman.Message.OwnerNotification(
             self,
             _('Hostile subscription attempt detected'),
             Utils.wrap(_("""%(address)s was invited to a different mailing
@@ -200,7 +200,7 @@ action by you is required.""")))
         otrans = i18n.get_translation()
         i18n.set_language(mlist.preferred_language)
         try:
-            msg = Message.OwnerNotification(
+            msg = Mailman.Message.OwnerNotification(
                 mlist,
                 _('Hostile subscription attempt detected'),
                 Utils.wrap(_("""You invited %(address)s to your list, but in a
@@ -239,7 +239,7 @@ is required.""")))
             subject = _('%(listname)s mailing list probe message')
         finally:
             i18n.set_translation(otrans)
-        outer = Message.UserNotification(member, probeaddr, subject,
+        outer = Mailman.Message.UserNotification(member, probeaddr, subject,
                                          lang=ulang)
         outer.set_type('multipart/mixed')
         text = MIMEText(text, _charset=Utils.GetCharSet(ulang))

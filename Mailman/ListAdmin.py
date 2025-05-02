@@ -534,7 +534,7 @@ class ListAdmin(object):
             otrans = i18n.get_translation()
             i18n.set_language(lang)
             try:
-                fmsg = Message.UserNotification(
+                fmsg = Mailman.Message.UserNotification(
                     addr, self.GetBouncesEmail(),
                     _('Forward of moderated message'),
                     lang=lang)
@@ -605,7 +605,7 @@ class ListAdmin(object):
             # This message should appear to come from the <list>-owner so as
             # to avoid any useless bounce processing.
             owneraddr = self.GetOwnerEmail()
-            msg = Message.UserNotification(owneraddr, owneraddr, subject, text,
+            msg = Mailman.Message.UserNotification(owneraddr, owneraddr, subject, text,
                                            self.preferred_language)
             msg.send(self, **{'tomoderators': 1})
             # Restore the user's preferred language.
@@ -666,7 +666,7 @@ class ListAdmin(object):
             # This message should appear to come from the <list>-owner so as
             # to avoid any useless bounce processing.
             owneraddr = self.GetOwnerEmail()
-            msg = Message.UserNotification(owneraddr, owneraddr, subject, text,
+            msg = Mailman.Message.UserNotification(owneraddr, owneraddr, subject, text,
                                            self.preferred_language)
             msg.send(self, **{'tomoderators': 1})
 
@@ -717,7 +717,7 @@ class ListAdmin(object):
             subject = _('Request to mailing list %(realname)s rejected')
         finally:
             i18n.set_translation(otrans)
-        msg = Message.UserNotification(recip, self.GetOwnerEmail(),
+        msg = Mailman.Message.UserNotification(recip, self.GetOwnerEmail(),
                                        subject, text, lang)
         msg.send(self)
 

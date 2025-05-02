@@ -42,6 +42,7 @@ from Mailman.Message import Message
 from Mailman import i18n
 from Mailman import Pending
 from Mailman.Logging.Syslog import syslog
+from Mailman.Message import UserNotification
 
 # First, play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.
@@ -245,7 +246,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
         lang = msgdata.get('lang', mlist.getMemberLanguage(sender))
         subject = _('Your message to %(listname)s awaits moderator approval')
         text = Utils.maketext('postheld.txt', d, lang=lang, mlist=mlist)
-        nmsg = Message.UserNotification(sender, owneraddr, subject, text, lang)
+        nmsg = Mailman.Message.UserNotification(sender, owneraddr, subject, text, lang)
         nmsg.send(mlist)
     # Now the message for the list owners.  Be sure to include the list
     # moderators in this message.  This one should appear to come from
@@ -263,8 +264,8 @@ def hold_for_approval(mlist, msg, msgdata, exc):
             d['subject'] = usersubject
             # craft the admin notification message and deliver it
             subject = _('%(listname)s post from %(sender)s requires approval')
-            nmsg = Message.UserNotification(owneraddr, owneraddr, subject,
-                                            lang=lang)
+            nmsg = Mailman.Message.UserNotification(owneraddr, owneraddr, subject,
+                                    lang=lang)
             nmsg.set_type('multipart/mixed')
             text = MIMEText(
                 Utils.maketext('postauth.txt', d, raw=1, mlist=mlist),

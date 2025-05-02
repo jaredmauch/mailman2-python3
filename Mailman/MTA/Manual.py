@@ -87,7 +87,7 @@ equivalent) file by adding the following lines, and possibly running the
     # this request.
     siteowner = Utils.get_site_email(extra='owner')
     # Should this be sent in the site list's preferred language?
-    msg = Message.UserNotification(
+    msg = Mailman.Message.UserNotification(
         siteowner, siteowner,
         _('Mailing list creation request for list %(listname)s'),
         sfp.getvalue(), mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -130,7 +130,7 @@ equivalent) file by removing the following lines, and possibly running the
         return
     siteowner = Utils.get_site_email(extra='owner')
     # Should this be sent in the site list's preferred language?
-    msg = Message.UserNotification(
+    msg = Mailman.Message.UserNotification(
         siteowner, siteowner,
         _('Mailing list removal request for list %(listname)s'),
         sfp.getvalue(), mm_cfg.DEFAULT_SERVER_LANGUAGE)

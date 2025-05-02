@@ -296,7 +296,7 @@ def main():
                 # Ensure host is properly decoded
                 if isinstance(host, bytes):
                     host = tounicode(host, 'latin-1')
-                msg = Message.UserNotification(
+                msg = Mailman.Message.UserNotification(
                     addr, siteowner,
                     _('%(host)s mailing list memberships reminder') % {'host': host},
                     text.encode(enc, 'replace'), poplang)

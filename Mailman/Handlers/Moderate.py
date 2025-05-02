@@ -162,7 +162,7 @@ def do_discard(mlist, msg):
         lang = mlist.preferred_language
         varhelp = '%s/?VARHELP=privacy/sender/discard_these_nonmembers' % \
                   mlist.GetScriptURL('admin', absolute=1)
-        nmsg = Message.UserNotification(mlist.GetOwnerEmail(),
+        nmsg = Mailman.Message.UserNotification(mlist.GetOwnerEmail(),
                                         mlist.GetBouncesEmail(),
                                         _('Auto-discard notification'),
                                         lang=lang)

@@ -285,7 +285,7 @@ def process_request(doc, cgidata):
              'requestaddr' : mlist.GetRequestEmail(),
              'siteowner'   : siteowner,
              }, mlist=mlist)
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             owner, siteowner,
             _('Your new mailing list: {listname}'),
             text, mlist.preferred_language)

@@ -209,7 +209,7 @@ To obtain instructions, send a message containing just the word "help".
         recip = self.returnaddr or self.msg.get_sender()
         if not self.mlist.autorespondToSender(recip, self.msgdata['lang']):
             return
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             recip,
             self.mlist.GetOwnerEmail(),
             _('The results of your email commands'),
