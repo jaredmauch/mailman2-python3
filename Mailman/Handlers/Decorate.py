@@ -204,6 +204,10 @@ def process(mlist, msg, msgdata):
 def decorate(mlist, template, what, extradict=None):
     # `what' is just a descriptive phrase used in the log message
     
+    # If template is None, return empty string
+    if template is None:
+        return ''
+    
     # If template is a Message object, get its content
     if isinstance(template, Message):
         template = template.get_payload(decode=True)
