@@ -26,7 +26,7 @@ from email.utils import parseaddr
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman import Hold
+from Mailman.Handlers import Hold
 from Mailman import i18n
 from Mailman.Message import Message
 from Mailman.Logging.Syslog import syslog
