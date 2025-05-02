@@ -87,36 +87,27 @@ class OutgoingRunner(Runner, BounceMixin):
     def _dispose(self, mlist, msg, msgdata):
         """Process an outgoing message."""
         try:
-            # Log message details for debugging
-            msgid = msg.get('message-id', 'n/a')
-            mailman_log('debug', 'OutgoingRunner: Processing message %s for list %s', msgid, mlist.internal_name())
-            
             # Validate message type first
             msg, success = self._validate_message(msg, msgdata)
             if not success:
-                mailman_log('error', 'Message validation failed for outgoing message %s', msgid)
+                mailman_log('error', 'Message validation failed for outgoing message')
                 return False
 
-            # Log message type and content for debugging
-            mailman_log('debug', 'OutgoingRunner: Message type: %s, Content type: %s', 
-                       type(msg).__name__, msg.get_content_type())
-            
             # Process the message through the delivery module
             self._func(mlist, msg, msgdata)
             return True
         except Exception as e:
-            # Enhanced error logging with full context
-            msgid = msg.get('message-id', 'n/a')
-            mailman_log('error', 'Error processing outgoing message for list %s: %s\n'
-                                'Message ID: %s\n'
-                                'Message type: %s\n'
-                                'Content type: %s\n'
-                                'Traceback:\n%s',
-                       mlist.internal_name(), str(e),
-                       msgid,
-                       type(msg).__name__,
-                       msg.get_content_type(),
-                       traceback.format_exc())
+            # Enhanced error logging with more context
+            mailman_log('error', 'Error processing outgoing message for list %s: %s',
+                   mlist.internal_name(), str(e))
+            mailman_log('error', 'Message details:')
+            mailman_log('error', '  Message ID: %s', msg.get('message-id', 'n/a'))
+            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('error', '  Message type: %s', type(msg).__name__)
+            mailman_log('error', '  Message data: %s', str(msgdata))
+            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
             return False
 
     def _queue_bounces(self, mlist, msg, msgdata, failures):
