@@ -330,9 +330,9 @@ def chunkify(recips, chunksize):
                 'edu': 4,
                 'us' : 5,
                 'ca' : 6,
-		'uk' : 7,
-		'jp' : 8,
-		'au' : 9,
+                'uk' : 7,
+                'jp' : 8,
+                'au' : 9,
                 }
     # Need to sort by domain name.  if we split to chunks it is possible
     # some well-known domains will be interspersed as we sort by
@@ -343,6 +343,7 @@ def chunkify(recips, chunksize):
         i = r.rfind('.')
         if i >= 0:
             tld = r[i+1:]
+        # Use get() with default value of 0 for unknown TLDs
         bin = chunkmap.get(tld, 0)
         bucket = buckets.get(bin, [])
         bucket.append(r)
