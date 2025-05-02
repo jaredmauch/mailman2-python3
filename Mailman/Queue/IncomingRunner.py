@@ -110,7 +110,6 @@ from Mailman.Message import Message
 from urllib.parse import parse_qs
 from Mailman.Utils import reap
 from Mailman import Utils
-from Mailman.Utils import Document, Header, Bold
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -360,65 +359,3 @@ class IncomingRunner(Runner):
                         mailman_log('error', 'Failed to requeue file %s: %s', filebase, str(e2))
         return len(files)
 
-    def output_success_page(self, doc):
-        print(doc.Format())
-        return
-
-    def handle_error(self, status, message, details=None):
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_(message)))
-        if details:
-            doc.AddItem(Preformatted(Utils.websafe(str(details))))
-        print(f'Status: {status}')
-        print(doc.Format())
-        return
-
-    def handle_form_data(self):
-        try:
-            if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
-                content_type = os.environ.get('CONTENT_TYPE', '')
-                if content_type.startswith('application/x-www-form-urlencoded'):
-                    content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                    form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
-                    cgidata = parse_qs(form_data, keep_blank_values=1)
-                else:
-                    raise ValueError('Invalid content type')
-            else:
-                cgidata = parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
-        except Exception:
-            self.handle_error(400, _('Invalid options to CGI script.'))
-            return
-
-        # Add proper CSRF protection
-        safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
-        params = list(cgidata.keys())
-        if set(params) - set(safe_params):
-            csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
-                                      'admindb')
-        else:
-            csrf_checked = True
-        # if password is present, void cookie to force password authentication.
-        if cgidata.get('adminpw', [''])[0]:
-            os.environ['HTTP_COOKIE'] = ''
-            csrf_checked = True
-
-        # Add proper authentication flow
-        if not mlist.WebAuthenticate(AUTH_CONTEXTS, cgidata.get('adminpw', [''])[0]):
-            if 'adminpw' in cgidata:
-                msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
-                remote = os.environ.get('HTTP_FORWARDED_FOR',
-                         os.environ.get('HTTP_X_FORWARDED_FOR',
-                         os.environ.get('REMOTE_ADDR',
-                                        'unidentified origin')))
-                syslog('security',
-                       'Authorization failed (admindb): list=%s: remote=%s',
-                       listname, remote)
-            else:
-                msg = ''
-            Auth.loginpage(mlist, 'admindb', msg=msg)
-            return
-
-        # Process the form data
-        # ... (rest of the method content remains unchanged)
