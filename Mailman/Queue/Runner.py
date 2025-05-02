@@ -259,7 +259,8 @@ class Runner:
             # Check for duplicate messages early
             msgid = msg.get('message-id', 'n/a')
             if hasattr(self, '_processed_messages') and msgid in self._processed_messages:
-                log('error', 'Duplicate message detected early: %s', msgid)
+                log('error', 'Duplicate message detected early: %s (file: %s)', msgid, msgdata.get('_filebase', 'unknown'))
+                self._shunt.enqueue(msg, msgdata)
                 return
 
             sender = msg.get_sender()
