@@ -192,17 +192,18 @@ def kill_watcher(sig):
 def get_lock_data():
     # Return the hostname, pid, and tempfile
     try:
-        fp = open(LOCKFILE)
-        filename = os.path.split(fp.read().strip())[1]
-        fp.close()
-        parts = filename.split('.')
-        hostname = DOT.join(parts[1:-1])
-        try:
-            pid = int(parts[-1])
-        except ValueError as e:
-            syslog('error', 'Invalid PID in lock file %s: %s', LOCKFILE, e)
-            raise LockFile.LockError('Invalid PID in lock file')
-        return hostname, pid, filename
+        with open(LOCKFILE) as fp:
+            content = fp.read().strip().split()
+            if len(content) != 2:
+                syslog('error', 'Invalid lock file format in %s: expected "pid hostname"', LOCKFILE)
+                raise LockFile.LockError('Invalid lock file format')
+            try:
+                pid = int(content[0])
+                hostname = content[1]
+            except ValueError as e:
+                syslog('error', 'Invalid PID in lock file %s: %s', LOCKFILE, e)
+                raise LockFile.LockError('Invalid PID in lock file')
+            return hostname, pid, None  # tempfile is not used in this format
     except IOError as e:
         syslog('error', 'Could not read lock file %s: %s', LOCKFILE, e)
         raise LockFile.LockError('Could not read lock file')
