@@ -20,12 +20,19 @@
 from builtins import object
 import sys
 import time
+import os
+import email
+import errno
+import pickle
+import email.message
+from email.message import Message
 
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 
 from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman import Errors
 from Mailman.Message import Message
 from Mailman import MemberAdaptor
 from Mailman import Pending

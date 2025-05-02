@@ -34,6 +34,13 @@ from Mailman.Logging.Syslog import syslog
 _ = i18n._
 
 import sys
+import os
+import time
+import email
+import errno
+import pickle
+import email.message
+from email.message import Message
 
 
 class Deliverer(object):

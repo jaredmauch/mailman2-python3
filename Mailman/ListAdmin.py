@@ -41,6 +41,7 @@ from email.mime.message import MIMEMessage
 from email.generator import Generator
 from email.utils import getaddresses
 import email.message
+from email.message import Message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -447,7 +448,7 @@ class ListAdmin(object):
                 if e.errno != errno.ENOENT: raise
                 return LOST
             # Convert to Mailman.Message if needed
-            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+            if isinstance(msg, Message) and not isinstance(msg, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -503,7 +504,7 @@ class ListAdmin(object):
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
             # Convert to Mailman.Message if needed
-            if isinstance(copy, email.message.Message) and not isinstance(copy, Message):
+            if isinstance(copy, Message) and not isinstance(copy, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in copy.items():
@@ -534,7 +535,7 @@ class ListAdmin(object):
             otrans = i18n.get_translation()
             i18n.set_language(lang)
             try:
-                fmsg = Mailman.Message.UserNotification(
+                fmsg = Message.UserNotification(
                     addr, self.GetBouncesEmail(),
                     _('Forward of moderated message'),
                     lang=lang)
@@ -605,7 +606,7 @@ class ListAdmin(object):
             # This message should appear to come from the <list>-owner so as
             # to avoid any useless bounce processing.
             owneraddr = self.GetOwnerEmail()
-            msg = Mailman.Message.UserNotification(owneraddr, owneraddr, subject, text,
+            msg = Message.UserNotification(owneraddr, owneraddr, subject, text,
                                            self.preferred_language)
             msg.send(self, **{'tomoderators': 1})
             # Restore the user's preferred language.
@@ -666,7 +667,7 @@ class ListAdmin(object):
             # This message should appear to come from the <list>-owner so as
             # to avoid any useless bounce processing.
             owneraddr = self.GetOwnerEmail()
-            msg = Mailman.Message.UserNotification(owneraddr, owneraddr, subject, text,
+            msg = Message.UserNotification(owneraddr, owneraddr, subject, text,
                                            self.preferred_language)
             msg.send(self, **{'tomoderators': 1})
 
@@ -717,7 +718,7 @@ class ListAdmin(object):
             subject = _('Request to mailing list %(realname)s rejected')
         finally:
             i18n.set_translation(otrans)
-        msg = Mailman.Message.UserNotification(recip, self.GetOwnerEmail(),
+        msg = Message.UserNotification(recip, self.GetOwnerEmail(),
                                        subject, text, lang)
         msg.send(self)
 
@@ -866,7 +867,7 @@ def readMessage(path):
         if ext == '.txt':
             msg = email.message_from_file(fp, Message)
             # Convert to Mailman.Message if needed
-            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+            if isinstance(msg, Message) and not isinstance(msg, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -882,7 +883,7 @@ def readMessage(path):
             assert ext == '.pck'
             msg = pickle.load(fp, fix_imports=True, encoding='latin1')
             # Convert to Mailman.Message if needed
-            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+            if isinstance(msg, Message) and not isinstance(msg, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -897,3 +898,18 @@ def readMessage(path):
     finally:
         fp.close()
     return msg
+
+def process(mlist, msg, msgdata):
+    # Convert email.message.Message to Mailman.Message.Message if needed
+    if isinstance(msg, email.message.Message):
+        newmsg = Message.Message()
+        # Copy attributes
+        for k, v in msg.items():
+            newmsg[k] = v
+        # Copy payload
+        if msg.is_multipart():
+            for part in msg.get_payload():
+                newmsg.attach(part)
+        else:
+            newmsg.set_payload(msg.get_payload())
+        msg = newmsg

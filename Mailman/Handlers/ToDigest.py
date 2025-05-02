@@ -43,6 +43,10 @@ from email.utils import getaddresses, formatdate
 from email.header import decode_header, make_header, Header
 from email.charset import Charset
 import email
+import email.message
+from email.message import Message
+import errno
+import pickle
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -148,8 +152,27 @@ def process(mlist, msg, msgdata):
     This function handles adding messages to the digest and sending the digest
     when appropriate. All file operations use proper encoding handling.
     """
+    if msgdata.get('isdigest'):
+        return
+    # Convert email.message.Message to Mailman.Message.Message if needed
+    if isinstance(msg, email.message.Message):
+        newmsg = Message()
+        # Copy attributes
+        for k, v in msg.items():
+            newmsg[k] = v
+        # Copy payload
+        if msg.is_multipart():
+            for part in msg.get_payload():
+                newmsg.attach(part)
+        else:
+            newmsg.set_payload(msg.get_payload())
+        msg = newmsg
+    # Create digest message
+    mimemsg = Message()
+    rfc1153msg = Message()
+    
     # Short circuit non-digestable lists
-    if not mlist.digestable or msgdata.get('isdigest'):
+    if not mlist.digestable:
         return
         
     mboxfile = os.path.join(mlist.fullpath(), 'digest.mbox')
@@ -264,7 +287,7 @@ def send_digests(mlist, mboxpath):
                         # Process the previous message
                         msg_str = ''.join(current_msg)
                         try:
-                            msg = email.message_from_string(msg_str, Message)
+                            msg = email.message.Message.from_string(msg_str)
                             if msg is None:
                                 continue
                                 
@@ -312,7 +335,7 @@ def send_digests(mlist, mboxpath):
             if current_msg:
                 msg_str = ''.join(current_msg)
                 try:
-                    msg = email.message_from_string(msg_str, Message)
+                    msg = email.message.Message.from_string(msg_str)
                     if msg is not None:
                         # Process the last message (same code as above)
                         subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)

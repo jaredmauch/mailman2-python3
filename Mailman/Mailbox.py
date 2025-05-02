@@ -24,6 +24,8 @@ from io import StringIO, BytesIO
 from types import MethodType
 
 import email
+import email.message
+from email.message import Message
 from email.parser import Parser
 from email.errors import MessageParseError
 
@@ -33,7 +35,7 @@ from Mailman.Message import Message
 
 def _safeparser(fp):
     try:
-        return email.message_from_file(fp, Message)
+        return email.message_from_file(fp, Mailman.Message.Message)
     except MessageParseError:
         # Don't return None since that will stop a mailbox iterator
         return ''

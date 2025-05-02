@@ -41,7 +41,7 @@ import errno
 import pickle
 import marshal
 import email.message
-from email.message import Message as EmailMessage
+from email.message import Message
 import hashlib
 import socket
 import traceback
