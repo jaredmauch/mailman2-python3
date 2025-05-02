@@ -201,11 +201,11 @@ def get_lock_data():
             pid = int(parts[-1])
         except ValueError as e:
             syslog('error', 'Invalid PID in lock file %s: %s', LOCKFILE, e)
-            raise Errors.LockError('Invalid PID in lock file')
+            raise LockFile.LockError('Invalid PID in lock file')
         return hostname, pid, filename
     except IOError as e:
         syslog('error', 'Could not read lock file %s: %s', LOCKFILE, e)
-        raise Errors.LockError('Could not read lock file')
+        raise LockFile.LockError('Could not read lock file')
 
 
 def qrunner_state():
