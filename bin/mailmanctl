@@ -668,7 +668,8 @@ Qrunner %s reached maximum restart limit of %d, not restarting.""",
                 os._exit(1)
 
         except Exception as e:
-            syslog('error', 'Error during startup: %s', str(e))
+            import traceback
+            syslog('error', 'Error during startup: %s\nTraceback:\n%s', str(e), traceback.format_exc())
             sys.exit(1)
     elif args.command == 'stop':
         kill_watcher(signal.SIGTERM)

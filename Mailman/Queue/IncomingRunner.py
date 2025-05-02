@@ -288,7 +288,14 @@ class IncomingRunner(Runner):
                        mlist.internal_name(), handler)
                 return 0
             except Errors.HoldMessage:
-                # Let the approval process take it from here
+                # Message is being held for moderation, no need to requeue
+                mailman_log('vette', """Message held for moderation, msgid: %s
+        list: %s,
+        handler: %s""",
+                       msg.get('message-id', 'n/a'),
+                       mlist.internal_name(), handler)
+                # Add message ID to processed set to prevent duplicate processing
+                self._processed_messages.add(msgid)
                 return 0
             except Errors.RejectMessage as e:
                 pipeline.insert(0, handler)

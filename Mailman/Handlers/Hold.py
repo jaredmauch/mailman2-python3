@@ -215,8 +215,6 @@ def hold_for_approval(mlist, msg, msgdata, exc):
         lang = mlist.getMemberLanguage(sender)
         # Get the text of the message
         text = exc.rejection_notice(mlist)
-        # Create the notification message
-        nmsg = UserNotification(sender, owneraddr, subject, text, lang)
         listname = mlist.real_name
         sender = msgdata.get('sender', msg.get_sender())
         usersubject = msg.get('subject')
