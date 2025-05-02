@@ -30,6 +30,7 @@ from email.message import Message
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 
+import Mailman
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors

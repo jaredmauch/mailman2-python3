@@ -23,6 +23,7 @@ from email.mime.message import MIMEMessage
 from email.mime.text import MIMEText
 from email.utils import parseaddr
 
+import Mailman
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
