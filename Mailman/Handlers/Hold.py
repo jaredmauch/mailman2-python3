@@ -38,11 +38,10 @@ from email.iterators import body_line_iterator
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Message import Message
+from Mailman.Message import Message, UserNotification
 from Mailman import i18n
 from Mailman import Pending
 from Mailman.Logging.Syslog import syslog
-from Mailman.Message import UserNotification
 
 # First, play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.
@@ -198,8 +197,19 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     #
     # Check if exc is a class (new-style in Python 3)
     if isinstance(exc, type):
-        # Go ahead and instantiate it now.
         exc = exc()
+    # Get the sender of the message
+    sender = msg.get_sender()
+    # Get the list's owner address
+    owneraddr = mlist.GetOwnerEmail()
+    # Get the subject
+    subject = msg.get('subject', _('(no subject)'))
+    # Get the language to use
+    lang = mlist.getMemberLanguage(sender)
+    # Get the text of the message
+    text = exc.rejection_notice(mlist)
+    # Create the notification message
+    nmsg = UserNotification(sender, owneraddr, subject, text, lang)
     listname = mlist.real_name
     sender = msgdata.get('sender', msg.get_sender())
     usersubject = msg.get('subject')
@@ -209,7 +219,6 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     else:
         usersubject = _('(no subject)')
     message_id = msg.get('message-id', 'n/a')
-    owneraddr = mlist.GetOwnerEmail()
     adminaddr = mlist.GetBouncesEmail()
     requestaddr = mlist.GetRequestEmail()
     # We need to send both the reason and the rejection notice through the
@@ -246,7 +255,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
         lang = msgdata.get('lang', mlist.getMemberLanguage(sender))
         subject = _('Your message to %(listname)s awaits moderator approval')
         text = Utils.maketext('postheld.txt', d, lang=lang, mlist=mlist)
-        nmsg = Mailman.Message.UserNotification(sender, owneraddr, subject, text, lang)
+        nmsg = UserNotification(sender, owneraddr, subject, text, lang)
         nmsg.send(mlist)
     # Now the message for the list owners.  Be sure to include the list
     # moderators in this message.  This one should appear to come from
@@ -264,7 +273,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
             d['subject'] = usersubject
             # craft the admin notification message and deliver it
             subject = _('%(listname)s post from %(sender)s requires approval')
-            nmsg = Mailman.Message.UserNotification(owneraddr, owneraddr, subject,
+            nmsg = UserNotification(owneraddr, owneraddr, subject,
                                     lang=lang)
             nmsg.set_type('multipart/mixed')
             text = MIMEText(
