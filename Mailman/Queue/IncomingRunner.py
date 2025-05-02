@@ -181,7 +181,7 @@ class IncomingRunner(Runner):
             mlist.Save()
             return more
         except Exception as e:
-            mailman_log('error', 'Error processing message for %s: %s', listname, str(e))
+            mailman_log('error', 'Error processing message for %s: %s\nTraceback:\n%s', listname, str(e), traceback.format_exc())
             return 1
         finally:
             try:
