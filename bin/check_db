@@ -54,8 +54,8 @@ PROGRAM = sys.argv[0]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Check a list\'s config database file for integrity.')
-    parser.add_argument('-a', '--all', action='store_true',
-                       help='Check the databases for all lists')
+    parser.add_argument('-a', '--all', action='store_true', default=True,
+                       help='Check the databases for all lists (default)')
     parser.add_argument('-v', '--verbose', action='store_true',
                        help='Verbose output. The state of every tested file is printed')
     parser.add_argument('listnames', nargs='*',
@@ -72,7 +72,7 @@ def load_pickle(fp):
         return None
 
 
-def testfile(dbfile):
+def testfile(dbfile, verbose=False):
     # Use our safe loader
     loadfunc = load_pickle
     if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
@@ -81,14 +81,14 @@ def testfile(dbfile):
         loadfunc = load_pickle
     else:
         assert 0
-    if args.verbose:
+    if verbose:
         print('Processing file: %s' % dbfile)
         print('  File type: %s' % ('marshal' if dbfile.endswith('.db') else 'pickle'))
         print('  File size: %d bytes' % os.path.getsize(dbfile))
     fp = open(dbfile, 'rb')
     try:
         data = loadfunc(fp)
-        if args.verbose:
+        if verbose:
             print('  Successfully loaded data')
             if isinstance(data, dict):
                 print('  Number of entries: %d' % len(data))
@@ -117,7 +117,7 @@ def testfile(dbfile):
                 if isinstance(item, bytes):
                     data[i] = item.decode('utf-8', 'replace')
     except Exception as e:
-        if args.verbose:
+        if verbose:
             print('  Error loading file: %s' % str(e))
         raise
     finally:
@@ -126,71 +126,71 @@ def testfile(dbfile):
 
 def main():
     args = parse_args()
-    if args.all:
-        try:
+    try:
+        if args.all or not args.listnames:
             listnames = Utils.list_names()
             if args.verbose:
                 print('Checking all lists (%d total)' % len(listnames))
-        except Exception as e:
-            print('Error getting list names: %s' % str(e))
-            sys.exit(1)
-    else:
-        listnames = args.listnames
-        if args.verbose:
-            print('Checking specified lists (%d total)' % len(listnames))
-
-    # Convert list names to lowercase and strip whitespace
-    listnames = [n.lower().strip() for n in listnames]
-    if not listnames:
-        print('Nothing to do.')
-        sys.exit(0)
-
-    for listname in listnames:
-        if args.verbose:
-            print('\nProcessing list: %s' % listname)
-        
-        # Validate list name format
-        if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) > 0:
-            print('  Invalid list name format: %s' % listname)
-            continue
-
-        listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
-        if not os.path.exists(listdir):
+        else:
+            listnames = args.listnames
             if args.verbose:
-                print('  List directory does not exist: %s' % listdir)
-            continue
+                print('Checking specified lists (%d total)' % len(listnames))
 
-        # Check if any of the required files exist
-        required_files = [
-            os.path.join(listdir, 'config.pck'),
-            os.path.join(listdir, 'config.pck.last'),
-            os.path.join(listdir, 'config.db'),
-            os.path.join(listdir, 'config.db.last'),
-            os.path.join(listdir, 'config.safety'),
-        ]
-        
-        has_required_files = any(os.path.exists(f) for f in required_files)
-        if not has_required_files:
+        # Convert list names to lowercase and strip whitespace
+        listnames = [n.lower().strip() for n in listnames]
+        if not listnames:
+            print('No lists found to check.')
+            sys.exit(0)
+
+        for listname in listnames:
             if args.verbose:
-                print('  No configuration files found for list: %s' % listname)
-            continue
+                print('\nProcessing list: %s' % listname)
+            
+            # Validate list name format
+            if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) > 0:
+                print('  Invalid list name format: %s' % listname)
+                continue
 
-        # Check all possible database files
-        dbfiles = required_files + [
-            os.path.join(listdir, 'request.pck'),
-            os.path.join(listdir, 'request.pck.bak'),
-        ]
+            listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
+            if not os.path.exists(listdir):
+                if args.verbose:
+                    print('  List directory does not exist: %s' % listdir)
+                continue
 
-        for dbfile in dbfiles:
-            if os.path.exists(dbfile):
-                try:
-                    testfile(dbfile)
-                    if args.verbose:
-                        print('  File %s: OK' % os.path.basename(dbfile))
-                except Exception as e:
-                    print('  File %s: ERROR - %s' % (os.path.basename(dbfile), str(e)))
-            elif args.verbose:
-                print('  File %s: Not found' % os.path.basename(dbfile))
+            # Check if any of the required files exist
+            required_files = [
+                os.path.join(listdir, 'config.pck'),
+                os.path.join(listdir, 'config.pck.last'),
+                os.path.join(listdir, 'config.db'),
+                os.path.join(listdir, 'config.db.last'),
+                os.path.join(listdir, 'config.safety'),
+            ]
+            
+            has_required_files = any(os.path.exists(f) for f in required_files)
+            if not has_required_files:
+                if args.verbose:
+                    print('  No configuration files found for list: %s' % listname)
+                continue
+
+            # Check all possible database files
+            dbfiles = required_files + [
+                os.path.join(listdir, 'request.pck'),
+                os.path.join(listdir, 'request.pck.bak'),
+            ]
+
+            for dbfile in dbfiles:
+                if os.path.exists(dbfile):
+                    try:
+                        testfile(dbfile, args.verbose)
+                        if args.verbose:
+                            print('  File %s: OK' % os.path.basename(dbfile))
+                    except Exception as e:
+                        print('  File %s: ERROR - %s' % (os.path.basename(dbfile), str(e)))
+                elif args.verbose:
+                    print('  File %s: Not found' % os.path.basename(dbfile))
+    except Exception as e:
+        print('Error getting list names: %s' % str(e))
+        sys.exit(1)
 
 
 if __name__ == '__main__':
