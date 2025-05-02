@@ -94,6 +94,22 @@ def testfile(dbfile, verbose=False, listname=None):
                 print('  Number of entries: %d' % len(data))
                 if 'version' in data:
                     print('  Database version: %s' % data['version'])
+                # Add detailed debugging for request.pck files
+                if dbfile.endswith('request.pck'):
+                    print('  Request data structure:')
+                    for key, value in data.items():
+                        print('    Key: %s' % key)
+                        print('    Value type: %s' % type(value))
+                        if isinstance(value, (str, bytes)):
+                            print('    Value length: %d' % len(value))
+                            if len(str(value)) < 100:  # Only print short values
+                                print('    Value: %s' % value)
+                        elif isinstance(value, (list, tuple)):
+                            print('    Number of items: %d' % len(value))
+                            if len(value) > 0:
+                                print('    First item type: %s' % type(value[0]))
+                                if isinstance(value[0], (str, bytes)) and len(str(value[0])) < 100:
+                                    print('    First item: %s' % value[0])
         # Handle string/bytes conversion with better error handling
         if isinstance(data, bytes):
             try:
