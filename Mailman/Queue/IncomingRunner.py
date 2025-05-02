@@ -116,7 +116,6 @@ from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
-from Mailman import Auth
 
 
 class PipelineError(Exception):
