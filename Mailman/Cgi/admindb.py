@@ -149,14 +149,24 @@ def main():
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
         except Exception as e:
             mailman_log('error', 'admindb: Invalid form data: %s\n%s', str(e), traceback.format_exc())
-            doc = output_error_page('400 Bad Request', 'Error', 'Invalid options to CGI script.')
-            return output_success_page(doc)
+            try:
+                doc = output_error_page('400 Bad Request', 'Error', 'Invalid options to CGI script.')
+                return output_success_page(doc)
+            except Exception as output_error:
+                mailman_log('error', 'admindb: Failed to output error page: %s\n%s', 
+                           str(output_error), traceback.format_exc())
+                raise
 
         # Get the list name
         parts = Utils.GetPathPieces()
         if not parts:
-            doc = handle_no_list()
-            return output_success_page(doc)
+            try:
+                doc = handle_no_list()
+                return output_success_page(doc)
+            except Exception as e:
+                mailman_log('error', 'admindb: Failed to handle no list case: %s\n%s', 
+                           str(e), traceback.format_exc())
+                raise
 
         listname = parts[0].lower()
         mailman_log('info', 'admindb: Processing list "%s"', listname)
@@ -165,34 +175,54 @@ def main():
         listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
         if not os.path.exists(listdir):
             mailman_log('error', 'admindb: List directory does not exist: %s', listdir)
-            doc = output_error_page('404 Not Found', 'Error', 
-                                   'No such list <em>%s</em>' % Utils.websafe(listname),
-                                   'The list directory does not exist.')
-            return output_success_page(doc)
+            try:
+                doc = output_error_page('404 Not Found', 'Error', 
+                                       'No such list <em>%s</em>' % Utils.websafe(listname),
+                                       'The list directory does not exist.')
+                return output_success_page(doc)
+            except Exception as e:
+                mailman_log('error', 'admindb: Failed to output list not found error: %s\n%s', 
+                           str(e), traceback.format_exc())
+                raise
 
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError as e:
             mailman_log('error', 'admindb: No such list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
-            doc = output_error_page('404 Not Found', 'Error',
-                                   'No such list <em>%s</em>' % Utils.websafe(listname),
-                                   'The list configuration could not be loaded.')
-            return output_success_page(doc)
+            try:
+                doc = output_error_page('404 Not Found', 'Error',
+                                       'No such list <em>%s</em>' % Utils.websafe(listname),
+                                       'The list configuration could not be loaded.')
+                return output_success_page(doc)
+            except Exception as output_error:
+                mailman_log('error', 'admindb: Failed to output list error page: %s\n%s', 
+                           str(output_error), traceback.format_exc())
+                raise
         except PermissionError as e:
             mailman_log('error', 'admindb: Permission error accessing list "%s": %s\n%s', 
                        listname, e, traceback.format_exc())
-            doc = output_error_page('500 Internal Server Error', 'Error',
-                                   'Permission error accessing list <em>%s</em>' % Utils.websafe(listname),
-                                   str(e))
-            return output_success_page(doc)
+            try:
+                doc = output_error_page('500 Internal Server Error', 'Error',
+                                       'Permission error accessing list <em>%s</em>' % Utils.websafe(listname),
+                                       str(e))
+                return output_success_page(doc)
+            except Exception as output_error:
+                mailman_log('error', 'admindb: Failed to output permission error page: %s\n%s', 
+                           str(output_error), traceback.format_exc())
+                raise
         except Exception as e:
             mailman_log('error', 'admindb: Unexpected error loading list "%s": %s\n%s',
                        listname, str(e), traceback.format_exc())
-            doc = output_error_page('500 Internal Server Error', 'Error',
-                                   'Error accessing list <em>%s</em>' % Utils.websafe(listname),
-                                   str(e))
-            return output_success_page(doc)
+            try:
+                doc = output_error_page('500 Internal Server Error', 'Error',
+                                       'Error accessing list <em>%s</em>' % Utils.websafe(listname),
+                                       str(e))
+                return output_success_page(doc)
+            except Exception as output_error:
+                mailman_log('error', 'admindb: Failed to output unexpected error page: %s\n%s', 
+                           str(output_error), traceback.format_exc())
+                raise
 
         # Now that we know what list has been requested, all subsequent admin
         # pages are shown in that list's preferred language.
@@ -212,19 +242,31 @@ def main():
                            listname, remote, traceback.format_exc())
             else:
                 msg = ''
-            Auth.loginpage(mlist, 'admindb', msg=msg)
+            try:
+                Auth.loginpage(mlist, 'admindb', msg=msg)
+            except Exception as e:
+                mailman_log('error', 'admindb: Failed to display login page: %s\n%s', 
+                           str(e), traceback.format_exc())
+                raise
             return
 
         # We need a signal handler to catch the SIGTERM that can come from Apache
         # when the user hits the browser's STOP button.  See the comment in
         # admin.py for details.
         def sigterm_handler(signum, frame, mlist=mlist):
-            # Make sure the list gets unlocked...
-            mlist.Unlock()
-            # ...and ensure we exit, otherwise race conditions could cause us to
-            # enter MailList.Save() while we're in the unlocked state, and that
-            # could be bad!
-            sys.exit(0)
+            try:
+                # Make sure the list gets unlocked...
+                mlist.Unlock()
+                # Log the termination
+                mailman_log('info', 'admindb: SIGTERM received, unlocking list and exiting')
+            except Exception as e:
+                mailman_log('error', 'admindb: Error in SIGTERM handler: %s\n%s', 
+                           str(e), traceback.format_exc())
+            finally:
+                # ...and ensure we exit, otherwise race conditions could cause us to
+                # enter MailList.Save() while we're in the unlocked state, and that
+                # could be bad!
+                sys.exit(0)
 
         mlist.Lock()
         try:
@@ -253,12 +295,9 @@ def main():
         finally:
             mlist.Unlock()
     except Exception as e:
-        mailman_log('error', 'admindb: Unexpected error: %s\n%s',
+        mailman_log('error', 'admindb: Unhandled exception in main(): %s\n%s', 
                    str(e), traceback.format_exc())
-        doc = output_error_page('500 Internal Server Error', 'Error',
-                               'An unexpected error occurred',
-                               str(e))
-        return output_success_page(doc)
+        raise
 
 
 def handle_no_list(msg=''):
@@ -734,99 +773,104 @@ def show_post_requests(mlist, id, info, total, count, form):
 
 
 def process_form(mlist, doc, cgidata):
-    # Get the sender and message id from the query string
-    envar = os.environ.get('QUERY_STRING', '')
-    qs = urllib.parse.parse_qs(envar)
-    sender = qs.get('sender', [''])[0]
-    msgid = qs.get('msgid', [''])[0]
-    details = qs.get('details', [''])[0]
+    try:
+        # Get the sender and message id from the query string
+        envar = os.environ.get('QUERY_STRING', '')
+        qs = urllib.parse.parse_qs(envar)
+        sender = qs.get('sender', [''])[0]
+        msgid = qs.get('msgid', [''])[0]
+        details = qs.get('details', [''])[0]
 
-    # Check if there are any pending requests
-    if not mlist.NumRequestsPending():
-        title = _(f'{mlist.real_name} Administrative Database')
-        doc.SetTitle(title)
-        doc.AddItem(Header(2, title))
-        doc.AddItem(_('There are no pending requests.'))
-        doc.AddItem(' ')
-        admindburl = mlist.GetScriptURL('admindb', absolute=1)
-        doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
-        # Put 'Logout' link before the footer
-        doc.AddItem('\n<div align="right"><font size="+2">')
-        doc.AddItem(Link('%s/logout' % admindburl,
-            '<b>%s</b>' % _('Logout')))
-        doc.AddItem('</font></div>\n')
-        doc.AddItem(mlist.GetMailmanFooter())
-        # Output the success page with proper headers
-        return output_success_page(doc)
+        # Check if there are any pending requests
+        if not mlist.NumRequestsPending():
+            title = _(f'{mlist.real_name} Administrative Database')
+            doc.SetTitle(title)
+            doc.AddItem(Header(2, title))
+            doc.AddItem(_('There are no pending requests.'))
+            doc.AddItem(' ')
+            admindburl = mlist.GetScriptURL('admindb', absolute=1)
+            doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
+            # Put 'Logout' link before the footer
+            doc.AddItem('\n<div align="right"><font size="+2">')
+            doc.AddItem(Link('%s/logout' % admindburl,
+                '<b>%s</b>' % _('Logout')))
+            doc.AddItem('</font></div>\n')
+            doc.AddItem(mlist.GetMailmanFooter())
+            # Output the success page with proper headers
+            return output_success_page(doc)
 
-    # Create a form for the overview
-    form = Form(mlist.GetScriptURL('admindb', absolute=1), mlist=mlist, contexts=AUTH_CONTEXTS)
-    form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
+        # Create a form for the overview
+        form = Form(mlist.GetScriptURL('admindb', absolute=1), mlist=mlist, contexts=AUTH_CONTEXTS)
+        form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
 
-    # Get the action from the form data
-    action = cgidata.get('action', [''])[0]
-    if not action:
-        # No action specified, show the overview
-        show_pending_subs(mlist, form)
-        show_pending_unsubs(mlist, form)
-        show_helds_overview(mlist, form)
+        # Get the action from the form data
+        action = cgidata.get('action', [''])[0]
+        if not action:
+            # No action specified, show the overview
+            show_pending_subs(mlist, form)
+            show_pending_unsubs(mlist, form)
+            show_helds_overview(mlist, form)
+            doc.AddItem(form)
+            return output_success_page(doc)
+
+        # Process the action
+        if action == 'approve':
+            if sender:
+                show_sender_requests(mlist, form, sender)
+            elif msgid:
+                show_message_requests(mlist, form, msgid)
+            else:
+                show_detailed_requests(mlist, form)
+        elif action == 'reject':
+            if sender:
+                show_sender_requests(mlist, form, sender)
+            elif msgid:
+                show_message_requests(mlist, form, msgid)
+            else:
+                show_detailed_requests(mlist, form)
+        elif action == 'defer':
+            if sender:
+                show_sender_requests(mlist, form, sender)
+            elif msgid:
+                show_message_requests(mlist, form, msgid)
+            else:
+                show_detailed_requests(mlist, form)
+        elif action == 'discard':
+            if sender:
+                show_sender_requests(mlist, form, sender)
+            elif msgid:
+                show_message_requests(mlist, form, msgid)
+            else:
+                show_detailed_requests(mlist, form)
+        elif action == 'hold':
+            if sender:
+                show_sender_requests(mlist, form, sender)
+            elif msgid:
+                show_message_requests(mlist, form, msgid)
+            else:
+                show_detailed_requests(mlist, form)
+        elif action == 'post':
+            if msgid:
+                info = mlist.GetRecord(msgid)
+                if info:
+                    total = len(mlist.GetHeldMessageIds())
+                    count = 1
+                    show_post_requests(mlist, msgid, info, total, count, form)
+            else:
+                show_detailed_requests(mlist, form)
+        else:
+            # Unknown action, show the overview
+            show_pending_subs(mlist, form)
+            show_pending_unsubs(mlist, form)
+            show_helds_overview(mlist, form)
+
+        # Add the form to the document and output
         doc.AddItem(form)
         return output_success_page(doc)
-
-    # Process the action
-    if action == 'approve':
-        if sender:
-            show_sender_requests(mlist, form, sender)
-        elif msgid:
-            show_message_requests(mlist, form, msgid)
-        else:
-            show_detailed_requests(mlist, form)
-    elif action == 'reject':
-        if sender:
-            show_sender_requests(mlist, form, sender)
-        elif msgid:
-            show_message_requests(mlist, form, msgid)
-        else:
-            show_detailed_requests(mlist, form)
-    elif action == 'defer':
-        if sender:
-            show_sender_requests(mlist, form, sender)
-        elif msgid:
-            show_message_requests(mlist, form, msgid)
-        else:
-            show_detailed_requests(mlist, form)
-    elif action == 'discard':
-        if sender:
-            show_sender_requests(mlist, form, sender)
-        elif msgid:
-            show_message_requests(mlist, form, msgid)
-        else:
-            show_detailed_requests(mlist, form)
-    elif action == 'hold':
-        if sender:
-            show_sender_requests(mlist, form, sender)
-        elif msgid:
-            show_message_requests(mlist, form, msgid)
-        else:
-            show_detailed_requests(mlist, form)
-    elif action == 'post':
-        if msgid:
-            info = mlist.GetRecord(msgid)
-            if info:
-                total = len(mlist.GetHeldMessageIds())
-                count = 1
-                show_post_requests(mlist, msgid, info, total, count, form)
-        else:
-            show_detailed_requests(mlist, form)
-    else:
-        # Unknown action, show the overview
-        show_pending_subs(mlist, form)
-        show_pending_unsubs(mlist, form)
-        show_helds_overview(mlist, form)
-
-    # Add the form to the document and output
-    doc.AddItem(form)
-    return output_success_page(doc)
+    except Exception as e:
+        mailman_log('error', 'admindb: Error in process_form: %s\n%s', 
+                   str(e), traceback.format_exc())
+        raise
 
 
 def format_body(body, mcset, lcset):
