@@ -80,9 +80,19 @@ def testfile(dbfile):
         loadfunc = load_pickle
     else:
         assert 0
+    if args.verbose:
+        print('Processing file: %s' % dbfile)
+        print('  File type: %s' % ('marshal' if dbfile.endswith('.db') else 'pickle'))
+        print('  File size: %d bytes' % os.path.getsize(dbfile))
     fp = open(dbfile, 'rb')
     try:
         data = loadfunc(fp)
+        if args.verbose:
+            print('  Successfully loaded data')
+            if isinstance(data, dict):
+                print('  Number of entries: %d' % len(data))
+                if 'version' in data:
+                    print('  Database version: %s' % data['version'])
         # Handle string/bytes conversion
         if isinstance(data, bytes):
             data = data.decode('utf-8', 'replace')
@@ -105,54 +115,55 @@ def testfile(dbfile):
             for i, item in enumerate(data):
                 if isinstance(item, bytes):
                     data[i] = item.decode('utf-8', 'replace')
+    except Exception as e:
+        if args.verbose:
+            print('  Error loading file: %s' % str(e))
+        raise
     finally:
         fp.close()
 
 
 def main():
     args = parse_args()
-
-    listnames = args.listnames
     if args.all:
         listnames = Utils.list_names()
-
-    listnames = [n.lower().strip() for n in listnames]
-    if not listnames:
-        print(C_('Nothing to do.'))
-        sys.exit(0)
+        if args.verbose:
+            print('Checking all lists (%d total)' % len(listnames))
+    else:
+        listnames = args.listnames
+        if args.verbose:
+            print('Checking specified lists (%d total)' % len(listnames))
 
     for listname in listnames:
-        if not Utils.list_exists(listname):
-            print(C_('No list named:'), listname)
-            continue
-        mlist = MailList(listname, lock=0)
-        pfile = os.path.join(mlist.fullpath(), 'config.pck')
-        plast = pfile + '.last'
-        dfile = os.path.join(mlist.fullpath(), 'config.db')
-        dlast = dfile + '.last'
-
         if args.verbose:
-            print(C_('List:'), listname)
+            print('\nProcessing list: %s' % listname)
+        listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
+        if not os.path.exists(listdir):
+            if args.verbose:
+                print('  List directory does not exist: %s' % listdir)
+            continue
 
-        for file in (pfile, plast, dfile, dlast):
-            status = 0
-            try:
-                testfile(file)
-            except IOError as e:
-                # Don't report ENOENT unless we're in verbose mode
-                if args.verbose or e.errno != errno.ENOENT:
-                    status = e
-            except Exception as e:
-                status = e
-            # Report errors
-            if status:
-                if isinstance(status, EnvironmentError):
-                    # This already includes the file name
-                    print('   ', status)
-                else:
-                    print('    %s: %s' % (file, status))
+        # Check all possible database files
+        dbfiles = [
+            os.path.join(listdir, 'config.pck'),
+            os.path.join(listdir, 'config.pck.last'),
+            os.path.join(listdir, 'config.db'),
+            os.path.join(listdir, 'config.db.last'),
+            os.path.join(listdir, 'config.safety'),
+            os.path.join(listdir, 'request.pck'),
+            os.path.join(listdir, 'request.pck.bak'),
+        ]
+
+        for dbfile in dbfiles:
+            if os.path.exists(dbfile):
+                try:
+                    testfile(dbfile)
+                    if args.verbose:
+                        print('  File %s: OK' % os.path.basename(dbfile))
+                except Exception as e:
+                    print('  File %s: ERROR - %s' % (os.path.basename(dbfile), str(e)))
             elif args.verbose:
-                print(C_('   %(file)s: okay'))
+                print('  File %s: Not found' % os.path.basename(dbfile))
 
 
 if __name__ == '__main__':

@@ -313,7 +313,7 @@ Here is a history of user visible changes to Mailman.
 
     - The German translation has been updated by Ralf Hildebrandt.
 
-    - The Esperanto translation has been updated by Rubén Fernández Asensio.
+    - The Esperanto translation has been updated by Rubï¿½n Fernï¿½ndez Asensio.
 
   Bug fixes and other patches
 
@@ -376,7 +376,7 @@ Here is a history of user visible changes to Mailman.
     - The Russian translation has been updated by Danil Smirnov.
 
     - A partial Esperanto translation has been added.  Thanks to
-      Rubén Fernández Asensio.
+      Rubï¿½n Fernï¿½ndez Asensio.
 
     - Fixed a '# -*- coding:' line in the Russian message catalog that was
       mistakenly translated to Russian.  (LP: #1777342)
@@ -435,7 +435,7 @@ Here is a history of user visible changes to Mailman.
 
   New Features
 
-    - Thanks to David Siebörger who adapted an existing patch by Andrea
+    - Thanks to David Siebï¿½rger who adapted an existing patch by Andrea
       Veri to use Google reCAPTCHA v2 there is now the ability to add
       reCAPTCHA to the listinfo subscribe form.  There are two new mm_cfg.py
       settings for RECAPTCHA_SITE_KEY and RECAPTCHA_SECRET_KEY, the values
@@ -688,7 +688,7 @@ Here is a history of user visible changes to Mailman.
   i18n
 
     - The French translation of 'Dutch' is changed from 'Hollandais' to
-      'Néerlandais' per Francis Jorissen.
+      'Nï¿½erlandais' per Francis Jorissen.
 
     - Some German language templates that were incorrectly utf-8 encoded have
       been recoded as iso-8859-1.  (LP: #1602779)
@@ -1614,7 +1614,7 @@ Here is a history of user visible changes to Mailman.
     - Thanks go to the following for updating translations for the changes in
       this release.
         Thijs Kinkhorst
-        Stefan Förster
+        Stefan Fï¿½rster
         Fabian Wenk
 
   Bug Fixes and other patches
@@ -1819,7 +1819,7 @@ Here is a history of user visible changes to Mailman.
 
     - Updated Japanese Translation from Tokio Kikuchi.
 
-    - Updated Finnish translation from Joni Töyrylä.
+    - Updated Finnish translation from Joni Tï¿½yrylï¿½.
 
     - Made a few corrections to some Polish templates.  Bug #566731.
 
@@ -2245,7 +2245,7 @@ Internationalization
 
     - Added the Slovak translation from Martin Matuska.
 
-    - Added the Galician translation from Frco. Javier Rial Rodríguez.
+    - Added the Galician translation from Frco. Javier Rial Rodrï¿½guez.
 
   Bug fixes and other patches
 
