@@ -118,8 +118,6 @@ def output_error_page(status, title, message, details=None):
 
 
 def output_success_page(doc):
-    print('Status: 200 OK')
-    print('Content-type: text/html; charset=utf-8\n')
     print(doc.Format())
     return
 
