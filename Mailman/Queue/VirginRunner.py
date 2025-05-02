@@ -25,17 +25,52 @@ recipient.
 from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.IncomingRunner import IncomingRunner
+import traceback
 
 
-
 class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
 
     def _dispose(self, mlist, msg, msgdata):
-        # We need to fasttrack this message through any handlers that touch
-        # it.  E.g. especially CookHeaders.
-        msgdata['_fasttrack'] = 1
-        return IncomingRunner._dispose(self, mlist, msg, msgdata)
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Check retry delay and duplicate processing
+        if not self._check_retry_delay(msgid, filebase):
+            return 0
+
+        try:
+            # Log start of processing
+            mailman_log('info', 'VirginRunner: Starting to process virgin message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            
+            # We need to fasttrack this message through any handlers that touch
+            # it.  E.g. especially CookHeaders.
+            msgdata['_fasttrack'] = 1
+            
+            # Process through the pipeline
+            result = IncomingRunner._dispose(self, mlist, msg, msgdata)
+            
+            # Log successful completion
+            mailman_log('info', 'VirginRunner: Successfully processed virgin message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            return result
+        except Exception as e:
+            # Enhanced error logging with more context
+            mailman_log('error', 'Error processing virgin message %s for list %s: %s',
+                   msgid, mlist.internal_name(), str(e))
+            mailman_log('error', 'Message details:')
+            mailman_log('error', '  Message ID: %s', msgid)
+            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('error', '  Message type: %s', type(msg).__name__)
+            mailman_log('error', '  Message data: %s', str(msgdata))
+            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
+            
+            # Remove from processed messages on error
+            self._unmark_message_processed(msgid)
+            return 0
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # It's okay to hardcode this, since it'll be the same for all

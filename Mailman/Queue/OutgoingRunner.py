@@ -25,6 +25,7 @@ import traceback
 import os
 import sys
 from io import StringIO
+import threading
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -42,6 +43,15 @@ DEAL_WITH_PERMFAILURES_EVERY = 10
 
 class OutgoingRunner(Runner, BounceMixin):
     QDIR = mm_cfg.OUTQUEUE_DIR
+    # Shared processed messages tracking
+    _processed_messages = set()
+    _processed_lock = threading.Lock()
+    _last_cleanup = time.time()
+    _cleanup_interval = 3600  # Clean up every hour
+    
+    # Retry delay configuration
+    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
+    _retry_times = {}  # Track last retry time for each message
 
     def __init__(self, slice=None, numslices=1):
         mailman_log('debug', 'OutgoingRunner: Starting initialization')
@@ -51,12 +61,6 @@ class OutgoingRunner(Runner, BounceMixin):
             
             BounceMixin.__init__(self)
             mailman_log('debug', 'OutgoingRunner: BounceMixin initialized')
-            
-            # Track processed messages to prevent duplicates
-            self._processed_messages = set()
-            # Clean up old messages periodically
-            self._last_cleanup = time.time()
-            self._cleanup_interval = 3600  # Clean up every hour
             
             # We look this function up only at startup time
             self._modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
@@ -95,16 +99,32 @@ class OutgoingRunner(Runner, BounceMixin):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        # Check for duplicate messages
-        if msgid in self._processed_messages:
-            mailman_log('error', 'OutgoingRunner: Duplicate message detected: %s (file: %s)', msgid, filebase)
-            return False
-            
-        # Clean up old message IDs periodically
-        current_time = time.time()
-        if current_time - self._last_cleanup > self._cleanup_interval:
-            self._processed_messages.clear()
-            self._last_cleanup = current_time
+        # Check for duplicate messages with proper locking
+        with self._processed_lock:
+            if msgid in self._processed_messages:
+                mailman_log('error', 'OutgoingRunner: Duplicate message detected: %s (file: %s)', msgid, filebase)
+                return False
+                
+            # Clean up old message IDs periodically
+            current_time = time.time()
+            if current_time - self._last_cleanup > self._cleanup_interval:
+                self._processed_messages.clear()
+                self._retry_times.clear()  # Also clean up retry times
+                self._last_cleanup = current_time
+                
+            # Check retry delay
+            last_retry = self._retry_times.get(msgid, 0)
+            time_since_last_retry = current_time - last_retry
+            if time_since_last_retry < self.MIN_RETRY_DELAY:
+                mailman_log('info', 'OutgoingRunner: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
+                           msgid, filebase, time_since_last_retry)
+                # Requeue with delay
+                self.__retryq.enqueue(msg, msgdata)
+                return False
+                
+            # Mark message as being processed and update retry time
+            self._processed_messages.add(msgid)
+            self._retry_times[msgid] = current_time
             
         try:
             # Log start of processing
@@ -115,13 +135,12 @@ class OutgoingRunner(Runner, BounceMixin):
             msg, success = self._validate_message(msg, msgdata)
             if not success:
                 mailman_log('error', 'Message validation failed for outgoing message %s', msgid)
+                with self._processed_lock:
+                    self._processed_messages.remove(msgid)
                 return False
 
             # Process the message through the delivery module
             self._func(mlist, msg, msgdata)
-            
-            # Add to processed messages only after successful processing
-            self._processed_messages.add(msgid)
             
             # Log successful completion
             mailman_log('info', 'OutgoingRunner: Successfully processed message %s (file: %s) for list %s',
@@ -139,6 +158,12 @@ class OutgoingRunner(Runner, BounceMixin):
             mailman_log('error', '  Message type: %s', type(msg).__name__)
             mailman_log('error', '  Message data: %s', str(msgdata))
             mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
+            
+            # Remove from processed messages on error and requeue
+            with self._processed_lock:
+                self._processed_messages.remove(msgid)
+                # Requeue with delay
+                self.__retryq.enqueue(msg, msgdata)
             return False
 
     def _queue_bounces(self, mlist, msg, msgdata, failures):

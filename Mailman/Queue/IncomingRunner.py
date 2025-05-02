@@ -140,59 +140,53 @@ class IncomingRunner(Runner):
 
         # Track message ID to prevent duplicates
         msgid = msg.get('message-id', 'n/a')
-        if msgid in self._processed_messages:
-            mailman_log('error', 'Duplicate message detected: %s (file: %s)', msgid, msgdata.get('_filebase', 'unknown'))
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Check retry delay and duplicate processing
+        if not self._check_retry_delay(msgid, filebase):
             # Move to shunt queue and remove from original queue
             self._shunt.enqueue(msg, msgdata)
             # Get the filebase from msgdata and finish processing it
-            filebase = msgdata.get('_filebase')
             if filebase:
                 self._switchboard.finish(filebase)
             return 0
-
-        # Clean up old message IDs periodically
-        current_time = time.time()
-        if current_time - self._last_cleanup > self._cleanup_interval:
-            self._processed_messages.clear()
-            self._last_cleanup = current_time
 
         # Get the MailList object for the list name
         try:
             mlist = MailList(listname, lock=False)
         except Errors.MMListError as e:
             mailman_log('error', 'Failed to get list %s: %s', listname, str(e))
+            self._unmark_message_processed(msgid)
             return 0
 
-        # Try to get the list lock with shorter timeout
         try:
-            mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT / 2)
-        except LockFile.TimeOutError:
-            mailman_log('error', 'Lock timeout for %s', listname)
-            return 1
+            # Log start of processing
+            mailman_log('info', 'IncomingRunner: Starting to process message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            
+            # Process the message through the pipeline
+            result = self._dopipeline(mlist, msg, msgdata, self._get_pipeline(mlist, msg, msgdata))
+            
+            # Log successful completion
+            mailman_log('info', 'IncomingRunner: Successfully processed message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            return result
         except Exception as e:
-            mailman_log('error', 'Unexpected error acquiring lock for %s: %s',
-                      listname, str(e))
-            return 1
-
-        # Process the message through a handler pipeline
-        try:
-            pipeline = self._get_pipeline(mlist, msg, msgdata)
-            msgdata['pipeline'] = pipeline
-            more = self._dopipeline(mlist, msg, msgdata, pipeline)
-            if not more:
-                del msgdata['pipeline']
-                # Only add to processed messages if processing completed successfully
-                self._processed_messages.add(msgid)
-            mlist.Save()
-            return more
-        except Exception as e:
-            mailman_log('error', 'Error processing message for %s: %s\nTraceback:\n%s', listname, str(e), traceback.format_exc())
-            return 1
-        finally:
-            try:
-                mlist.Unlock()
-            except Exception as e:
-                mailman_log('error', 'Error unlocking %s: %s', listname, str(e))
+            # Enhanced error logging with more context
+            mailman_log('error', 'Error processing incoming message %s for list %s: %s',
+                   msgid, mlist.internal_name(), str(e))
+            mailman_log('error', 'Message details:')
+            mailman_log('error', '  Message ID: %s', msgid)
+            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('error', '  Message type: %s', type(msg).__name__)
+            mailman_log('error', '  Message data: %s', str(msgdata))
+            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
+            
+            # Remove from processed messages on error
+            self._unmark_message_processed(msgid)
+            return 0
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # We must return a copy of the list, otherwise, the first message that

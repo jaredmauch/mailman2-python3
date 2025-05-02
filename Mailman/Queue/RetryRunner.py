@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 import time
+import traceback
 
 from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
@@ -30,18 +31,54 @@ class RetryRunner(Runner):
         self.__outq = Switchboard(mm_cfg.OUTQUEUE_DIR)
 
     def _dispose(self, mlist, msg, msgdata):
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Check retry delay and duplicate processing
+        if not self._check_retry_delay(msgid, filebase):
+            return True  # Keep in retry queue
+
         # Validate message type first
         msg, success = self._validate_message(msg, msgdata)
         if not success:
             mailman_log('error', 'Message validation failed for retry message')
-            return False
+            self._unmark_message_processed(msgid)
+            return True  # Keep in retry queue
 
-        # Move it to the out queue for another retry if it's time.
-        deliver_after = msgdata.get('deliver_after', 0)
-        if time.time() < deliver_after:
-            return True
-        self.__outq.enqueue(msg, msgdata)
-        return False
+        try:
+            # Log start of processing
+            mailman_log('info', 'RetryRunner: Starting to process retry message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            
+            # Move it to the out queue for another retry if it's time.
+            deliver_after = msgdata.get('deliver_after', 0)
+            if time.time() < deliver_after:
+                self._unmark_message_processed(msgid)
+                return True  # Keep in retry queue
+                
+            # Move to outgoing queue
+            self.__outq.enqueue(msg, msgdata)
+            
+            # Log successful completion
+            mailman_log('info', 'RetryRunner: Successfully moved retry message %s (file: %s) to outgoing queue for list %s',
+                       msgid, filebase, mlist.internal_name())
+            return False  # Remove from retry queue
+        except Exception as e:
+            # Enhanced error logging with more context
+            mailman_log('error', 'Error processing retry message %s for list %s: %s',
+                   msgid, mlist.internal_name(), str(e))
+            mailman_log('error', 'Message details:')
+            mailman_log('error', '  Message ID: %s', msgid)
+            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('error', '  Message type: %s', type(msg).__name__)
+            mailman_log('error', '  Message data: %s', str(msgdata))
+            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
+            
+            # Remove from processed messages on error
+            self._unmark_message_processed(msgid)
+            return True  # Keep in retry queue
 
     def _snooze(self, filecnt):
         # We always want to snooze, but check for stop flag periodically

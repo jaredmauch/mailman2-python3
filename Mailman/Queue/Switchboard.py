@@ -90,6 +90,8 @@ class Switchboard:
             self.__upper = ((((shamax+1) * (slice+1)) / numslices)) - 1
         if recover:
             self.recover_backup_files()
+            # Clean up any stale locks during initialization
+            self.cleanup_stale_locks()
 
     def whichq(self):
         return self.__whichq
@@ -187,129 +189,76 @@ class Switchboard:
         backfile = os.path.join(self.__whichq, filebase + '.bak')
         lockfile = filename + '.lock'
         
-        # Create lock file
-        try:
-            lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-            os.close(lock_fd)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                mailman_log('warning', 'Lock file exists for %s (full path: %s), waiting...', filename, lockfile)
-                # Wait for lock to be released
-                for _ in range(10):  # 10 attempts
-                    try:
-                        lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-                        os.close(lock_fd)
-                        break
-                    except OSError:
-                        time.sleep(0.1)
-                else:
-                    mailman_log('error', 'Could not acquire lock for %s (full path: %s) after 10 attempts', filename, lockfile)
-                    return None, None
-            else:
-                mailman_log('error', 'Failed to create lock file %s (full path: %s): %s\nTraceback:\n%s',
-                       filename, lockfile, str(e), traceback.format_exc())
-                return None, None
-        
-        try:
-            # Move the file to the backup file name for processing
+        # Create lock file with proper cleanup
+        max_attempts = 30  # Increased from 10 to 30
+        attempt = 0
+        while attempt < max_attempts:
             try:
-                if not os.path.exists(filename):
-                    mailman_log('error', 'Source file %s (full path: %s) does not exist', filename, os.path.join(self.__whichq, filename))
-                    return None, None
-                if os.path.exists(backfile):
-                    mailman_log('warning', 'Backup file %s (full path: %s) already exists, removing old version', backfile, os.path.join(self.__whichq, backfile))
-                    os.unlink(backfile)
+                # Try to create lock file
+                lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+                # Write process info to lock file for debugging
+                with os.fdopen(lock_fd, 'w') as f:
+                    f.write('pid=%d\nhost=%s\ntime=%f\n' % (
+                        os.getpid(),
+                        socket.gethostname(),
+                        time.time()
+                    ))
+                break
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    # Check if lock is stale (older than 5 minutes)
+                    try:
+                        lock_age = time.time() - os.path.getmtime(lockfile)
+                        if lock_age > 300:  # 5 minutes
+                            # Read lock file contents for debugging
+                            try:
+                                with open(lockfile, 'r') as f:
+                                    lock_info = f.read()
+                                mailman_log('warning', 
+                                    'Removing stale lock file %s (age: %d seconds)\nLock info: %s',
+                                    lockfile, lock_age, lock_info)
+                            except Exception:
+                                mailman_log('warning', 
+                                    'Removing stale lock file %s (age: %d seconds)',
+                                    lockfile, lock_age)
+                            os.unlink(lockfile)
+                            continue
+                    except OSError:
+                        pass
+                    # Wait before retrying with exponential backoff
+                    time.sleep(min(1.0 * (2 ** attempt), 10.0))
+                    attempt += 1
+                    continue
+                raise
+        else:
+            mailman_log('error', 'Failed to acquire lock for %s after %d attempts', filename, max_attempts)
+            return None, None
+            
+        try:
+            # Read the message and metadata
+            try:
+                with open(filename, 'rb') as fp:
+                    # Use protocol 2 for Python 2/3 compatibility
+                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+            except (pickle.UnpicklingError, EOFError) as e:
+                mailman_log('error', 'Error unpickling file %s: %s', filename, str(e))
+                return None, None
+                
+            # Move to backup file
+            try:
                 os.rename(filename, backfile)
             except OSError as e:
-                mailman_log('error', 'Failed to rename %s to %s (full paths: %s -> %s): %s\nTraceback:\n%s',
-                       filename, backfile, os.path.join(self.__whichq, filename), os.path.join(self.__whichq, backfile), str(e), traceback.format_exc())
+                mailman_log('error', 'Error moving %s to %s: %s', filename, backfile, str(e))
                 return None, None
-            
-            # Read the message object and metadata
-            try:
-                with open(backfile, 'rb') as fp:
-                    # Try loading with Python 3 protocol first
-                    try:
-                        msg = pickle.load(fp, fix_imports=True)
-                        data = pickle.load(fp, fix_imports=True)
-                    except (pickle.UnpicklingError, EOFError) as e:
-                        # If that fails, try with Python 2 protocol
-                        fp.seek(0)
-                        try:
-                            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-                            data = pickle.load(fp, fix_imports=True, encoding='latin1')
-                        except (pickle.UnpicklingError, EOFError) as e2:
-                            # The file is corrupted. Log the error and try to recover it.
-                            mailman_log('error', 'Failed to unpickle file %s:\nPython 3 error: %s\nPython 2 error: %s\nTraceback:\n%s',
-                                   backfile, str(e), str(e2), traceback.format_exc())
-                            # Try to restore the original file
-                            try:
-                                if os.path.exists(filename):
-                                    os.unlink(filename)
-                                os.rename(backfile, filename)
-                            except Exception as restore_e:
-                                mailman_log('error', 'Failed to restore original file %s: %s\nTraceback:\n%s',
-                                       filename, str(restore_e), traceback.format_exc())
-                            self.recover_backup_files()
-                            return None, None
-
-                # Validate message object
-                if isinstance(msg, str):
-                    mailman_log('error', 'Message object is a string instead of a proper message object in file %s', backfile)
-                    # Try to convert string to proper message object
-                    try:
-                        from email import message_from_string
-                        msg = message_from_string(msg)
-                    except Exception as e:
-                        mailman_log('error', 'Failed to convert string to message object: %s\nTraceback:\n%s',
-                               str(e), traceback.format_exc())
-                        # Move to shunt queue
-                        self.finish(filebase, preserve=True)
-                        return None, None
-
-                # Convert to Mailman.Message if needed
-                if not isinstance(msg, Message):
-                    try:
-                        mailman_log('info', 'Converting email.message.Message to Mailman.Message')
-                        mailman_msg = Message()
-                        # Copy all attributes from the original message
-                        for key, value in msg.items():
-                            mailman_msg[key] = value
-                        # Copy the payload
-                        if msg.is_multipart():
-                            for part in msg.get_payload():
-                                mailman_msg.attach(part)
-                        else:
-                            mailman_msg.set_payload(msg.get_payload())
-                        msg = mailman_msg
-                    except Exception as e:
-                        mailman_log('error', 'Failed to convert to Mailman.Message: %s\nTraceback:\n%s',
-                               str(e), traceback.format_exc())
-                        # Move to shunt queue
-                        self.finish(filebase, preserve=True)
-                        return None, None
-
-                if not hasattr(msg, 'get_sender'):
-                    mailman_log('error', 'Message object does not have get_sender() method in file %s', backfile)
-                    # Move to shunt queue
-                    self.finish(filebase, preserve=True)
-                    return None, None
-
-            except Exception as e:
-                mailman_log('error', 'Failed to read backup file %s: %s\nTraceback:\n%s',
-                       backfile, str(e), traceback.format_exc())
-                return None, None
-            
-            return msg, data
-            
+                
+            return msg, metadata
         finally:
-            # Clean up lock file
+            # Always clean up the lock file
             try:
-                if os.path.exists(lockfile):
-                    os.unlink(lockfile)
-            except Exception as cleanup_e:
-                mailman_log('error', 'Failed to clean up lock file %s: %s\nTraceback:\n%s',
-                       lockfile, str(cleanup_e), traceback.format_exc())
+                os.unlink(lockfile)
+            except OSError:
+                pass
 
     def finish(self, filebase, preserve=False):
         bakfile = os.path.join(self.__whichq, filebase + '.bak')
@@ -735,3 +684,29 @@ class Switchboard:
             return metadata
         except (IOError, OSError) as e:
             raise SwitchboardError('Could not read %s: %s' % (filename, e))
+
+    def cleanup_stale_locks(self):
+        """Clean up any stale lock files in the queue directory."""
+        try:
+            for f in os.listdir(self.__whichq):
+                if f.endswith('.lock'):
+                    lockfile = os.path.join(self.__whichq, f)
+                    try:
+                        lock_age = time.time() - os.path.getmtime(lockfile)
+                        if lock_age > 300:  # 5 minutes
+                            # Read lock file contents for debugging
+                            try:
+                                with open(lockfile, 'r') as f:
+                                    lock_info = f.read()
+                                mailman_log('warning', 
+                                    'Cleaning up stale lock file %s (age: %d seconds)\nLock info: %s',
+                                    lockfile, lock_age, lock_info)
+                            except Exception:
+                                mailman_log('warning', 
+                                    'Cleaning up stale lock file %s (age: %d seconds)',
+                                    lockfile, lock_age)
+                            os.unlink(lockfile)
+                    except OSError:
+                        pass
+        except OSError as e:
+            mailman_log('error', 'Error cleaning up stale locks: %s', str(e))

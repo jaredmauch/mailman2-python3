@@ -23,6 +23,7 @@ import time
 import traceback
 from io import StringIO
 from functools import wraps
+import threading
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -39,6 +40,16 @@ import email.errors
 class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
+    
+    # Shared processed messages tracking
+    _processed_messages = set()
+    _processed_lock = threading.Lock()
+    _last_cleanup = time.time()
+    _cleanup_interval = 3600  # Clean up every hour
+    
+    # Retry delay configuration
+    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
+    _retry_times = {}  # Track last retry time for each message
 
     def __init__(self, slice=None, numslices=1):
         self._kids = {}
@@ -370,3 +381,38 @@ class Runner:
         msgdata is a dictionary of message metadata.
         """
         raise NotImplementedError
+
+    def _check_retry_delay(self, msgid, filebase):
+        """Check if enough time has passed since the last retry attempt.
+        Returns True if the message can be processed, False if it should be delayed."""
+        with self._processed_lock:
+            # Clean up old message IDs periodically
+            current_time = time.time()
+            if current_time - self._last_cleanup > self._cleanup_interval:
+                self._processed_messages.clear()
+                self._retry_times.clear()  # Also clean up retry times
+                self._last_cleanup = current_time
+                
+            # Check retry delay
+            last_retry = self._retry_times.get(msgid, 0)
+            time_since_last_retry = current_time - last_retry
+            if time_since_last_retry < self.MIN_RETRY_DELAY:
+                log('info', '%s: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
+                           self.__class__.__name__, msgid, filebase, time_since_last_retry)
+                return False
+                
+            # Mark message as being processed and update retry time
+            self._processed_messages.add(msgid)
+            self._retry_times[msgid] = current_time
+            return True
+
+    def _mark_message_processed(self, msgid):
+        """Mark a message as processed and update its retry time."""
+        with self._processed_lock:
+            self._processed_messages.add(msgid)
+            self._retry_times[msgid] = time.time()
+
+    def _unmark_message_processed(self, msgid):
+        """Remove a message from the processed set."""
+        with self._processed_lock:
+            self._processed_messages.discard(msgid)

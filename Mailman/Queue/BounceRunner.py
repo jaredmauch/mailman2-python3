@@ -179,32 +179,48 @@ class BounceRunner(Runner, BounceMixin):
 
     def _dispose(self, mlist, msg, msgdata):
         """Process a bounce message."""
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Check retry delay and duplicate processing
+        if not self._check_retry_delay(msgid, filebase):
+            return False
+
         # Make sure we have the most up-to-date state
         try:
             mlist.Load()
         except Errors.MMCorruptListDatabaseError as e:
             mailman_log('error', 'Failed to load list %s: %s',
                        mlist.internal_name(), e)
+            self._unmark_message_processed(msgid)
             return False
         except Exception as e:
             mailman_log('error', 'Unexpected error loading list %s: %s',
                        mlist.internal_name(), e)
+            self._unmark_message_processed(msgid)
             return False
 
         # Validate message type first
         msg, success = self._validate_message(msg, msgdata)
         if not success:
             mailman_log('error', 'Message validation failed for bounce message')
+            self._unmark_message_processed(msgid)
             return False
 
         # Validate message headers
         if not msg.get('message-id'):
             mailman_log('error', 'Message missing Message-ID header')
+            self._unmark_message_processed(msgid)
             return False
 
         try:
+            # Log start of processing
+            mailman_log('info', 'BounceRunner: Starting to process bounce message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            
             # Process the bounce
             if not self._register_bounces(mlist.internal_name(), msg, msgdata):
+                self._unmark_message_processed(msgid)
                 return False
 
             # Queue the bounce for further processing
@@ -212,12 +228,28 @@ class BounceRunner(Runner, BounceMixin):
                 self._queue_bounces(mlist.internal_name(), msg, msgdata)
             except Exception as e:
                 mailman_log('error', 'Error queueing bounces: %s', e)
+                self._unmark_message_processed(msgid)
                 return False
 
+            # Log successful completion
+            mailman_log('info', 'BounceRunner: Successfully processed bounce message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
             return True
         except Exception as e:
-            mailman_log('error', 'Error processing bounce %s: %s',
-                       msg.get('message-id', 'n/a'), e)
+            # Enhanced error logging with more context
+            mailman_log('error', 'Error processing bounce message %s for list %s: %s',
+                   msgid, mlist.internal_name(), str(e))
+            mailman_log('error', 'Message details:')
+            mailman_log('error', '  Message ID: %s', msgid)
+            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('error', '  Message type: %s', type(msg).__name__)
+            mailman_log('error', '  Message data: %s', str(msgdata))
+            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
+            
+            # Remove from processed messages on error
+            self._unmark_message_processed(msgid)
             return False
 
     _doperiodic = BounceMixin._doperiodic
