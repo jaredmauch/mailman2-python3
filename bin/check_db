@@ -41,6 +41,7 @@ import errno
 import argparse
 import marshal
 import pickle
+import re
 
 import paths
 from Mailman import mm_cfg
@@ -126,30 +127,56 @@ def testfile(dbfile):
 def main():
     args = parse_args()
     if args.all:
-        listnames = Utils.list_names()
-        if args.verbose:
-            print('Checking all lists (%d total)' % len(listnames))
+        try:
+            listnames = Utils.list_names()
+            if args.verbose:
+                print('Checking all lists (%d total)' % len(listnames))
+        except Exception as e:
+            print('Error getting list names: %s' % str(e))
+            sys.exit(1)
     else:
         listnames = args.listnames
         if args.verbose:
             print('Checking specified lists (%d total)' % len(listnames))
 
+    # Convert list names to lowercase and strip whitespace
+    listnames = [n.lower().strip() for n in listnames]
+    if not listnames:
+        print('Nothing to do.')
+        sys.exit(0)
+
     for listname in listnames:
         if args.verbose:
             print('\nProcessing list: %s' % listname)
+        
+        # Validate list name format
+        if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) > 0:
+            print('  Invalid list name format: %s' % listname)
+            continue
+
         listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
         if not os.path.exists(listdir):
             if args.verbose:
                 print('  List directory does not exist: %s' % listdir)
             continue
 
-        # Check all possible database files
-        dbfiles = [
+        # Check if any of the required files exist
+        required_files = [
             os.path.join(listdir, 'config.pck'),
             os.path.join(listdir, 'config.pck.last'),
             os.path.join(listdir, 'config.db'),
             os.path.join(listdir, 'config.db.last'),
             os.path.join(listdir, 'config.safety'),
+        ]
+        
+        has_required_files = any(os.path.exists(f) for f in required_files)
+        if not has_required_files:
+            if args.verbose:
+                print('  No configuration files found for list: %s' % listname)
+            continue
+
+        # Check all possible database files
+        dbfiles = required_files + [
             os.path.join(listdir, 'request.pck'),
             os.path.join(listdir, 'request.pck.bak'),
         ]
