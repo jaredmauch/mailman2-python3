@@ -141,8 +141,12 @@ class IncomingRunner(Runner):
         msgid = msg.get('message-id', 'n/a')
         if msgid in self._processed_messages:
             mailman_log('error', 'Duplicate message detected: %s (file: %s)', msgid, msgdata.get('_filebase', 'unknown'))
-            # Move to shunt queue
+            # Move to shunt queue and remove from original queue
             self._shunt.enqueue(msg, msgdata)
+            # Get the filebase from msgdata and finish processing it
+            filebase = msgdata.get('_filebase')
+            if filebase:
+                self._switchboard.finish(filebase)
             return 0
 
         # Clean up old message IDs periodically

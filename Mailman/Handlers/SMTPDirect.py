@@ -116,6 +116,9 @@ class Connection(object):
         if self.__conn is None:
             self.__connect()
         try:
+            # Convert message to string if it's a Message object
+            if isinstance(msgtext, Message):
+                msgtext = msgtext.as_string()
             # Ensure msgtext is properly encoded as UTF-8
             if isinstance(msgtext, str):
                 msgtext = msgtext.encode('utf-8')
