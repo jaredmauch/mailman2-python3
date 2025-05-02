@@ -331,7 +331,12 @@ class IncomingRunner(Runner):
                 
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
-                msg, msgdata = self._switchboard.dequeue(filebase)
+                try:
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                except Exception as e:
+                    mailman_log('error', 'Failed to dequeue file %s: %s', filebase, str(e))
+                    continue
+                    
                 # Process the message
                 more = self._dispose(msgdata['listname'], msg, msgdata)
                 if more:
@@ -345,8 +350,9 @@ class IncomingRunner(Runner):
             except Exception as e:
                 # Log the error and requeue the message for later processing
                 mailman_log('error', 'Error processing queue file %s: %s', filebase, str(e))
-                try:
-                    self._switchboard.enqueue(msg, msgdata)
-                except:
-                    pass
+                if msg is not None and msgdata is not None:
+                    try:
+                        self._switchboard.enqueue(msg, msgdata)
+                    except Exception as e2:
+                        mailman_log('error', 'Failed to requeue file %s: %s', filebase, str(e2))
         return len(files)
