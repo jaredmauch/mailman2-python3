@@ -187,7 +187,7 @@ class Runner:
         return len(files)
 
     def _validate_message(self, msg, msgdata=None):
-        """Validate and convert message to Mailman.Message.Message if needed.
+        """Validate and convert message to Mailman.Message if needed.
         
         Args:
             msg: The message object to validate
@@ -201,7 +201,7 @@ class Runner:
         try:
             # Handle string messages
             if isinstance(msg, str):
-                log('info', 'Converting string to Mailman.Message.Message')
+                log('info', 'Converting string to Mailman.Message')
                 try:
                     from email import message_from_string
                     msg = message_from_string(msg)
@@ -210,9 +210,9 @@ class Runner:
                            str(e), traceback.format_exc())
                     return None, False
 
-            # Convert to Mailman.Message.Message if needed
+            # Convert to Mailman.Message if needed
             if not isinstance(msg, Message):
-                log('info', 'Converting email.message.Message to Mailman.Message.Message')
+                log('info', 'Converting email.message.Message to Mailman.Message')
                 try:
                     mailman_msg = Message()
                     # Copy all attributes from the original message
@@ -229,11 +229,11 @@ class Runner:
                     if msgdata and 'msg' in msgdata:
                         msgdata['msg'] = msg
                 except Exception as e:
-                    log('error', 'Failed to convert to Mailman.Message.Message: %s\nTraceback:\n%s',
+                    log('error', 'Failed to convert to Mailman.Message: %s\nTraceback:\n%s',
                            str(e), traceback.format_exc())
                     return None, False
 
-            # Validate required Mailman.Message.Message methods
+            # Validate required Mailman.Message methods
             required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
             for method in required_methods:
                 if not hasattr(msg, method):

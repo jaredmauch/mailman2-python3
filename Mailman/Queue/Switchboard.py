@@ -129,8 +129,8 @@ class Switchboard:
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
             # Convert email.message.Message to Mailman.Message if needed
-            if isinstance(_msg, email.message.Message) and not isinstance(_msg, Message.Message):
-                mailman_msg = Message.Message()
+            if isinstance(_msg, email.message.Message) and not isinstance(_msg, Message):
+                mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in _msg.items():
                     mailman_msg[key] = value
@@ -267,11 +267,11 @@ class Switchboard:
                         self.finish(filebase, preserve=True)
                         return None, None
 
-                # Convert to Mailman.Message.Message if needed
-                if not isinstance(msg, Message.Message):
+                # Convert to Mailman.Message if needed
+                if not isinstance(msg, Message):
                     try:
-                        mailman_log('info', 'Converting email.message.Message to Mailman.Message.Message')
-                        mailman_msg = Message.Message()
+                        mailman_log('info', 'Converting email.message.Message to Mailman.Message')
+                        mailman_msg = Message()
                         # Copy all attributes from the original message
                         for key, value in msg.items():
                             mailman_msg[key] = value
@@ -283,7 +283,7 @@ class Switchboard:
                             mailman_msg.set_payload(msg.get_payload())
                         msg = mailman_msg
                     except Exception as e:
-                        mailman_log('error', 'Failed to convert to Mailman.Message.Message: %s\nTraceback:\n%s',
+                        mailman_log('error', 'Failed to convert to Mailman.Message: %s\nTraceback:\n%s',
                                str(e), traceback.format_exc())
                         # Move to shunt queue
                         self.finish(filebase, preserve=True)

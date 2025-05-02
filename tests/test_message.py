@@ -77,7 +77,7 @@ From: nobody@dom.ain
 Subject: and another thing
 
 yadda yadda yadda
-""", Message.Message)
+""", Message)
         self._mlist.BounceMessage(msg, {})
         qmsg = email.message_from_string(self._readmsg())
         unless(qmsg.is_multipart())

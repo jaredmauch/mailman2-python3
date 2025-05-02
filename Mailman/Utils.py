@@ -52,6 +52,7 @@ from Mailman import Errors
 from Mailman import Site
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import mailman_log
+from Mailman.Message import Message
 
 try:
     import hashlib
@@ -763,7 +764,7 @@ ADMINDATA = {
     'who':         (0, 1),
     }
 
-# Given a Message.Message object, test for administrivia (eg subscribe,
+# Given a Message object, test for administrivia (eg subscribe,
 # unsubscribe, etc).  The test must be a good guess -- messages that return
 # true get sent to the list admin instead of the entire list.
 def is_administrivia(msg):

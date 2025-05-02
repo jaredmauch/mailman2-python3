@@ -447,8 +447,8 @@ class ListAdmin(object):
                 if e.errno != errno.ENOENT: raise
                 return LOST
             # Convert to Mailman.Message if needed
-            if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
-                mailman_msg = Message.Message()
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+                mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
                     mailman_msg[key] = value
@@ -503,8 +503,8 @@ class ListAdmin(object):
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
             # Convert to Mailman.Message if needed
-            if isinstance(copy, email.message.Message) and not isinstance(copy, Message.Message):
-                mailman_msg = Message.Message()
+            if isinstance(copy, email.message.Message) and not isinstance(copy, Message):
+                mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in copy.items():
                     mailman_msg[key] = value
@@ -866,8 +866,8 @@ def readMessage(path):
         if ext == '.txt':
             msg = email.message_from_file(fp, Message)
             # Convert to Mailman.Message if needed
-            if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
-                mailman_msg = Message.Message()
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+                mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
                     mailman_msg[key] = value
@@ -882,8 +882,8 @@ def readMessage(path):
             assert ext == '.pck'
             msg = pickle.load(fp, fix_imports=True, encoding='latin1')
             # Convert to Mailman.Message if needed
-            if isinstance(msg, email.message.Message) and not isinstance(msg, Message.Message):
-                mailman_msg = Message.Message()
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+                mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
                     mailman_msg[key] = value

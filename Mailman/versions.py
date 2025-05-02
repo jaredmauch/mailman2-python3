@@ -36,7 +36,6 @@ run again until another version change is detected.
 from builtins import str
 from builtins import range
 import email
-import email.message
 from Mailman.Message import Message
 
 

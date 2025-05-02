@@ -50,7 +50,6 @@ import marshal
 
 import paths
 import email.errors
-import email.message
 from Mailman.Message import Message
 
 sys.path.append("@VAR_PREFIX@/Mailman")

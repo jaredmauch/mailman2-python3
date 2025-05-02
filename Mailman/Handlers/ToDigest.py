@@ -42,7 +42,7 @@ from email.mime.message import MIMEMessage
 from email.utils import getaddresses, formatdate
 from email.header import decode_header, make_header, Header
 from email.charset import Charset
-import email.message
+import email
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -212,7 +212,7 @@ def send_digests(mlist, mboxpath):
     lcset_out = Charset(lcset).output_charset or lcset
     
     # Create the digest messages
-    mimemsg = email.message.Message()
+    mimemsg = Message()
     mimemsg['Content-Type'] = 'multipart/mixed'
     mimemsg['MIME-Version'] = '1.0'
     mimemsg['From'] = mlist.GetRequestEmail()
@@ -224,7 +224,7 @@ def send_digests(mlist, mboxpath):
     
     # Set up the RFC 1153 digest
     plainmsg = StringIO()  # Use StringIO for text output
-    rfc1153msg = email.message.Message()
+    rfc1153msg = Message()
     rfc1153msg['From'] = mlist.GetRequestEmail()
     rfc1153msg['Subject'] = Header(digestid, lcset, header_name='Subject')
     rfc1153msg['To'] = mlist.GetListEmail()

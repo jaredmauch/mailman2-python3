@@ -115,7 +115,6 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import reap
 from Mailman import Utils
-from Mailman import Message
 
 
 class PipelineError(Exception):
@@ -204,10 +203,10 @@ class IncomingRunner(Runner):
             mailman_log('error', 'Pipeline state mismatch for message %s', msg.get('message-id', 'n/a'))
             return 0
 
-        # Ensure message is a Mailman.Message.Message
+        # Ensure message is a Mailman.Message
         if not isinstance(msg, Message):
             try:
-                mailman_log('info', 'Converting email.message.Message to Mailman.Message.Message')
+                mailman_log('info', 'Converting email.message.Message to Mailman.Message')
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -223,11 +222,11 @@ class IncomingRunner(Runner):
                 if 'msg' in msgdata:
                     msgdata['msg'] = msg
             except Exception as e:
-                mailman_log('error', 'Failed to convert message to Mailman.Message.Message: %s\nTraceback:\n%s',
+                mailman_log('error', 'Failed to convert message to Mailman.Message: %s\nTraceback:\n%s',
                        str(e), traceback.format_exc())
                 return 0
 
-        # Validate required Mailman.Message.Message methods
+        # Validate required Mailman.Message methods
         required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
         for method in required_methods:
             if not hasattr(msg, method):
