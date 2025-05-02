@@ -25,11 +25,12 @@ from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman.Message import Message
 from Mailman import Errors
-from Mailman.i18n import _
-from Mailman.Handlers import Hold
+from Mailman import Hold
+from Mailman import i18n
+from Mailman.Message import Message
 from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log
 
 # Remove the MailList import from here since it's causing a circular dependency
 # from Mailman.MailList import MailList
