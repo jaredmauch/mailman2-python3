@@ -52,7 +52,6 @@ from Mailman import Errors
 from Mailman import Site
 from Mailman.SafeDict import SafeDict
 from Mailman.Logging.Syslog import mailman_log
-from Mailman.Message import Message
 
 try:
     import hashlib
@@ -768,6 +767,11 @@ ADMINDATA = {
 # unsubscribe, etc).  The test must be a good guess -- messages that return
 # true get sent to the list admin instead of the entire list.
 def is_administrivia(msg):
+    """Return true if the message is administrative in nature."""
+    # Not imported at module scope to avoid import loop
+    from Mailman.Message import Message
+    if not isinstance(msg, Message):
+        return False
     linecnt = 0
     lines = []
     for line in email.iterators.body_line_iterator(msg):

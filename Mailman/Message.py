@@ -31,7 +31,7 @@ from email.charset import Charset
 from email.header import Header
 
 from Mailman import mm_cfg
-from Mailman import Utils
+from Mailman.Utils import GetCharSet, unique_message_id, get_site_email
 
 COMMASPACE = ', '
 
@@ -250,7 +250,7 @@ class UserNotification(Message):
         Message.__init__(self)
         charset = None
         if lang is not None:
-            charset = Charset(Utils.GetCharSet(lang))
+            charset = Charset(mm_cfg.GetCharSet(lang))
         if text is not None:
             self.set_payload(text, charset)
         if subject is None:
@@ -274,7 +274,7 @@ class UserNotification(Message):
         # this message has a Message-ID.  Yes, the MTA would give us one, but
         # this is useful for logging to logs/smtp.
         if 'message-id' not in self:
-            self['Message-ID'] = Utils.unique_message_id(mlist)
+            self['Message-ID'] = mm_cfg.unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
         if 'date' not in self:
             self['Date'] = email.utils.formatdate(localtime=1)
@@ -312,7 +312,7 @@ class OwnerNotification(UserNotification):
             recips.extend(mlist.moderator)
         # We have to set the owner to the site's -bounces address, otherwise
         # we'll get a mail loop if an owner's address bounces.
-        sender = Utils.get_site_email(mlist.host_name, 'bounces')
+        sender = mm_cfg.get_site_email(mlist.host_name, 'bounces')
         lang = mlist.preferred_language
         UserNotification.__init__(self, recips, sender, subject, text, lang)
         # Hack the To header to look like it's going to the -owner address
