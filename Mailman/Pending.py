@@ -63,7 +63,7 @@ class Pending(object):
         :rtype: string
         """
         # Make sure we have a lock
-        assert self._locked, 'List must be locked before pending operations'
+        assert self.Locked(), 'List must be locked before pending operations'
         
         # Generate a unique cookie
         cookie = Utils.unique_message_id(mlist=self)
