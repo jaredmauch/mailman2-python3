@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import, division, unicode_literals
-
 #! @PYTHON@
 #
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
@@ -38,6 +36,8 @@ Options:
 Use this script to help you update to the latest release of Mailman from
 some previous version.  It knows about versions back to 1.0b4 (?).
 """
+
+from __future__ import print_function, absolute_import, division, unicode_literals
 
 import os
 import sys
