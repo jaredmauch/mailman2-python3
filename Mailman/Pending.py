@@ -29,6 +29,7 @@ import traceback
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
+from Mailman import Utils
 from Mailman.Utils import sha_new
 
 # Types of pending records
