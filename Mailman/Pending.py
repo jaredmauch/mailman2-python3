@@ -52,44 +52,25 @@ class Pending(object):
     def InitTempVars(self):
         self.__pendfile = os.path.join(self.fullpath(), 'pending.pck')
 
-    def pend_new(self, op, *content, **kws):
-        """Create a new entry in the pending database, returning cookie for it.
+    def pend_new(self, operation, data=None):
+        """Add a new pending request to the list.
+
+        :param operation: The operation to perform.
+        :type operation: string
+        :param data: The data associated with the operation.
+        :type data: any
+        :return: The cookie for the pending request.
+        :rtype: string
         """
-        if op not in _ALLKEYS:
-            raise ValueError(f'Invalid operation: {op}, must be one of {_ALLKEYS}')
-        lifetime = kws.get('lifetime', mm_cfg.PENDING_REQUEST_LIFE)
-        # We try the main loop several times. If we get a lock error somewhere
-        # (for instance because someone broke the lock) we simply try again.
-        assert self.Locked()
-        # Load the database
-        db = self.__load()
+        # Make sure we have a lock
+        assert self._locked, 'List must be locked before pending operations'
         
-        # Ensure content is properly encoded and convert to tuple
-        content = tuple(
-            c.decode('utf-8', 'replace') if isinstance(c, bytes) else c
-            for c in content
-        )
+        # Generate a unique cookie
+        cookie = Utils.unique_message_id(mlist=self)
         
-        # Calculate a unique cookie.  Algorithm vetted by the Timbot.  time()
-        # has high resolution on Linux, clock() on Windows.  random gives us
-        # about 45 bits in Python 2.2, 53 bits on Python 2.3.  The time and
-        # clock values basically help obscure the random number generator, as
-        # does the hash calculation.  The integral parts of the time values
-        # are discarded because they're the most predictable bits.
-        while True:
-            now = time.time()
-            x = random.random() + now % 1.0
-            cookie = sha_new(repr(x).encode()).hexdigest()
-            # We'll never get a duplicate, but we'll be anal about checking
-            # anyway.
-            if cookie not in db:
-                break
-        # Store the content, plus the time in the future when this entry will
-        # be evicted from the database, due to staleness.
-        db[cookie] = (op,) + content
-        evictions = db.setdefault('evictions', {})
-        evictions[cookie] = now + lifetime
-        self.__save(db)
+        # Store the pending request
+        self._pending[cookie] = (operation, data)
+        
         return cookie
 
     def __load(self):
