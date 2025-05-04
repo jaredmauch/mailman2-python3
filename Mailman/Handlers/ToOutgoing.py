@@ -24,56 +24,30 @@ recipient should just be placed in the out queue directly.
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
 import traceback
+from Mailman.Logging.Syslog import mailman_log
 
 
 def process(mlist, msg, msgdata):
-    msgid = msg.get('message-id', 'n/a')
-    mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s', 
-                msgid, mlist.internal_name())
+    """Process the message by moving it to the outgoing queue."""
+    # Log the start of processing
+    mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s',
+               msg.get('message-id', 'n/a'), mlist.internal_name())
     
-    # Log message details for debugging
-    mailman_log('debug', 'ToOutgoing: Message details for %s:', msgid)
+    # Get the outgoing queue
+    outgoingq = mlist.outgoingq
+    
+    # Log message details
+    mailman_log('debug', 'ToOutgoing: Message details:')
+    mailman_log('debug', '  Message ID: %s', msg.get('message-id', 'n/a'))
     mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
     mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
     mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
     mailman_log('debug', '  Message type: %s', type(msg).__name__)
     mailman_log('debug', '  Message data: %s', str(msgdata))
     
-    interval = mm_cfg.VERP_DELIVERY_INTERVAL
-    # Should we VERP this message?  If personalization is enabled for this
-    # list and VERP_PERSONALIZED_DELIVERIES is true, then yes we VERP it.
-    # Also, if personalization is /not/ enabled, but VERP_DELIVERY_INTERVAL is
-    # set (and we've hit this interval), then again, this message should be
-    # VERPed. Otherwise, no.
-    #
-    # Note that the verp flag may already be set, e.g. by mailpasswds using
-    # VERP_PASSWORD_REMINDERS.  Preserve any existing verp flag.
-    if 'verp' in msgdata:
-        mailman_log('debug', 'ToOutgoing: Using existing VERP flag for message %s', msgid)
-    elif mlist.personalize:
-        if mm_cfg.VERP_PERSONALIZED_DELIVERIES:
-            msgdata['verp'] = 1
-            mailman_log('debug', 'ToOutgoing: Setting VERP flag for personalized message %s', msgid)
-    elif interval == 0:
-        # Never VERP
-        mailman_log('debug', 'ToOutgoing: VERP disabled for message %s', msgid)
-    elif interval == 1:
-        # VERP every time
-        msgdata['verp'] = 1
-        mailman_log('debug', 'ToOutgoing: Setting VERP flag for message %s (interval=1)', msgid)
-    else:
-        # VERP every `inteval' number of times
-        msgdata['verp'] = not int(mlist.post_id) % interval
-        mailman_log('debug', 'ToOutgoing: Setting VERP flag for message %s based on interval %d', 
-                   msgid, interval)
+    # Add the message to the outgoing queue
+    outgoingq.enqueue(msg, msgdata)
     
-    # And now drop the message in qfiles/out
-    try:
-        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-        mailman_log('debug', 'ToOutgoing: Enqueueing message %s to outgoing queue', msgid)
-        outq.enqueue(msg, msgdata, listname=mlist.internal_name())
-        mailman_log('info', 'ToOutgoing: Successfully enqueued message %s to outgoing queue', msgid)
-    except Exception as e:
-        mailman_log('error', 'ToOutgoing: Failed to enqueue message %s: %s', msgid, str(e))
-        mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
-        raise
+    # Log successful completion
+    mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
+               msg.get('message-id', 'n/a'), mlist.internal_name())
