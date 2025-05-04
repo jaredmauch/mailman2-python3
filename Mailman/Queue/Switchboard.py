@@ -241,6 +241,15 @@ class Switchboard:
                     # Use protocol 2 for Python 2/3 compatibility
                     msg = pickle.load(fp, fix_imports=True, encoding='latin1')
                     metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    
+                    # If msg is a string, convert it to a Message object
+                    if isinstance(msg, str):
+                        try:
+                            from email import message_from_string
+                            msg = message_from_string(msg)
+                        except Exception as e:
+                            mailman_log('error', 'Error converting string message to Message object in %s: %s', filename, str(e))
+                            return None, None
             except (pickle.UnpicklingError, EOFError) as e:
                 mailman_log('error', 'Error unpickling file %s: %s', filename, str(e))
                 return None, None
