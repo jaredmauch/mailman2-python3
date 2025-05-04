@@ -29,25 +29,35 @@ from Mailman.Logging.Syslog import mailman_log
 
 def process(mlist, msg, msgdata):
     """Process the message by moving it to the outgoing queue."""
+    msgid = msg.get('message-id', 'n/a')
+    
     # Log the start of processing
     mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s',
-               msg.get('message-id', 'n/a'), mlist.internal_name())
-    
-    # Get the outgoing queue
-    outgoingq = mlist.outgoingq
+               msgid, mlist.internal_name())
     
     # Log message details
     mailman_log('debug', 'ToOutgoing: Message details:')
-    mailman_log('debug', '  Message ID: %s', msg.get('message-id', 'n/a'))
+    mailman_log('debug', '  Message ID: %s', msgid)
     mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
     mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
     mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
     mailman_log('debug', '  Message type: %s', type(msg).__name__)
     mailman_log('debug', '  Message data: %s', str(msgdata))
     
-    # Add the message to the outgoing queue
-    outgoingq.enqueue(msg, msgdata)
+    # Get the outgoing queue
+    try:
+        outgoingq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        mailman_log('debug', 'ToOutgoing: Got outgoing queue for message %s', msgid)
+    except Exception as e:
+        mailman_log('error', 'ToOutgoing: Failed to get outgoing queue for message %s: %s', msgid, str(e))
+        raise
     
-    # Log successful completion
-    mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
-               msg.get('message-id', 'n/a'), mlist.internal_name())
+    # Add the message to the outgoing queue
+    try:
+        outgoingq.enqueue(msg, msgdata, listname=mlist.internal_name())
+        mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
+                   msgid, mlist.internal_name())
+    except Exception as e:
+        mailman_log('error', 'ToOutgoing: Failed to enqueue message %s: %s', msgid, str(e))
+        mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
+        raise
