@@ -371,7 +371,56 @@ class IncomingRunner(Runner):
                 # associated with this filebase.
                 try:
                     msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None or msgdata is None:
+                        mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to dequeue file %s - invalid message data', filebase)
+                        # Move to shunt queue
+                        try:
+                            src = os.path.join(self._switchboard.whichq(), filebase + '.bak')
+                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                            os.rename(src, dst)
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s', filebase, dst)
+                        except Exception as e:
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
+                        continue
+                        
                     mailman_log('qrunner', 'IncomingRunner._oneloop: Successfully dequeued file %s', filebase)
+                    
+                    # Validate message data structure
+                    if not isinstance(msgdata, dict):
+                        mailman_log('qrunner', 'IncomingRunner._oneloop: Invalid message data structure for file %s: expected dict, got %s', 
+                                  filebase, type(msgdata))
+                        # Move to shunt queue
+                        try:
+                            src = os.path.join(self._switchboard.whichq(), filebase + '.bak')
+                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                            os.rename(src, dst)
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s', filebase, dst)
+                        except Exception as e:
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
+                        continue
+                        
+                    # Validate required message data fields
+                    required_fields = ['listname']
+                    missing_fields = [field for field in required_fields if field not in msgdata]
+                    if missing_fields:
+                        mailman_log('qrunner', 'IncomingRunner._oneloop: Missing required fields in message data for file %s: %s', 
+                                  filebase, ', '.join(missing_fields))
+                        # Move to shunt queue
+                        try:
+                            src = os.path.join(self._switchboard.whichq(), filebase + '.bak')
+                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                            os.rename(src, dst)
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s', filebase, dst)
+                        except Exception as e:
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
+                        continue
+                    
                 except Exception as e:
                     mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to dequeue file %s: %s', filebase, str(e))
                     continue

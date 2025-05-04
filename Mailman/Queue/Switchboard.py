@@ -218,18 +218,32 @@ class Switchboard:
                     msgsave = fp.read()
                     try:
                         # Try Python 3 protocol first
+                        mailman_log('debug', 'Attempting to unpickle data from %s using Python 3 protocol', filename)
                         data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                        mailman_log('debug', 'Successfully unpickled data from %s, type: %s', filename, type(data))
+                        
                         if isinstance(data, tuple):
                             msg, data = data
+                            mailman_log('debug', 'Unpickled tuple with msg type: %s, data type: %s', 
+                                      type(msg), type(data))
                         else:
                             msg = None
-                    except (pickle.UnpicklingError, ValueError):
+                            mailman_log('debug', 'Unpickled non-tuple data: %s', type(data))
+                            
+                    except (pickle.UnpicklingError, ValueError) as e:
+                        mailman_log('debug', 'Python 3 protocol failed, trying Python 2 protocol: %s', str(e))
                         # Fall back to Python 2 protocol
                         data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                        mailman_log('debug', 'Successfully unpickled data using Python 2 protocol, type: %s', type(data))
+                        
                         if isinstance(data, tuple):
                             msg, data = data
+                            mailman_log('debug', 'Unpickled tuple with msg type: %s, data type: %s', 
+                                      type(msg), type(data))
                         else:
                             msg = None
+                            mailman_log('debug', 'Unpickled non-tuple data: %s', type(data))
+                            
             except (IOError, OSError) as e:
                 if e.errno != errno.ENOENT:
                     raise
@@ -239,18 +253,32 @@ class Switchboard:
                         msgsave = fp.read()
                         try:
                             # Try Python 3 protocol first
+                            mailman_log('debug', 'Attempting to unpickle data from backup file %s using Python 3 protocol', backfile)
                             data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                            mailman_log('debug', 'Successfully unpickled data from backup file, type: %s', type(data))
+                            
                             if isinstance(data, tuple):
                                 msg, data = data
+                                mailman_log('debug', 'Unpickled tuple from backup with msg type: %s, data type: %s', 
+                                          type(msg), type(data))
                             else:
                                 msg = None
-                        except (pickle.UnpicklingError, ValueError):
+                                mailman_log('debug', 'Unpickled non-tuple data from backup: %s', type(data))
+                                
+                        except (pickle.UnpicklingError, ValueError) as e:
+                            mailman_log('debug', 'Python 3 protocol failed on backup, trying Python 2 protocol: %s', str(e))
                             # Fall back to Python 2 protocol
                             data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                            mailman_log('debug', 'Successfully unpickled data from backup using Python 2 protocol, type: %s', type(data))
+                            
                             if isinstance(data, tuple):
                                 msg, data = data
+                                mailman_log('debug', 'Unpickled tuple from backup with msg type: %s, data type: %s', 
+                                          type(msg), type(data))
                             else:
                                 msg = None
+                                mailman_log('debug', 'Unpickled non-tuple data from backup: %s', type(data))
+                                
                 except (IOError, OSError) as e:
                     if e.errno != errno.ENOENT:
                         raise
@@ -261,6 +289,11 @@ class Switchboard:
                 os.rename(filename, backfile)
             except OSError as e:
                 mailman_log('error', 'Error moving %s to %s: %s', filename, backfile, str(e))
+                return None, None
+                
+            # Validate data structure before returning
+            if not isinstance(data, dict):
+                mailman_log('error', 'Invalid data structure in %s: expected dict, got %s', filename, type(data))
                 return None, None
                 
             return msg, data
