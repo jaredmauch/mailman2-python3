@@ -143,11 +143,11 @@ class Switchboard:
                 else:
                     mailman_msg.set_payload(_msg.get_payload())
                 _msg = mailman_msg
-            # Use protocol 2 for Python 2/3 compatibility
-            msgsave = pickle.dumps(_msg, protocol=2, fix_imports=True)
+            # Use protocol 4 for Python 3 compatibility
+            msgsave = pickle.dumps(_msg, protocol=4, fix_imports=True)
         else:
-            # Use protocol 2 for Python 2/3 compatibility
-            msgsave = pickle.dumps(str(_msg), protocol=2, fix_imports=True)
+            # Use protocol 4 for Python 3 compatibility
+            msgsave = pickle.dumps(str(_msg), protocol=4, fix_imports=True)
         hashfood = msgsave + listname.encode('utf-8') + repr(now).encode('utf-8')
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
@@ -165,7 +165,7 @@ class Switchboard:
                 del data[k]
         # We have to tell the dequeue() method whether to parse the message
         # object or not.
-        protocol = 2  # Use protocol 2 for Python 2/3 compatibility
+        protocol = 4  # Use protocol 4 for Python 3 compatibility
         data['_parsemsg'] = (protocol == 0)
         # Write to the pickle file the message object and metadata.
         omask = os.umask(0o007)                     # -rw-rw----
@@ -173,7 +173,7 @@ class Switchboard:
             fp = open(tmpfile, 'wb')
             try:
                 fp.write(msgsave)
-                pickle.dump(data, fp, protocol=2, fix_imports=True)
+                pickle.dump(data, fp, protocol=4, fix_imports=True)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:
@@ -198,61 +198,63 @@ class Switchboard:
                 lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
                 # Write process info to lock file for debugging
                 with os.fdopen(lock_fd, 'w') as f:
-                    f.write('pid=%d\nhost=%s\ntime=%f\n' % (
-                        os.getpid(),
-                        socket.gethostname(),
-                        time.time()
-                    ))
+                    f.write('PID: %d\n' % os.getpid())
+                    f.write('Time: %s\n' % time.ctime())
                 break
             except OSError as e:
-                if e.errno == errno.EEXIST:
-                    # Check if lock is stale (older than 5 minutes)
-                    try:
-                        lock_age = time.time() - os.path.getmtime(lockfile)
-                        if lock_age > 300:  # 5 minutes
-                            # Read lock file contents for debugging
-                            try:
-                                with open(lockfile, 'r') as f:
-                                    lock_info = f.read()
-                                mailman_log('warning', 
-                                    'Removing stale lock file %s (age: %d seconds)\nLock info: %s',
-                                    lockfile, lock_age, lock_info)
-                            except Exception:
-                                mailman_log('warning', 
-                                    'Removing stale lock file %s (age: %d seconds)',
-                                    lockfile, lock_age)
-                            os.unlink(lockfile)
-                            continue
-                    except OSError:
-                        pass
-                    # Wait before retrying with exponential backoff
-                    time.sleep(min(1.0 * (2 ** attempt), 10.0))
-                    attempt += 1
-                    continue
-                raise
-        else:
-            mailman_log('error', 'Failed to acquire lock for %s after %d attempts', filename, max_attempts)
-            return None, None
-            
+                if e.errno != errno.EEXIST:
+                    raise
+                attempt += 1
+                if attempt >= max_attempts:
+                    mailman_log('error', 'Failed to acquire lock for %s after %d attempts',
+                          filename, max_attempts)
+                    return None, None
+                time.sleep(0.1)
+        
         try:
-            # Read the message and metadata
+            # Try to read the file with Python 3 protocol first
             try:
                 with open(filename, 'rb') as fp:
-                    # Use protocol 2 for Python 2/3 compatibility
-                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    
-                    # If msg is a string, convert it to a Message object
-                    if isinstance(msg, str):
+                    msgsave = fp.read()
+                    try:
+                        # Try Python 3 protocol first
+                        data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                        if isinstance(data, tuple):
+                            msg, data = data
+                        else:
+                            msg = None
+                    except (pickle.UnpicklingError, ValueError):
+                        # Fall back to Python 2 protocol
+                        data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                        if isinstance(data, tuple):
+                            msg, data = data
+                        else:
+                            msg = None
+            except (IOError, OSError) as e:
+                if e.errno != errno.ENOENT:
+                    raise
+                # Try to recover from .bak file
+                try:
+                    with open(backfile, 'rb') as fp:
+                        msgsave = fp.read()
                         try:
-                            from email import message_from_string
-                            msg = message_from_string(msg)
-                        except Exception as e:
-                            mailman_log('error', 'Error converting string message to Message object in %s: %s', filename, str(e))
-                            return None, None
-            except (pickle.UnpicklingError, EOFError) as e:
-                mailman_log('error', 'Error unpickling file %s: %s', filename, str(e))
-                return None, None
+                            # Try Python 3 protocol first
+                            data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                            if isinstance(data, tuple):
+                                msg, data = data
+                            else:
+                                msg = None
+                        except (pickle.UnpicklingError, ValueError):
+                            # Fall back to Python 2 protocol
+                            data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
+                            if isinstance(data, tuple):
+                                msg, data = data
+                            else:
+                                msg = None
+                except (IOError, OSError) as e:
+                    if e.errno != errno.ENOENT:
+                        raise
+                    return None, None
                 
             # Move to backup file
             try:
@@ -261,7 +263,7 @@ class Switchboard:
                 mailman_log('error', 'Error moving %s to %s: %s', filename, backfile, str(e))
                 return None, None
                 
-            return msg, metadata
+            return msg, data
         finally:
             # Always clean up the lock file
             try:
@@ -479,7 +481,7 @@ class Switchboard:
                             protocol = 0
                         else:
                             protocol = 1
-                        pickle.dump(data, fp, protocol=2, fix_imports=True)
+                        pickle.dump(data, fp, protocol=4, fix_imports=True)
                         fp.truncate()
                         fp.flush()
                         os.fsync(fp.fileno())
@@ -595,7 +597,7 @@ class Switchboard:
             # Write to temporary file first
             try:
                 with open(tmpfile, 'wb') as fp:
-                    pickle.dump(data, fp, protocol=2, fix_imports=True)
+                    pickle.dump(data, fp, protocol=4, fix_imports=True)
                     fp.flush()
                     if hasattr(os, 'fsync'):
                         os.fsync(fp.fileno())

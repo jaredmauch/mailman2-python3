@@ -970,7 +970,7 @@ def upgrade(mlist):
             backup_path = os.path.join(list_dir, 'config.pck.bak')
             try:
                 with open(backup_path, 'wb') as fp:
-                    pickle.dump(mlist.__dict__, fp, protocol=2, fix_imports=True)
+                    pickle.dump(mlist.__dict__, fp, protocol=4, fix_imports=True)
                 print(C_('Saved backup configuration to %(path)s') % {'path': backup_path})
             except Exception as e:
                 print(C_('Failed to save backup configuration: %(error)s') % {'error': str(e)})

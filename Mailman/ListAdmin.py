@@ -103,7 +103,7 @@ class ListAdmin(object):
         try:
             with open(filename, 'rb') as fp:
                 try:
-                    self.__db = pickle.load(fp)
+                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
                     mailman_log('info', 'Successfully loaded request.pck for list %s', self.internal_name())
                     
                     # Log pending requests
@@ -153,7 +153,7 @@ class ListAdmin(object):
                         mailman_log('info', 'Attempting to load from backup file')
                         with open(filename_backup, 'rb') as backup_fp:
                             try:
-                                self.__db = pickle.load(backup_fp)
+                                self.__db = pickle.load(backup_fp, fix_imports=True, encoding='latin1')
                                 mailman_log('info', 'Successfully loaded backup request.pck for list %s',
                                            self.internal_name())
                                 # Successfully loaded backup, restore it as main
@@ -212,7 +212,7 @@ class ListAdmin(object):
             try:
                 # Create temporary file
                 with open(filename_tmp, 'wb') as fp:
-                    pickle.dump(self.__db, fp, protocol=2)
+                    pickle.dump(self.__db, fp, protocol=4, fix_imports=True)
                     fp.flush()
                     os.fsync(fp.fileno())
                 
@@ -369,7 +369,7 @@ class ListAdmin(object):
             fp = open(os.path.join(mm_cfg.DATA_DIR, filename), 'wb')
             try:
                 if mm_cfg.HOLD_MESSAGES_AS_PICKLES:
-                    pickle.dump(msg, fp, protocol=2, fix_imports=True)
+                    pickle.dump(msg, fp, protocol=4, fix_imports=True)
                 else:
                     g = Generator(fp)
                     g.flatten(msg, 1)

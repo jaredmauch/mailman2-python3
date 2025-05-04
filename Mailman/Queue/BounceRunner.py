@@ -93,9 +93,9 @@ class BounceMixin:
             finally:
                 os.umask(omask)
         for addr in addrs:
-            # Use protocol 2 for Python 2/3 compatibility and fix_imports for Python 2/3 compatibility
+            # Use protocol 4 for Python 3 compatibility and fix_imports for Python 2/3 compatibility
             pickle.dump((listname, addr, today, msg),
-                       self._bounce_events_fp, protocol=2, fix_imports=True)
+                       self._bounce_events_fp, protocol=4, fix_imports=True)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
         self._bouncecnt += len(addrs)
@@ -110,10 +110,10 @@ class BounceMixin:
             
             # Write the bounce data to the pickle file
             try:
-                # Use protocol 2 for Python 2/3 compatibility
-                protocol = 2
+                # Use protocol 4 for Python 3 compatibility
+                protocol = 4
                 with open(filename, 'wb') as fp:
-                    pickle.dump((listname, addr, now, msg), fp, protocol=2, fix_imports=True)
+                    pickle.dump((listname, addr, now, msg), fp, protocol=4, fix_imports=True)
                 # Set the file's mode appropriately
                 os.chmod(filename, 0o660)
             except (IOError, OSError) as e:

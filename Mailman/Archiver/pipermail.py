@@ -132,7 +132,7 @@ class Database(DatabaseInterface):
         temp2 = article.html_body
         article.body = []
         del article.html_body
-        self.articleIndex[article.msgid] = pickle.dumps(article, protocol=2, fix_imports=True)
+        self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
         article.body = temp
         article.html_body = temp2
 
@@ -338,14 +338,14 @@ class T(object):
             f = open(os.path.join(self.basedir, 'pipermail.pck'), 'w')
         finally:
             os.umask(omask)
-        pickle.dump(self.getstate(), f, protocol=2, fix_imports=True)
+        pickle.dump(self.getstate(), f, protocol=4, fix_imports=True)
         f.close()
 
     def getstate(self):
         """Get the current state of the archive."""
         try:
-            # Use protocol 2 for Python 2/3 compatibility
-            protocol = 2
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
             return pickle.dumps(self.__dict__, protocol, fix_imports=True)
         except Exception as e:
             mailman_log('error', 'Error getting archive state: %s', e)
@@ -354,8 +354,8 @@ class T(object):
     def setstate(self, state):
         """Set the state of the archive."""
         try:
-            # Use protocol 2 for Python 2/3 compatibility
-            protocol = 2
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
             self.__dict__ = pickle.loads(state, fix_imports=True, encoding='latin1')
         except Exception as e:
             mailman_log('error', 'Error setting archive state: %s', e)
@@ -631,9 +631,9 @@ class T(object):
     def add_article(self, article):
         """Add an article to the archive."""
         try:
-            # Use protocol 2 for Python 2/3 compatibility
-            protocol = 2
-            self.articleIndex[article.msgid] = pickle.dumps(article, protocol=2, fix_imports=True)
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
+            self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
             self.articleIndex.sync()
         except Exception as e:
             mailman_log('error', 'Error adding article %s: %s', article.msgid, e)

@@ -645,7 +645,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         try:
             fp = open(fname_tmp, 'wb')
             # Use a binary format... it's more efficient.
-            pickle.dump(data_dict, fp, 1)
+            pickle.dump(data_dict, fp, protocol=4, fix_imports=True)
             fp.flush()
             if mm_cfg.SYNC_AFTER_WRITE:
                 os.fsync(fp.fileno())

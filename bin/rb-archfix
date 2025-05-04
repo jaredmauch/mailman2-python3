@@ -77,7 +77,7 @@ def load_article(pckstr):
 def save_article(article):
     """Save an article to a pickle string with Python 2/3 compatibility."""
     try:
-        return pickle.dumps(article, protocol=2, fix_imports=True)
+        return pickle.dumps(article, protocol=4, fix_imports=True)
     except Exception as e:
         print('Error saving article: %s' % e)
         return None
