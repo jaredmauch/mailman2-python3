@@ -143,10 +143,9 @@ your membership administrative address, %(addr)s.'''))
         lang = self.getMemberLanguage(user)
         cset = Utils.GetCharSet(lang)
         password = self.getMemberPassword(user)
-        # TK: Make unprintables to ?
-        # The list owner should allow users to set language options if they
-        # want to use non-us-ascii characters in password and send it back.
-        password = str(password, cset, 'replace').encode(cset, 'replace')
+        # Handle password encoding properly for Python 3
+        if isinstance(password, bytes):
+            password = password.decode(cset, 'replace')
         # get the text from the template
         text = Utils.maketext(
             'userpass.txt',

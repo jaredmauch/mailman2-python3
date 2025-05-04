@@ -1020,3 +1020,45 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self._ListAdmin__nextid_counter = nextid
         # Return just the counter number
         return nextid
+
+    def ConfirmUnsubscription(self, addr, lang=None, remote=None):
+        """Confirm an unsubscription request.
+
+        :param addr: The address to unsubscribe.
+        :type addr: string
+        :param lang: The language to use for the confirmation message.
+        :type lang: string
+        :param remote: The remote address making the request.
+        :type remote: string
+        :raises: MMAlreadyPending if there's already a pending request
+        """
+        # Make sure we have a lock
+        assert self._locked, 'List must be locked before pending operations'
+        
+        # Get the member's language if not specified
+        if lang is None:
+            lang = self.getMemberLanguage(addr)
+            
+        # Create a pending request
+        cookie = self.pend_new(Pending.UNSUBSCRIPTION, addr)
+        
+        # Craft the confirmation message
+        d = {
+            'listname': self.real_name,
+            'email': addr,
+            'listaddr': self.GetListEmail(),
+            'remote': remote and f'from {remote}' or '',
+            'confirmurl': '%s/%s' % (self.GetScriptURL('confirm', absolute=1), cookie),
+            'requestaddr': self.GetRequestEmail(cookie),
+            'cookie': cookie,
+            'listadmin': self.GetOwnerEmail(),
+        }
+        
+        # Send the confirmation message
+        subject = self.GetConfirmLeaveSubject(self.real_name, cookie)
+        text = Utils.maketext('unsub.txt', d, lang=lang, mlist=self)
+        msg = Message.UserNotification(addr, self.GetRequestEmail(cookie),
+                                     subject, text, lang)
+        msg.send(self)
+        
+        return cookie
