@@ -234,11 +234,15 @@ class IncomingRunner(Runner):
                 mailman_log('error', 'Message object missing required method %s', method)
                 return 0
 
+        msgid = msg.get('message-id', 'n/a')
         while pipeline:
             handler = pipeline.pop(0)
             modname = 'Mailman.Handlers.' + handler
-            __import__(modname)
             try:
+                mailman_log('debug', 'IncomingRunner: Processing message %s through handler %s', 
+                           msgid, handler)
+                __import__(modname)
+                
                 # Store original PID and track child processes
                 original_pid = os.getpid()
                 child_pids = set()
@@ -271,6 +275,9 @@ class IncomingRunner(Runner):
                 if child_pids:
                     mailman_log('debug', 'Cleaned up %d child processes from handler %s: %s',
                           len(child_pids), modname, child_pids)
+                
+                mailman_log('debug', 'IncomingRunner: Successfully processed message %s through handler %s',
+                           msgid, handler)
                     
             except Errors.DiscardMessage:
                 # Throw the message away; we need do nothing else with it.
@@ -278,16 +285,14 @@ class IncomingRunner(Runner):
                 mailman_log('vette', """Message discarded, msgid: %s'
         list: %s,
         handler: %s""",
-                       msg.get('message-id', 'n/a'),
-                       mlist.internal_name(), handler)
+                       msgid, mlist.internal_name(), handler)
                 return 0
             except Errors.HoldMessage:
                 # Message is being held for moderation, no need to requeue
                 mailman_log('vette', """Message held for moderation, msgid: %s
         list: %s,
         handler: %s""",
-                       msg.get('message-id', 'n/a'),
-                       mlist.internal_name(), handler)
+                       msgid, mlist.internal_name(), handler)
                 # Add message ID to processed set to prevent duplicate processing
                 self._processed_messages.add(msgid)
                 return 0
@@ -297,15 +302,22 @@ class IncomingRunner(Runner):
         list: %s,
         handler: %s,
         reason: %s""",
-                       msg.get('message-id', 'n/a'),
-                       mlist.internal_name(), handler, e.notice())
+                       msgid, mlist.internal_name(), handler, e.notice())
                 mlist.BounceMessage(msg, msgdata, e)
                 return 0
             except Exception as e:
                 # Log the full traceback for debugging
-                mailman_log('error', 'Error in handler %s: %s\n%s', modname, str(e),
-                      ''.join(traceback.format_exc()))
+                mailman_log('error', 'Error in handler %s for message %s: %s\n%s', 
+                           modname, msgid, str(e), traceback.format_exc())
+                # Put the handler back in the pipeline
                 pipeline.insert(0, handler)
+                # Try to move message to shunt queue
+                try:
+                    self._shunt.enqueue(msg, msgdata)
+                    mailman_log('info', 'Moved failed message %s to shunt queue', msgid)
+                except Exception as shunt_error:
+                    mailman_log('error', 'Failed to move message %s to shunt queue: %s', 
+                               msgid, str(shunt_error))
                 raise
         return 0
 

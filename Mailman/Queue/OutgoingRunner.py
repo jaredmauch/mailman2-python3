@@ -26,6 +26,7 @@ import os
 import sys
 from io import StringIO
 import threading
+import email.message
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -186,3 +187,60 @@ class OutgoingRunner(Runner, BounceMixin):
         mailman_log('debug', 'OutgoingRunner: Cleanup complete')
 
     _doperiodic = BounceMixin._doperiodic
+
+    def _validate_message(self, msg, msgdata):
+        """Validate and convert message if needed.
+        
+        Returns a tuple of (msg, success) where success is a boolean indicating
+        if validation was successful.
+        """
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            # Convert email.message.Message to Mailman.Message if needed
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+                mailman_log('debug', 'OutgoingRunner: Converting email.message.Message to Mailman.Message for %s', msgid)
+                mailman_msg = Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
+                mailman_log('debug', 'OutgoingRunner: Successfully converted message %s', msgid)
+            
+            # Validate required Mailman.Message methods
+            required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
+            missing_methods = []
+            for method in required_methods:
+                if not hasattr(msg, method):
+                    missing_methods.append(method)
+            
+            if missing_methods:
+                mailman_log('error', 'OutgoingRunner: Message %s missing required methods: %s', 
+                           msgid, ', '.join(missing_methods))
+                return msg, False
+                
+            # Validate message headers
+            if not msg.get('message-id'):
+                mailman_log('error', 'OutgoingRunner: Message %s missing Message-ID header', msgid)
+                return msg, False
+                
+            if not msg.get('from'):
+                mailman_log('error', 'OutgoingRunner: Message %s missing From header', msgid)
+                return msg, False
+                
+            if not msg.get('to') and not msg.get('recipients'):
+                mailman_log('error', 'OutgoingRunner: Message %s missing To/Recipients', msgid)
+                return msg, False
+                
+            mailman_log('debug', 'OutgoingRunner: Message %s validation successful', msgid)
+            return msg, True
+            
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner: Error validating message %s: %s', msgid, str(e))
+            mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+            return msg, False
