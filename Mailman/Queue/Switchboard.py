@@ -146,8 +146,14 @@ class Switchboard:
             # Use protocol 4 for Python 3 compatibility
             msgsave = pickle.dumps(_msg, protocol=4, fix_imports=True)
         else:
+            # Convert string to Mailman.Message if needed
+            if isinstance(_msg, str):
+                mailman_msg = Message()
+                mailman_msg.set_payload(_msg)
+                _msg = mailman_msg
             # Use protocol 4 for Python 3 compatibility
-            msgsave = pickle.dumps(str(_msg), protocol=4, fix_imports=True)
+            msgsave = pickle.dumps(_msg, protocol=4, fix_imports=True)
+            
         hashfood = msgsave + listname.encode('utf-8') + repr(now).encode('utf-8')
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
@@ -172,8 +178,8 @@ class Switchboard:
         try:
             fp = open(tmpfile, 'wb')
             try:
-                fp.write(msgsave)
-                pickle.dump(data, fp, protocol=4, fix_imports=True)
+                # Write the tuple of (message, metadata)
+                pickle.dump((_msg, data), fp, protocol=4, fix_imports=True)
                 fp.flush()
                 os.fsync(fp.fileno())
             finally:
@@ -188,6 +194,9 @@ class Switchboard:
         filename = os.path.join(self.__whichq, filebase + '.pck')
         backfile = os.path.join(self.__whichq, filebase + '.bak')
         lockfile = filename + '.lock'
+        
+        mailman_log('debug', 'Switchboard.dequeue: Starting to dequeue file %s', filebase)
+        mailman_log('debug', 'Switchboard.dequeue: Full paths - filename: %s, backfile: %s', filename, backfile)
         
         # Create lock file with proper cleanup
         max_attempts = 30  # Increased from 10 to 30
@@ -216,91 +225,97 @@ class Switchboard:
             try:
                 with open(filename, 'rb') as fp:
                     msgsave = fp.read()
+                    mailman_log('debug', 'Switchboard.dequeue: Read %d bytes from %s', len(msgsave), filename)
                     try:
                         # Try Python 3 protocol first
-                        mailman_log('debug', 'Attempting to unpickle data from %s using Python 3 protocol', filename)
+                        mailman_log('debug', 'Switchboard.dequeue: Attempting to unpickle data from %s using Python 3 protocol', filename)
                         data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                        mailman_log('debug', 'Successfully unpickled data from %s, type: %s', filename, type(data))
+                        mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data from %s, type: %s', filename, type(data))
                         
                         if isinstance(data, tuple):
                             msg, data = data
-                            mailman_log('debug', 'Unpickled tuple with msg type: %s, data type: %s', 
+                            mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple with msg type: %s, data type: %s', 
                                       type(msg), type(data))
                         else:
                             msg = None
-                            mailman_log('debug', 'Unpickled non-tuple data: %s', type(data))
+                            mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data: %s', type(data))
                             
                     except (pickle.UnpicklingError, ValueError) as e:
-                        mailman_log('debug', 'Python 3 protocol failed, trying Python 2 protocol: %s', str(e))
+                        mailman_log('debug', 'Switchboard.dequeue: Python 3 protocol failed, trying Python 2 protocol: %s', str(e))
                         # Fall back to Python 2 protocol
                         data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                        mailman_log('debug', 'Successfully unpickled data using Python 2 protocol, type: %s', type(data))
+                        mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data using Python 2 protocol, type: %s', type(data))
                         
                         if isinstance(data, tuple):
                             msg, data = data
-                            mailman_log('debug', 'Unpickled tuple with msg type: %s, data type: %s', 
+                            mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple with msg type: %s, data type: %s', 
                                       type(msg), type(data))
-                        else:
                             msg = None
-                            mailman_log('debug', 'Unpickled non-tuple data: %s', type(data))
+                            mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data: %s', type(data))
                             
             except (IOError, OSError) as e:
                 if e.errno != errno.ENOENT:
                     raise
+                mailman_log('debug', 'Switchboard.dequeue: Primary file not found, trying backup file')
                 # Try to recover from .bak file
                 try:
                     with open(backfile, 'rb') as fp:
                         msgsave = fp.read()
+                        mailman_log('debug', 'Switchboard.dequeue: Read %d bytes from backup file %s', len(msgsave), backfile)
                         try:
                             # Try Python 3 protocol first
-                            mailman_log('debug', 'Attempting to unpickle data from backup file %s using Python 3 protocol', backfile)
+                            mailman_log('debug', 'Switchboard.dequeue: Attempting to unpickle data from backup file %s using Python 3 protocol', backfile)
                             data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                            mailman_log('debug', 'Successfully unpickled data from backup file, type: %s', type(data))
+                            mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data from backup file, type: %s', type(data))
                             
                             if isinstance(data, tuple):
                                 msg, data = data
-                                mailman_log('debug', 'Unpickled tuple from backup with msg type: %s, data type: %s', 
+                                mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple from backup with msg type: %s, data type: %s', 
                                           type(msg), type(data))
                             else:
                                 msg = None
-                                mailman_log('debug', 'Unpickled non-tuple data from backup: %s', type(data))
+                                mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data from backup: %s', type(data))
                                 
                         except (pickle.UnpicklingError, ValueError) as e:
-                            mailman_log('debug', 'Python 3 protocol failed on backup, trying Python 2 protocol: %s', str(e))
+                            mailman_log('debug', 'Switchboard.dequeue: Python 3 protocol failed on backup, trying Python 2 protocol: %s', str(e))
                             # Fall back to Python 2 protocol
                             data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                            mailman_log('debug', 'Successfully unpickled data from backup using Python 2 protocol, type: %s', type(data))
+                            mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data from backup using Python 2 protocol, type: %s', type(data))
                             
                             if isinstance(data, tuple):
                                 msg, data = data
-                                mailman_log('debug', 'Unpickled tuple from backup with msg type: %s, data type: %s', 
+                                mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple from backup with msg type: %s, data type: %s', 
                                           type(msg), type(data))
                             else:
                                 msg = None
-                                mailman_log('debug', 'Unpickled non-tuple data from backup: %s', type(data))
+                                mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data from backup: %s', type(data))
                                 
                 except (IOError, OSError) as e:
                     if e.errno != errno.ENOENT:
                         raise
+                    mailman_log('error', 'Switchboard.dequeue: Both primary and backup files not found for %s', filebase)
                     return None, None
                 
             # Move to backup file
             try:
                 os.rename(filename, backfile)
+                mailman_log('debug', 'Switchboard.dequeue: Successfully moved %s to %s', filename, backfile)
             except OSError as e:
-                mailman_log('error', 'Error moving %s to %s: %s', filename, backfile, str(e))
+                mailman_log('error', 'Switchboard.dequeue: Error moving %s to %s: %s', filename, backfile, str(e))
                 return None, None
                 
             # Validate data structure before returning
             if not isinstance(data, dict):
-                mailman_log('error', 'Invalid data structure in %s: expected dict, got %s', filename, type(data))
+                mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', filename, type(data))
                 return None, None
                 
+            mailman_log('debug', 'Switchboard.dequeue: Successfully dequeued file %s', filebase)
             return msg, data
         finally:
             # Always clean up the lock file
             try:
                 os.unlink(lockfile)
+                mailman_log('debug', 'Switchboard.dequeue: Cleaned up lock file %s', lockfile)
             except OSError:
                 pass
 
