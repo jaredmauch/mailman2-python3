@@ -227,6 +227,7 @@ class LockFile:
         # Create a hard link from the global lock file to the temp file.  This
         # actually does things in reverse order of normal operation because we
         # know that lockfile exists, and tmpfname better not!
+        mailman_log('debug', 'Attempting to transfer lock from %s to %s', winner, self.__tmpfname)
         os.link(self.__lockfile, self.__tmpfname)
         # Now update the lock file to contain a reference to the new owner
         self.__write()
@@ -238,12 +239,14 @@ class LockFile:
         # And do some sanity checks
         link_count = self.__linkcount()
         if link_count != 2:
-            mailman_log('error', 'Lock transfer failed: link count is %d, expected 2', link_count)
+            mailman_log('error', 'Lock transfer failed: link count is %d, expected 2 for lockfile %s (temp file: %s)', 
+                       link_count, self.__lockfile, self.__tmpfname)
             raise LockError('Lock transfer failed: link count is %d, expected 2' % link_count)
         if not self.locked():
-            mailman_log('error', 'Lock transfer failed: lock not acquired')
+            mailman_log('error', 'Lock transfer failed: lock not acquired for lockfile %s (temp file: %s)', 
+                       self.__lockfile, self.__tmpfname)
             raise LockError('Lock transfer failed: lock not acquired')
-        mailman_log('debug', 'transferred the lock')
+        mailman_log('debug', 'Successfully transferred lock from %s to %s', winner, self.__tmpfname)
 
     def _take_possession(self):
         """Try to take possession of the lock file.
