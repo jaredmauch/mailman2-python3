@@ -142,8 +142,13 @@ class IncomingRunner(Runner):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
+        mailman_log('debug', 'IncomingRunner._dispose: Starting to process message %s (file: %s) for list %s',
+                   msgid, filebase, listname)
+        
         # Check retry delay and duplicate processing
         if not self._check_retry_delay(msgid, filebase):
+            mailman_log('debug', 'IncomingRunner._dispose: Message %s failed retry delay check, moving to shunt queue',
+                       msgid)
             # Move to shunt queue and remove from original queue
             self._shunt.enqueue(msg, msgdata)
             # Get the filebase from msgdata and finish processing it
@@ -154,6 +159,7 @@ class IncomingRunner(Runner):
         # Get the MailList object for the list name
         try:
             mlist = MailList(listname, lock=False)
+            mailman_log('debug', 'IncomingRunner._dispose: Successfully got MailList object for %s', listname)
         except Errors.MMListError as e:
             mailman_log('error', 'Failed to get list %s: %s', listname, str(e))
             self._unmark_message_processed(msgid)
@@ -164,8 +170,13 @@ class IncomingRunner(Runner):
             mailman_log('info', 'IncomingRunner: Starting to process message %s (file: %s) for list %s',
                        msgid, filebase, mlist.internal_name())
             
+            # Get the pipeline
+            pipeline = self._get_pipeline(mlist, msg, msgdata)
+            mailman_log('debug', 'IncomingRunner._dispose: Got pipeline for message %s: %s', 
+                       msgid, str(pipeline))
+            
             # Process the message through the pipeline
-            result = self._dopipeline(mlist, msg, msgdata, self._get_pipeline(mlist, msg, msgdata))
+            result = self._dopipeline(mlist, msg, msgdata, pipeline)
             
             # Log successful completion
             mailman_log('info', 'IncomingRunner: Successfully processed message %s (file: %s) for list %s',
@@ -191,9 +202,12 @@ class IncomingRunner(Runner):
     def _get_pipeline(self, mlist, msg, msgdata):
         # We must return a copy of the list, otherwise, the first message that
         # flows through the pipeline will empty it out!
-        return msgdata.get('pipeline',
+        pipeline = msgdata.get('pipeline',
                            getattr(mlist, 'pipeline',
                                    mm_cfg.GLOBAL_PIPELINE))[:]
+        mailman_log('debug', 'IncomingRunner._get_pipeline: Got pipeline for message %s: %s',
+                   msg.get('message-id', 'n/a'), str(pipeline))
+        return pipeline
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
         # Validate pipeline state

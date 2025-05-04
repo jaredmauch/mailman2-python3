@@ -31,6 +31,14 @@ def process(mlist, msg, msgdata):
     mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s', 
                 msgid, mlist.internal_name())
     
+    # Log message details for debugging
+    mailman_log('debug', 'ToOutgoing: Message details for %s:', msgid)
+    mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
+    mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
+    mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
+    mailman_log('debug', '  Message type: %s', type(msg).__name__)
+    mailman_log('debug', '  Message data: %s', str(msgdata))
+    
     interval = mm_cfg.VERP_DELIVERY_INTERVAL
     # Should we VERP this message?  If personalization is enabled for this
     # list and VERP_PERSONALIZED_DELIVERIES is true, then yes we VERP it.
