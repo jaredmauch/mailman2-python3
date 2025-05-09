@@ -443,6 +443,8 @@ def prefix_subject(mlist, msg, msgdata):
         subject = _('(no subject)')
         i18n.set_translation(otrans)
         cset = Utils.GetCharSet(mlist.preferred_language)
+        if isinstance(subject, str):
+            subject = subject.encode()
         subject = str(subject, cset)
     # and substitute %d in prefix with post_id
     try:
