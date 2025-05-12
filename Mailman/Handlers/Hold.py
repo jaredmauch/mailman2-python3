@@ -260,7 +260,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
             finally:
                 mlist.Unlock()
         else:
-            cookie = mlist.pend_new(Pending.HELD_MESSAGE, id)
+        cookie = mlist.pend_new(Pending.HELD_MESSAGE, id)
             
         if not fromusenet and ackp(msg) and mlist.respond_to_post_requests and \
                mlist.autorespondToSender(sender, mlist.getMemberLanguage(sender)):

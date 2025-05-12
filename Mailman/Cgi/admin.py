@@ -152,10 +152,18 @@ def main():
             csrf_checked = True
         try:
             mailman_log('debug', 'Calling WebAuthenticate')
+            mailman_log('debug', 'Authentication contexts: %s', str((mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)))
+            mailman_log('debug', 'Password provided: %s', 'Yes' if cgidata.get('adminpw', [''])[0] else 'No')
+            mailman_log('debug', 'Cookie present: %s', 'Yes' if os.environ.get('HTTP_COOKIE') else 'No')
             auth_result = mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                       mm_cfg.AuthSiteAdmin),
                                      cgidata.get('adminpw', [''])[0])
             mailman_log('debug', 'WebAuthenticate result: %s', str(auth_result))
+            if not auth_result:
+                mailman_log('debug', 'Authentication failed - checking auth contexts')
+                for context in (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin):
+                    mailman_log('debug', 'Checking context %s: %s', 
+                               context, str(mlist.AuthContextInfo(context)))
         except Exception as e:
             mailman_log('error', 'admin: Exception during WebAuthenticate: %s\n%s', str(e), traceback.format_exc())
             mailman_log('debug', 'Exception during WebAuthenticate')
