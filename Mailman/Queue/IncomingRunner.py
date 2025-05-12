@@ -104,7 +104,7 @@ import traceback
 from io import StringIO
 import random
 import signal
-import threading
+import os
 from email import message_from_string
 from Mailman.Message import Message
 from urllib.parse import parse_qs
@@ -129,118 +129,43 @@ class IncomingRunner(Runner):
     def __init__(self, slice=None, numslices=1):
         mailman_log('qrunner', 'IncomingRunner: Initializing with slice=%s, numslices=%s', slice, numslices)
         Runner.__init__(self, slice, numslices)
-        # Rate limiting
-        self._message_times = {}
-        self._message_lock = threading.Lock()
-        self._max_messages_per_hour = 1000
-        self._message_window = 3600  # 1 hour
-        # Cleanup
+        # Track processed messages to prevent duplicates
+        self._processed_messages = set()
+        # Clean up old messages periodically
         self._last_cleanup = time.time()
         self._cleanup_interval = 3600  # Clean up every hour
-        self._max_message_age = 7 * 24 * 3600  # 7 days max message age
         mailman_log('qrunner', 'IncomingRunner: Initialization complete')
 
-    def _cleanup_old_messages(self):
-        """Clean up old message files."""
-        try:
-            current_time = time.time()
-            if current_time - self._last_cleanup < self._cleanup_interval:
-                return
-                
-            with self._message_lock:
-                # Clean up old message files
-                for filename in os.listdir(self.QDIR):
-                    if filename.endswith('.pck'):
-                        filepath = os.path.join(self.QDIR, filename)
-                        try:
-                            if current_time - os.path.getmtime(filepath) > self._max_message_age:
-                                os.unlink(filepath)
-                        except OSError:
-                            pass
-                            
-                # Clean up old message times
-                cutoff = current_time - self._message_window
-                self._message_times = {k: v for k, v in self._message_times.items() 
-                                    if v > cutoff}
-                                    
-                self._last_cleanup = current_time
-        except Exception as e:
-            mailman_log('error', 'Error cleaning up old messages: %s', str(e))
-
-    def _check_rate_limit(self, sender):
-        """Check if sender has exceeded rate limit."""
-        with self._message_lock:
-            current_time = time.time()
-            # Clean up old entries
-            cutoff = current_time - self._message_window
-            self._message_times = {k: v for k, v in self._message_times.items() 
-                                if v > cutoff}
-                                
-            # Count messages in window
-            count = sum(1 for t in self._message_times.values() if t > cutoff)
-            if count >= self._max_messages_per_hour:
-                return False
-                
-            # Add new message
-            self._message_times[sender] = current_time
-            return True
-
-    def _validate_message(self, msg, msgdata):
-        """Validate message format."""
-        try:
-            # Check required headers
-            if not msg.get('from'):
-                return False
-            if not msg.get('to'):
-                return False
-            if not msg.get('message-id'):
-                return False
-                
-            # Check message size
-            if len(str(msg)) > mm_cfg.MAX_MESSAGE_SIZE:
-                return False
-                
-            # Check for valid message format
-            if not msg.get('content-type', '').startswith(('text/', 'multipart/')):
-                return False
-                
-            return True
-        except Exception:
-            return False
-
     def _dispose(self, listname, msg, msgdata):
-        """Process an incoming message with proper validation and rate limiting."""
         # Import MailList here to avoid circular imports
         from Mailman.MailList import MailList
 
         # Track message ID to prevent duplicates
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
-        sender = msg.get_sender()
         
         mailman_log('qrunner', 'IncomingRunner._dispose: Starting to process message %s (file: %s) for list %s',
                    msgid, filebase, listname)
         
-        # Validate message
-        if not self._validate_message(msg, msgdata):
-            mailman_log('error', 'Invalid message format for %s', msgid)
-            return False
-            
-        # Check rate limit
-        if not self._check_rate_limit(sender):
-            mailman_log('error', 'Rate limit exceeded for sender %s', sender)
-            return False
+        # Check retry delay and duplicate processing
+        if not self._check_retry_delay(msgid, filebase):
+            mailman_log('qrunner', 'IncomingRunner._dispose: Message %s failed retry delay check, moving to shunt queue',
+                       msgid)
+            # Move to shunt queue and remove from original queue
+            self._shunt.enqueue(msg, msgdata)
+            # Get the filebase from msgdata and finish processing it
+            if filebase:
+                self._switchboard.finish(filebase)
+            return 0
 
         # Get the MailList object for the list name
         try:
             mlist = MailList(listname, lock=False)
             mailman_log('qrunner', 'IncomingRunner._dispose: Successfully got MailList object for %s', listname)
         except Errors.MMListError as e:
-            mailman_log('error', 'Failed to get list %s: %s', listname, str(e))
-            return False
-        except Exception as e:
-            mailman_log('error', 'Unexpected error loading list %s: %s', listname, str(e))
-            return False
+            mailman_log('qrunner', 'IncomingRunner._dispose: Failed to get list %s: %s', listname, str(e))
+            self._unmark_message_processed(msgid)
+            return 0
 
         try:
             # Log start of processing
@@ -261,22 +186,22 @@ class IncomingRunner(Runner):
             return result
         except Exception as e:
             # Enhanced error logging with more context
-            mailman_log('error', 'Error processing message %s for list %s: %s',
+            mailman_log('qrunner', 'IncomingRunner._dispose: Error processing message %s for list %s: %s',
                    msgid, mlist.internal_name(), str(e))
-            mailman_log('error', 'Message details:')
-            mailman_log('error', '  Message ID: %s', msgid)
-            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
-            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
-            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
-            mailman_log('error', '  Message type: %s', type(msg).__name__)
-            mailman_log('error', '  Message data: %s', str(msgdata))
-            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
-            return False
-        finally:
-            self._cleanup_old_messages()
+            mailman_log('qrunner', 'IncomingRunner._dispose: Message details:')
+            mailman_log('qrunner', '  Message ID: %s', msgid)
+            mailman_log('qrunner', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('qrunner', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('qrunner', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('qrunner', '  Message type: %s', type(msg).__name__)
+            mailman_log('qrunner', '  Message data: %s', str(msgdata))
+            mailman_log('qrunner', 'IncomingRunner._dispose: Traceback:\n%s', traceback.format_exc())
+            
+            # Remove from processed messages on error
+            self._unmark_message_processed(msgid)
+            return 0
 
     def _get_pipeline(self, mlist, msg, msgdata):
-        """Get the pipeline for message processing."""
         # We must return a copy of the list, otherwise, the first message that
         # flows through the pipeline will empty it out!
         pipeline = msgdata.get('pipeline',
@@ -287,22 +212,21 @@ class IncomingRunner(Runner):
         return pipeline
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
-        """Process message through pipeline with proper error handling."""
         msgid = msg.get('message-id', 'n/a')
         mailman_log('qrunner', 'IncomingRunner._dopipeline: Starting pipeline processing for message %s', msgid)
         
         # Validate pipeline state
         if not pipeline:
-            mailman_log('error', 'Empty pipeline for message %s', msgid)
+            mailman_log('qrunner', 'IncomingRunner._dopipeline: Empty pipeline for message %s', msgid)
             return 0
         if 'pipeline' in msgdata and msgdata['pipeline'] != pipeline:
-            mailman_log('error', 'Pipeline state mismatch for message %s', msgid)
+            mailman_log('qrunner', 'IncomingRunner._dopipeline: Pipeline state mismatch for message %s', msgid)
             return 0
 
         # Ensure message is a Mailman.Message
         if not isinstance(msg, Message):
             try:
-                mailman_log('qrunner', 'Converting email.message.Message to Mailman.Message for %s', msgid)
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Converting email.message.Message to Mailman.Message for %s', msgid)
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -317,37 +241,117 @@ class IncomingRunner(Runner):
                 # Update msgdata references if needed
                 if 'msg' in msgdata:
                     msgdata['msg'] = msg
-                mailman_log('qrunner', 'Successfully converted message %s', msgid)
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Successfully converted message %s', msgid)
             except Exception as e:
-                mailman_log('error', 'Failed to convert message to Mailman.Message: %s\nTraceback:\n%s',
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Failed to convert message to Mailman.Message: %s\nTraceback:\n%s',
                        str(e), traceback.format_exc())
                 return 0
 
-        # Process through pipeline
-        try:
-            for handler in pipeline:
+        # Validate required Mailman.Message methods
+        required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
+        for method in required_methods:
+            if not hasattr(msg, method):
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Message object missing required method %s', method)
+                return 0
+
+        while pipeline:
+            handler = pipeline.pop(0)
+            modname = 'Mailman.Handlers.' + handler
+            try:
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Processing message %s through handler %s', 
+                           msgid, handler)
+                __import__(modname)
+                
+                # Store original PID and track child processes
+                original_pid = os.getpid()
+                child_pids = set()
+                
+                # Process the message
+                sys.modules[modname].process(mlist, msg, msgdata)
+                
+                # Check for process leaks
+                current_pid = os.getpid()
+                if current_pid != original_pid:
+                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Child process leaked through in handler %s: original_pid=%d, current_pid=%d',
+                          modname, original_pid, current_pid)
+                    # Try to clean up any child processes
+                    try:
+                        os.kill(original_pid, signal.SIGTERM)
+                    except:
+                        pass
+                    os._exit(1)
+                
+                # Clean up any child processes
                 try:
-                    handler.process(mlist, msg, msgdata)
-                except Exception as e:
-                    mailman_log('error', 'Handler %s failed for message %s: %s',
-                           handler.__name__, msgid, str(e))
-                    raise PipelineError(str(e))
-            return 1
-        except PipelineError as e:
-            mailman_log('error', 'Pipeline processing failed for message %s: %s',
-                   msgid, str(e))
-            return 0
-        except Exception as e:
-            mailman_log('error', 'Unexpected error in pipeline for message %s: %s',
-                   msgid, str(e))
-            return 0
+                    while True:
+                        pid, status = os.waitpid(-1, os.WNOHANG)
+                        if pid == 0:
+                            break
+                        child_pids.add(pid)
+                except ChildProcessError:
+                    pass
+                
+                if child_pids:
+                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Cleaned up %d child processes from handler %s: %s',
+                          len(child_pids), modname, child_pids)
+                
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Successfully processed message %s through handler %s',
+                           msgid, handler)
+                    
+            except Errors.DiscardMessage:
+                # Throw the message away; we need do nothing else with it.
+                pipeline.insert(0, handler)
+                mailman_log('qrunner', """IncomingRunner._dopipeline: Message discarded, msgid: %s
+        list: %s,
+        handler: %s""",
+                       msgid, mlist.internal_name(), handler)
+                return 0
+            except Errors.HoldMessage:
+                # Message is being held for moderation, no need to requeue
+                mailman_log('qrunner', """IncomingRunner._dopipeline: Message held for moderation, msgid: %s
+        list: %s,
+        handler: %s""",
+                       msgid, mlist.internal_name(), handler)
+                # Add message ID to processed set to prevent duplicate processing
+                self._processed_messages.add(msgid)
+                return 0
+            except Errors.RejectMessage as e:
+                pipeline.insert(0, handler)
+                mailman_log('qrunner', """IncomingRunner._dopipeline: Message rejected, msgid: %s
+        list: %s,
+        handler: %s,
+        reason: %s""",
+                       msgid, mlist.internal_name(), handler, e.notice())
+                mlist.BounceMessage(msg, msgdata, e)
+                return 0
+            except Exception as e:
+                # Log the full traceback for debugging
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Error in handler %s for message %s: %s\n%s', 
+                           modname, msgid, str(e), traceback.format_exc())
+                # Put the handler back in the pipeline
+                pipeline.insert(0, handler)
+                # Try to move message to shunt queue
+                try:
+                    self._shunt.enqueue(msg, msgdata)
+                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Moved failed message %s to shunt queue', msgid)
+                except Exception as shunt_error:
+                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Failed to move message %s to shunt queue: %s', 
+                               msgid, str(shunt_error))
+                raise
+        return 0
 
     def _cleanup(self):
-        """Clean up resources."""
-        try:
-            self._cleanup_old_messages()
-        except Exception as e:
-            mailman_log('error', 'Error in message cleanup: %s', str(e))
+        """Clean up any resources used by the pipeline."""
+        mailman_log('qrunner', 'IncomingRunner._cleanup: Starting cleanup')
+        # Clean up child processes
+        reap(self._kids, once=True)
+        # Close any open file descriptors
+        for fd in range(3, 1024):  # Skip stdin, stdout, stderr
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+        mailman_log('qrunner', 'IncomingRunner._cleanup: Cleanup complete')
 
     def _oneloop(self):
         mailman_log('qrunner', 'IncomingRunner._oneloop: Starting loop')
