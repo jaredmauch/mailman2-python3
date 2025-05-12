@@ -245,13 +245,6 @@ def hold_for_approval(mlist, msg, msgdata, exc):
              'subject'    : usersubject,
              'admindb_url': mlist.GetScriptURL('admindb', absolute=1),
              }
-        # We may want to send a notification to the original sender too
-        fromusenet = msgdata.get('fromusenet')
-        # Since we're sending two messages, which may potentially be in different
-        # languages (the user's preferred and the list's preferred for the admin),
-        # we need to play some i18n games here.  Since the current language
-        # context ought to be set up for the user, let's craft his message first.
-        
         # Ensure the list is locked before calling pend_new
         if not mlist.Locked():
             mlist.Lock()
@@ -260,8 +253,15 @@ def hold_for_approval(mlist, msg, msgdata, exc):
             finally:
                 mlist.Unlock()
         else:
-        cookie = mlist.pend_new(Pending.HELD_MESSAGE, id)
+            cookie = mlist.pend_new(Pending.HELD_MESSAGE, id)
             
+        # We may want to send a notification to the original sender too
+        fromusenet = msgdata.get('fromusenet')
+        # Since we're sending two messages, which may potentially be in different
+        # languages (the user's preferred and the list's preferred for the admin),
+        # we need to play some i18n games here.  Since the current language
+        # context ought to be set up for the user, let's craft his message first.
+        
         if not fromusenet and ackp(msg) and mlist.respond_to_post_requests and \
                mlist.autorespondToSender(sender, mlist.getMemberLanguage(sender)):
             # Get a confirmation cookie
