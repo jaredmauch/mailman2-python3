@@ -263,37 +263,112 @@ class Switchboard:
                         msgsave = fp.read()
                         mailman_log('debug', 'Switchboard.dequeue: Read %d bytes from backup file %s', len(msgsave), backfile)
                         try:
-                            # Try Python 3 protocol first
-                            mailman_log('debug', 'Switchboard.dequeue: Attempting to unpickle data from backup file %s using Python 3 protocol', backfile)
-                            data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                            mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data from backup file, type: %s', type(data))
-                            
-                            if isinstance(data, tuple):
-                                msg, data = data
-                                mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple from backup with msg type: %s, data type: %s', 
-                                          type(msg), type(data))
-                            else:
-                                msg = None
-                                mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data from backup: %s', type(data))
+                            # First try to validate the backup file
+                            with open(backfile, 'rb') as fp:
+                                content = fp.read()
+                                if not content:
+                                    raise EOFError('Empty backup file')
                                 
-                        except (pickle.UnpicklingError, ValueError) as e:
-                            mailman_log('debug', 'Switchboard.dequeue: Python 3 protocol failed on backup, trying Python 2 protocol: %s', str(e))
-                            # Fall back to Python 2 protocol
-                            data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                            mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data from backup using Python 2 protocol, type: %s', type(data))
-                            
-                            if isinstance(data, tuple):
-                                msg, data = data
-                                mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple from backup with msg type: %s, data type: %s', 
-                                          type(msg), type(data))
-                            else:
-                                msg = None
-                                mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data from backup: %s', type(data))
+                                # Create a BytesIO object to read from the content
+                                from io import BytesIO
+                                fp = BytesIO(content)
                                 
-                except (IOError, OSError) as e:
-                    if e.errno != errno.ENOENT:
-                        raise
-                    mailman_log('error', 'Switchboard.dequeue: Both primary and backup files not found for %s', filebase)
+                                try:
+                                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                                    data_pos = fp.tell()
+                                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                                except (EOFError, pickle.UnpicklingError) as e:
+                                    mailman_log('error', 'Corrupted backup file %s: %s\nTraceback:\n%s',
+                                           filebase, str(e), traceback.format_exc())
+                                    self.finish(filebase, preserve=True)
+                                    return None, None
+                                
+                                # Validate the unpickled data
+                                if not isinstance(data, dict):
+                                    raise TypeError('Invalid data format in backup file')
+                                    
+                                # Update metadata
+                                data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
+                                data['_last_attempt'] = time.time()
+                                if '_error_history' not in data:
+                                    data['_error_history'] = []
+                                if '_traceback' in data:
+                                    data['_error_history'].append({
+                                        'error': data.get('_last_error', 'unknown'),
+                                        'traceback': data.get('_traceback', 'none'),
+                                        'time': data.get('_last_attempt', 0)
+                                    })
+                                
+                                # Write the updated data back
+                                try:
+                                    with open(backfile, 'wb') as out_fp:
+                                        if data.get('_parsemsg'):
+                                            protocol = 0
+                                        else:
+                                            protocol = 1
+                                        pickle.dump(data, out_fp, protocol=4, fix_imports=True)
+                                        out_fp.flush()
+                                        if hasattr(os, 'fsync'):
+                                            os.fsync(out_fp.fileno())
+                                except Exception as e:
+                                    mailman_log('error', 'Failed to write updated data to backup file %s: %s\nTraceback:\n%s',
+                                           filebase, str(e), traceback.format_exc())
+                                    self.finish(filebase, preserve=True)
+                                    return None, None
+                                
+                                # Log detailed information about the retry
+                                mailman_log('warning',
+                                       'Message retry attempt %d/%d: %s (queue: %s, '
+                                       'message-id: %s, listname: %s, recipients: %s, '
+                                       'error: %s, last attempt: %s, traceback: %s)',
+                                       data['_bak_count'],
+                                       MAX_BAK_COUNT,
+                                       filebase,
+                                       self.__whichq,
+                                       data.get('message-id', 'unknown'),
+                                       data.get('listname', 'unknown'),
+                                       data.get('recips', 'unknown'),
+                                       data.get('_last_error', 'unknown'),
+                                       time.ctime(data.get('_last_attempt', 0)),
+                                       data.get('_traceback', 'none'))
+                                
+                                if data['_bak_count'] >= MAX_BAK_COUNT:
+                                    mailman_log('error',
+                                           'Backup file exceeded maximum retry count (%d). '
+                                           'Moving to shunt queue: %s (original queue: %s, '
+                                           'retry count: %d, last error: %s, '
+                                           'message-id: %s, listname: %s, '
+                                           'recipients: %s, error history: %s, '
+                                           'last traceback: %s, full path: %s)',
+                                           MAX_BAK_COUNT,
+                                           filebase,
+                                           self.__whichq,
+                                           data['_bak_count'],
+                                           data.get('_last_error', 'unknown'),
+                                           data.get('message-id', 'unknown'),
+                                           data.get('listname', 'unknown'),
+                                           data.get('recips', 'unknown'),
+                                           data.get('_error_history', 'unknown'),
+                                           data.get('_traceback', 'none'),
+                                           os.path.join(self.__whichq, filebase + '.bak'))
+                                    self.finish(filebase, preserve=True)
+                                    return None, None
+                                else:
+                                    try:
+                                        os.rename(backfile, filename)
+                                    except OSError as e:
+                                        mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
+                                               filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
+                                        self.finish(filebase, preserve=True)
+                                        return None, None
+                        except Exception as e:
+                            mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
+                                   filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
+                            self.finish(filebase, preserve=True)
+                            return None, None
+                except Exception as e:
+                    mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
+                           filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
                     return None, None
                 
             # Move to backup file
@@ -501,7 +576,7 @@ class Switchboard:
                 try:
                     # First try to validate the backup file
                     with open(src, 'rb') as fp:
-                    try:
+                        try:
                             # Try to read the entire file first to check for EOF
                             content = fp.read()
                             if not content:
@@ -511,97 +586,104 @@ class Switchboard:
                             from io import BytesIO
                             fp = BytesIO(content)
                             
-                        try:
-                            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-                            data_pos = fp.tell()
-                            data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                            try:
+                                msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                                data_pos = fp.tell()
+                                data = pickle.load(fp, fix_imports=True, encoding='latin1')
                             except (EOFError, pickle.UnpicklingError) as e:
                                 mailman_log('error', 'Corrupted backup file %s: %s\nTraceback:\n%s',
                                        filebase, str(e), traceback.format_exc())
-                            self.finish(filebase, preserve=True)
-                            continue
-                        
+                                self.finish(filebase, preserve=True)
+                                return
+                            
                             # Validate the unpickled data
                             if not isinstance(data, dict):
                                 raise TypeError('Invalid data format in backup file')
                                 
                             # Update metadata
-                        data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
-                        data['_last_attempt'] = time.time()
-                        if '_error_history' not in data:
-                            data['_error_history'] = []
-                        if '_traceback' in data:
-                            data['_error_history'].append({
-                                'error': data.get('_last_error', 'unknown'),
-                                'traceback': data.get('_traceback', 'none'),
-                                'time': data.get('_last_attempt', 0)
-                            })
+                            data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
+                            data['_last_attempt'] = time.time()
+                            if '_error_history' not in data:
+                                data['_error_history'] = []
+                            if '_traceback' in data:
+                                data['_error_history'].append({
+                                    'error': data.get('_last_error', 'unknown'),
+                                    'traceback': data.get('_traceback', 'none'),
+                                    'time': data.get('_last_attempt', 0)
+                                })
                             
                             # Write the updated data back
-                            with open(src, 'wb') as out_fp:
-                        if data.get('_parsemsg'):
-                            protocol = 0
-                        else:
-                            protocol = 1
-                                pickle.dump(data, out_fp, protocol=4, fix_imports=True)
-                                out_fp.flush()
-                                if hasattr(os, 'fsync'):
-                                    os.fsync(out_fp.fileno())
-                        
-                        # Log detailed information about the retry
-                        mailman_log('warning',
-                               'Message retry attempt %d/%d: %s (queue: %s, '
-                               'message-id: %s, listname: %s, recipients: %s, '
-                               'error: %s, last attempt: %s, traceback: %s)',
-                               data['_bak_count'],
-                               MAX_BAK_COUNT,
-                               filebase,
-                               self.__whichq,
-                               data.get('message-id', 'unknown'),
-                               data.get('listname', 'unknown'),
-                               data.get('recips', 'unknown'),
-                               data.get('_last_error', 'unknown'),
-                               time.ctime(data.get('_last_attempt', 0)),
-                               data.get('_traceback', 'none'))
-                        
-                        if data['_bak_count'] >= MAX_BAK_COUNT:
-                            mailman_log('error',
-                                   'Backup file exceeded maximum retry count (%d). '
-                                   'Moving to shunt queue: %s (original queue: %s, '
-                                   'retry count: %d, last error: %s, '
-                                   'message-id: %s, listname: %s, '
-                                   'recipients: %s, error history: %s, '
-                                   'last traceback: %s, full path: %s)',
+                            try:
+                                with open(src, 'wb') as out_fp:
+                                    if data.get('_parsemsg'):
+                                        protocol = 0
+                                    else:
+                                        protocol = 1
+                                    pickle.dump(data, out_fp, protocol=4, fix_imports=True)
+                                    out_fp.flush()
+                                    if hasattr(os, 'fsync'):
+                                        os.fsync(out_fp.fileno())
+                            except Exception as e:
+                                mailman_log('error', 'Failed to write updated data to backup file %s: %s\nTraceback:\n%s',
+                                       filebase, str(e), traceback.format_exc())
+                                self.finish(filebase, preserve=True)
+                                return
+                            
+                            # Log detailed information about the retry
+                            mailman_log('warning',
+                                   'Message retry attempt %d/%d: %s (queue: %s, '
+                                   'message-id: %s, listname: %s, recipients: %s, '
+                                   'error: %s, last attempt: %s, traceback: %s)',
+                                   data['_bak_count'],
                                    MAX_BAK_COUNT,
                                    filebase,
                                    self.__whichq,
-                                   data['_bak_count'],
-                                   data.get('_last_error', 'unknown'),
                                    data.get('message-id', 'unknown'),
                                    data.get('listname', 'unknown'),
                                    data.get('recips', 'unknown'),
-                                   data.get('_error_history', 'unknown'),
-                                   data.get('_traceback', 'none'),
-                                   os.path.join(self.__whichq, filebase + '.bak'))
-                            self.finish(filebase, preserve=True)
-                        else:
-                            try:
-                                os.rename(src, dst)
-                            except OSError as e:
-                                mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
-                                       filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
+                                   data.get('_last_error', 'unknown'),
+                                   time.ctime(data.get('_last_attempt', 0)),
+                                   data.get('_traceback', 'none'))
+                            
+                            if data['_bak_count'] >= MAX_BAK_COUNT:
+                                mailman_log('error',
+                                       'Backup file exceeded maximum retry count (%d). '
+                                       'Moving to shunt queue: %s (original queue: %s, '
+                                       'retry count: %d, last error: %s, '
+                                       'message-id: %s, listname: %s, '
+                                       'recipients: %s, error history: %s, '
+                                       'last traceback: %s, full path: %s)',
+                                       MAX_BAK_COUNT,
+                                       filebase,
+                                       self.__whichq,
+                                       data['_bak_count'],
+                                       data.get('_last_error', 'unknown'),
+                                       data.get('message-id', 'unknown'),
+                                       data.get('listname', 'unknown'),
+                                       data.get('recips', 'unknown'),
+                                       data.get('_error_history', 'unknown'),
+                                       data.get('_traceback', 'none'),
+                                       os.path.join(self.__whichq, filebase + '.bak'))
                                 self.finish(filebase, preserve=True)
-                                    
+                                return
+                            else:
+                                try:
+                                    os.rename(src, dst)
+                                except OSError as e:
+                                    mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
+                                           filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
+                                    self.finish(filebase, preserve=True)
+                                    return
                         except Exception as e:
                             mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
                                    filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
                             self.finish(filebase, preserve=True)
-                            continue
+                            return
                             
                 except Exception as e:
                     mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
                            filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
-                    continue
+                    return None, None
         except Exception as e:
             mailman_log('error', 'Failed to recover backup files: %s\nTraceback:\n%s',
                    str(e), traceback.format_exc())
