@@ -58,13 +58,13 @@ def main():
     try:
         # Log page load
         mailman_log('info', 'admin: Page load started')
-        print("DEBUG: Entered main()", flush=True)
+        mailman_log('debug', 'Entered main()')
         # Initialize document early
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         # Parse form data first since we need it for authentication
         try:
-            print("DEBUG: Parsing form data", flush=True)
+            mailman_log('debug', 'Parsing form data')
             if os.environ.get('REQUEST_METHOD') == 'POST':
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 if content_length > 0:
@@ -75,7 +75,7 @@ def main():
             else:
                 query_string = os.environ.get('QUERY_STRING', '')
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-            print(f"DEBUG: cgidata after parse: {cgidata}", flush=True)
+            mailman_log('debug', 'cgidata after parse: %s', str(cgidata))
         except Exception as e:
             print('Status: 400 Bad Request')
             print('Content-type: text/html; charset=utf-8\n')
@@ -86,18 +86,18 @@ def main():
             return
         # Get the list name
         parts = Utils.GetPathPieces()
-        print(f"DEBUG: Path parts: {parts}", flush=True)
+        mailman_log('debug', 'Path parts: %s', str(parts))
         if not parts:
             handle_no_list()
             return
         listname = parts[0].lower()
         mailman_log('info', 'admin: Processing list "%s"', listname)
-        print(f"DEBUG: List name: {listname}", flush=True)
+        mailman_log('debug', 'List name: %s', listname)
         if isinstance(listname, bytes):
             listname = listname.decode('utf-8', 'replace')
         try:
             mlist = MailList.MailList(listname, lock=0)
-            print("DEBUG: Loaded MailList", flush=True)
+            mailman_log('debug', 'Loaded MailList')
         except Errors.MMListError as e:
             safelistname = Utils.websafe(listname)
             print('Status: 404 Not Found')
@@ -110,7 +110,7 @@ def main():
         i18n.set_language(mlist.preferred_language)
         # If the user is not authenticated, we're done.
         try:
-            print("DEBUG: Checking authentication", flush=True)
+            mailman_log('debug', 'Checking authentication')
             if os.environ.get('REQUEST_METHOD') == 'POST':
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 if content_length > 0:
@@ -125,7 +125,7 @@ def main():
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
                 for key in cgidata:
                     cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
-            print(f"DEBUG: cgidata before auth: {cgidata}", flush=True)
+            mailman_log('debug', 'cgidata before auth: %s', str(cgidata))
         except Exception as e:
             doc = Document()
             doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -151,17 +151,17 @@ def main():
             os.environ['HTTP_COOKIE'] = ''
             csrf_checked = True
         try:
-            print("DEBUG: Calling WebAuthenticate", flush=True)
+            mailman_log('debug', 'Calling WebAuthenticate')
             auth_result = mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                       mm_cfg.AuthSiteAdmin),
                                      cgidata.get('adminpw', [''])[0])
-            print(f"DEBUG: WebAuthenticate result: {auth_result}", flush=True)
+            mailman_log('debug', 'WebAuthenticate result: %s', str(auth_result))
         except Exception as e:
             mailman_log('error', 'admin: Exception during WebAuthenticate: %s\n%s', str(e), traceback.format_exc())
-            print("DEBUG: Exception during WebAuthenticate", flush=True)
+            mailman_log('debug', 'Exception during WebAuthenticate')
             raise
         if not auth_result:
-            print("DEBUG: Not authenticated, calling loginpage", flush=True)
+            mailman_log('debug', 'Not authenticated, calling loginpage')
             if 'adminpw' in cgidata:
                 msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
                 remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -174,9 +174,9 @@ def main():
             else:
                 msg = ''
             Auth.loginpage(mlist, 'admin', msg=msg)
-            print("DEBUG: Called Auth.loginpage", flush=True)
+            mailman_log('debug', 'Called Auth.loginpage')
             return
-        print("DEBUG: Authenticated, proceeding to admin page", flush=True)
+        mailman_log('debug', 'Authenticated, proceeding to admin page')
         # Which subcategory was requested?  Default is `general'
         if len(parts) == 1:
             category = 'general'
@@ -190,7 +190,7 @@ def main():
         doc = Document()
         doc.set_language(mlist.preferred_language)
         form = Form(mlist=mlist, contexts=AUTH_CONTEXTS)
-        print(f"DEBUG: category={category}, subcat={subcat}", flush=True)
+        mailman_log('debug', 'category=%s, subcat=%s', category, subcat)
         # Now dispatch to the appropriate handler
         if category == 'general':
             show_variables(mlist, category, subcat, cgidata, doc)
@@ -207,7 +207,7 @@ def main():
             doc.AddItem(Bold(_('No such category: %(category)s') % {
                 'category': category
             }))
-        print("DEBUG: About to print doc.Format()", flush=True)
+        mailman_log('debug', 'About to print doc.Format()')
         print(doc.Format())
     except Exception as e:
         doc = Document()
