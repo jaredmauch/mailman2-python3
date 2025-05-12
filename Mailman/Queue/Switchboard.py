@@ -487,7 +487,7 @@ class Switchboard:
                 # Check if the backup file is too old
                 try:
                     file_age = time.time() - os.path.getmtime(src)
-                    if file_age > mm_cfg.BACKUP_FILE_MAX_AGE:
+                    if file_age > mm_cfg.FORM_LIFETIME:
                         mailman_log('warning',
                             'Backup file %s is too old (%d seconds), moving to shunt queue',
                             filebase, file_age)

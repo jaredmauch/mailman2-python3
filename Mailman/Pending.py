@@ -26,6 +26,7 @@ import random
 import pickle
 import socket
 import traceback
+import signal
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
