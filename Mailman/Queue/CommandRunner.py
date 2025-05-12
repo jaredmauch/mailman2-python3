@@ -24,6 +24,10 @@
 
 import re
 import sys
+import time
+import threading
+import traceback
+import os
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -231,12 +235,101 @@ To obtain instructions, send a message containing just the word "help".
 
 class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
+    
+    def __init__(self, slice=None, numslices=1):
+        Runner.__init__(self, slice, numslices)
+        # Rate limiting
+        self._command_times = {}
+        self._command_lock = threading.Lock()
+        self._max_commands_per_hour = 100
+        self._command_window = 3600  # 1 hour
+        # Cleanup
+        self._last_cleanup = time.time()
+        self._cleanup_interval = 3600  # Clean up every hour
+        self._max_command_age = 7 * 24 * 3600  # 7 days max command age
+
+    def _cleanup_old_commands(self):
+        """Clean up old command files."""
+        try:
+            current_time = time.time()
+            if current_time - self._last_cleanup < self._cleanup_interval:
+                return
+                
+            with self._command_lock:
+                # Clean up old command files
+                for filename in os.listdir(self.QDIR):
+                    if filename.endswith('.pck'):
+                        filepath = os.path.join(self.QDIR, filename)
+                        try:
+                            if current_time - os.path.getmtime(filepath) > self._max_command_age:
+                                os.unlink(filepath)
+                        except OSError:
+                            pass
+                            
+                # Clean up old command times
+                cutoff = current_time - self._command_window
+                self._command_times = {k: v for k, v in self._command_times.items() 
+                                    if v > cutoff}
+                                    
+                self._last_cleanup = current_time
+        except Exception as e:
+            syslog('error', 'Error cleaning up old commands: %s', str(e))
+
+    def _check_rate_limit(self, sender):
+        """Check if sender has exceeded rate limit."""
+        with self._command_lock:
+            current_time = time.time()
+            # Clean up old entries
+            cutoff = current_time - self._command_window
+            self._command_times = {k: v for k, v in self._command_times.items() 
+                                if v > cutoff}
+                                
+            # Count commands in window
+            count = sum(1 for t in self._command_times.values() if t > cutoff)
+            if count >= self._max_commands_per_hour:
+                return False
+                
+            # Add new command
+            self._command_times[sender] = current_time
+            return True
+
+    def _validate_command(self, msg, msgdata):
+        """Validate command message format."""
+        try:
+            # Check required headers
+            if not msg.get('from'):
+                return False
+            if not msg.get('to'):
+                return False
+            if not msg.get('message-id'):
+                return False
+                
+            # Check message size
+            if len(str(msg)) > mm_cfg.MAX_MESSAGE_SIZE:
+                return False
+                
+            # Check for valid command format
+            if not msg.get('content-type', '').startswith('text/plain'):
+                return False
+                
+            return True
+        except Exception:
+            return False
 
     def _dispose(self, mlist, msg, msgdata):
-        # Validate message type first
-        msg, success = self._validate_message(msg, msgdata)
-        if not success:
-            mailman_log('error', 'Message validation failed for command message')
+        """Process a command message with proper validation and rate limiting."""
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        sender = msg.get_sender()
+        
+        # Validate command message
+        if not self._validate_command(msg, msgdata):
+            syslog('error', 'Invalid command message format for %s', msgid)
+            return False
+            
+        # Check rate limit
+        if not self._check_rate_limit(sender):
+            syslog('error', 'Rate limit exceeded for sender %s', sender)
             return False
 
         # The policy here is similar to the Replybot policy.  If a message has
@@ -248,44 +341,43 @@ class CommandRunner(Runner):
             syslog('vette', 'Precedence: %s message discarded by: %s',
                    precedence, mlist.GetRequestEmail())
             return False
-        # Do replybot for commands
-        mlist.Load()
-        Replybot.process(mlist, msg, msgdata)
-        if mlist.autorespond_requests == 1:
-            syslog('vette', 'replied and discard')
-            # w/discard
-            return False
-        # Now craft the response
-        res = Results(mlist, msg, msgdata)
-        # BAW: Not all the functions of this qrunner require the list to be
-        # locked.  Still, it's more convenient to lock it here and now and
-        # deal with lock failures in one place.
+
         try:
-            mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-        except LockFile.TimeOutError:
-            # Oh well, try again later
+            # Log start of processing
+            syslog('info', 'CommandRunner: Starting to process command message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
+            
+            # Process the command
+            results = Results(mlist, msg, msgdata)
+            ret = results.process()
+            
+            # Send response if needed
+            if ret != BADCMD:
+                results.send_response()
+            
+            # Log successful completion
+            syslog('info', 'CommandRunner: Successfully processed command message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
             return True
-        # This message will have been delivered to one of mylist-request,
-        # mylist-join, or mylist-leave, and the message metadata will contain
-        # a key to which one was used.
-        try:
-            ret = BADCMD
-            if msgdata.get('torequest'):
-                ret = res.process()
-            elif msgdata.get('tojoin'):
-                ret = res.do_command('join')
-            elif msgdata.get('toleave'):
-                ret = res.do_command('leave')
-            elif msgdata.get('toconfirm'):
-                mo = re.match(mm_cfg.VERP_CONFIRM_REGEXP, msg.get('to', ''))
-                if mo:
-                    ret = res.do_command('confirm', (mo.group('cookie'),))
-            if ret == BADCMD and mm_cfg.DISCARD_MESSAGE_WITH_NO_COMMAND:
-                syslog('vette',
-                       'No command, message discarded, msgid: %s',
-                       msg.get('message-id', 'n/a'))
-            else:
-                res.send_response()
-                mlist.Save()
+        except Exception as e:
+            # Enhanced error logging with more context
+            syslog('error', 'Error processing command message %s for list %s: %s',
+                   msgid, mlist.internal_name(), str(e))
+            syslog('error', 'Message details:')
+            syslog('error', '  Message ID: %s', msgid)
+            syslog('error', '  From: %s', msg.get('from', 'unknown'))
+            syslog('error', '  To: %s', msg.get('to', 'unknown'))
+            syslog('error', '  Subject: %s', msg.get('subject', '(no subject)'))
+            syslog('error', '  Message type: %s', type(msg).__name__)
+            syslog('error', '  Message data: %s', str(msgdata))
+            syslog('error', 'Traceback:\n%s', traceback.format_exc())
+            return False
         finally:
-            mlist.Unlock()
+            self._cleanup_old_commands()
+
+    def _cleanup(self):
+        """Clean up resources."""
+        try:
+            self._cleanup_old_commands()
+        except Exception as e:
+            syslog('error', 'Error in command cleanup: %s', str(e))

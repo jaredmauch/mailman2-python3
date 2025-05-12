@@ -25,10 +25,11 @@ import pickle
 import email
 from email.utils import getaddresses
 from email.iterators import body_line_iterator
-
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 from email.utils import parseaddr
+import threading
+import traceback
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -59,49 +60,102 @@ class BounceMixin:
         # Then it truncates the file and continues on.  We don't need to lock
         # the bounce event file because bounce qrunners are single threaded
         # and each creates a uniquely named file to contain the events.
-        #
-        # XXX When Python 2.3 is minimal require, we can use the new
-        # tempfile.TemporaryFile() function.
-        #
-        # XXX We used to classify bounces to the site list as bounce events
-        # for every list, but this caused severe problems.  Here's the
-        # scenario: aperson@example.com is a member of 4 lists, and a list
-        # owner of the foo list.  example.com has an aggressive spam filter
-        # which rejects any message that is spam or contains spam as an
-        # attachment.  Now, a spambot sends a piece of spam to the foo list,
-        # but since that spambot is not a member, the list holds the message
-        # for approval, and sends a notification to aperson@example.com as
-        # list owner.  That notification contains a copy of the spam.  Now
-        # example.com rejects the message, causing a bounce to be sent to the
-        # site list's bounce address.  The bounce runner would then dutifully
-        # register a bounce for all 4 lists that aperson@example.com was a
-        # member of, and eventually that person would get disabled on all
-        # their lists.  So now we ignore site list bounces.  Ce La Vie for
-        # password reminder bounces.
         self._bounce_events_file = os.path.join(
             mm_cfg.DATA_DIR, 'bounce-events-%05d.pck' % os.getpid())
         self._bounce_events_fp = None
         self._bouncecnt = 0
         self._nextaction = time.time() + mm_cfg.REGISTER_BOUNCES_EVERY
+        self._max_bounce_size = 1024 * 1024  # 1MB max bounce size
+        self._max_bounce_age = 7 * 24 * 3600  # 7 days max bounce age
+        self._bounce_lock = threading.Lock()
+        self._last_cleanup = time.time()
+        self._cleanup_interval = 3600  # Clean up every hour
+
+    def _cleanup_old_bounces(self):
+        """Clean up old bounce files."""
+        try:
+            current_time = time.time()
+            if current_time - self._last_cleanup < self._cleanup_interval:
+                return
+                
+            with self._bounce_lock:
+                # Clean up old bounce event files
+                for filename in os.listdir(mm_cfg.DATA_DIR):
+                    if filename.startswith('bounce-events-') and filename.endswith('.pck'):
+                        filepath = os.path.join(mm_cfg.DATA_DIR, filename)
+                        try:
+                            if current_time - os.path.getmtime(filepath) > self._max_bounce_age:
+                                os.unlink(filepath)
+                        except OSError:
+                            pass
+                            
+                # Clean up old bounce queue files
+                for filename in os.listdir(mm_cfg.BOUNCEQUEUE_DIR):
+                    if filename.endswith('.pck'):
+                        filepath = os.path.join(mm_cfg.BOUNCEQUEUE_DIR, filename)
+                        try:
+                            if current_time - os.path.getmtime(filepath) > self._max_bounce_age:
+                                os.unlink(filepath)
+                        except OSError:
+                            pass
+                            
+                self._last_cleanup = current_time
+        except Exception as e:
+            mailman_log('error', 'Error cleaning up old bounces: %s', str(e))
+
+    def _validate_bounce(self, msg):
+        """Validate bounce message format."""
+        try:
+            # Check required headers
+            if not msg.get('from'):
+                return False
+            if not msg.get('to'):
+                return False
+            if not msg.get('message-id'):
+                return False
+                
+            # Check message size
+            if len(str(msg)) > self._max_bounce_size:
+                return False
+                
+            # Check for valid bounce format
+            if not msg.get('content-type', '').startswith('message/delivery-status'):
+                return False
+                
+            return True
+        except Exception:
+            return False
 
     def _queue_bounces(self, listname, addrs, msg):
+        """Queue bounce messages with proper validation and error handling."""
+        if not self._validate_bounce(msg):
+            mailman_log('error', 'Invalid bounce message format')
+            return False
+            
         today = time.localtime()[:3]
-        if self._bounce_events_fp is None:
-            omask = os.umask(0o006)
-            try:
-                self._bounce_events_fp = open(self._bounce_events_file, 'ab')
-            finally:
-                os.umask(omask)
-        for addr in addrs:
-            # Use protocol 4 for Python 3 compatibility and fix_imports for Python 2/3 compatibility
-            pickle.dump((listname, addr, today, msg),
-                       self._bounce_events_fp, protocol=4, fix_imports=True)
-        self._bounce_events_fp.flush()
-        os.fsync(self._bounce_events_fp.fileno())
-        self._bouncecnt += len(addrs)
+        try:
+            with self._bounce_lock:
+                if self._bounce_events_fp is None:
+                    omask = os.umask(0o006)
+                    try:
+                        self._bounce_events_fp = open(self._bounce_events_file, 'ab')
+                    finally:
+                        os.umask(omask)
+                        
+                for addr in addrs:
+                    # Use protocol 4 for Python 3 compatibility
+                    pickle.dump((listname, addr, today, msg),
+                              self._bounce_events_fp, protocol=4, fix_imports=True)
+                self._bounce_events_fp.flush()
+                os.fsync(self._bounce_events_fp.fileno())
+                self._bouncecnt += len(addrs)
+            return True
+        except Exception as e:
+            mailman_log('error', 'Error queueing bounces: %s', str(e))
+            return False
 
     def _register_bounces(self, listname, addr, msg):
-        """Register a bounce for a member."""
+        """Register a bounce for a member with proper error handling."""
         try:
             # Create a unique filename
             now = time.time()
@@ -110,53 +164,60 @@ class BounceMixin:
             
             # Write the bounce data to the pickle file
             try:
-                # Use protocol 4 for Python 3 compatibility
-                protocol = 4
                 with open(filename, 'wb') as fp:
                     pickle.dump((listname, addr, now, msg), fp, protocol=4, fix_imports=True)
-                # Set the file's mode appropriately
                 os.chmod(filename, 0o660)
+                return True
             except (IOError, OSError) as e:
                 try:
                     os.unlink(filename)
                 except (IOError, OSError):
                     pass
-                raise SwitchboardError('Could not save bounce to %s: %s' %
-                                     (filename, e))
+                mailman_log('error', 'Could not save bounce to %s: %s', filename, e)
+                return False
         except Exception as e:
             mailman_log('error', 'Error registering bounce: %s', e)
             return False
 
     def _cleanup(self):
-        if self._bouncecnt > 0:
-            self._register_bounces()
+        """Clean up resources."""
+        try:
+            if self._bounce_events_fp is not None:
+                self._bounce_events_fp.close()
+                self._bounce_events_fp = None
+            if self._bouncecnt > 0:
+                self._register_bounces()
+            self._cleanup_old_bounces()
+        except Exception as e:
+            mailman_log('error', 'Error in bounce cleanup: %s', str(e))
 
     def _doperiodic(self):
+        """Periodic cleanup and processing."""
         now = time.time()
         if self._nextaction > now or self._bouncecnt == 0:
             return
         # Let's go ahead and register the bounces we've got stored up
         self._nextaction = now + mm_cfg.REGISTER_BOUNCES_EVERY
         self._register_bounces()
+        self._cleanup_old_bounces()
 
     def _probe_bounce(self, mlist, token):
+        """Process a probe bounce with proper error handling."""
         locked = mlist.Locked()
         if not locked:
             mlist.Lock()
         try:
             op, addr, bmsg = mlist.pend_confirm(token)
-            # For Python 2.4 compatibility we need an inner try because
-            # try: ... except: ... finally: requires Python 2.5+
             try:
                 info = mlist.getBounceInfo(addr)
                 if not info:
                     # info was deleted before probe bounce was received.
                     # Just create a new info.
                     info = _BounceInfo(addr,
-                                       0.0,
-                                       time.localtime()[:3],
-                                       mlist.bounce_you_are_disabled_warnings
-                                       )
+                                     0.0,
+                                     time.localtime()[:3],
+                                     mlist.bounce_you_are_disabled_warnings
+                                     )
                 mlist.disableBouncingMember(addr, info, bmsg)
                 # Only save the list if we're unlocking it
                 if not locked:
@@ -165,6 +226,8 @@ class BounceMixin:
                 # Member was removed before probe bounce returned.
                 # Just ignore it.
                 pass
+        except Exception as e:
+            mailman_log('error', 'Error processing probe bounce: %s', str(e))
         finally:
             if not locked:
                 mlist.Unlock()
@@ -178,12 +241,13 @@ class BounceRunner(Runner, BounceMixin):
         BounceMixin.__init__(self)
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process a bounce message."""
+        """Process a bounce message with proper validation and error handling."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        # Check retry delay and duplicate processing
-        if not self._check_retry_delay(msgid, filebase):
+        # Validate bounce message
+        if not self._validate_bounce(msg):
+            mailman_log('error', 'Invalid bounce message format for %s', msgid)
             return False
 
         # Make sure we have the most up-to-date state
@@ -192,25 +256,10 @@ class BounceRunner(Runner, BounceMixin):
         except Errors.MMCorruptListDatabaseError as e:
             mailman_log('error', 'Failed to load list %s: %s',
                        mlist.internal_name(), e)
-            self._unmark_message_processed(msgid)
             return False
         except Exception as e:
             mailman_log('error', 'Unexpected error loading list %s: %s',
                        mlist.internal_name(), e)
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Validate message type first
-        msg, success = self._validate_message(msg, msgdata)
-        if not success:
-            mailman_log('error', 'Message validation failed for bounce message')
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Validate message headers
-        if not msg.get('message-id'):
-            mailman_log('error', 'Message missing Message-ID header')
-            self._unmark_message_processed(msgid)
             return False
 
         try:
@@ -220,7 +269,6 @@ class BounceRunner(Runner, BounceMixin):
             
             # Process the bounce
             if not self._register_bounces(mlist.internal_name(), msg, msgdata):
-                self._unmark_message_processed(msgid)
                 return False
 
             # Queue the bounce for further processing
@@ -228,7 +276,6 @@ class BounceRunner(Runner, BounceMixin):
                 self._queue_bounces(mlist.internal_name(), msg, msgdata)
             except Exception as e:
                 mailman_log('error', 'Error queueing bounces: %s', e)
-                self._unmark_message_processed(msgid)
                 return False
 
             # Log successful completion
@@ -247,9 +294,6 @@ class BounceRunner(Runner, BounceMixin):
             mailman_log('error', '  Message type: %s', type(msg).__name__)
             mailman_log('error', '  Message data: %s', str(msgdata))
             mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
-            
-            # Remove from processed messages on error
-            self._unmark_message_processed(msgid)
             return False
 
     _doperiodic = BounceMixin._doperiodic
