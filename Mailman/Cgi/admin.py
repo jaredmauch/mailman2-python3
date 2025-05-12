@@ -193,10 +193,7 @@ def main():
         mailman_log('debug', 'category=%s, subcat=%s', category, subcat)
         # Now dispatch to the appropriate handler
         if category == 'general':
-            table = show_variables(mlist, category, subcat, cgidata, doc)
-            form.AddItem(table)
-            form.AddItem(Center(submit_button()))
-            doc.AddItem(form)
+            show_results(mlist, doc, category, subcat, cgidata)
         elif category == 'members':
             membership_options(mlist, subcat, cgidata, doc, form)
         elif category == 'passwords':
