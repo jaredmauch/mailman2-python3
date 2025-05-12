@@ -187,28 +187,87 @@ def main():
         else:
             category = parts[1]
             subcat = parts[2]
+
+        # Sanity check - validate category against available categories
+        if category not in list(mlist.GetConfigCategories().keys()):
+            category = 'general'
+
+        # Is the request for variable details?
+        varhelp = None
+        qsenviron = os.environ.get('QUERY_STRING')
+        parsedqs = None
+        if qsenviron:
+            parsedqs = urllib.parse.parse_qs(qsenviron)
+        if 'VARHELP' in cgidata:
+            varhelp = cgidata['VARHELP'][0]
+        elif parsedqs:
+            # POST methods, even if their actions have a query string, don't get
+            # put into FieldStorage's keys :-(
+            qs = parsedqs.get('VARHELP')
+            if qs and type(qs) is list:
+                varhelp = qs[0]
+        if varhelp:
+            option_help(mlist, varhelp)
+            return
+
         doc = Document()
         doc.set_language(mlist.preferred_language)
         form = Form(mlist=mlist, contexts=AUTH_CONTEXTS)
         mailman_log('debug', 'category=%s, subcat=%s', category, subcat)
-        # Now dispatch to the appropriate handler
-        if category == 'general':
+
+        # From this point on, the MailList object must be locked
+        mlist.Lock()
+        try:
+            # Install the emergency shutdown signal handler
+            def sigterm_handler(signum, frame, mlist=mlist):
+                # Make sure the list gets unlocked...
+                mlist.Unlock()
+                # ...and ensure we exit
+                sys.exit(0)
+            signal.signal(signal.SIGTERM, sigterm_handler)
+
+            if cgidata:
+                if csrf_checked:
+                    # There are options to change
+                    change_options(mlist, category, subcat, cgidata, doc)
+                else:
+                    doc.addError(
+                      _('The form lifetime has expired. (request forgery check)'))
+                # Let the list sanity check the changed values
+                mlist.CheckValues()
+
+            # Additional sanity checks
+            if not mlist.digestable and not mlist.nondigestable:
+                doc.addError(
+                    _(f'''You have turned off delivery of both digest and
+                    non-digest messages.  This is an incompatible state of
+                    affairs.  You must turn on either digest delivery or
+                    non-digest delivery or your mailing list will basically be
+                    unusable.'''), tag=_('Warning: '))
+
+            dm = mlist.getDigestMemberKeys()
+            if not mlist.digestable and dm:
+                doc.addError(
+                    _(f'''You have digest members, but digests are turned
+                    off. Those people will not receive mail.
+                    Affected member(s) %(dm)r.'''),
+                    tag=_('Warning: '))
+            rm = mlist.getRegularMemberKeys()
+            if not mlist.nondigestable and rm:
+                doc.addError(
+                    _(f'''You have regular list members but non-digestified mail is
+                    turned off.  They will receive non-digestified mail until you
+                    fix this problem. Affected member(s) %(rm)r.'''),
+                    tag=_('Warning: '))
+
+            # Show the results page
             show_results(mlist, doc, category, subcat, cgidata)
-        elif category == 'members':
-            membership_options(mlist, subcat, cgidata, doc, form)
-        elif category == 'passwords':
-            password_inputs(mlist)
-        elif category == 'options':
-            change_options(mlist, category, subcat, cgidata, doc)
-        elif category == 'help':
-            option_help(mlist, cgidata.get('VARHELP', [''])[0])
-        else:
-            doc.AddItem(Header(2, _('Error')))
-            doc.AddItem(Bold(_('No such category: %(category)s') % {
-                'category': category
-            }))
-        mailman_log('debug', 'About to print doc.Format()')
-        print(doc.Format())
+            mailman_log('debug', 'About to print doc.Format()')
+            print(doc.Format())
+            mlist.Save()
+        finally:
+            # Now be sure to unlock the list
+            mlist.Unlock()
     except Exception as e:
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
