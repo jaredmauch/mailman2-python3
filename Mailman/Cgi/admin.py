@@ -570,16 +570,20 @@ def show_results(mlist, doc, category, subcat, cgidata):
     doc.AddItem(mlist.GetMailmanFooter())
 
 def show_variables(mlist, category, subcat, cgidata, doc):
+    mailman_log('debug', 'show_variables called with category=%s, subcat=%s', category, subcat)
     options = mlist.GetConfigInfo(category, subcat)
+    mailman_log('debug', 'Got config info: %s', str(options))
 
     # The table containing the results
     table = Table(cellspacing=3, cellpadding=4, width='100%')
 
     # Get and portray the text label for the category.
     categories = mlist.GetConfigCategories()
+    mailman_log('debug', 'Got config categories: %s', str(categories))
     label = _(categories[category][0])
     if isinstance(label, bytes):
         label = label.decode('latin1', 'replace')
+    mailman_log('debug', 'Category label: %s', label)
 
     table.AddRow([Center(Header(2, label))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
@@ -590,12 +594,14 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     description = options[0]
     if isinstance(description, bytes):
         description = description.decode('latin1', 'replace')
+    mailman_log('debug', 'Description: %s', description)
     if type(description) is str:
         table.AddRow([description])
         table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         options = options[1:]
 
     if not options:
+        mailman_log('debug', 'No options to display')
         return table
 
     # Add the global column headers
@@ -607,6 +613,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
                       width='85%')
 
     for item in options:
+        mailman_log('debug', 'Processing item: %s', str(item))
         if type(item) == str:
             # The very first banner option (string in an options list) is
             # treated as a general description, while any others are
@@ -621,12 +628,15 @@ def show_variables(mlist, category, subcat, cgidata, doc):
             add_options_table_item(mlist, category, subcat, table, item)
     table.AddRow(['<br>'])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
+    mailman_log('debug', 'Returning table with %d rows', table.GetCurrentRowIndex() + 1)
     return table
 
 def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
+    mailman_log('debug', 'Adding options table item: %s', str(item))
     # Add a row to an options table with the item description and value.
     varname, kind, params, extra, descr, elaboration = \
              get_item_characteristics(item)
+    mailman_log('debug', 'Item characteristics: varname=%s, kind=%s', varname, kind)
     if elaboration is None:
         elaboration = descr
     descr = get_item_gui_description(mlist, category, subcat,
