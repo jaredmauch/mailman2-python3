@@ -167,38 +167,22 @@ class IncomingRunner(Runner):
             self._unmark_message_processed(msgid)
             return 0
 
+        # Get the pipeline for this message
         try:
-            # Log start of processing
-            mailman_log('qrunner', 'IncomingRunner: Starting to process message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            
-            # Get the pipeline
             pipeline = self._get_pipeline(mlist, msg, msgdata)
-            mailman_log('qrunner', 'IncomingRunner._dispose: Got pipeline for message %s: %s', 
-                       msgid, str(pipeline))
-            
-            # Process the message through the pipeline
+            mailman_log('qrunner', 'IncomingRunner._dispose: Got pipeline for message %s: %s', msgid, str(pipeline))
+        except Exception as e:
+            mailman_log('qrunner', 'IncomingRunner._dispose: Failed to get pipeline for message %s: %s', msgid, str(e))
+            return 0
+
+        # Process the message through the pipeline
+        try:
             result = self._dopipeline(mlist, msg, msgdata, pipeline)
-            
-            # Log successful completion
-            mailman_log('qrunner', 'IncomingRunner: Successfully processed message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
+            mailman_log('qrunner', 'IncomingRunner._dispose: Pipeline processing complete for message %s, result: %s', msgid, result)
             return result
         except Exception as e:
-            # Enhanced error logging with more context
-            mailman_log('qrunner', 'IncomingRunner._dispose: Error processing message %s for list %s: %s',
-                   msgid, mlist.internal_name(), str(e))
-            mailman_log('qrunner', 'IncomingRunner._dispose: Message details:')
-            mailman_log('qrunner', '  Message ID: %s', msgid)
-            mailman_log('qrunner', '  From: %s', msg.get('from', 'unknown'))
-            mailman_log('qrunner', '  To: %s', msg.get('to', 'unknown'))
-            mailman_log('qrunner', '  Subject: %s', msg.get('subject', '(no subject)'))
-            mailman_log('qrunner', '  Message type: %s', type(msg).__name__)
-            mailman_log('qrunner', '  Message data: %s', str(msgdata))
-            mailman_log('qrunner', 'IncomingRunner._dispose: Traceback:\n%s', traceback.format_exc())
-            
-            # Remove from processed messages on error
-            self._unmark_message_processed(msgid)
+            mailman_log('qrunner', 'IncomingRunner._dispose: Error in pipeline processing for message %s: %s\n%s', 
+                       msgid, str(e), traceback.format_exc())
             return 0
 
     def _get_pipeline(self, mlist, msg, msgdata):
@@ -223,36 +207,13 @@ class IncomingRunner(Runner):
             mailman_log('qrunner', 'IncomingRunner._dopipeline: Pipeline state mismatch for message %s', msgid)
             return 0
 
-        # Ensure message is a Mailman.Message
-        if not isinstance(msg, Message):
-            try:
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Converting email.message.Message to Mailman.Message for %s', msgid)
-                mailman_msg = Message()
-                # Copy all attributes from the original message
-                for key, value in msg.items():
-                    mailman_msg[key] = value
-                # Copy the payload
-                if msg.is_multipart():
-                    for part in msg.get_payload():
-                        mailman_msg.attach(part)
-                else:
-                    mailman_msg.set_payload(msg.get_payload())
-                msg = mailman_msg
-                # Update msgdata references if needed
-                if 'msg' in msgdata:
-                    msgdata['msg'] = msg
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Successfully converted message %s', msgid)
-            except Exception as e:
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Failed to convert message to Mailman.Message: %s\nTraceback:\n%s',
-                       str(e), traceback.format_exc())
-                return 0
-
-        # Validate required Mailman.Message methods
-        required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
-        for method in required_methods:
-            if not hasattr(msg, method):
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Message object missing required method %s', method)
-                return 0
+        # Log message details for debugging
+        mailman_log('qrunner', 'IncomingRunner._dopipeline: Message details for %s:', msgid)
+        mailman_log('qrunner', '  From: %s', msg.get('from', 'unknown'))
+        mailman_log('qrunner', '  To: %s', msg.get('to', 'unknown'))
+        mailman_log('qrunner', '  Subject: %s', msg.get('subject', '(no subject)'))
+        mailman_log('qrunner', '  Message type: %s', type(msg).__name__)
+        mailman_log('qrunner', '  Message data: %s', str(msgdata))
 
         while pipeline:
             handler = pipeline.pop(0)
@@ -303,14 +264,16 @@ class IncomingRunner(Runner):
                 pipeline.insert(0, handler)
                 mailman_log('qrunner', """IncomingRunner._dopipeline: Message discarded, msgid: %s
         list: %s,
-        handler: %s""",
+        handler: %s,
+        reason: DiscardMessage exception""",
                        msgid, mlist.internal_name(), handler)
                 return 0
             except Errors.HoldMessage:
                 # Message is being held for moderation, no need to requeue
                 mailman_log('qrunner', """IncomingRunner._dopipeline: Message held for moderation, msgid: %s
         list: %s,
-        handler: %s""",
+        handler: %s,
+        reason: HoldMessage exception""",
                        msgid, mlist.internal_name(), handler)
                 # Add message ID to processed set to prevent duplicate processing
                 self._processed_messages.add(msgid)
@@ -333,7 +296,7 @@ class IncomingRunner(Runner):
                 # Try to move message to shunt queue
                 try:
                     self._shunt.enqueue(msg, msgdata)
-                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Moved failed message %s to shunt queue', msgid)
+                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Moved failed message %s to shunt queue (reason: handler error)', msgid)
                 except Exception as shunt_error:
                     mailman_log('qrunner', 'IncomingRunner._dopipeline: Failed to move message %s to shunt queue: %s', 
                                msgid, str(shunt_error))
@@ -380,7 +343,7 @@ class IncomingRunner(Runner):
                             if not os.path.exists(mm_cfg.BADQUEUE_DIR):
                                 os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
                             os.rename(src, dst)
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s', filebase, dst)
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s (reason: null message or metadata)', filebase, dst)
                         except Exception as e:
                             mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
                         continue
@@ -398,7 +361,7 @@ class IncomingRunner(Runner):
                             if not os.path.exists(mm_cfg.BADQUEUE_DIR):
                                 os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
                             os.rename(src, dst)
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s', filebase, dst)
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s (reason: invalid message data structure)', filebase, dst)
                         except Exception as e:
                             mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
                         continue
@@ -416,7 +379,8 @@ class IncomingRunner(Runner):
                             if not os.path.exists(mm_cfg.BADQUEUE_DIR):
                                 os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
                             os.rename(src, dst)
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s', filebase, dst)
+                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s (reason: missing required fields: %s)', 
+                                      filebase, dst, ', '.join(missing_fields))
                         except Exception as e:
                             mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
                         continue
@@ -435,11 +399,13 @@ class IncomingRunner(Runner):
                 else:
                     # The message is done being processed by this qrunner, so
                     # shunt it off to the next queue.
-                    mailman_log('qrunner', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s', filebase)
+                    msgid = msg.get('message-id', 'n/a')
+                    mailman_log('qrunner', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)', filebase, msgid)
                     self._shunt.enqueue(msg, msgdata)
             except Exception as e:
                 # Log the error and requeue the message for later processing
-                mailman_log('qrunner', 'IncomingRunner._oneloop: Error processing queue file %s: %s', filebase, str(e))
+                mailman_log('qrunner', 'IncomingRunner._oneloop: Error processing queue file %s: %s\n%s', 
+                           filebase, str(e), traceback.format_exc())
                 if msg is not None and msgdata is not None:
                     try:
                         self._switchboard.enqueue(msg, msgdata)
