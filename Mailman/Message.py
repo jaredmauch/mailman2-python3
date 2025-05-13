@@ -299,12 +299,17 @@ class UserNotification(Message):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
         virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        # Create msgdata dictionary with the parameters
+        msgdata = {
+            'nodecorate': 1,
+            'reduced_list_headers': 1,
+        }
+        # Add any additional keyword arguments to msgdata
+        msgdata.update(_kws)
         # The message metadata better have a `recip' attribute
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
-                        nodecorate = 1,
-                        reduced_list_headers = 1,
-                        **_kws)
+                        msgdata = msgdata)
 
 
 class OwnerNotification(UserNotification):
@@ -334,10 +339,15 @@ class OwnerNotification(UserNotification):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
         virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        # Create msgdata dictionary with the parameters
+        msgdata = {
+            'nodecorate': 1,
+            'reduced_list_headers': 1,
+            'envsender': self._sender,
+        }
+        # Add any additional keyword arguments to msgdata
+        msgdata.update(_kws)
         # The message metadata better have a `recip' attribute
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
-                        nodecorate = 1,
-                        reduced_list_headers = 1,
-                        envsender = self._sender,
-                        **_kws)
+                        msgdata = msgdata)
