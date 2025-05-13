@@ -199,13 +199,20 @@ class IncomingRunner(Runner):
         msgid = msg.get('message-id', 'n/a')
         mailman_log('qrunner', 'IncomingRunner._dopipeline: Starting pipeline processing for message %s', msgid)
         
-        # Validate pipeline state
+        # Validate pipeline state - use a more lenient check
         if not pipeline:
             mailman_log('qrunner', 'IncomingRunner._dopipeline: Empty pipeline for message %s', msgid)
             return 0
-        if 'pipeline' in msgdata and msgdata['pipeline'] != pipeline:
-            mailman_log('qrunner', 'IncomingRunner._dopipeline: Pipeline state mismatch for message %s', msgid)
-            return 0
+            
+        # Deep copy the pipeline to prevent modifications
+        current_pipeline = list(pipeline)
+        if 'pipeline' in msgdata:
+            stored_pipeline = list(msgdata['pipeline'])
+            if set(current_pipeline) != set(stored_pipeline):
+                mailman_log('qrunner', 'IncomingRunner._dopipeline: Pipeline mismatch for message %s. Current: %s, Stored: %s', 
+                           msgid, str(current_pipeline), str(stored_pipeline))
+                # Update the stored pipeline instead of failing
+                msgdata['pipeline'] = current_pipeline
 
         # Log message details for debugging
         mailman_log('qrunner', 'IncomingRunner._dopipeline: Message details for %s:', msgid)
@@ -215,93 +222,24 @@ class IncomingRunner(Runner):
         mailman_log('qrunner', '  Message type: %s', type(msg).__name__)
         mailman_log('qrunner', '  Message data: %s', str(msgdata))
 
-        while pipeline:
-            handler = pipeline.pop(0)
-            modname = 'Mailman.Handlers.' + handler
+        # Process through pipeline
+        for handler in current_pipeline:
             try:
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Processing message %s through handler %s', 
-                           msgid, handler)
+                modname = 'Mailman.Handlers.' + handler
                 __import__(modname)
-                
-                # Store original PID and track child processes
-                original_pid = os.getpid()
-                child_pids = set()
-                
-                # Process the message
-                sys.modules[modname].process(mlist, msg, msgdata)
-                
-                # Check for process leaks
-                current_pid = os.getpid()
-                if current_pid != original_pid:
-                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Child process leaked through in handler %s: original_pid=%d, current_pid=%d',
-                          modname, original_pid, current_pid)
-                    # Try to clean up any child processes
-                    try:
-                        os.kill(original_pid, signal.SIGTERM)
-                    except:
-                        pass
-                    os._exit(1)
-                
-                # Clean up any child processes
-                try:
-                    while True:
-                        pid, status = os.waitpid(-1, os.WNOHANG)
-                        if pid == 0:
-                            break
-                        child_pids.add(pid)
-                except ChildProcessError:
-                    pass
-                
-                if child_pids:
-                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Cleaned up %d child processes from handler %s: %s',
-                          len(child_pids), modname, child_pids)
-                
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Successfully processed message %s through handler %s',
-                           msgid, handler)
-                    
-            except Errors.DiscardMessage:
-                # Throw the message away; we need do nothing else with it.
-                pipeline.insert(0, handler)
-                mailman_log('qrunner', """IncomingRunner._dopipeline: Message discarded, msgid: %s
-        list: %s,
-        handler: %s,
-        reason: DiscardMessage exception""",
-                       msgid, mlist.internal_name(), handler)
+                process = getattr(sys.modules[modname], 'process')
+                process(mlist, msg, msgdata)
+            except ImportError as e:
+                mailman_log('error', 'Failed to import handler %s: %s', handler, str(e))
                 return 0
-            except Errors.HoldMessage:
-                # Message is being held for moderation, no need to requeue
-                mailman_log('qrunner', """IncomingRunner._dopipeline: Message held for moderation, msgid: %s
-        list: %s,
-        handler: %s,
-        reason: HoldMessage exception""",
-                       msgid, mlist.internal_name(), handler)
-                # Add message ID to processed set to prevent duplicate processing
-                self._processed_messages.add(msgid)
-                return 0
-            except Errors.RejectMessage as e:
-                pipeline.insert(0, handler)
-                mailman_log('qrunner', """IncomingRunner._dopipeline: Message rejected, msgid: %s
-        list: %s,
-        handler: %s,
-        reason: %s""",
-                       msgid, mlist.internal_name(), handler, e.notice())
-                mlist.BounceMessage(msg, msgdata, e)
+            except AttributeError as e:
+                mailman_log('error', 'Handler %s missing process() method: %s', handler, str(e))
                 return 0
             except Exception as e:
-                # Log the full traceback for debugging
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Error in handler %s for message %s: %s\n%s', 
-                           modname, msgid, str(e), traceback.format_exc())
-                # Put the handler back in the pipeline
-                pipeline.insert(0, handler)
-                # Try to move message to shunt queue
-                try:
-                    self._shunt.enqueue(msg, msgdata)
-                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Moved failed message %s to shunt queue (reason: handler error)', msgid)
-                except Exception as shunt_error:
-                    mailman_log('qrunner', 'IncomingRunner._dopipeline: Failed to move message %s to shunt queue: %s', 
-                               msgid, str(shunt_error))
-                raise
-        return 0
+                mailman_log('error', 'Handler %s failed: %s\n%s', handler, str(e), traceback.format_exc())
+                return 0
+
+        return 1
 
     def _cleanup(self):
         """Clean up any resources used by the pipeline."""

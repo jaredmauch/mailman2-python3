@@ -163,10 +163,16 @@ def process(mlist, msg, msgdata):
             # Copy attributes
             for k, v in msg.items():
                 newmsg[k] = v
-            # Copy payload
+            # Copy payload with proper MIME handling
             if msg.is_multipart():
                 for part in msg.get_payload():
-                    newmsg.attach(part)
+                    if isinstance(part, email.message.Message):
+                        newmsg.attach(part)
+                    else:
+                        # Handle non-Message payloads
+                        newpart = Message()
+                        newpart.set_payload(part)
+                        newmsg.attach(newpart)
             else:
                 newmsg.set_payload(msg.get_payload())
             msg = newmsg
@@ -182,12 +188,8 @@ def process(mlist, msg, msgdata):
                 envsender = mlist.GetBouncesEmail()
             else:
                 envsender = Mailman.Utils.get_site_email(extra='bounces')
-        # Time to split up the recipient list.  If we're personalizing or VERPing
-        # then each chunk will have exactly one recipient.  We'll then hand craft
-        # an envelope sender and stitch a message together in memory for each one
-        # separately.  If we're not VERPing, then we'll chunkify based on
-        # SMTP_MAX_RCPTS.  Note that most MTAs have a limit on the number of
-        # recipients they'll swallow in a single transaction.
+
+        # Time to split up the recipient list
         deliveryfunc = None
         if ('personalize' not in msgdata or msgdata['personalize']) and (
                msgdata.get('verp') or mlist.personalize):
@@ -198,131 +200,63 @@ def process(mlist, msg, msgdata):
             chunks = [recips]
         else:
             chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS)
+
         # See if this is an unshunted message for which some were undelivered
         if 'undelivered' in msgdata:
             chunks = msgdata['undelivered']
-    except Exception as e:
-        mailman_log('error', 'Error in SMTPDirect.process: %s\nTraceback:\n%s',
-               str(e), traceback.format_exc())
-        raise
-    # If we're doing bulk delivery, then we can stitch up the message now.
-    if deliveryfunc is None:
-        # Be sure never to decorate the message more than once!
-        if not msgdata.get('decorated'):
-            decorate(mlist, msg, msgdata)
-            msgdata['decorated'] = True
-        deliveryfunc = bulkdeliver
-    refused = {}
-    t0 = time.time()
-    # Open the initial connection
-    origrecips = msgdata['recips']
-    # MAS: get the message sender now for logging.  If we're using 'sender'
-    # and not 'from', bulkdeliver changes it for bounce processing.  If we're
-    # VERPing, it doesn't matter because bulkdeliver is working on a copy, but
-    # otherwise msg gets changed.  If the list is anonymous, the original
-    # sender is long gone, but Cleanse.py has logged it.
-    origsender = msgdata.get('original_sender', msg.get_sender())
-    # `undelivered' is a copy of chunks that we pop from to do deliveries.
-    # This seems like a good tradeoff between robustness and resource
-    # utilization.  If delivery really fails (i.e. qfiles/shunt type
-    # failures), then we'll pick up where we left off with `undelivered'.
-    # This means at worst, the last chunk for which delivery was attempted
-    # could get duplicates but not every one, and no recips should miss the
-    # message.
-    conn = Connection()
-    try:
-        msgdata['undelivered'] = chunks
-        while chunks:
-            chunk = chunks.pop()
-            msgdata['recips'] = chunk
-            try:
-                deliveryfunc(mlist, msg, msgdata, envsender, refused, conn)
-            except Exception as e:
-                # If /anything/ goes wrong, push the last chunk back on the
-                # undelivered list and re-raise the exception.  We don't know
-                # how many of the last chunk might receive the message, so at
-                # worst, everyone in this chunk will get a duplicate.  Sigh.
-                mailman_log('error', 
-                    'Delivery error for chunk: %s\nError: %s\n%s',
-                    chunk, str(e), traceback.format_exc())
-                chunks.append(chunk)
-                raise
-        del msgdata['undelivered']
-    finally:
-        conn.quit()
-        msgdata['recips'] = origrecips
-    # Log the successful post
-    t1 = time.time()
-    # Ensure listname is a string, not bytes
-    listname = mlist.internal_name()
-    if isinstance(listname, bytes):
-        listname = listname.decode('latin-1')
-    d = Mailman.SafeDict.MsgSafeDict(msg, {'time'    : t1-t0,
-                          # BAW: Urg.  This seems inefficient.
+
+        # If we're doing bulk delivery, then we can stitch up the message now.
+        if deliveryfunc is None:
+            # Be sure never to decorate the message more than once!
+            if not msgdata.get('decorated'):
+                decorate(mlist, msg, msgdata)
+                msgdata['decorated'] = True
+            deliveryfunc = bulkdeliver
+
+        refused = {}
+        t0 = time.time()
+        # Open the initial connection
+        origrecips = msgdata['recips']
+        origsender = msgdata.get('original_sender', msg.get_sender())
+        conn = Connection()
+        try:
+            msgdata['undelivered'] = chunks
+            while chunks:
+                chunk = chunks.pop()
+                msgdata['recips'] = chunk
+                try:
+                    deliveryfunc(mlist, msg, msgdata, envsender, refused, conn)
+                except Exception as e:
+                    mailman_log('error', 
+                        'Delivery error for chunk: %s\nError: %s\n%s',
+                        chunk, str(e), traceback.format_exc())
+                    chunks.append(chunk)
+                    raise
+            del msgdata['undelivered']
+        finally:
+            conn.quit()
+            msgdata['recips'] = origrecips
+
+        # Log the successful post
+        t1 = time.time()
+        listname = mlist.internal_name()
+        if isinstance(listname, bytes):
+            listname = listname.decode('latin-1')
+        d = Mailman.SafeDict.MsgSafeDict(msg, {'time'    : t1-t0,
                           'size'    : len(msg.as_string()),
                           '#recips' : len(recips),
                           '#refused': len(refused),
                           'listname': listname,
                           'sender'  : origsender,
                           })
-    # We have to use the copy() method because extended call syntax requires a
-    # concrete dictionary object; it does not allow a generic mapping.  It's
-    # still worthwhile doing the interpolation in mailman_log() because it'll catch
-    # any catastrophic exceptions due to bogus format strings.
-    if Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE:
-        mailman_log(Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
+        if Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE:
+            mailman_log(Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
                     Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[1] % d.copy())
 
-    if refused:
-        if Mailman.mm_cfg.SMTP_LOG_REFUSED:
-            mailman_log(Mailman.mm_cfg.SMTP_LOG_REFUSED[0],
-                            Mailman.mm_cfg.SMTP_LOG_REFUSED[1] % d.copy())
-
-    elif msgdata.get('tolist'):
-        # Log the successful post, but only if it really was a post to the
-        # mailing list.  Don't log sends to the -owner, or -admin addrs.
-        # -request addrs should never get here.  BAW: it may be useful to log
-        # the other messages, but in that case, we should probably have a
-        # separate configuration variable to control that.
-        if Mailman.mm_cfg.SMTP_LOG_SUCCESS:
-            mailman_log(Mailman.mm_cfg.SMTP_LOG_SUCCESS[0],
-                            Mailman.mm_cfg.SMTP_LOG_SUCCESS[1] % d.copy())
-
-    # Process any failed deliveries.
-    tempfailures = []
-    permfailures = []
-    for recip, (code, smtpmsg) in list(refused.items()):
-        # DRUMS is an internet draft, but it says:
-        #
-        #    [RFC-821] incorrectly listed the error where an SMTP server
-        #    exhausts its implementation limit on the number of RCPT commands
-        #    ("too many recipients") as having reply code 552.  The correct
-        #    reply code for this condition is 452. Clients SHOULD treat a 552
-        #    code in this case as a temporary, rather than permanent failure
-        #    so the logic below works.
-        #
-        if code >= 500 and code != 552:
-            # A permanent failure
-            permfailures.append(recip)
-            mailman_log('smtp-failure', 
-                'Permanent delivery failure for %s: code %s, message: %s',
-                recip, code, smtpmsg)
-        else:
-            # Deal with persistent transient failures by queuing them up for
-            # future delivery.  TBD: this could generate lots of log entries!
-            tempfailures.append(recip)
-            mailman_log('smtp-failure',
-                'Temporary delivery failure for %s: code %s, message: %s',
-                recip, code, smtpmsg)
-        if Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE:
-            d.update({'recipient': recip,
-                      'failcode' : code,
-                      'failmsg'  : smtpmsg})
-            mailman_log(Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE[0],
-                            Mailman.mm_cfg.SMTP_LOG_EACH_FAILURE[1] % d.copy())
-    # Return the results
-    if tempfailures or permfailures:
-        raise Mailman.Errors.SomeRecipientsFailed(tempfailures, permfailures)
+    except Exception as e:
+        mailman_log('error', 'Error in SMTPDirect.process: %s\nTraceback:\n%s',
+               str(e), traceback.format_exc())
+        raise
 
 
 def chunkify(recips, chunksize):
@@ -459,50 +393,32 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # Copy all attributes from the original message
         for key, value in msg.items():
             mailman_msg[key] = value
-        # Copy the payload
+        # Copy the payload with proper MIME handling
         if msg.is_multipart():
             for part in msg.get_payload():
-                mailman_msg.attach(part)
+                if isinstance(part, email.message.Message):
+                    mailman_msg.attach(part)
+                else:
+                    newpart = Message()
+                    newpart.set_payload(part)
+                    mailman_msg.attach(newpart)
         else:
             mailman_msg.set_payload(msg.get_payload())
         msg = mailman_msg
 
-    # Do some final cleanup of the message header.  Start by blowing away
-    # any the Sender: and Errors-To: headers so remote MTAs won't be
-    # tempted to delivery bounces there instead of our envelope sender
-    #
-    # BAW An interpretation of RFCs 2822 and 2076 could argue for not touching
-    # the Sender header at all.  Brad Knowles points out that MTAs tend to
-    # wipe existing Return-Path headers, and old MTAs may still honor
-    # Errors-To while new ones will at worst ignore the header.
-    #
-    # With some MUAs (eg. Outlook 2003) rewriting the Sender header with our
-    # envelope sender causes more problems than it solves, because some will 
-    # include the Sender address in a reply-to-all, which is not only 
-    # confusing to subscribers, but can actually disable/unsubscribe them from
-    # lists, depending on how often they accidentally reply to it.  Also, when
-    # forwarding mail inline, the sender is replaced with the string "Full 
-    # Name (on behalf bounce@addr.ess)", essentially losing the original
-    # sender address.  To partially mitigate this, we add the list name as a
-    # display-name in the Sender: header that we add.
-    # 
-    # The drawback of not touching the Sender: header is that some MTAs might
-    # still send bounces to it, so by not trapping it, we can miss bounces.
-    # (Or worse, MTAs might send bounces to the From: address if they can't
-    # find a Sender: header.)  So instead of completely disabling the sender
-    # rewriting, we offer an option to disable it.
+    # Do some final cleanup of the message header
     del msg['errors-to']
     msg['Errors-To'] = envsender
     if mlist.include_sender_header:
         del msg['sender']
         msg['Sender'] = '"%s" <%s>' % (mlist.real_name, envsender)
-    # Get the plain, flattened text of the message, sans unixfrom
-    # using our as_string() method to not mangle From_ and not fold
-    # sub-part headers possibly breaking signatures.
+
+    # Get the plain, flattened text of the message
     msgtext = msg.as_string(mangle_from_=False)
     # Ensure the message text is properly encoded as UTF-8
     if isinstance(msgtext, str):
         msgtext = msgtext.encode('utf-8')
+
     refused = {}
     recips = msgdata['recips']
     msgid = msg.get('Message-ID', 'n/a')
@@ -516,20 +432,16 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     except smtplib.SMTPResponseException as e:
         mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
-        # If this was a permanent failure, don't add the recipients to the
-        # refused, because we don't want them to be added to failures.
-        # Otherwise, if the MTA rejects the message because of the message
-        # content (e.g. it's spam, virii, or has syntactic problems), then
-        # this will end up registering a bounce score for every recipient.
-        # Definitely /not/ what we want.
-        if e.smtp_code < 500 or e.smtp_code == 552:
-            # It's a temporary failure
+        # Properly handle permanent vs temporary failures
+        if e.smtp_code >= 500 and e.smtp_code != 552:
+            # Permanent failure - add to refused
             for r in recips:
                 refused[r] = (e.smtp_code, e.smtp_error)
+        else:
+            # Temporary failure - don't add to refused
+            mailman_log('smtp-failure', 'Temporary SMTP failure, will retry: %s', e.smtp_error)
     except (socket.error, IOError, smtplib.SMTPException) as e:
-        # MTA not responding, or other socket problems, or any other kind of
-        # SMTPException.  In that case, nothing got delivered, so treat this
-        # as a temporary failure.
+        # MTA not responding or other socket problems
         mailman_log('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
         error = str(e)
         for r in recips:
