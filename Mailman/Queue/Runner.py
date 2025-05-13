@@ -173,6 +173,14 @@ class Runner:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
+                try:
+                    from Mailman.Logging.Syslog import mailman_log
+                    mailman_log('debug', 'Runner._oneloop: Dequeued file %s, msg type: %s, msgdata type: %s', filebase, type(msg), type(msgdata))
+                    # Log a short summary of the message and msgdata
+                    mailman_log('debug', 'Runner._oneloop: msg repr: %r', repr(msg)[:500])
+                    mailman_log('debug', 'Runner._oneloop: msgdata keys: %s', list(msgdata.keys()) if isinstance(msgdata, dict) else str(msgdata))
+                except Exception as e:
+                    mailman_log('error', 'Runner._oneloop: Exception during post-dequeue logging: %s', str(e))
             except (email.errors.MessageParseError, ValueError) as e:
                 # Handle message parsing errors
                 self.log_error('message_parse_error', e, filebase=filebase)
