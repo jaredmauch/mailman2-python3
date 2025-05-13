@@ -68,7 +68,7 @@ def main():
             if os.environ.get('REQUEST_METHOD') == 'POST':
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 if content_length > 0:
-                    form_data = sys.stdin.read(content_length)
+                    form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
                     cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
                 else:
                     cgidata = {}
@@ -111,47 +111,19 @@ def main():
         # If the user is not authenticated, we're done.
         try:
             mailman_log('debug', 'Checking authentication')
-            if os.environ.get('REQUEST_METHOD') == 'POST':
-                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                if content_length > 0:
-                    form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
-                    cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-                    for key in cgidata:
-                        cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
-                else:
-                    cgidata = {}
+            # CSRF check
+            safe_params = ['VARHELP', 'adminpw', 'admlogin',
+                          'letter', 'chunk', 'findmember',
+                          'legend']
+            params = list(cgidata.keys())
+            if set(params) - set(safe_params):
+                csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
+                                        'admin')
             else:
-                query_string = os.environ.get('QUERY_STRING', '')
-                cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-                for key in cgidata:
-                    cgidata[key] = [v.decode('latin-1') if isinstance(v, bytes) else v for v in cgidata[key]]
-            mailman_log('debug', 'cgidata before auth: %s', str(cgidata))
-        except Exception as e:
-            doc = Document()
-            doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Invalid options to CGI script.')))
-            doc.AddItem(Preformatted(Utils.websafe(str(e))))
-            doc.AddItem(Preformatted(Utils.websafe(traceback.format_exc())))
-            print('Status: 400 Bad Request')
-            print(doc.Format())
-            mailman_log('error', 'admin: Invalid options: %s\n%s', str(e), traceback.format_exc())
-            return
-        # CSRF check
-        safe_params = ['VARHELP', 'adminpw', 'admlogin',
-                       'letter', 'chunk', 'findmember',
-                       'legend']
-        params = list(cgidata.keys())
-        if set(params) - set(safe_params):
-            csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
-                                      'admin')
-        else:
-            csrf_checked = True
-        if cgidata.get('adminpw', [''])[0]:
-            os.environ['HTTP_COOKIE'] = ''
-            csrf_checked = True
-        try:
-            mailman_log('debug', 'Calling WebAuthenticate')
+                csrf_checked = True
+            if cgidata.get('adminpw', [''])[0]:
+                os.environ['HTTP_COOKIE'] = ''
+                csrf_checked = True
             mailman_log('debug', 'Authentication contexts: %s', str((mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)))
             mailman_log('debug', 'Password provided: %s', 'Yes' if cgidata.get('adminpw', [''])[0] else 'No')
             mailman_log('debug', 'Cookie present: %s', 'Yes' if os.environ.get('HTTP_COOKIE') else 'No')

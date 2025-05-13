@@ -46,7 +46,7 @@ def main():
         if os.environ.get('REQUEST_METHOD') == 'POST':
             content_length = int(os.environ.get('CONTENT_LENGTH', 0))
             if content_length > 0:
-                form_data = sys.stdin.read(content_length)
+                form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
                 cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
             else:
                 cgidata = {}
