@@ -125,17 +125,33 @@ class VirginRunner(Runner):
         mailman_log('debug', 'VirginRunner._dispose: Starting to process virgin message %s (file: %s)',
                    msgid, filebase)
         
-        # Get the IncomingRunner class
-        from Mailman.Queue import get_incoming_runner
-        IncomingRunner = get_incoming_runner()
+        # Ensure we have a MailList object
+        if isinstance(mlist, str):
+            try:
+                mlist = MailList.MailList(mlist, lock=0)
+                should_unlock = True
+            except Errors.MMUnknownListError:
+                mailman_log('error', 'VirginRunner: Unknown list %s', mlist)
+                self._shunt.enqueue(msg, msgdata)
+                return
+        else:
+            should_unlock = False
         
-        # Process the message using IncomingRunner's _dispose method
-        result = IncomingRunner._dispose(self, mlist, msg, msgdata)
-        
-        mailman_log('debug', 'VirginRunner._dispose: Finished processing virgin message %s (file: %s)',
-                   msgid, filebase)
-        
-        return result
+        try:
+            # Get the IncomingRunner class
+            from Mailman.Queue import get_incoming_runner
+            IncomingRunner = get_incoming_runner()
+            
+            # Process the message using IncomingRunner's _dispose method
+            result = IncomingRunner._dispose(self, mlist, msg, msgdata)
+            
+            mailman_log('debug', 'VirginRunner._dispose: Finished processing virgin message %s (file: %s)',
+                       msgid, filebase)
+            
+            return result
+        finally:
+            if should_unlock:
+                mlist.Unlock()
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # It's okay to hardcode this, since it'll be the same for all
