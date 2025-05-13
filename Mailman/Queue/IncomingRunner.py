@@ -317,102 +317,61 @@ class IncomingRunner(Runner):
         mailman_log('qrunner', 'IncomingRunner._cleanup: Cleanup complete')
 
     def _oneloop(self):
-        mailman_log('qrunner', 'IncomingRunner._oneloop: Starting loop')
+        """Process one batch of messages from the incoming queue."""
         # First, list all the files in our queue directory.
         # Switchboard.files() is guaranteed to hand us the files in FIFO
         # order.  Return an integer count of the number of files that were
         # available for this qrunner to process.
-        files = self._switchboard.files()
-        mailman_log('qrunner', 'IncomingRunner._oneloop: Found %d files to process', len(files))
-        
-        for filebase in files:
-            try:
-                # Log that we're starting to process this file
-                mailman_log('qrunner', 'IncomingRunner._oneloop: Starting to process queue file: %s', filebase)
-                
-                # Ask the switchboard for the message and metadata objects
-                # associated with this filebase.
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Only log at debug level if we found files to process
+            if filecnt > 0:
+                mailman_log('debug', 'IncomingRunner._oneloop: Found %d files to process', filecnt)
+            
+            # Process each file
+            for filebase in files:
                 try:
+                    # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
-                    if msg is None or msgdata is None:
-                        mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to dequeue file %s - invalid message data', filebase)
-                        # Move to shunt queue
-                        try:
-                            src = os.path.join(self._switchboard.whichq(), filebase + '.bak')
-                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                            os.rename(src, dst)
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s (reason: null message or metadata)', filebase, dst)
-                        except Exception as e:
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
+                    if msg is None:
                         continue
                         
-                    mailman_log('qrunner', 'IncomingRunner._oneloop: Successfully dequeued file %s', filebase)
+                    mailman_log('info', 'IncomingRunner._oneloop: Successfully dequeued file %s', filebase)
                     
-                    # Validate message data structure
-                    if not isinstance(msgdata, dict):
-                        mailman_log('qrunner', 'IncomingRunner._oneloop: Invalid message data structure for file %s: expected dict, got %s', 
-                                  filebase, type(msgdata))
-                        # Move to shunt queue
-                        try:
-                            src = os.path.join(self._switchboard.whichq(), filebase + '.bak')
-                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                            os.rename(src, dst)
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s (reason: invalid message data structure)', filebase, dst)
-                        except Exception as e:
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
-                        continue
-                        
-                    # Validate required message data fields
-                    required_fields = ['listname']
-                    missing_fields = [field for field in required_fields if field not in msgdata]
-                    if missing_fields:
-                        mailman_log('qrunner', 'IncomingRunner._oneloop: Missing required fields in message data for file %s: %s', 
-                                  filebase, ', '.join(missing_fields))
-                        # Move to shunt queue
-                        try:
-                            src = os.path.join(self._switchboard.whichq(), filebase + '.bak')
-                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                            os.rename(src, dst)
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Moved invalid file to shunt queue: %s -> %s (reason: missing required fields: %s)', 
-                                      filebase, dst, ', '.join(missing_fields))
-                        except Exception as e:
-                            mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to move invalid file to shunt queue: %s', str(e))
-                        continue
-                    
-                except Exception as e:
-                    mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to dequeue file %s: %s', filebase, str(e))
-                    continue
-                    
-                # Process the message
-                more = self._dispose(msgdata['listname'], msg, msgdata)
-                if more:
-                    # The message needs more processing, so enqueue it at the
-                    # end of the self._switchboard's queue.
-                    mailman_log('qrunner', 'IncomingRunner._oneloop: Message needs more processing, requeuing %s', filebase)
-                    self._switchboard.enqueue(msg, msgdata)
-                else:
-                    # The message is done being processed by this qrunner, so
-                    # shunt it off to the next queue.
-                    msgid = msg.get('message-id', 'n/a')
-                    mailman_log('qrunner', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)', filebase, msgid)
-                    self._shunt.enqueue(msg, msgdata)
-            except Exception as e:
-                # Log the error and requeue the message for later processing
-                mailman_log('qrunner', 'IncomingRunner._oneloop: Error processing queue file %s: %s\n%s', 
-                           filebase, str(e), traceback.format_exc())
-                if msg is not None and msgdata is not None:
+                    # Process the message
                     try:
-                        self._switchboard.enqueue(msg, msgdata)
-                        mailman_log('qrunner', 'IncomingRunner._oneloop: Successfully requeued file %s', filebase)
-                    except Exception as e2:
-                        mailman_log('qrunner', 'IncomingRunner._oneloop: Failed to requeue file %s: %s', filebase, str(e2))
-        
-        mailman_log('qrunner', 'IncomingRunner._oneloop: Loop complete, processed %d files', len(files))
-        return len(files)
+                        # Get the list name from the message data
+                        listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
+                        
+                        # Process the message
+                        result = self._dispose(listname, msg, msgdata)
+                        
+                        # If the message should be kept in the queue, requeue it
+                        if result:
+                            self._switchboard.enqueue(msg, msgdata)
+                            mailman_log('info', 'IncomingRunner._oneloop: Message requeued for later processing: %s', filebase)
+                        else:
+                            mailman_log('info', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
+                                      filebase, msg.get('message-id', 'n/a'))
+                            
+                    except Exception as e:
+                        mailman_log('error', 'IncomingRunner._oneloop: Error processing message: %s\n%s',
+                                  str(e), traceback.format_exc())
+                        # Move to shunt queue on error
+                        self._shunt.enqueue(msg, msgdata)
+                        
+                except Exception as e:
+                    mailman_log('error', 'IncomingRunner._oneloop: Error dequeuing file %s: %s\n%s',
+                              filebase, str(e), traceback.format_exc())
+                    
+            # Only log completion at debug level if we processed files
+            if filecnt > 0:
+                mailman_log('debug', 'IncomingRunner._oneloop: Loop complete, processed %d files', filecnt)
+                
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._oneloop: Unexpected error in main loop: %s\n%s',
+                      str(e), traceback.format_exc())
 

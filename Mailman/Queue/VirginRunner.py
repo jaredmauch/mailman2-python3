@@ -62,8 +62,8 @@ class VirginRunner(IncomingRunner):
                         # Continue processing even if cleanup fails
                 
                 # Check retry delay
-                last_retry = self._retry_times.get(msgid, 0)
-                time_since_last_retry = current_time - last_retry
+                last_retry = self._retry_times.get(msgid)
+                time_since_last_retry = 0 if last_retry is None else current_time - last_retry
                 
                 # Log detailed retry information at debug level
                 mailman_log('debug', 'VirginRunner: Retry check for message %s (file: %s):', msgid, filebase)
@@ -72,6 +72,24 @@ class VirginRunner(IncomingRunner):
                 mailman_log('debug', '  Time since last retry: %d seconds', time_since_last_retry)
                 mailman_log('debug', '  Minimum retry delay: %d seconds', self.MIN_RETRY_DELAY)
                 
+                # If message has never been retried (last_retry is None), it can be processed
+                if last_retry is None:
+                    # Update both data structures atomically
+                    try:
+                        self._processed_messages.add(msgid)
+                        self._retry_times[msgid] = current_time
+                        mailman_log('debug', 'VirginRunner: Message %s (file: %s) has never been retried, proceeding with processing',
+                                   msgid, filebase)
+                        return True
+                    except Exception as e:
+                        # If we fail to update the tracking data, remove the message from processed set
+                        self._processed_messages.discard(msgid)
+                        self._retry_times.pop(msgid, None)
+                        mailman_log('error', 'VirginRunner: Failed to update tracking data for message %s: %s',
+                                   msgid, str(e))
+                        return False
+                
+                # For messages that have been retried before, check the delay
                 if time_since_last_retry < self.MIN_RETRY_DELAY:
                     # Log at info level when retry check fails
                     mailman_log('info', 'VirginRunner: Message %s (file: %s) retried too soon. Time since last retry: %d seconds, minimum required: %d seconds',
