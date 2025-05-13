@@ -302,7 +302,6 @@ class UserNotification(Message):
         # The message metadata better have a `recip' attribute
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
-                        recips = self.recips,
                         nodecorate = 1,
                         reduced_list_headers = 1,
                         **_kws)
@@ -338,7 +337,6 @@ class OwnerNotification(UserNotification):
         # The message metadata better have a `recip' attribute
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
-                        recips = self.recips,
                         nodecorate = 1,
                         reduced_list_headers = 1,
                         envsender = self._sender,
