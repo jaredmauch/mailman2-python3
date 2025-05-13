@@ -39,7 +39,7 @@ from email.charset import Charset
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
-from Mailman.Message import Message
+from Mailman.Message import UserNotification
 from Mailman import i18n
 
 # Work around known problems with some RedHat cron daemons
@@ -104,10 +104,10 @@ def main():
                 else:
                     subject = _(
                         '%(realname)s moderator request check result')
-                msg = Mailman.Message.UserNotification(mlist.GetOwnerEmail(),
-                                               mlist.GetBouncesEmail(),
-                                               subject, text,
-                                               mlist.preferred_language)
+                msg = UserNotification(mlist.GetOwnerEmail(),
+                                     mlist.GetBouncesEmail(),
+                                     subject, text,
+                                     mlist.preferred_language)
                 msg.send(mlist, **{'tomoderators': 1})
         finally:
             mlist.Unlock()
