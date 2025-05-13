@@ -251,8 +251,11 @@ class UserNotification(Message):
         charset = None
         if lang is not None:
             charset = Charset(GetCharSet(lang))
+            # Ensure we have a valid output charset
+            if charset.output_charset == 'us-ascii':
+                charset = Charset('utf-8')
         else:
-            charset = Charset('us-ascii')  # Use us-ascii as fallback when lang is None
+            charset = Charset('utf-8')  # Use utf-8 as fallback when lang is None
         if text is not None:
             self.set_payload(text, charset)
         if subject is None:
