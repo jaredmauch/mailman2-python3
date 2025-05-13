@@ -400,6 +400,9 @@ class HTMLFormatter(object):
             mailman_log('error', 'Could not read template file: %s', template)
             return ''
             
+        # Convert replacement keys to lowercase for case-insensitive matching
+        replacements = {k.lower(): v for k, v in replacements.items()}
+            
         # Split on MM tags, case-insensitive
         parts = re.split('(</?[Mm][Mm]-[^>]*>)', text)
         i = 1
