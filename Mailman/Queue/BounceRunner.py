@@ -169,19 +169,36 @@ class BounceRunner(Runner, BounceMixin):
             msgid = msg.get('message-id', 'n/a')
             filebase = msgdata.get('_filebase', 'unknown')
             
-            syslog('debug', 'BounceRunner._dispose: Starting to process bounce message %s (file: %s) for list %s',
-                   msgid, filebase, mlist.internal_name())
+            # Ensure we have a MailList object
+            if isinstance(mlist, str):
+                try:
+                    mlist = MailList.MailList(mlist, lock=0)
+                    should_unlock = True
+                except Errors.MMUnknownListError:
+                    syslog('error', 'BounceRunner: Unknown list %s', mlist)
+                    self._shunt.enqueue(msg, msgdata)
+                    return True
+            else:
+                should_unlock = False
             
-            # Check retry delay
-            if not self._check_retry_delay(msgid, filebase):
-                syslog('debug', 'BounceRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-                return True
-            
-            # Process the bounce
-            # ... bounce processing logic ...
-            
-            return False
-            
+            try:
+                syslog('debug', 'BounceRunner._dispose: Starting to process bounce message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+                
+                # Check retry delay
+                if not self._check_retry_delay(msgid, filebase):
+                    syslog('debug', 'BounceRunner._dispose: Message %s failed retry delay check, skipping', msgid)
+                    return True
+                
+                # Process the bounce
+                # ... bounce processing logic ...
+                
+                return False
+                
+            finally:
+                if should_unlock:
+                    mlist.Unlock()
+                
         except Exception as e:
             syslog('error', 'BounceRunner._dispose: Error processing bounce message %s: %s\nTraceback:\n%s',
                    msgid, str(e), traceback.format_exc())
