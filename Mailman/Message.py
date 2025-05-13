@@ -250,7 +250,9 @@ class UserNotification(Message):
         Message.__init__(self)
         charset = None
         if lang is not None:
-            charset = Charset(mm_cfg.GetCharSet(lang))
+            charset = Charset(Utils.GetCharSet(lang))
+        else:
+            charset = Charset('us-ascii')  # Use us-ascii as fallback when lang is None
         if text is not None:
             self.set_payload(text, charset)
         if subject is None:
