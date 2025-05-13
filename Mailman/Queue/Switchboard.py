@@ -101,12 +101,18 @@ class Switchboard:
     def whichq(self):
         return self.__whichq
 
-    def enqueue(self, msg, msgdata=None, listname=None, _plaintext=False):
-        """Add a message to the queue."""
+    def enqueue(self, msg, msgdata=None, listname=None, _plaintext=False, **kwargs):
+        """Add a message to the queue.
+        
+        Additional keyword arguments are stored in msgdata.
+        """
         if msgdata is None:
             msgdata = {}
         if listname:
             msgdata['listname'] = listname
+            
+        # Store any additional keyword arguments in msgdata
+        msgdata.update(kwargs)
             
         mailman_log('debug', 'Switchboard.enqueue: Starting to enqueue message for list %s', listname or 'unknown')
         
