@@ -245,7 +245,17 @@ class Runner:
             # Convert message if needed
             if not isinstance(msg, Message):
                 syslog('debug', 'Runner._validate_message: Converting message %s to Mailman.Message', msgid)
-                msg = Message(msg)
+                mailman_msg = Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        mailman_msg.attach(part)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
             
             # Validate required Mailman.Message methods
             required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
