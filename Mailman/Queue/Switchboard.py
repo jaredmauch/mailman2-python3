@@ -105,6 +105,15 @@ class Switchboard:
             
         mailman_log('debug', 'Switchboard.enqueue: Starting to enqueue message for list %s', listname or 'unknown')
         
+        # Convert string message to Message object if needed
+        if isinstance(msg, str):
+            try:
+                msg = email.message_from_string(msg)
+                mailman_log('debug', 'Switchboard.enqueue: Converted string message to Message object')
+            except Exception as e:
+                mailman_log('error', 'Switchboard.enqueue: Failed to convert string message to Message object: %s', str(e))
+                raise
+        
         # Generate a unique filebase
         filebase = self._make_filebase(msg, msgdata)
         mailman_log('debug', 'Switchboard.enqueue: Generated filebase %s', filebase)

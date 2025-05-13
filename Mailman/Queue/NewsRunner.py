@@ -162,9 +162,10 @@ class NewsRunner(Runner):
         # Write the message and metadata to the pickle file
         try:
             # Use protocol 4 for Python 3 compatibility
-            pickle.dump(listname, fp, protocol=4, fix_imports=True)
-            pickle.dump(msg, fp, protocol=4, fix_imports=True)
-            pickle.dump(msgdata, fp, protocol=4, fix_imports=True)
+            with open(filename, 'wb') as fp:
+                pickle.dump(listname, fp, protocol=4, fix_imports=True)
+                pickle.dump(msg, fp, protocol=4, fix_imports=True)
+                pickle.dump(msgdata, fp, protocol=4, fix_imports=True)
             # Set the file's mode appropriately
             os.chmod(filename, 0o660)
         except (IOError, OSError) as e:
