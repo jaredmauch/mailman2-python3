@@ -33,7 +33,7 @@ def inject(listname, msg, recips=None, qdir=None):
            }
     if recips:
         kws['recips'] = recips
-    queue.enqueue(msg, **kws)
+    queue.enqueue(msg, msgdata=kws)
 
 
 

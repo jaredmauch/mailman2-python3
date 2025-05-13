@@ -481,7 +481,7 @@ class ListAdmin(object):
             # Stick the message back in the incoming queue for further
             # processing.
             inq = get_switchboard(mm_cfg.INQUEUE_DIR)
-            inq.enqueue(msg, _metadata=msgdata)
+            inq.enqueue(msg, msgdata=msgdata)
         elif value == mm_cfg.REJECT:
             # Rejected
             rejection = 'Refused'

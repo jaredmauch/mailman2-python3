@@ -56,11 +56,13 @@ def main():
     # the purpose of delivering to the list owners.
     inq = get_switchboard(mm_cfg.INQUEUE_DIR)
     inq.enqueue(sys.stdin.read(),
-                listname=listname,
-                _plaintext=1,
-                envsender=Utils.get_site_email(extra='bounces'),
-                pipeline=mm_cfg.OWNER_PIPELINE,
-                toowner=1)
+                msgdata={
+                    'listname': listname,
+                    '_plaintext': 1,
+                    'envsender': Utils.get_site_email(extra='bounces'),
+                    'pipeline': mm_cfg.OWNER_PIPELINE,
+                    'toowner': 1
+                })
 
 
 

@@ -128,7 +128,7 @@ class NewsRunner(Runner):
         except Exception as e:
             mailman_log('error', 'NewsRunner error: %s', str(e))
             # Put the message back in the queue
-            self._switchboard.enqueue(msg)
+            self._switchboard.enqueue(msg, msgdata={})
         return 1
 
     def _dispose(self, mlist, msg, msgdata):

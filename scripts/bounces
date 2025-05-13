@@ -54,7 +54,7 @@ def main():
     # is a good example; if the limit is hit, the proc is SIGKILL'd giving us
     # no chance to save the message.
     bounceq = get_switchboard(mm_cfg.BOUNCEQUEUE_DIR)
-    bounceq.enqueue(sys.stdin.read(), listname=listname, _plaintext=1)
+    bounceq.enqueue(sys.stdin.read(), msgdata={'listname': listname, '_plaintext': 1})
 
 
 

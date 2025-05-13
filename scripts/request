@@ -55,9 +55,9 @@ def main():
     # no chance to save the message.
     cmdq = get_switchboard(mm_cfg.CMDQUEUE_DIR)
     cmdq.enqueue(sys.stdin.read(),
-                 listname=listname,
-                 torequest=1,
-                 _plaintext=1)
+                 msgdata={'listname': listname,
+                         'torequest': 1,
+                         '_plaintext': 1})
 
 
 

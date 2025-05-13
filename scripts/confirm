@@ -54,8 +54,7 @@ def main():
     # is a good example; if the limit is hit, the proc is SIGKILL'd giving us
     # no chance to save the message.
     cmdq = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-    cmdq.enqueue(sys.stdin.read(), listname=listname, toconfirm=1,
-                 _plaintext=1)
+    cmdq.enqueue(sys.stdin.read(), msgdata={'listname': listname, 'toconfirm': 1, '_plaintext': 1})
 
 
 

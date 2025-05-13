@@ -136,4 +136,4 @@ equivalent) file by removing the following lines, and possibly running the
         sfp.getvalue(), mm_cfg.DEFAULT_SERVER_LANGUAGE)
     msg['Date'] = email.utils.formatdate(localtime=1)
     outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-    outq.enqueue(msg, recips=[siteowner], nodecorate=1)
+    outq.enqueue(msg, msgdata={'recips': [siteowner], 'nodecorate': 1})

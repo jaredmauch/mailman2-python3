@@ -73,8 +73,9 @@ def main():
     # no chance to save the message.
     inq = get_switchboard(mm_cfg.INQUEUE_DIR)
     qfile = inq.enqueue(msgtext,
-                       listname=listname,
-                       tolist=1, _plaintext=1)
+                       msgdata={'listname': listname,
+                               'tolist': 1,
+                               '_plaintext': 1})
     # Log the queue file information
     mailman_log('post', 'message queued to %s, qfile: %s, full path: %s',
            mm_cfg.INQUEUE_DIR, qfile, os.path.join(mm_cfg.INQUEUE_DIR, qfile))
