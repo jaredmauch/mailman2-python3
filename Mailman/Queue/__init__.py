@@ -35,7 +35,6 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 
 # Import other runners that don't have dependencies
-from Mailman.Queue.OutgoingRunner import OutgoingRunner
 from Mailman.Queue.BounceRunner import BounceRunner
 from Mailman.Queue.MaildirRunner import MaildirRunner
 from Mailman.Queue.RetryRunner import RetryRunner
@@ -55,10 +54,13 @@ def get_virgin_runner():
     from Mailman.Queue.VirginRunner import VirginRunner
     return VirginRunner
 
+def get_outgoing_runner():
+    from Mailman.Queue.OutgoingRunner import OutgoingRunner
+    return OutgoingRunner
+
 __all__ = [
     'Runner',
     'Switchboard',
-    'OutgoingRunner',
     'BounceRunner',
     'MaildirRunner',
     'RetryRunner',
@@ -67,4 +69,5 @@ __all__ = [
     'get_news_runner',
     'get_incoming_runner',
     'get_virgin_runner',
+    'get_outgoing_runner',
 ]

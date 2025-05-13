@@ -27,17 +27,22 @@ import Mailman
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Handlers import Hold
 from Mailman import i18n
 from Mailman.i18n import _
 from Mailman.Message import Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Logging.Syslog import mailman_log
 
-# Remove the MailList import from here since it's causing a circular dependency
-# from Mailman.MailList import MailList
+# Lazy imports to avoid circular dependencies
+def get_hold():
+    from Mailman.Handlers import Hold
+    return Hold
 
-class ModeratedMemberPost(Hold.ModeratedPost):
+def get_mail_list():
+    from Mailman.MailList import MailList
+    return MailList
+
+class ModeratedMemberPost(get_hold().ModeratedPost):
     # BAW: I wanted to use the reason below to differentiate between this
     # situation and normal ModeratedPost reasons.  Greg Ward and Stonewall
     # Ballard thought the language was too harsh and mentioned offense taken
@@ -50,9 +55,6 @@ class ModeratedMemberPost(Hold.ModeratedPost):
 
 def process(mlist, msg, msgdata):
     """Process a message for moderation."""
-    # Import MailList here to avoid circular dependency
-    from Mailman.MailList import MailList
-    
     if msgdata.get('approved'):
         return
     # Is the poster a member or not?
@@ -80,7 +82,7 @@ def process(mlist, msg, msgdata):
                 # Hold.  BAW: WIBNI we could add the member_moderation_notice
                 # to the notice sent back to the sender?
                 msgdata['sender'] = sender
-                Hold.hold_for_approval(mlist, msg, msgdata,
+                get_hold().hold_for_approval(mlist, msg, msgdata,
                                        ModeratedMemberPost)
             elif member_moderation_action == 1:
                 # Reject
@@ -114,7 +116,7 @@ def process(mlist, msg, msgdata):
                         mlist.hold_these_nonmembers,
                         at_list='hold_these_nonmembers'
                        ):
-        Hold.hold_for_approval(mlist, msg, msgdata, Hold.NonMemberPost)
+        get_hold().hold_for_approval(mlist, msg, msgdata, get_hold().NonMemberPost)
         # No return
     if mlist.GetPattern(sender,
                         mlist.reject_these_nonmembers,
@@ -138,7 +140,7 @@ def process(mlist, msg, msgdata):
         # Accept
         return
     elif generic_nonmember_action == 1:
-        Hold.hold_for_approval(mlist, msg, msgdata, Hold.NonMemberPost)
+        get_hold().hold_for_approval(mlist, msg, msgdata, get_hold().NonMemberPost)
     elif generic_nonmember_action == 2:
         do_reject(mlist)
     elif generic_nonmember_action == 3:
@@ -146,9 +148,6 @@ def process(mlist, msg, msgdata):
 
 def do_reject(mlist):
     """Handle message rejection."""
-    # Import MailList here to avoid circular dependency
-    from Mailman.MailList import MailList
-    
     listowner = mlist.GetOwnerEmail()
     if mlist.nonmember_rejection_notice:
         raise Errors.RejectMessage(Utils.wrap(_(mlist.nonmember_rejection_notice)))
@@ -161,9 +160,6 @@ mailing list owner at %(listowner)s.""")))
 
 def do_discard(mlist, msg):
     """Handle message discarding."""
-    # Import MailList here to avoid circular dependency
-    from Mailman.MailList import MailList
-    
     sender = msg.get_sender()
     # Do we forward auto-discards to the list owners?
     if mlist.forward_auto_discards:

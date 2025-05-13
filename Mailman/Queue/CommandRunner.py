@@ -28,7 +28,6 @@ import sys
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman.Message import Message
-from Mailman.Handlers import Replybot
 from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import syslog
@@ -41,6 +40,11 @@ from email.errors import HeaderParseError
 from email.iterators import typed_subpart_iterator
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
+
+# Lazy import to avoid circular dependency
+def get_replybot():
+    from Mailman.Handlers import Replybot
+    return Replybot
 
 NL = '\n'
 CONTINUE = 0

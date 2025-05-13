@@ -37,7 +37,11 @@ from Mailman.Logging.Syslog import mailman_log
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Queue.BounceRunner import BounceMixin
-from Mailman.MailList import MailList
+
+# Lazy import to avoid circular dependency
+def get_mail_list():
+    from Mailman.MailList import MailList
+    return MailList
 
 # This controls how often _doperiodic() will try to deal with deferred
 # permanent failures.  It is a count of calls to _doperiodic()
@@ -226,9 +230,7 @@ class OutgoingRunner(Runner, BounceMixin):
         # Ensure we have a MailList object
         if isinstance(mlist, str):
             try:
-                # Lazy import to avoid circular dependencies
-                from Mailman.MailList import MailList
-                mlist = MailList(mlist, lock=0)
+                mlist = get_mail_list()(mlist, lock=0)
                 should_unlock = True
             except Errors.MMUnknownListError:
                 mailman_log('error', 'OutgoingRunner: Unknown list %s', mlist)

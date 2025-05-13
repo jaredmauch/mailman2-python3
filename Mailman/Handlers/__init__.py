@@ -25,10 +25,18 @@ Each handler module must define a process() function which takes three arguments
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-# Import all handlers so they're available in the package namespace
-from . import (
-    SpamDetect, Approve, Replybot, Moderate, Hold, MimeDel, Scrubber,
-    Emergency, Tagger, CalcRecips, AvoidDuplicates, Cleanse, CleanseDKIM,
-    CookHeaders, ToDigest, ToArchive, ToUsenet, AfterDelivery, Acknowledge,
-    WrapMessage, ToOutgoing, OwnerRecips
-)
+# Define lazy imports to avoid circular dependencies
+def get_handler(name):
+    """Get a handler module by name."""
+    return __import__('Mailman.Handlers.' + name, fromlist=['Mailman.Handlers'])
+
+# Define handler names for reference
+HANDLER_NAMES = [
+    'SpamDetect', 'Approve', 'Replybot', 'Moderate', 'Hold', 'MimeDel', 'Scrubber',
+    'Emergency', 'Tagger', 'CalcRecips', 'AvoidDuplicates', 'Cleanse', 'CleanseDKIM',
+    'CookHeaders', 'ToDigest', 'ToArchive', 'ToUsenet', 'AfterDelivery', 'Acknowledge',
+    'WrapMessage', 'ToOutgoing', 'OwnerRecips'
+]
+
+# Export handler names
+__all__ = HANDLER_NAMES + ['get_handler']
