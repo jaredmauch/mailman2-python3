@@ -483,7 +483,11 @@ def check_global_password(response, siteadmin=True):
     challenge = get_global_password(siteadmin)
     if challenge is None:
         return None
-    return challenge == sha_new(response).hexdigest()
+    # Log the hashes for debugging
+    computed_hash = sha_new(response).hexdigest()
+    mailman_log('debug', 'Password check - stored hash: %s, computed hash: %s', 
+                challenge, computed_hash)
+    return challenge == computed_hash
 
 
 _ampre = re.compile('&amp;((?:#[0-9]+|[a-z]+);)', re.IGNORECASE)

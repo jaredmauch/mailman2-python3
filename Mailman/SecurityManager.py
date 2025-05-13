@@ -139,6 +139,9 @@ class SecurityManager(object):
         if not response:
             # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
+        # Log the type and encoding of the response
+        mailman_log('debug', 'Auth response type: %s, encoding: %s', 
+                    type(response), getattr(response, 'encoding', 'N/A'))
         # python3
         response = response.encode('UTF-8')
         for ac in authcontexts:
