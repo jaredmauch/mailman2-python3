@@ -356,7 +356,7 @@ class Switchboard:
                                 else:
                                     try:
                                         os.rename(backfile, filename)
-                                    except OSError as e:
+                                    except Exception as e:
                                         mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
                                                filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
                                         self.finish(filebase, preserve=True)
@@ -372,13 +372,14 @@ class Switchboard:
                     return None, None
                 
             # Move to backup file
+            mailman_log('debug', 'Switchboard.dequeue: About to rename %s to %s', filename, backfile)
             try:
                 os.rename(filename, backfile)
                 mailman_log('debug', 'Switchboard.dequeue: Successfully moved %s to %s', filename, backfile)
-            except OSError as e:
-                mailman_log('error', 'Switchboard.dequeue: Error moving %s to %s: %s', filename, backfile, str(e))
+            except Exception as e:
+                mailman_log('error', 'Switchboard.dequeue: Exception during os.rename from %s to %s: %s\nTraceback:\n%s', filename, backfile, str(e), traceback.format_exc())
                 return None, None
-                
+            
             # Validate data structure before returning
             if not isinstance(data, dict):
                 mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', filename, type(data))
@@ -669,7 +670,7 @@ class Switchboard:
                             else:
                                 try:
                                     os.rename(src, dst)
-                                except OSError as e:
+                                except Exception as e:
                                     mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
                                            filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
                                     self.finish(filebase, preserve=True)
