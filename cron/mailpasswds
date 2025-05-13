@@ -229,7 +229,7 @@ def main():
 
         # If we're in test mode and no user info was collected, show a message
         if args.test and not userinfo:
-            print(f"No valid list memberships found for test email {args.test}")
+            print(f"No valid list memberships found for test email {args.test} on host {host}")
             if skipped_lists:
                 print("\nSkipped lists:")
                 for listname, reason in skipped_lists:
