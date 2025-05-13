@@ -311,7 +311,8 @@ class Switchboard:
                         times[f] = mtime
                 except OSError:
                     continue
-            return sorted(times.items(), key=lambda x: x[1])
+            # Sort by modification time but return just the filenames
+            return [f for f, _ in sorted(times.items(), key=lambda x: x[1])]
         except OSError as e:
             mailman_log('error', 'Error reading queue directory %s: %s', self.__whichq, str(e))
             return []
