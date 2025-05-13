@@ -276,7 +276,7 @@ class UserNotification(Message):
         # this message has a Message-ID.  Yes, the MTA would give us one, but
         # this is useful for logging to logs/smtp.
         if 'message-id' not in self:
-            self['Message-ID'] = mm_cfg.unique_message_id(mlist)
+            self['Message-ID'] = unique_message_id(mlist)
         # Ditto for Date: which is required by RFC 2822
         if 'date' not in self:
             self['Date'] = email.utils.formatdate(localtime=1)
