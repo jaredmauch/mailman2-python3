@@ -265,8 +265,8 @@ class UserNotification(Message):
         self['Subject'] = subject
         self['Date'] = email.utils.formatdate(localtime=1)
         self['X-Mailer'] = 'Mailman/%s' % mm_cfg.VERSION
-        if defined(mm_cfg.DEFAULT_SERVER_LANGUAGES):
-            self['X-Accept-Language'] = ', '.join(mm_cfg.DEFAULT_SERVER_LANGUAGES)
+        if lang:
+            self['X-Accept-Language'] = lang
         self['Precedence'] = 'bulk'
         if text:
             if _text_is_unicode:
