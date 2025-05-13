@@ -25,6 +25,7 @@ recipient.
 from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.IncomingRunner import IncomingRunner
+from Mailman.Logging.Syslog import mailman_log
 import traceback
 
 
