@@ -509,18 +509,8 @@ class Switchboard:
             os.close(lock_fd)
         except OSError as e:
             if e.errno == errno.EEXIST:
-                mailman_log('warning', 'Lock file exists for %s (full path: %s), waiting...', qfile, lockfile)
-                # Wait for lock to be released
-                for _ in range(10):  # 10 attempts
-                    try:
-                        lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-                        os.close(lock_fd)
-                        break
-                    except OSError:
-                        time.sleep(0.1)
-                else:
-                    mailman_log('error', 'Could not acquire lock for %s (full path: %s) after 10 attempts', qfile, lockfile)
-                    raise
+                mailman_log('warning', 'Lock file exists for %s (full path: %s)', qfile, lockfile)
+                raise
             else:
                 mailman_log('error', 'Failed to create lock file %s (full path: %s): %s\nTraceback:\n%s',
                        qfile, lockfile, str(e), traceback.format_exc())
