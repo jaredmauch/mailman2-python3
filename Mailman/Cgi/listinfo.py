@@ -198,7 +198,7 @@ def list_listinfo(mlist, language):
     # Then get replacements
     replacements = mlist.GetStandardReplacements(language)
 
-    if not mlist.digestable or not mlist.nondigestable:
+    if not mlist.nondigestable:
         replacements['<mm-digest-radio-button>'] = ""
         replacements['<mm-undigest-radio-button>'] = ""
         replacements['<mm-digest-question-start>'] = '<!-- '
