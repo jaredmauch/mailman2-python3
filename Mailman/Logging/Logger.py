@@ -82,26 +82,39 @@ class Logger(object):
             return f
 
     def flush(self):
+        """Flush the file buffer and sync to disk."""
         f = self.__get_f()
         if hasattr(f, 'flush'):
             f.flush()
+            try:
+                os.fsync(f.fileno())
+            except (OSError, IOError):
+                # Some file-like objects may not have a fileno() method
+                # or may not support fsync
+                pass
 
     def write(self, msg):
+        """Write a message to the log file and ensure it's synced to disk."""
         if msg is str:
             msg = str(msg, self.__encoding, 'replace')
         f = self.__get_f()
         try:
             f.write(msg)
+            # Flush and sync after each write to ensure logs are persisted
+            self.flush()
         except IOError as msg:
             _logexc(self, msg)
 
     def writelines(self, lines):
+        """Write multiple lines to the log file."""
         for l in lines:
             self.write(l)
 
     def close(self):
+        """Close the log file and ensure all data is synced to disk."""
         try:
             if self._fp is not None:
+                self.flush()  # Ensure all data is synced before closing
                 self._fp.close()
                 self._fp = None
         except:
