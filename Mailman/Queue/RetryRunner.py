@@ -20,6 +20,8 @@ import traceback
 from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
+from Mailman.MailingList import MailList
+from Mailman.Errors import MMUnknownListError
 
 
 class RetryRunner(Runner):
@@ -42,70 +44,87 @@ class RetryRunner(Runner):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        mailman_log('debug', 'RetryRunner._dispose: Starting to process retry message %s (file: %s) for list %s',
-                   msgid, filebase, mlist.internal_name())
-        
-        # Check retry delay and duplicate processing
-        if not self._check_retry_delay(msgid, filebase):
-            mailman_log('debug', 'RetryRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-            return False
-
-        # Make sure we have the most up-to-date state
-        try:
-            mlist.Load()
-            mailman_log('debug', 'RetryRunner._dispose: Successfully loaded list %s', mlist.internal_name())
-        except Errors.MMCorruptListDatabaseError as e:
-            mailman_log('error', 'RetryRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
-                       mlist.internal_name(), str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
-            return False
-        except Exception as e:
-            mailman_log('error', 'RetryRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
-                       mlist.internal_name(), str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Validate message type first
-        msg, success = self._validate_message(msg, msgdata)
-        if not success:
-            mailman_log('error', 'RetryRunner._dispose: Message validation failed for message %s', msgid)
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Validate message headers
-        if not msg.get('message-id'):
-            mailman_log('error', 'RetryRunner._dispose: Message missing Message-ID header')
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Process the retry message
-        try:
-            mailman_log('debug', 'RetryRunner._dispose: Processing retry message %s', msgid)
-            
-            # Check retry count
-            retry_count = msgdata.get('retry_count', 0)
-            max_retries = msgdata.get('max_retries', mm_cfg.MAX_RETRIES)
-            
-            if retry_count >= max_retries:
-                mailman_log('error', 'RetryRunner._dispose: Message %s exceeded maximum retry count (%d/%d)',
-                           msgid, retry_count, max_retries)
-                self._handle_max_retries_exceeded(mlist, msg, msgdata)
-                return False
-
-            # Process the retry
-            success = self._process_retry(mlist, msg, msgdata)
-            if success:
-                mailman_log('debug', 'RetryRunner._dispose: Successfully processed retry message %s', msgid)
+        # Ensure we have a MailList object
+        if isinstance(mlist, str):
+            try:
+                mlist = MailList.MailList(mlist, lock=0)
+                should_unlock = True
+            except MMUnknownListError:
+                syslog('error', 'RetryRunner: Unknown list %s', mlist)
+                self._shunt.enqueue(msg, msgdata)
                 return True
-            else:
-                mailman_log('error', 'RetryRunner._dispose: Failed to process retry message %s', msgid)
+        else:
+            should_unlock = False
+        
+        try:
+            mailman_log('debug', 'RetryRunner._dispose: Starting to process retry message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
+            
+            # Check retry delay and duplicate processing
+            if not self._check_retry_delay(msgid, filebase):
+                mailman_log('debug', 'RetryRunner._dispose: Message %s failed retry delay check, skipping', msgid)
                 return False
 
-        except Exception as e:
-            mailman_log('error', 'RetryRunner._dispose: Error processing retry message %s: %s\nTraceback:\n%s',
-                       msgid, str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
-            return False
+            # Make sure we have the most up-to-date state
+            try:
+                mlist.Load()
+                mailman_log('debug', 'RetryRunner._dispose: Successfully loaded list %s', mlist.internal_name())
+            except Errors.MMCorruptListDatabaseError as e:
+                mailman_log('error', 'RetryRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
+                           mlist.internal_name(), str(e), traceback.format_exc())
+                self._unmark_message_processed(msgid)
+                return False
+            except Exception as e:
+                mailman_log('error', 'RetryRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
+                           mlist.internal_name(), str(e), traceback.format_exc())
+                self._unmark_message_processed(msgid)
+                return False
+
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                mailman_log('error', 'RetryRunner._dispose: Message validation failed for message %s', msgid)
+                self._unmark_message_processed(msgid)
+                return False
+
+            # Validate message headers
+            if not msg.get('message-id'):
+                mailman_log('error', 'RetryRunner._dispose: Message missing Message-ID header')
+                self._unmark_message_processed(msgid)
+                return False
+
+            # Process the retry message
+            try:
+                mailman_log('debug', 'RetryRunner._dispose: Processing retry message %s', msgid)
+                
+                # Check retry count
+                retry_count = msgdata.get('retry_count', 0)
+                max_retries = msgdata.get('max_retries', mm_cfg.MAX_RETRIES)
+                
+                if retry_count >= max_retries:
+                    mailman_log('error', 'RetryRunner._dispose: Message %s exceeded maximum retry count (%d/%d)',
+                               msgid, retry_count, max_retries)
+                    self._handle_max_retries_exceeded(mlist, msg, msgdata)
+                    return False
+
+                # Process the retry
+                success = self._process_retry(mlist, msg, msgdata)
+                if success:
+                    mailman_log('debug', 'RetryRunner._dispose: Successfully processed retry message %s', msgid)
+                    return True
+                else:
+                    mailman_log('error', 'RetryRunner._dispose: Failed to process retry message %s', msgid)
+                    return False
+
+            except Exception as e:
+                mailman_log('error', 'RetryRunner._dispose: Error processing retry message %s: %s\nTraceback:\n%s',
+                           msgid, str(e), traceback.format_exc())
+                self._unmark_message_processed(msgid)
+                return False
+                
+        finally:
+            if should_unlock:
+                mlist.Unlock()
 
     def _process_retry(self, mlist, msg, msgdata):
         """Process a retry message."""

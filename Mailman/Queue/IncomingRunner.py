@@ -147,65 +147,82 @@ class IncomingRunner(Runner):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s) for list %s',
-                   msgid, filebase, mlist.internal_name())
+        # Ensure we have a MailList object
+        if isinstance(mlist, str):
+            try:
+                mlist = MailList.MailList(mlist, lock=0)
+                should_unlock = True
+            except Errors.MMUnknownListError:
+                mailman_log('error', 'IncomingRunner: Unknown list %s', mlist)
+                self._shunt.enqueue(msg, msgdata)
+                return True
+        else:
+            should_unlock = False
         
-        # Check retry delay and duplicate processing
-        if not self._check_retry_delay(msgid, filebase):
-            mailman_log('debug', 'IncomingRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-            return False
-
-        # Make sure we have the most up-to-date state
         try:
-            mlist.Load()
-            mailman_log('debug', 'IncomingRunner._dispose: Successfully loaded list %s', mlist.internal_name())
-        except Errors.MMCorruptListDatabaseError as e:
-            mailman_log('error', 'IncomingRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
-                       mlist.internal_name(), str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
-            return False
-        except Exception as e:
-            mailman_log('error', 'IncomingRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
-                       mlist.internal_name(), str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Validate message type first
-        msg, success = self._validate_message(msg, msgdata)
-        if not success:
-            mailman_log('error', 'IncomingRunner._dispose: Message validation failed for message %s', msgid)
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Validate message headers
-        if not msg.get('message-id'):
-            mailman_log('error', 'IncomingRunner._dispose: Message missing Message-ID header')
-            self._unmark_message_processed(msgid)
-            return False
-
-        # Process the message
-        try:
-            mailman_log('debug', 'IncomingRunner._dispose: Processing message %s', msgid)
+            mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s) for list %s',
+                       msgid, filebase, mlist.internal_name())
             
-            # Check if the message is a command
-            if self._is_command(msg):
-                mailman_log('debug', 'IncomingRunner._dispose: Message %s is a command', msgid)
-                return self._process_command(mlist, msg, msgdata)
-            
-            # Check if the message is a bounce
-            if self._is_bounce(msg):
-                mailman_log('debug', 'IncomingRunner._dispose: Message %s is a bounce', msgid)
-                return self._process_bounce(mlist, msg, msgdata)
-            
-            # Process as a regular message
-            mailman_log('debug', 'IncomingRunner._dispose: Processing message %s as regular message', msgid)
-            return self._process_regular_message(mlist, msg, msgdata)
+            # Check retry delay and duplicate processing
+            if not self._check_retry_delay(msgid, filebase):
+                mailman_log('debug', 'IncomingRunner._dispose: Message %s failed retry delay check, skipping', msgid)
+                return False
 
-        except Exception as e:
-            mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
-                       msgid, str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
-            return False
+            # Make sure we have the most up-to-date state
+            try:
+                mlist.Load()
+                mailman_log('debug', 'IncomingRunner._dispose: Successfully loaded list %s', mlist.internal_name())
+            except Errors.MMCorruptListDatabaseError as e:
+                mailman_log('error', 'IncomingRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
+                           mlist.internal_name(), str(e), traceback.format_exc())
+                self._unmark_message_processed(msgid)
+                return False
+            except Exception as e:
+                mailman_log('error', 'IncomingRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
+                           mlist.internal_name(), str(e), traceback.format_exc())
+                self._unmark_message_processed(msgid)
+                return False
+
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                mailman_log('error', 'IncomingRunner._dispose: Message validation failed for message %s', msgid)
+                self._unmark_message_processed(msgid)
+                return False
+
+            # Validate message headers
+            if not msg.get('message-id'):
+                mailman_log('error', 'IncomingRunner._dispose: Message missing Message-ID header')
+                self._unmark_message_processed(msgid)
+                return False
+
+            # Process the message
+            try:
+                mailman_log('debug', 'IncomingRunner._dispose: Processing message %s', msgid)
+                
+                # Check if the message is a command
+                if self._is_command(msg):
+                    mailman_log('debug', 'IncomingRunner._dispose: Message %s is a command', msgid)
+                    return self._process_command(mlist, msg, msgdata)
+                
+                # Check if the message is a bounce
+                if self._is_bounce(msg):
+                    mailman_log('debug', 'IncomingRunner._dispose: Message %s is a bounce', msgid)
+                    return self._process_bounce(mlist, msg, msgdata)
+                
+                # Process as a regular message
+                mailman_log('debug', 'IncomingRunner._dispose: Processing message %s as regular message', msgid)
+                return self._process_regular_message(mlist, msg, msgdata)
+
+            except Exception as e:
+                mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
+                           msgid, str(e), traceback.format_exc())
+                self._unmark_message_processed(msgid)
+                return False
+                
+        finally:
+            if should_unlock:
+                mlist.Unlock()
 
     def _is_command(self, msg):
         """Check if the message is a command."""
@@ -307,10 +324,6 @@ class IncomingRunner(Runner):
                 try:
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
-                    if msg is None:
-                        continue
-                        
-                    mailman_log('info', 'IncomingRunner._oneloop: Successfully dequeued file %s', filebase)
                     
                     # Process the message
                     try:
@@ -408,4 +421,3 @@ class IncomingRunner(Runner):
             mailman_log('error', 'IncomingRunner._process_admin: Error processing admin message %s: %s\nTraceback:\n%s',
                        msgid, str(e), traceback.format_exc())
             return False
-
