@@ -277,9 +277,10 @@ class Switchboard:
             for f in os.listdir(self.__whichq):
                 # By ignoring anything that doesn't end in .pck, we ignore
                 # tempfiles and avoid a race condition.
-                filebase, ext = os.path.splitext(f)
-                if ext != extension:
+                if not f.endswith(extension):
                     continue
+                # Remove the extension to get the filebase
+                filebase = f[:-len(extension)]
                 try:
                     # Log warning for non-standard filenames but still process them
                     if '+' not in filebase:
@@ -308,10 +309,10 @@ class Switchboard:
                     # Get the file's modification time
                     mtime = os.path.getmtime(os.path.join(self.__whichq, f))
                     if lower <= mtime < upper:
-                        times[f] = mtime
+                        times[filebase] = mtime
                 except OSError:
                     continue
-            # Sort by modification time but return just the filenames
+            # Sort by modification time but return just the filebases
             return [f for f, _ in sorted(times.items(), key=lambda x: x[1])]
         except OSError as e:
             mailman_log('error', 'Error reading queue directory %s: %s', self.__whichq, str(e))
