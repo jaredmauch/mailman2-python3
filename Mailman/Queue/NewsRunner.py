@@ -27,15 +27,19 @@ import os
 import pickle
 
 import email
-from email.utils import getaddresses
+from email.utils import getaddresses, parsedate_tz, mktime_tz
 from email.iterators import body_line_iterator
 
 COMMASPACE = ', '
 
 from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman import Errors
+from Mailman import i18n
 from Mailman.Queue.Runner import Runner
-from Mailman.Logging.Syslog import mailman_log
+from Mailman.Logging.Syslog import mailman_log, syslog
+from Mailman.Message import Message
+from Mailman.MailList import MailList
 
 # Only import nntplib if NNTP support is enabled
 try:
@@ -61,55 +65,72 @@ class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
-        # Always initialize the parent class first
-        Runner.__init__(self, slice, numslices)
-        
-        # Check if NNTP support is available and configured
-        self._nntp_enabled = False
-        if not HAVE_NNTP:
-            # Only log if we're actually trying to start the runner
-            if slice is not None:
-                mailman_log('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
+        # First check if NNTP support is enabled
+        if not mm_cfg.NNTP_SUPPORT:
+            syslog('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
             return
         if not mm_cfg.DEFAULT_NNTP_HOST:
-            if slice is not None:
-                mailman_log('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
+            syslog('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
             return
-            
-        # Check if any lists actually need NNTP support
-        from Mailman import Utils
-        from Mailman.MailList import MailList
-        from Mailman import Errors
-        
-        has_nntp_lists = False
+        # Initialize the base class
+        Runner.__init__(self, slice, numslices)
+        # Check if any lists require NNTP support
+        self._nntp_lists = []
         for listname in Utils.list_names():
             try:
-                mlist = MailList(listname, lock=False)
+                mlist = MailList.MailList(listname, lock=False)
                 if mlist.nntp_host:
-                    has_nntp_lists = True
-                    break
-            except Errors.MMUnknownListError:
+                    self._nntp_lists.append(listname)
+            except Errors.MMListError:
                 continue
-            finally:
-                if 'mlist' in locals():
-                    mlist.Unlock()
-                    
-        if not has_nntp_lists:
-            if slice is not None:
-                mailman_log('info', 'No lists require NNTP support. NewsRunner will not be started.')
+        if not self._nntp_lists:
+            syslog('info', 'No lists require NNTP support. NewsRunner will not be started.')
             return
-            
-        # NNTP is available, configured, and needed by at least one list
-        self._nntp_enabled = True
-        from Mailman.Queue.Switchboard import Switchboard
-        self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
-        # Initialize _kids if not already done by parent
-        if not hasattr(self, '_kids'):
-            self._kids = {}
+        # Initialize the NNTP connection
+        self._nntp = None
+        self._connect()
+
+    def _connect(self):
+        """Connect to the NNTP server."""
+        try:
+            self._nntp = nntplib.NNTP(mm_cfg.DEFAULT_NNTP_HOST,
+                                    mm_cfg.DEFAULT_NNTP_PORT,
+                                    mm_cfg.DEFAULT_NNTP_USER,
+                                    mm_cfg.DEFAULT_NNTP_PASS)
+        except Exception as e:
+            syslog('error', 'NewsRunner error: %s', str(e))
+            self._nntp = None
+
+    def _validate_message(self, msg, msgdata):
+        """Validate the message for news posting."""
+        try:
+            # Check if the message has a Message-ID
+            if not msg.get('message-id'):
+                syslog('error', 'Message validation failed for news message')
+                return False
+            return True
+        except Exception as e:
+            syslog('error', 'Error validating news message: %s', str(e))
+            return False
+
+    def _dispose(self, mlist, msg, msgdata):
+        """Post the message to the newsgroup."""
+        try:
+            # Get the newsgroup name
+            newsgroup = mlist.nntp_host
+            if not newsgroup:
+                return False
+            # Post the message
+            self._nntp.post(str(msg))
+            return False
+        except Exception as e:
+            syslog('error', 'Error posting message to newsgroup for list %s: %s',
+                   mlist.internal_name(), str(e))
+            return True
 
     def _oneloop(self):
         # If NNTP is not enabled, sleep for a while before checking again
-        if not self._nntp_enabled:
+        if not self._nntp:
             # Check the stop flag every second during sleep
             for _ in range(60):
                 if self._stop:
@@ -130,23 +151,6 @@ class NewsRunner(Runner):
             # Put the message back in the queue
             self._switchboard.enqueue(msg, msgdata={})
         return 1
-
-    def _dispose(self, mlist, msg, msgdata):
-        """Post the message to the newsgroup."""
-        try:
-            # Validate message type first
-            msg, success = self._validate_message(msg, msgdata)
-            if not success:
-                mailman_log('error', 'Message validation failed for news message')
-                return False
-
-            # Post the message to the newsgroup
-            mlist.post_to_news(msg)
-            return True
-        except Exception as e:
-            mailman_log('error', 'Error posting message to newsgroup for list %s: %s',
-                   mlist.internal_name(), str(e))
-            return False
 
     def _queue_news(self, listname, msg, msgdata):
         """Queue a news message for processing."""
@@ -174,12 +178,12 @@ class NewsRunner(Runner):
     def _cleanup(self):
         """Clean up resources before termination."""
         # Close any open NNTP connections
-        if hasattr(self, '_nntp_conn') and self._nntp_conn:
+        if hasattr(self, '_nntp') and self._nntp:
             try:
-                self._nntp_conn.quit()
+                self._nntp.quit()
             except Exception:
                 pass
-            self._nntp_conn = None
+            self._nntp = None
         # Call parent cleanup
         super(NewsRunner, self)._cleanup()
 

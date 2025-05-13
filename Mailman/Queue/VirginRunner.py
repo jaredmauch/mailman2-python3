@@ -184,3 +184,18 @@ class VirginRunner(IncomingRunner):
         # It's okay to hardcode this, since it'll be the same for all
         # internally crafted messages.
         return ['CookHeaders', 'ToOutgoing']
+
+    def _cleanup_old_messages(self):
+        """Clean up old message tracking data."""
+        try:
+            mailman_log('debug', 'VirginRunner: Starting cleanup of old message tracking data')
+            now = time.time()
+            old_msgids = []
+            for msgid, last_retry in list(self._retry_times.items()):
+                if now - last_retry > self._max_retry_age:
+                    old_msgids.append(msgid)
+            for msgid in old_msgids:
+                del self._retry_times[msgid]
+            mailman_log('debug', 'VirginRunner: Cleaned up %d old message entries', len(old_msgids))
+        except Exception as e:
+            mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
