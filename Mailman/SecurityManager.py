@@ -66,7 +66,7 @@ except ImportError:
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import syslog, mailman_log
 from Mailman.Utils import md5_new, sha_new
 
 
