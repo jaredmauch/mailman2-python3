@@ -116,6 +116,7 @@ from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
+from Mailman.List import MailList
 
 
 class PipelineError(Exception):
@@ -316,8 +317,16 @@ class IncomingRunner(Runner):
                         # Get the list name from the message data
                         listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
                         
+                        # Create a MailList object
+                        try:
+                            mlist = MailList(listname, lock=0)
+                        except Errors.MMUnknownListError:
+                            mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s', listname)
+                            self._shunt.enqueue(msg, msgdata)
+                            continue
+                        
                         # Process the message
-                        result = self._dispose(listname, msg, msgdata)
+                        result = self._dispose(mlist, msg, msgdata)
                         
                         # If the message should be kept in the queue, requeue it
                         if result:
