@@ -294,9 +294,6 @@ class IncomingRunner(Runner):
         # order.  Return an integer count of the number of files that were
         # available for this qrunner to process.
         try:
-            # Import MailList here to avoid circular imports
-            from Mailman.MailList import MailList
-            
             # Get the list of files to process
             files = self._switchboard.files()
             filecnt = len(files)
@@ -320,8 +317,15 @@ class IncomingRunner(Runner):
                         # Get the list name from the message data
                         listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
                         
-                        # Create a MailList object
+                        # Create a MailList object using lazy import
                         try:
+                            # Import MailList here to avoid circular imports
+                            from Mailman.MailList import MailList
+                            mlist = MailList(listname, lock=0)
+                        except ImportError:
+                            # If we can't import MailList, try to get it from sys.modules
+                            import sys
+                            MailList = sys.modules['Mailman.MailList'].MailList
                             mlist = MailList(listname, lock=0)
                         except Errors.MMUnknownListError:
                             mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s', listname)
