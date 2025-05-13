@@ -30,6 +30,7 @@ Options:
 import sys
 import time
 import argparse
+import traceback
 
 import paths
 
@@ -41,6 +42,7 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.Message import UserNotification
 from Mailman import i18n
+from Mailman.Logging.Syslog import mailman_log
 
 # Work around known problems with some RedHat cron daemons
 import signal
@@ -62,55 +64,77 @@ def parse_args():
 
 def main():
     args = parse_args()
+    processed = 0
+    errors = 0
 
     for name in Utils.list_names():
         # the list must be locked in order to open the requests database
-        mlist = MailList.MailList(name)
         try:
-            count = mlist.NumRequestsPending()
-            # While we're at it, let's evict yesterday's autoresponse data
-            midnightToday = Utils.midnight()
-            evictions = []
-            for sender in mlist.hold_and_cmd_autoresponses.keys():
-                date, respcount = mlist.hold_and_cmd_autoresponses[sender]
-                if Utils.midnight(date) < midnightToday:
-                    evictions.append(sender)
-            if evictions:
-                for sender in evictions:
-                    del mlist.hold_and_cmd_autoresponses[sender]
-                # Only here have we changed the list's database
-                mlist.Save()
-            if count:
-                i18n.set_language(mlist.preferred_language)
-                realname = mlist.real_name
-                discarded = auto_discard(mlist)
-                if discarded:
-                    count = count - discarded
-                    text = _(
-             'Notice: %(discarded)d old request(s) automatically expired.\n\n')
-                else:
-                    text = ''
+            mlist = MailList.MailList(name)
+            try:
+                count = mlist.NumRequestsPending()
+                # While we're at it, let's evict yesterday's autoresponse data
+                midnightToday = Utils.midnight()
+                evictions = []
+                for sender in mlist.hold_and_cmd_autoresponses.keys():
+                    date, respcount = mlist.hold_and_cmd_autoresponses[sender]
+                    if Utils.midnight(date) < midnightToday:
+                        evictions.append(sender)
+                if evictions:
+                    for sender in evictions:
+                        del mlist.hold_and_cmd_autoresponses[sender]
+                    # Only here have we changed the list's database
+                    mlist.Save()
                 if count:
-                    text += str(Utils.maketext(
-                        'checkdbs.txt',
-                        {'count'    : count,
-                         'host_name': mlist.host_name,
-                         'adminDB'  : mlist.GetScriptURL('admindb', absolute=1),
-                         'real_name': realname,
-                         }, mlist=mlist))
-                    text += '\n' + pending_requests(mlist)
-                    subject = _(
-                        '%(count)d %(realname)s moderator request(s) waiting')
-                else:
-                    subject = _(
-                        '%(realname)s moderator request check result')
-                msg = UserNotification(mlist.GetOwnerEmail(),
-                                     mlist.GetBouncesEmail(),
-                                     subject, text,
-                                     mlist.preferred_language)
-                msg.send(mlist, **{'tomoderators': 1})
-        finally:
-            mlist.Unlock()
+                    i18n.set_language(mlist.preferred_language)
+                    realname = mlist.real_name
+                    discarded = auto_discard(mlist)
+                    if discarded:
+                        count = count - discarded
+                        text = _(
+                 'Notice: %(discarded)d old request(s) automatically expired.\n\n')
+                    else:
+                        text = ''
+                    if count:
+                        text += str(Utils.maketext(
+                            'checkdbs.txt',
+                            {'count'    : count,
+                             'host_name': mlist.host_name,
+                             'adminDB'  : mlist.GetScriptURL('admindb', absolute=1),
+                             'real_name': realname,
+                             }, mlist=mlist))
+                        text += '\n' + pending_requests(mlist)
+                        subject = _(
+                            '%(count)d %(realname)s moderator request(s) waiting')
+                    else:
+                        subject = _(
+                            '%(realname)s moderator request check result')
+                    try:
+                        # Get the charset for the list's language
+                        charset = Utils.GetCharSet(mlist.preferred_language)
+                        msg = UserNotification(mlist.GetOwnerEmail(),
+                                             mlist.GetBouncesEmail(),
+                                             subject, text,
+                                             mlist.preferred_language)
+                        msg.send(mlist, **{'tomoderators': 1})
+                        processed += 1
+                    except Exception as e:
+                        mailman_log('error', 'Failed to send notification for list %s: %s\n%s',
+                                  name, str(e), traceback.format_exc())
+                        errors += 1
+            finally:
+                mlist.Unlock()
+        except Exception as e:
+            mailman_log('error', 'Error processing list %s: %s\n%s',
+                       name, str(e), traceback.format_exc())
+            errors += 1
+
+    if errors:
+        mailman_log('error', 'checkdbs completed with %d errors, processed %d lists',
+                   errors, processed)
+    else:
+        mailman_log('info', 'checkdbs completed successfully, processed %d lists',
+                   processed)
 
 
 def pending_requests(mlist):
@@ -118,43 +142,66 @@ def pending_requests(mlist):
     lcset = Utils.GetCharSet(mlist.preferred_language)
     pending = []
     first = 1
-    for id in mlist.GetSubscriptionIds():
-        if first:
-            pending.append(_('Pending subscriptions:'))
-            first = 0
-        when, addr, fullname, passwd, digest, lang = mlist.GetRecord(id)
-        if fullname:
-            if isinstance(fullname, bytes):
-                fullname = fullname.decode(lcset, 'replace')
-            fullname = ' (%s)' % fullname
-        pending.append('    %s%s %s' % (addr, fullname, time.ctime(when)))
-    first = 1
-    for id in mlist.GetUnsubscriptionIds():
-        if first:
-            pending.append(_('Pending unsubscriptions:'))
-            first = 0
-        addr = mlist.GetRecord(id)
-        pending.append('    %s' % addr)
-    first = 1
-    for id in mlist.GetHeldMessageIds():
-        if first:
-            pending.append(_('\nPending posts:'))
-            first = 0
-        info = mlist.GetRecord(id)
-        when, sender, subject, reason, text, msgdata = mlist.GetRecord(id)
-        subject = Utils.oneline(subject, lcset)
-        if isinstance(subject, bytes):
-            subject = subject.decode(lcset, 'replace')
-        date = time.ctime(when)
-        reason = _(reason)
-        pending.append(_("""\
+    try:
+        for id in mlist.GetSubscriptionIds():
+            if first:
+                pending.append(_('Pending subscriptions:'))
+                first = 0
+            try:
+                when, addr, fullname, passwd, digest, lang = mlist.GetRecord(id)
+                if fullname:
+                    if isinstance(fullname, bytes):
+                        fullname = fullname.decode(lcset, 'replace')
+                    fullname = ' (%s)' % fullname
+                pending.append('    %s%s %s' % (addr, fullname, time.ctime(when)))
+            except Exception as e:
+                mailman_log('error', 'Error processing subscription record %d: %s\n%s',
+                           id, str(e), traceback.format_exc())
+                continue
+
+        first = 1
+        for id in mlist.GetUnsubscriptionIds():
+            if first:
+                pending.append(_('Pending unsubscriptions:'))
+                first = 0
+            try:
+                addr = mlist.GetRecord(id)
+                pending.append('    %s' % addr)
+            except Exception as e:
+                mailman_log('error', 'Error processing unsubscription record %d: %s\n%s',
+                           id, str(e), traceback.format_exc())
+                continue
+
+        first = 1
+        for id in mlist.GetHeldMessageIds():
+            if first:
+                pending.append(_('\nPending posts:'))
+                first = 0
+            try:
+                info = mlist.GetRecord(id)
+                when, sender, subject, reason, text, msgdata = mlist.GetRecord(id)
+                subject = Utils.oneline(subject, lcset)
+                if isinstance(subject, bytes):
+                    subject = subject.decode(lcset, 'replace')
+                date = time.ctime(when)
+                reason = _(reason)
+                pending.append(_("""\
 From: %(sender)s on %(date)s
 Subject: %(subject)s
 Cause: %(reason)s"""))
-        pending.append('')
+                pending.append('')
+            except Exception as e:
+                mailman_log('error', 'Error processing held message record %d: %s\n%s',
+                           id, str(e), traceback.format_exc())
+                continue
+    except Exception as e:
+        mailman_log('error', 'Error in pending_requests: %s\n%s',
+                   str(e), traceback.format_exc())
+        return _('Error retrieving pending requests')
     
     # Join all lines with newlines and return as a string
     return '\n'.join(pending)
+
 
 def auto_discard(mlist):
     # Discard old held messages
@@ -162,12 +209,20 @@ def auto_discard(mlist):
     expire = mlist.max_days_to_hold * 86400 # days
     heldmsgs = mlist.GetHeldMessageIds()
     if expire and len(heldmsgs):
+        current_time = time.time()
         for id in heldmsgs:
-            if now - mlist.GetRecord(id)[0] > expire:
-                mlist.HandleRequest(id, mm_cfg.DISCARD)
-                discard_count += 1
-        mlist.Save()
+            try:
+                if current_time - mlist.GetRecord(id)[0] > expire:
+                    mlist.HandleRequest(id, mm_cfg.DISCARD)
+                    discard_count += 1
+            except Exception as e:
+                mailman_log('error', 'Error auto-discarding message %d: %s\n%s',
+                           id, str(e), traceback.format_exc())
+                continue
+        if discard_count:
+            mlist.Save()
     return discard_count
+
 
 if __name__ == '__main__':
     main()
