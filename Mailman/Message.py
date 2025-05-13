@@ -295,30 +295,9 @@ class UserNotification(Message):
     def _enqueue(self, mlist, **_kws):
         """Enqueue the message to the virgin queue."""
         # Not imported at module scope to avoid import loop
-        from Mailman.Queue.Switchboard import Switchboard
-        from Mailman.Queue.VirginQueue import VirginQueue
-        
-        mailman_log('debug', 'UserNotification._enqueue: Starting to enqueue notification for list %s', mlist.internal_name())
-        
-        # Create a unique filebase using the standard format
-        now = time.time()
-        msg_str = self.as_string()
-        hashfood = msg_str.encode() + mlist.internal_name().encode() + repr(now).encode()
-        filebase = repr(now) + '+' + hashlib.sha1(hashfood).hexdigest()
-        
-        mailman_log('debug', 'UserNotification._enqueue: Generated filebase %s', filebase)
-        
-        # Create the virgin queue
-        virginq = VirginQueue()
-        
-        # Enqueue the message
-        try:
-            virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
-            mailman_log('debug', 'UserNotification._enqueue: Successfully enqueued notification to virgin queue')
-            return True
-        except Exception as e:
-            mailman_log('error', 'UserNotification._enqueue: Failed to enqueue notification: %s', str(e))
-            return False
+        from Mailman.Queue.sbcache import get_switchboard
+        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
 
 
 class OwnerNotification(UserNotification):
@@ -335,27 +314,6 @@ class OwnerNotification(UserNotification):
     def _enqueue(self, mlist, **_kws):
         """Enqueue the message to the virgin queue."""
         # Not imported at module scope to avoid import loop
-        from Mailman.Queue.Switchboard import Switchboard
-        from Mailman.Queue.VirginQueue import VirginQueue
-        
-        mailman_log('debug', 'OwnerNotification._enqueue: Starting to enqueue notification for list %s', mlist.internal_name())
-        
-        # Create a unique filebase using the standard format
-        now = time.time()
-        msg_str = self.as_string()
-        hashfood = msg_str.encode() + mlist.internal_name().encode() + repr(now).encode()
-        filebase = repr(now) + '+' + hashlib.sha1(hashfood).hexdigest()
-        
-        mailman_log('debug', 'OwnerNotification._enqueue: Generated filebase %s', filebase)
-        
-        # Create the virgin queue
-        virginq = VirginQueue()
-        
-        # Enqueue the message
-        try:
-            virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
-            mailman_log('debug', 'OwnerNotification._enqueue: Successfully enqueued notification to virgin queue')
-            return True
-        except Exception as e:
-            mailman_log('error', 'OwnerNotification._enqueue: Failed to enqueue notification: %s', str(e))
-            return False
+        from Mailman.Queue.sbcache import get_switchboard
+        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
