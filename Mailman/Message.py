@@ -257,26 +257,36 @@ class Message(email.message.Message):
 
 class UserNotification(Message):
     """Class for crafting user notifications."""
-    def __init__(self, recip, sender, subject=None, text=None, lang=None):
+    def __init__(self, recip, sender, subject, text=None, lang=None, charset=None,
+                 _fasttrack=False, _text_is_unicode=False):
         Message.__init__(self)
-        self['To'] = recip
         self['From'] = sender
-        if subject:
-            self['Subject'] = subject
-        if text:
-            self.set_payload(text)
-        if lang:
-            self['Content-Language'] = lang
+        self['To'] = recip
+        self['Subject'] = subject
+        self['Date'] = email.utils.formatdate(localtime=1)
         self['X-Mailer'] = 'Mailman/%s' % mm_cfg.VERSION
-        self['X-Ack-No'] = 'yes'
+        self['X-Accept-Language'] = ', '.join(mm_cfg.DEFAULT_SERVER_LANGUAGES)
         self['Precedence'] = 'bulk'
-        self['Message-ID'] = unique_message_id()
+        if text:
+            if _text_is_unicode:
+                self.set_payload(text)
+            else:
+                self.set_payload(text, charset or 'us-ascii')
+        if _fasttrack:
+            self['X-Ack'] = 'yes'
+        if lang:
+            self['X-Accept-Language'] = lang
 
     def send(self, mlist, noprecedence=False, **_kws):
         """Send the message to the recipient.
 
         The message is sent via the virgin queue.
         """
+        # Since we're crafting the message from whole cloth, let's make sure
+        # this message has a Message-ID.  Yes, the MTA would give us one, but
+        # this is useful for logging to logs/smtp.
+        if 'message-id' not in self:
+            self['Message-ID'] = unique_message_id(mlist)
         if not noprecedence:
             self['Precedence'] = 'bulk'
         return self._enqueue(mlist, **_kws)
