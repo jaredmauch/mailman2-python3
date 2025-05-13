@@ -42,9 +42,6 @@ from Mailman.Queue.RetryRunner import RetryRunner
 from Mailman.Queue.CommandRunner import CommandRunner
 from Mailman.Queue.ArchRunner import ArchRunner
 
-# Import VirginRunner last to avoid circular imports
-from Mailman.Queue.VirginRunner import VirginRunner
-
 # Define lazy imports to avoid circular dependencies
 def get_news_runner():
     from Mailman.Queue.NewsRunner import NewsRunner
@@ -53,6 +50,10 @@ def get_news_runner():
 def get_incoming_runner():
     from Mailman.Queue.IncomingRunner import IncomingRunner
     return IncomingRunner
+
+def get_virgin_runner():
+    from Mailman.Queue.VirginRunner import VirginRunner
+    return VirginRunner
 
 __all__ = [
     'Runner',
@@ -63,7 +64,7 @@ __all__ = [
     'RetryRunner',
     'CommandRunner',
     'ArchRunner',
-    'VirginRunner',
     'get_news_runner',
     'get_incoming_runner',
+    'get_virgin_runner',
 ]
