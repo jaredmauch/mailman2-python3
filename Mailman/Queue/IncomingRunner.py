@@ -294,6 +294,9 @@ class IncomingRunner(Runner):
         # order.  Return an integer count of the number of files that were
         # available for this qrunner to process.
         try:
+            # Import MailList here to avoid circular imports
+            from Mailman.MailList import MailList
+            
             # Get the list of files to process
             files = self._switchboard.files()
             filecnt = len(files)
