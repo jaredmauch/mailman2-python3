@@ -65,7 +65,7 @@ class VirginRunner(IncomingRunner):
                 last_retry = self._retry_times.get(msgid, 0)
                 time_since_last_retry = current_time - last_retry
                 
-                # Log detailed retry information
+                # Log detailed retry information at debug level
                 mailman_log('debug', 'VirginRunner: Retry check for message %s (file: %s):', msgid, filebase)
                 mailman_log('debug', '  Last retry time: %s', time.ctime(last_retry) if last_retry else 'Never')
                 mailman_log('debug', '  Current time: %s', time.ctime(current_time))
@@ -73,8 +73,9 @@ class VirginRunner(IncomingRunner):
                 mailman_log('debug', '  Minimum retry delay: %d seconds', self.MIN_RETRY_DELAY)
                 
                 if time_since_last_retry < self.MIN_RETRY_DELAY:
-                    mailman_log('info', 'VirginRunner: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
-                               msgid, filebase, time_since_last_retry)
+                    # Log at info level when retry check fails
+                    mailman_log('info', 'VirginRunner: Message %s (file: %s) retried too soon. Time since last retry: %d seconds, minimum required: %d seconds',
+                               msgid, filebase, time_since_last_retry, self.MIN_RETRY_DELAY)
                     return False
                 
                 # Update both data structures atomically
