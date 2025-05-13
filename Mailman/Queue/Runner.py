@@ -52,16 +52,18 @@ class Runner:
     _retry_times = {}  # Track last retry time for each message
 
     def __init__(self, slice=None, numslices=1):
-        self._kids = {}
-        # Create our own switchboard.  Don't use the switchboard cache because
-        # we want to provide slice and numslice arguments.
-        self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
-        # Create the shunt switchboard
-        self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
-        self._stop = False
-        self.status = 0  # Add status attribute initialized to 0
-        self._error_count = 0  # Track consecutive errors
-        self._last_error_time = 0  # Track time of last error
+        mailman_log('debug', 'Runner: Starting initialization')
+        try:
+            self._stop = 0
+            self._slice = slice
+            self._numslices = numslices
+            self._switchboard = Switchboard(self.QDIR)
+            self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
+            mailman_log('debug', 'Runner: Initialization complete')
+        except Exception as e:
+            mailman_log('error', 'Runner: Initialization failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            raise
 
     def __repr__(self):
         return '<%s at %s>' % (self.__class__.__name__, id(self))
@@ -163,107 +165,111 @@ class Runner:
         return True
 
     def _oneloop(self):
-        # First, list all the files in our queue directory.
-        # Switchboard.files() is guaranteed to hand us the files in FIFO
-        # order.  Return an integer count of the number of files that were
-        # available for this qrunner to process.
-        files = self._switchboard.files()
-        for filebase in files:
-            try:
-                # Ask the switchboard for the message and metadata objects
-                # associated with this filebase.
-                msg, msgdata = self._switchboard.dequeue(filebase)
-                try:
-                    from Mailman.Logging.Syslog import mailman_log
-                    mailman_log('debug', 'Runner._oneloop: Dequeued file %s, msg type: %s, msgdata type: %s', filebase, type(msg), type(msgdata))
-                    # Log a short summary of the message and msgdata
-                    mailman_log('debug', 'Runner._oneloop: msg repr: %r', repr(msg)[:500])
-                    mailman_log('debug', 'Runner._oneloop: msgdata keys: %s', list(msgdata.keys()) if isinstance(msgdata, dict) else str(msgdata))
-                except Exception as e:
-                    mailman_log('error', 'Runner._oneloop: Exception during post-dequeue logging: %s', str(e))
-            except (email.errors.MessageParseError, ValueError) as e:
-                # Handle message parsing errors
-                self.log_error('message_parse_error', e, filebase=filebase)
-                preserve = mm_cfg.QRUNNER_SAVE_BAD_MESSAGES
-                self._switchboard.finish(filebase, preserve=preserve)
-                continue
-            except Exception as e:
-                # Handle other unexpected errors
-                self._handle_error(e, filebase=filebase)
-                self._switchboard.finish(filebase, preserve=True)
-                continue
-            try:
-                self._onefile(msg, msgdata)
-                self._switchboard.finish(filebase)
-            except Exception as e:
-                if not self._handle_error(e, msg=msg, mlist=msgdata.get('listname')):
-                    self._switchboard.finish(filebase, preserve=True)
-            # Other work we want to do each time through the loop
-            Utils.reap(self._kids, once=True)
-            self._doperiodic()
-            if self._shortcircuit():
-                break
-        return len(files)
-
-    def _validate_message(self, msg, msgdata=None):
-        """Validate and convert message to Mailman.Message if needed.
-        
-        Args:
-            msg: The message object to validate
-            msgdata: Optional message metadata dictionary
-            
-        Returns:
-            tuple: (validated_msg, success)
-            where validated_msg is the converted message if successful,
-            and success is a boolean indicating if validation succeeded
-        """
+        """Process one batch of messages from the queue."""
         try:
-            # Handle string messages
-            if isinstance(msg, str):
-                log('info', 'Converting string to Mailman.Message')
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Only log at debug level if we found files to process
+            if filecnt > 0:
+                mailman_log('debug', 'Runner._oneloop: Found %d files to process', filecnt)
+            
+            # Process each file
+            for filebase in files:
                 try:
-                    from email import message_from_string
-                    msg = message_from_string(msg)
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        continue
+                        
+                    mailman_log('info', 'Runner._oneloop: Successfully dequeued file %s', filebase)
+                    
+                    # Process the message
+                    try:
+                        # Get the list name from the message data
+                        listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
+                        
+                        # Process the message
+                        result = self._dispose(listname, msg, msgdata)
+                        
+                        # If the message should be kept in the queue, requeue it
+                        if result:
+                            self._switchboard.enqueue(msg, msgdata)
+                            mailman_log('info', 'Runner._oneloop: Message requeued for later processing: %s', filebase)
+                        else:
+                            mailman_log('info', 'Runner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
+                                      filebase, msg.get('message-id', 'n/a'))
+                            
+                    except Exception as e:
+                        mailman_log('error', 'Runner._oneloop: Error processing message: %s\n%s',
+                                  str(e), traceback.format_exc())
+                        # Move to shunt queue on error
+                        self._shunt.enqueue(msg, msgdata)
+                        
                 except Exception as e:
-                    log('error', 'Failed to convert string to message: %s\nTraceback:\n%s',
-                           str(e), traceback.format_exc())
-                    return None, False
+                    mailman_log('error', 'Runner._oneloop: Error dequeuing file %s: %s\n%s',
+                              filebase, str(e), traceback.format_exc())
+                    
+            # Only log completion at debug level if we processed files
+            if filecnt > 0:
+                mailman_log('debug', 'Runner._oneloop: Loop complete, processed %d files', filecnt)
+                
+        except Exception as e:
+            mailman_log('error', 'Runner._oneloop: Unexpected error in main loop: %s\n%s',
+                      str(e), traceback.format_exc())
 
-            # Convert to Mailman.Message if needed
+    def _validate_message(self, msg, msgdata):
+        """Validate and convert message if needed.
+        
+        Returns a tuple of (msg, success) where success is a boolean indicating
+        if validation was successful.
+        """
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            # Check message size
+            if len(str(msg)) > mm_cfg.MAX_MESSAGE_SIZE:
+                mailman_log('error', 'Runner._validate_message: Message %s too large: %d bytes',
+                           msgid, len(str(msg)))
+                return msg, False
+
+            # Convert message if needed
             if not isinstance(msg, Message):
-                log('info', 'Converting email.message.Message to Mailman.Message')
-                try:
-                    mailman_msg = Message()
-                    # Copy all attributes from the original message
-                    for key, value in msg.items():
-                        mailman_msg[key] = value
-                    # Copy the payload
-                    if msg.is_multipart():
-                        for part in msg.get_payload():
-                            mailman_msg.attach(part)
-                    else:
-                        mailman_msg.set_payload(msg.get_payload())
-                    msg = mailman_msg
-                    # Update msgdata references if needed
-                    if msgdata and 'msg' in msgdata:
-                        msgdata['msg'] = msg
-                except Exception as e:
-                    log('error', 'Failed to convert to Mailman.Message: %s\nTraceback:\n%s',
-                           str(e), traceback.format_exc())
-                    return None, False
-
+                mailman_log('debug', 'Runner._validate_message: Converting message %s to Mailman.Message', msgid)
+                msg = Message(msg)
+            
             # Validate required Mailman.Message methods
             required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
+            missing_methods = []
             for method in required_methods:
                 if not hasattr(msg, method):
-                    log('error', 'Message object missing required method %s', method)
-                    return None, False
-
+                    missing_methods.append(method)
+            
+            if missing_methods:
+                mailman_log('error', 'Runner._validate_message: Message %s missing required methods: %s', 
+                           msgid, ', '.join(missing_methods))
+                return msg, False
+                
+            # Validate message headers
+            if not msg.get('message-id'):
+                mailman_log('error', 'Runner._validate_message: Message %s missing Message-ID header', msgid)
+                return msg, False
+                
+            if not msg.get('from'):
+                mailman_log('error', 'Runner._validate_message: Message %s missing From header', msgid)
+                return msg, False
+                
+            if not msg.get('to') and not msg.get('recipients'):
+                mailman_log('error', 'Runner._validate_message: Message %s missing To/Recipients', msgid)
+                return msg, False
+                
+            mailman_log('debug', 'Runner._validate_message: Message %s validation successful', msgid)
             return msg, True
+            
         except Exception as e:
-            log('error', 'Unexpected error during message validation: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-            return None, False
+            mailman_log('error', 'Runner._validate_message: Error validating message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return msg, False
 
     def _onefile(self, msg, msgdata):
         # Validate message type first
@@ -343,16 +349,14 @@ class Runner:
         pass
 
     def _snooze(self, filecnt):
-        """Sleep for a little while.
-
-        filecnt is the number of messages in the queue the last time through.
-        Sub-runners can decide to continue to do work, or sleep for a while
-        based on this value.  By default, we only snooze if there was nothing
-        to do last time around.
-        """
-        if filecnt or self.SLEEPTIME <= 0:
-            return
-        time.sleep(self.SLEEPTIME)
+        """Sleep for a while, but check for stop flag periodically."""
+        mailman_log('debug', 'Runner._snooze: Sleeping for %d seconds', self.SLEEPTIME)
+        for _ in range(self.SLEEPTIME):
+            if self._stop:
+                mailman_log('debug', 'Runner._snooze: Stop flag detected, waking up')
+                return
+            time.sleep(1)
+        mailman_log('debug', 'Runner._snooze: Sleep complete')
 
     def _shortcircuit(self):
         """Return a true value if the individual file processing loop should
@@ -368,12 +372,14 @@ class Runner:
     # Subclasses can override these methods.
     #
     def _cleanup(self):
-        """Clean up upon exit from the main processing loop.
-
-        Called when the Runner's main loop is stopped, this should perform
-        any necessary resource deallocation.  Its return value is irrelevant.
-        """
-        Utils.reap(self._kids)
+        """Clean up resources."""
+        mailman_log('debug', 'Runner: Starting cleanup')
+        try:
+            self._cleanup_old_messages()
+        except Exception as e:
+            mailman_log('error', 'Runner: Cleanup failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+        mailman_log('debug', 'Runner: Cleanup complete')
 
     def _dispose(self, mlist, msg, msgdata):
         """Dispose of a single message destined for a mailing list.
@@ -391,36 +397,41 @@ class Runner:
         raise NotImplementedError
 
     def _check_retry_delay(self, msgid, filebase):
-        """Check if enough time has passed since the last retry attempt.
-        Returns True if the message can be processed, False if it should be delayed."""
-        with self._processed_lock:
-            # Clean up old message IDs periodically
-            current_time = time.time()
-            if current_time - self._last_cleanup > self._cleanup_interval:
-                self._processed_messages.clear()
-                self._retry_times.clear()  # Also clean up retry times
-                self._last_cleanup = current_time
-                
-            # Check retry delay
-            last_retry = self._retry_times.get(msgid, 0)
-            time_since_last_retry = current_time - last_retry
-            if time_since_last_retry < self.MIN_RETRY_DELAY:
-                log('info', '%s: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
-                           self.__class__.__name__, msgid, filebase, time_since_last_retry)
-                return False
-                
-            # Mark message as being processed and update retry time
-            self._processed_messages.add(msgid)
-            self._retry_times[msgid] = current_time
-            return True
+        """Check if enough time has passed since the last retry attempt."""
+        now = time.time()
+        last_retry = self._retry_times.get(msgid, 0)
+        
+        if now - last_retry < self.MIN_RETRY_DELAY:
+            mailman_log('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay not met. Last retry: %s, Now: %s, Delay needed: %s',
+                       msgid, filebase, time.ctime(last_retry), time.ctime(now), self.MIN_RETRY_DELAY)
+            return False
+        
+        mailman_log('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay met. Last retry: %s, Now: %s',
+                   msgid, filebase, time.ctime(last_retry), time.ctime(now))
+        return True
 
     def _mark_message_processed(self, msgid):
-        """Mark a message as processed and update its retry time."""
+        """Mark a message as processed."""
         with self._processed_lock:
             self._processed_messages.add(msgid)
-            self._retry_times[msgid] = time.time()
+            mailman_log('debug', 'Runner._mark_message_processed: Marked message %s as processed', msgid)
 
     def _unmark_message_processed(self, msgid):
         """Remove a message from the processed set."""
         with self._processed_lock:
-            self._processed_messages.discard(msgid)
+            if msgid in self._processed_messages:
+                self._processed_messages.remove(msgid)
+                mailman_log('debug', 'Runner._unmark_message_processed: Removed message %s from processed set', msgid)
+
+    def _cleanup_old_messages(self):
+        """Clean up old message tracking data."""
+        with self._processed_lock:
+            if len(self._processed_messages) > self._max_processed_messages:
+                mailman_log('debug', 'Runner._cleanup_old_messages: Clearing processed messages set (size: %d)',
+                           len(self._processed_messages))
+                self._processed_messages.clear()
+            if len(self._retry_times) > self._max_retry_times:
+                mailman_log('debug', 'Runner._cleanup_old_messages: Clearing retry times dict (size: %d)',
+                           len(self._retry_times))
+                self._retry_times.clear()
+            self._last_cleanup = time.time()

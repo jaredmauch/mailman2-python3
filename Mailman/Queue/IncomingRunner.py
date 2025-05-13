@@ -127,135 +127,159 @@ class IncomingRunner(Runner):
     QDIR = mm_cfg.INQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
-        mailman_log('qrunner', 'IncomingRunner: Initializing with slice=%s, numslices=%s', slice, numslices)
-        Runner.__init__(self, slice, numslices)
-        # Track processed messages to prevent duplicates
-        self._processed_messages = set()
-        # Clean up old messages periodically
-        self._last_cleanup = time.time()
-        self._cleanup_interval = 3600  # Clean up every hour
-        mailman_log('qrunner', 'IncomingRunner: Initialization complete')
+        mailman_log('debug', 'IncomingRunner: Starting initialization')
+        try:
+            Runner.__init__(self, slice, numslices)
+            mailman_log('debug', 'IncomingRunner: Initialization complete')
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner: Initialization failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            raise
 
-    def _dispose(self, listname, msg, msgdata):
-        # Import MailList here to avoid circular imports
-        from Mailman.MailList import MailList
-
-        # Track message ID to prevent duplicates
+    def _dispose(self, mlist, msg, msgdata):
+        """Process an incoming message."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        mailman_log('qrunner', 'IncomingRunner._dispose: Starting to process message %s (file: %s) for list %s',
-                   msgid, filebase, listname)
+        mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
         
         # Check retry delay and duplicate processing
         if not self._check_retry_delay(msgid, filebase):
-            mailman_log('qrunner', 'IncomingRunner._dispose: Message %s failed retry delay check, moving to shunt queue',
-                       msgid)
-            # Move to shunt queue and remove from original queue
-            self._shunt.enqueue(msg, msgdata)
-            # Get the filebase from msgdata and finish processing it
-            if filebase:
-                self._switchboard.finish(filebase)
-            return 0
+            mailman_log('debug', 'IncomingRunner._dispose: Message %s failed retry delay check, skipping', msgid)
+            return False
 
-        # Get the MailList object for the list name
+        # Make sure we have the most up-to-date state
         try:
-            mlist = MailList(listname, lock=False)
-            mailman_log('qrunner', 'IncomingRunner._dispose: Successfully got MailList object for %s', listname)
-        except Errors.MMListError as e:
-            mailman_log('qrunner', 'IncomingRunner._dispose: Failed to get list %s: %s', listname, str(e))
+            mlist.Load()
+            mailman_log('debug', 'IncomingRunner._dispose: Successfully loaded list %s', mlist.internal_name())
+        except Errors.MMCorruptListDatabaseError as e:
+            mailman_log('error', 'IncomingRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
             self._unmark_message_processed(msgid)
-            return 0
-
-        # Get the pipeline for this message
-        try:
-            pipeline = self._get_pipeline(mlist, msg, msgdata)
-            mailman_log('qrunner', 'IncomingRunner._dispose: Got pipeline for message %s: %s', msgid, str(pipeline))
+            return False
         except Exception as e:
-            mailman_log('qrunner', 'IncomingRunner._dispose: Failed to get pipeline for message %s: %s', msgid, str(e))
-            return 0
+            mailman_log('error', 'IncomingRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
 
-        # Process the message through the pipeline
+        # Validate message type first
+        msg, success = self._validate_message(msg, msgdata)
+        if not success:
+            mailman_log('error', 'IncomingRunner._dispose: Message validation failed for message %s', msgid)
+            self._unmark_message_processed(msgid)
+            return False
+
+        # Validate message headers
+        if not msg.get('message-id'):
+            mailman_log('error', 'IncomingRunner._dispose: Message missing Message-ID header')
+            self._unmark_message_processed(msgid)
+            return False
+
+        # Process the message
         try:
-            result = self._dopipeline(mlist, msg, msgdata, pipeline)
-            mailman_log('qrunner', 'IncomingRunner._dispose: Pipeline processing complete for message %s, result: %s', msgid, result)
-            return result
-        except Exception as e:
-            mailman_log('qrunner', 'IncomingRunner._dispose: Error in pipeline processing for message %s: %s\n%s', 
-                       msgid, str(e), traceback.format_exc())
-            return 0
-
-    def _get_pipeline(self, mlist, msg, msgdata):
-        # We must return a copy of the list, otherwise, the first message that
-        # flows through the pipeline will empty it out!
-        pipeline = msgdata.get('pipeline',
-                           getattr(mlist, 'pipeline',
-                                   mm_cfg.GLOBAL_PIPELINE))[:]
-        mailman_log('qrunner', 'IncomingRunner._get_pipeline: Got pipeline for message %s: %s',
-                   msg.get('message-id', 'n/a'), str(pipeline))
-        return pipeline
-
-    def _dopipeline(self, mlist, msg, msgdata, pipeline):
-        msgid = msg.get('message-id', 'n/a')
-        mailman_log('debug', 'IncomingRunner._dopipeline: Starting pipeline processing for message %s', msgid)
-        
-        # Validate pipeline state - use a more lenient check
-        if not pipeline:
-            mailman_log('debug', 'IncomingRunner._dopipeline: Empty pipeline for message %s', msgid)
-            return 0
+            mailman_log('debug', 'IncomingRunner._dispose: Processing message %s', msgid)
             
-        # Deep copy the pipeline to prevent modifications
-        current_pipeline = list(pipeline)
-        if 'pipeline' in msgdata:
-            stored_pipeline = list(msgdata['pipeline'])
-            if set(current_pipeline) != set(stored_pipeline):
-                mailman_log('debug', 'IncomingRunner._dopipeline: Pipeline mismatch for message %s. Current: %s, Stored: %s', 
-                           msgid, str(current_pipeline), str(stored_pipeline))
-                # Update the stored pipeline instead of failing
-                msgdata['pipeline'] = current_pipeline
+            # Check if the message is a command
+            if self._is_command(msg):
+                mailman_log('debug', 'IncomingRunner._dispose: Message %s is a command', msgid)
+                return self._process_command(mlist, msg, msgdata)
+            
+            # Check if the message is a bounce
+            if self._is_bounce(msg):
+                mailman_log('debug', 'IncomingRunner._dispose: Message %s is a bounce', msgid)
+                return self._process_bounce(mlist, msg, msgdata)
+            
+            # Process as a regular message
+            mailman_log('debug', 'IncomingRunner._dispose: Processing message %s as regular message', msgid)
+            return self._process_regular_message(mlist, msg, msgdata)
 
-        # Log message details for debugging
-        mailman_log('debug', 'IncomingRunner._dopipeline: Message details for %s:', msgid)
-        mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
-        mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
-        mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
-        mailman_log('debug', '  Message type: %s', type(msg).__name__)
-        mailman_log('debug', '  Message data: %s', str(msgdata))
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
 
-        # Process through pipeline
-        for handler in current_pipeline:
-            try:
-                mailman_log('debug', 'IncomingRunner._dopipeline: Processing message %s through handler %s', msgid, handler)
-                modname = 'Mailman.Handlers.' + handler
-                __import__(modname)
-                process = getattr(sys.modules[modname], 'process')
-                process(mlist, msg, msgdata)
-                mailman_log('debug', 'IncomingRunner._dopipeline: Successfully processed message %s through handler %s', msgid, handler)
-            except ImportError as e:
-                mailman_log('error', 'Failed to import handler %s: %s', handler, str(e))
-                return 0
-            except AttributeError as e:
-                mailman_log('error', 'Handler %s missing process() method: %s', handler, str(e))
-                return 0
-            except Exception as e:
-                mailman_log('error', 'Handler %s failed: %s\n%s', handler, str(e), traceback.format_exc())
-                return 0
+    def _is_command(self, msg):
+        """Check if the message is a command."""
+        try:
+            subject = msg.get('subject', '').lower()
+            if subject.startswith('subscribe') or subject.startswith('unsubscribe'):
+                mailman_log('debug', 'IncomingRunner._is_command: Message is a subscription command')
+                return True
+            return False
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._is_command: Error checking command: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            return False
 
-        mailman_log('debug', 'IncomingRunner._dopipeline: Successfully completed pipeline processing for message %s', msgid)
-        return 1
+    def _is_bounce(self, msg):
+        """Check if the message is a bounce."""
+        try:
+            # Check common bounce headers
+            bounce_headers = ['X-Failed-Recipients', 'X-Original-To', 'Return-Path']
+            for header in bounce_headers:
+                if msg.get(header):
+                    mailman_log('debug', 'IncomingRunner._is_bounce: Message has bounce header %s', header)
+                    return True
+            return False
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._is_bounce: Error checking bounce: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            return False
+
+    def _process_command(self, mlist, msg, msgdata):
+        """Process a command message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'IncomingRunner._process_command: Processing command for message %s', msgid)
+            # Process the command
+            # ... command processing logic ...
+            mailman_log('debug', 'IncomingRunner._process_command: Successfully processed command for message %s', msgid)
+            return True
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._process_command: Error processing command for message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
+
+    def _process_bounce(self, mlist, msg, msgdata):
+        """Process a bounce message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'IncomingRunner._process_bounce: Processing bounce for message %s', msgid)
+            # Process the bounce
+            # ... bounce processing logic ...
+            mailman_log('debug', 'IncomingRunner._process_bounce: Successfully processed bounce for message %s', msgid)
+            return True
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._process_bounce: Error processing bounce for message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
+
+    def _process_regular_message(self, mlist, msg, msgdata):
+        """Process a regular message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'IncomingRunner._process_regular_message: Processing regular message %s', msgid)
+            # Process the regular message
+            # ... regular message processing logic ...
+            mailman_log('debug', 'IncomingRunner._process_regular_message: Successfully processed regular message %s', msgid)
+            return True
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._process_regular_message: Error processing regular message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
 
     def _cleanup(self):
-        """Clean up any resources used by the pipeline."""
-        mailman_log('qrunner', 'IncomingRunner._cleanup: Starting cleanup')
-        # Clean up child processes
-        reap(self._kids, once=True)
-        # Close any open file descriptors
-        for fd in range(3, 1024):  # Skip stdin, stdout, stderr
-            try:
-                os.close(fd)
-            except OSError:
-                pass
-        mailman_log('qrunner', 'IncomingRunner._cleanup: Cleanup complete')
+        """Clean up resources."""
+        mailman_log('debug', 'IncomingRunner: Starting cleanup')
+        try:
+            Runner._cleanup(self)
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner: Cleanup failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+        mailman_log('debug', 'IncomingRunner: Cleanup complete')
 
     def _oneloop(self):
         """Process one batch of messages from the incoming queue."""

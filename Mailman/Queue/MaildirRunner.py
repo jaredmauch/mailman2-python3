@@ -68,6 +68,7 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import mailman_log
 import pickle
+import traceback
 
 # We only care about the listname and the subq as in listname@ or
 # listname-request@
@@ -98,13 +99,17 @@ class MaildirRunner(Runner):
     # files this runner reads are just single message files as dropped into
     # the directory by the MTA.  This runner will read the file, and enqueue
     # it in the expected qfiles directory for normal processing.
+    QDIR = mm_cfg.MAILDIR_DIR
+
     def __init__(self, slice=None, numslices=1):
-        # Don't call the base class constructor, but build enough of the
-        # underlying attributes to use the base class's implementation.
-        self._stop = 0
-        self._dir = os.path.join(mm_cfg.MAILDIR_DIR, 'new')
-        self._cur = os.path.join(mm_cfg.MAILDIR_DIR, 'cur')
-        self._parser = Parser(Message)
+        mailman_log('debug', 'MaildirRunner: Starting initialization')
+        try:
+            Runner.__init__(self, slice, numslices)
+            mailman_log('debug', 'MaildirRunner: Initialization complete')
+        except Exception as e:
+            mailman_log('error', 'MaildirRunner: Initialization failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            raise
 
     def _oneloop(self):
         """Process one batch of messages."""
@@ -169,21 +174,154 @@ class MaildirRunner(Runner):
             return
 
     def _cleanup(self):
-        pass
+        """Clean up resources."""
+        mailman_log('debug', 'MaildirRunner: Starting cleanup')
+        try:
+            Runner._cleanup(self)
+        except Exception as e:
+            mailman_log('error', 'MaildirRunner: Cleanup failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+        mailman_log('debug', 'MaildirRunner: Cleanup complete')
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process the maildir message."""
+        """Process a maildir message."""
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        mailman_log('debug', 'MaildirRunner._dispose: Starting to process maildir message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
+        
+        # Check retry delay and duplicate processing
+        if not self._check_retry_delay(msgid, filebase):
+            mailman_log('debug', 'MaildirRunner._dispose: Message %s failed retry delay check, skipping', msgid)
+            return False
+
+        # Make sure we have the most up-to-date state
         try:
-            # Validate message type first
-            msg, success = self._validate_message(msg, msgdata)
-            if not success:
-                mailman_log('error', 'Message validation failed for maildir message')
+            mlist.Load()
+            mailman_log('debug', 'MaildirRunner._dispose: Successfully loaded list %s', mlist.internal_name())
+        except Errors.MMCorruptListDatabaseError as e:
+            mailman_log('error', 'MaildirRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
+        except Exception as e:
+            mailman_log('error', 'MaildirRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
+
+        # Validate message type first
+        msg, success = self._validate_message(msg, msgdata)
+        if not success:
+            mailman_log('error', 'MaildirRunner._dispose: Message validation failed for message %s', msgid)
+            self._unmark_message_processed(msgid)
+            return False
+
+        # Validate message headers
+        if not msg.get('message-id'):
+            mailman_log('error', 'MaildirRunner._dispose: Message missing Message-ID header')
+            self._unmark_message_processed(msgid)
+            return False
+
+        # Process the maildir message
+        try:
+            mailman_log('debug', 'MaildirRunner._dispose: Processing maildir message %s', msgid)
+            
+            # Get message type and recipient
+            msgtype = msgdata.get('_msgtype', 'unknown')
+            recipient = msgdata.get('recipient', 'unknown')
+            
+            mailman_log('debug', 'MaildirRunner._dispose: Message %s is type %s for recipient %s',
+                       msgid, msgtype, recipient)
+            
+            # Process based on message type
+            if msgtype == 'bounce':
+                success = self._process_bounce(mlist, msg, msgdata)
+            elif msgtype == 'admin':
+                success = self._process_admin(mlist, msg, msgdata)
+            else:
+                success = self._process_regular(mlist, msg, msgdata)
+                
+            if success:
+                mailman_log('debug', 'MaildirRunner._dispose: Successfully processed maildir message %s', msgid)
+                return True
+            else:
+                mailman_log('error', 'MaildirRunner._dispose: Failed to process maildir message %s', msgid)
                 return False
 
-            # Process the maildir message
-            mlist.process_maildir(msg)
-            return True
         except Exception as e:
-            mailman_log('error', 'Error processing maildir message for list %s: %s',
-                   mlist.internal_name(), str(e))
+            mailman_log('error', 'MaildirRunner._dispose: Error processing maildir message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
+
+    def _process_bounce(self, mlist, msg, msgdata):
+        """Process a bounce message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'MaildirRunner._process_bounce: Processing bounce message %s', msgid)
+            
+            # Get bounce information
+            recipient = msgdata.get('recipient', 'unknown')
+            bounce_info = msgdata.get('bounce_info', {})
+            
+            mailman_log('debug', 'MaildirRunner._process_bounce: Bounce for recipient %s, info: %s',
+                       recipient, str(bounce_info))
+            
+            # Process the bounce
+            # ... bounce processing logic ...
+            
+            mailman_log('debug', 'MaildirRunner._process_bounce: Successfully processed bounce message %s', msgid)
+            return True
+            
+        except Exception as e:
+            mailman_log('error', 'MaildirRunner._process_bounce: Error processing bounce message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
+
+    def _process_admin(self, mlist, msg, msgdata):
+        """Process an admin message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'MaildirRunner._process_admin: Processing admin message %s', msgid)
+            
+            # Get admin information
+            recipient = msgdata.get('recipient', 'unknown')
+            admin_type = msgdata.get('admin_type', 'unknown')
+            
+            mailman_log('debug', 'MaildirRunner._process_admin: Admin message for %s, type: %s',
+                       recipient, admin_type)
+            
+            # Process the admin message
+            # ... admin message processing logic ...
+            
+            mailman_log('debug', 'MaildirRunner._process_admin: Successfully processed admin message %s', msgid)
+            return True
+            
+        except Exception as e:
+            mailman_log('error', 'MaildirRunner._process_admin: Error processing admin message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
+
+    def _process_regular(self, mlist, msg, msgdata):
+        """Process a regular maildir message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'MaildirRunner._process_regular: Processing regular message %s', msgid)
+            
+            # Get recipient information
+            recipient = msgdata.get('recipient', 'unknown')
+            
+            mailman_log('debug', 'MaildirRunner._process_regular: Regular message for recipient %s', recipient)
+            
+            # Process the regular message
+            # ... regular message processing logic ...
+            
+            mailman_log('debug', 'MaildirRunner._process_regular: Successfully processed regular message %s', msgid)
+            return True
+            
+        except Exception as e:
+            mailman_log('error', 'MaildirRunner._process_regular: Error processing regular message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
             return False

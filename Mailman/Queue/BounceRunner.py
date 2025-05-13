@@ -83,6 +83,8 @@ class BounceMixin:
         self._bounce_events_fp = None
         self._bouncecnt = 0
         self._nextaction = time.time() + mm_cfg.REGISTER_BOUNCES_EVERY
+        mailman_log('debug', 'BounceMixin: Initialized with next action time: %s', 
+                   time.ctime(self._nextaction))
 
     def _queue_bounces(self, listname, addrs, msg):
         today = time.localtime()[:3]
@@ -108,6 +110,9 @@ class BounceMixin:
             filename = os.path.join(mm_cfg.BOUNCEQUEUE_DIR,
                                   '%d.%d.pck' % (os.getpid(), now))
             
+            mailman_log('debug', 'BounceMixin._register_bounces: Registering bounce for list %s, address %s',
+                       listname, addr)
+            
             # Write the bounce data to the pickle file
             try:
                 # Use protocol 4 for Python 3 compatibility
@@ -116,7 +121,10 @@ class BounceMixin:
                     pickle.dump((listname, addr, now, msg), fp, protocol=4, fix_imports=True)
                 # Set the file's mode appropriately
                 os.chmod(filename, 0o660)
+                mailman_log('debug', 'BounceMixin._register_bounces: Successfully wrote bounce data to %s', filename)
             except (IOError, OSError) as e:
+                mailman_log('error', 'BounceMixin._register_bounces: Failed to write bounce data to %s: %s\nTraceback:\n%s',
+                           filename, str(e), traceback.format_exc())
                 try:
                     os.unlink(filename)
                 except (IOError, OSError):
@@ -124,11 +132,13 @@ class BounceMixin:
                 raise SwitchboardError('Could not save bounce to %s: %s' %
                                      (filename, e))
         except Exception as e:
-            mailman_log('error', 'Error registering bounce: %s', e)
+            mailman_log('error', 'BounceMixin._register_bounces: Error registering bounce: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
             return False
 
     def _cleanup(self):
         if self._bouncecnt > 0:
+            mailman_log('debug', 'BounceMixin._cleanup: Processing %d pending bounces', self._bouncecnt)
             self._register_bounces()
 
     def _doperiodic(self):
@@ -137,6 +147,8 @@ class BounceMixin:
             return
         # Let's go ahead and register the bounces we've got stored up
         self._nextaction = now + mm_cfg.REGISTER_BOUNCES_EVERY
+        mailman_log('debug', 'BounceMixin._doperiodic: Processing bounces, next action scheduled for %s',
+                   time.ctime(self._nextaction))
         self._register_bounces()
 
     def _probe_bounce(self, mlist, token):
@@ -174,89 +186,140 @@ class BounceRunner(Runner, BounceMixin):
     QDIR = mm_cfg.BOUNCEQUEUE_DIR
 
     def __init__(self, slice=None, numslices=1):
-        Runner.__init__(self, slice, numslices)
-        BounceMixin.__init__(self)
+        mailman_log('debug', 'BounceRunner: Starting initialization')
+        try:
+            Runner.__init__(self, slice, numslices)
+            BounceMixin.__init__(self)
+            mailman_log('debug', 'BounceRunner: Initialization complete')
+        except Exception as e:
+            mailman_log('error', 'BounceRunner: Initialization failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            raise
 
     def _dispose(self, mlist, msg, msgdata):
         """Process a bounce message."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
+        mailman_log('debug', 'BounceRunner._dispose: Starting to process bounce message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
+        
         # Check retry delay and duplicate processing
         if not self._check_retry_delay(msgid, filebase):
+            mailman_log('debug', 'BounceRunner._dispose: Message %s failed retry delay check, skipping', msgid)
             return False
 
         # Make sure we have the most up-to-date state
         try:
             mlist.Load()
+            mailman_log('debug', 'BounceRunner._dispose: Successfully loaded list %s', mlist.internal_name())
         except Errors.MMCorruptListDatabaseError as e:
-            mailman_log('error', 'Failed to load list %s: %s',
-                       mlist.internal_name(), e)
+            mailman_log('error', 'BounceRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
             self._unmark_message_processed(msgid)
             return False
         except Exception as e:
-            mailman_log('error', 'Unexpected error loading list %s: %s',
-                       mlist.internal_name(), e)
+            mailman_log('error', 'BounceRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
             self._unmark_message_processed(msgid)
             return False
 
         # Validate message type first
         msg, success = self._validate_message(msg, msgdata)
         if not success:
-            mailman_log('error', 'Message validation failed for bounce message')
+            mailman_log('error', 'BounceRunner._dispose: Message validation failed for bounce message %s', msgid)
             self._unmark_message_processed(msgid)
             return False
 
         # Validate message headers
         if not msg.get('message-id'):
-            mailman_log('error', 'Message missing Message-ID header')
+            mailman_log('error', 'BounceRunner._dispose: Message missing Message-ID header')
             self._unmark_message_processed(msgid)
             return False
 
+        # Process the bounce message
         try:
-            # Log start of processing
-            mailman_log('info', 'BounceRunner: Starting to process bounce message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            
-            # Process the bounce
-            if not self._register_bounces(mlist.internal_name(), msg, msgdata):
+            mailman_log('debug', 'BounceRunner._dispose: Processing bounce message %s', msgid)
+            # Extract bounce information
+            bounce_info = self._extract_bounce_info(msg)
+            if not bounce_info:
+                mailman_log('error', 'BounceRunner._dispose: Failed to extract bounce information from message %s', msgid)
                 self._unmark_message_processed(msgid)
                 return False
 
-            # Queue the bounce for further processing
-            try:
-                self._queue_bounces(mlist.internal_name(), msg, msgdata)
-            except Exception as e:
-                mailman_log('error', 'Error queueing bounces: %s', e)
+            # Register the bounce
+            listname = mlist.internal_name()
+            addr = bounce_info.get('recipient')
+            if not addr:
+                mailman_log('error', 'BounceRunner._dispose: No recipient found in bounce message %s', msgid)
                 self._unmark_message_processed(msgid)
                 return False
 
-            # Log successful completion
-            mailman_log('info', 'BounceRunner: Successfully processed bounce message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            return True
+            mailman_log('debug', 'BounceRunner._dispose: Registering bounce for list %s, address %s', listname, addr)
+            if self._register_bounces(listname, addr, msg):
+                mailman_log('debug', 'BounceRunner._dispose: Successfully processed bounce message %s', msgid)
+                return True
+            else:
+                mailman_log('error', 'BounceRunner._dispose: Failed to register bounce for message %s', msgid)
+                return False
+
         except Exception as e:
-            # Enhanced error logging with more context
-            mailman_log('error', 'Error processing bounce message %s for list %s: %s',
-                   msgid, mlist.internal_name(), str(e))
-            mailman_log('error', 'Message details:')
-            mailman_log('error', '  Message ID: %s', msgid)
-            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
-            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
-            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
-            mailman_log('error', '  Message type: %s', type(msg).__name__)
-            mailman_log('error', '  Message data: %s', str(msgdata))
-            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
-            
-            # Remove from processed messages on error
+            mailman_log('error', 'BounceRunner._dispose: Error processing bounce message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
             self._unmark_message_processed(msgid)
             return False
 
-    _doperiodic = BounceMixin._doperiodic
+    def _extract_bounce_info(self, msg):
+        """Extract bounce information from a message."""
+        try:
+            # Log the message structure for debugging
+            mailman_log('debug', 'BounceRunner._extract_bounce_info: Message structure:')
+            mailman_log('debug', '  Headers: %s', dict(msg.items()))
+            mailman_log('debug', '  Content-Type: %s', msg.get('content-type', 'unknown'))
+            mailman_log('debug', '  Is multipart: %s', msg.is_multipart())
+
+            # Extract bounce information based on message structure
+            bounce_info = {}
+            
+            # Try to get recipient from various headers
+            for header in ['X-Failed-Recipients', 'X-Original-To', 'To']:
+                if msg.get(header):
+                    bounce_info['recipient'] = msg[header]
+                    mailman_log('debug', 'BounceRunner._extract_bounce_info: Found recipient in %s header: %s',
+                              header, bounce_info['recipient'])
+                    break
+
+            # Try to get error information
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    if part.get_content_type() == 'message/delivery-status':
+                        bounce_info['error'] = part.get_payload()
+                        mailman_log('debug', 'BounceRunner._extract_bounce_info: Found delivery status in multipart message')
+                        break
+
+            if not bounce_info.get('recipient'):
+                mailman_log('error', 'BounceRunner._extract_bounce_info: Could not find recipient in bounce message')
+                return None
+
+            return bounce_info
+
+        except Exception as e:
+            mailman_log('error', 'BounceRunner._extract_bounce_info: Error extracting bounce information: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            return None
 
     def _cleanup(self):
-        BounceMixin._cleanup(self)
-        Runner._cleanup(self)
+        """Clean up resources."""
+        mailman_log('debug', 'BounceRunner: Starting cleanup')
+        try:
+            BounceMixin._cleanup(self)
+            Runner._cleanup(self)
+        except Exception as e:
+            mailman_log('error', 'BounceRunner: Cleanup failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+        mailman_log('debug', 'BounceRunner: Cleanup complete')
+
+    _doperiodic = BounceMixin._doperiodic
 
 
 def verp_bounce(mlist, msg):

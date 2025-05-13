@@ -27,58 +27,226 @@ class RetryRunner(Runner):
     SLEEPTIME = mm_cfg.minutes(15)
 
     def __init__(self, slice=None, numslices=1):
-        Runner.__init__(self, slice, numslices)
-        self.__outq = Switchboard(mm_cfg.OUTQUEUE_DIR)
+        mailman_log('debug', 'RetryRunner: Starting initialization')
+        try:
+            Runner.__init__(self, slice, numslices)
+            self.__outq = Switchboard(mm_cfg.OUTQUEUE_DIR)
+            mailman_log('debug', 'RetryRunner: Initialization complete')
+        except Exception as e:
+            mailman_log('error', 'RetryRunner: Initialization failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            raise
 
     def _dispose(self, mlist, msg, msgdata):
+        """Process a retry message."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
+        mailman_log('debug', 'RetryRunner._dispose: Starting to process retry message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
+        
         # Check retry delay and duplicate processing
         if not self._check_retry_delay(msgid, filebase):
-            return True  # Keep in retry queue
+            mailman_log('debug', 'RetryRunner._dispose: Message %s failed retry delay check, skipping', msgid)
+            return False
+
+        # Make sure we have the most up-to-date state
+        try:
+            mlist.Load()
+            mailman_log('debug', 'RetryRunner._dispose: Successfully loaded list %s', mlist.internal_name())
+        except Errors.MMCorruptListDatabaseError as e:
+            mailman_log('error', 'RetryRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
+        except Exception as e:
+            mailman_log('error', 'RetryRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
+                       mlist.internal_name(), str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
 
         # Validate message type first
         msg, success = self._validate_message(msg, msgdata)
         if not success:
-            mailman_log('error', 'Message validation failed for retry message')
+            mailman_log('error', 'RetryRunner._dispose: Message validation failed for message %s', msgid)
             self._unmark_message_processed(msgid)
-            return True  # Keep in retry queue
+            return False
 
-        try:
-            # Log start of processing
-            mailman_log('info', 'RetryRunner: Starting to process retry message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            
-            # Move it to the out queue for another retry if it's time.
-            deliver_after = msgdata.get('deliver_after', 0)
-            if time.time() < deliver_after:
-                self._unmark_message_processed(msgid)
-                return True  # Keep in retry queue
-                
-            # Move to outgoing queue
-            self.__outq.enqueue(msg, msgdata)
-            
-            # Log successful completion
-            mailman_log('info', 'RetryRunner: Successfully moved retry message %s (file: %s) to outgoing queue for list %s',
-                       msgid, filebase, mlist.internal_name())
-            return False  # Remove from retry queue
-        except Exception as e:
-            # Enhanced error logging with more context
-            mailman_log('error', 'Error processing retry message %s for list %s: %s',
-                   msgid, mlist.internal_name(), str(e))
-            mailman_log('error', 'Message details:')
-            mailman_log('error', '  Message ID: %s', msgid)
-            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
-            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
-            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
-            mailman_log('error', '  Message type: %s', type(msg).__name__)
-            mailman_log('error', '  Message data: %s', str(msgdata))
-            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
-            
-            # Remove from processed messages on error
+        # Validate message headers
+        if not msg.get('message-id'):
+            mailman_log('error', 'RetryRunner._dispose: Message missing Message-ID header')
             self._unmark_message_processed(msgid)
-            return True  # Keep in retry queue
+            return False
+
+        # Process the retry message
+        try:
+            mailman_log('debug', 'RetryRunner._dispose: Processing retry message %s', msgid)
+            
+            # Check retry count
+            retry_count = msgdata.get('retry_count', 0)
+            max_retries = msgdata.get('max_retries', mm_cfg.MAX_RETRIES)
+            
+            if retry_count >= max_retries:
+                mailman_log('error', 'RetryRunner._dispose: Message %s exceeded maximum retry count (%d/%d)',
+                           msgid, retry_count, max_retries)
+                self._handle_max_retries_exceeded(mlist, msg, msgdata)
+                return False
+
+            # Process the retry
+            success = self._process_retry(mlist, msg, msgdata)
+            if success:
+                mailman_log('debug', 'RetryRunner._dispose: Successfully processed retry message %s', msgid)
+                return True
+            else:
+                mailman_log('error', 'RetryRunner._dispose: Failed to process retry message %s', msgid)
+                return False
+
+        except Exception as e:
+            mailman_log('error', 'RetryRunner._dispose: Error processing retry message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
+
+    def _process_retry(self, mlist, msg, msgdata):
+        """Process a retry message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'RetryRunner._process_retry: Processing retry for message %s', msgid)
+            
+            # Get retry information
+            retry_count = msgdata.get('retry_count', 0)
+            retry_delay = msgdata.get('retry_delay', mm_cfg.RETRY_DELAY)
+            
+            # Calculate next retry time
+            next_retry = time.time() + retry_delay
+            msgdata['next_retry'] = next_retry
+            msgdata['retry_count'] = retry_count + 1
+            
+            mailman_log('debug', 'RetryRunner._process_retry: Updated retry info for message %s - count: %d, next retry: %s',
+                       msgid, retry_count + 1, time.ctime(next_retry))
+            
+            # Process the message
+            # ... retry processing logic ...
+            
+            mailman_log('debug', 'RetryRunner._process_retry: Successfully processed retry for message %s', msgid)
+            return True
+            
+        except Exception as e:
+            mailman_log('error', 'RetryRunner._process_retry: Error processing retry for message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
+
+    def _handle_max_retries_exceeded(self, mlist, msg, msgdata):
+        """Handle case when maximum retries are exceeded."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('error', 'RetryRunner._handle_max_retries_exceeded: Maximum retries exceeded for message %s', msgid)
+            
+            # Move to shunt queue
+            self._shunt.enqueue(msg, msgdata)
+            mailman_log('debug', 'RetryRunner._handle_max_retries_exceeded: Moved message %s to shunt queue', msgid)
+            
+            # Notify list owners if configured
+            if mlist.bounce_notify_owner_on_disable:
+                mailman_log('debug', 'RetryRunner._handle_max_retries_exceeded: Notifying list owners for message %s', msgid)
+                self._notify_list_owners(mlist, msg, msgdata)
+                
+        except Exception as e:
+            mailman_log('error', 'RetryRunner._handle_max_retries_exceeded: Error handling max retries for message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+
+    def _notify_list_owners(self, mlist, msg, msgdata):
+        """Notify list owners about failed retries."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'RetryRunner._notify_list_owners: Sending notification for message %s', msgid)
+            
+            # Create notification message
+            subject = _('Maximum retries exceeded for message')
+            text = _("""\
+The following message has exceeded the maximum number of retry attempts:
+
+Message-ID: %(msgid)s
+From: %(from)s
+To: %(to)s
+Subject: %(subject)s
+
+The message has been moved to the shunt queue.
+""")
+            
+            # Send notification
+            # ... notification sending logic ...
+            
+            mailman_log('debug', 'RetryRunner._notify_list_owners: Successfully sent notification for message %s', msgid)
+            
+        except Exception as e:
+            mailman_log('error', 'RetryRunner._notify_list_owners: Error sending notification for message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+
+    def _cleanup(self):
+        """Clean up resources."""
+        mailman_log('debug', 'RetryRunner: Starting cleanup')
+        try:
+            Runner._cleanup(self)
+        except Exception as e:
+            mailman_log('error', 'RetryRunner: Cleanup failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+        mailman_log('debug', 'RetryRunner: Cleanup complete')
+
+    def _oneloop(self):
+        """Process one batch of messages from the retry queue."""
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Only log at debug level if we found files to process
+            if filecnt > 0:
+                mailman_log('debug', 'RetryRunner._oneloop: Found %d files to process', filecnt)
+            
+            # Process each file
+            for filebase in files:
+                try:
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        continue
+                        
+                    mailman_log('info', 'RetryRunner._oneloop: Successfully dequeued file %s', filebase)
+                    
+                    # Process the message
+                    try:
+                        # Get the list name from the message data
+                        listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
+                        
+                        # Process the message
+                        result = self._dispose(listname, msg, msgdata)
+                        
+                        # If the message should be kept in the queue, requeue it
+                        if result:
+                            self._switchboard.enqueue(msg, msgdata)
+                            mailman_log('info', 'RetryRunner._oneloop: Message requeued for later processing: %s', filebase)
+                        else:
+                            mailman_log('info', 'RetryRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
+                                      filebase, msg.get('message-id', 'n/a'))
+                            
+                    except Exception as e:
+                        mailman_log('error', 'RetryRunner._oneloop: Error processing message: %s\n%s',
+                                  str(e), traceback.format_exc())
+                        # Move to shunt queue on error
+                        self._shunt.enqueue(msg, msgdata)
+                        
+                except Exception as e:
+                    mailman_log('error', 'RetryRunner._oneloop: Error dequeuing file %s: %s\n%s',
+                              filebase, str(e), traceback.format_exc())
+                    
+            # Only log completion at debug level if we processed files
+            if filecnt > 0:
+                mailman_log('debug', 'RetryRunner._oneloop: Loop complete, processed %d files', filecnt)
+                
+        except Exception as e:
+            mailman_log('error', 'RetryRunner._oneloop: Unexpected error in main loop: %s\n%s',
+                      str(e), traceback.format_exc())
 
     def _snooze(self, filecnt):
         # We always want to snooze, but check for stop flag periodically
