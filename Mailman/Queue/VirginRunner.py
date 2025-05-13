@@ -32,7 +32,7 @@ import traceback
 from Mailman import Errors
 
 
-class VirginRunner(Runner):
+class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
     # Override the minimum retry delay for virgin messages
     MIN_RETRY_DELAY = 60  # 1 minute minimum delay between retries
@@ -138,12 +138,8 @@ class VirginRunner(Runner):
             should_unlock = False
         
         try:
-            # Get the IncomingRunner class
-            from Mailman.Queue import get_incoming_runner
-            IncomingRunner = get_incoming_runner()
-            
             # Process the message using IncomingRunner's _dispose method
-            result = IncomingRunner._dispose(self, mlist, msg, msgdata)
+            result = super()._dispose(mlist, msg, msgdata)
             
             mailman_log('debug', 'VirginRunner._dispose: Finished processing virgin message %s (file: %s)',
                        msgid, filebase)

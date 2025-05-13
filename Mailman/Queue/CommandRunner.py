@@ -34,6 +34,7 @@ from Mailman.Logging.Syslog import syslog
 from Mailman import LockFile
 from Mailman import Errors
 from Mailman import Pending
+from Mailman.List import MailList
 
 from email.header import decode_header, make_header, Header
 from email.errors import HeaderParseError
@@ -53,8 +54,8 @@ BADCMD = 2
 BADSUBJ = 3
 
 class Results:
-    def __init__(self, mlist, msg, msgdata):
-        self.mlist = mlist
+    def __init__(self, mlist_obj, msg, msgdata):
+        self.mlist = mlist_obj
         self.msg = msg
         self.msgdata = msgdata
         # Only set returnaddr if the response is to go to someone other than
@@ -243,6 +244,13 @@ class CommandRunner(Runner):
             mailman_log('error', 'Message validation failed for command message')
             return False
 
+        # Get the MailList object first, before any usage
+        try:
+            mlist_obj = MailList.MailList(mlist, lock=False)
+        except Errors.MMListError as e:
+            mailman_log('error', 'Failed to get MailList object for %s: %s', mlist, str(e))
+            return False
+
         # The policy here is similar to the Replybot policy.  If a message has
         # "Precedence: bulk|junk|list" and no "X-Ack: yes" header, we discard
         # it to prevent replybot response storms.
@@ -250,22 +258,22 @@ class CommandRunner(Runner):
         ack = msg.get('x-ack', '').lower()
         if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
             syslog('vette', 'Precedence: %s message discarded by: %s',
-                   precedence, mlist.GetRequestEmail())
+                   precedence, mlist_obj.GetRequestEmail())
             return False
         # Do replybot for commands
-        mlist.Load()
-        Replybot.process(mlist, msg, msgdata)
-        if mlist.autorespond_requests == 1:
+        mlist_obj.Load()
+        Replybot.process(mlist_obj, msg, msgdata)
+        if mlist_obj.autorespond_requests == 1:
             syslog('vette', 'replied and discard')
             # w/discard
             return False
         # Now craft the response
-        res = Results(mlist, msg, msgdata)
+        res = Results(mlist_obj, msg, msgdata)
         # BAW: Not all the functions of this qrunner require the list to be
         # locked.  Still, it's more convenient to lock it here and now and
         # deal with lock failures in one place.
         try:
-            mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
+            mlist_obj.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
         except LockFile.TimeOutError:
             # Oh well, try again later
             return True
@@ -290,6 +298,6 @@ class CommandRunner(Runner):
                        msg.get('message-id', 'n/a'))
             else:
                 res.send_response()
-                mlist.Save()
+                mlist_obj.Save()
         finally:
-            mlist.Unlock()
+            mlist_obj.Unlock()
