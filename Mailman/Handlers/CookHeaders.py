@@ -103,27 +103,49 @@ def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
                                  Utils.GetCharSet(mlist.preferred_language))
 
 def process(mlist, msg, msgdata):
+    """Process the message by cooking its headers."""
+    msgid = msg.get('message-id', 'n/a')
+    
+    # Log start of processing with enhanced details
+    mailman_log('debug', 'CookHeaders: Starting to process message %s for list %s',
+               msgid, mlist.internal_name())
+    mailman_log('debug', 'CookHeaders: Message details:')
+    mailman_log('debug', '  Message ID: %s', msgid)
+    mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
+    mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
+    mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
+    mailman_log('debug', '  Message type: %s', type(msg).__name__)
+    mailman_log('debug', '  Message data: %s', str(msgdata))
+    mailman_log('debug', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
+    
     # Set the "X-Ack: no" header if noack flag is set
     if msgdata.get('noack'):
+        mailman_log('debug', 'CookHeaders: Setting X-Ack: no for message %s', msgid)
         change_header('X-Ack', 'no', mlist, msg, msgdata)
     
     # Save original sender for later
     if 'original_sender' not in msgdata:
         msgdata['original_sender'] = msg.get_sender()
+        mailman_log('debug', 'CookHeaders: Saved original sender %s for message %s',
+                   msgdata['original_sender'], msgid)
     
     # Handle subject prefix and other headers
     fasttrack = msgdata.get('_fasttrack')
     if not msgdata.get('isdigest') and not fasttrack:
         try:
+            mailman_log('debug', 'CookHeaders: Adding subject prefix for message %s', msgid)
             prefix_subject(mlist, msg, msgdata)
-        except (UnicodeError, ValueError):
-            pass
+        except (UnicodeError, ValueError) as e:
+            mailman_log('error', 'CookHeaders: Error adding subject prefix for message %s: %s',
+                       msgid, str(e))
     
     # Mark message as processed
+    mailman_log('debug', 'CookHeaders: Adding X-BeenThere header for message %s', msgid)
     change_header('X-BeenThere', mlist.GetListEmail(),
                  mlist, msg, msgdata, delete=False)
     
     # Add standard headers
+    mailman_log('debug', 'CookHeaders: Adding standard headers for message %s', msgid)
     change_header('X-Mailman-Version', mm_cfg.VERSION,
                  mlist, msg, msgdata, repl=False)
     change_header('Precedence', 'list',
@@ -131,7 +153,10 @@ def process(mlist, msg, msgdata):
     
     # Handle From: header munging if needed
     if (msgdata.get('from_is_list') or mlist.from_is_list) and not fasttrack:
+        mailman_log('debug', 'CookHeaders: Munging From header for message %s', msgid)
         munge_from_header(mlist, msg, msgdata)
+    
+    mailman_log('debug', 'CookHeaders: Finished processing message %s', msgid)
 
 def munge_from_header(mlist, msg, msgdata):
     """Munge the From: header for the list.

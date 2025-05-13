@@ -234,11 +234,11 @@ class Switchboard:
                         
                         if isinstance(data, tuple):
                             msg, data = data
-                            mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple with msg type: %s, data type: %s', 
+                            mailman_log('debug', 'Switchboard.dequeue: 1Unpickled tuple with msg type: %s, data type: %s', 
                                       type(msg), type(data))
                         else:
                             msg = None
-                            mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data: %s', type(data))
+                            mailman_log('debug', 'Switchboard.dequeue: 2Unpickled non-tuple data: %s', type(data))
                             
                     except (pickle.UnpicklingError, ValueError) as e:
                         mailman_log('debug', 'Switchboard.dequeue: Python 3 protocol failed, trying Python 2 protocol: %s', str(e))

@@ -214,15 +214,29 @@ class OutgoingRunner(Runner, BounceMixin):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
+        # Log start of processing with enhanced details
+        mailman_log('debug', 'OutgoingRunner._dispose: Starting to process message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
+        mailman_log('debug', 'OutgoingRunner._dispose: Message details:')
+        mailman_log('debug', '  Message ID: %s', msgid)
+        mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
+        mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
+        mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
+        mailman_log('debug', '  Message type: %s', type(msg).__name__)
+        mailman_log('debug', '  Message data: %s', str(msgdata))
+        mailman_log('debug', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
+        
         # Check retry count
         retry_count = msgdata.get('_retry_count', 0)
         if retry_count >= self.MAX_RETRIES:
-            mailman_log('error', 'Message %s exceeded maximum retries', msgid)
+            mailman_log('error', 'OutgoingRunner._dispose: Message %s exceeded maximum retries (%d)', 
+                       msgid, self.MAX_RETRIES)
             return False
         
         with self._processed_lock:
             if msgid in self._processed_messages:
-                mailman_log('error', 'OutgoingRunner: Duplicate message detected: %s (file: %s)', msgid, filebase)
+                mailman_log('error', 'OutgoingRunner._dispose: Duplicate message detected: %s (file: %s)', 
+                           msgid, filebase)
                 return False
                 
             # Clean up old message IDs periodically
@@ -234,7 +248,7 @@ class OutgoingRunner(Runner, BounceMixin):
             last_retry = self._retry_times.get(msgid, 0)
             time_since_last_retry = current_time - last_retry
             if time_since_last_retry < self.MIN_RETRY_DELAY:
-                mailman_log('info', 'OutgoingRunner: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
+                mailman_log('debug', 'OutgoingRunner._dispose: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
                            msgid, filebase, time_since_last_retry)
                 # Requeue with delay
                 self.__retryq.enqueue(msg, msgdata)
@@ -246,39 +260,43 @@ class OutgoingRunner(Runner, BounceMixin):
             
         try:
             # Log start of processing
-            mailman_log('info', 'OutgoingRunner: Starting to process message %s (file: %s) for list %s',
+            mailman_log('debug', 'OutgoingRunner._dispose: Starting to process message %s (file: %s) for list %s',
                        msgid, filebase, mlist.internal_name())
             
             # Validate message type first
             msg, success = self._validate_message(msg, msgdata)
             if not success:
-                mailman_log('error', 'Message validation failed for outgoing message %s', msgid)
+                mailman_log('error', 'OutgoingRunner._dispose: Message validation failed for outgoing message %s', msgid)
                 with self._processed_lock:
                     self._processed_messages.remove(msgid)
                 return False
 
             # Process the message through the delivery module
             try:
+                mailman_log('debug', 'OutgoingRunner._dispose: Calling delivery module process function for message %s', msgid)
                 self._func(mlist, msg, msgdata)
+                mailman_log('debug', 'OutgoingRunner._dispose: Successfully processed message %s through delivery module', msgid)
             except smtplib.SMTPException as e:
+                mailman_log('error', 'OutgoingRunner._dispose: SMTP error processing message %s: %s', msgid, str(e))
                 return self._handle_smtp_error(e, mlist, msg, msgdata)
             
             # Log successful completion
-            mailman_log('info', 'OutgoingRunner: Successfully processed message %s (file: %s) for list %s',
+            mailman_log('debug', 'OutgoingRunner._dispose: Successfully processed message %s (file: %s) for list %s',
                        msgid, filebase, mlist.internal_name())
             return True
         except Exception as e:
             # Enhanced error logging with more context
-            mailman_log('error', 'Error processing outgoing message %s for list %s: %s',
+            mailman_log('error', 'OutgoingRunner._dispose: Error processing outgoing message %s for list %s: %s',
                    msgid, mlist.internal_name(), str(e))
-            mailman_log('error', 'Message details:')
+            mailman_log('error', 'OutgoingRunner._dispose: Message details:')
             mailman_log('error', '  Message ID: %s', msgid)
             mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
             mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
             mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
             mailman_log('error', '  Message type: %s', type(msg).__name__)
             mailman_log('error', '  Message data: %s', str(msgdata))
-            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
+            mailman_log('error', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
+            mailman_log('error', 'OutgoingRunner._dispose: Traceback:\n%s', traceback.format_exc())
             
             # Remove from processed messages on error and requeue
             with self._processed_lock:

@@ -31,11 +31,9 @@ def process(mlist, msg, msgdata):
     """Process the message by moving it to the outgoing queue."""
     msgid = msg.get('message-id', 'n/a')
     
-    # Log the start of processing
-    mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s',
+    # Log the start of processing with enhanced details
+    mailman_log('debug', 'ToOutgoing: Starting to process message %s for list %s',
                msgid, mlist.internal_name())
-    
-    # Log message details
     mailman_log('debug', 'ToOutgoing: Message details:')
     mailman_log('debug', '  Message ID: %s', msgid)
     mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
@@ -43,6 +41,7 @@ def process(mlist, msg, msgdata):
     mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
     mailman_log('debug', '  Message type: %s', type(msg).__name__)
     mailman_log('debug', '  Message data: %s', str(msgdata))
+    mailman_log('debug', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
     
     # Get the outgoing queue
     try:
@@ -55,8 +54,9 @@ def process(mlist, msg, msgdata):
     # Add the message to the outgoing queue
     try:
         outgoingq.enqueue(msg, msgdata, listname=mlist.internal_name())
-        mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
+        mailman_log('debug', 'ToOutgoing: Successfully queued message %s for list %s',
                    msgid, mlist.internal_name())
+        mailman_log('debug', 'ToOutgoing: Message %s is now in outgoing queue', msgid)
     except Exception as e:
         mailman_log('error', 'ToOutgoing: Failed to enqueue message %s: %s', msgid, str(e))
         mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())

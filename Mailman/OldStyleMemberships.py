@@ -50,6 +50,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         self.bounce_you_are_disabled_warnings_interval = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL  # Initialize bounce warning interval
         self.digest_members = {}  # Initialize digest_members dictionary
         self.digest_is_default = mm_cfg.DEFAULT_DIGEST_IS_DEFAULT  # Initialize digest_is_default attribute
+        self.mime_is_default_digest = mm_cfg.DEFAULT_MIME_IS_DEFAULT_DIGEST  # Initialize mime_is_default_digest attribute
 
     def GetMailmanHeader(self):
         """Return the standard Mailman header HTML for this list."""
