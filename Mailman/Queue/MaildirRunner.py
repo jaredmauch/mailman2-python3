@@ -15,19 +15,47 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Maildir queue runner.
+"""Maildir pre-queue runner.
 
-This module is responsible for processing messages from a maildir directory.
+Most MTAs can be configured to deliver messages to a `Maildir'[1].  This
+runner will read messages from a maildir's new/ directory and inject them into
+Mailman's qfiles/in directory for processing in the normal pipeline.  This
+delivery mechanism contrasts with mail program delivery, where incoming
+messages end up in qfiles/in via the MTA executing the scripts/post script
+(and likewise for the other -aliases for each mailing list).
+
+The advantage to Maildir delivery is that it is more efficient; there's no
+need to fork an intervening program just to take the message from the MTA's
+standard output, to the qfiles/in directory.
+
+[1] http://cr.yp.to/proto/maildir.html
+
+We're going to use the :info flag == 1, experimental status flag for our own
+purposes.  The :1 can be followed by one of these letters:
+
+- P means that MaildirRunner's in the process of parsing and enqueuing the
+  message.  If successful, it will delete the file.
+
+- X means something failed during the parse/enqueue phase.  An error message
+  will be logged to log/error and the file will be renamed <filename>:1,X.
+  MaildirRunner will never automatically return to this file, but once the
+  problem is fixed, you can manually move the file back to the new/ directory
+  and MaildirRunner will attempt to re-process it.  At some point we may do
+  this automatically.
+
+See the variable USE_MAILDIR in Defaults.py.in for enabling this delivery
+mechanism.
 """
 
-from builtins import object
+from builtins import str
+import os
+import re
+import errno
 import time
 import traceback
 from io import StringIO
-import os
-import sys
 import email
-from email.utils import getaddresses
+from email.utils import getaddresses, parsedate_tz, mktime_tz, parseaddr
 from email.iterators import body_line_iterator
 
 from Mailman import mm_cfg
@@ -37,6 +65,7 @@ from Mailman import i18n
 from Mailman.Message import Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Runner import Runner
+from Mailman.Queue.sbcache import get_switchboard
 
 # We only care about the listname and the subq as in listname@ or
 # listname-request@
@@ -73,9 +102,12 @@ class MaildirRunner(Runner):
         syslog('debug', 'MaildirRunner: Starting initialization')
         try:
             Runner.__init__(self, slice, numslices)
-            self._maildir = mm_cfg.MAILDIR_DIR
-            if not os.path.exists(self._maildir):
-                os.makedirs(self._maildir)
+            self._dir = os.path.join(mm_cfg.MAILDIR_DIR, 'new')
+            self._cur = os.path.join(mm_cfg.MAILDIR_DIR, 'cur')
+            if not os.path.exists(self._dir):
+                os.makedirs(self._dir)
+            if not os.path.exists(self._cur):
+                os.makedirs(self._cur)
             syslog('debug', 'MaildirRunner: Initialization complete')
         except Exception as e:
             syslog('error', 'MaildirRunner: Initialization failed: %s\nTraceback:\n%s',
@@ -84,42 +116,105 @@ class MaildirRunner(Runner):
 
     def _oneloop(self):
         """Process one batch of messages from the maildir."""
+        # Refresh this each time through the list
+        listnames = Utils.list_names()
         try:
-            # Get the list of files to process
-            files = []
-            for filename in os.listdir(self._maildir):
-                if filename.startswith('.'):
-                    continue
-                files.append(os.path.join(self._maildir, filename))
+            files = os.listdir(self._dir)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                syslog('error', 'Error listing maildir directory: %s', str(e))
+                raise
+            # Nothing's been delivered yet
+            return 0
+
+        for file in files:
+            srcname = os.path.join(self._dir, file)
+            dstname = os.path.join(self._cur, file + ':1,P')
+            xdstname = os.path.join(self._cur, file + ':1,X')
             
-            # Process each file
-            for filepath in files:
-                try:
-                    # Read the message
-                    with open(filepath, 'rb') as fp:
-                        msg = email.message_from_binary_file(fp)
-                    
-                    # Process the message
-                    try:
-                        self._process_message(msg, filepath)
-                    except Exception as e:
-                        syslog('error', 'Error processing message %s: %s',
-                               msg.get('message-id', 'n/a'), str(e))
+            try:
+                os.rename(srcname, dstname)
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    # Some other MaildirRunner beat us to it
+                    continue
+                syslog('error', 'Could not rename maildir file: %s', srcname)
+                raise
+
+            try:
+                # Read and parse the message
+                with open(dstname, 'rb') as fp:
+                    msg = email.message_from_binary_file(fp)
+
+                # Figure out which queue of which list this message was destined for
+                vals = []
+                for header in ('delivered-to', 'envelope-to', 'apparently-to'):
+                    vals.extend(msg.get_all(header, []))
+                
+                for field in vals:
+                    to = parseaddr(field)[1]
+                    if not to:
                         continue
-                    
-                    # Move the file to the processed directory
-                    try:
-                        os.rename(filepath, filepath + '.processed')
-                    except Exception as e:
-                        syslog('error', 'Error moving maildir file %s: %s',
-                               filepath, str(e))
-                        
-                except Exception as e:
-                    syslog('error', 'Error processing maildir file %s: %s',
-                           filepath, str(e))
-                    
-        except Exception as e:
-            syslog('error', 'Error in maildir runner: %s', e)
+                    mo = lre.match(to)
+                    if not mo:
+                        # This isn't an address we care about
+                        continue
+                    listname, subq = mo.group('listname', 'subq')
+                    if listname in listnames:
+                        break
+                else:
+                    # As far as we can tell, this message isn't destined for
+                    # any list on the system
+                    syslog('error', 'Message apparently not for any list: %s',
+                           xdstname)
+                    os.rename(dstname, xdstname)
+                    continue
+
+                # Determine which queue to use based on the subqueue
+                msgdata = {'listname': listname}
+                if subq in ('bounces', 'admin'):
+                    queue = get_switchboard(mm_cfg.BOUNCEQUEUE_DIR)
+                elif subq == 'confirm':
+                    msgdata['toconfirm'] = 1
+                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
+                elif subq in ('join', 'subscribe'):
+                    msgdata['tojoin'] = 1
+                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
+                elif subq in ('leave', 'unsubscribe'):
+                    msgdata['toleave'] = 1
+                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
+                elif subq == 'owner':
+                    msgdata.update({
+                        'toowner': 1,
+                        'envsender': Utils.get_site_email(extra='bounces'),
+                        'pipeline': mm_cfg.OWNER_PIPELINE,
+                        })
+                    queue = get_switchboard(mm_cfg.INQUEUE_DIR)
+                elif subq is None:
+                    msgdata['tolist'] = 1
+                    queue = get_switchboard(mm_cfg.INQUEUE_DIR)
+                elif subq == 'request':
+                    msgdata['torequest'] = 1
+                    queue = get_switchboard(mm_cfg.CMDQUEUE_DIR)
+                else:
+                    syslog('error', 'Unknown sub-queue: %s', subq)
+                    os.rename(dstname, xdstname)
+                    continue
+
+                # Enqueue the message and clean up
+                queue.enqueue(msg, msgdata)
+                os.unlink(dstname)
+                syslog('debug', 'Successfully processed maildir message: %s', file)
+
+            except Exception as e:
+                syslog('error', 'Error processing maildir file %s: %s\nTraceback:\n%s',
+                       file, str(e), traceback.format_exc())
+                try:
+                    os.rename(dstname, xdstname)
+                except OSError:
+                    pass
+
+        return len(files)
 
     def _cleanup(self):
         """Clean up resources."""
@@ -131,146 +226,3 @@ class MaildirRunner(Runner):
             syslog('error', 'MaildirRunner: Cleanup failed: %s\nTraceback:\n%s',
                    str(e), traceback.format_exc())
         syslog('debug', 'MaildirRunner: Cleanup complete')
-
-    def _dispose(self, mlist, msg, msgdata):
-        """Process a maildir message."""
-        try:
-            # Get the message ID
-            msgid = msg.get('message-id', 'n/a')
-            filebase = msgdata.get('_filebase', 'unknown')
-            
-            syslog('debug', 'MaildirRunner._dispose: Starting to process maildir message %s (file: %s) for list %s',
-                   msgid, filebase, mlist.internal_name())
-            
-            # Check retry delay
-            if not self._check_retry_delay(msgid, filebase):
-                syslog('debug', 'MaildirRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-                return True
-            
-            # Get the list object
-            try:
-                mlist = MailList.MailList(mlist.internal_name(), lock=False)
-                syslog('debug', 'MaildirRunner._dispose: Successfully loaded list %s', mlist.internal_name())
-            except Errors.MMListError as e:
-                syslog('error', 'MaildirRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
-                       mlist.internal_name(), str(e), traceback.format_exc())
-                return True
-            except Exception as e:
-                syslog('error', 'MaildirRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
-                       mlist.internal_name(), str(e), traceback.format_exc())
-                return True
-            
-            # Validate the message
-            if not self._validate_message(msg, msgdata):
-                syslog('error', 'MaildirRunner._dispose: Message validation failed for message %s', msgid)
-                return True
-            
-            # Check for Message-ID
-            if not msg.get('message-id'):
-                syslog('error', 'MaildirRunner._dispose: Message missing Message-ID header')
-                return True
-            
-            # Process the message
-            syslog('debug', 'MaildirRunner._dispose: Processing maildir message %s', msgid)
-            
-            # Get the recipient
-            recipient = msg.get('to', '')
-            if not recipient:
-                recipient = msg.get('recipients', '')
-            
-            # Determine message type
-            if msg.get('x-mailman-command'):
-                syslog('debug', 'MaildirRunner._dispose: Message %s is type %s for recipient %s',
-                       msgid, 'command', recipient)
-                self._process_command(mlist, msg, msgdata)
-            elif msg.get('x-mailman-bounce'):
-                syslog('debug', 'MaildirRunner._dispose: Message %s is type %s for recipient %s',
-                       msgid, 'bounce', recipient)
-                self._process_bounce(mlist, msg, msgdata)
-            else:
-                syslog('debug', 'MaildirRunner._dispose: Message %s is type %s for recipient %s',
-                       msgid, 'regular', recipient)
-                self._process_regular(mlist, msg, msgdata)
-            
-            syslog('debug', 'MaildirRunner._dispose: Successfully processed maildir message %s', msgid)
-            return False
-            
-        except Exception as e:
-            syslog('error', 'MaildirRunner._dispose: Failed to process maildir message %s', msgid)
-            syslog('error', 'MaildirRunner._dispose: Error processing maildir message %s: %s\nTraceback:\n%s',
-                   msgid, str(e), traceback.format_exc())
-            return True
-
-    def _process_bounce(self, mlist, msg, msgdata):
-        """Process a bounce message."""
-        try:
-            msgid = msg.get('message-id', 'n/a')
-            syslog('debug', 'MaildirRunner._process_bounce: Processing bounce message %s', msgid)
-            
-            # Get the recipient
-            recipient = msg.get('to', '')
-            if not recipient:
-                recipient = msg.get('recipients', '')
-            
-            # Get bounce info
-            bounce_info = msg.get('x-mailman-bounce-info', '')
-            
-            syslog('debug', 'MaildirRunner._process_bounce: Bounce for recipient %s, info: %s',
-                   recipient, bounce_info)
-            
-            # Process the bounce
-            mlist.process_bounce(msg, bounce_info)
-            
-            syslog('debug', 'MaildirRunner._process_bounce: Successfully processed bounce message %s', msgid)
-            
-        except Exception as e:
-            syslog('error', 'MaildirRunner._process_bounce: Error processing bounce message %s: %s\nTraceback:\n%s',
-                   msgid, str(e), traceback.format_exc())
-
-    def _process_command(self, mlist, msg, msgdata):
-        """Process a command message."""
-        try:
-            msgid = msg.get('message-id', 'n/a')
-            syslog('debug', 'MaildirRunner._process_command: Processing command message %s', msgid)
-            
-            # Get the recipient
-            recipient = msg.get('to', '')
-            if not recipient:
-                recipient = msg.get('recipients', '')
-            
-            # Get command type
-            command = msg.get('x-mailman-command', '')
-            
-            syslog('debug', 'MaildirRunner._process_command: Command for recipient %s, type: %s',
-                   recipient, command)
-            
-            # Process the command
-            mlist.process_command(msg, command)
-            
-            syslog('debug', 'MaildirRunner._process_command: Successfully processed command message %s', msgid)
-            
-        except Exception as e:
-            syslog('error', 'MaildirRunner._process_command: Error processing command message %s: %s\nTraceback:\n%s',
-                   msgid, str(e), traceback.format_exc())
-
-    def _process_regular(self, mlist, msg, msgdata):
-        """Process a regular message."""
-        try:
-            msgid = msg.get('message-id', 'n/a')
-            syslog('debug', 'MaildirRunner._process_regular: Processing regular message %s', msgid)
-            
-            # Get the recipient
-            recipient = msg.get('to', '')
-            if not recipient:
-                recipient = msg.get('recipients', '')
-            
-            syslog('debug', 'MaildirRunner._process_regular: Regular message for recipient %s', recipient)
-            
-            # Process the message
-            mlist.process_regular(msg)
-            
-            syslog('debug', 'MaildirRunner._process_regular: Successfully processed regular message %s', msgid)
-            
-        except Exception as e:
-            syslog('error', 'MaildirRunner._process_regular: Error processing regular message %s: %s\nTraceback:\n%s',
-                   msgid, str(e), traceback.format_exc())
