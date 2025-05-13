@@ -792,7 +792,7 @@ def process_form(mlist, doc, cgidata):
             doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
             # Add the footer
             doc.AddItem(mlist.GetMailmanFooter())
-            return output_success_page(doc)
+            return
 
         # Create a form for the overview
         form = Form(mlist.GetScriptURL('admindb', absolute=1), mlist=mlist, contexts=AUTH_CONTEXTS)
@@ -808,7 +808,7 @@ def process_form(mlist, doc, cgidata):
             doc.AddItem(form)
             # Add the footer
             doc.AddItem(mlist.GetMailmanFooter())
-            return output_success_page(doc)
+            return
 
         # Process the form submission
         if action == 'submit':
@@ -821,7 +821,7 @@ def process_form(mlist, doc, cgidata):
             doc.AddItem(Link(admindburl, _('Click here to return to the pending requests page.')))
             # Add the footer
             doc.AddItem(mlist.GetMailmanFooter())
-            return output_success_page(doc)
+            return
 
         # If we get here, something went wrong
         doc.AddItem(_('Invalid action specified.'))
@@ -830,7 +830,6 @@ def process_form(mlist, doc, cgidata):
         doc.AddItem(Link(admindburl, _('Click here to return to the pending requests page.')))
         # Add the footer
         doc.AddItem(mlist.GetMailmanFooter())
-        return output_success_page(doc)
 
     except Exception as e:
         mailman_log('error', 'admindb: Error in process_form: %s\n%s', 
