@@ -45,6 +45,10 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def __init__(self, mlist):
         self.__mlist = mlist
         self.archive = mm_cfg.DEFAULT_ARCHIVE  # Initialize archive attribute
+        self.digest_send_periodic = mm_cfg.DEFAULT_DIGEST_SEND_PERIODIC  # Initialize digest_send_periodic attribute
+        self.archive_private = mm_cfg.DEFAULT_ARCHIVE_PRIVATE  # Initialize archive_private attribute
+        self.bounce_you_are_disabled_warnings_interval = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL  # Initialize bounce warning interval
+        self.digest_members = {}  # Initialize digest_members dictionary
 
     def GetMailmanHeader(self):
         """Return the standard Mailman header HTML for this list."""
