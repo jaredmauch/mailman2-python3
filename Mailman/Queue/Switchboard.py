@@ -543,17 +543,62 @@ class Switchboard:
         try:
             with open(filename, 'rb') as fp:
                 try:
-                    msgsave = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Try UTF-8 first, then fall back to latin-1
+                    try:
+                        msgsave = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                        metadata = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                    except (pickle.UnpicklingError, EOFError) as e:
+                        # Reset file pointer to beginning
+                        fp.seek(0)
+                        # Try latin-1 as fallback
+                        msgsave = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
                 except (pickle.UnpicklingError, EOFError) as e:
+                    mailman_log('error', 'Corrupted queue file %s: %s', filename, str(e))
+                    # Move the corrupted file to the bad queue
+                    try:
+                        filebase = os.path.basename(filename)
+                        if filebase.endswith('.pck'):
+                            filebase = filebase[:-4]
+                        bakfile = os.path.join(self.__whichq, filebase + '.bak')
+                        psvfile = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                        # Create bad queue directory if it doesn't exist
+                        if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                            os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                        # Move the file to bad queue
+                        os.rename(filename, psvfile)
+                        mailman_log('info', 'Moved corrupted file to bad queue: %s -> %s', filename, psvfile)
+                    except Exception as move_e:
+                        mailman_log('error', 'Failed to move corrupted file to bad queue: %s: %s', filename, str(move_e))
                     raise IOError('Could not unpickle %s: %s' % (filename, e))
             # Try to unpickle the message
             try:
-                msg = pickle.loads(msgsave, fix_imports=True, encoding='latin1')
+                # Try UTF-8 first, then fall back to latin-1
+                try:
+                    msg = pickle.loads(msgsave, fix_imports=True, encoding='utf-8')
+                except (pickle.UnpicklingError, EOFError):
+                    msg = pickle.loads(msgsave, fix_imports=True, encoding='latin1')
             except (pickle.UnpicklingError, EOFError) as e:
+                mailman_log('error', 'Failed to unpickle message from %s: %s', filename, str(e))
+                # Move the corrupted file to the bad queue
+                try:
+                    filebase = os.path.basename(filename)
+                    if filebase.endswith('.pck'):
+                        filebase = filebase[:-4]
+                    bakfile = os.path.join(self.__whichq, filebase + '.bak')
+                    psvfile = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                    # Create bad queue directory if it doesn't exist
+                    if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                        os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                    # Move the file to bad queue
+                    os.rename(filename, psvfile)
+                    mailman_log('info', 'Moved corrupted file to bad queue: %s -> %s', filename, psvfile)
+                except Exception as move_e:
+                    mailman_log('error', 'Failed to move corrupted file to bad queue: %s: %s', filename, str(move_e))
                 raise IOError('Could not unpickle message from %s: %s' % (filename, e))
             return msg, metadata
         except (IOError, OSError) as e:
+            mailman_log('error', 'Could not read %s: %s', filename, str(e))
             raise IOError('Could not read %s: %s' % (filename, e))
 
     def _dequeue_metadata(self, filename):
@@ -561,10 +606,18 @@ class Switchboard:
         try:
             with open(filename, 'rb') as fp:
                 try:
-                    # Skip the message
-                    pickle.load(fp, fix_imports=True, encoding='latin1')
-                    # Get the metadata
-                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Try UTF-8 first, then fall back to latin-1
+                    try:
+                        # Skip the message
+                        pickle.load(fp, fix_imports=True, encoding='utf-8')
+                        # Get the metadata
+                        metadata = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                    except (pickle.UnpicklingError, EOFError) as e:
+                        # Reset file pointer to beginning
+                        fp.seek(0)
+                        # Try latin-1 as fallback
+                        pickle.load(fp, fix_imports=True, encoding='latin1')
+                        metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
                 except (pickle.UnpicklingError, EOFError) as e:
                     raise IOError('Could not unpickle %s: %s' % (filename, e))
             return metadata
