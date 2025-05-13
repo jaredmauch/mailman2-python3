@@ -44,6 +44,7 @@ ISDIGEST = 2
 class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def __init__(self, mlist):
         self.__mlist = mlist
+        self.archive = mm_cfg.DEFAULT_ARCHIVE  # Initialize archive attribute
 
     def GetMailmanHeader(self):
         """Return the standard Mailman header HTML for this list."""
