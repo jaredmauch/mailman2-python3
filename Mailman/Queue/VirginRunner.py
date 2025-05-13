@@ -156,3 +156,21 @@ class VirginRunner(Runner):
             mailman_log('debug', 'VirginRunner: Cleaned up %d old message entries', len(old_msgids))
         except Exception as e:
             mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
+
+    def _onefile(self, msg, msgdata):
+        # Ensure _dispose always gets a MailList object, not a string
+        listname = msgdata.get('listname')
+        if not listname:
+            listname = mm_cfg.MAILMAN_SITE_LIST
+        try:
+            mlist = MailList.MailList(listname, lock=0)
+        except Errors.MMUnknownListError:
+            mailman_log('error', 'VirginRunner: Unknown list %s', listname)
+            self._shunt.enqueue(msg, msgdata)
+            return
+        try:
+            keepqueued = self._dispose(mlist, msg, msgdata)
+        finally:
+            mlist.Unlock()
+        if keepqueued:
+            self._switchboard.enqueue(msg, msgdata)
