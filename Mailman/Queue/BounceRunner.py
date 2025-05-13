@@ -50,6 +50,11 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 
+# Lazy import to avoid circular dependency
+def get_mail_list():
+    from Mailman.MailList import MailList
+    return MailList
+
 COMMASPACE = ', '
 
 class BounceMixin:
@@ -172,7 +177,7 @@ class BounceRunner(Runner, BounceMixin):
             # Ensure we have a MailList object
             if isinstance(mlist, str):
                 try:
-                    mlist = MailList.MailList(mlist, lock=0)
+                    mlist = get_mail_list()(mlist, lock=0)
                     should_unlock = True
                 except Errors.MMUnknownListError:
                     syslog('error', 'BounceRunner: Unknown list %s', mlist)
