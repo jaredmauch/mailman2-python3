@@ -32,7 +32,7 @@ def process(mlist, msg, msgdata):
     msgid = msg.get('message-id', 'n/a')
     
     # Log the start of processing with enhanced details
-    mailman_log('debug', 'ToOutgoing: Starting to process message %s for list %s',
+    mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s',
                msgid, mlist.internal_name())
     mailman_log('debug', 'ToOutgoing: Message details:')
     mailman_log('debug', '  Message ID: %s', msgid)
@@ -45,16 +45,20 @@ def process(mlist, msg, msgdata):
     
     # Get the outgoing queue
     try:
+        mailman_log('debug', 'ToOutgoing: Getting outgoing queue for message %s', msgid)
         outgoingq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-        mailman_log('debug', 'ToOutgoing: Got outgoing queue for message %s', msgid)
+        mailman_log('debug', 'ToOutgoing: Successfully got outgoing queue for message %s', msgid)
     except Exception as e:
         mailman_log('error', 'ToOutgoing: Failed to get outgoing queue for message %s: %s', msgid, str(e))
+        mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
         raise
     
     # Add the message to the outgoing queue
     try:
+        mailman_log('debug', 'ToOutgoing: Attempting to enqueue message %s for list %s',
+                   msgid, mlist.internal_name())
         outgoingq.enqueue(msg, msgdata, listname=mlist.internal_name())
-        mailman_log('debug', 'ToOutgoing: Successfully queued message %s for list %s',
+        mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
                    msgid, mlist.internal_name())
         mailman_log('debug', 'ToOutgoing: Message %s is now in outgoing queue', msgid)
     except Exception as e:

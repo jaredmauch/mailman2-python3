@@ -673,6 +673,12 @@ Qrunner %s reached maximum restart limit of %d, not restarting.""",
             sys.exit(1)
     elif args.command == 'stop':
         kill_watcher(signal.SIGTERM)
+        try:
+            os.unlink(mm_cfg.PIDFILE)
+            syslog('qrunner', 'Removed PID file: %s', mm_cfg.PIDFILE)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                syslog('error', 'Failed to remove PID file %s: %s', mm_cfg.PIDFILE, str(e))
     elif args.command == 'restart':
         kill_watcher(signal.SIGINT)
         start_all_runners()

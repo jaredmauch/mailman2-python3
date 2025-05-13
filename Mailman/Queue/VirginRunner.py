@@ -129,7 +129,9 @@ class VirginRunner(IncomingRunner):
         try:
             # Get the MailList object
             try:
+                mailman_log('debug', 'VirginRunner: Getting MailList object for list %s', listname)
                 mlist = MailList.MailList(listname, lock=0)
+                mailman_log('debug', 'VirginRunner: Successfully got MailList object for list %s', listname)
             except Exception as e:
                 mailman_log('error', 'Failed to get MailList object for list %s: %s',
                            listname, str(e))
@@ -142,8 +144,10 @@ class VirginRunner(IncomingRunner):
             # We need to fasttrack this message through any handlers that touch
             # it.  E.g. especially CookHeaders.
             msgdata['_fasttrack'] = 1
+            mailman_log('debug', 'VirginRunner: Set _fasttrack flag for message %s', msgid)
             
             # Process through the pipeline
+            mailman_log('debug', 'VirginRunner: Starting pipeline processing for message %s', msgid)
             result = IncomingRunner._dispose(self, mlist, msg, msgdata)
             
             # Log successful completion

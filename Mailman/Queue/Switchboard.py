@@ -96,290 +96,83 @@ class Switchboard:
     def whichq(self):
         return self.__whichq
 
-    def enqueue(self, _msg, _metadata={}, **_kws):
-        # Calculate the SHA hexdigest of the message to get a unique base
-        # filename.  We're also going to use the digest as a hash into the set
-        # of parallel qrunner processes.
-        data = _metadata.copy()
-        data.update(_kws)
-        
-        # Ensure metadata values are properly encoded
-        for key, value in list(data.items()):
-            if isinstance(key, bytes):
-                del data[key]
-                key = key.decode('utf-8', 'replace')
-            if isinstance(value, bytes):
-                value = value.decode('utf-8', 'replace')
-            elif isinstance(value, list):
-                value = [
-                    v.decode('utf-8', 'replace') if isinstance(v, bytes) else v
-                    for v in value
-                ]
-            elif isinstance(value, dict):
-                new_dict = {}
-                for k, v in value.items():
-                    if isinstance(k, bytes):
-                        k = k.decode('utf-8', 'replace')
-                    if isinstance(v, bytes):
-                        v = v.decode('utf-8', 'replace')
-                    new_dict[k] = v
-                value = new_dict
-            data[key] = value
-        
-        listname = data.get('listname', '--nolist--')
-        # Get some data for the input to the sha hash
-        now = time.time()
-        if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
-            # Convert email.message.Message to Mailman.Message if needed
-            if isinstance(_msg, email.message.Message) and not isinstance(_msg, Message):
-                mailman_msg = Message()
-                # Copy all attributes from the original message
-                for key, value in _msg.items():
-                    mailman_msg[key] = value
-                # Copy the payload
-                if _msg.is_multipart():
-                    for part in _msg.get_payload():
-                        mailman_msg.attach(part)
-                else:
-                    mailman_msg.set_payload(_msg.get_payload())
-                _msg = mailman_msg
-            # Use protocol 4 for Python 3 compatibility
-            msgsave = pickle.dumps(_msg, protocol=4, fix_imports=True)
-        else:
-            # Convert string to Mailman.Message if needed
-            if isinstance(_msg, str):
-                mailman_msg = Message()
-                mailman_msg.set_payload(_msg)
-                _msg = mailman_msg
-            # Use protocol 4 for Python 3 compatibility
-            msgsave = pickle.dumps(_msg, protocol=4, fix_imports=True)
+    def enqueue(self, msg, msgdata=None, listname=None, _plaintext=False):
+        """Add a message to the queue."""
+        if msgdata is None:
+            msgdata = {}
+        if listname:
+            msgdata['listname'] = listname
             
-        hashfood = msgsave + listname.encode('utf-8') + repr(now).encode('utf-8')
-        # Encode the current time into the file name for FIFO sorting in
-        # files().  The file name consists of two parts separated by a `+':
-        # the received time for this message (i.e. when it first showed up on
-        # this system) and the sha hex digest.
-        rcvtime = data.setdefault('received_time', now)
-        filebase = repr(rcvtime) + '+' + sha_new(hashfood).hexdigest()
+        mailman_log('debug', 'Switchboard.enqueue: Starting to enqueue message for list %s', listname or 'unknown')
+        
+        # Generate a unique filebase
+        filebase = self._make_filebase(msg, msgdata)
+        mailman_log('debug', 'Switchboard.enqueue: Generated filebase %s', filebase)
+        
+        # Calculate the filename
         filename = os.path.join(self.__whichq, filebase + '.pck')
-        tmpfile = filename + '.tmp'
-        # Always add the metadata schema version number
-        data['version'] = mm_cfg.QFILE_SCHEMA_VERSION
-        # Filter out volatile entries
-        for k in list(data.keys()):
-            if k.startswith('_'):
-                del data[k]
-        # We have to tell the dequeue() method whether to parse the message
-        # object or not.
-        protocol = 4  # Use protocol 4 for Python 3 compatibility
-        data['_parsemsg'] = (protocol == 0)
-        # Write to the pickle file the message object and metadata.
-        omask = os.umask(0o007)                     # -rw-rw----
+        mailman_log('debug', 'Switchboard.enqueue: Target filename is %s', filename)
+        
+        # Create a lock file
+        lockfile = filename + '.lock'
         try:
-            fp = open(tmpfile, 'wb')
+            fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            os.close(fd)
+            mailman_log('debug', 'Switchboard.enqueue: Created lock file for %s', filebase)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                mailman_log('error', 'Switchboard.enqueue: Failed to create lock file for %s: %s', filebase, str(e))
+                raise
+            mailman_log('debug', 'Switchboard.enqueue: Lock file already exists for %s', filebase)
+            return None
+
+        try:
+            # Write the message and metadata
             try:
-                # Write the tuple of (message, metadata)
-                pickle.dump((_msg, data), fp, protocol=4, fix_imports=True)
-                fp.flush()
-                os.fsync(fp.fileno())
-            finally:
-                fp.close()
+                self._enqueue(filename, msg, msgdata, _plaintext)
+                mailman_log('debug', 'Switchboard.enqueue: Successfully wrote message and data to %s', filebase)
+            except Exception as e:
+                mailman_log('error', 'Switchboard.enqueue: Failed to write message to %s: %s', filebase, str(e))
+                raise
+
+            mailman_log('debug', 'Switchboard.enqueue: Successfully enqueued message to %s', filebase)
+            return filebase
         finally:
-            os.umask(omask)
-        os.rename(tmpfile, filename)
-        return filebase
+            # Always clean up the lock file
+            try:
+                os.unlink(lockfile)
+                mailman_log('debug', 'Switchboard.enqueue: Cleaned up lock file %s', lockfile)
+            except OSError:
+                pass
 
     def dequeue(self, filebase):
         # Calculate the filename from the given filebase.
         filename = os.path.join(self.__whichq, filebase + '.pck')
-        backfile = os.path.join(self.__whichq, filebase + '.bak')
+        mailman_log('debug', 'Switchboard.dequeue: Attempting to dequeue file %s', filebase)
+        
+        # Create a lock file
         lockfile = filename + '.lock'
-        
-        mailman_log('debug', 'Switchboard.dequeue: Starting to dequeue file %s', filebase)
-        mailman_log('debug', 'Switchboard.dequeue: Full paths - filename: %s, backfile: %s', filename, backfile)
-        
-        # Create lock file with proper cleanup
-        max_attempts = 30  # Increased from 10 to 30
-        attempt = 0
-        while attempt < max_attempts:
-            try:
-                # Try to create lock file
-                lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-                # Write process info to lock file for debugging
-                with os.fdopen(lock_fd, 'w') as f:
-                    f.write('PID: %d\n' % os.getpid())
-                    f.write('Time: %s\n' % time.ctime())
-                break
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    raise
-                attempt += 1
-                if attempt >= max_attempts:
-                    mailman_log('error', 'Failed to acquire lock for %s after %d attempts',
-                          filename, max_attempts)
-                    return None, None
-                time.sleep(0.1)
-        
         try:
-            # Try to read the file with Python 3 protocol first
+            # Try to create the lock file
+            fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            os.close(fd)
+            mailman_log('debug', 'Switchboard.dequeue: Created lock file for %s', filebase)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                mailman_log('error', 'Switchboard.dequeue: Failed to create lock file for %s: %s', filebase, str(e))
+                raise
+            mailman_log('debug', 'Switchboard.dequeue: Lock file already exists for %s', filebase)
+            return None, None
+
+        try:
+            # Read the message and metadata
             try:
-                with open(filename, 'rb') as fp:
-                    msgsave = fp.read()
-                    mailman_log('debug', 'Switchboard.dequeue: Read %d bytes from %s', len(msgsave), filename)
-                    try:
-                        # Try Python 3 protocol first
-                        mailman_log('debug', 'Switchboard.dequeue: Attempting to unpickle data from %s using Python 3 protocol', filename)
-                        data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                        mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data from %s, type: %s', filename, type(data))
-                        
-                        if isinstance(data, tuple):
-                            msg, data = data
-                            mailman_log('debug', 'Switchboard.dequeue: 1Unpickled tuple with msg type: %s, data type: %s', 
-                                      type(msg), type(data))
-                        else:
-                            msg = None
-                            mailman_log('debug', 'Switchboard.dequeue: 2Unpickled non-tuple data: %s', type(data))
-                            
-                    except (pickle.UnpicklingError, ValueError) as e:
-                        mailman_log('debug', 'Switchboard.dequeue: Python 3 protocol failed, trying Python 2 protocol: %s', str(e))
-                        # Fall back to Python 2 protocol
-                        data = pickle.loads(msgsave, encoding='latin1', fix_imports=True)
-                        mailman_log('debug', 'Switchboard.dequeue: Successfully unpickled data using Python 2 protocol, type: %s', type(data))
-                        
-                        if isinstance(data, tuple):
-                            msg, data = data
-                            mailman_log('debug', 'Switchboard.dequeue: Unpickled tuple with msg type: %s, data type: %s', 
-                                      type(msg), type(data))
-                            msg = None
-                            mailman_log('debug', 'Switchboard.dequeue: Unpickled non-tuple data: %s', type(data))
-                            
-            except (IOError, OSError) as e:
-                if e.errno != errno.ENOENT:
-                    raise
-                mailman_log('debug', 'Switchboard.dequeue: Primary file not found, trying backup file')
-                # Try to recover from .bak file
-                try:
-                    with open(backfile, 'rb') as fp:
-                        msgsave = fp.read()
-                        mailman_log('debug', 'Switchboard.dequeue: Read %d bytes from backup file %s', len(msgsave), backfile)
-                        try:
-                            # First try to validate the backup file
-                            with open(backfile, 'rb') as fp:
-                                content = fp.read()
-                                if not content:
-                                    raise EOFError('Empty backup file')
-                                
-                                # Create a BytesIO object to read from the content
-                                from io import BytesIO
-                                fp = BytesIO(content)
-                                
-                                try:
-                                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-                                    data_pos = fp.tell()
-                                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
-                                except (EOFError, pickle.UnpicklingError) as e:
-                                    mailman_log('error', 'Corrupted backup file %s: %s\nTraceback:\n%s',
-                                           filebase, str(e), traceback.format_exc())
-                                    self.finish(filebase, preserve=True)
-                                    return None, None
-                                
-                                # Validate the unpickled data
-                                if not isinstance(data, dict):
-                                    raise TypeError('Invalid data format in backup file')
-                                    
-                                # Update metadata
-                                data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
-                                data['_last_attempt'] = time.time()
-                                if '_error_history' not in data:
-                                    data['_error_history'] = []
-                                if '_traceback' in data:
-                                    data['_error_history'].append({
-                                        'error': data.get('_last_error', 'unknown'),
-                                        'traceback': data.get('_traceback', 'none'),
-                                        'time': data.get('_last_attempt', 0)
-                                    })
-                                
-                                # Write the updated data back
-                                try:
-                                    with open(backfile, 'wb') as out_fp:
-                                        if data.get('_parsemsg'):
-                                            protocol = 0
-                                        else:
-                                            protocol = 1
-                                        pickle.dump(data, out_fp, protocol=4, fix_imports=True)
-                                        out_fp.flush()
-                                        if hasattr(os, 'fsync'):
-                                            os.fsync(out_fp.fileno())
-                                except Exception as e:
-                                    mailman_log('error', 'Failed to write updated data to backup file %s: %s\nTraceback:\n%s',
-                                           filebase, str(e), traceback.format_exc())
-                                    self.finish(filebase, preserve=True)
-                                    return None, None
-                                
-                                # Log detailed information about the retry
-                                mailman_log('warning',
-                                       'Message retry attempt %d/%d: %s (queue: %s, '
-                                       'message-id: %s, listname: %s, recipients: %s, '
-                                       'error: %s, last attempt: %s, traceback: %s)',
-                                       data['_bak_count'],
-                                       MAX_BAK_COUNT,
-                                       filebase,
-                                       self.__whichq,
-                                       data.get('message-id', 'unknown'),
-                                       data.get('listname', 'unknown'),
-                                       data.get('recips', 'unknown'),
-                                       data.get('_last_error', 'unknown'),
-                                       time.ctime(data.get('_last_attempt', 0)),
-                                       data.get('_traceback', 'none'))
-                                
-                                if data['_bak_count'] >= MAX_BAK_COUNT:
-                                    mailman_log('error',
-                                           'Backup file exceeded maximum retry count (%d). '
-                                           'Moving to shunt queue: %s (original queue: %s, '
-                                           'retry count: %d, last error: %s, '
-                                           'message-id: %s, listname: %s, '
-                                           'recipients: %s, error history: %s, '
-                                           'last traceback: %s, full path: %s)',
-                                           MAX_BAK_COUNT,
-                                           filebase,
-                                           self.__whichq,
-                                           data['_bak_count'],
-                                           data.get('_last_error', 'unknown'),
-                                           data.get('message-id', 'unknown'),
-                                           data.get('listname', 'unknown'),
-                                           data.get('recips', 'unknown'),
-                                           data.get('_error_history', 'unknown'),
-                                           data.get('_traceback', 'none'),
-                                           os.path.join(self.__whichq, filebase + '.bak'))
-                                    self.finish(filebase, preserve=True)
-                                    return None, None
-                                else:
-                                    try:
-                                        os.rename(backfile, filename)
-                                    except Exception as e:
-                                        mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
-                                               filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
-                                        self.finish(filebase, preserve=True)
-                                        return None, None
-                        except Exception as e:
-                            mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
-                                   filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
-                            self.finish(filebase, preserve=True)
-                            return None, None
-                except Exception as e:
-                    mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
-                           filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
-                    return None, None
-                
-            # Move to backup file
-            mailman_log('debug', 'Switchboard.dequeue: About to rename %s to %s', filename, backfile)
-            try:
-                os.rename(filename, backfile)
-                mailman_log('debug', 'Switchboard.dequeue: Successfully moved %s to %s', filename, backfile)
+                msg, data = self._dequeue(filename)
+                mailman_log('debug', 'Switchboard.dequeue: Successfully read message and data from %s', filebase)
             except Exception as e:
-                mailman_log('error', 'Switchboard.dequeue: Exception during os.rename from %s to %s: %s\nTraceback:\n%s', filename, backfile, str(e), traceback.format_exc())
-                return None, None
-            
+                mailman_log('error', 'Switchboard.dequeue: Failed to read message from %s: %s', filebase, str(e))
+                raise
+
             # Validate data structure before returning
             if not isinstance(data, dict):
                 mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', filename, type(data))
@@ -690,7 +483,7 @@ class Switchboard:
                    str(e), traceback.format_exc())
             raise
 
-    def _enqueue(self, msg, metadata=None, _recips=None):
+    def _enqueue(self, filename, msg, msgdata, _plaintext):
         """Enqueue a message for delivery.
         
         This method implements a robust enqueue mechanism with:
@@ -747,7 +540,7 @@ class Switchboard:
             # Write to temporary file first
             try:
                 with open(tmpfile, 'wb') as fp:
-                    pickle.dump(data, fp, protocol=4, fix_imports=True)
+                    pickle.dump((msg, msgdata), fp, protocol=4, fix_imports=True)
                     fp.flush()
                     if hasattr(os, 'fsync'):
                         os.fsync(fp.fileno())
@@ -760,7 +553,7 @@ class Switchboard:
             try:
                 with open(tmpfile, 'rb') as fp:
                     test_data = pickle.load(fp, fix_imports=True, encoding='latin1')
-                if not isinstance(test_data, tuple) or len(test_data) != 3:
+                if not isinstance(test_data, tuple) or len(test_data) != 2:
                     raise TypeError('Loaded data is not a valid tuple')
             except Exception as e:
                 mailman_log('error', 'Validation of temporary file failed: %s\nTraceback:\n%s', 
