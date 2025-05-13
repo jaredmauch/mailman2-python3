@@ -779,22 +779,19 @@ def process_form(mlist, doc, cgidata):
         msgid = qs.get('msgid', [''])[0]
         details = qs.get('details', [''])[0]
 
+        # Set the page title
+        title = _(f'{mlist.real_name} Administrative Database')
+        doc.SetTitle(title)
+        doc.AddItem(Header(2, title))
+
         # Check if there are any pending requests
         if not mlist.NumRequestsPending():
-            title = _(f'{mlist.real_name} Administrative Database')
-            doc.SetTitle(title)
-            doc.AddItem(Header(2, title))
             doc.AddItem(_('There are no pending requests.'))
             doc.AddItem(' ')
             admindburl = mlist.GetScriptURL('admindb', absolute=1)
             doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
-            # Put 'Logout' link before the footer
-            doc.AddItem('\n<div align="right"><font size="+2">')
-            doc.AddItem(Link('%s/logout' % admindburl,
-                '<b>%s</b>' % _('Logout')))
-            doc.AddItem('</font></div>\n')
+            # Add the footer
             doc.AddItem(mlist.GetMailmanFooter())
-            # Output the success page with proper headers
             return output_success_page(doc)
 
         # Create a form for the overview
@@ -809,62 +806,32 @@ def process_form(mlist, doc, cgidata):
             show_pending_unsubs(mlist, form)
             show_helds_overview(mlist, form)
             doc.AddItem(form)
+            # Add the footer
+            doc.AddItem(mlist.GetMailmanFooter())
             return output_success_page(doc)
 
-        # Process the action
-        if action == 'approve':
-            if sender:
-                show_sender_requests(mlist, form, sender)
-            elif msgid:
-                show_message_requests(mlist, form, msgid)
-            else:
-                show_detailed_requests(mlist, form)
-        elif action == 'reject':
-            if sender:
-                show_sender_requests(mlist, form, sender)
-            elif msgid:
-                show_message_requests(mlist, form, msgid)
-            else:
-                show_detailed_requests(mlist, form)
-        elif action == 'defer':
-            if sender:
-                show_sender_requests(mlist, form, sender)
-            elif msgid:
-                show_message_requests(mlist, form, msgid)
-            else:
-                show_detailed_requests(mlist, form)
-        elif action == 'discard':
-            if sender:
-                show_sender_requests(mlist, form, sender)
-            elif msgid:
-                show_message_requests(mlist, form, msgid)
-            else:
-                show_detailed_requests(mlist, form)
-        elif action == 'hold':
-            if sender:
-                show_sender_requests(mlist, form, sender)
-            elif msgid:
-                show_message_requests(mlist, form, msgid)
-            else:
-                show_detailed_requests(mlist, form)
-        elif action == 'post':
-            if msgid:
-                info = mlist.GetRecord(msgid)
-                if info:
-                    total = len(mlist.GetHeldMessageIds())
-                    count = 1
-                    show_post_requests(mlist, msgid, info, total, count, form)
-            else:
-                show_detailed_requests(mlist, form)
-        else:
-            # Unknown action, show the overview
-            show_pending_subs(mlist, form)
-            show_pending_unsubs(mlist, form)
-            show_helds_overview(mlist, form)
+        # Process the form submission
+        if action == 'submit':
+            # Process the form data
+            process_submissions(mlist, cgidata)
+            # Show success message
+            doc.AddItem(_('Your changes have been made.'))
+            doc.AddItem(' ')
+            admindburl = mlist.GetScriptURL('admindb', absolute=1)
+            doc.AddItem(Link(admindburl, _('Click here to return to the pending requests page.')))
+            # Add the footer
+            doc.AddItem(mlist.GetMailmanFooter())
+            return output_success_page(doc)
 
-        # Add the form to the document and output
-        doc.AddItem(form)
+        # If we get here, something went wrong
+        doc.AddItem(_('Invalid action specified.'))
+        doc.AddItem(' ')
+        admindburl = mlist.GetScriptURL('admindb', absolute=1)
+        doc.AddItem(Link(admindburl, _('Click here to return to the pending requests page.')))
+        # Add the footer
+        doc.AddItem(mlist.GetMailmanFooter())
         return output_success_page(doc)
+
     except Exception as e:
         mailman_log('error', 'admindb: Error in process_form: %s\n%s', 
                    str(e), traceback.format_exc())
