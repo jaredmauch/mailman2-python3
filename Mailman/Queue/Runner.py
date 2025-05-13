@@ -242,12 +242,6 @@ class Runner:
         """
         msgid = msg.get('message-id', 'n/a')
         try:
-            # Check message size
-            if len(str(msg)) > mm_cfg.MAX_MESSAGE_SIZE:
-                syslog('error', 'Runner._validate_message: Message %s too large: %d bytes',
-                       msgid, len(str(msg)))
-                return msg, False
-
             # Convert message if needed
             if not isinstance(msg, Message):
                 syslog('debug', 'Runner._validate_message: Converting message %s to Mailman.Message', msgid)
