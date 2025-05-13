@@ -785,11 +785,16 @@ def process_form(mlist, doc, cgidata):
         doc.AddItem(Header(2, title))
 
         # Check if there are any pending requests
+        admindburl = mlist.GetScriptURL('admindb', absolute=1)
         if not mlist.NumRequestsPending():
             doc.AddItem(_('There are no pending requests.'))
             doc.AddItem(' ')
-            admindburl = mlist.GetScriptURL('admindb', absolute=1)
             doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
+            # Put 'Logout' link before the footer
+            doc.AddItem('\n<div align="right"><font size="+2">')
+            doc.AddItem(Link('%s/logout' % admindburl,
+                '<b>%s</b>' % _('Logout')))
+            doc.AddItem('</font></div>\n')
             # Add the footer
             doc.AddItem(mlist.GetMailmanFooter())
             return
