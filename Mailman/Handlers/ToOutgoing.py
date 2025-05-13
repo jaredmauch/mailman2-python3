@@ -26,7 +26,6 @@ from Mailman.Queue.sbcache import get_switchboard
 import traceback
 from Mailman.Logging.Syslog import mailman_log
 
-
 def process(mlist, msg, msgdata):
     """Process the message by moving it to the outgoing queue."""
     msgid = msg.get('message-id', 'n/a')

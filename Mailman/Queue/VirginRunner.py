@@ -146,9 +146,19 @@ class VirginRunner(IncomingRunner):
             msgdata['_fasttrack'] = 1
             mailman_log('debug', 'VirginRunner: Set _fasttrack flag for message %s', msgid)
             
+            # Get the pipeline and log it
+            pipeline = self._get_pipeline(mlist, msg, msgdata)
+            mailman_log('debug', 'VirginRunner: Pipeline for message %s: %s', msgid, pipeline)
+            
             # Process through the pipeline
             mailman_log('debug', 'VirginRunner: Starting pipeline processing for message %s', msgid)
-            result = IncomingRunner._dispose(self, mlist, msg, msgdata)
+            try:
+                result = IncomingRunner._dispose(self, mlist, msg, msgdata)
+                mailman_log('debug', 'VirginRunner: Pipeline processing completed for message %s with result: %s', msgid, result)
+            except Exception as e:
+                mailman_log('error', 'VirginRunner: Pipeline processing failed for message %s: %s', msgid, str(e))
+                mailman_log('error', 'VirginRunner: Pipeline processing traceback:\n%s', traceback.format_exc())
+                raise
             
             # Log successful completion
             mailman_log('info', 'VirginRunner: Successfully processed virgin message %s (file: %s) for list %s',

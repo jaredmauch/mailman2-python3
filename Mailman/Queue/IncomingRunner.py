@@ -197,11 +197,11 @@ class IncomingRunner(Runner):
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
         msgid = msg.get('message-id', 'n/a')
-        mailman_log('qrunner', 'IncomingRunner._dopipeline: Starting pipeline processing for message %s', msgid)
+        mailman_log('debug', 'IncomingRunner._dopipeline: Starting pipeline processing for message %s', msgid)
         
         # Validate pipeline state - use a more lenient check
         if not pipeline:
-            mailman_log('qrunner', 'IncomingRunner._dopipeline: Empty pipeline for message %s', msgid)
+            mailman_log('debug', 'IncomingRunner._dopipeline: Empty pipeline for message %s', msgid)
             return 0
             
         # Deep copy the pipeline to prevent modifications
@@ -209,26 +209,28 @@ class IncomingRunner(Runner):
         if 'pipeline' in msgdata:
             stored_pipeline = list(msgdata['pipeline'])
             if set(current_pipeline) != set(stored_pipeline):
-                mailman_log('qrunner', 'IncomingRunner._dopipeline: Pipeline mismatch for message %s. Current: %s, Stored: %s', 
+                mailman_log('debug', 'IncomingRunner._dopipeline: Pipeline mismatch for message %s. Current: %s, Stored: %s', 
                            msgid, str(current_pipeline), str(stored_pipeline))
                 # Update the stored pipeline instead of failing
                 msgdata['pipeline'] = current_pipeline
 
         # Log message details for debugging
-        mailman_log('qrunner', 'IncomingRunner._dopipeline: Message details for %s:', msgid)
-        mailman_log('qrunner', '  From: %s', msg.get('from', 'unknown'))
-        mailman_log('qrunner', '  To: %s', msg.get('to', 'unknown'))
-        mailman_log('qrunner', '  Subject: %s', msg.get('subject', '(no subject)'))
-        mailman_log('qrunner', '  Message type: %s', type(msg).__name__)
-        mailman_log('qrunner', '  Message data: %s', str(msgdata))
+        mailman_log('debug', 'IncomingRunner._dopipeline: Message details for %s:', msgid)
+        mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
+        mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
+        mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
+        mailman_log('debug', '  Message type: %s', type(msg).__name__)
+        mailman_log('debug', '  Message data: %s', str(msgdata))
 
         # Process through pipeline
         for handler in current_pipeline:
             try:
+                mailman_log('debug', 'IncomingRunner._dopipeline: Processing message %s through handler %s', msgid, handler)
                 modname = 'Mailman.Handlers.' + handler
                 __import__(modname)
                 process = getattr(sys.modules[modname], 'process')
                 process(mlist, msg, msgdata)
+                mailman_log('debug', 'IncomingRunner._dopipeline: Successfully processed message %s through handler %s', msgid, handler)
             except ImportError as e:
                 mailman_log('error', 'Failed to import handler %s: %s', handler, str(e))
                 return 0
@@ -239,6 +241,7 @@ class IncomingRunner(Runner):
                 mailman_log('error', 'Handler %s failed: %s\n%s', handler, str(e), traceback.format_exc())
                 return 0
 
+        mailman_log('debug', 'IncomingRunner._dopipeline: Successfully completed pipeline processing for message %s', msgid)
         return 1
 
     def _cleanup(self):
