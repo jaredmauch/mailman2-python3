@@ -52,6 +52,11 @@ from Mailman.Message import Message
 from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import sha_new
 
+# Custom exception class for Switchboard errors
+class SwitchboardError(Exception):
+    """Exception raised for errors in the Switchboard class."""
+    pass
+
 # 20 bytes of all bits set, maximum sha.digest() value
 shamax = 0xffffffffffffffffffffffffffffffffffffffff
 
@@ -535,17 +540,15 @@ class Switchboard:
                     msgsave = pickle.load(fp, fix_imports=True, encoding='latin1')
                     metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
                 except (pickle.UnpicklingError, EOFError) as e:
-                    raise SwitchboardError('Could not unpickle %s: %s' %
-                                         (filename, e))
+                    raise IOError('Could not unpickle %s: %s' % (filename, e))
             # Try to unpickle the message
             try:
                 msg = pickle.loads(msgsave, fix_imports=True, encoding='latin1')
             except (pickle.UnpicklingError, EOFError) as e:
-                raise SwitchboardError('Could not unpickle message from %s: %s' %
-                                     (filename, e))
+                raise IOError('Could not unpickle message from %s: %s' % (filename, e))
             return msg, metadata
         except (IOError, OSError) as e:
-            raise SwitchboardError('Could not read %s: %s' % (filename, e))
+            raise IOError('Could not read %s: %s' % (filename, e))
 
     def _dequeue_metadata(self, filename):
         """Dequeue just the metadata from the queue."""
@@ -557,11 +560,10 @@ class Switchboard:
                     # Get the metadata
                     metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
                 except (pickle.UnpicklingError, EOFError) as e:
-                    raise SwitchboardError('Could not unpickle %s: %s' %
-                                         (filename, e))
+                    raise IOError('Could not unpickle %s: %s' % (filename, e))
             return metadata
         except (IOError, OSError) as e:
-            raise SwitchboardError('Could not read %s: %s' % (filename, e))
+            raise IOError('Could not read %s: %s' % (filename, e))
 
     def cleanup_stale_locks(self):
         """Clean up any stale lock files in the queue directory."""
