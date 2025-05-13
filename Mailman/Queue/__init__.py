@@ -36,7 +36,6 @@ from Mailman.Queue.Switchboard import Switchboard
 
 # Import other runners that don't have dependencies
 from Mailman.Queue.OutgoingRunner import OutgoingRunner
-from Mailman.Queue.NewsRunner import NewsRunner
 from Mailman.Queue.BounceRunner import BounceRunner
 from Mailman.Queue.MaildirRunner import MaildirRunner
 from Mailman.Queue.RetryRunner import RetryRunner
@@ -47,11 +46,15 @@ from Mailman.Queue.ArchRunner import ArchRunner
 from Mailman.Queue.IncomingRunner import IncomingRunner
 from Mailman.Queue.VirginRunner import VirginRunner
 
+# Define NewsRunner as a lazy import to avoid circular dependencies
+def get_news_runner():
+    from Mailman.Queue.NewsRunner import NewsRunner
+    return NewsRunner
+
 __all__ = [
     'Runner',
     'Switchboard',
     'OutgoingRunner',
-    'NewsRunner',
     'BounceRunner',
     'MaildirRunner',
     'RetryRunner',
@@ -59,4 +62,5 @@ __all__ = [
     'ArchRunner',
     'IncomingRunner',
     'VirginRunner',
+    'get_news_runner',
 ]

@@ -40,8 +40,12 @@ from Mailman.Version import VERSION
 from Mailman.i18n import _
 from Mailman.Utils import oneline
 
+# Lazy import to avoid circular dependency
+def get_switchboard(qdir):
+    from Mailman.Queue.sbcache import get_switchboard
+    return get_switchboard(qdir)
 
-
+
 def process(mlist, msg, msgdata):
     # Short-circuits
     if not mlist.filter_content:
@@ -119,7 +123,6 @@ def process(mlist, msg, msgdata):
         msg['X-Content-Filtered-By'] = 'Mailman/MimeDel %s' % VERSION
 
 
-
 def reset_payload(msg, subpart):
     # Reset payload of msg to contents of subpart, and fix up content headers
     payload = subpart.get_payload()
@@ -140,7 +143,6 @@ def reset_payload(msg, subpart):
         msg['Content-Description'] = cdesc
 
 
-
 def filter_parts(msg, filtertypes, passtypes, filterexts, passexts):
     # Look at all the message's subparts, and recursively filter
     if not msg.is_multipart():
@@ -178,7 +180,6 @@ def filter_parts(msg, filtertypes, passtypes, filterexts, passexts):
     return 1
 
 
-
 def collapse_multipart_alternatives(msg):
     if not msg.is_multipart():
         return
@@ -205,7 +206,6 @@ def collapse_multipart_alternatives(msg):
     msg.set_payload(newpayload)
 
 
-
 def recast_multipart(msg):
     # If we're left with a multipart message with only one sub-part, recast
     # the message to just the sub-part, but not if the part is message/rfc822
@@ -227,7 +227,6 @@ def recast_multipart(msg):
                 recast_multipart(part)
 
 
-
 def to_plaintext(msg):
     changedp = 0
     for subpart in typed_subpart_iterator(msg, 'text', 'html'):
@@ -255,7 +254,6 @@ def to_plaintext(msg):
     return changedp
 
 
-
 def dispose(mlist, msg, msgdata, why):
     # filter_action == 0 just discards, see below
     if mlist.filter_action == 1:
