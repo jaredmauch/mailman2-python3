@@ -27,11 +27,75 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Queue.IncomingRunner import IncomingRunner
 from Mailman.Logging.Syslog import mailman_log
 from Mailman import MailList
+import time
 import traceback
 
 
 class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
+    # Override the minimum retry delay for virgin messages
+    MIN_RETRY_DELAY = 60  # 1 minute minimum delay between retries
+
+    def _check_retry_delay(self, msgid, filebase):
+        """Check if enough time has passed since the last retry attempt.
+        Returns True if the message can be processed, False if it should be delayed."""
+        try:
+            with self._processed_lock:
+                current_time = time.time()
+                
+                # Check if cleanup is needed
+                if current_time - self._last_cleanup > self._cleanup_interval:
+                    try:
+                        mailman_log('debug', 'VirginRunner: Starting cleanup of old message tracking data')
+                        # Only clean up entries older than cleanup_interval
+                        cutoff_time = current_time - self._cleanup_interval
+                        # Clean up retry times first
+                        old_msgids = [mid for mid, retry_time in self._retry_times.items() 
+                                    if retry_time < cutoff_time]
+                        for mid in old_msgids:
+                            self._retry_times.pop(mid, None)
+                            self._processed_messages.discard(mid)
+                        self._last_cleanup = current_time
+                        mailman_log('debug', 'VirginRunner: Cleaned up %d old message entries', len(old_msgids))
+                    except Exception as e:
+                        mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
+                        # Continue processing even if cleanup fails
+                
+                # Check retry delay
+                last_retry = self._retry_times.get(msgid, 0)
+                time_since_last_retry = current_time - last_retry
+                
+                # Log detailed retry information
+                mailman_log('debug', 'VirginRunner: Retry check for message %s (file: %s):', msgid, filebase)
+                mailman_log('debug', '  Last retry time: %s', time.ctime(last_retry) if last_retry else 'Never')
+                mailman_log('debug', '  Current time: %s', time.ctime(current_time))
+                mailman_log('debug', '  Time since last retry: %d seconds', time_since_last_retry)
+                mailman_log('debug', '  Minimum retry delay: %d seconds', self.MIN_RETRY_DELAY)
+                
+                if time_since_last_retry < self.MIN_RETRY_DELAY:
+                    mailman_log('info', 'VirginRunner: Message %s (file: %s) retried too soon, delaying. Time since last retry: %d seconds',
+                               msgid, filebase, time_since_last_retry)
+                    return False
+                
+                # Update both data structures atomically
+                try:
+                    self._processed_messages.add(msgid)
+                    self._retry_times[msgid] = current_time
+                    mailman_log('debug', 'VirginRunner: Message %s (file: %s) passed retry check, proceeding with processing',
+                               msgid, filebase)
+                    return True
+                except Exception as e:
+                    # If we fail to update the tracking data, remove the message from processed set
+                    self._processed_messages.discard(msgid)
+                    self._retry_times.pop(msgid, None)
+                    mailman_log('error', 'VirginRunner: Failed to update tracking data for message %s: %s',
+                               msgid, str(e))
+                    return False
+                    
+        except Exception as e:
+            mailman_log('error', 'VirginRunner: Unexpected error in retry check for message %s: %s',
+                       msgid, str(e))
+            return False
 
     def _dispose(self, listname, msg, msgdata):
         msgid = msg.get('message-id', 'n/a')
