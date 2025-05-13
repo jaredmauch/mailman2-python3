@@ -193,6 +193,9 @@ class Switchboard:
         try:
             if preserve:
                 psvfile = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                # Log the reason for moving to bad queue
+                mailman_log('info', 'Moving message to bad queue: %s (queue: %s)', filebase, self.__whichq)
+                
                 # Create the directory if it doesn't yet exist.
                 # Copied from __init__.
                 omask = os.umask(0)                       # rwxrws---
@@ -269,7 +272,7 @@ class Switchboard:
                             if not os.path.exists(mm_cfg.BADQUEUE_DIR):
                                 os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
                             os.rename(src, dst)
-                            mailman_log('info', 'Moved invalid file to shunt queue: %s -> %s', f, dst)
+                            mailman_log('info', 'Moved invalid file to shunt queue due to missing + in filename: %s -> %s', f, dst)
                         except Exception as e:
                             mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
                                    f, str(e), traceback.format_exc())
@@ -286,7 +289,7 @@ class Switchboard:
                             if not os.path.exists(mm_cfg.BADQUEUE_DIR):
                                 os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
                             os.rename(src, dst)
-                            mailman_log('info', 'Moved invalid file to shunt queue: %s -> %s', f, dst)
+                            mailman_log('info', 'Moved invalid file to shunt queue due to wrong number of parts in filename: %s -> %s', f, dst)
                         except Exception as e:
                             mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
                                    f, str(e), traceback.format_exc())
@@ -312,7 +315,7 @@ class Switchboard:
                             if not os.path.exists(mm_cfg.BADQUEUE_DIR):
                                 os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
                             os.rename(src, dst)
-                            mailman_log('info', 'Moved invalid file to shunt queue: %s -> %s', f, dst)
+                            mailman_log('info', 'Moved invalid file to shunt queue due to invalid timestamp/digest: %s -> %s', f, dst)
                         except Exception as e:
                             mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
                                    f, str(e), traceback.format_exc())
@@ -353,20 +356,6 @@ class Switchboard:
                 src = os.path.join(self.__whichq, filebase + '.bak')
                 dst = os.path.join(self.__whichq, filebase + '.pck')
                 
-                # Check if the backup file is too old
-                try:
-                    file_age = time.time() - os.path.getmtime(src)
-                    if file_age > mm_cfg.FORM_LIFETIME:
-                        mailman_log('warning',
-                            'Backup file %s is too old (%d seconds), moving to shunt queue',
-                            filebase, file_age)
-                        self.finish(filebase, preserve=True)
-                        continue
-                except OSError as e:
-                    mailman_log('error', 'Error checking file age for %s: %s\nTraceback:\n%s',
-                           filebase, str(e), traceback.format_exc())
-                    continue
-                    
                 try:
                     # First try to validate the backup file
                     with open(src, 'rb') as fp:
@@ -374,6 +363,7 @@ class Switchboard:
                             # Try to read the entire file first to check for EOF
                             content = fp.read()
                             if not content:
+                                mailman_log('error', 'Empty backup file found: %s', filebase)
                                 raise EOFError('Empty backup file')
                             
                             # Create a BytesIO object to read from the content
@@ -392,82 +382,16 @@ class Switchboard:
                             
                             # Validate the unpickled data
                             if not isinstance(data, dict):
+                                mailman_log('error', 'Invalid data format in backup file %s: expected dict, got %s', filebase, type(data))
                                 raise TypeError('Invalid data format in backup file')
                                 
-                            # Update metadata
-                            data['_bak_count'] = data.setdefault('_bak_count', 0) + 1
-                            data['_last_attempt'] = time.time()
-                            if '_error_history' not in data:
-                                data['_error_history'] = []
-                            if '_traceback' in data:
-                                data['_error_history'].append({
-                                    'error': data.get('_last_error', 'unknown'),
-                                    'traceback': data.get('_traceback', 'none'),
-                                    'time': data.get('_last_attempt', 0)
-                                })
-                            
-                            # Write the updated data back
                             try:
-                                with open(src, 'wb') as out_fp:
-                                    if data.get('_parsemsg'):
-                                        protocol = 0
-                                    else:
-                                        protocol = 1
-                                    pickle.dump(data, out_fp, protocol=4, fix_imports=True)
-                                    out_fp.flush()
-                                    if hasattr(os, 'fsync'):
-                                        os.fsync(out_fp.fileno())
+                                os.rename(src, dst)
                             except Exception as e:
-                                mailman_log('error', 'Failed to write updated data to backup file %s: %s\nTraceback:\n%s',
-                                       filebase, str(e), traceback.format_exc())
+                                mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
+                                       filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
                                 self.finish(filebase, preserve=True)
                                 return
-                            
-                            # Log detailed information about the retry
-                            mailman_log('warning',
-                                   'Message retry attempt %d/%d: %s (queue: %s, '
-                                   'message-id: %s, listname: %s, recipients: %s, '
-                                   'error: %s, last attempt: %s, traceback: %s)',
-                                   data['_bak_count'],
-                                   MAX_BAK_COUNT,
-                                   filebase,
-                                   self.__whichq,
-                                   data.get('message-id', 'unknown'),
-                                   data.get('listname', 'unknown'),
-                                   data.get('recips', 'unknown'),
-                                   data.get('_last_error', 'unknown'),
-                                   time.ctime(data.get('_last_attempt', 0)),
-                                   data.get('_traceback', 'none'))
-                            
-                            if data['_bak_count'] >= MAX_BAK_COUNT:
-                                mailman_log('error',
-                                       'Backup file exceeded maximum retry count (%d). '
-                                       'Moving to shunt queue: %s (original queue: %s, '
-                                       'retry count: %d, last error: %s, '
-                                       'message-id: %s, listname: %s, '
-                                       'recipients: %s, error history: %s, '
-                                       'last traceback: %s, full path: %s)',
-                                       MAX_BAK_COUNT,
-                                       filebase,
-                                       self.__whichq,
-                                       data['_bak_count'],
-                                       data.get('_last_error', 'unknown'),
-                                       data.get('message-id', 'unknown'),
-                                       data.get('listname', 'unknown'),
-                                       data.get('recips', 'unknown'),
-                                       data.get('_error_history', 'unknown'),
-                                       data.get('_traceback', 'none'),
-                                       os.path.join(self.__whichq, filebase + '.bak'))
-                                self.finish(filebase, preserve=True)
-                                return
-                            else:
-                                try:
-                                    os.rename(src, dst)
-                                except Exception as e:
-                                    mailman_log('error', 'Failed to rename backup file %s (full paths: %s -> %s): %s\nTraceback:\n%s',
-                                           filebase, os.path.join(self.__whichq, filebase + '.bak'), os.path.join(self.__whichq, filebase + '.pck'), str(e), traceback.format_exc())
-                                    self.finish(filebase, preserve=True)
-                                    return
                         except Exception as e:
                             mailman_log('error', 'Failed to process backup file %s (full path: %s): %s\nTraceback:\n%s',
                                    filebase, os.path.join(self.__whichq, filebase + '.bak'), str(e), traceback.format_exc())
