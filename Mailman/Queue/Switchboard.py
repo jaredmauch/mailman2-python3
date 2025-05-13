@@ -664,3 +664,13 @@ class Switchboard:
                         pass
         except OSError as e:
             mailman_log('error', 'Error cleaning up stale locks: %s', str(e))
+
+    def _make_filebase(self, msg, msgdata):
+        import hashlib
+        import time
+        msgid = msg.get('message-id', '')
+        listname = msgdata.get('listname', '--nolist--')
+        now = time.time()
+        hash_input = (str(msgid) + str(listname) + str(now)).encode('utf-8')
+        digest = hashlib.sha1(hash_input).hexdigest()
+        return "%d+%s" % (int(now), digest)
