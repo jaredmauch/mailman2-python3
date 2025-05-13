@@ -63,7 +63,7 @@ from Mailman import mm_cfg
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import Utils
-from Mailman.Message import Message
+from Mailman.Message import UserNotification
 from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
 
@@ -296,7 +296,7 @@ def main():
                 # Ensure host is properly decoded
                 if isinstance(host, bytes):
                     host = tounicode(host, 'latin-1')
-                msg = Mailman.Message.UserNotification(
+                msg = UserNotification(
                     addr, siteowner,
                     _('%(host)s mailing list memberships reminder') % {'host': host},
                     text.encode(enc, 'replace'), poplang)
