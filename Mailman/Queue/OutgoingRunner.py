@@ -226,7 +226,9 @@ class OutgoingRunner(Runner, BounceMixin):
         # Ensure we have a MailList object
         if isinstance(mlist, str):
             try:
-                mlist = MailList.MailList(mlist, lock=0)
+                # Lazy import to avoid circular dependencies
+                from Mailman.MailList import MailList
+                mlist = MailList(mlist, lock=0)
                 should_unlock = True
             except Errors.MMUnknownListError:
                 mailman_log('error', 'OutgoingRunner: Unknown list %s', mlist)

@@ -20,10 +20,8 @@ import traceback
 from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
-from Mailman.MailingList import MailList
 from Mailman.Errors import MMUnknownListError
 
-
 class RetryRunner(Runner):
     QDIR = mm_cfg.RETRYQUEUE_DIR
     SLEEPTIME = mm_cfg.minutes(15)
@@ -47,7 +45,9 @@ class RetryRunner(Runner):
         # Ensure we have a MailList object
         if isinstance(mlist, str):
             try:
-                mlist = MailList.MailList(mlist, lock=0)
+                # Lazy import to avoid circular dependencies
+                from Mailman.MailList import MailList
+                mlist = MailList(mlist, lock=0)
                 should_unlock = True
             except MMUnknownListError:
                 syslog('error', 'RetryRunner: Unknown list %s', mlist)
