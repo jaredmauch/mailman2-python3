@@ -23,6 +23,8 @@ which is more convenient for use inside Mailman.
 
 import re
 from io import StringIO
+import time
+import hashlib
 
 import email
 import email.generator
@@ -32,6 +34,7 @@ from email.header import Header
 
 from Mailman import mm_cfg
 from Mailman.Utils import GetCharSet, unique_message_id, get_site_email
+from Mailman.Logging.Syslog import mailman_log
 
 COMMASPACE = ', '
 
@@ -109,7 +112,6 @@ class Message(email.message.Message):
         if hchanged:
             self._headers = headers
 
-    # I think this method ought to eventually be deprecated
     def get_sender(self, use_envelope=None, preserve_case=0):
         """Return the address considered to be the author of the email.
 
@@ -198,44 +200,54 @@ class Message(email.message.Message):
                 # get_unixfrom() returns None if there's no envelope
                 fieldval = self.get_unixfrom() or ''
                 try:
-                    pairs.append(('', fieldval.split()[1]))
-                except IndexError:
-                    # Ignore badly formatted unixfroms
-                    pass
+                    realname, address = email.utils.parseaddr(fieldval)
+                except (TypeError, ValueError):
+                    continue
             else:
-                fieldvals = self.get_all(h)
-                if fieldvals:
-                    # See comment above in get_sender() regarding
-                    # getaddresses() and multi-line headers
-                    fieldvals = [''.join(fv.splitlines())
-                                 for fv in fieldvals]
-                    pairs.extend(email.utils.getaddresses(fieldvals))
-        authors = []
-        for pair in pairs:
-            address = pair[1]
-            if address is not None and not preserve_case:
-                address = address.lower()
-            authors.append(address)
-        return authors
+                fieldval = self[h]
+                if not fieldval:
+                    continue
+                # Work around bug in email 2.5.8 (and ?) involving getaddresses()
+                # from multi-line header values.
+                fieldval = ''.join(fieldval.splitlines())
+                addrs = email.utils.getaddresses([fieldval])
+                if not addrs:
+                    continue
+                realname, address = addrs[0]
+            if address:
+                if not preserve_case:
+                    address = address.lower()
+                pairs.append((realname, address))
+        return pairs
 
     def get_filename(self, failobj=None):
-        """Some MUA have bugs in RFC2231 filename encoding and cause
-        Mailman to stop delivery in Scrubber.py (called from ToDigest.py).
-        """
-        try:
-            filename = email.message.Message.get_filename(self, failobj)
-            return filename
-        except (UnicodeError, LookupError, ValueError):
-            return failobj
+        """Return the filename associated with the message's payload.
 
+        This is a convenience method that returns the filename associated with
+        the message's payload.  If the message is a multipart message, then
+        the filename is taken from the first part that has a filename
+        associated with it.  If no filename is found, then failobj is
+        returned (defaults to None).
+        """
+        if self.is_multipart():
+            for part in self.get_payload():
+                if part.is_multipart():
+                    continue
+                filename = part.get_filename()
+                if filename:
+                    return filename
+        else:
+            return self.get_param('filename', failobj)
+        return failobj
 
     def as_string(self, unixfrom=False, mangle_from_=True):
-        """Return entire formatted message as a string using
-        Mailman.Message.Generator.
+        """Return the entire formatted message as a string.
 
-        Operates like email.message.Message.as_string, only
-        using Mailman's Message.Generator class. Only the top headers will
-        get folded.
+        Optional unixfrom is a flag that, when True, results in the envelope
+        header being included in the output.
+
+        Optional mangle_from_ is a flag that, when True, escapes From_ lines
+        in the body of the message by putting a `>' in front of them.
         """
         fp = StringIO()
         g = Generator(fp, mangle_from_=mangle_from_)
@@ -244,110 +256,95 @@ class Message(email.message.Message):
 
 
 class UserNotification(Message):
-    """Class for internally crafted messages."""
-
+    """Class for crafting user notifications."""
     def __init__(self, recip, sender, subject=None, text=None, lang=None):
         Message.__init__(self)
-        charset = None
-        if lang is not None:
-            charset = Charset(GetCharSet(lang))
-            # Ensure we have a valid output charset
-            if charset.output_charset == 'us-ascii':
-                charset = Charset('utf-8')
-        else:
-            charset = Charset('utf-8')  # Use utf-8 as fallback when lang is None
-        if text is not None:
-            self.set_payload(text, charset)
-        if subject is None:
-            subject = '(no subject)'
-        self['Subject'] = Header(subject, charset, header_name='Subject',
-                                 errors='replace')
+        self['To'] = recip
         self['From'] = sender
-        if isinstance(recip, list):
-            self['To'] = COMMASPACE.join(recip)
-            self.recips = recip
-        else:
-            self['To'] = recip
-            self.recips = [recip]
+        if subject:
+            self['Subject'] = subject
+        if text:
+            self.set_payload(text)
+        if lang:
+            self['Content-Language'] = lang
+        self['X-Mailer'] = 'Mailman/%s' % mm_cfg.VERSION
+        self['X-Ack-No'] = 'yes'
+        self['Precedence'] = 'bulk'
+        self['Message-ID'] = unique_message_id()
 
     def send(self, mlist, noprecedence=False, **_kws):
-        """Sends the message by enqueuing it to the `virgin' queue.
+        """Send the message to the recipient.
 
-        This is used for all internally crafted messages.
+        The message is sent via the virgin queue.
         """
-        # Since we're crafting the message from whole cloth, let's make sure
-        # this message has a Message-ID.  Yes, the MTA would give us one, but
-        # this is useful for logging to logs/smtp.
-        if 'message-id' not in self:
-            self['Message-ID'] = unique_message_id(mlist)
-        # Ditto for Date: which is required by RFC 2822
-        if 'date' not in self:
-            self['Date'] = email.utils.formatdate(localtime=1)
-        # UserNotifications are typically for admin messages, and for messages
-        # other than list explosions.  Send these out as Precedence: bulk, but
-        # don't override an existing Precedence: header.
-        # Also, if the message is To: the list-owner address, set Precedence:
-        # list.  See note below in OwnerNotification.
-        if not ('precedence' in self or noprecedence):
-            if self.get('to') == mlist.GetOwnerEmail():
-                self['Precedence'] = 'list'
-            else:
-                self['Precedence'] = 'bulk'
-        self._enqueue(mlist, **_kws)
+        if not noprecedence:
+            self['Precedence'] = 'bulk'
+        return self._enqueue(mlist, **_kws)
 
     def _enqueue(self, mlist, **_kws):
+        """Enqueue the message to the virgin queue."""
         # Not imported at module scope to avoid import loop
-        from Mailman.Queue.sbcache import get_switchboard
-        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-        # Create msgdata dictionary with the parameters
-        msgdata = {
-            'nodecorate': 1,
-            'reduced_list_headers': 1,
-        }
-        # Add any additional keyword arguments to msgdata
-        msgdata.update(_kws)
-        # The message metadata better have a `recip' attribute
-        virginq.enqueue(self,
-                        listname = mlist.internal_name(),
-                        msgdata = msgdata)
+        from Mailman.Queue.Switchboard import Switchboard
+        from Mailman.Queue.VirginQueue import VirginQueue
+        
+        mailman_log('debug', 'UserNotification._enqueue: Starting to enqueue notification for list %s', mlist.internal_name())
+        
+        # Create a unique filebase using the standard format
+        now = time.time()
+        msg_str = self.as_string()
+        hashfood = msg_str.encode() + mlist.internal_name().encode() + repr(now).encode()
+        filebase = repr(now) + '+' + hashlib.sha1(hashfood).hexdigest()
+        
+        mailman_log('debug', 'UserNotification._enqueue: Generated filebase %s', filebase)
+        
+        # Create the virgin queue
+        virginq = VirginQueue()
+        
+        # Enqueue the message
+        try:
+            virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
+            mailman_log('debug', 'UserNotification._enqueue: Successfully enqueued notification to virgin queue')
+            return True
+        except Exception as e:
+            mailman_log('error', 'UserNotification._enqueue: Failed to enqueue notification: %s', str(e))
+            return False
 
 
 class OwnerNotification(UserNotification):
-    """Like user notifications, but this message goes to the list owners."""
-
+    """Class for crafting owner notifications."""
     def __init__(self, mlist, subject=None, text=None, tomoderators=1):
-        recips = mlist.owner[:]
+        UserNotification.__init__(self, mlist.GetOwnerEmail(),
+                                 get_site_email(mlist.host_name),
+                                 subject, text)
         if tomoderators:
-            recips.extend(mlist.moderator)
-        # We have to set the owner to the site's -bounces address, otherwise
-        # we'll get a mail loop if an owner's address bounces.
-        sender = mm_cfg.get_site_email(mlist.host_name, 'bounces')
-        lang = mlist.preferred_language
-        UserNotification.__init__(self, recips, sender, subject, text, lang)
-        # Hack the To header to look like it's going to the -owner address
-        del self['to']
-        self['To'] = mlist.GetOwnerEmail()
-        self._sender = sender
-        # User notifications are normally sent with Precedence: bulk.  This
-        # is appropriate as they can be backscatter of rejected spam.
-        # Owner notifications are not backscatter and are perhaps more
-        # important than 'bulk' so give them Precedence: list by default.
-        # (LP: #1313146)
-        self['Precedence'] = 'list'
+            self['To'] = mlist.GetModeratorEmail()
+        self['X-Ack-No'] = 'no'
+        self['Precedence'] = 'bulk'
 
     def _enqueue(self, mlist, **_kws):
+        """Enqueue the message to the virgin queue."""
         # Not imported at module scope to avoid import loop
-        from Mailman.Queue.sbcache import get_switchboard
-        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-        # Create msgdata dictionary with the parameters
-        msgdata = {
-            'nodecorate': 1,
-            'reduced_list_headers': 1,
-            'envsender': self._sender,
-        }
-        # Add any additional keyword arguments to msgdata
-        msgdata.update(_kws)
-        # The message metadata better have a `recip' attribute
-        virginq.enqueue(self,
-                        listname = mlist.internal_name(),
-                        msgdata = msgdata)
+        from Mailman.Queue.Switchboard import Switchboard
+        from Mailman.Queue.VirginQueue import VirginQueue
+        
+        mailman_log('debug', 'OwnerNotification._enqueue: Starting to enqueue notification for list %s', mlist.internal_name())
+        
+        # Create a unique filebase using the standard format
+        now = time.time()
+        msg_str = self.as_string()
+        hashfood = msg_str.encode() + mlist.internal_name().encode() + repr(now).encode()
+        filebase = repr(now) + '+' + hashlib.sha1(hashfood).hexdigest()
+        
+        mailman_log('debug', 'OwnerNotification._enqueue: Generated filebase %s', filebase)
+        
+        # Create the virgin queue
+        virginq = VirginQueue()
+        
+        # Enqueue the message
+        try:
+            virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
+            mailman_log('debug', 'OwnerNotification._enqueue: Successfully enqueued notification to virgin queue')
+            return True
+        except Exception as e:
+            mailman_log('error', 'OwnerNotification._enqueue: Failed to enqueue notification: %s', str(e))
+            return False

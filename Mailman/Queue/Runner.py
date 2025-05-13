@@ -63,6 +63,17 @@ class Runner:
             self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
             # Create the shunt switchboard
             self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
+            
+            # Initialize message tracking attributes
+            self._track_messages = self.__class__._track_messages
+            self._max_processed_messages = self.__class__._max_processed_messages
+            self._max_retry_times = self.__class__._max_retry_times
+            self._processed_messages = set()
+            self._processed_lock = threading.Lock()
+            self._retry_times = {}
+            self._last_cleanup = time.time()
+            self._cleanup_interval = 3600
+            
             syslog('debug', 'Runner: Initialization complete')
         except Exception as e:
             syslog('error', 'Runner: Initialization failed: %s\nTraceback:\n%s',

@@ -426,13 +426,14 @@ class Switchboard:
         4. Proper error handling and cleanup
         5. File locking for concurrent access
         """
-        # Create a unique filename
+        # Create a unique filename using the standard format
         now = time.time()
-        hashbase = hashlib.md5(repr(now).encode()).hexdigest()
-        msginfo = msg.get('message-id', '')
-        if msginfo:
-            hashbase = hashlib.md5((hashbase + msginfo).encode()).hexdigest()
-        qfile = os.path.join(self.__whichq, hashbase + '.pck')
+        msgid = msg.get('message-id', '')
+        listname = msgdata.get('listname', '--nolist--')
+        hash_input = (str(msgid) + str(listname) + str(now)).encode('utf-8')
+        digest = hashlib.sha1(hash_input).hexdigest()
+        filebase = "%d+%s" % (int(now), digest)
+        qfile = os.path.join(self.__whichq, filebase + '.pck')
         tmpfile = qfile + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
         lockfile = qfile + '.lock'
         
