@@ -156,6 +156,16 @@ class BounceMixin:
 class BounceRunner(Runner, BounceMixin):
     QDIR = mm_cfg.BOUNCEQUEUE_DIR
 
+    # Enable message tracking for bounce messages
+    _track_messages = True
+    _max_processed_messages = 10000
+    _max_retry_times = 10000
+    
+    # Retry configuration
+    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
+    MAX_RETRIES = 5  # Maximum number of retry attempts
+    _retry_times = {}  # Track last retry time for each message
+
     def __init__(self, slice=None, numslices=1):
         syslog('debug', 'BounceRunner: Starting initialization')
         try:
