@@ -544,13 +544,17 @@ class Switchboard:
             with open(filename, 'rb') as fp:
                 try:
                     # Try UTF-8 first for newer files
-                    msgsave = pickle.load(fp, fix_imports=True, encoding='utf-8')
-                    metadata = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                    data = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                    if not isinstance(data, tuple) or len(data) != 2:
+                        raise TypeError('Invalid data format in queue file')
+                    msgsave, metadata = data
                 except (UnicodeDecodeError, pickle.UnpicklingError):
                     # Fall back to latin1 for older files
                     fp.seek(0)
-                    msgsave = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    if not isinstance(data, tuple) or len(data) != 2:
+                        raise TypeError('Invalid data format in queue file')
+                    msgsave, metadata = data
                 return msgsave, metadata
         except (IOError, OSError) as e:
             mailman_log('error', 'Error dequeuing message from %s: %s', filename, str(e))
