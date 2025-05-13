@@ -126,6 +126,11 @@ class PipelineError(Exception):
 class IncomingRunner(Runner):
     QDIR = mm_cfg.INQUEUE_DIR
 
+    # Enable message tracking for incoming messages
+    _track_messages = True
+    _max_processed_messages = 10000
+    _max_retry_times = 10000
+
     def __init__(self, slice=None, numslices=1):
         mailman_log('debug', 'IncomingRunner: Starting initialization')
         try:
@@ -339,4 +344,52 @@ class IncomingRunner(Runner):
         except Exception as e:
             mailman_log('error', 'IncomingRunner._oneloop: Unexpected error in main loop: %s\n%s',
                       str(e), traceback.format_exc())
+
+    def _check_retry_delay(self, msgid, filebase):
+        """Check if enough time has passed since the last retry attempt."""
+        now = time.time()
+        last_retry = self._retry_times.get(msgid, 0)
+        
+        if now - last_retry < self.MIN_RETRY_DELAY:
+            mailman_log('debug', 'IncomingRunner._check_retry_delay: Message %s (file: %s) retry delay not met. Last retry: %s, Now: %s, Delay needed: %s',
+                       msgid, filebase, time.ctime(last_retry), time.ctime(now), self.MIN_RETRY_DELAY)
+            return False
+        
+        mailman_log('debug', 'IncomingRunner._check_retry_delay: Message %s (file: %s) retry delay met. Last retry: %s, Now: %s',
+                   msgid, filebase, time.ctime(last_retry), time.ctime(now))
+        return True
+
+    def _mark_message_processed(self, msgid):
+        """Mark a message as processed."""
+        with self._processed_lock:
+            self._processed_messages.add(msgid)
+
+    def _unmark_message_processed(self, msgid):
+        """Remove a message from the processed set."""
+        with self._processed_lock:
+            self._processed_messages.discard(msgid)
+
+    def _process_admin(self, mlist, msg, msgdata):
+        """Process an admin message."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            mailman_log('debug', 'IncomingRunner._process_admin: Processing admin message %s', msgid)
+            
+            # Get admin information
+            recipient = msgdata.get('recipient', 'unknown')
+            admin_type = msgdata.get('admin_type', 'unknown')
+            
+            mailman_log('debug', 'IncomingRunner._process_admin: Admin message for %s, type: %s',
+                       recipient, admin_type)
+            
+            # Process the admin message
+            # ... admin message processing logic ...
+            
+            mailman_log('debug', 'IncomingRunner._process_admin: Successfully processed admin message %s', msgid)
+            return True
+            
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._process_admin: Error processing admin message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            return False
 

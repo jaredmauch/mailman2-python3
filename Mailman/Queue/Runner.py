@@ -41,15 +41,15 @@ class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
     
-    # Shared processed messages tracking
-    _processed_messages = set()
-    _processed_lock = threading.Lock()
-    _last_cleanup = time.time()
-    _cleanup_interval = 3600  # Clean up every hour
-    
-    # Retry delay configuration
-    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
-    _retry_times = {}  # Track last retry time for each message
+    # Message tracking configuration - can be overridden by subclasses
+    _track_messages = False  # Whether to track processed messages
+    _max_processed_messages = 10000  # Maximum number of messages to track
+    _max_retry_times = 10000  # Maximum number of retry times to track
+    _processed_messages = set()  # Set of processed message IDs
+    _processed_lock = threading.Lock()  # Lock for thread safety
+    _retry_times = {}  # Dictionary of retry times
+    _last_cleanup = time.time()  # Last cleanup time
+    _cleanup_interval = 3600  # Cleanup interval in seconds
 
     def __init__(self, slice=None, numslices=1):
         syslog('debug', 'Runner: Starting initialization')
@@ -57,7 +57,11 @@ class Runner:
             self._stop = 0
             self._slice = slice
             self._numslices = numslices
-            self._switchboard = Switchboard(self.QDIR)
+            self._kids = {}
+            # Create our own switchboard.  Don't use the switchboard cache because
+            # we want to provide slice and numslice arguments.
+            self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
+            # Create the shunt switchboard
             self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
             syslog('debug', 'Runner: Initialization complete')
         except Exception as e:
@@ -376,6 +380,8 @@ class Runner:
         syslog('debug', 'Runner: Starting cleanup')
         try:
             self._cleanup_old_messages()
+            # Clean up any stale locks
+            self._switchboard.cleanup_stale_locks()
         except Exception as e:
             syslog('error', 'Runner: Cleanup failed: %s\nTraceback:\n%s',
                    str(e), traceback.format_exc())
@@ -424,14 +430,25 @@ class Runner:
                 syslog('debug', 'Runner._unmark_message_processed: Removed message %s from processed set', msgid)
 
     def _cleanup_old_messages(self):
-        """Clean up old message tracking data."""
-        with self._processed_lock:
-            if len(self._processed_messages) > self._max_processed_messages:
-                syslog('debug', 'Runner._cleanup_old_messages: Clearing processed messages set (size: %d)',
-                       len(self._processed_messages))
-                self._processed_messages.clear()
-            if len(self._retry_times) > self._max_retry_times:
-                syslog('debug', 'Runner._cleanup_old_messages: Clearing retry times dict (size: %d)',
-                       len(self._retry_times))
-                self._retry_times.clear()
-            self._last_cleanup = time.time()
+        """Clean up old message tracking data if message tracking is enabled."""
+        if not self._track_messages:
+            return
+
+        try:
+            now = time.time()
+            if now - self._last_cleanup < self._cleanup_interval:
+                return
+
+            with self._processed_lock:
+                if len(self._processed_messages) > self._max_processed_messages:
+                    syslog('debug', '%s: Clearing processed messages set (size: %d)',
+                           self.__class__.__name__, len(self._processed_messages))
+                    self._processed_messages.clear()
+                if len(self._retry_times) > self._max_retry_times:
+                    syslog('debug', '%s: Clearing retry times dict (size: %d)',
+                           self.__class__.__name__, len(self._retry_times))
+                    self._retry_times.clear()
+                self._last_cleanup = now
+        except Exception as e:
+            syslog('error', '%s: Error during message cleanup: %s',
+                   self.__class__.__name__, str(e))
