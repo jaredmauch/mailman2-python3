@@ -275,40 +275,14 @@ class Switchboard:
         upper = self.__upper
         try:
             for f in os.listdir(self.__whichq):
-                # By ignoring anything that doesn't end in .pck, we ignore
-                # tempfiles and avoid a race condition.
                 if not f.endswith(extension):
                     continue
-                # Remove the extension to get the filebase
                 filebase = f[:-len(extension)]
                 try:
-                    # Log warning for non-standard filenames but still process them
-                    if '+' not in filebase:
-                        full_path = os.path.join(self.__whichq, f)
-                        mailman_log('warning', 'Non-standard file name format in queue directory (missing +): %s (full path: %s)', f, full_path)
-                        # Try to process the file anyway
-                        try:
-                            # Attempt to read the file to verify it's valid
-                            with open(os.path.join(self.__whichq, f), 'rb') as fp:
-                                pickle.load(fp, fix_imports=True, encoding='utf-8')
-                        except Exception as e:
-                            # If we can't read it, move it to shunt queue
-                            try:
-                                src = os.path.join(self.__whichq, f)
-                                dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                                if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                    os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                                os.rename(src, dst)
-                                mailman_log('info', 'Moved invalid file to shunt queue due to read error: %s -> %s', f, dst)
-                                continue
-                            except Exception as move_e:
-                                mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
-                                       f, str(move_e), traceback.format_exc())
-                                continue
-                    
                     # Get the file's modification time
                     mtime = os.path.getmtime(os.path.join(self.__whichq, f))
-                    if lower <= mtime < upper:
+                    # Only apply time bounds if they are set
+                    if lower is None or upper is None or (lower <= mtime < upper):
                         times[filebase] = mtime
                 except OSError:
                     continue
