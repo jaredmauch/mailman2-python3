@@ -281,86 +281,40 @@ class Switchboard:
                 if ext != extension:
                     continue
                 try:
-                    # Validate file name format
+                    # Log warning for non-standard filenames but still process them
                     if '+' not in filebase:
                         full_path = os.path.join(self.__whichq, f)
-                        mailman_log('warning', 'Invalid file name format in queue directory (missing +): %s (full path: %s)', f, full_path)
-                        # Try to recover by moving to shunt queue
+                        mailman_log('warning', 'Non-standard file name format in queue directory (missing +): %s (full path: %s)', f, full_path)
+                        # Try to process the file anyway
                         try:
-                            src = os.path.join(self.__whichq, f)
-                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                            os.rename(src, dst)
-                            mailman_log('info', 'Moved invalid file to shunt queue due to missing + in filename: %s -> %s', f, dst)
+                            # Attempt to read the file to verify it's valid
+                            with open(os.path.join(self.__whichq, f), 'rb') as fp:
+                                pickle.load(fp, fix_imports=True, encoding='utf-8')
                         except Exception as e:
-                            mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
-                                   f, str(e), traceback.format_exc())
-                        continue
-
-                    parts = filebase.split('+')
-                    if len(parts) != 2:
-                        full_path = os.path.join(self.__whichq, f)
-                        mailman_log('warning', 'Invalid file name format in queue directory (wrong number of parts): %s (full path: %s)', f, full_path)
-                        # Try to recover by moving to shunt queue
-                        try:
-                            src = os.path.join(self.__whichq, f)
-                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                            os.rename(src, dst)
-                            mailman_log('info', 'Moved invalid file to shunt queue due to wrong number of parts in filename: %s -> %s', f, dst)
-                        except Exception as e:
-                            mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
-                                   f, str(e), traceback.format_exc())
-                        continue
-
-                    when, digest = parts
-                    try:
-                        # Validate timestamp format
-                        when_float = float(when)
-                        # Validate digest format (should be hex)
-                        try:
-                            digest_int = int(digest, 16)
-                        except ValueError as e:
-                            mailman_log('error', 'Invalid digest format in queue file %s: %s', f, e)
-                            raise
-                    except ValueError as e:
-                        full_path = os.path.join(self.__whichq, f)
-                        mailman_log('warning', 'Invalid file name format in queue directory (invalid timestamp/digest): %s: %s (full path: %s)', f, str(e), full_path)
-                        # Try to recover by moving to shunt queue
-                        try:
-                            src = os.path.join(self.__whichq, f)
-                            dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                            if not os.path.exists(mm_cfg.BADQUEUE_DIR):
-                                os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
-                            os.rename(src, dst)
-                            mailman_log('info', 'Moved invalid file to shunt queue due to invalid timestamp/digest: %s -> %s', f, dst)
-                        except Exception as e:
-                            mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
-                                   f, str(e), traceback.format_exc())
-                        continue
-
-                    # Throw out any files which don't match our bitrange.  BAW: test
-                    # performance and end-cases of this algorithm.  MAS: both
-                    # comparisons need to be <= to get complete range.
-                    if lower is None or (lower <= digest_int <= upper):
-                        key = when_float
-                        while key in times:
-                            key += DELTA
-                        times[key] = filebase
-                except Exception as e:
-                    mailman_log('error', 'Unexpected error processing file %s: %s\nTraceback:\n%s',
-                           f, str(e), traceback.format_exc())
+                            # If we can't read it, move it to shunt queue
+                            try:
+                                src = os.path.join(self.__whichq, f)
+                                dst = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
+                                if not os.path.exists(mm_cfg.BADQUEUE_DIR):
+                                    os.makedirs(mm_cfg.BADQUEUE_DIR, 0o770)
+                                os.rename(src, dst)
+                                mailman_log('info', 'Moved invalid file to shunt queue due to read error: %s -> %s', f, dst)
+                                continue
+                            except Exception as move_e:
+                                mailman_log('error', 'Failed to move invalid file %s to shunt queue: %s\nTraceback:\n%s',
+                                       f, str(move_e), traceback.format_exc())
+                                continue
+                    
+                    # Get the file's modification time
+                    mtime = os.path.getmtime(os.path.join(self.__whichq, f))
+                    if lower <= mtime < upper:
+                        times[f] = mtime
+                except OSError:
                     continue
+            return sorted(times.items(), key=lambda x: x[1])
         except OSError as e:
-            mailman_log('error', 'Failed to list queue directory %s: %s\nTraceback:\n%s',
-                   self.__whichq, str(e), traceback.format_exc())
-            raise
-        # FIFO sort
-        keys = list(times.keys())
-        keys.sort()
-        return [times[k] for k in keys]
+            mailman_log('error', 'Error reading queue directory %s: %s', self.__whichq, str(e))
+            return []
 
     def recover_backup_files(self):
         """Move all .bak files in our slice to .pck.
