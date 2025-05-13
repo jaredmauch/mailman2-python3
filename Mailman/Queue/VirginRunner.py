@@ -29,9 +29,10 @@ from Mailman.Logging.Syslog import mailman_log
 from Mailman import MailList
 import time
 import traceback
+from Mailman import Errors
 
 
-class VirginRunner(IncomingRunner):
+class VirginRunner(Runner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
     # Override the minimum retry delay for virgin messages
     MIN_RETRY_DELAY = 60  # 1 minute minimum delay between retries
@@ -116,69 +117,25 @@ class VirginRunner(IncomingRunner):
                        msgid, str(e))
             return False
 
-    def _dispose(self, listname, msg, msgdata):
+    def _dispose(self, mlist, msg, msgdata):
+        """Process a virgin message."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        # Check retry delay but don't shunt on timeout
-        if not self._check_retry_delay(msgid, filebase):
-            mailman_log('info', 'VirginRunner: Message %s (file: %s) not ready for processing yet, will retry',
-                       msgid, filebase)
-            return 1  # Return 1 to indicate we should keep trying
-
-        try:
-            # Get the MailList object
-            try:
-                mailman_log('debug', 'VirginRunner: Getting MailList object for list %s', listname)
-                mlist = MailList.MailList(listname, lock=0)
-                mailman_log('debug', 'VirginRunner: Successfully got MailList object for list %s', listname)
-            except Exception as e:
-                mailman_log('error', 'Failed to get MailList object for list %s: %s',
-                           listname, str(e))
-                return 1  # Return 1 to keep trying instead of shunting
-
-            # Log start of processing
-            mailman_log('info', 'VirginRunner: Starting to process virgin message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            
-            # We need to fasttrack this message through any handlers that touch
-            # it.  E.g. especially CookHeaders.
-            msgdata['_fasttrack'] = 1
-            mailman_log('debug', 'VirginRunner: Set _fasttrack flag for message %s', msgid)
-            
-            # Get the pipeline and log it
-            pipeline = self._get_pipeline(mlist, msg, msgdata)
-            mailman_log('debug', 'VirginRunner: Pipeline for message %s: %s', msgid, pipeline)
-            
-            # Process through the pipeline
-            mailman_log('debug', 'VirginRunner: Starting pipeline processing for message %s', msgid)
-            try:
-                result = IncomingRunner._dispose(self, mlist, msg, msgdata)
-                mailman_log('debug', 'VirginRunner: Pipeline processing completed for message %s with result: %s', msgid, result)
-            except Exception as e:
-                mailman_log('error', 'VirginRunner: Pipeline processing failed for message %s: %s', msgid, str(e))
-                mailman_log('error', 'VirginRunner: Pipeline processing traceback:\n%s', traceback.format_exc())
-                raise
-            
-            # Log successful completion
-            mailman_log('info', 'VirginRunner: Successfully processed virgin message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            return result
-        except Exception as e:
-            # Enhanced error logging with more context
-            mailman_log('error', 'Error processing virgin message %s for list %s: %s',
-                   msgid, listname, str(e))
-            mailman_log('error', 'Message details:')
-            mailman_log('error', '  Message ID: %s', msgid)
-            mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
-            mailman_log('error', '  To: %s', msg.get('to', 'unknown'))
-            mailman_log('error', '  Subject: %s', msg.get('subject', '(no subject)'))
-            mailman_log('error', '  Message type: %s', type(msg).__name__)
-            mailman_log('error', '  Message data: %s', str(msgdata))
-            mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
-            
-            # Don't remove from processed messages on error, let it retry
-            return 1  # Return 1 to keep trying instead of shunting
+        mailman_log('debug', 'VirginRunner._dispose: Starting to process virgin message %s (file: %s)',
+                   msgid, filebase)
+        
+        # Get the IncomingRunner class
+        from Mailman.Queue import get_incoming_runner
+        IncomingRunner = get_incoming_runner()
+        
+        # Process the message using IncomingRunner's _dispose method
+        result = IncomingRunner._dispose(self, mlist, msg, msgdata)
+        
+        mailman_log('debug', 'VirginRunner._dispose: Finished processing virgin message %s (file: %s)',
+                   msgid, filebase)
+        
+        return result
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # It's okay to hardcode this, since it'll be the same for all
