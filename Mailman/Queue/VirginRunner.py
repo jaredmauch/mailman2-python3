@@ -26,13 +26,14 @@ from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.IncomingRunner import IncomingRunner
 from Mailman.Logging.Syslog import mailman_log
+from Mailman import MailList
 import traceback
 
 
 class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
 
-    def _dispose(self, mlist, msg, msgdata):
+    def _dispose(self, listname, msg, msgdata):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
@@ -41,6 +42,14 @@ class VirginRunner(IncomingRunner):
             return 0
 
         try:
+            # Get the MailList object
+            try:
+                mlist = MailList.MailList(listname, lock=0)
+            except Exception as e:
+                mailman_log('error', 'Failed to get MailList object for list %s: %s',
+                           listname, str(e))
+                return 0
+
             # Log start of processing
             mailman_log('info', 'VirginRunner: Starting to process virgin message %s (file: %s) for list %s',
                        msgid, filebase, mlist.internal_name())
@@ -59,7 +68,7 @@ class VirginRunner(IncomingRunner):
         except Exception as e:
             # Enhanced error logging with more context
             mailman_log('error', 'Error processing virgin message %s for list %s: %s',
-                   msgid, mlist.internal_name(), str(e))
+                   msgid, listname, str(e))
             mailman_log('error', 'Message details:')
             mailman_log('error', '  Message ID: %s', msgid)
             mailman_log('error', '  From: %s', msg.get('from', 'unknown'))
