@@ -37,9 +37,11 @@ class VirginRunner(IncomingRunner):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        # Check retry delay and duplicate processing
+        # Check retry delay but don't shunt on timeout
         if not self._check_retry_delay(msgid, filebase):
-            return 0
+            mailman_log('info', 'VirginRunner: Message %s (file: %s) not ready for processing yet, will retry',
+                       msgid, filebase)
+            return 1  # Return 1 to indicate we should keep trying
 
         try:
             # Get the MailList object
@@ -48,7 +50,7 @@ class VirginRunner(IncomingRunner):
             except Exception as e:
                 mailman_log('error', 'Failed to get MailList object for list %s: %s',
                            listname, str(e))
-                return 0
+                return 1  # Return 1 to keep trying instead of shunting
 
             # Log start of processing
             mailman_log('info', 'VirginRunner: Starting to process virgin message %s (file: %s) for list %s',
@@ -78,9 +80,8 @@ class VirginRunner(IncomingRunner):
             mailman_log('error', '  Message data: %s', str(msgdata))
             mailman_log('error', 'Traceback:\n%s', traceback.format_exc())
             
-            # Remove from processed messages on error
-            self._unmark_message_processed(msgid)
-            return 0
+            # Don't remove from processed messages on error, let it retry
+            return 1  # Return 1 to keep trying instead of shunting
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # It's okay to hardcode this, since it'll be the same for all
