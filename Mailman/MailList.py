@@ -644,7 +644,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         fp = None
         try:
             fp = open(fname_tmp, 'wb')
-            # Use a binary format... it's more efficient.
+            # Use protocol 4 for Python 2/3 compatibility, with fix_imports for backward compatibility
             pickle.dump(data_dict, fp, protocol=4, fix_imports=True)
             fp.flush()
             if mm_cfg.SYNC_AFTER_WRITE:
@@ -723,7 +723,14 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
             loadfunc = marshal.load
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-            loadfunc = lambda fp: pickle.load(fp, fix_imports=True, encoding='latin1')
+            def loadfunc(fp):
+                try:
+                    # Try UTF-8 first for newer files
+                    return pickle.load(fp, fix_imports=True, encoding='utf-8')
+                except (UnicodeDecodeError, pickle.UnpicklingError):
+                    # Fall back to latin1 for older files
+                    fp.seek(0)
+                    return pickle.load(fp, fix_imports=True, encoding='latin1')
         else:
             raise ValueError('Bad database file name')
         try:

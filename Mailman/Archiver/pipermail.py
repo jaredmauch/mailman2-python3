@@ -132,6 +132,7 @@ class Database(DatabaseInterface):
         temp2 = article.html_body
         article.body = []
         del article.html_body
+        # Use protocol 4 for Python 2/3 compatibility
         self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
         article.body = temp
         article.html_body = temp2
@@ -272,37 +273,22 @@ class T(object):
     def __init__(self, basedir = None, reload = 1, database = None):
         # If basedir isn't provided, assume the current directory
         if basedir is None:
-            self.basedir = os.getcwd()
-        else:
-            basedir = os.path.expanduser(basedir)
-            self.basedir = basedir
-        self.database = database
-
-        # If the directory doesn't exist, create it.  This code shouldn't get
-        # run anymore, we create the directory in Archiver.py.  It should only
-        # get used by legacy lists created that are only receiving their first
-        # message in the HTML archive now -- Marc
-        try:
-            os.stat(self.basedir)
-        except os.error as errdata:
-            errno, errmsg = errdata
-            if errno != 2:
-                raise os.error(errdata)
-            else:
-                self.message(C_('Creating archive directory ') + self.basedir)
-                omask = os.umask(0)
-                try:
-                    os.mkdir(self.basedir, self.DIRMODE)
-                finally:
-                    os.umask(omask)
+            basedir = os.getcwd()
+        self.basedir = basedir
 
         # Try to load previously pickled state
         try:
             if not reload:
                 raise IOError
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'r')
+            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'rb')
             self.message(C_('Reloading pickled archive state'))
-            d = pickle.load(f, fix_imports=True, encoding='latin1')
+            try:
+                # Try UTF-8 first for newer files
+                d = pickle.load(f, fix_imports=True, encoding='utf-8')
+            except (UnicodeDecodeError, pickle.UnpicklingError):
+                # Fall back to latin1 for older files
+                f.seek(0)
+                d = pickle.load(f, fix_imports=True, encoding='latin1')
             f.close()
             for key, value in list(d.items()):
                 setattr(self, key, value)
@@ -335,9 +321,10 @@ class T(object):
 
         omask = os.umask(0o007)
         try:
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'w')
+            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'wb')
         finally:
             os.umask(omask)
+        # Use protocol 4 for Python 2/3 compatibility
         pickle.dump(self.getstate(), f, protocol=4, fix_imports=True)
         f.close()
 

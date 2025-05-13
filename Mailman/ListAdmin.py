@@ -87,149 +87,83 @@ class ListAdmin(object):
 
     def __opendb(self):
         """Open the database file."""
-        if self.__db is not None:
-            return
-
-        # Use original file location
         filename = os.path.join(self.fullpath(), 'request.pck')
         filename_backup = filename + '.bak'
-
-        # Log file information for debugging
-        self.log_file_info(filename)
-        if os.path.exists(filename_backup):
-            self.log_file_info(filename_backup)
-
-        # Try to open the main file first
+        
+        # Try loading the main file first
         try:
             with open(filename, 'rb') as fp:
                 try:
+                    # Try UTF-8 first for newer files
+                    self.__db = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                except (UnicodeDecodeError, pickle.UnpicklingError):
+                    # Fall back to latin1 for older files
+                    fp.seek(0)
                     self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
-                    mailman_log('info', 'Successfully loaded request.pck for list %s', self.internal_name())
-                    
-                    # Log pending requests
-                    held_msgs = self.GetHeldMessageIds()
-                    pending_subs = self.GetSubscriptionIds()
-                    pending_unsubs = self.GetUnsubscriptionIds()
-                    
-                    mailman_log('info', 'Done checking on held_msgs, pending_subs, pending_unsubs for %s', self.internal_name())
-                    if held_msgs:
-                        mailman_log('info', 'Pending held messages: %d', len(held_msgs))
-                        for id in held_msgs:
-                            try:
-                                info = self.GetRecord(id)
-                                if len(info) >= 2:  # Ensure we have at least time and sender
-                                    mailman_log('info', '  Message %d: from %s at %s', 
-                                              id, info[1], time.ctime(info[0]))
-                            except Exception as e:
-                                mailman_log('error', 'Error getting held message %d: %s', id, str(e))
-                    
-                    if pending_subs:
-                        mailman_log('info', 'Pending subscriptions: %d', len(pending_subs))
-                        for id in pending_subs:
-                            try:
-                                info = self.GetRecord(id)
-                                if len(info) >= 2:  # Ensure we have at least time and address
-                                    mailman_log('info', '  Subscription %d: %s at %s', 
-                                              id, info[1], time.ctime(info[0]))
-                            except Exception as e:
-                                mailman_log('error', 'Error getting subscription %d: %s', id, str(e))
-                    
-                    if pending_unsubs:
-                        mailman_log('info', 'Pending unsubscriptions: %d', len(pending_unsubs))
-                        for id in pending_unsubs:
-                            try:
-                                info = self.GetRecord(id)
-                                if len(info) >= 1:  # Ensure we have at least the address
-                                    mailman_log('info', '  Unsubscription %d: %s', id, info)
-                            except Exception as e:
-                                mailman_log('error', 'Error getting unsubscription %d: %s', id, str(e))
-                    mailman_log('info', 'done handling %s', self.internal_name())
+        except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
+            mailman_log('error', 'Error loading request.pck for list %s: %s\n%s',
+                       self.internal_name(), str(e), traceback.format_exc())
+            # Try backup if main file failed
+            if os.path.exists(filename_backup):
+                mailman_log('info', 'Attempting to load from backup file')
+                with open(filename_backup, 'rb') as backup_fp:
+                    try:
+                        # Try UTF-8 first for newer files
+                        self.__db = pickle.load(backup_fp, fix_imports=True, encoding='utf-8')
+                    except (UnicodeDecodeError, pickle.UnpicklingError):
+                        # Fall back to latin1 for older files
+                        backup_fp.seek(0)
+                        self.__db = pickle.load(backup_fp, fix_imports=True, encoding='latin1')
+                    mailman_log('info', 'Successfully loaded backup request.pck for list %s',
+                               self.internal_name())
+                    # Successfully loaded backup, restore it as main
+                    import shutil
+                    shutil.copy2(filename_backup, filename)
+            else:
+                self.__db = {}
 
-                except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
-                    mailman_log('error', 'Error loading request.pck for list %s: %s\n%s',
-                               self.internal_name(), str(e), traceback.format_exc())
-                    # Try backup if main file failed
-                    if os.path.exists(filename_backup):
-                        mailman_log('info', 'Attempting to load from backup file')
-                        with open(filename_backup, 'rb') as backup_fp:
-                            try:
-                                self.__db = pickle.load(backup_fp, fix_imports=True, encoding='latin1')
-                                mailman_log('info', 'Successfully loaded backup request.pck for list %s',
-                                           self.internal_name())
-                                # Successfully loaded backup, restore it as main
-                                import shutil
-                                shutil.copy2(filename_backup, filename)
-                            except (pickle.UnpicklingError, EOFError, ValueError, TypeError) as e:
-                                mailman_log('error', 'Error loading backup request.pck for list %s: %s\n%s',
-                                           self.internal_name(), str(e), traceback.format_exc())
-                                self.__db = {}
-                            except Exception as e:
-                                mailman_log('error', 'Unexpected error loading backup request.pck for list %s: %s\n%s',
-                                           self.internal_name(), str(e), traceback.format_exc())
-                                self.__db = {}
-                    else:
-                        self.__db = {}
-                except Exception as e:
-                    mailman_log('error', 'Unexpected error loading request.pck for list %s: %s\n%s',
-                               self.internal_name(), str(e), traceback.format_exc())
-                    self.__db = {}
-        except IOError as e:
-            if e.errno != errno.ENOENT:
-                mailman_log('error', 'IOError loading request.pck for list %s: %s\n%s',
-                           self.internal_name(), str(e), traceback.format_exc())
-            self.__db = {}
-
-    def __closedb(self):
-        """Save the database with atomic operations and backup."""
-        if self.__db is None:
+    def __savedb(self):
+        """Save the database file."""
+        if not self.__db:
             return
 
-        # Use original file location
         filename = os.path.join(self.fullpath(), 'request.pck')
-        filename_tmp = filename + '.tmp'
+        filename_tmp = filename + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
         filename_backup = filename + '.bak'
 
-        # First check if we can write to the directory
-        dirname = os.path.dirname(filename)
-        try:
-            # Test if we can write to the directory
-            test_file = os.path.join(dirname, '.test_write')
+        # First create a backup of the current file if it exists
+        if os.path.exists(filename):
             try:
-                with open(test_file, 'w') as f:
-                    f.write('test')
-                os.unlink(test_file)
-            except (IOError, OSError) as e:
-                self.log_file_info(dirname)
-                raise PermissionError(f'Cannot write to directory {dirname}: {str(e)}')
-        except OSError as e:
-            self.log_file_info(dirname)
-            raise PermissionError(f'Cannot access directory {dirname}: {str(e)}')
+                import shutil
+                shutil.copy2(filename, filename_backup)
+            except IOError as e:
+                mailman_log('error', 'Error creating backup: %s', str(e))
 
-        # Try to save the new file
+        # Save to temporary file first
         try:
-            # Set umask to ensure proper permissions
-            omask = os.umask(0o007)
-            try:
-                # Create temporary file
-                with open(filename_tmp, 'wb') as fp:
-                    pickle.dump(self.__db, fp, protocol=4, fix_imports=True)
-                    fp.flush()
+            # Ensure directory exists
+            dirname = os.path.dirname(filename)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname, 0o755)
+
+            with open(filename_tmp, 'wb') as fp:
+                # Use protocol 4 for Python 2/3 compatibility
+                pickle.dump(self.__db, fp, protocol=4, fix_imports=True)
+                fp.flush()
+                if hasattr(os, 'fsync'):
                     os.fsync(fp.fileno())
-                
-                # Do the atomic rename
-                os.rename(filename_tmp, filename)
-                
-                # Log the result for debugging
-                self.log_file_info(filename)
-            finally:
-                os.umask(omask)
-        except (IOError, OSError) as e:
-            self.log_file_info(filename_tmp)
-            if os.path.exists(filename):
-                self.log_file_info(filename)
-            raise PermissionError(f'Error saving database: {str(e)}')
 
-        self.__db = None
+            # Atomic rename
+            os.rename(filename_tmp, filename)
+
+        except (IOError, OSError) as e:
+            mailman_log('error', 'Error saving request.pck: %s', str(e))
+            # Try to clean up
+            try:
+                os.unlink(filename_tmp)
+            except OSError:
+                pass
+            raise
 
     def __validate_and_clean_db(self):
         """Validate database entries and clean up invalid ones."""
@@ -268,7 +202,7 @@ class ListAdmin(object):
         """Save the requests database with validation."""
         if self.__db is not None:
             self.__validate_and_clean_db()
-            self.__closedb()
+            self.__savedb()
 
     def NumRequestsPending(self):
         self.__opendb()
@@ -804,7 +738,7 @@ class ListAdmin(object):
                 self.__db[id] = op, (when, sender, subject, reason,
                                      text, msgdata)
         # All done
-        self.__closedb()
+        self.__savedb()
 
     def log_file_info(self, path):
         """Log detailed information about a file's permissions and ownership."""
