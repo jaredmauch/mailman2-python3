@@ -34,7 +34,6 @@ from Mailman.Logging.Syslog import syslog
 from Mailman import LockFile
 from Mailman import Errors
 from Mailman import Pending
-from Mailman.List import MailList
 
 from email.header import decode_header, make_header, Header
 from email.errors import HeaderParseError
@@ -244,8 +243,10 @@ class CommandRunner(Runner):
             mailman_log('error', 'Message validation failed for command message')
             return False
 
-        # Get the MailList object first, before any usage
+        # Get the MailList object
         try:
+            # Lazy import to avoid circular dependency
+            from Mailman.MailList import MailList
             mlist_obj = MailList.MailList(mlist, lock=False)
         except Errors.MMListError as e:
             mailman_log('error', 'Failed to get MailList object for %s: %s', mlist, str(e))
