@@ -104,11 +104,14 @@ def main():
                              'real_name': realname,
                              }, mlist=mlist))
                         text += '\n' + pending_requests(mlist)
-                        subject = _(
-                            '%(count)d %(realname)s moderator request(s) waiting')
+                        subject = _('%(count)d %(realname)s moderator request(s) waiting') % {
+                            'count': count,
+                            'realname': realname
+                        }
                     else:
-                        subject = _(
-                            '%(realname)s moderator request check result')
+                        subject = _('%(realname)s moderator request check result') % {
+                            'realname': realname
+                        }
                     try:
                         # Get the charset for the list's language
                         charset = Utils.GetCharSet(mlist.preferred_language)

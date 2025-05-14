@@ -290,7 +290,12 @@ To: %(to)s
 Subject: %(subject)s
 
 The message has been moved to the shunt queue.
-""")
+""") % {
+                'msgid': msgid,
+                'from': msg.get('from', 'unknown'),
+                'to': msg.get('to', 'unknown'),
+                'subject': msg.get('subject', 'unknown')
+            }
             
             # Send notification
             # ... notification sending logic ...

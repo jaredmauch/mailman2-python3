@@ -154,13 +154,29 @@ def main():
         
         # Parse form data first since we need it for authentication
         try:
-            if os.environ.get('REQUEST_METHOD') == 'POST':
-                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                if content_length > 0:
-                    form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
-                    cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+                content_type = os.environ.get('CONTENT_TYPE', '')
+                if content_type.startswith('application/x-www-form-urlencoded'):
+                    content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                    if content_length > 0:
+                        form_data = sys.stdin.buffer.read(content_length)
+                        try:
+                            # Try UTF-8 first
+                            form_data = form_data.decode('utf-8')
+                        except UnicodeDecodeError:
+                            try:
+                                # Fall back to the list's preferred charset
+                                charset = Utils.GetCharSet(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+                                form_data = form_data.decode(charset)
+                            except (UnicodeDecodeError, LookupError):
+                                # Last resort: latin-1
+                                form_data = form_data.decode('latin-1', 'replace')
+                        cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+                    else:
+                        cgidata = {}
                 else:
-                    cgidata = {}
+                    mailman_log('error', 'admindb: Invalid content type: %s', content_type)
+                    raise ValueError('Invalid content type')
             else:
                 query_string = os.environ.get('QUERY_STRING', '')
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
@@ -446,6 +462,28 @@ def show_pending_unsubs(mlist, form):
     return num
 
 
+def format_subject(subject, charset):
+    """Format a subject line with proper encoding handling."""
+    dispsubj = Utils.oneline(subject, charset)
+    if isinstance(dispsubj, bytes):
+        try:
+            dispsubj = dispsubj.decode(charset)
+        except UnicodeDecodeError:
+            dispsubj = dispsubj.decode('latin-1', 'replace')
+    return dispsubj
+
+
+def format_message_data(msgdata):
+    """Format message metadata with proper error handling."""
+    when = msgdata.get('received_time')
+    if when:
+        try:
+            return time.ctime(when)
+        except (TypeError, ValueError):
+            return _('Invalid timestamp')
+    return None
+
+
 def show_helds_overview(mlist, form, ssort=SSENDER):
     # Sort the held messages.
     byskey = helds_by_skey(mlist, ssort)
@@ -562,43 +600,57 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
         right.AddRow(['&nbsp;', '&nbsp;'])
         counter = 1
         for ptime, id in byskey[skey]:
-            info = mlist.GetRecord(id)
-            ptime, sender, subject, reason, filename, msgdata = info
-            # BAW: This is really the size of the message pickle, which should
-            # be close, but won't be exact.  Sigh, good enough.
             try:
-                size = os.path.getsize(os.path.join(mm_cfg.DATA_DIR, filename))
-            except OSError as e:
-                if e.errno != errno.ENOENT: raise
-                # This message must have gotten lost, i.e. it's already been
-                # handled by the time we got here.
-                mlist.HandleRequest(id, mm_cfg.DISCARD)
+                info = mlist.GetRecord(id)
+                ptime, sender, subject, reason, filename, msgdata = info
+                # Get message size with proper error handling
+                try:
+                    size = os.path.getsize(os.path.join(mm_cfg.DATA_DIR, filename))
+                except OSError as e:
+                    if e.errno != errno.ENOENT:
+                        mailman_log('error', 'admindb: Error getting file size: %s\n%s',
+                                   str(e), traceback.format_exc())
+                        raise
+                    # Message already handled
+                    mlist.HandleRequest(id, mm_cfg.DISCARD)
+                    continue
+
+                # Format subject with proper encoding
+                charset = Utils.GetCharSet(mlist.preferred_language)
+                dispsubj = format_subject(subject, charset)
+                
+                t = Table(border=0)
+                t.AddRow([Link(admindburl + '?msgid=%d' % id, '[%d]' % counter),
+                          Bold(_('Subject:')),
+                          Utils.websafe(dispsubj)
+                          ])
+                t.AddRow(['&nbsp;', Bold(_('Size:')), str(size) + _(' bytes')])
+                
+                # Format reason with proper encoding
+                if reason:
+                    try:
+                        reason = _(reason)
+                        if isinstance(reason, bytes):
+                            reason = reason.decode(charset, 'replace')
+                    except (UnicodeError, LookupError):
+                        reason = _('not available')
+                else:
+                    reason = _('not available')
+                t.AddRow(['&nbsp;', Bold(_('Reason:')), reason])
+                
+                # Format received time with proper error handling
+                received_time = format_message_data(msgdata)
+                if received_time:
+                    t.AddRow(['&nbsp;', Bold(_('Received:')), received_time])
+                
+                t.AddRow([InputObj(qsender, 'hidden', str(id), False).Format()])
+                counter += 1
+                right.AddRow([t])
+            except Exception as e:
+                mailman_log('error', 'admindb: Error processing held message %d: %s\n%s',
+                           id, str(e), traceback.format_exc())
                 continue
-            dispsubj = Utils.oneline(
-                subject, Utils.GetCharSet(mlist.preferred_language))
-            if isinstance(dispsubj, bytes):
-                dispsubj = dispsubj.decode('latin1', 'replace')
-            t = Table(border=0)
-            t.AddRow([Link(admindburl + '?msgid=%d' % id, '[%d]' % counter),
-                      Bold(_('Subject:')),
-                      Utils.websafe(dispsubj)
-                      ])
-            t.AddRow(['&nbsp;', Bold(_('Size:')), str(size) + _(' bytes')])
-            if reason:
-                reason = _(reason)
-                if isinstance(reason, bytes):
-                    reason = reason.decode('latin1', 'replace')
-            else:
-                reason = _('not available')
-            t.AddRow(['&nbsp;', Bold(_('Reason:')), reason])
-            # Include the date we received the message, if available
-            when = msgdata.get('received_time')
-            if when:
-                t.AddRow(['&nbsp;', Bold(_('Received:')),
-                          time.ctime(when)])
-            t.AddRow([InputObj(qsender, 'hidden', str(id), False).Format()])
-            counter += 1
-            right.AddRow([t])
+                
         stable.AddRow([left, right])
         table.AddRow([stable])
     return 1

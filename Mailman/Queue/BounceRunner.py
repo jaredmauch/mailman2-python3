@@ -363,7 +363,7 @@ the list administrator(s).
 For more information see:
 %(adminurl)s
 
-"""),
+""") % {'adminurl': adminurl},
                              subject=_('Uncaught bounce notification'),
                              tomoderators=0)
         syslog('bounce',

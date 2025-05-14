@@ -62,7 +62,7 @@ def main():
         title = _('CGI script error')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.addError(_('Invalid request method: {method}'))
+        doc.addError(_('Invalid request method: %(method)s') % {'method': method})
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
         print('Status: 405 Method Not Allowed')
@@ -92,7 +92,7 @@ def main():
         title = _('CGI script error')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.addError(_('No such list <em>{safelistname}</em>'))
+        doc.addError(_('No such list <em>%(safelistname)s</em>') % {'safelistname': safelistname})
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
         # Send this with a 404 status.
@@ -180,7 +180,7 @@ def main():
     # using public rosters, otherwise, we'll leak membership information.
     if not mlist.isMember(user):
         if mlist.private_roster == 0:
-            doc.addError(_('No such member: {safeuser}.'))
+            doc.addError(_('No such member: %(safeuser)s.') % {'safeuser': safeuser})
             loginpage(mlist, doc, None, language)
             print(doc.Format())
         return
@@ -218,7 +218,7 @@ def main():
     # Are we processing an unsubscription request from the login screen?
     msgc = _('If you are a list member, a confirmation email has been sent.')
     msgb = _('You already have a subscription pending confirmation')
-    msga = _(f"""If you are a list member, your unsubscription request has been
+    msga = _("""If you are a list member, your unsubscription request has been
              forwarded to the list administrator for approval.""")
     if 'login-unsub' in cgidata:
         # Because they can't supply a password for unsubscribing, we'll need
@@ -987,7 +987,10 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
         units = _('days')
     else:
         units = _('day')
-    replacements['<mm-pending-days>'] = _('%(days)d {units}')
+    replacements['<mm-pending-days>'] = _('%(days)d %(units)s') % {
+        'days': days,
+        'units': units
+    }
 
     replacements['<mm-new-address-box>'] = mlist.FormatBox('new-address')
     replacements['<mm-confirm-address-box>'] = mlist.FormatBox(

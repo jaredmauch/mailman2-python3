@@ -530,8 +530,10 @@ class ListAdmin(object):
         if self.admin_immed_notify:
             i18n.set_language(self.preferred_language)
             realname = self.real_name
-            subject = _(
-                'New subscription request to list %(realname)s from %(addr)s')
+            subject = _('New subscription request to list %(realname)s from %(addr)s') % {
+                'realname': realname,
+                'addr': addr
+            }
             text = Utils.maketext(
                 'subauth.txt',
                 {'username'   : addr,
@@ -592,8 +594,10 @@ class ListAdmin(object):
         # Possibly notify the administrator of the hold
         if self.admin_immed_notify:
             realname = self.real_name
-            subject = _(
-                'New unsubscription request from %(realname)s by %(addr)s')
+            subject = _('New unsubscription request from %(realname)s by %(addr)s') % {
+                'realname': realname,
+                'addr': addr
+            }
             text = Utils.maketext(
                 'unsubauth.txt',
                 {'username'   : addr,
@@ -653,7 +657,9 @@ class ListAdmin(object):
                      '---------- ' + _('Original Message') + ' ----------',
                      str(origmsg)
                      ])
-            subject = _('Request to mailing list %(realname)s rejected')
+            subject = _('Request to mailing list %(realname)s rejected') % {
+                'realname': realname
+            }
         finally:
             i18n.set_translation(otrans)
         msg = Message.UserNotification(recip, self.GetOwnerEmail(),
