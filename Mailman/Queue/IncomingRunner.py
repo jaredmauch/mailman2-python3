@@ -153,7 +153,7 @@ class IncomingRunner(Runner):
     def _convert_message(self, msg):
         """Convert email.message.Message to Mailman.Message with proper handling of nested messages."""
         if isinstance(msg, EmailMessage):
-            mailman_msg = Message()
+            mailman_msg = Mailman.Message.Message()
             for key, value in msg.items():
                 mailman_msg[key] = value
             if msg.is_multipart():
