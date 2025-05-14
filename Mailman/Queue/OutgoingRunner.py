@@ -71,6 +71,10 @@ class OutgoingRunner(Runner, BounceMixin):
             BounceMixin.__init__(self)
             mailman_log('debug', 'OutgoingRunner: BounceMixin initialized')
             
+            # Initialize processed messages tracking
+            self._processed_messages = set()
+            self._last_cleanup = time.time()
+            
             # We look this function up only at startup time
             self._modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
             mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', self._modname)
@@ -102,6 +106,13 @@ class OutgoingRunner(Runner, BounceMixin):
             mailman_log('error', 'OutgoingRunner: Initialization failed: %s', str(e))
             mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
             raise
+
+    def _unmark_message_processed(self, msgid):
+        """Remove a message from the processed messages set."""
+        with self._processed_lock:
+            if msgid in self._processed_messages:
+                self._processed_messages.remove(msgid)
+                mailman_log('debug', 'OutgoingRunner: Unmarked message %s as processed', msgid)
 
     def _cleanup_old_messages(self):
         """Clean up old message tracking data."""

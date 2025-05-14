@@ -165,12 +165,25 @@ class BounceRunner(Runner, BounceMixin):
     MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
     MAX_RETRIES = 5  # Maximum number of retry attempts
     _retry_times = {}  # Track last retry time for each message
+    
+    # Cleanup configuration
+    _cleanup_interval = 3600  # Clean up every hour
+    _last_cleanup = 0  # Last cleanup time
 
     def __init__(self, slice=None, numslices=1):
         syslog('debug', 'BounceRunner: Starting initialization')
         try:
             Runner.__init__(self, slice, numslices)
             BounceMixin.__init__(self)
+            
+            # Initialize bounce events file
+            self._bounce_events_file = os.path.join(mm_cfg.DATA_DIR, 'bounce_events')
+            self._bounce_events_fp = None
+            
+            # Initialize processed messages tracking
+            self._processed_messages = set()
+            self._last_cleanup = time.time()
+            
             syslog('debug', 'BounceRunner: Initialization complete')
         except Exception as e:
             syslog('error', 'BounceRunner: Initialization failed: %s\nTraceback:\n%s',

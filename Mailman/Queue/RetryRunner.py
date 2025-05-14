@@ -16,26 +16,114 @@
 
 import time
 import traceback
+import os
+import sys
+import threading
 
 from Mailman import mm_cfg
+from Mailman import Errors
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Errors import MMUnknownListError
+from Mailman.Logging.Syslog import mailman_log
 
 class RetryRunner(Runner):
     QDIR = mm_cfg.RETRYQUEUE_DIR
     SLEEPTIME = mm_cfg.minutes(15)
+    
+    # Message tracking configuration
+    _track_messages = True
+    _max_processed_messages = 10000
+    _max_retry_times = 10000
+    _processed_messages = set()
+    _processed_lock = threading.Lock()
+    _last_cleanup = time.time()
+    _cleanup_interval = 3600  # Clean up every hour
+    
+    # Retry configuration
+    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
+    MAX_RETRIES = 5  # Maximum number of retry attempts
+    _retry_times = {}  # Track last retry time for each message
 
     def __init__(self, slice=None, numslices=1):
         mailman_log('debug', 'RetryRunner: Starting initialization')
         try:
             Runner.__init__(self, slice, numslices)
             self.__outq = Switchboard(mm_cfg.OUTQUEUE_DIR)
+            
+            # Initialize processed messages tracking
+            self._processed_messages = set()
+            self._last_cleanup = time.time()
+            
             mailman_log('debug', 'RetryRunner: Initialization complete')
         except Exception as e:
             mailman_log('error', 'RetryRunner: Initialization failed: %s\nTraceback:\n%s',
                        str(e), traceback.format_exc())
             raise
+
+    def _check_retry_delay(self, msgid, filebase):
+        """Check if enough time has passed since the last retry attempt."""
+        now = time.time()
+        last_retry = self._retry_times.get(msgid, 0)
+        
+        if now - last_retry < self.MIN_RETRY_DELAY:
+            mailman_log('debug', 'RetryRunner._check_retry_delay: Message %s (file: %s) retry delay not met. Last retry: %s, Now: %s, Delay needed: %s',
+                       msgid, filebase, time.ctime(last_retry), time.ctime(now), self.MIN_RETRY_DELAY)
+            return False
+        
+        mailman_log('debug', 'RetryRunner._check_retry_delay: Message %s (file: %s) retry delay met. Last retry: %s, Now: %s',
+                   msgid, filebase, time.ctime(last_retry), time.ctime(now))
+        return True
+
+    def _validate_message(self, msg, msgdata):
+        """Validate message format and required fields."""
+        msgid = msg.get('message-id', 'n/a')
+        try:
+            # Check message size
+            if len(str(msg)) > mm_cfg.MAX_MESSAGE_SIZE:
+                mailman_log('error', 'RetryRunner: Message too large: %d bytes', len(str(msg)))
+                return msg, False
+            
+            # Validate required headers
+            if not msg.get('message-id'):
+                mailman_log('error', 'RetryRunner: Message missing Message-ID header')
+                return msg, False
+                
+            if not msg.get('from'):
+                mailman_log('error', 'RetryRunner: Message missing From header')
+                return msg, False
+                
+            if not msg.get('to') and not msg.get('recipients'):
+                mailman_log('error', 'RetryRunner: Message missing To/Recipients')
+                return msg, False
+                
+            mailman_log('debug', 'RetryRunner: Message %s validation successful', msgid)
+            return msg, True
+            
+        except Exception as e:
+            mailman_log('error', 'RetryRunner: Error validating message %s: %s', msgid, str(e))
+            mailman_log('error', 'RetryRunner: Traceback:\n%s', traceback.format_exc())
+            return msg, False
+
+    def _unmark_message_processed(self, msgid):
+        """Remove a message from the processed messages set."""
+        with self._processed_lock:
+            if msgid in self._processed_messages:
+                self._processed_messages.remove(msgid)
+                mailman_log('debug', 'RetryRunner: Unmarked message %s as processed', msgid)
+
+    def _cleanup_old_messages(self):
+        """Clean up old message tracking data."""
+        with self._processed_lock:
+            if len(self._processed_messages) > self._max_processed_messages:
+                mailman_log('debug', 'RetryRunner._cleanup_old_messages: Clearing processed messages set (size: %d)',
+                           len(self._processed_messages))
+                self._processed_messages.clear()
+            if len(self._retry_times) > self._max_retry_times:
+                mailman_log('debug', 'RetryRunner._cleanup_old_messages: Clearing retry times dict (size: %d)',
+                           len(self._retry_times))
+                self._retry_times.clear()
+            self._last_cleanup = time.time()
 
     def _dispose(self, mlist, msg, msgdata):
         """Process a retry message."""

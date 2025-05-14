@@ -26,7 +26,6 @@ from Mailman import mm_cfg
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.IncomingRunner import IncomingRunner
 from Mailman.Logging.Syslog import mailman_log
-from Mailman import MailList
 import time
 import traceback
 from Mailman import Errors
@@ -36,6 +35,10 @@ class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
     # Override the minimum retry delay for virgin messages
     MIN_RETRY_DELAY = 60  # 1 minute minimum delay between retries
+    # Maximum age for retry tracking data
+    _max_retry_age = 86400  # 24 hours in seconds
+    # Cleanup interval for message tracking data
+    _cleanup_interval = 3600  # 1 hour in seconds
 
     def _check_retry_delay(self, msgid, filebase):
         """Check if enough time has passed since the last retry attempt.
@@ -128,12 +131,14 @@ class VirginRunner(IncomingRunner):
         # Ensure we have a MailList object
         if isinstance(mlist, str):
             try:
-                mlist = MailList.MailList(mlist, lock=0)
+                # Lazy import to avoid circular dependency
+                from Mailman.MailList import MailList
+                mlist = MailList(mlist, lock=0)
                 should_unlock = True
             except Errors.MMUnknownListError:
                 mailman_log('error', 'VirginRunner: Unknown list %s', mlist)
                 self._shunt.enqueue(msg, msgdata)
-                return
+                return False
         else:
             should_unlock = False
         
@@ -170,19 +175,23 @@ class VirginRunner(IncomingRunner):
             mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
 
     def _onefile(self, msg, msgdata):
+        """Process a single file from the queue."""
         # Ensure _dispose always gets a MailList object, not a string
         listname = msgdata.get('listname')
         if not listname:
             listname = mm_cfg.MAILMAN_SITE_LIST
         try:
-            mlist = MailList.MailList(listname, lock=0)
+            # Lazy import to avoid circular dependency
+            from Mailman.MailList import MailList
+            mlist = MailList(listname, lock=0)
         except Errors.MMUnknownListError:
             mailman_log('error', 'VirginRunner: Unknown list %s', listname)
             self._shunt.enqueue(msg, msgdata)
-            return
+            return False
         try:
             keepqueued = self._dispose(mlist, msg, msgdata)
+            if keepqueued:
+                self._switchboard.enqueue(msg, msgdata)
+            return keepqueued
         finally:
             mlist.Unlock()
-        if keepqueued:
-            self._switchboard.enqueue(msg, msgdata)
