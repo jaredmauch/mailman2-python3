@@ -148,55 +148,56 @@ class IncomingRunner(Runner):
                        str(e), traceback.format_exc())
             raise
 
+    def _convert_message(self, msg):
+        """Convert email.message.Message to Mailman.Message with proper handling of nested messages."""
+        if isinstance(msg, email.message.Message):
+            mailman_msg = Message()
+            for key, value in msg.items():
+                mailman_msg[key] = value
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    mailman_msg.attach(self._convert_message(part))
+            else:
+                mailman_msg.set_payload(msg.get_payload())
+            return mailman_msg
+        return msg
+
     def _dispose(self, mlist, msg, msgdata):
         """Process an incoming message."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
-        # Ensure we have a MailList object
-        if isinstance(mlist, str):
-            try:
-                mlist = MailList.MailList(mlist, lock=0)
-                should_unlock = True
-            except Errors.MMUnknownListError:
-                mailman_log('error', 'IncomingRunner: Unknown list %s', mlist)
-                self._shunt.enqueue(msg, msgdata)
-                return True
-        else:
-            should_unlock = False
-        
         try:
-            # Try to get the list lock with timeout
-            try:
-                mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-            except LockFile.TimeOutError:
-                mailman_log('error', 'IncomingRunner: List lock timeout for %s', mlist.internal_name())
-                return True  # Try again later
+            mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s)',
+                       msgid, filebase)
             
-            mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
+            # Convert Python's Message to Mailman's Message if needed
+            msg = self._convert_message(msg)
             
-            # Get the pipeline for processing
+            # Get the pipeline
             pipeline = self._get_pipeline(mlist, msg, msgdata)
-            msgdata['pipeline'] = pipeline
+            if not pipeline:
+                mailman_log('error', 'IncomingRunner._dispose: No pipeline found for message %s', msgid)
+                return False
             
-            # Process through pipeline
-            more = self._dopipeline(mlist, msg, msgdata, pipeline)
+            # Process the message through the pipeline
+            try:
+                more = self._dopipeline(mlist, msg, msgdata, pipeline)
+                if more:
+                    mailman_log('debug', 'IncomingRunner._dispose: Message %s needs more processing', msgid)
+                    return True
+            except Exception as e:
+                mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
+                           msgid, str(e), traceback.format_exc())
+                return False
             
-            if not more:
-                del msgdata['pipeline']
-            
-            mlist.Save()
-            return more
+            mailman_log('debug', 'IncomingRunner._dispose: Successfully processed message %s', msgid)
+            return True
             
         except Exception as e:
             mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
                        msgid, str(e), traceback.format_exc())
-            self._unmark_message_processed(msgid)
             return False
-        finally:
-            if should_unlock:
-                mlist.Unlock()
 
     def _get_pipeline(self, mlist, msg, msgdata):
         """Get the pipeline for processing the message."""
