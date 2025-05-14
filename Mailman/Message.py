@@ -271,13 +271,9 @@ class UserNotification(Message):
             self['X-Accept-Language'] = lang
         self['Precedence'] = 'bulk'
         if text:
-            if _text_is_unicode:
-                # If text is already Unicode, use UTF-8 encoding
-                self.set_payload(text, 'utf-8')
-            else:
-                # In Python 3, strings are already Unicode
-                # Just use UTF-8 as the default encoding
-                self.set_payload(text, charset or 'utf-8')
+            # In Python 3, text is already a string
+            # Use the specified charset or default to UTF-8
+            self.set_payload(text, charset or 'utf-8')
         if _fasttrack:
             self['X-Ack'] = 'yes'
         if lang:
