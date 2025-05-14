@@ -106,6 +106,9 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         return list(self.__mlist.digest_members.keys())
 
     def __get_cp_member(self, member):
+        # Handle both string and tuple inputs
+        if isinstance(member, tuple):
+            _, member = member  # Extract email address from tuple
         lcmember = member.lower()
         missing = []
         val = self.__mlist.members.get(lcmember, missing)
