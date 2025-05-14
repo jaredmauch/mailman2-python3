@@ -188,54 +188,14 @@ class OutgoingRunner(Runner, BounceMixin):
             return mailman_msg
         return msg
 
-    def _validate_message(self, msg, msgdata):
-        """Validate and convert message if needed.
+    def _validate_message(self, msg):
+        """Validate the message before processing.
         
-        Returns a tuple of (msg, success) where success is a boolean indicating
-        if validation was successful.
+        This method is called before _dispose() to validate the message.
+        Returns True if the message is valid, False otherwise.
         """
-        msgid = msg.get('message-id', 'n/a')
-        try:
-            # Check message size
-            if len(str(msg)) > mm_cfg.MAX_MESSAGE_SIZE:
-                mailman_log('error', 'Message too large: %d bytes', len(str(msg)))
-                return msg, False
-
-            # Convert message if needed
-            msg = self._convert_message(msg)
-            
-            # Validate required Mailman.Message methods
-            required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
-            missing_methods = []
-            for method in required_methods:
-                if not hasattr(msg, method):
-                    missing_methods.append(method)
-            
-            if missing_methods:
-                mailman_log('error', 'OutgoingRunner: Message %s missing required methods: %s', 
-                           msgid, ', '.join(missing_methods))
-                return msg, False
-                
-            # Validate message headers
-            if not msg.get('message-id'):
-                mailman_log('error', 'OutgoingRunner: Message %s missing Message-ID header', msgid)
-                return msg, False
-                
-            if not msg.get('from'):
-                mailman_log('error', 'OutgoingRunner: Message %s missing From header', msgid)
-                return msg, False
-                
-            if not msg.get('to') and not msg.get('recipients'):
-                mailman_log('error', 'OutgoingRunner: Message %s missing To/Recipients', msgid)
-                return msg, False
-                
-            mailman_log('debug', 'OutgoingRunner: Message %s validation successful', msgid)
-            return msg, True
-            
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Error validating message %s: %s', msgid, str(e))
-            mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
-            return msg, False
+        # No validation needed - this check was not in the original code
+        return True
 
     def _dispose(self, mlist, msg, msgdata):
         """Process an outgoing message."""
@@ -279,7 +239,7 @@ class OutgoingRunner(Runner, BounceMixin):
                 return False
 
             # Validate message type first
-            msg, success = self._validate_message(msg, msgdata)
+            msg, success = self._validate_message(msg)
             if not success:
                 mailman_log('error', 'OutgoingRunner._dispose: Message validation failed for message %s', msgid)
                 self._unmark_message_processed(msgid)

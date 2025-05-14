@@ -94,15 +94,34 @@ def helds_by_skey(mlist, ssort=SSENDER):
 
 
 def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
-    # We can't use a RadioButtonArray here because horizontal placement can be
-    # confusing to the user and vertical placement takes up too much
-    # real-estate.  This is a hack!
+    """Create radio buttons with proper table formatting.
+    
+    This is a hack because we can't use RadioButtonArray here - horizontal placement
+    can be confusing to the user and vertical placement takes up too much real-estate.
+    """
     space = '&nbsp;' * spacing
-    btns = Table(cellspacing='5', cellpadding='0')
-    btns.AddRow([space + text + space for text in labels])
-    btns.AddRow([Center(RadioButton(btnname, value, default).Format()
-                     + '<div class=hidden>' + label + '</div>')
-                 for label, value, default in zip(labels, values, defaults)])
+    btns = Table(cellspacing='5', cellpadding='0', border='0', width='100%')
+    
+    # Add labels row with proper alignment
+    label_cells = []
+    for text in labels:
+        cell = space + text + space
+        label_cells.append(cell)
+    btns.AddRow(label_cells)
+    
+    # Add radio buttons row with proper alignment and hidden labels
+    button_cells = []
+    for label, value, default in zip(labels, values, defaults):
+        cell = Center(RadioButton(btnname, value, default).Format() +
+                     '<div class="hidden">' + Utils.websafe(label) + '</div>')
+        button_cells.append(cell)
+    btns.AddRow(button_cells)
+    
+    # Set proper alignment for all cells
+    for row in range(2):
+        for col in range(len(labels)):
+            btns.AddCellInfo(row, col, align='center', valign='middle')
+    
     return btns
 
 
@@ -771,15 +790,30 @@ def show_post_requests(mlist, id, info, total, count, form):
 
 
 def process_form(mlist, doc, cgidata):
+    """Process the admin database form with proper error handling."""
     try:
-        # Get the sender and message id from the query string
+        # Get the sender and message id from the query string with proper encoding
         envar = os.environ.get('QUERY_STRING', '')
-        qs = urllib.parse.parse_qs(envar)
-        sender = qs.get('sender', [''])[0]
-        msgid = qs.get('msgid', [''])[0]
-        details = qs.get('details', [''])[0]
+        qs = urllib.parse.parse_qs(envar, keep_blank_values=True)
+        
+        # Handle both encoded and unencoded values
+        def safe_get(key, default=''):
+            values = qs.get(key, [default])
+            if not values:
+                return default
+            try:
+                # Try to decode if it's bytes
+                if isinstance(values[0], bytes):
+                    return values[0].decode('utf-8', 'replace')
+                return values[0]
+            except (UnicodeError, AttributeError):
+                return str(values[0])
+        
+        sender = safe_get('sender')
+        msgid = safe_get('msgid')
+        details = safe_get('details')
 
-        # Set the page title
+        # Set the page title with proper encoding
         title = _(f'{mlist.real_name} Administrative Database')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
@@ -799,12 +833,15 @@ def process_form(mlist, doc, cgidata):
             doc.AddItem(mlist.GetMailmanFooter())
             return
 
-        # Create a form for the overview
-        form = Form(mlist.GetScriptURL('admindb', absolute=1), mlist=mlist, contexts=AUTH_CONTEXTS)
+        # Create a form for the overview with proper encoding
+        form = Form(mlist.GetScriptURL('admindb', absolute=1), 
+                   mlist=mlist, 
+                   contexts=AUTH_CONTEXTS,
+                   encoding='multipart/form-data')
         form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
 
-        # Get the action from the form data
-        action = cgidata.get('action', [''])[0]
+        # Get the action from the form data with proper encoding
+        action = safe_get('action')
         if not action:
             # No action specified, show the overview
             show_pending_subs(mlist, form)
