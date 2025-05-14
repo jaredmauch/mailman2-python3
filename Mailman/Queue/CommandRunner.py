@@ -32,7 +32,7 @@ from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import mailman_log, syslog
 from Mailman.Utils import validate_ip_address
-from Mailman.Handlers.Replybot import Replybot
+import Mailman.Handlers.Replybot as Replybot
 from Mailman.Message import Message
 from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
@@ -47,11 +47,11 @@ from email.mime.message import MIMEMessage
 
 # Lazy imports to avoid circular dependencies
 def get_replybot():
-    from Mailman.Handlers import Replybot
+    import Mailman.Handlers.Replybot as Replybot
     return Replybot
 
 def get_maillist():
-    from Mailman.MailList import MailList
+    import Mailman.MailList as MailList
     return MailList
 
 NL = '\n'

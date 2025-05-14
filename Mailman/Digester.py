@@ -29,7 +29,7 @@ from Mailman.i18n import _
 
 # Lazy import to avoid circular dependency
 def get_to_digest():
-    from Mailman.Handlers import ToDigest
+    import Mailman.Handlers.ToDigest as ToDigest
     return ToDigest
 
 

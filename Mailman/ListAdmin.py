@@ -23,8 +23,7 @@ Pending subscriptions which are requiring a user's confirmation are handled
 elsewhere.
 """
 
-from builtins import str
-from builtins import object
+from builtins import str, object
 import os
 import time
 import errno
@@ -41,11 +40,11 @@ from email.mime.message import MIMEMessage
 from email.generator import Generator
 from email.utils import getaddresses
 import email.message
-from email.message import Message
+from email.message import Message as EmailMessage
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman.Message import Message
+import Mailman.Message as Message
 from Mailman import Errors
 from Mailman.UserDesc import UserDesc
 from Mailman.Queue.sbcache import get_switchboard
@@ -379,12 +378,12 @@ class ListAdmin(object):
         elif value == mm_cfg.APPROVE:
             # Approved.
             try:
-                msg = email.message_from_file(fp, Message)
+                msg = email.message_from_file(fp, EmailMessage)
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 return LOST
             # Convert to Mailman.Message if needed
-            if isinstance(msg, Message) and not isinstance(msg, Message):
+            if isinstance(msg, EmailMessage) and not isinstance(msg, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -436,12 +435,12 @@ class ListAdmin(object):
             # since we don't want to share any state or information with the
             # normal delivery.
             try:
-                copy = email.message_from_file(fp, Message)
+                copy = email.message_from_file(fp, EmailMessage)
             except IOError as e:
                 if e.errno != errno.ENOENT: raise
                 raise Errors.LostHeldMessage(path)
             # Convert to Mailman.Message if needed
-            if isinstance(copy, Message) and not isinstance(copy, Message):
+            if isinstance(copy, EmailMessage) and not isinstance(copy, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in copy.items():
@@ -804,9 +803,9 @@ def readMessage(path):
     fp = open(path, 'rb')
     try:
         if ext == '.txt':
-            msg = email.message_from_file(fp, Message)
+            msg = email.message_from_file(fp, EmailMessage)
             # Convert to Mailman.Message if needed
-            if isinstance(msg, Message) and not isinstance(msg, Message):
+            if isinstance(msg, EmailMessage) and not isinstance(msg, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
@@ -822,7 +821,7 @@ def readMessage(path):
             assert ext == '.pck'
             msg = pickle.load(fp, fix_imports=True, encoding='latin1')
             # Convert to Mailman.Message if needed
-            if isinstance(msg, Message) and not isinstance(msg, Message):
+            if isinstance(msg, EmailMessage) and not isinstance(msg, Message):
                 mailman_msg = Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():

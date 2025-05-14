@@ -17,7 +17,8 @@
 
 """Bounce queue runner.
 
-This module is responsible for processing bounce messages.
+This module is responsible for processing bounce messages.  It's a separate
+queue from the virgin queue because bounces need different handling.
 """
 
 from builtins import object, str
@@ -26,15 +27,13 @@ import re
 import time
 import pickle
 import email
-from email.utils import getaddresses
+from email.utils import getaddresses, parseaddr
 from email.iterators import body_line_iterator
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 import traceback
 from io import StringIO
 import sys
-
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
-from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -42,17 +41,17 @@ from Mailman import LockFile
 from Mailman import Errors
 from Mailman import i18n
 from Mailman.Errors import NotAMemberError
-from Mailman.Message import Message, UserNotification
 from Mailman.Bouncer import _BounceInfo
 from Mailman.Bouncers import BouncerAPI
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
+import Mailman.Message as Message
 
 # Lazy import to avoid circular dependency
 def get_mail_list():
-    from Mailman.MailList import MailList
+    import Mailman.MailList as MailList
     return MailList
 
 COMMASPACE = ', '

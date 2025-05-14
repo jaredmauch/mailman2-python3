@@ -38,8 +38,8 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log, syslog
-from Mailman.Message import Message
-from Mailman.MailList import MailList
+import Mailman.Message as Message
+import Mailman.MailList as MailList
 
 # Only import nntplib if NNTP support is enabled
 try:

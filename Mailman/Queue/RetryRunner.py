@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2018 by the Free Software Foundation, Inc.
+# Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -12,13 +12,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
 
+"""Retry queue runner.
+
+This module is responsible for retrying failed message deliveries.  It's a
+separate queue from the virgin queue because retries need different handling.
+"""
+
+from builtins import object
 import time
 import traceback
 import os
 import sys
 import threading
+import email.message
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -26,6 +35,8 @@ from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Errors import MMUnknownListError
 from Mailman.Logging.Syslog import mailman_log
+import Mailman.MailList as MailList
+import Mailman.Message as Message
 
 class RetryRunner(Runner):
     QDIR = mm_cfg.RETRYQUEUE_DIR

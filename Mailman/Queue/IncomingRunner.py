@@ -116,7 +116,8 @@ from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
-from Mailman.MailList import MailList
+import Mailman.MailList as MailList
+import Mailman.Message as Message
 
 
 class PipelineError(Exception):
@@ -338,8 +339,8 @@ class IncomingRunner(Runner):
                         # Create a MailList object using lazy import
                         try:
                             # Import MailList here to avoid circular imports
-                            from Mailman.MailList import MailList
-                            mlist = MailList(listname, lock=0)
+                            import Mailman.MailList as MailList
+                            mlist = MailList.MailList(listname, lock=0)
                         except ImportError:
                             # If we can't import MailList, try to get it from sys.modules
                             import sys

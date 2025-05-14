@@ -28,9 +28,9 @@ import threading
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman import MailList
+import Mailman.MailList as MailList
 from Mailman import i18n
-from Mailman.Message import Message
+import Mailman.Message as Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
@@ -243,9 +243,9 @@ class Runner:
         msgid = msg.get('message-id', 'n/a')
         try:
             # Convert message if needed
-            if not isinstance(msg, Message):
+            if not isinstance(msg, Message.Message):
                 syslog('debug', 'Runner._validate_message: Converting message %s to Mailman.Message', msgid)
-                mailman_msg = Message()
+                mailman_msg = Message.Message()
                 # Copy all attributes from the original message
                 for key, value in msg.items():
                     mailman_msg[key] = value

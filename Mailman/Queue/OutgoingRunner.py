@@ -32,19 +32,19 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman import i18n
-from Mailman.Message import Message
 from Mailman.Logging.Syslog import mailman_log
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Queue.BounceRunner import BounceMixin
+import Mailman.Message as Message
 
 # Lazy import to avoid circular dependency
 def get_mail_list():
-    from Mailman.MailList import MailList
+    import Mailman.MailList as MailList
     return MailList
 
 def get_replybot():
-    from Mailman.Handlers import Replybot
+    import Mailman.Handlers.Replybot as Replybot
     return Replybot
 
 # This controls how often _doperiodic() will try to deal with deferred

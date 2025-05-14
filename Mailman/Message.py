@@ -21,6 +21,7 @@ This is a subclass of email.message but provides a slightly extended interface
 which is more convenient for use inside Mailman.
 """
 
+from builtins import object
 import re
 from io import StringIO
 import time
@@ -31,6 +32,7 @@ import email.generator
 import email.utils
 from email.charset import Charset
 from email.header import Header
+from email.message import Message as EmailMessage
 
 from Mailman import mm_cfg
 from Mailman.Utils import GetCharSet, unique_message_id, get_site_email
@@ -62,11 +64,11 @@ class Generator(email.generator.Generator):
                 self.__children_maxheaderlen, self.__children_maxheaderlen)
 
 
-class Message(email.message.Message):
+class Message(EmailMessage):
     def __init__(self):
         # We need a version number so that we can optimize __setstate__()
         self.__version__ = VERSION
-        email.message.Message.__init__(self)
+        EmailMessage.__init__(self)
 
     # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
     def __repr__(self):

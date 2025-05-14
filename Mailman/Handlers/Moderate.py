@@ -35,7 +35,7 @@ from Mailman.Logging.Syslog import mailman_log
 
 # Lazy imports to avoid circular dependencies
 def get_hold():
-    from Mailman.Handlers import Hold
+    import Mailman.Handlers.Hold as Hold
     return Hold
 
 def get_mail_list():
