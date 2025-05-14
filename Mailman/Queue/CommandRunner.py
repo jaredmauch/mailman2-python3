@@ -27,12 +27,16 @@ import sys
 
 from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman import Errors
+from Mailman import i18n
+from Mailman.htmlformat import *
+from Mailman.Logging.Syslog import mailman_log, syslog
+from Mailman.Utils import validate_ip_address
+from Mailman.Replybot import Replybot
 from Mailman.Message import Message
 from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
-from Mailman.Logging.Syslog import syslog
 from Mailman import LockFile
-from Mailman import Errors
 from Mailman import Pending
 
 from email.header import decode_header, make_header, Header
@@ -41,10 +45,14 @@ from email.iterators import typed_subpart_iterator
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 
-# Lazy import to avoid circular dependency
+# Lazy imports to avoid circular dependencies
 def get_replybot():
     from Mailman.Handlers import Replybot
     return Replybot
+
+def get_maillist():
+    from Mailman.MailList import MailList
+    return MailList
 
 NL = '\n'
 CONTINUE = 0
@@ -245,8 +253,7 @@ class CommandRunner(Runner):
 
         # Get the MailList object
         try:
-            # Lazy import to avoid circular dependency
-            from Mailman.MailList import MailList
+            MailList = get_maillist()
             mlist_obj = MailList(mlist, lock=False)
         except Errors.MMListError as e:
             mailman_log('error', 'Failed to get MailList object for %s: %s', mlist, str(e))
@@ -263,6 +270,7 @@ class CommandRunner(Runner):
             return False
         # Do replybot for commands
         mlist_obj.Load()
+        Replybot = get_replybot()
         Replybot.process(mlist_obj, msg, msgdata)
         if mlist_obj.autorespond_requests == 1:
             syslog('vette', 'replied and discard')
@@ -302,3 +310,7 @@ class CommandRunner(Runner):
                 mlist_obj.Save()
         finally:
             mlist_obj.Unlock()
+
+# Set up i18n
+_ = i18n._
+i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
