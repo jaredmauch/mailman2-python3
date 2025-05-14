@@ -51,6 +51,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         self.digest_members = {}  # Initialize digest_members dictionary
         self.digest_is_default = mm_cfg.DEFAULT_DIGEST_IS_DEFAULT  # Initialize digest_is_default attribute
         self.mime_is_default_digest = mm_cfg.DEFAULT_MIME_IS_DEFAULT_DIGEST  # Initialize mime_is_default_digest attribute
+        self._pending = {}  # Initialize _pending dictionary for pending operations
 
     def GetMailmanHeader(self):
         """Return the standard Mailman header HTML for this list."""
