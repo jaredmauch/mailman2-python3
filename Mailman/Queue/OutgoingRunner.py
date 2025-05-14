@@ -147,6 +147,7 @@ class OutgoingRunner(Runner, BounceMixin):
         """Get a new SMTP connection with proper configuration."""
         try:
             conn = smtplib.SMTP()
+            smtp._host = mm_cfg.SMTPHOST # workaround https://github.com/python/cpython/issues/80275
             conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
             conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
             
