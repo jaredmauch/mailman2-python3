@@ -228,25 +228,38 @@ class LockFile:
         # actually does things in reverse order of normal operation because we
         # know that lockfile exists, and tmpfname better not!
         mailman_log('debug', 'Attempting to transfer lock from %s to %s', winner, self.__tmpfname)
-        os.link(self.__lockfile, self.__tmpfname)
-        # Now update the lock file to contain a reference to the new owner
-        self.__write()
-        # Toggle off our ownership of the file so we don't try to finalize it
-        # in our __del__()
-        self.__owned = False
-        # Unlink the old winner, completing the transfer
-        os.unlink(winner)
-        # And do some sanity checks
-        link_count = self.__linkcount()
-        if link_count != 2:
-            mailman_log('error', 'Lock transfer failed: link count is %d, expected 2 for lockfile %s (temp file: %s)', 
-                       link_count, self.__lockfile, self.__tmpfname)
-            raise LockError('Lock transfer failed: link count is %d, expected 2' % link_count)
-        if not self.locked():
-            mailman_log('error', 'Lock transfer failed: lock not acquired for lockfile %s (temp file: %s)', 
-                       self.__lockfile, self.__tmpfname)
-            raise LockError('Lock transfer failed: lock not acquired')
-        mailman_log('debug', 'Successfully transferred lock from %s to %s', winner, self.__tmpfname)
+        try:
+            os.link(self.__lockfile, self.__tmpfname)
+            # Now update the lock file to contain a reference to the new owner
+            self.__write()
+            # Toggle off our ownership of the file so we don't try to finalize it
+            # in our __del__()
+            self.__owned = False
+            # Unlink the old winner, completing the transfer
+            os.unlink(winner)
+            # And do some sanity checks
+            link_count = self.__linkcount()
+            if link_count != 2:
+                # Try to recover by cleaning up and retrying once
+                try:
+                    os.unlink(self.__tmpfname)
+                    os.link(self.__lockfile, self.__tmpfname)
+                    self.__write()
+                    link_count = self.__linkcount()
+                except OSError:
+                    pass
+                if link_count != 2:
+                    mailman_log('error', 'Lock transfer failed: link count is %d, expected 2 for lockfile %s (temp file: %s)', 
+                               link_count, self.__lockfile, self.__tmpfname)
+                    raise LockError('Lock transfer failed: link count is %d, expected 2' % link_count)
+            if not self.locked():
+                mailman_log('error', 'Lock transfer failed: lock not acquired for lockfile %s (temp file: %s)', 
+                           self.__lockfile, self.__tmpfname)
+                raise LockError('Lock transfer failed: lock not acquired')
+            mailman_log('debug', 'Successfully transferred lock from %s to %s', winner, self.__tmpfname)
+        except OSError as e:
+            mailman_log('error', 'Error during lock transfer: %s', str(e))
+            raise LockError('Lock transfer failed: %s' % str(e))
 
     def _take_possession(self):
         """Try to take possession of the lock file.
