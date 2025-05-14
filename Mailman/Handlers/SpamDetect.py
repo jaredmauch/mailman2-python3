@@ -120,7 +120,9 @@ error, contact the mailing list owner at %(listowner)s."""))
                     raise Errors.DiscardMessage
 
         # Get member address if any.
-        for sender in msg.get_senders():
+        for sender_tuple in msg.get_senders():
+            # Extract email address from the (realname, address) tuple
+            _, sender = sender_tuple
             if mlist.isMember(sender):
                 break
         else:
