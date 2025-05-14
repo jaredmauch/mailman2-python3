@@ -331,6 +331,11 @@ class IncomingRunner(Runner):
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
                     
+                    # Skip if dequeue failed
+                    if msg is None or msgdata is None:
+                        mailman_log('error', 'IncomingRunner._oneloop: Failed to dequeue file %s (got None values)', filebase)
+                        continue
+                    
                     # Process the message
                     try:
                         # Get the list name from the message data
