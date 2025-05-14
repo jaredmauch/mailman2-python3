@@ -105,6 +105,7 @@ from io import StringIO
 import random
 import signal
 import os
+import email
 from email import message_from_string
 from Mailman.Message import Message
 from urllib.parse import parse_qs
