@@ -107,7 +107,8 @@ import signal
 import os
 import email
 from email import message_from_string
-from Mailman.Message import Message
+from email.message import Message as EmailMessage
+from Mailman.Message import Message as MailmanMessage
 from urllib.parse import parse_qs
 from Mailman.Utils import reap
 from Mailman import Utils
@@ -151,7 +152,7 @@ class IncomingRunner(Runner):
 
     def _convert_message(self, msg):
         """Convert email.message.Message to Mailman.Message with proper handling of nested messages."""
-        if isinstance(msg, email.message.Message):
+        if isinstance(msg, EmailMessage):
             mailman_msg = Message()
             for key, value in msg.items():
                 mailman_msg[key] = value
