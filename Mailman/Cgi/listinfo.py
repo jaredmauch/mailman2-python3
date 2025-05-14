@@ -42,22 +42,60 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
+def validate_listname(listname):
+    """Validate and sanitize a listname to prevent path traversal.
+    
+    Args:
+        listname: The listname to validate
+        
+    Returns:
+        tuple: (is_valid, sanitized_name, error_message)
+    """
+    if not listname:
+        return False, None, _('List name is required')
+        
+    # Convert to lowercase and strip whitespace
+    listname = listname.lower().strip()
+    
+    # Basic validation
+    if not Utils.ValidateListName(listname):
+        return False, None, _('Invalid list name')
+        
+    # Check for path traversal attempts
+    if '..' in listname or '/' in listname or '\\' in listname:
+        return False, None, _('Invalid list name')
+        
+    return True, listname, None
+
+
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
         listinfo_overview()
         return
 
-    listname = parts[0].lower()
+    # Validate and sanitize listname
+    is_valid, listname, error_msg = validate_listname(parts[0])
+    if not is_valid:
+        print('Status: 400 Bad Request')
+        listinfo_overview(error_msg)
+        return
+
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
-        # Avoid cross-site scripting attacks
+        # Avoid cross-site scripting attacks and information disclosure
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         listinfo_overview(_(f'No such list <em>{safelistname}</em>'))
-        mailman_log('error', 'listinfo: No such list "%s": %s', listname, e)
+        mailman_log('error', 'listinfo: No such list "%s"', listname)
+        return
+    except Exception as e:
+        # Log the full error but don't expose it to the user
+        mailman_log('error', 'listinfo: Unexpected error for list "%s": %s', listname, str(e))
+        print('Status: 500 Internal Server Error')
+        listinfo_overview(_('An error occurred processing your request'))
         return
 
     # See if the user want to see this page in other language
@@ -65,6 +103,11 @@ def main():
         if os.environ.get('REQUEST_METHOD') == 'POST':
             content_length = int(os.environ.get('CONTENT_LENGTH', 0))
             if content_length > 0:
+                # Limit content length to prevent DoS
+                if content_length > mm_cfg.MAX_CONTENT_LENGTH:
+                    print('Status: 413 Request Entity Too Large')
+                    listinfo_overview(_('Request too large'))
+                    return
                 form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
                 cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
             else:
@@ -72,13 +115,13 @@ def main():
         else:
             query_string = os.environ.get('QUERY_STRING', '')
             cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-    except Exception:
-        # Someone crafted a POST with a bad Content-Type:.
+    except Exception as e:
+        # Log the error but don't expose details
+        mailman_log('error', 'listinfo: Error parsing form data: %s', str(e))
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('Invalid options to CGI script.')))
-        # Send this with a 400 status.
+        doc.AddItem(Bold(_('Invalid request.')))
         print('Status: 400 Bad Request')
         print(doc.Format())
         return
