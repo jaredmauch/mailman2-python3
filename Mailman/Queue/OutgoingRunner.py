@@ -192,10 +192,11 @@ class OutgoingRunner(Runner, BounceMixin):
         """Validate the message before processing.
         
         This method is called before _dispose() to validate the message.
-        Returns True if the message is valid, False otherwise.
+        Returns a tuple of (msg, success) where success is a boolean indicating
+        if validation was successful.
         """
         # No validation needed - this check was not in the original code
-        return True
+        return msg, True
 
     def _dispose(self, mlist, msg, msgdata):
         """Process an outgoing message."""
