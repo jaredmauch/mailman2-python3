@@ -32,7 +32,7 @@ from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import mailman_log, syslog
 from Mailman.Utils import validate_ip_address
-from Mailman.Replybot import Replybot
+from Mailman.Handlers.Replybot import Replybot
 from Mailman.Message import Message
 from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
