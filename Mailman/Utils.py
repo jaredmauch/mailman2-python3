@@ -1735,3 +1735,17 @@ def validate_ip_address(ip):
         pass
         
     return False, None
+
+def ValidateListName(listname):
+    """Validate a list name against the acceptable character pattern.
+    
+    Args:
+        listname: The list name to validate
+        
+    Returns:
+        bool: True if the list name is valid, False otherwise
+    """
+    if not listname:
+        return False
+    # Check if the list name contains any characters not in the acceptable pattern
+    return len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) == 0
