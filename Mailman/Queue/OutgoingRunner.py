@@ -348,8 +348,37 @@ class OutgoingRunner(Runner, BounceMixin):
             
             mailman_log('debug', 'OutgoingRunner._process_regular: Regular message for recipient %s', recipient)
             
-            # Process the regular message
-            # ... regular message processing logic ...
+            # For system messages (_nolist=1), we need to handle them differently
+            if msgdata.get('_nolist'):
+                mailman_log('debug', 'OutgoingRunner._process_regular: Processing system message %s', msgid)
+                # System messages should be sent directly via SMTP
+                try:
+                    conn = self._get_smtp_connection()
+                    if not conn:
+                        mailman_log('error', 'OutgoingRunner._process_regular: Failed to get SMTP connection for message %s', msgid)
+                        return False
+                    
+                    # Send the message
+                    sender = msg.get('from', msgdata.get('original_sender', mm_cfg.MAILMAN_SITE_LIST))
+                    recipients = [recipient]
+                    
+                    mailman_log('debug', 'OutgoingRunner._process_regular: Sending system message %s from %s to %s',
+                               msgid, sender, recipient)
+                    
+                    conn.sendmail(sender, recipients, str(msg))
+                    conn.quit()
+                    
+                    mailman_log('debug', 'OutgoingRunner._process_regular: Successfully sent system message %s', msgid)
+                    return True
+                    
+                except Exception as e:
+                    mailman_log('error', 'OutgoingRunner._process_regular: SMTP error for system message %s: %s',
+                               msgid, str(e))
+                    return False
+            
+            # For regular list messages, use the delivery module
+            mailman_log('debug', 'OutgoingRunner._process_regular: Using delivery module for message %s', msgid)
+            self._func(mlist, msg, msgdata)
             
             mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
             return True
