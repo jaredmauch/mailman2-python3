@@ -58,7 +58,9 @@ def process(mlist, msg, msgdata):
     if msgdata.get('approved'):
         return
     # Is the poster a member or not?
-    for sender in msg.get_senders():
+    for sender_tuple in msg.get_senders():
+        # Extract email address from the (realname, address) tuple
+        _, sender = sender_tuple
         if mlist.isMember(sender):
             break
         for sender in Utils.check_eq_domains(sender,
