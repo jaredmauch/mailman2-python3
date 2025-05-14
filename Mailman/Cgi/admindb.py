@@ -873,16 +873,12 @@ def process_form(mlist, doc, cgidata):
         # Check if there are any pending requests
         admindburl = mlist.GetScriptURL('admindb', absolute=1)
         if not mlist.NumRequestsPending():
-            doc.AddItem(_('There are no pending requests.'))
-            doc.AddItem(' ')
-            doc.AddItem(Link(admindburl, _('Click here to reload this page.')))
-            # Put 'Logout' link before the footer
-            doc.AddItem('\n<div align="right"><font size="+2">')
-            doc.AddItem(Link('%s/logout' % admindburl,
-                '<b>%s</b>' % _('Logout')))
-            doc.AddItem('</font></div>\n')
-            # Add the footer
-            doc.AddItem(mlist.GetMailmanFooter())
+            replacements = {
+                'admindburl': admindburl,
+                'logout_url': '%s/logout' % admindburl
+            }
+            output = mlist.ParseTags('admindb_empty.html', replacements, mlist.preferred_language)
+            doc.AddItem(output)
             return
 
         # Create a form for the overview with proper encoding
@@ -909,21 +905,19 @@ def process_form(mlist, doc, cgidata):
             # Process the form data
             process_submissions(mlist, cgidata)
             # Show success message
-            doc.AddItem(_('Your changes have been made.'))
-            doc.AddItem(' ')
-            admindburl = mlist.GetScriptURL('admindb', absolute=1)
-            doc.AddItem(Link(admindburl, _('Click here to return to the pending requests page.')))
-            # Add the footer
-            doc.AddItem(mlist.GetMailmanFooter())
+            replacements = {
+                'admindburl': admindburl
+            }
+            output = mlist.ParseTags('admindb_success.html', replacements, mlist.preferred_language)
+            doc.AddItem(output)
             return
 
         # If we get here, something went wrong
-        doc.AddItem(_('Invalid action specified.'))
-        doc.AddItem(' ')
-        admindburl = mlist.GetScriptURL('admindb', absolute=1)
-        doc.AddItem(Link(admindburl, _('Click here to return to the pending requests page.')))
-        # Add the footer
-        doc.AddItem(mlist.GetMailmanFooter())
+        replacements = {
+            'admindburl': admindburl
+        }
+        output = mlist.ParseTags('admindb_error.html', replacements, mlist.preferred_language)
+        doc.AddItem(output)
 
     except Exception as e:
         mailman_log('error', 'admindb: Error in process_form: %s\n%s', 

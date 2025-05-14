@@ -326,19 +326,9 @@ def list_listinfo(mlist, language):
 
     # Process the template with replacements
     try:
-        # Ensure template content is unicode
-        if isinstance(template_content, bytes):
-            template_content = template_content.decode('utf-8', 'replace')
-        
-        # Process replacements
-        for key, value in replacements.items():
-            if isinstance(value, bytes):
-                value = value.decode('utf-8', 'replace')
-            template_content = template_content.replace(key, str(value))
-        
-        # Add the processed content to the document
-        doc.AddItem(template_content)
-        
+        # Use ParseTags for proper template processing
+        output = mlist.ParseTags('listinfo.html', replacements, language)
+        doc.AddItem(output)
     except Exception as e:
         mailman_log('error', 'Error processing template: %s', str(e))
         return

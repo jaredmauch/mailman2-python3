@@ -533,15 +533,23 @@ def show_results(mlist, doc, category, subcat, cgidata):
         'realname': mlist.real_name,
         'label': label
     })
-    doc.AddItem(Center(Header(2, _(
-        '%(realname)s mailing list administration<br>%(label)s Section') % {
-            'realname': mlist.real_name,
-            'label': label
-        })))
-    doc.AddItem('<hr>')
-    # Now we need to craft the form that will be submitted, which will contain
-    # all the variable settings, etc.  This is a bit of a kludge because we
-    # know that the autoreply and members categories supports file uploads.
+    
+    # Use ParseTags for the main content
+    replacements = {
+        'realname': mlist.real_name,
+        'label': label,
+        'adminurl': adminurl,
+        'admindburl': mlist.GetScriptURL('admindb'),
+        'listinfourl': mlist.GetScriptURL('listinfo'),
+        'edithtmlurl': mlist.GetScriptURL('edithtml'),
+        'archiveurl': mlist.GetBaseArchiveURL(),
+        'rmlisturl': mlist.GetScriptURL('rmlist') if mm_cfg.OWNERS_CAN_DELETE_THEIR_OWN_LISTS and mlist.internal_name() != mm_cfg.MAILMAN_SITE_LIST else None
+    }
+    
+    output = mlist.ParseTags('admin_results.html', replacements, mlist.preferred_language)
+    doc.AddItem(output)
+    
+    # Now we need to craft the form that will be submitted
     encoding = None
     if category in ('autoreply', 'members'):
         encoding = 'multipart/form-data'
@@ -556,127 +564,19 @@ def show_results(mlist, doc, category, subcat, cgidata):
             'adminurl': adminurl,
             'category': category
         }, encoding=encoding, mlist=mlist, contexts=AUTH_CONTEXTS)
-    # This holds the two columns of links
-    linktable = Table(valign='top', width='100%')
-    linktable.AddRow([Center(Bold(_("Configuration Categories"))),
-                      Center(Bold(_("Other Administrative Activities")))])
-    # The `other links' are stuff in the right column.
-    otherlinks = UnorderedList()
-    otherlinks.AddItem(Link(mlist.GetScriptURL('admindb'),
-                            _('Tend to pending moderator requests')))
-    otherlinks.AddItem(Link(mlist.GetScriptURL('listinfo'),
-                            _('Go to the general list information page')))
-    otherlinks.AddItem(Link(mlist.GetScriptURL('edithtml'),
-                            _('Edit the public HTML pages and text files')))
-    otherlinks.AddItem(Link(mlist.GetBaseArchiveURL(),
-                            _('Go to list archives')).Format() +
-                       '<br>&nbsp;<br>')
-    # We do not allow through-the-web deletion of the site list!
-    if mm_cfg.OWNERS_CAN_DELETE_THEIR_OWN_LISTS and \
-           mlist.internal_name() != mm_cfg.MAILMAN_SITE_LIST:
-        otherlinks.AddItem(Link(mlist.GetScriptURL('rmlist'),
-                                _('Delete this mailing list')).Format() +
-                           _(' (requires confirmation)<br>&nbsp;<br>'))
-    otherlinks.AddItem(Link('%s/logout' % adminurl,
-                            # BAW: What I really want is a blank line, but
-                            # adding an &nbsp; won't do it because of the
-                            # bullet added to the list item.
-                            '<FONT SIZE="+2"><b>%s</b></FONT>' %
-                            _('Logout')))
-    # These are links to other categories and live in the left column
-    categorylinks_1 = categorylinks = UnorderedList()
-    categorylinks_2 = ''
-    categorykeys = list(categories.keys())
-    half = len(categorykeys) / 2
-    counter = 0
-    subcat = None
-    for k in categorykeys:
-        label = _(categories[k][0])
-        url = '%s/%s' % (adminurl, k)
-        if k == category:
-            # Handle subcategories
-            subcats = mlist.GetConfigSubCategories(k)
-            if subcats:
-                subcat = Utils.GetPathPieces()[-1]
-                for k, v in subcats:
-                    if k == subcat:
-                        break
-                else:
-                    # The first subcategory in the list is the default
-                    subcat = subcats[0][0]
-                subcat_items = []
-                for sub, text in subcats:
-                    if sub == subcat:
-                        text = Bold('[%s]' % text).Format()
-                    subcat_items.append(Link(url + '/' + sub, text))
-                categorylinks.AddItem(
-                    Bold(label).Format() +
-                    UnorderedList(*subcat_items).Format())
-            else:
-                formatted_label = '[%s]' % label
-                categorylinks.AddItem(Link(url, Bold(formatted_label)))
-        else:
-            categorylinks.AddItem(Link(url, label))
-        counter += 1
-        if counter >= half:
-            categorylinks_2 = categorylinks = UnorderedList()
-            counter = -len(categorykeys)
-    # Make the emergency stop switch a rude solo light
-    etable = Table()
-    # Add all the links to the links table...
-    etable.AddRow([categorylinks_1, categorylinks_2])
-    etable.AddRowInfo(etable.GetCurrentRowIndex(), valign='top')
-    if mlist.emergency:
-        label = _('Emergency moderation of all list traffic is enabled')
-        etable.AddRow([Center(
-            Link('?VARHELP=general/emergency', Bold(label)))])
-        color = mm_cfg.WEB_ERROR_COLOR
-        etable.AddCellInfo(etable.GetCurrentRowIndex(), 0,
-                           colspan=2, bgcolor=color)
-    linktable.AddRow([etable, otherlinks])
-    # ...and add the links table to the document.
-    form.AddItem(linktable)
-    form.AddItem('<hr>')
-    form.AddItem(
-        _(f'''Make your changes in the following section, then submit them
-        using the <em>Submit Your Changes</em> button below.''')
-        + '<p>')
-
-    # The members and passwords categories are special in that they aren't
-    # defined in terms of gui elements.  Create those pages here.
+        
+    # Add the form content based on category
     if category == 'members':
-        # Figure out which subcategory we should display
-        subcat = Utils.GetPathPieces()[-1]
-        if subcat not in ('list', 'add', 'remove', 'change', 'sync'):
-            subcat = 'list'
-        # Add member category specific tables
         form.AddItem(membership_options(mlist, subcat, cgidata, doc, form))
         form.AddItem(Center(submit_button('setmemberopts_btn')))
-        # In "list" subcategory, we can also search for members
-        if subcat == 'list':
-            form.AddItem('<hr>\n')
-            table = Table(width='100%')
-            table.AddRow([Center(Header(2, _('Additional Member Tasks')))])
-            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
-                              bgcolor=mm_cfg.WEB_HEADER_COLOR)
-            # Add a blank separator row
-            table.AddRow(['&nbsp;', '&nbsp;'])
-            # Add a section to set the moderation bit for all members
-            table.AddRow([_(f"""<li>Set everyone's moderation bit, including
-            those members not currently visible""")])
-            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
-            table.AddRow([RadioButtonArray('allmodbit_val',
-                                           (_('Off'), _('On')),
-                                           mlist.default_member_moderation),
-                          SubmitButton('allmodbit_btn', _('Set'))])
-            form.AddItem(table)
     elif category == 'passwords':
         form.AddItem(Center(password_inputs(mlist)))
         form.AddItem(Center(submit_button()))
     else:
         form.AddItem(show_variables(mlist, category, subcat, cgidata, doc))
         form.AddItem(Center(submit_button()))
-    # And add the form
+        
+    # Add the form to the document
     doc.AddItem(form)
     doc.AddItem(mlist.GetMailmanFooter())
 

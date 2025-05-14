@@ -111,6 +111,7 @@ def main():
         doc.AddItem(Header(3, error_msg))
         print('Status: 400 Bad Request')
         print(doc.Format())
+        syslog('mischief', 'Private archive invalid path: %s', parts[0])
         return
 
     # Validate and sanitize the full path
@@ -233,13 +234,14 @@ def main():
         # page don't work.
         if true_filename.endswith('/index.html') and parts[-1] != 'index.html':
             action += SLASH
-        # Escape web input parameter to avoid cross-site scripting.
-        print(Utils.maketext(
-            'private.html',
-            {'action'  : Utils.websafe(action),
-             'realname': mlist.real_name,
-             'message' : message,
-             }, mlist=mlist))
+        # Use ParseTags for proper template processing
+        replacements = {
+            'action': Utils.websafe(action),
+            'realname': mlist.real_name,
+            'message': message
+        }
+        output = mlist.ParseTags('private.html', replacements, lang)
+        print(output)
         return
 
     lang = mlist.getMemberLanguage(username)

@@ -173,15 +173,13 @@ def main():
             print(doc.Format())
             return
     else:
-        doc.SetTitle(_('{realname} -- HTML Page Editing'))
-        doc.AddItem(Header(1, _('{realname} -- HTML Page Editing')))
-        doc.AddItem(Header(2, _('Select page to edit:')))
-        template_list = UnorderedList()
-        for (template, info) in template_data:
-            l = Link(mlist.GetScriptURL('edithtml') + '/' + template, _(info))
-            template_list.AddItem(l)
-        doc.AddItem(FontSize("+2", template_list))
-        doc.AddItem(mlist.GetMailmanFooter())
+        # Use ParseTags for the template selection page
+        replacements = {
+            'realname': realname,
+            'templates': template_data
+        }
+        output = mlist.ParseTags('edithtml_select.html', replacements, language)
+        doc.AddItem(output)
         print(doc.Format())
         return
 
@@ -192,7 +190,10 @@ def main():
             else:
                 doc.addError(
                   _('The form lifetime has expired. (request forgery check)'))
-        FormatHTML(mlist, doc, template_name, template_info, lang=language)
+        # Use ParseTags for proper template processing
+        replacements = mlist.GetStandardReplacements(language)
+        output = mlist.ParseTags(template_name, replacements, language)
+        doc.AddItem(output)
     finally:
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
