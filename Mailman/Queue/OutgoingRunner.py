@@ -43,6 +43,10 @@ def get_mail_list():
     from Mailman.MailList import MailList
     return MailList
 
+def get_replybot():
+    from Mailman.Handlers import Replybot
+    return Replybot
+
 # This controls how often _doperiodic() will try to deal with deferred
 # permanent failures.  It is a count of calls to _doperiodic()
 DEAL_WITH_PERMFAILURES_EVERY = 10
@@ -361,7 +365,8 @@ class OutgoingRunner(Runner, BounceMixin):
                        recipient, admin_type)
             
             # Process the admin message
-            # ... admin message processing logic ...
+            Replybot = get_replybot()
+            Replybot.process(mlist, msg, msgdata)
             
             mailman_log('debug', 'OutgoingRunner._process_admin: Successfully processed admin message %s', msgid)
             return True
