@@ -166,69 +166,88 @@ class IncomingRunner(Runner):
             should_unlock = False
         
         try:
+            # Try to get the list lock with timeout
+            try:
+                mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
+            except LockFile.TimeOutError:
+                mailman_log('error', 'IncomingRunner: List lock timeout for %s', mlist.internal_name())
+                return True  # Try again later
+            
             mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s) for list %s',
                        msgid, filebase, mlist.internal_name())
             
-            # Check retry delay and duplicate processing
-            if not self._check_retry_delay(msgid, filebase):
-                mailman_log('debug', 'IncomingRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-                return False
-
-            # Make sure we have the most up-to-date state
-            try:
-                mlist.Load()
-                mailman_log('debug', 'IncomingRunner._dispose: Successfully loaded list %s', mlist.internal_name())
-            except Errors.MMCorruptListDatabaseError as e:
-                mailman_log('error', 'IncomingRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
-                           mlist.internal_name(), str(e), traceback.format_exc())
-                self._unmark_message_processed(msgid)
-                return False
-            except Exception as e:
-                mailman_log('error', 'IncomingRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
-                           mlist.internal_name(), str(e), traceback.format_exc())
-                self._unmark_message_processed(msgid)
-                return False
-
-            # Validate message type first
-            msg, success = self._validate_message(msg, msgdata)
-            if not success:
-                mailman_log('error', 'IncomingRunner._dispose: Message validation failed for message %s', msgid)
-                self._unmark_message_processed(msgid)
-                return False
-
-            # Validate message headers
-            if not msg.get('message-id'):
-                mailman_log('error', 'IncomingRunner._dispose: Message missing Message-ID header')
-                self._unmark_message_processed(msgid)
-                return False
-
-            # Process the message
-            try:
-                mailman_log('debug', 'IncomingRunner._dispose: Processing message %s', msgid)
-                
-                # Check if the message is a command
-                if self._is_command(msg):
-                    mailman_log('debug', 'IncomingRunner._dispose: Message %s is a command', msgid)
-                    return self._process_command(mlist, msg, msgdata)
-                
-                # Check if the message is a bounce
-                if self._is_bounce(msg):
-                    mailman_log('debug', 'IncomingRunner._dispose: Message %s is a bounce', msgid)
-                    return self._process_bounce(mlist, msg, msgdata)
-                
-                # Process as a regular message
-                mailman_log('debug', 'IncomingRunner._dispose: Processing message %s as regular message', msgid)
-                return self._process_regular_message(mlist, msg, msgdata)
-
-            except Exception as e:
-                mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
-                           msgid, str(e), traceback.format_exc())
-                self._unmark_message_processed(msgid)
-                return False
-                
+            # Get the pipeline for processing
+            pipeline = self._get_pipeline(mlist, msg, msgdata)
+            msgdata['pipeline'] = pipeline
+            
+            # Process through pipeline
+            more = self._dopipeline(mlist, msg, msgdata, pipeline)
+            
+            if not more:
+                del msgdata['pipeline']
+            
+            mlist.Save()
+            return more
+            
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
+                       msgid, str(e), traceback.format_exc())
+            self._unmark_message_processed(msgid)
+            return False
         finally:
             if should_unlock:
                 mlist.Unlock()
+
+    def _get_pipeline(self, mlist, msg, msgdata):
+        """Get the pipeline for processing the message."""
+        # We must return a copy of the list, otherwise, the first message that
+        # flows through the pipeline will empty it out!
+        return msgdata.get('pipeline',
+                          getattr(mlist, 'pipeline',
+                                 mm_cfg.GLOBAL_PIPELINE))[:]
+
+    def _dopipeline(self, mlist, msg, msgdata, pipeline):
+        """Process the message through the pipeline of handlers."""
+        while pipeline:
+            handler = pipeline.pop(0)
+            modname = 'Mailman.Handlers.' + handler
+            __import__(modname)
+            try:
+                pid = os.getpid()
+                sys.modules[modname].process(mlist, msg, msgdata)
+                # Failsafe -- a child may have leaked through
+                if pid != os.getpid():
+                    mailman_log('error', 'Child process leaked through: %s', modname)
+                    os._exit(1)
+            except Errors.DiscardMessage:
+                # Throw the message away
+                pipeline.insert(0, handler)
+                mailman_log('vette', """Message discarded, msgid: %s
+        list: %s,
+        handler: %s""",
+                       msg.get('message-id', 'n/a'),
+                       mlist.real_name, handler)
+                return 0
+            except Errors.HoldMessage:
+                # Let the approval process take it from here
+                return 0
+            except Errors.RejectMessage as e:
+                # Log rejection and bounce message
+                pipeline.insert(0, handler)
+                mailman_log('vette', """Message rejected, msgid: %s
+        list: %s,
+        handler: %s,
+        reason: %s""",
+                       msg.get('message-id', 'n/a'),
+                       mlist.real_name, handler, e.notice())
+                mlist.BounceMessage(msg, msgdata, e)
+                return 0
+            except Exception as e:
+                # Push this pipeline module back on the stack, then re-raise
+                pipeline.insert(0, handler)
+                raise
+        # We've successfully completed handling of this message
+        return 0
 
     def _is_command(self, msg):
         """Check if the message is a command."""
