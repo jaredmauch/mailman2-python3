@@ -247,7 +247,7 @@ class CommandRunner(Runner):
         try:
             # Lazy import to avoid circular dependency
             from Mailman.MailList import MailList
-            mlist_obj = MailList.MailList(mlist, lock=False)
+            mlist_obj = MailList(mlist, lock=False)
         except Errors.MMListError as e:
             mailman_log('error', 'Failed to get MailList object for %s: %s', mlist, str(e))
             return False
