@@ -149,6 +149,11 @@ class OutgoingRunner(Runner, BounceMixin):
             conn = smtplib.SMTP(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, timeout=30)
             if mm_cfg.SMTP_USE_TLS:
                 conn.starttls()
+            # Add SMTP authentication if configured
+            if hasattr(mm_cfg, 'SMTP_USER') and hasattr(mm_cfg, 'SMTP_PASSWORD'):
+                if mm_cfg.SMTP_USER and mm_cfg.SMTP_PASSWORD:
+                    mailman_log('debug', 'OutgoingRunner._get_smtp_connection: Authenticating with SMTP server')
+                    conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWORD)
             return conn
         except Exception as e:
             mailman_log('error', 'SMTP connection failed: %s', str(e))
