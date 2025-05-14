@@ -108,7 +108,6 @@ import os
 import email
 from email import message_from_string
 from email.message import Message as EmailMessage
-from Mailman.Message import Message as MailmanMessage
 from urllib.parse import parse_qs
 from Mailman.Utils import reap
 from Mailman import Utils
@@ -119,7 +118,7 @@ from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
 from Mailman.Logging.Syslog import mailman_log
 import Mailman.MailList as MailList
-import Mailman.Message as Message
+import Mailman.Message
 
 
 class PipelineError(Exception):
