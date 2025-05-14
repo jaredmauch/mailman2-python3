@@ -54,20 +54,66 @@ OPTCOLUMNS = 11
 
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
+def validate_listname(listname):
+    """Validate and sanitize a listname to prevent path traversal.
+    
+    Args:
+        listname: The listname to validate
+        
+    Returns:
+        tuple: (is_valid, sanitized_name, error_message)
+    """
+    if not listname:
+        return False, None, _('List name is required')
+        
+    # Convert to lowercase and strip whitespace
+    listname = listname.lower().strip()
+    
+    # Basic validation
+    if not Utils.ValidateListName(listname):
+        return False, None, _('Invalid list name')
+        
+    # Check for path traversal attempts
+    if '..' in listname or '/' in listname or '\\' in listname:
+        return False, None, _('Invalid list name')
+        
+    return True, listname, None
+
+def handle_no_list():
+    """Handle the case when no list is specified."""
+    doc = Document()
+    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+    doc.SetTitle(_('CGI script error'))
+    doc.AddItem(Header(2, _('CGI script error')))
+    doc.addError(_('Invalid options to CGI script.'))
+    doc.AddItem('<hr>')
+    doc.AddItem(MailmanLogo())
+    print('Status: 400 Bad Request')
+    return doc
+
 def main():
     try:
         # Log page load
         mailman_log('info', 'admin: Page load started')
         mailman_log('debug', 'Entered main()')
+        
         # Initialize document early
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+        
         # Parse form data first since we need it for authentication
         try:
             mailman_log('debug', 'Parsing form data')
             if os.environ.get('REQUEST_METHOD') == 'POST':
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 if content_length > 0:
+                    # Limit content length to prevent DoS
+                    if content_length > mm_cfg.MAX_CONTENT_LENGTH:
+                        print('Status: 413 Request Entity Too Large')
+                        doc.AddItem(Header(2, _("Error")))
+                        doc.AddItem(Bold(_('Request too large')))
+                        print(doc.Format())
+                        return
                     form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
                     cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
                 else:
@@ -77,36 +123,62 @@ def main():
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
             mailman_log('debug', 'cgidata after parse: %s', str(cgidata))
         except Exception as e:
-            print('Status: 400 Bad Request')
-            print('Content-type: text/html; charset=utf-8\n')
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Invalid options to CGI script.')))
-            print(doc.Format())
             mailman_log('error', 'admin: Invalid form data: %s\n%s', str(e), traceback.format_exc())
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Invalid request')))
+            print('Status: 400 Bad Request')
+            print(doc.Format())
             return
+
         # Get the list name
         parts = Utils.GetPathPieces()
         mailman_log('debug', 'Path parts: %s', str(parts))
         if not parts:
-            handle_no_list()
+            doc = handle_no_list()
+            print(doc.Format())
             return
-        listname = parts[0].lower()
+
+        # Validate listname
+        is_valid, listname, error_msg = validate_listname(parts[0])
+        if not is_valid:
+            doc.SetTitle(_('CGI script error'))
+            doc.AddItem(Header(2, _('CGI script error')))
+            doc.addError(error_msg)
+            doc.AddItem('<hr>')
+            doc.AddItem(MailmanLogo())
+            print('Status: 400 Bad Request')
+            print(doc.Format())
+            return
+
         mailman_log('info', 'admin: Processing list "%s"', listname)
         mailman_log('debug', 'List name: %s', listname)
-        if isinstance(listname, bytes):
-            listname = listname.decode('utf-8', 'replace')
+
         try:
             mlist = MailList.MailList(listname, lock=0)
-            mailman_log('debug', 'Loaded MailList')
         except Errors.MMListError as e:
+            # Avoid cross-site scripting attacks and information disclosure
             safelistname = Utils.websafe(listname)
+            doc.SetTitle(_('CGI script error'))
+            doc.AddItem(Header(2, _('CGI script error')))
+            doc.addError(_('No such list <em>{safelistname}</em>'))
+            doc.AddItem('<hr>')
+            doc.AddItem(MailmanLogo())
             print('Status: 404 Not Found')
-            admin_overview(_('No such list <em>%(safelistname)s</em>') % {
-                'safelistname': safelistname
-            })
-            mailman_log('error', 'admin: No such list "%s": %s\n%s', 
-                       listname, e, traceback.format_exc())
+            print(doc.Format())
+            mailman_log('error', 'admin: No such list "%s"', listname)
             return
+        except Exception as e:
+            # Log the full error but don't expose it to the user
+            mailman_log('error', 'admin: Unexpected error for list "%s": %s', listname, str(e))
+            doc.SetTitle(_('CGI script error'))
+            doc.AddItem(Header(2, _('CGI script error')))
+            doc.addError(_('An error occurred processing your request'))
+            doc.AddItem('<hr>')
+            doc.AddItem(MailmanLogo())
+            print('Status: 500 Internal Server Error')
+            print(doc.Format())
+            return
+
         i18n.set_language(mlist.preferred_language)
         # If the user is not authenticated, we're done.
         try:
@@ -1213,7 +1285,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                         mlist.getMemberCPAddress(addr))
             fullname = mlist.getMemberName(addr)
             if isinstance(fullname, bytes):
-                fullname = fullname.decode('latin-1', 'replace')
+                fullname = fullname.decode('latin1', 'replace')
             fullname = Utils.uncanonstr(fullname, mlist.preferred_language)
             name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
             cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format()

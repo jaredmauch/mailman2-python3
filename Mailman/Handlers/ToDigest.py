@@ -396,8 +396,9 @@ def send_digest_final(mlist, mimemsg, rfc1153msg, volume, issue):
     batch_size = 1000  # Process 1000 recipients at a time
     
     # Send to MIME digest members
-    mime_members = mlist.getMemberCPAddresses(digest=True, mime=True)
+    mime_members = mlist.getDigestMemberKeys()
     if mime_members:
+        mime_members = mlist.getMemberCPAddresses(mime_members)
         outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
         # Process in batches to avoid memory issues
         for i in range(0, len(mime_members), batch_size):
@@ -410,8 +411,9 @@ def send_digest_final(mlist, mimemsg, rfc1153msg, volume, issue):
                         fromnode='digest')
     
     # Send to RFC 1153 digest members
-    rfc1153_members = mlist.getMemberCPAddresses(digest=True, mime=False)
+    rfc1153_members = mlist.getDigestMemberKeys()
     if rfc1153_members:
+        rfc1153_members = mlist.getMemberCPAddresses(rfc1153_members)
         outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
         # Process in batches to avoid memory issues
         for i in range(0, len(rfc1153_members), batch_size):
