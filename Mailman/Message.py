@@ -272,9 +272,19 @@ class UserNotification(Message):
         self['Precedence'] = 'bulk'
         if text:
             if _text_is_unicode:
-                self.set_payload(text)
+                # If text is already Unicode, use UTF-8 encoding
+                self.set_payload(text, 'utf-8')
             else:
-                self.set_payload(text, charset or 'us-ascii')
+                # Try to detect the encoding if not specified
+                if not charset:
+                    try:
+                        # Try to decode as UTF-8 first
+                        text.decode('utf-8')
+                        charset = 'utf-8'
+                    except UnicodeDecodeError:
+                        # Fall back to ISO-8859-1 if UTF-8 fails
+                        charset = 'iso-8859-1'
+                self.set_payload(text, charset)
         if _fasttrack:
             self['X-Ack'] = 'yes'
         if lang:
