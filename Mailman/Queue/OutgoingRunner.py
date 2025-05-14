@@ -146,14 +146,36 @@ class OutgoingRunner(Runner, BounceMixin):
     def _get_smtp_connection(self):
         """Get a new SMTP connection with proper configuration."""
         try:
-            conn = smtplib.SMTP(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, timeout=30)
-            if mm_cfg.SMTP_USE_TLS:
-                conn.starttls()
-            # Add SMTP authentication if configured
-            if hasattr(mm_cfg, 'SMTP_USER') and hasattr(mm_cfg, 'SMTP_PASSWORD'):
-                if mm_cfg.SMTP_USER and mm_cfg.SMTP_PASSWORD:
-                    mailman_log('debug', 'OutgoingRunner._get_smtp_connection: Authenticating with SMTP server')
-                    conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWORD)
+            conn = smtplib.SMTP()
+            conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
+            conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+            
+            if mm_cfg.SMTP_AUTH:
+                if mm_cfg.SMTP_USE_TLS:
+                    try:
+                        conn.starttls()
+                    except smtplib.SMTPException as e:
+                        mailman_log('error', 'SMTP TLS error: %s', str(e))
+                        conn.quit()
+                        return None
+                    try:
+                        helo_host = mm_cfg.SMTP_HELO_HOST or socket.getfqdn()
+                        conn.ehlo(helo_host)
+                    except smtplib.SMTPException as e:
+                        mailman_log('error', 'SMTP EHLO error: %s', str(e))
+                        conn.quit()
+                        return None
+                try:
+                    conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
+                except smtplib.SMTPHeloError as e:
+                    mailman_log('error', 'SMTP HELO error: %s', str(e))
+                    conn.quit()
+                    return None
+                except smtplib.SMTPAuthenticationError as e:
+                    mailman_log('error', 'SMTP AUTH error: %s', str(e))
+                    conn.quit()
+                    return None
+            
             return conn
         except Exception as e:
             mailman_log('error', 'SMTP connection failed: %s', str(e))
