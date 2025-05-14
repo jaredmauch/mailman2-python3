@@ -344,7 +344,21 @@ class OutgoingRunner(Runner, BounceMixin):
             mailman_log('debug', 'OutgoingRunner._process_regular: Processing regular message %s', msgid)
             
             # Get recipient information
-            recipient = msgdata.get('recipient', 'unknown')
+            recipient = msgdata.get('recipient')
+            if not recipient:
+                # Try to get recipient from message headers
+                recipient = msg.get('to')
+                if not recipient:
+                    mailman_log('error', 'OutgoingRunner._process_regular: No recipient found for message %s', msgid)
+                    return False
+            
+            # Ensure recipient is a string and fully qualified
+            if isinstance(recipient, (list, tuple)):
+                recipient = recipient[0]  # Take first recipient if multiple
+            if not '@' in recipient:
+                mailman_log('error', 'OutgoingRunner._process_regular: Invalid recipient address %s for message %s',
+                           recipient, msgid)
+                return False
             
             mailman_log('debug', 'OutgoingRunner._process_regular: Regular message for recipient %s', recipient)
             
@@ -360,12 +374,13 @@ class OutgoingRunner(Runner, BounceMixin):
                     
                     # Send the message
                     sender = msg.get('from', msgdata.get('original_sender', mm_cfg.MAILMAN_SITE_LIST))
-                    recipients = [recipient]
+                    if not sender or not '@' in sender:
+                        sender = mm_cfg.MAILMAN_SITE_LIST
                     
                     mailman_log('debug', 'OutgoingRunner._process_regular: Sending system message %s from %s to %s',
                                msgid, sender, recipient)
                     
-                    conn.sendmail(sender, recipients, str(msg))
+                    conn.sendmail(sender, [recipient], str(msg))
                     conn.quit()
                     
                     mailman_log('debug', 'OutgoingRunner._process_regular: Successfully sent system message %s', msgid)
