@@ -40,7 +40,7 @@ def get_hold():
 
 def get_mail_list():
     from Mailman.MailList import MailList
-    return MailList
+    return MailList.MailList
 
 class ModeratedMemberPost(get_hold().ModeratedPost):
     # BAW: I wanted to use the reason below to differentiate between this

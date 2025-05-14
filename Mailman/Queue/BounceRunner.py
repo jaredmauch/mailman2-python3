@@ -52,7 +52,7 @@ import Mailman.Message as Message
 # Lazy import to avoid circular dependency
 def get_mail_list():
     import Mailman.MailList as MailList
-    return MailList
+    return MailList.MailList
 
 COMMASPACE = ', '
 

@@ -52,7 +52,7 @@ def get_replybot():
 
 def get_maillist():
     import Mailman.MailList as MailList
-    return MailList
+    return MailList.MailList
 
 NL = '\n'
 CONTINUE = 0

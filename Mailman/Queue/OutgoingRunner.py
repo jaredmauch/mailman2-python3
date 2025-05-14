@@ -41,7 +41,7 @@ import Mailman.Message as Message
 # Lazy import to avoid circular dependency
 def get_mail_list():
     import Mailman.MailList as MailList
-    return MailList
+    return MailList.MailList
 
 def get_replybot():
     import Mailman.Handlers.Replybot as Replybot
