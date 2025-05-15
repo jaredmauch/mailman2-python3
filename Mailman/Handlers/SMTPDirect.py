@@ -47,7 +47,7 @@ from Mailman.Message import Message
 from Mailman.Handlers.Decorate import decorate
 from Mailman.Logging.Syslog import mailman_log
 import Mailman.SafeDict
-from Mailman.Queue.Switchboard import get_switchboard
+from Mailman.Queue.sbcache import get_switchboard
 
 import email
 from email.utils import formataddr
