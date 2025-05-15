@@ -395,7 +395,7 @@ class OutgoingRunner(Runner, BounceMixin):
                     recipient = addrs[0][1]
             
         if not recipient:
-            mailman_log('error', 'No recipients found in msgdata for message: %s', msgid)
+            mailman_log('error', 'OutgoingRunner: No recipients found in msgdata for message: %s', msgid)
             return False
             
         # Set the recipient in msgdata for future use

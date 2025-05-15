@@ -182,7 +182,7 @@ class IncomingRunner(Runner):
             recipients = msgdata.get('recipients', [])
             mailman_log('debug', '  Recipients: %s', recipients)
             if not recipients:
-                mailman_log('error', 'No recipients found in msgdata for message %s', msgid)
+                mailman_log('error', 'IncomingRunner: No recipients found in msgdata for message %s', msgid)
                 mailman_log('error', '  Message data: %s', str(msgdata))
                 mailman_log('error', '  To header: %s', msg.get('to', 'unknown'))
                 mailman_log('error', '  Cc header: %s', msg.get('cc', 'unknown'))

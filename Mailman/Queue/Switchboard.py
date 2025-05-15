@@ -182,9 +182,9 @@ class Switchboard:
                     mailman_log('debug', 'Switchboard.enqueue: Set recipients from message headers for message: %s',
                                msg.get('message-id', 'n/a'))
                 else:
-                    mailman_log('error', 'Switchboard.enqueue: No recipients found in msgdata or message headers for message: %s',
+                    mailman_log('error', 'Switchboard: No recipients found in msgdata or message headers for message: %s',
                                msg.get('message-id', 'n/a'))
-                    raise ValueError('No recipients found in msgdata or message headers')
+                    raise ValueError('Switchboard: No recipients found in msgdata or message headers')
         
         # Generate a unique filebase
         filebase = self._make_filebase(msg, msgdata)

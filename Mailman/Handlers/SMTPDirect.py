@@ -214,7 +214,7 @@ def process(mlist, msg, msgdata):
         deliveryfunc = bulkdeliver
 
     try:
-        origrecips = msgdata['recips']
+        origrecips = msgdata.get('recips', None)
         origsender = msgdata.get('original_sender', msg.get_sender())
         conn = Connection()
         try:
@@ -399,7 +399,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         # Get the list of recipients
         recips = msgdata.get('recipients', [])
         if not recips:
-            mailman_log('error', 'No recipients found in msgdata')
+            mailman_log('error', 'SMTPDirect: No recipients found in msgdata for message:\n%s', msg.get('Message-ID', 'n/a'))
             return
 
         # Convert email.message.Message to Mailman.Message if needed
