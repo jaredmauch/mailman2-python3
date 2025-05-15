@@ -312,6 +312,7 @@ class UserNotification(Message):
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
                         recips = self.recips,
+                        recipient = self.recips[0] if self.recips else None,
                         nodecorate = 1,
                         reduced_list_headers = 1,
                         **_kws)

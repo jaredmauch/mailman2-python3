@@ -122,6 +122,17 @@ class Switchboard:
                 mailman_log('error', 'Switchboard.enqueue: Failed to convert string message to Message object: %s', str(e))
                 raise
         
+        # Ensure recipient is set in msgdata
+        if 'recipient' not in msgdata:
+            # Try to get recipient from msgdata['recips'] first
+            if 'recips' in msgdata and msgdata['recips']:
+                msgdata['recipient'] = msgdata['recips'][0]
+            # Fall back to message headers
+            elif msg.get('to'):
+                msgdata['recipient'] = msg.get('to')
+            elif msg.get('envelope-to'):
+                msgdata['recipient'] = msg.get('envelope-to')
+        
         # Generate a unique filebase
         filebase = self._make_filebase(msg, msgdata)
         
