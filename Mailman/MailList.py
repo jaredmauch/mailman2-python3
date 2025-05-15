@@ -1007,34 +1007,56 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
             
         return False
 
-    def hasMatchingHeader(self, msg):
-        """Check if the message has any headers that match the bounce_matching_headers list.
+    def parse_matching_header_opt(self):
+        """Return a list of triples [(field name, regex, line), ...].
         
-        Args:
-            msg: The email message to check
-            
         Returns:
-            True if any header matches, False otherwise
+            A list of tuples containing (header name, compiled regex, original line)
+        """
+        # - Blank lines and lines with '#' as first char are skipped.
+        # - Leading whitespace in the matchexp is trimmed - you can defeat
+        #   that by, eg, containing it in gratuitous square brackets.
+        all = []
+        for line in self.bounce_matching_headers.split('\n'):
+            line = line.strip()
+            # Skip blank lines and lines *starting* with a '#'.
+            if not line or line[0] == "#":
+                continue
+            i = line.find(':')
+            if i < 0:
+                # This didn't look like a header line
+                syslog('config', 'bad bounce_matching_header line: %s\n%s',
+                       self.real_name, line)
+            else:
+                header = line[:i]
+                value = line[i+1:].lstrip()
+                try:
+                    cre = re.compile(value, re.IGNORECASE)
+                except re.error as e:
+                    # The regexp was malformed
+                    syslog('config', '''\
+bad regexp in bounce_matching_header line: %s
+\n%s (cause: %s)''', self.real_name, value, e)
+                else:
+                    all.append((header, cre, line))
+        return all
+
+    def hasMatchingHeader(self, msg):
+        """Return true if named header field matches a regexp in the
+        bounce_matching_header list variable.
+
+        Returns:
+            The matching line if found, False otherwise
         """
         if not self.bounce_matching_headers:
             return False
             
-        # Check each header in the message
-        for header in msg.keys():
-            header_value = msg.get(header, '').lower()
-            # Check if this header matches any pattern in bounce_matching_headers
-            for pattern in self.bounce_matching_headers:
-                try:
-                    cre = re.compile(pattern, re.IGNORECASE)
-                    if cre.search(header_value):
-                        syslog('vette', 'Message header %s matches pattern %s',
-                               header, pattern)
-                        return True
-                except re.error:
-                    syslog('error', 'Invalid regex pattern in bounce_matching_headers: %s',
-                           pattern)
-                    continue
-                    
+        for header, cre, line in self.parse_matching_header_opt():
+            for value in msg.get_all(header, []):
+                if cre.search(value):
+                    syslog('vette', 'Message header %s matches pattern %s',
+                           header, line)
+                    return line
         return False
 
     def _ListAdmin__nextid(self):
