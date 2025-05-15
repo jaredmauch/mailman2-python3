@@ -28,7 +28,7 @@ import email.message
 from email.message import Message
 from email.parser import Parser
 from email.errors import MessageParseError
-from email.generator import BytesGenerator
+from email.generator import Generator
 
 from Mailman import mm_cfg
 from Mailman.Message import Message
@@ -51,8 +51,8 @@ class Mailbox(mailbox.mbox):
                 # Create a temporary file if we don't have a path
                 import tempfile
                 path = tempfile.mktemp()
-                with open(path, 'wb') as f:
-                    f.write(fp.read())
+                with open(path, 'w', encoding='utf-8') as f:
+                    f.write(fp.read().decode('utf-8', 'replace'))
                 fp.seek(0)
         else:
             # It's a path string
@@ -64,8 +64,8 @@ class Mailbox(mailbox.mbox):
         if hasattr(fp, 'read') and hasattr(fp, 'write'):
             self.fp = fp
         else:
-            # Open in binary mode for writing
-            self.fp = open(path, 'ab+')
+            # Open in text mode for writing
+            self.fp = open(path, 'a+', encoding='utf-8')
 
     # msg should be an rfc822 message or a subclass.
     def AppendMessage(self, msg):
@@ -78,15 +78,16 @@ class Mailbox(mailbox.mbox):
             # returned, since it differs per platform.
             pass
         else:
-            if self.fp.read(1) != b'\n':
-                self.fp.write(b'\n')
+            if self.fp.read(1) != '\n':
+                self.fp.write('\n')
         # Seek to the last char of the mailbox
         self.fp.seek(0, 2)
-        # Create a BytesGenerator instance to write the message to the file
-        g = BytesGenerator(self.fp, mangle_from_=False, maxheaderlen=0)
+        
+        # Create a Generator instance to write the message to the file
+        g = Generator(self.fp, mangle_from_=False, maxheaderlen=0)
         g.flatten(msg, unixfrom=True)
         # Add one more trailing newline for separation with the next message
-        self.fp.write(b'\n')
+        self.fp.write('\n')
 
 
 # This stuff is used by pipermail.py:processUnixMailbox().  It provides an
