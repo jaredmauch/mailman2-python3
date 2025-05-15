@@ -491,6 +491,50 @@ def check_global_circuit_breaker():
     return False
 
 
+def stop_all_processes(kids, lock=None):
+    """Stop all child processes and clean up, similar to mailmanctl stop.
+    
+    Args:
+        kids: Dictionary of child processes
+        lock: Optional lock to release
+    """
+    # First send SIGTERM to all children
+    for pid in list(kids.keys()):
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except OSError as e:
+            if e.errno != errno.ESRCH:
+                raise
+    
+    # Wait for all children to exit
+    while kids:
+        try:
+            pid, status = os.wait()
+            if pid in kids:
+                del kids[pid]
+        except OSError as e:
+            if e.errno == errno.ECHILD:
+                break
+            elif e.errno != errno.EINTR:
+                raise
+            continue
+    
+    # Clean up PID file
+    try:
+        os.unlink(mm_cfg.PIDFILE)
+        syslog('qrunner', 'Removed PID file: %s', mm_cfg.PIDFILE)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            syslog('error', 'Failed to remove PID file %s: %s', mm_cfg.PIDFILE, str(e))
+    
+    # Release lock if provided
+    if lock:
+        try:
+            lock.unlock(unconditionally=1)
+        except Exception as e:
+            syslog('error', 'Failed to release lock: %s', str(e))
+
+
 def main():
     try:
         args = parse_args()
@@ -692,13 +736,8 @@ Master qrunner detected abnormal subprocess exit
                         # Check global circuit breaker before restarting
                         if restarting and check_global_circuit_breaker():
                             syslog('error', 'Global circuit breaker triggered - stopping all runners')
-                            # Stop all runners
-                            for pid in list(kids.keys()):
-                                try:
-                                    os.kill(pid, signal.SIGTERM)
-                                except OSError as e:
-                                    if e.errno != errno.ESRCH:
-                                        raise
+                            # Stop all processes and clean up
+                            stop_all_processes(kids, lock)
                             # Exit the main loop
                             break
                         
