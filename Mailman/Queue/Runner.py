@@ -231,6 +231,29 @@ class Runner:
             
         return filecnt
 
+    def _convert_message(self, msg):
+        """Convert email.message.Message to Mailman.Message with proper handling of nested messages.
+        
+        Args:
+            msg: The message to convert
+            
+        Returns:
+            Mailman.Message: The converted message
+        """
+        if isinstance(msg, email.message.Message):
+            mailman_msg = Message.Message()
+            # Copy all attributes from the original message
+            for key, value in msg.items():
+                mailman_msg[key] = value
+            # Copy the payload
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    mailman_msg.attach(self._convert_message(part))
+            else:
+                mailman_msg.set_payload(msg.get_payload())
+            return mailman_msg
+        return msg
+
     def _validate_message(self, msg, msgdata):
         """Validate and convert message if needed.
         
@@ -242,17 +265,7 @@ class Runner:
             # Convert message if needed
             if not isinstance(msg, Message.Message):
                 syslog('debug', 'Runner._validate_message: Converting message %s to Mailman.Message', msgid)
-                mailman_msg = Message.Message()
-                # Copy all attributes from the original message
-                for key, value in msg.items():
-                    mailman_msg[key] = value
-                # Copy the payload
-                if msg.is_multipart():
-                    for part in msg.get_payload():
-                        mailman_msg.attach(part)
-                else:
-                    mailman_msg.set_payload(msg.get_payload())
-                msg = mailman_msg
+                msg = self._convert_message(msg)
             
             # Validate required Mailman.Message methods
             required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
@@ -306,7 +319,38 @@ class Runner:
                 self._shunt.enqueue(msg, msgdata)
                 return
 
-            sender = msg.get_sender()
+            # Convert to Mailman.Message if needed
+            if not isinstance(msg, Message.Message):
+                try:
+                    mailman_msg = Message.Message()
+                    # Copy all attributes from the original message
+                    for key, value in msg.items():
+                        mailman_msg[key] = value
+                    # Copy the payload
+                    if msg.is_multipart():
+                        for part in msg.get_payload():
+                            mailman_msg.attach(part)
+                    else:
+                        mailman_msg.set_payload(msg.get_payload())
+                    msg = mailman_msg
+                    syslog('debug', 'Converted message to Mailman.Message instance')
+                except Exception as e:
+                    syslog('error', 'Failed to convert message to Mailman.Message: %s', str(e))
+                    self._shunt.enqueue(msg, msgdata)
+                    return
+
+            # Get sender using Mailman.Message's get_sender method
+            try:
+                sender = msg.get_sender()
+                if not sender:
+                    syslog('error', 'Could not determine sender for message %s', msgid)
+                    self._shunt.enqueue(msg, msgdata)
+                    return
+            except Exception as e:
+                syslog('error', 'Error getting sender: %s', str(e))
+                self._shunt.enqueue(msg, msgdata)
+                return
+
             listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
             mlist = self._open_list(listname)
             if not mlist:

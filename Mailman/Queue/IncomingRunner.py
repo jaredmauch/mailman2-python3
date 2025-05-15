@@ -151,17 +151,7 @@ class IncomingRunner(Runner):
 
     def _convert_message(self, msg):
         """Convert email.message.Message to Mailman.Message with proper handling of nested messages."""
-        if isinstance(msg, EmailMessage):
-            mailman_msg = Mailman.Message.Message()
-            for key, value in msg.items():
-                mailman_msg[key] = value
-            if msg.is_multipart():
-                for part in msg.get_payload():
-                    mailman_msg.attach(self._convert_message(part))
-            else:
-                mailman_msg.set_payload(msg.get_payload())
-            return mailman_msg
-        return msg
+        return Runner._convert_message(self, msg)
 
     def _dispose(self, mlist, msg, msgdata):
         """Process an incoming message."""
