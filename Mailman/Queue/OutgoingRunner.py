@@ -36,6 +36,7 @@ from Mailman.Logging.Syslog import mailman_log
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Queue.BounceRunner import BounceMixin
+from Mailman.MemberAdaptor import MemberAdaptor
 import Mailman.Message as Message
 
 # Lazy import to avoid circular dependency
