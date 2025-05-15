@@ -41,7 +41,7 @@ from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import mailman_log, syslog
 from Mailman.Utils import validate_ip_address
 import Mailman.Handlers.Replybot as Replybot
-from Mailman.Message import Message
+from Mailman.Message import Message, UserNotification
 from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
 from Mailman import LockFile
@@ -55,6 +55,10 @@ def get_replybot():
 def get_maillist():
     import Mailman.MailList as MailList
     return MailList.MailList
+
+def get_usernotification():
+    from Mailman.Message import UserNotification
+    return UserNotification
 
 NL = '\n'
 CONTINUE = 0
@@ -256,7 +260,7 @@ To obtain instructions, send a message containing just the word "help".
         recip = self.returnaddr or self.msg.get_sender()
         if not self.mlist.autorespondToSender(recip, self.msgdata.get('lang', self.mlist.preferred_language)):
             return
-        msg = Mailman.Message.UserNotification(
+        msg = UserNotification(
             recip,
             self.mlist.GetOwnerEmail(),
             _('The results of your email commands'),

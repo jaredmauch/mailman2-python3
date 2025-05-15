@@ -64,7 +64,7 @@ class VirginRunner(IncomingRunner):
                        str(e), traceback.format_exc())
             raise
 
-    def _check_message_processed(self, msgid, filebase):
+    def _check_message_processed(self, msgid, filebase, msg):
         """Check if a message has already been processed and if retry delay is met.
         Returns True if the message can be processed, False if it's a duplicate or retry delay not met."""
         try:
@@ -147,7 +147,7 @@ class VirginRunner(IncomingRunner):
         filebase = msgdata.get('_filebase', 'unknown')
         
         # Check if message has already been processed
-        if not self._check_message_processed(msgid, filebase):
+        if not self._check_message_processed(msgid, filebase, msg):
             self._shunt.enqueue(msg, msgdata)
             return False
         
