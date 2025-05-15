@@ -993,6 +993,24 @@ def main():
     if lastversion == FRESH:
         print(C_('This appears to be a fresh installation.'))
         print(C_('No upgrade is necessary.'))
+        # Early check: try to load all lists and print a summary
+        list_names = Utils.list_names()
+        ok = 0
+        fail = 0
+        for listname in list_names:
+            try:
+                if isinstance(listname, bytes):
+                    listname = listname.decode('utf-8', 'replace')
+                listname = listname.lower()
+                mlist = MailList.MailList(listname, lock=0)
+                ok += 1
+            except Exception as e:
+                fail += 1
+                print('  [WARN] Could not load list "%s": %s' % (listname, str(e)))
+        if fail == 0:
+            print('All %d lists loaded successfully, no upgrade necessary.' % ok)
+        else:
+            print('%d lists loaded successfully, %d lists had errors. No upgrade necessary.' % (ok, fail))
         sys.exit(0)
 
     # If this is not a fresh install, but we can't determine the last version,
@@ -1008,6 +1026,24 @@ version number.  You must use the -f flag to force the upgrade."""))
     # If the versions match, we don't need to do anything
     if lastversion == thisversion and not args.force:
         print(C_('No upgrade is necessary.'))
+        # Early check: try to load all lists and print a summary
+        list_names = Utils.list_names()
+        ok = 0
+        fail = 0
+        for listname in list_names:
+            try:
+                if isinstance(listname, bytes):
+                    listname = listname.decode('utf-8', 'replace')
+                listname = listname.lower()
+                mlist = MailList.MailList(listname, lock=0)
+                ok += 1
+            except Exception as e:
+                fail += 1
+                print('  [WARN] Could not load list "%s": %s' % (listname, str(e)))
+        if fail == 0:
+            print('All %d lists loaded successfully, no upgrade necessary.' % ok)
+        else:
+            print('%d lists loaded successfully, %d lists had errors. No upgrade necessary.' % (ok, fail))
         sys.exit(0)
 
     # If this is a downgrade, we need to force it
