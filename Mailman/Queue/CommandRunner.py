@@ -236,8 +236,15 @@ To obtain instructions, send a message containing just the word "help".
         for item in resp:
             if isinstance(item, str):
                 item = item.encode(charset, 'replace')
+            # Convert bytes to string for joining
+            if isinstance(item, bytes):
+                try:
+                    item = item.decode(charset, 'replace')
+                except UnicodeDecodeError:
+                    item = item.decode('latin-1', 'replace')
             encoded_resp.append(item)
-        results = MIMEText(NL.join(encoded_resp), _charset=charset)
+        # Join all items as strings
+        results = MIMEText(NL.join(str(item) for item in encoded_resp), _charset=charset)
         # Safety valve for mail loops with misconfigured email 'bots.  We
         # don't respond to commands sent with "Precedence: bulk|junk|list"
         # unless they explicitly "X-Ack: yes", but not all mail 'bots are
