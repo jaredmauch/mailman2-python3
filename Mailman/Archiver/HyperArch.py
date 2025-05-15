@@ -637,8 +637,8 @@ class HyperArchive(pipermail.T):
         # with mailman's LockFile module for HyperDatabase.HyperDatabase
         #
         dir = maillist.archive_dir()
-        db = HyperDatabase.HyperDatabase(dir, maillist)
-        self.__super_init(dir, reload=1, database=db)
+        self.database = HyperDatabase.HyperDatabase(dir, maillist)
+        self.__super_init(dir, reload=1, database=self.database)
 
         self.maillist = maillist
         self._lock_file = None
