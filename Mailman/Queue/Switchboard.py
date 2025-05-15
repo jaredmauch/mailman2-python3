@@ -97,6 +97,10 @@ class Switchboard:
             self.recover_backup_files()
             # Clean up any stale locks during initialization
             self.cleanup_stale_locks()
+            # Clean up any stale backup files
+            self.cleanup_stale_backups()
+            # Clean up any stale processed files
+            self.cleanup_stale_processed()
 
     def whichq(self):
         return self.__whichq
@@ -104,56 +108,24 @@ class Switchboard:
     def enqueue(self, msg, msgdata=None, listname=None, _plaintext=False, **kwargs):
         """Add a message to the queue.
         
-        Additional keyword arguments are stored in msgdata.
+        Args:
+            msg: The message to enqueue
+            msgdata: Optional message metadata
+            listname: Optional list name
+            _plaintext: Whether to save as plaintext
+            **kwargs: Additional metadata to add
         """
+        # Initialize msgdata if not provided
         if msgdata is None:
             msgdata = {}
+            
+        # Add any additional metadata
+        msgdata.update(kwargs)
+        
+        # Add listname if provided
         if listname:
             msgdata['listname'] = listname
             
-        # Store any additional keyword arguments in msgdata
-        msgdata.update(kwargs)
-        
-        # Log the full msgdata before processing
-        mailman_log('debug', 'Switchboard.enqueue: Full msgdata before processing:\n%s', str(msgdata))
-            
-        # Convert string message to Message object if needed
-        if isinstance(msg, str):
-            try:
-                msg = email.message_from_string(msg)
-            except Exception as e:
-                mailman_log('error', 'Switchboard.enqueue: Failed to convert string message to Message object: %s', str(e))
-                raise
-
-        # First check if we have a recipient set
-        if 'recipient' not in msgdata:
-            # Try to get recipient from msgdata['recips'] first
-            if msgdata.get('recips'):
-                msgdata['recipient'] = msgdata['recips'][0]
-                mailman_log('debug', 'Switchboard.enqueue: Set recipient from recips for message: %s',
-                           msg.get('message-id', 'n/a'))
-            # Then try envelope-to header
-            elif msg.get('envelope-to'):
-                msgdata['recipient'] = msg.get('envelope-to')
-                mailman_log('debug', 'Switchboard.enqueue: Set recipient from envelope-to header for message: %s',
-                           msg.get('message-id', 'n/a'))
-            # Finally try To header
-            elif msg.get('to'):
-                # Parse the To header to get the first recipient
-                addrs = email.utils.getaddresses([msg.get('to')])
-                if addrs and addrs[0][1]:
-                    msgdata['recipient'] = addrs[0][1]
-                    mailman_log('debug', 'Switchboard.enqueue: Set recipient from To header for message: %s',
-                               msg.get('message-id', 'n/a'))
-                else:
-                    mailman_log('error', 'Switchboard.enqueue: No valid recipient found in To header for message: %s',
-                               msg.get('message-id', 'n/a'))
-                    raise ValueError('No valid recipient found in To header')
-            else:
-                mailman_log('error', 'Switchboard.enqueue: No recipient found in msgdata for message: %s',
-                           msg.get('message-id', 'n/a'))
-                raise ValueError('No recipient found in msgdata')
-
         # Then check if we need to set recips
         if 'recips' not in msgdata or not msgdata['recips']:
             # If we have a recipient but no recips, use the recipient
@@ -214,6 +186,8 @@ class Switchboard:
                 mailman_log('error', 'Switchboard.enqueue: Failed to write message to %s: %s', filebase, str(e))
                 raise
 
+            # Add filebase to msgdata for cleanup
+            msgdata['filebase'] = filebase
             return filebase
         finally:
             # Always clean up the lock file
@@ -247,6 +221,9 @@ class Switchboard:
             # Read the message and metadata
             try:
                 msg, data = self._dequeue(filename)
+                # Add filebase to msgdata for cleanup
+                if data is not None:
+                    data['filebase'] = filebase
                 # Log the full msgdata after dequeuing
                 mailman_log('debug', 'Switchboard.dequeue: Full msgdata after dequeuing:\n%s', str(data))
             except Exception as e:
@@ -659,6 +636,62 @@ class Switchboard:
                         pass
         except OSError as e:
             mailman_log('error', 'Error cleaning up stale locks: %s', str(e))
+
+    def cleanup_stale_backups(self):
+        """Clean up any stale backup files in the queue directory.
+        
+        This method removes backup files that are older than 24 hours
+        to prevent accumulation of stale files.
+        """
+        try:
+            now = time.time()
+            stale_age = 24 * 3600  # 24 hours in seconds
+            
+            for f in os.listdir(self.__whichq):
+                if f.endswith('.bak'):
+                    bakfile = os.path.join(self.__whichq, f)
+                    try:
+                        # Check file age
+                        file_age = now - os.path.getmtime(bakfile)
+                        if file_age > stale_age:
+                            mailman_log('warning', 
+                                'Cleaning up stale backup file %s (age: %d seconds)',
+                                bakfile, file_age)
+                            os.unlink(bakfile)
+                    except OSError as e:
+                        mailman_log('error', 
+                            'Failed to clean up stale backup file %s: %s',
+                            bakfile, str(e))
+        except OSError as e:
+            mailman_log('error', 'Error cleaning up stale backup files: %s', str(e))
+
+    def cleanup_stale_processed(self):
+        """Clean up any stale processed files in the queue directory.
+        
+        This method removes processed files that are older than 7 days
+        to prevent accumulation of stale files.
+        """
+        try:
+            now = time.time()
+            stale_age = 7 * 24 * 3600  # 7 days in seconds
+            
+            for f in os.listdir(self.__whichq):
+                if f.endswith('.pck'):
+                    pckfile = os.path.join(self.__whichq, f)
+                    try:
+                        # Check file age
+                        file_age = now - os.path.getmtime(pckfile)
+                        if file_age > stale_age:
+                            mailman_log('warning', 
+                                'Cleaning up stale processed file %s (age: %d seconds)',
+                                pckfile, file_age)
+                            os.unlink(pckfile)
+                    except OSError as e:
+                        mailman_log('error', 
+                            'Failed to clean up stale processed file %s: %s',
+                            pckfile, str(e))
+        except OSError as e:
+            mailman_log('error', 'Error cleaning up stale processed files: %s', str(e))
 
     def _make_filebase(self, msg, msgdata):
         import hashlib

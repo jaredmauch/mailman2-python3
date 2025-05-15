@@ -323,7 +323,13 @@ class Runner:
             try:
                 result = self._dispose(mlist, msg, msgdata)
                 if result:
+                    # If _dispose returns True, requeue the message
                     self._switchboard.enqueue(msg, msgdata)
+                    syslog('debug', 'Runner._onefile: Message requeued for %s', listname)
+                else:
+                    # If _dispose returns False, finish processing and remove the file
+                    self._switchboard.finish(msgdata.get('filebase', ''))
+                    syslog('debug', 'Runner._onefile: Message processing completed for %s', listname)
                 return result
             except Exception as e:
                 self._handle_error(e, msg=msg, mlist=mlist)
