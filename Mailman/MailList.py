@@ -1240,7 +1240,7 @@ class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bo
             i18n.set_language(lang)
             try:
                 deliverer.SendSubscribeAck(email, self.getMemberPassword(email),
-                                          digest, text)
+                                          digest, text, lang)
             finally:
                 i18n.set_translation(otrans)
         if admin_notif:
