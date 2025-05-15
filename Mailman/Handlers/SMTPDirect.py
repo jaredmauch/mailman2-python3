@@ -174,12 +174,13 @@ def process(mlist, msg, msgdata):
 
     # Check for spam headers first
     if msg.get('x-google-group-id'):
-        mailman_log('error', 'Rejecting message with X-Google-Group-Id header')
+        mailman_log('error', 'Silently dropping message with X-Google-Group-Id header')
         # Add all recipients to refused list with 550 error
         for r in recips:
             refused[r] = (550, 'Message rejected due to spam detection')
         # Update failures dict
         msgdata['failures'] = refused
+        # Silently return without raising an exception
         return
 
     # Chunkify the recipients

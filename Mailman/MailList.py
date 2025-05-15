@@ -1432,3 +1432,42 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                     data.lower() == email.lower()):
                 return True
         return False
+
+    def GetBannedPattern(self, email):
+        """Check if the email address matches any banned patterns.
+        
+        Args:
+            email: The email address to check
+            
+        Returns:
+            The matching pattern if found, None otherwise
+        """
+        if not self.ban_list:
+            return None
+            
+        # Convert email to lowercase for case-insensitive matching
+        email = email.lower()
+        
+        # Check each pattern in the ban list
+        for pattern in self.ban_list:
+            # Skip empty patterns
+            if not pattern.strip():
+                continue
+                
+            # If pattern starts with @, it's a domain pattern
+            if pattern.startswith('@'):
+                domain = pattern[1:].lower()
+                if email.endswith(domain):
+                    return pattern
+            # Otherwise it's a regex pattern
+            else:
+                try:
+                    cre = re.compile(pattern, re.IGNORECASE)
+                    if cre.search(email):
+                        return pattern
+                except re.error:
+                    syslog('error', 'Invalid regex pattern in ban_list: %s',
+                           pattern)
+                    continue
+                    
+        return None
