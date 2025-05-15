@@ -79,7 +79,7 @@ EMPTYSTRING = ''
 OR = '|'
 
 # Use mixins here just to avoid having any one chunk be too large.
-class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bouncer, GatewayManager, Autoresponder, TopicMgr, Pending.Pending):
+class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, SecurityManager, Bouncer, GatewayManager, Autoresponder, TopicMgr, Pending.Pending):
     #
     # A MailList object's basic Python object model support
     #
