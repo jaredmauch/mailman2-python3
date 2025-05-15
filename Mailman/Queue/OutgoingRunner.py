@@ -438,10 +438,36 @@ class OutgoingRunner(Runner, BounceMixin):
         
         # For regular list messages, use the delivery module
         mailman_log('debug', 'OutgoingRunner._process_regular: Using delivery module for message %s', msgid)
-        self._func(mlist, msg, msgdata)
         
-        mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
-        return True
+        # Log the state before calling the delivery module
+        mailman_log('debug', 'OutgoingRunner._process_regular: Pre-delivery msgdata:\n%s', str(msgdata))
+        
+        # Ensure we have the list members if this is a list message
+        if msgdata.get('tolist') and not msgdata.get('_nolist'):
+            try:
+                # Get all list members
+                members = mlist.getMemberCPAddresses()
+                if members:
+                    msgdata['recips'] = [mlist.getMemberEmail(member) for member in members]
+                    mailman_log('debug', 'OutgoingRunner._process_regular: Expanded list members for message %s: %s',
+                              msgid, str(msgdata['recips']))
+                else:
+                    mailman_log('error', 'OutgoingRunner._process_regular: No members found for list %s',
+                              mlist.internal_name())
+            except Exception as e:
+                mailman_log('error', 'OutgoingRunner._process_regular: Error getting list members: %s', str(e))
+        
+        # Call the delivery module
+        try:
+            self._func(mlist, msg, msgdata)
+            # Log the state after calling the delivery module
+            mailman_log('debug', 'OutgoingRunner._process_regular: Post-delivery msgdata:\n%s', str(msgdata))
+            mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
+            return True
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner._process_regular: Error in delivery module: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            return False
 
     def _check_retry_delay(self, msgid, filebase):
         """Check if enough time has passed since the last retry attempt."""
