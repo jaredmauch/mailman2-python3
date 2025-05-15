@@ -277,7 +277,9 @@ To obtain instructions, send a message containing just the word "help".
         else:
             orig = MIMEMessage(self.msg)
         msg.attach(orig)
-        msg.send(self.mlist)
+        # Add recipient to msgdata to ensure proper delivery
+        msgdata = {'recipient': recip}
+        msg.send(self.mlist, msgdata=msgdata)
 
 class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
