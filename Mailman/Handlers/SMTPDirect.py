@@ -398,13 +398,11 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             # Add all recipients to refused list with 550 error
             for r in msgdata.get('recipients', []):
                 refused[r] = (550, 'Message rejected due to spam detection')
-            # Move message to bad queue
-            badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
-            badq.enqueue(msg, msgdata)
             # Update failures dict
             failures.update(refused)
             msgdata['failures'] = failures
-            return
+            # Raise RejectMessage to properly handle the rejection
+            raise Errors.RejectMessage('Message rejected due to spam detection')
 
         # Get the list of recipients
         recips = msgdata.get('recipients', [])

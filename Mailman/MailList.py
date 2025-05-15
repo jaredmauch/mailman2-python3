@@ -144,10 +144,10 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 self.Load()
 
     def __getattr__(self, name):
-        # Because we're using delegation, we want to be sure that attribute
-        # access to a delegated member function gets passed to the
-        # sub-objects.  This of course imposes a specific name resolution
-        # order.
+        # First check if the attribute exists in the class itself
+        if hasattr(self.__class__, name):
+            return getattr(self.__class__, name).__get__(self, self.__class__)
+        # Then try the member adaptor
         try:
             return getattr(self._memberadaptor, name)
         except AttributeError:
