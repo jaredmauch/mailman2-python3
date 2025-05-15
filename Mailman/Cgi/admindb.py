@@ -725,80 +725,132 @@ def show_post_requests(mlist, id, info, total, count, form):
     if total != 1:
         msg += _(f' (%(count)d of %(total)d)')
     form.AddItem(Center(Header(2, msg)))
-    # We need to get the headers and part of the textual body of the message
-    # being held.  The best way to do this is to use the email Parser to get
-    # an actual object, which will be easier to deal with.  We probably could
-    # just do raw reads on the file.
+    
+    # Get the message file path
+    msgpath = os.path.join(mm_cfg.DATA_DIR, filename)
+    
+    # Try to read the message with better error handling
     try:
-        msg = readMessage(os.path.join(mm_cfg.DATA_DIR, filename))
+        msg = readMessage(msgpath)
     except IOError as e:
         if e.errno != errno.ENOENT:
+            mailman_log('error', 'admindb: Error reading message file %s: %s\n%s',
+                       msgpath, str(e), traceback.format_exc())
             raise
         form.AddItem(_(f'<em>Message with id #%(id)d was lost.'))
         form.AddItem('<p>')
-        # BAW: kludge to remove id from requests.db.
         try:
             mlist.HandleRequest(id, mm_cfg.DISCARD)
         except Errors.LostHeldMessage:
             pass
         return
-    except email.errors.MessageParseError:
+    except email.errors.MessageParseError as e:
+        mailman_log('error', 'admindb: Corrupted message file %s: %s\n%s',
+                   msgpath, str(e), traceback.format_exc())
         form.AddItem(_(f'<em>Message with id #%(id)d is corrupted.'))
-        # BAW: Should we really delete this, or shuttle it off for site admin
-        # to look more closely at?
         form.AddItem('<p>')
-        # BAW: kludge to remove id from requests.db.
         try:
             mlist.HandleRequest(id, mm_cfg.DISCARD)
         except Errors.LostHeldMessage:
             pass
         return
-    # Get the header text and the message body excerpt
+    except Exception as e:
+        mailman_log('error', 'admindb: Unexpected error reading message %d: %s\n%s',
+                   id, str(e), traceback.format_exc())
+        form.AddItem(_(f'<em>Error reading message #%(id)d.'))
+        form.AddItem('<p>')
+        return
+
+    # Get the header text and the message body excerpt with better encoding handling
     lines = []
     chars = 0
-    # A negative value means, include the entire message regardless of size
     limit = mm_cfg.ADMINDB_PAGE_TEXT_LIMIT
-    for line in body_line_iterator(msg, decode=True):
-        lines.append(line)
-        chars += len(line)
-        if chars >= limit > 0:
-            break
-    # We may have gone over the limit on the last line, but keep the full line
-    # anyway to avoid losing part of a multibyte character.
-    body = EMPTYSTRING.join(lines)
-    # Get message charset and try encode in list charset
-    # We get it from the first text part.
-    # We need to replace invalid characters here or we can throw an uncaught
-    # exception in doc.Format().
+    
+    # Try to determine the message charset
+    charset = None
     for part in msg.walk():
         if part.get_content_maintype() == 'text':
-            # Watchout for charset= with no value.
-            mcset = part.get_content_charset() or 'us-ascii'
-            break
-    else:
-        mcset = 'us-ascii'
-    lcset = Utils.GetCharSet(mlist.preferred_language)
-    if mcset != lcset:
-        try:
-            body = str(body, mcset, 'replace').encode(lcset, 'replace')
-        except (LookupError, UnicodeError, ValueError):
-            pass
-    hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
-    hdrtxt = Utils.websafe(hdrtxt)
-    # Okay, we've reconstituted the message just fine.  Now for the fun part!
+            charset = part.get_content_charset()
+            if charset:
+                break
+    
+    # If no charset found, use list's preferred charset
+    if not charset:
+        charset = Utils.GetCharSet(mlist.preferred_language)
+    
+    # Read the message body with proper encoding
+    try:
+        for line in body_line_iterator(msg, decode=True):
+            # Try to decode the line if it's bytes
+            if isinstance(line, bytes):
+                try:
+                    line = line.decode(charset, 'replace')
+                except (UnicodeError, LookupError):
+                    line = line.decode('latin-1', 'replace')
+            
+            lines.append(line)
+            chars += len(line)
+            if chars >= limit > 0:
+                break
+    except Exception as e:
+        mailman_log('error', 'admindb: Error reading message body: %s\n%s',
+                   str(e), traceback.format_exc())
+        lines = [_('Error reading message body')]
+    
+    # Join the lines with proper encoding
+    try:
+        body = ''.join(lines)
+        if isinstance(body, bytes):
+            body = body.decode(charset, 'replace')
+    except (UnicodeError, LookupError):
+        body = _('Error decoding message body')
+    
+    # Format the headers with proper encoding
+    try:
+        hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
+        if isinstance(hdrtxt, bytes):
+            hdrtxt = hdrtxt.decode(charset, 'replace')
+    except (UnicodeError, LookupError):
+        hdrtxt = _('Error decoding message headers')
+    
+    # Format the subject with proper encoding
+    try:
+        dispsubj = Utils.oneline(subject, charset)
+        if isinstance(dispsubj, bytes):
+            dispsubj = dispsubj.decode(charset, 'replace')
+    except (UnicodeError, LookupError):
+        dispsubj = _('Error decoding subject')
+    
+    # Format the reason with proper encoding
+    try:
+        if reason:
+            reason = _(reason)
+            if isinstance(reason, bytes):
+                reason = reason.decode(charset, 'replace')
+        else:
+            reason = _('not available')
+    except (UnicodeError, LookupError):
+        reason = _('Error decoding reason')
+    
+    # Create the form table with proper encoding
     t = Table(cellspacing=0, cellpadding=0, width='100%')
-    t.AddRow([Bold(_('From:')), sender])
+    t.AddRow([Bold(_('From:')), Utils.websafe(sender)])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
-    t.AddRow([Bold(_('Subject:')),
-              Utils.websafe(Utils.oneline(subject, lcset))])
+    
+    t.AddRow([Bold(_('Subject:')), Utils.websafe(dispsubj)])
     t.AddCellInfo(row+1, col-1, align='right')
-    t.AddRow([Bold(_('Reason:')), _(reason)])
+    
+    t.AddRow([Bold(_('Reason:')), Utils.websafe(reason)])
     t.AddCellInfo(row+2, col-1, align='right')
-    when = msgdata.get('received_time')
-    if when:
-        t.AddRow([Bold(_('Received:')), time.ctime(when)])
+    
+    # Format received time with proper error handling
+    received_time = format_message_data(msgdata)
+    if received_time:
+        t.AddRow([Bold(_('Received:')), received_time])
         t.AddCellInfo(row+3, col-1, align='right')
+    
+    # Add action buttons
     buttons = hacky_radio_buttons(id,
                 (_('Defer'), _('Approve'), _('Reject'), _('Discard')),
                 (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT, mm_cfg.DISCARD),
@@ -806,12 +858,16 @@ def show_post_requests(mlist, id, info, total, count, form):
                 spacing=5)
     t.AddRow([Bold(_('Action:')), buttons])
     t.AddCellInfo(t.GetCurrentRowIndex(), col-1, align='right')
+    
+    # Add preserve checkbox
     t.AddRow(['&nbsp;',
               '<label>' +
               CheckBox(f'preserve-%d' % id, 'on', 0).Format() +
               '&nbsp;' + _('Preserve message for site administrator') +
               '</label>'
               ])
+    
+    # Add forward checkbox and textbox
     t.AddRow(['&nbsp;',
               '<label>' +
               CheckBox(f'forward-%d' % id, 'on', 0).Format() +
@@ -820,6 +876,8 @@ def show_post_requests(mlist, id, info, total, count, form):
               TextBox(f'forward-addr-%d' % id, size=47,
                       value=mlist.GetOwnerEmail()).Format()
               ])
+    
+    # Add rejection notice textarea
     notice = msgdata.get('rejection_notice', _('[No explanation given]'))
     t.AddRow([
         Bold(_('If you reject this post,<br>please explain (optional):')),
@@ -828,15 +886,20 @@ def show_post_requests(mlist, id, info, total, count, form):
         ])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
+    
+    # Add message headers textarea
     t.AddRow([Bold(_('Message Headers:')),
-              TextArea('headers-%d' % id, hdrtxt,
+              TextArea('headers-%d' % id, Utils.websafe(hdrtxt),
                        rows=EXCERPT_HEIGHT, cols=EXCERPT_WIDTH, readonly=1)])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
+    
+    # Add message body textarea
     t.AddRow([Bold(_('Message Excerpt:')),
               TextArea('fulltext-%d' % id, Utils.websafe(body),
                        rows=EXCERPT_HEIGHT, cols=EXCERPT_WIDTH, readonly=1)])
     t.AddCellInfo(row+1, col-1, align='right')
+    
     form.AddItem(t)
     form.AddItem('<p>')
 

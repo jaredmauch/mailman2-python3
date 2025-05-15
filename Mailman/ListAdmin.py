@@ -803,45 +803,57 @@ class ListAdmin(object):
 
 
 def readMessage(path):
+    """Read a message from a file, handling both text and pickle formats.
+    
+    Args:
+        path: Path to the message file
+        
+    Returns:
+        A Message object
+        
+    Raises:
+        IOError: If the file cannot be read
+        email.errors.MessageParseError: If the message is corrupted
+        ValueError: If the file format is invalid
+    """
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
     ext = os.path.splitext(path)[1]
     fp = open(path, 'rb')
     try:
         if ext == '.txt':
-            msg = email.message_from_file(fp, EmailMessage)
-            # Convert to Mailman.Message if needed
-            if isinstance(msg, EmailMessage) and not isinstance(msg, Message):
-                mailman_msg = Message()
-                # Copy all attributes from the original message
-                for key, value in msg.items():
-                    mailman_msg[key] = value
-                # Copy the payload
-                if msg.is_multipart():
-                    for part in msg.get_payload():
-                        mailman_msg.attach(part)
-                else:
-                    mailman_msg.set_payload(msg.get_payload())
-                msg = mailman_msg
+            try:
+                msg = email.message_from_file(fp, EmailMessage)
+            except Exception as e:
+                mailman_log('error', 'Error parsing text message file %s: %s\n%s',
+                           path, str(e), traceback.format_exc())
+                raise email.errors.MessageParseError(str(e))
         else:
             assert ext == '.pck'
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-            # Convert to Mailman.Message if needed
-            if isinstance(msg, EmailMessage) and not isinstance(msg, Message):
-                mailman_msg = Message()
-                # Copy all attributes from the original message
-                for key, value in msg.items():
-                    mailman_msg[key] = value
-                # Copy the payload
-                if msg.is_multipart():
-                    for part in msg.get_payload():
-                        mailman_msg.attach(part)
-                else:
-                    mailman_msg.set_payload(msg.get_payload())
-                msg = mailman_msg
+            try:
+                msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            except Exception as e:
+                mailman_log('error', 'Error loading pickled message file %s: %s\n%s',
+                           path, str(e), traceback.format_exc())
+                raise ValueError(f'Invalid pickle file: {str(e)}')
+        
+        # Convert to Mailman.Message if needed
+        if isinstance(msg, EmailMessage) and not isinstance(msg, Message):
+            mailman_msg = Message()
+            # Copy all attributes from the original message
+            for key, value in msg.items():
+                mailman_msg[key] = value
+            # Copy the payload
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    mailman_msg.attach(part)
+            else:
+                mailman_msg.set_payload(msg.get_payload())
+            msg = mailman_msg
+            
+        return msg
     finally:
         fp.close()
-    return msg
 
 def process(mlist, msg, msgdata):
     # Convert email.message.Message to Mailman.Message.Message if needed
