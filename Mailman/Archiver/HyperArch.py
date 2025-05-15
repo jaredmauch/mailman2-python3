@@ -892,10 +892,32 @@ class HyperArchive(pipermail.T):
         """Process a Unix mailbox file."""
         from email import message_from_file
         from mailbox import mbox
-        mbox = mbox(archfile)
-        for key in mbox.keys():
-            msg = message_from_file(mbox.get_file(key))
-            self.add_article(msg)
+        
+        # If archfile is a file object, we need to read it directly
+        if hasattr(archfile, 'read'):
+            # Read the entire file content
+            content = archfile.read()
+            # Create a temporary file to store the content
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+                tmp.write(content)
+                tmp_path = tmp.name
+            
+            try:
+                # Process the temporary file
+                mbox = mbox(tmp_path)
+                for key in mbox.keys():
+                    msg = message_from_file(mbox.get_file(key))
+                    self.add_article(msg)
+            finally:
+                # Clean up the temporary file
+                os.unlink(tmp_path)
+        else:
+            # If it's a path, use it directly
+            mbox = mbox(archfile)
+            for key in mbox.keys():
+                msg = message_from_file(mbox.get_file(key))
+                self.add_article(msg)
 
     def format_article(self, article):
         """Format an article for HTML display."""
