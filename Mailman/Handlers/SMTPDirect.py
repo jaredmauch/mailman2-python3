@@ -423,6 +423,14 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     refused = {}
     recips = msgdata['recips']
     msgid = msg.get('Message-ID', 'n/a')
+    # Ensure msgid is a string
+    if isinstance(msgid, bytes):
+        try:
+            msgid = msgid.decode('utf-8', 'replace')
+        except UnicodeDecodeError:
+            msgid = msgid.decode('latin-1', 'replace')
+    elif not isinstance(msgid, str):
+        msgid = str(msgid)
     try:
         # Send the message
         refused = conn.sendmail(envsender, recips, msgtext)
@@ -431,7 +439,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
                e, msgid)
         refused = e.recipients
         # Move message to bad queue since all recipients were refused
-        badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+        badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
         badq.enqueue(msg, msgdata)
     except smtplib.SMTPResponseException as e:
         mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
@@ -441,7 +449,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             # Permanent failure - add to refused and move to bad queue
             for r in recips:
                 refused[r] = (e.smtp_code, e.smtp_error)
-            badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+            badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
             badq.enqueue(msg, msgdata)
         else:
             # Temporary failure - don't add to refused
@@ -453,6 +461,6 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         for r in recips:
             refused[r] = (-1, error)
         # Move message to bad queue for low level errors
-        badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+        badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
         badq.enqueue(msg, msgdata)
     failures.update(refused)

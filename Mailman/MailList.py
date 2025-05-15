@@ -332,12 +332,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # timestamp is newer than the modtime of the config.pck file, we don't
         # need to reload, otherwise... we do.
         self.__timestamp = 0
-        self.__lock = LockFile.LockFile(
-            os.path.join(mm_cfg.LOCK_DIR, name or '<site>') + '.lock',
-            # TBD: is this a good choice of lifetime?
-            lifetime = mm_cfg.LIST_LOCK_LIFETIME,
-            withlogging = mm_cfg.LIST_LOCK_DEBUGGING)
-        # Ensure name is a string
+        # Ensure name is a string before using it in os.path.join
         if isinstance(name, bytes):
             try:
                 # Try Latin-1 first since that's what we're seeing in the data
@@ -345,6 +340,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             except UnicodeDecodeError:
                 # Fall back to UTF-8 if Latin-1 fails
                 name = name.decode('utf-8', 'replace')
+        self.__lock = LockFile.LockFile(
+            os.path.join(mm_cfg.LOCK_DIR, name or '<site>') + '.lock',
+            # TBD: is this a good choice of lifetime?
+            lifetime = mm_cfg.LIST_LOCK_LIFETIME,
+            withlogging = mm_cfg.LIST_LOCK_DEBUGGING)
         self._internal_name = name
         if name:
             self._full_path = Site.get_listpath(name)
@@ -366,6 +366,14 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         """Assign default values - some will be overriden by stored state."""
         # Non-configurable list info
         if name:
+            # Ensure name is a string
+            if isinstance(name, bytes):
+                try:
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    name = name.decode('latin-1', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to UTF-8 if Latin-1 fails
+                    name = name.decode('utf-8', 'replace')
             self._internal_name = name
 
         # When was the list created?
@@ -593,6 +601,14 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     #
     def Create(self, name, admin, crypted_password,
                langs=None, emailhost=None, urlhost=None):
+        # Ensure name is a string
+        if isinstance(name, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                name = name.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                name = name.decode('utf-8', 'replace')
         if name != name.lower():
             raise ValueError('List name must be all lower case.')
         if Utils.list_exists(name):
