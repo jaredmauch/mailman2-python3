@@ -211,20 +211,45 @@ class Runner:
                 try:
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
-                    if msg is None:
+                    if msg is None or msgdata is None:
+                        syslog('error', 'Runner._oneloop: Failed to dequeue file %s (got None values)', filebase)
                         continue
-                        
+
+                    # Get the list name
+                    listname = msgdata.get('listname', 'unknown')
+                    try:
+                        mlist = MailList.MailList(listname, lock=False)
+                    except Errors.MMUnknownListError:
+                        syslog('error', 'Runner._oneloop: Unknown list %s for message %s',
+                                  listname, msg.get('message-id', 'n/a'))
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+
                     # Process the message
                     try:
-                        self._onefile(msg, msgdata)
+                        result = self._onefile(mlist, msg, msgdata)
+                        if result:
+                            # Message was successfully processed, finish and remove the file
+                            self._switchboard.finish(filebase)
+                            syslog('debug', 'Runner._oneloop: Successfully processed message %s, removed file %s',
+                                      msg.get('message-id', 'n/a'), filebase)
+                        elif result is False:
+                            # Message needs to be requeued
+                            self._switchboard.enqueue(msg, msgdata)
+                            syslog('debug', 'Runner._oneloop: Requeued message %s', msg.get('message-id', 'n/a'))
+                        else:
+                            # Message was shunted
+                            self._shunt.enqueue(msg, msgdata)
+                            syslog('debug', 'Runner._oneloop: Shunted message %s', msg.get('message-id', 'n/a'))
+                        return True
                     except Exception as e:
-                        # Log the error and shunt the message
-                        self._handle_error(e, msg=msg, mlist=None)
-                        continue
-                        
+                        syslog('error', 'Runner._oneloop: Error processing message %s: %s\nTraceback:\n%s',
+                                  msg.get('message-id', 'n/a'), str(e), traceback.format_exc())
+                        self._shunt.enqueue(msg, msgdata)
+                        return False
                 except Exception as e:
-                    # Log the error and continue
-                    syslog('error', 'Runner._oneloop: Error dequeuing file %s: %s', filebase, str(e))
+                    syslog('error', 'Runner._oneloop: Error processing file %s: %s\nTraceback:\n%s',
+                              filebase, str(e), traceback.format_exc())
                     continue
                     
         except Exception as e:
@@ -302,7 +327,7 @@ class Runner:
                    msgid, str(e), traceback.format_exc())
             return msg, False
 
-    def _onefile(self, msg, msgdata):
+    def _onefile(self, mlist, msg, msgdata):
         """Process a single file from the queue."""
         try:
             # Get the list name from the message data

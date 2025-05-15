@@ -244,64 +244,74 @@ class Switchboard:
                 pass
 
     def finish(self, filebase, preserve=False):
+        """Finish processing a file by either removing it or moving it to the shunt queue.
+        
+        Args:
+            filebase: The base name of the file to process
+            preserve: If True, move the file to the shunt queue instead of removing it
+        """
+        if not filebase:
+            mailman_log('error', 'Switchboard.finish: No filebase provided')
+            return
+
         bakfile = os.path.join(self.__whichq, filebase + '.bak')
+        pckfile = os.path.join(self.__whichq, filebase + '.pck')
+        
+        # First check if the backup file exists
+        if not os.path.exists(bakfile):
+            mailman_log('error', 'Switchboard.finish: Backup file does not exist: %s', bakfile)
+            # Try to clean up the .pck file if it exists
+            if os.path.exists(pckfile):
+                try:
+                    os.unlink(pckfile)
+                    mailman_log('info', 'Switchboard.finish: Removed stale .pck file: %s', pckfile)
+                except OSError as e:
+                    mailman_log('error', 'Switchboard.finish: Failed to remove stale .pck file %s: %s',
+                              pckfile, str(e))
+            return
+
         try:
             if preserve:
-                psvfile = os.path.join(mm_cfg.BADQUEUE_DIR, filebase + '.psv')
-                # Log the reason for moving to bad queue
-                mailman_log('info', 'Moving message to bad queue: %s (queue: %s)', filebase, self.__whichq)
+                # Move the file to the shunt queue
+                psvfile = os.path.join(mm_cfg.SHUNTQUEUE_DIR, filebase + '.bak')
                 
-                # Create the directory if it doesn't yet exist.
-                # Copied from __init__.
-                omask = os.umask(0)                       # rwxrws---
-                try:
+                # Ensure the shunt queue directory exists
+                if not os.path.exists(mm_cfg.SHUNTQUEUE_DIR):
                     try:
-                        os.mkdir(mm_cfg.BADQUEUE_DIR, 0o0770)
+                        os.makedirs(mm_cfg.SHUNTQUEUE_DIR, 0o775)
                     except OSError as e:
-                        if e.errno != errno.EEXIST:
-                            mailman_log('error', 'Failed to create shunt queue directory %s: %s\nTraceback:\n%s',
-                                   mm_cfg.BADQUEUE_DIR, str(e), traceback.format_exc())
-                            raise
-                finally:
-                    os.umask(omask)
+                        mailman_log('error', 'Switchboard.finish: Failed to create shunt queue directory: %s',
+                                  str(e))
+                        raise
                 
-                # Verify source file exists before moving
-                if not os.path.exists(bakfile):
-                    mailman_log('error', 'Source backup file does not exist: %s', bakfile)
-                    return
-                    
                 # Move the file and verify
                 try:
                     os.rename(bakfile, psvfile)
                     if not os.path.exists(psvfile):
-                        mailman_log('error', 'Failed to move backup file to shunt queue: %s -> %s',
-                               bakfile, psvfile)
+                        mailman_log('error', 'Switchboard.finish: Failed to move backup file to shunt queue: %s -> %s',
+                                  bakfile, psvfile)
                     else:
-                        mailman_log('info', 'Successfully moved backup file to shunt queue: %s -> %s',
-                               bakfile, psvfile)
+                        mailman_log('info', 'Switchboard.finish: Successfully moved backup file to shunt queue: %s -> %s',
+                                  bakfile, psvfile)
                 except OSError as e:
-                    mailman_log('error', 'Failed to move backup file to shunt queue: %s -> %s: %s\nTraceback:\n%s',
-                           bakfile, psvfile, str(e), traceback.format_exc())
+                    mailman_log('error', 'Switchboard.finish: Failed to move backup file to shunt queue: %s -> %s: %s',
+                              bakfile, psvfile, str(e))
                     raise
             else:
-                # Verify file exists before unlinking
-                if not os.path.exists(bakfile):
-                    mailman_log('error', 'Backup file does not exist for unlinking: %s', bakfile)
-                    return
-                    
+                # Remove the backup file
                 try:
                     os.unlink(bakfile)
                     if os.path.exists(bakfile):
-                        mailman_log('error', 'Failed to unlink backup file: %s', bakfile)
+                        mailman_log('error', 'Switchboard.finish: Failed to unlink backup file: %s', bakfile)
                     else:
-                        mailman_log('info', 'Successfully unlinked backup file: %s', bakfile)
+                        mailman_log('info', 'Switchboard.finish: Successfully unlinked backup file: %s', bakfile)
                 except OSError as e:
-                    mailman_log('error', 'Failed to unlink backup file %s: %s\nTraceback:\n%s',
-                           bakfile, str(e), traceback.format_exc())
+                    mailman_log('error', 'Switchboard.finish: Failed to unlink backup file %s: %s',
+                              bakfile, str(e))
                     raise
         except Exception as e:
-            mailman_log('error', 'Failed to finish processing backup file %s: %s\nTraceback:\n%s',
-                   bakfile, str(e), traceback.format_exc())
+            mailman_log('error', 'Switchboard.finish: Failed to finish processing backup file %s: %s',
+                      bakfile, str(e))
             raise
 
     def files(self, extension='.pck'):
