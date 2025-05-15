@@ -671,11 +671,15 @@ class HyperArchive(pipermail.T):
                 d = pickle.loads(d, fix_imports=True, encoding='latin1')
             
             # Only update attributes that don't conflict with our initialization
+            safe_attrs = {
+                'type', 'archive', 'firstdate', 'lastdate', 'archivedate',
+                'size', 'version', 'subjectIndex', 'authorIndex', 'dateIndex',
+                'articleIndex', 'threadIndex'
+            }
             for key, value in list(d.items()):
-                if key not in ('archives', '_dirty_archives', 'sequence', 'update_TOC',
-                             'maillist', '_lock_file', 'lang', 'charset', 'database'):
+                if key in safe_attrs:
                     setattr(self, key, value)
-        except (IOError, EOFError, pickle.UnpicklingError) as e:
+        except (IOError, EOFError, pickle.UnpicklingError, RecursionError) as e:
             syslog('error', 'Error loading archive state: %s', e)
             # Continue with default initialization
 
@@ -1008,8 +1012,20 @@ class HyperArchive(pipermail.T):
             f = open(os.path.join(self.basedir, 'pipermail.pck'), 'wb')
         finally:
             os.umask(omask)
+        
+        # Only save safe attributes
+        safe_state = {}
+        safe_attrs = {
+            'type', 'archive', 'firstdate', 'lastdate', 'archivedate',
+            'size', 'version', 'subjectIndex', 'authorIndex', 'dateIndex',
+            'articleIndex', 'threadIndex'
+        }
+        for key in safe_attrs:
+            if hasattr(self, key):
+                safe_state[key] = getattr(self, key)
+        
         # Use protocol 4 for Python 2/3 compatibility
-        pickle.dump(self.getstate(), f, protocol=4, fix_imports=True)
+        pickle.dump(safe_state, f, protocol=4, fix_imports=True)
         f.close()
 
     def getstate(self):
