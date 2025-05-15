@@ -69,7 +69,9 @@ class BinaryGenerator(email.generator.Generator):
         self._buffer.seek(0)
         self._buffer.truncate()
         # Write to binary file
-        self._binary_fp.write(content.encode('utf-8', 'replace'))
+        if isinstance(content, str):
+            content = content.encode('utf-8', 'replace')
+        self._binary_fp.write(content)
 
 
 class Mailbox(mailbox.mbox):
@@ -96,6 +98,7 @@ class Mailbox(mailbox.mbox):
         if hasattr(fp, 'read') and hasattr(fp, 'write'):
             self.fp = fp
         else:
+            # Open in binary mode for writing
             self.fp = open(path, 'ab+')
 
     # msg should be an rfc822 message or a subclass.

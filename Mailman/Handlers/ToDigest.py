@@ -34,7 +34,7 @@ import time
 import traceback
 from io import StringIO, BytesIO
 
-from email.parser import Parser
+from email.parser import Parser, message_from_string
 from email.generator import Generator
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -287,7 +287,7 @@ def send_digests(mlist, mboxpath):
                         # Process the previous message
                         msg_str = ''.join(current_msg)
                         try:
-                            msg = email.message.Message.from_string(msg_str)
+                            msg = message_from_string(msg_str)
                             if msg is None:
                                 continue
                                 
@@ -335,7 +335,7 @@ def send_digests(mlist, mboxpath):
             if current_msg:
                 msg_str = ''.join(current_msg)
                 try:
-                    msg = email.message.Message.from_string(msg_str)
+                    msg = message_from_string(msg_str)
                     if msg is not None:
                         # Process the last message (same code as above)
                         subject = decode_header_value(msg.get('subject', _('(no subject)')), lcset)
