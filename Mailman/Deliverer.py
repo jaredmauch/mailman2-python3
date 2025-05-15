@@ -85,7 +85,10 @@ class Deliverer(object):
         process(self, msg, msgdata)
 
     def SendSubscribeAck(self, name, password, digest, text=''):
-        pluser = self.getMemberLanguage(name)
+        try:
+            pluser = self.getMemberLanguage(name)
+        except AttributeError:
+            pluser = self.preferred_language
         # Need to set this here to get the proper l10n of the Subject:
         i18n.set_language(pluser)
         if self.welcome_msg:
