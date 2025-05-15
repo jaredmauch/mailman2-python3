@@ -455,6 +455,25 @@ class Switchboard:
                            dirname, os.path.abspath(dirname), str(e), traceback.format_exc())
                     raise
             
+            # Convert message to Mailman.Message if needed
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+                mailman_msg = Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload with proper MIME handling
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        if isinstance(part, email.message.Message):
+                            mailman_msg.attach(part)
+                        else:
+                            newpart = Message()
+                            newpart.set_payload(part)
+                            mailman_msg.attach(newpart)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
+            
             # Write to temporary file first
             try:
                 with open(tmpfile, 'wb') as fp:
@@ -473,6 +492,9 @@ class Switchboard:
                     test_data = pickle.load(fp, fix_imports=True, encoding='latin1')
                 if not isinstance(test_data, tuple) or len(test_data) != 2:
                     raise TypeError('Loaded data is not a valid tuple')
+                # Verify message type
+                if not isinstance(test_data[0], Message):
+                    raise TypeError('Message is not a Mailman.Message instance')
             except Exception as e:
                 mailman_log('error', 'Validation of temporary file failed: %s\nTraceback:\n%s', 
                        str(e), traceback.format_exc())
@@ -531,6 +553,27 @@ class Switchboard:
                     if not isinstance(data, tuple) or len(data) != 2:
                         raise TypeError('Invalid data format in queue file')
                     msgsave, metadata = data
+                    
+                    # Ensure we have a Mailman.Message
+                    if isinstance(msgsave, email.message.Message) and not isinstance(msgsave, Message):
+                        mailman_msg = Message()
+                        # Copy all attributes from the original message
+                        for key, value in msgsave.items():
+                            mailman_msg[key] = value
+                        # Copy the payload with proper MIME handling
+                        if msgsave.is_multipart():
+                            for part in msgsave.get_payload():
+                                if isinstance(part, email.message.Message):
+                                    mailman_msg.attach(part)
+                                else:
+                                    newpart = Message()
+                                    newpart.set_payload(part)
+                                    mailman_msg.attach(newpart)
+                        else:
+                            mailman_msg.set_payload(msgsave.get_payload())
+                        msgsave = mailman_msg
+                    
+                    return msgsave, metadata
                 except (UnicodeDecodeError, pickle.UnpicklingError):
                     # Fall back to latin1 for older files
                     fp.seek(0)
@@ -538,7 +581,27 @@ class Switchboard:
                     if not isinstance(data, tuple) or len(data) != 2:
                         raise TypeError('Invalid data format in queue file')
                     msgsave, metadata = data
-                return msgsave, metadata
+                    
+                    # Ensure we have a Mailman.Message
+                    if isinstance(msgsave, email.message.Message) and not isinstance(msgsave, Message):
+                        mailman_msg = Message()
+                        # Copy all attributes from the original message
+                        for key, value in msgsave.items():
+                            mailman_msg[key] = value
+                        # Copy the payload with proper MIME handling
+                        if msgsave.is_multipart():
+                            for part in msgsave.get_payload():
+                                if isinstance(part, email.message.Message):
+                                    mailman_msg.attach(part)
+                                else:
+                                    newpart = Message()
+                                    newpart.set_payload(part)
+                                    mailman_msg.attach(newpart)
+                        else:
+                            mailman_msg.set_payload(msgsave.get_payload())
+                        msgsave = mailman_msg
+                    
+                    return msgsave, metadata
         except (IOError, OSError) as e:
             mailman_log('error', 'Error dequeuing message from %s: %s', filename, str(e))
             return None, None
