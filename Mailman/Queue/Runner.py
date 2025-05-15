@@ -288,15 +288,17 @@ class Runner:
             return msg, False
 
     def _onefile(self, msg, msgdata):
-        # Validate message type first
-        msg, success = self._validate_message(msg, msgdata)
-        if not success:
-            syslog('error', 'Message validation failed, moving to shunt queue')
-            self._shunt.enqueue(msg, msgdata)
-            return
-
-        # Do some common sanity checking on the message metadata
+        # Initialize mlist as None at the start
+        mlist = None
         try:
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                syslog('error', 'Message validation failed, moving to shunt queue')
+                self._shunt.enqueue(msg, msgdata)
+                return
+
+            # Do some common sanity checking on the message metadata
             # Check for duplicate messages early
             msgid = msg.get('message-id', 'n/a')
             if hasattr(self, '_processed_messages') and msgid in self._processed_messages:
@@ -311,6 +313,7 @@ class Runner:
                 self.log_error('missing_list', 'List not found', msg=msg, listname=listname)
                 self._shunt.enqueue(msg, msgdata)
                 return
+
             # Now process this message, keeping track of any subprocesses that may
             # have been spawned.  We'll reap those later.
             #
