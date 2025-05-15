@@ -159,8 +159,35 @@ class IncomingRunner(Runner):
         filebase = msgdata.get('_filebase', 'unknown')
         
         try:
-            mailman_log('debug', 'IncomingRunner._dispose: Starting to process incoming message %s (file: %s)',
-                       msgid, filebase)
+            # Enhanced logging for message details
+            mailman_log('debug', 'IncomingRunner._dispose: Starting to process message %s (file: %s)', msgid, filebase)
+            mailman_log('debug', 'Message details:')
+            mailman_log('debug', '  Message ID: %s', msgid)
+            mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
+            mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
+            mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
+            mailman_log('debug', '  Message type: %s', type(msg).__name__)
+            mailman_log('debug', '  Message data: %s', str(msgdata))
+            mailman_log('debug', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
+            
+            # Check if this is an administrative message
+            is_admin = msgdata.get('admin_type', False)
+            mailman_log('debug', '  Is admin message: %s', is_admin)
+            
+            # Check if this is a list post
+            is_list_post = msgdata.get('list_post', False)
+            mailman_log('debug', '  Is list post: %s', is_list_post)
+            
+            # Log recipients information
+            recipients = msgdata.get('recipients', [])
+            mailman_log('debug', '  Recipients: %s', recipients)
+            if not recipients:
+                mailman_log('error', 'No recipients found in msgdata for message %s', msgid)
+                mailman_log('error', '  Message data: %s', str(msgdata))
+                mailman_log('error', '  To header: %s', msg.get('to', 'unknown'))
+                mailman_log('error', '  Cc header: %s', msg.get('cc', 'unknown'))
+                mailman_log('error', '  Resent-To: %s', msg.get('resent-to', 'unknown'))
+                mailman_log('error', '  Resent-Cc: %s', msg.get('resent-cc', 'unknown'))
             
             # Convert Python's Message to Mailman's Message if needed
             msg = self._convert_message(msg)
