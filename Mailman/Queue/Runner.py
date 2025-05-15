@@ -218,10 +218,12 @@ class Runner:
                     try:
                         self._onefile(msg, msgdata)
                     except Exception as e:
-                        syslog('error', 'Runner._oneloop: Error processing message %s: %s', filebase, str(e))
+                        # Log the error and shunt the message
+                        self._handle_error(e, msg=msg, mlist=None)
                         continue
                         
                 except Exception as e:
+                    # Log the error and continue
                     syslog('error', 'Runner._oneloop: Error dequeuing file %s: %s', filebase, str(e))
                     continue
                     
@@ -301,91 +303,38 @@ class Runner:
             return msg, False
 
     def _onefile(self, msg, msgdata):
-        # Initialize mlist as None at the start
-        mlist = None
+        """Process a single file from the queue."""
         try:
-            # Validate message type first
-            msg, success = self._validate_message(msg, msgdata)
-            if not success:
-                syslog('error', 'Message validation failed, moving to shunt queue')
-                self._shunt.enqueue(msg, msgdata)
-                return
-
-            # Do some common sanity checking on the message metadata
-            # Check for duplicate messages early
-            msgid = msg.get('message-id', 'n/a')
-            if hasattr(self, '_processed_messages') and msgid in self._processed_messages:
-                syslog('error', 'Duplicate message detected early: %s (file: %s)', msgid, msgdata.get('_filebase', 'unknown'))
-                self._shunt.enqueue(msg, msgdata)
-                return
-
-            # Convert to Mailman.Message if needed
-            if not isinstance(msg, Message.Message):
-                try:
-                    mailman_msg = Message.Message()
-                    # Copy all attributes from the original message
-                    for key, value in msg.items():
-                        mailman_msg[key] = value
-                    # Copy the payload
-                    if msg.is_multipart():
-                        for part in msg.get_payload():
-                            mailman_msg.attach(part)
-                    else:
-                        mailman_msg.set_payload(msg.get_payload())
-                    msg = mailman_msg
-                    syslog('debug', 'Converted message to Mailman.Message instance')
-                except Exception as e:
-                    syslog('error', 'Failed to convert message to Mailman.Message: %s', str(e))
-                    self._shunt.enqueue(msg, msgdata)
-                    return
-
-            # Get sender using Mailman.Message's get_sender method
+            # Get the list name from the message data
+            listname = msgdata.get('listname')
+            if not listname:
+                syslog('error', 'Runner._onefile: No listname in message data')
+                self._handle_error(ValueError('No listname in message data'), msg=msg, mlist=None)
+                return False
+                
+            # Open the list
             try:
-                sender = msg.get_sender()
-                if not sender:
-                    syslog('error', 'Could not determine sender for message %s', msgid)
-                    self._shunt.enqueue(msg, msgdata)
-                    return
+                mlist = self._open_list(listname)
             except Exception as e:
-                syslog('error', 'Error getting sender: %s', str(e))
-                self._shunt.enqueue(msg, msgdata)
-                return
-
-            listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
-            mlist = self._open_list(listname)
-            if not mlist:
-                self.log_error('missing_list', 'List not found', msg=msg, listname=listname)
-                self._shunt.enqueue(msg, msgdata)
-                return
-
-            # Now process this message, keeping track of any subprocesses that may
-            # have been spawned.  We'll reap those later.
-            #
-            # We also want to set up the language context for this message.  The
-            # context will be the preferred language for the user if a member of
-            # the list, or the list's preferred language.  However, we must take
-            # special care to reset the defaults, otherwise subsequent messages
-            # may be translated incorrectly.  BAW: I'm not sure I like this
-            # approach, but I can't think of anything better right now.
-            otranslation = i18n.get_translation()
-            if mlist:
-                lang = mlist.getMemberLanguage(sender)
-            else:
-                lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
-            i18n.set_language(lang)
-            msgdata['lang'] = lang
+                self._handle_error(e, msg=msg, mlist=None)
+                return False
+                
+            # Process the message
             try:
-                keepqueued = self._dispose(mlist, msg, msgdata)
+                result = self._dispose(mlist, msg, msgdata)
+                if result:
+                    self._switchboard.enqueue(msg, msgdata)
+                return result
+            except Exception as e:
+                self._handle_error(e, msg=msg, mlist=mlist)
+                return False
             finally:
-                i18n.set_translation(otranslation)
-            # Keep tabs on any child processes that got spawned.
-            kids = msgdata.get('_kids')
-            if kids:
-                self._kids.update(kids)
-            if keepqueued:
-                self._switchboard.enqueue(msg, msgdata)
+                if mlist:
+                    mlist.Unlock()
+                    
         except Exception as e:
-            self._handle_error(e, msg=msg, mlist=mlist)
+            self._handle_error(e, msg=msg, mlist=None)
+            return False
 
     def _open_list(self, listname):
         # We no longer cache the list instances.  Because of changes to
