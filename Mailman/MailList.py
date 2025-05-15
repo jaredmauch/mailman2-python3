@@ -1219,6 +1219,19 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         self.setMemberOption(email, mm_cfg.Moderate,
                              self.default_member_moderation)
         kind = ' (digest)' if digest else ''
+        
+        # Handle name encoding properly
+        if isinstance(name, bytes):
+            try:
+                # Try to decode using the member's language charset
+                charset = Utils.GetCharSet(lang)
+                name = name.decode(charset, 'replace')
+            except (UnicodeDecodeError, LookupError):
+                # Fall back to latin-1 if the charset is not available
+                name = name.decode('latin-1', 'replace')
+        elif not isinstance(name, str):
+            name = str(name)
+            
         syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
                kind, formataddr((name, email)), whence)
         if ack:
@@ -1240,8 +1253,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 subject = _('%(realname)s subscription notification')
             finally:
                 i18n.set_translation(otrans)
-            if isinstance(name, bytes):
-                name = name.decode(Utils.GetCharSet(lang), 'replace')
             text = Utils.maketext(
                 "adminsubscribeack.txt",
                 {"listname": realname,
