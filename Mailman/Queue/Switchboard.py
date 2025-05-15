@@ -113,6 +113,9 @@ class Switchboard:
             
         # Store any additional keyword arguments in msgdata
         msgdata.update(kwargs)
+        
+        # Log the full msgdata before processing
+        mailman_log('debug', 'Switchboard.enqueue: Full msgdata before processing:\n%s', str(msgdata))
             
         # Convert string message to Message object if needed
         if isinstance(msg, str):
@@ -244,6 +247,8 @@ class Switchboard:
             # Read the message and metadata
             try:
                 msg, data = self._dequeue(filename)
+                # Log the full msgdata after dequeuing
+                mailman_log('debug', 'Switchboard.dequeue: Full msgdata after dequeuing:\n%s', str(data))
             except Exception as e:
                 mailman_log('error', 'Switchboard.dequeue: Failed to read message from %s: %s', filebase, str(e))
                 raise

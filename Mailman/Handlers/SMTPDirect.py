@@ -188,9 +188,11 @@ def process(mlist, msg, msgdata):
                 '  To: %s\n'
                 '  Cc: %s\n'
                 '  List: %s\n'
-                '  Pipeline: %s',
+                '  Pipeline: %s\n'
+                '  Full msgdata: %s',
                 msgid, sender, subject, to, cc, mlist.internal_name(),
-                msgdata.get('pipeline', 'No pipeline'))
+                msgdata.get('pipeline', 'No pipeline'),
+                str(msgdata))
             return
     
     # Check for spam headers first

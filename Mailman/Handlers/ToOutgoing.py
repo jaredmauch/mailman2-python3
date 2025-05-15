@@ -74,6 +74,10 @@ def process(mlist, msg, msgdata):
         # Ensure recipients are preserved in msgdata
         msgdata['recips'] = recips
         msgdata['recipient'] = recips[0] if recips else None
+        
+        # Log the full msgdata before enqueueing
+        mailman_log('debug', 'ToOutgoing: Full msgdata before enqueue:\n%s', str(msgdata))
+        
         outgoingq.enqueue(msg, msgdata, 
                          listname=mlist.internal_name())
         mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',

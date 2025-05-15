@@ -245,6 +245,9 @@ class OutgoingRunner(Runner, BounceMixin):
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
         
+        # Log the full msgdata at the start of processing
+        mailman_log('debug', 'OutgoingRunner._dispose: Full msgdata at start:\n%s', str(msgdata))
+        
         # Ensure we have a MailList object
         if isinstance(mlist, str):
             try:
@@ -287,6 +290,9 @@ class OutgoingRunner(Runner, BounceMixin):
                 mailman_log('error', 'OutgoingRunner._dispose: Message validation failed for message %s', msgid)
                 self._unmark_message_processed(msgid)
                 return False
+
+            # Log the full msgdata after validation
+            mailman_log('debug', 'OutgoingRunner._dispose: Full msgdata after validation:\n%s', str(msgdata))
 
             # Validate message headers
             if not msg.get('message-id'):
