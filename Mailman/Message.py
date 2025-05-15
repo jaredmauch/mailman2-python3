@@ -258,63 +258,59 @@ class Message(EmailMessage):
 
 
 class UserNotification(Message):
-    """Class for crafting user notifications."""
-    def __init__(self, recip, sender, subject, text=None, lang=None, charset=None,
-                 _fasttrack=False, _text_is_unicode=False):
+    """A message sent to a user."""
+    def __init__(self, recip, sender, subject=None, text=None, lang=None):
         Message.__init__(self)
-        self['From'] = sender
         self['To'] = recip
-        self['Subject'] = subject
-        self['Date'] = email.utils.formatdate(localtime=1)
-        self['X-Mailer'] = 'Mailman/%s' % mm_cfg.VERSION
-        if lang:
-            self['X-Accept-Language'] = lang
-        self['Precedence'] = 'bulk'
+        self['From'] = sender
+        if subject:
+            self['Subject'] = subject
         if text:
-            # In Python 3, text is already a string
-            # Use the specified charset or default to UTF-8
-            self.set_payload(text, charset or 'utf-8')
-        if _fasttrack:
-            self['X-Ack'] = 'yes'
-        if lang:
-            self['X-Accept-Language'] = lang
+            self.set_payload(text)
+        self['Auto-Submitted'] = 'auto-generated'
+        self['Precedence'] = 'bulk'
+        self['X-Auto-Response-Suppress'] = 'OOF, AutoReply'
+        self['X-Mailman-Version'] = mm_cfg.VERSION
+        self['X-No-Archive'] = 'yes'
+        self.lang = lang
 
     def send(self, mlist, noprecedence=False, **_kws):
-        """Send the message to the recipient.
-
-        The message is sent via the virgin queue.
-        """
-        # Since we're crafting the message from whole cloth, let's make sure
-        # this message has a Message-ID.  Yes, the MTA would give us one, but
-        # this is useful for logging to logs/smtp.
-        if 'message-id' not in self:
-            self['Message-ID'] = unique_message_id(mlist)
+        """Send the message to the recipient."""
         if not noprecedence:
             self['Precedence'] = 'bulk'
-        return self._enqueue(mlist, **_kws)
+        self._enqueue(mlist, **_kws)
 
     def _enqueue(self, mlist, **_kws):
-        """Enqueue the message to the virgin queue."""
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
-        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-        virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
+        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        outq.enqueue(self, {'recipient': self['To'],
+                           'sender': self['From'],
+                           'lang': self.lang,
+                           'mlist': mlist,
+                           'version': mm_cfg.QUEUE_VERSION,
+                           }, **_kws)
 
 
 class OwnerNotification(UserNotification):
-    """Class for crafting owner notifications."""
+    """A message sent to the list owner."""
     def __init__(self, mlist, subject=None, text=None, tomoderators=1):
-        UserNotification.__init__(self, mlist.GetOwnerEmail(),
-                                 get_site_email(mlist.host_name),
-                                 subject, text)
         if tomoderators:
-            self['To'] = mlist.GetModeratorEmail()
-        self['X-Ack-No'] = 'no'
-        self['Precedence'] = 'bulk'
+            recip = mlist.GetOwnerEmail()
+        else:
+            recip = mlist.GetRequestEmail()
+        UserNotification.__init__(self, recip, mlist.GetBouncesEmail(),
+                                subject, text, mlist.preferred_language)
+        self['Reply-To'] = mlist.GetRequestEmail()
+        self['X-List-Administrivia'] = 'yes'
 
     def _enqueue(self, mlist, **_kws):
-        """Enqueue the message to the virgin queue."""
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
-        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-        virginq.enqueue(self, listname=mlist.internal_name(), **_kws)
+        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        outq.enqueue(self, {'recipient': self['To'],
+                           'sender': self['From'],
+                           'lang': self.lang,
+                           'mlist': mlist,
+                           'version': mm_cfg.QUEUE_VERSION,
+                           }, **_kws)
