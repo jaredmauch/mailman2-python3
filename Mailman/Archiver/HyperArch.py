@@ -641,6 +641,7 @@ class HyperArchive(pipermail.T):
         # with mailman's LockFile module for HyperDatabase.HyperDatabase
         #
         dir = maillist.archive_dir()
+        self.basedir = dir  # Set basedir first
         self.database = HyperDatabase.HyperDatabase(dir, maillist)
         
         # Initialize basic attributes first
@@ -655,7 +656,7 @@ class HyperArchive(pipermail.T):
 
         # Try to load previously pickled state
         try:
-            f = open(os.path.join(dir, 'pipermail.pck'), 'rb')
+            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'rb')
             self.message(C_('Reloading pickled archive state'))
             try:
                 # Try UTF-8 first for newer files
