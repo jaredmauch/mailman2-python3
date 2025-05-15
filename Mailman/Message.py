@@ -308,13 +308,20 @@ class UserNotification(Message):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
         virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        # Ensure recipient information is always included
+        if 'msgdata' in _kws:
+            msgdata = _kws['msgdata']
+        else:
+            msgdata = {}
+        # Always set recipient information
+        msgdata['recips'] = self.recips
+        msgdata['recipient'] = self.recips[0] if self.recips else None
         # The message metadata better have a `recip' attribute
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
-                        recips = self.recips,
-                        recipient = self.recips[0] if self.recips else None,
                         nodecorate = 1,
                         reduced_list_headers = 1,
+                        msgdata = msgdata,
                         **_kws)
 
 
@@ -345,13 +352,21 @@ class OwnerNotification(UserNotification):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
         virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        # Ensure recipient information is always included
+        if 'msgdata' in _kws:
+            msgdata = _kws['msgdata']
+        else:
+            msgdata = {}
+        # Always set recipient information
+        msgdata['recips'] = self.recips
+        msgdata['recipient'] = self.recips[0] if self.recips else None
         # The message metadata better have a `recip' attribute
         virginq.enqueue(self,
                         listname = mlist.internal_name(),
-                        recips = self.recips,
                         nodecorate = 1,
                         reduced_list_headers = 1,
                         envsender = self._sender,
+                        msgdata = msgdata,
                         **_kws)
 
 # Make UserNotification and OwnerNotification available as Message attributes
