@@ -282,12 +282,13 @@ class CommandRunner(Runner):
             mailman_log('error', 'Message validation failed for command message')
             return False
 
-        # Get the MailList object
+        # Get the list name from the mlist object
         try:
+            listname = mlist.internal_name() if hasattr(mlist, 'internal_name') else str(mlist)
             MailList = get_maillist()
-            mlist_obj = MailList(mlist, lock=False)
+            mlist_obj = MailList(listname, lock=False)
         except Errors.MMListError as e:
-            mailman_log('error', 'Failed to get MailList object for %s: %s', mlist, str(e))
+            mailman_log('error', 'Failed to get MailList object for %s: %s', listname, str(e))
             return False
 
         # The policy here is similar to the Replybot policy.  If a message has

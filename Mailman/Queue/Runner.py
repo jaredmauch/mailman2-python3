@@ -413,13 +413,14 @@ class Runner:
 
     def _snooze(self, filecnt):
         """Sleep for a while, but check for stop flag periodically."""
-        syslog('debug', 'Runner._snooze: Sleeping for %d seconds', self.SLEEPTIME)
+        if filecnt > 0:
+            syslog('debug', 'Runner._snooze: Sleeping for %d seconds after processing %d files', 
+                   self.SLEEPTIME, filecnt)
         for _ in range(self.SLEEPTIME):
             if self._stop:
                 syslog('debug', 'Runner._snooze: Stop flag detected, waking up')
                 return
             time.sleep(1)
-        syslog('debug', 'Runner._snooze: Sleep complete')
 
     def _shortcircuit(self):
         """Return a true value if the individual file processing loop should
