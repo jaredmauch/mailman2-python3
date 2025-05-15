@@ -89,7 +89,21 @@ class VirginRunner(IncomingRunner):
                         mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
                         # Continue processing even if cleanup fails
                 
-                # Check if message has been processed
+                # For welcome messages, check content and recipients
+                subject = msg.get('subject', '').lower()
+                if 'welcome to the' in subject:
+                    # Create a unique key based on subject, to, and from
+                    content_key = f"{subject}|{msg.get('to', '')}|{msg.get('from', '')}"
+                    if content_key in self._processed_messages:
+                        mailman_log('info', 'VirginRunner: Duplicate welcome message detected: %s (file: %s)',
+                                   content_key, filebase)
+                        return False
+                    # Mark this content as processed
+                    self._processed_messages.add(content_key)
+                    self._processed_times[content_key] = current_time
+                    return True
+                
+                # For other messages, check message ID
                 if msgid in self._processed_messages:
                     # Check retry delay
                     last_retry = self._processed_times.get(msgid)
@@ -162,6 +176,13 @@ class VirginRunner(IncomingRunner):
                        msgid, filebase)
             
             return result
+        except Exception as e:
+            # Log the full traceback for debugging
+            mailman_log('error', 'VirginRunner: Error processing message %s (file: %s):\n%s\nTraceback:\n%s',
+                       msgid, filebase, str(e), traceback.format_exc())
+            # Move the message to the shunt queue
+            self._shunt.enqueue(msg, msgdata)
+            return False
         finally:
             if should_unlock:
                 mlist.Unlock()
