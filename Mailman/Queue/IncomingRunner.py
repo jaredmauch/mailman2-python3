@@ -446,3 +446,36 @@ class IncomingRunner(Runner):
             mailman_log('error', 'IncomingRunner._process_admin: Error processing admin message %s: %s\nTraceback:\n%s',
                        msgid, str(e), traceback.format_exc())
             return False
+
+    def _check_message_processed(self, msgid, filebase, msg):
+        """Check if a message has already been processed and if retry delay is met.
+        
+        Args:
+            msgid: The message ID to check
+            filebase: The base filename of the message
+            msg: The message object
+            
+        Returns:
+            bool: True if message should be skipped (already processed or retry delay not met),
+                  False if message should be processed
+        """
+        try:
+            # Check if message was recently processed
+            with self._processed_lock:
+                if msgid in self._processed_messages:
+                    mailman_log('debug', 'IncomingRunner._check_message_processed: Message %s (file: %s) was recently processed, skipping',
+                              msgid, filebase)
+                    return True
+                
+            # Check if retry delay is met
+            if not self._check_retry_delay(msgid, filebase):
+                return True
+                
+            # Message should be processed
+            return False
+            
+        except Exception as e:
+            mailman_log('error', 'IncomingRunner._check_message_processed: Error checking message %s: %s\nTraceback:\n%s',
+                      msgid, str(e), traceback.format_exc())
+            # On error, allow the message to be processed
+            return False
