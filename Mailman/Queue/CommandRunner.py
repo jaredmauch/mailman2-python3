@@ -244,6 +244,37 @@ To obtain instructions, send a message containing just the word "help".
 class CommandRunner(Runner):
     QDIR = mm_cfg.CMDQUEUE_DIR
 
+    def _validate_message(self, msg, msgdata):
+        """Validate a command message.
+        
+        Args:
+            msg: The message to validate
+            msgdata: Additional message metadata
+            
+        Returns:
+            tuple: (msg, success) where success is True if validation passed
+        """
+        try:
+            # Check for required headers
+            if not msg.get('message-id'):
+                syslog('error', 'CommandRunner._validate_message: Missing Message-ID header')
+                return msg, False
+                
+            if not msg.get('from'):
+                syslog('error', 'CommandRunner._validate_message: Missing From header')
+                return msg, False
+                
+            # Check for command in msgdata
+            if not msgdata.get('command'):
+                syslog('error', 'CommandRunner._validate_message: No command in msgdata')
+                return msg, False
+                
+            return msg, True
+            
+        except Exception as e:
+            syslog('error', 'CommandRunner._validate_message: Error validating message: %s', str(e))
+            return msg, False
+
     def _dispose(self, mlist, msg, msgdata):
         # Validate message type first
         msg, success = self._validate_message(msg, msgdata)

@@ -323,10 +323,6 @@ The message has been moved to the shunt queue.
             files = self._switchboard.files()
             filecnt = len(files)
             
-            # Only log at debug level if we found files to process
-            if filecnt > 0:
-                mailman_log('debug', 'RetryRunner._oneloop: Found %d files to process', filecnt)
-            
             # Process each file
             for filebase in files:
                 try:
@@ -335,41 +331,38 @@ The message has been moved to the shunt queue.
                     if msg is None:
                         continue
                         
-                    mailman_log('info', 'RetryRunner._oneloop: Successfully dequeued file %s', filebase)
-                    
+                    # Get the list name from the message data
+                    listname = msgdata.get('listname')
+                    if not listname:
+                        syslog('error', 'RetryRunner._oneloop: No listname in message data for file %s', filebase)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+                        
+                    # Open the list
+                    try:
+                        mlist = self._open_list(listname)
+                    except Exception as e:
+                        self.log_error('list_open_error', str(e), listname=listname)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+                        
                     # Process the message
                     try:
-                        # Get the list name from the message data
-                        listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
-                        
-                        # Process the message
-                        result = self._dispose(listname, msg, msgdata)
-                        
-                        # If the message should be kept in the queue, requeue it
+                        result = self._dispose(mlist, msg, msgdata)
                         if result:
                             self._switchboard.enqueue(msg, msgdata)
-                            mailman_log('info', 'RetryRunner._oneloop: Message requeued for later processing: %s', filebase)
-                        else:
-                            mailman_log('info', 'RetryRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
-                                      filebase, msg.get('message-id', 'n/a'))
-                            
                     except Exception as e:
-                        mailman_log('error', 'RetryRunner._oneloop: Error processing message: %s\n%s',
-                                  str(e), traceback.format_exc())
-                        # Move to shunt queue on error
-                        self._shunt.enqueue(msg, msgdata)
+                        self._handle_error(e, msg=msg, mlist=mlist)
                         
                 except Exception as e:
-                    mailman_log('error', 'RetryRunner._oneloop: Error dequeuing file %s: %s\n%s',
-                              filebase, str(e), traceback.format_exc())
+                    syslog('error', 'RetryRunner._oneloop: Error dequeuing file %s: %s', filebase, str(e))
+                    continue
                     
-            # Only log completion at debug level if we processed files
-            if filecnt > 0:
-                mailman_log('debug', 'RetryRunner._oneloop: Loop complete, processed %d files', filecnt)
-                
         except Exception as e:
-            mailman_log('error', 'RetryRunner._oneloop: Unexpected error in main loop: %s\n%s',
-                      str(e), traceback.format_exc())
+            syslog('error', 'RetryRunner._oneloop: Error in main loop: %s', str(e))
+            return 0
+            
+        return filecnt
 
     def _snooze(self, filecnt):
         # We always want to snooze, but check for stop flag periodically

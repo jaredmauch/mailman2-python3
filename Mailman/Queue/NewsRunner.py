@@ -102,16 +102,24 @@ class NewsRunner(Runner):
             self._nntp = None
 
     def _validate_message(self, msg, msgdata):
-        """Validate the message for news posting."""
+        """Validate the message for news posting.
+        
+        Args:
+            msg: The message to validate
+            msgdata: Additional message metadata
+            
+        Returns:
+            tuple: (msg, success) where success is True if validation passed
+        """
         try:
             # Check if the message has a Message-ID
             if not msg.get('message-id'):
                 syslog('error', 'Message validation failed for news message')
-                return False
-            return True
+                return msg, False
+            return msg, True
         except Exception as e:
             syslog('error', 'Error validating news message: %s', str(e))
-            return False
+            return msg, False
 
     def _dispose(self, mlist, msg, msgdata):
         """Post the message to the newsgroup."""
@@ -140,7 +148,8 @@ class NewsRunner(Runner):
         """
         try:
             # Validate the message
-            if not self._validate_message(msg, msgdata):
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
                 syslog('error', 'NewsRunner._onefile: Message validation failed')
                 self._shunt.enqueue(msg, msgdata)
                 return

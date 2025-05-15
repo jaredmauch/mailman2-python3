@@ -216,15 +216,39 @@ class OutgoingRunner(Runner, BounceMixin):
             return mailman_msg
         return msg
 
-    def _validate_message(self, msg):
-        """Validate the message before processing.
+    def _validate_message(self, msg, msgdata):
+        """Validate the message for outgoing delivery.
         
-        This method is called before _dispose() to validate the message.
-        Returns a tuple of (msg, success) where success is a boolean indicating
-        if validation was successful.
+        Args:
+            msg: The message to validate
+            msgdata: Additional message metadata
+            
+        Returns:
+            tuple: (msg, success) where success is a boolean indicating if validation was successful
         """
-        # No validation needed - this check was not in the original code
-        return msg, True
+        try:
+            # Convert message if needed
+            if not isinstance(msg, Message.Message):
+                msg = self._convert_message(msg)
+                
+            # Check required headers
+            if not msg.get('message-id'):
+                mailman_log('error', 'OutgoingRunner._validate_message: Message missing Message-ID header')
+                return msg, False
+                
+            if not msg.get('from'):
+                mailman_log('error', 'OutgoingRunner._validate_message: Message missing From header')
+                return msg, False
+                
+            if not msg.get('to') and not msg.get('recipients'):
+                mailman_log('error', 'OutgoingRunner._validate_message: Message missing To/Recipients')
+                return msg, False
+                
+            return msg, True
+            
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner._validate_message: Error validating message: %s', str(e))
+            return msg, False
 
     def _dispose(self, mlist, msg, msgdata):
         """Process an outgoing message."""
@@ -268,7 +292,7 @@ class OutgoingRunner(Runner, BounceMixin):
                 return False
 
             # Validate message type first
-            msg, success = self._validate_message(msg)
+            msg, success = self._validate_message(msg, msgdata)
             if not success:
                 mailman_log('error', 'OutgoingRunner._dispose: Message validation failed for message %s', msgid)
                 self._unmark_message_processed(msgid)
