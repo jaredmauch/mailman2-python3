@@ -388,91 +388,106 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
 
 
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
-    # Convert email.message.Message to Mailman.Message if needed
-    if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
-        mailman_msg = Message()
-        # Copy all attributes from the original message
-        for key, value in msg.items():
-            mailman_msg[key] = value
-        # Copy the payload with proper MIME handling
-        if msg.is_multipart():
-            for part in msg.get_payload():
-                if isinstance(part, email.message.Message):
-                    mailman_msg.attach(part)
-                else:
-                    newpart = Message()
-                    newpart.set_payload(part)
-                    mailman_msg.attach(newpart)
-        else:
-            mailman_msg.set_payload(msg.get_payload())
-        msg = mailman_msg
-
-    # Do some final cleanup of the message header
-    del msg['errors-to']
-    msg['Errors-To'] = envsender
-    if mlist.include_sender_header:
-        del msg['sender']
-        msg['Sender'] = '"%s" <%s>' % (mlist.real_name, envsender)
-
-    # Check for spam indicators
-    if msg.get('X-Google-Group-Id'):
-        mailman_log('smtp-failure', 'Message rejected: Contains X-Google-Group-Id header, likely spam')
-        # Add all recipients to refused list
-        for r in recips:
-            refused[r] = (550, 'Message rejected: Contains X-Google-Group-Id header, likely spam')
-        # Move message to bad queue
-        badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
-        badq.enqueue(msg, msgdata)
-        failures.update(refused)
-        return
-
-    # Get the plain, flattened text of the message
-    msgtext = msg.as_string(mangle_from_=False)
-    # Ensure the message text is properly encoded as UTF-8
-    if isinstance(msgtext, str):
-        msgtext = msgtext.encode('utf-8')
-
-    refused = {}
-    recips = msgdata['recips']
-    msgid = msg.get('Message-ID', 'n/a')
-    # Ensure msgid is a string
-    if isinstance(msgid, bytes):
-        try:
-            msgid = msgid.decode('utf-8', 'replace')
-        except UnicodeDecodeError:
-            msgid = msgid.decode('latin-1', 'replace')
-    elif not isinstance(msgid, str):
-        msgid = str(msgid)
+    # Initialize recips at the start
+    recips = []
     try:
-        # Send the message
-        refused = conn.sendmail(envsender, recips, msgtext)
-    except smtplib.SMTPRecipientsRefused as e:
-        mailman_log('smtp-failure', 'All recipients refused: %s, msgid: %s',
-               e, msgid)
-        refused = e.recipients
-        # Move message to bad queue since all recipients were refused
-        badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
-        badq.enqueue(msg, msgdata)
-    except smtplib.SMTPResponseException as e:
-        mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
-               e.smtp_code, e.smtp_error, msgid)
-        # Properly handle permanent vs temporary failures
-        if e.smtp_code >= 500 and e.smtp_code != 552:
-            # Permanent failure - add to refused and move to bad queue
-            for r in recips:
-                refused[r] = (e.smtp_code, e.smtp_error)
+        # Check for spam headers first
+        if msg.get('x-google-group-id'):
+            mailman_log('error', 'Rejecting message with X-Google-Group-Id header')
+            # Add all recipients to refused list with 550 error
+            for r in msgdata.get('recipients', []):
+                refused[r] = (550, 'Message rejected due to spam detection')
+            # Move message to bad queue
             badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
             badq.enqueue(msg, msgdata)
-        else:
-            # Temporary failure - don't add to refused
-            mailman_log('smtp-failure', 'Temporary SMTP failure, will retry: %s', e.smtp_error)
-    except (socket.error, IOError, smtplib.SMTPException) as e:
-        # MTA not responding or other socket problems
-        mailman_log('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
-        error = str(e)
-        for r in recips:
-            refused[r] = (-1, error)
-        # Move message to bad queue for low level errors
-        badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
-        badq.enqueue(msg, msgdata)
-    failures.update(refused)
+            # Update failures dict
+            failures = msgdata.get('failures', {})
+            failures.update(refused)
+            msgdata['failures'] = failures
+            return
+
+        # Get the list of recipients
+        recips = msgdata.get('recipients', [])
+        if not recips:
+            mailman_log('error', 'No recipients found in msgdata')
+            return
+
+        # Convert email.message.Message to Mailman.Message if needed
+        if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+            mailman_msg = Message()
+            # Copy all attributes from the original message
+            for key, value in msg.items():
+                mailman_msg[key] = value
+            # Copy the payload with proper MIME handling
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    if isinstance(part, email.message.Message):
+                        mailman_msg.attach(part)
+                    else:
+                        newpart = Message()
+                        newpart.set_payload(part)
+                        mailman_msg.attach(newpart)
+            else:
+                mailman_msg.set_payload(msg.get_payload())
+            msg = mailman_msg
+
+        # Do some final cleanup of the message header
+        del msg['errors-to']
+        msg['Errors-To'] = envsender
+        if mlist.include_sender_header:
+            del msg['sender']
+            msg['Sender'] = '"%s" <%s>' % (mlist.real_name, envsender)
+
+        # Get the plain, flattened text of the message
+        msgtext = msg.as_string(mangle_from_=False)
+        # Ensure the message text is properly encoded as UTF-8
+        if isinstance(msgtext, str):
+            msgtext = msgtext.encode('utf-8')
+
+        refused = {}
+        msgid = msg.get('Message-ID', 'n/a')
+        # Ensure msgid is a string
+        if isinstance(msgid, bytes):
+            try:
+                msgid = msgid.decode('utf-8', 'replace')
+            except UnicodeDecodeError:
+                msgid = msgid.decode('latin-1', 'replace')
+        elif not isinstance(msgid, str):
+            msgid = str(msgid)
+        try:
+            # Send the message
+            refused = conn.sendmail(envsender, recips, msgtext)
+        except smtplib.SMTPRecipientsRefused as e:
+            mailman_log('smtp-failure', 'All recipients refused: %s, msgid: %s',
+                   e, msgid)
+            refused = e.recipients
+            # Move message to bad queue since all recipients were refused
+            badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+            badq.enqueue(msg, msgdata)
+        except smtplib.SMTPResponseException as e:
+            mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
+                   e.smtp_code, e.smtp_error, msgid)
+            # Properly handle permanent vs temporary failures
+            if e.smtp_code >= 500 and e.smtp_code != 552:
+                # Permanent failure - add to refused and move to bad queue
+                for r in recips:
+                    refused[r] = (e.smtp_code, e.smtp_error)
+                badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+                badq.enqueue(msg, msgdata)
+            else:
+                # Temporary failure - don't add to refused
+                mailman_log('smtp-failure', 'Temporary SMTP failure, will retry: %s', e.smtp_error)
+        except (socket.error, IOError, smtplib.SMTPException) as e:
+            # MTA not responding or other socket problems
+            mailman_log('smtp-failure', 'Low level smtp error: %s, msgid: %s', e, msgid)
+            error = str(e)
+            for r in recips:
+                refused[r] = (-1, error)
+            # Move message to bad queue for low level errors
+            badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+            badq.enqueue(msg, msgdata)
+        failures.update(refused)
+    except Exception as e:
+        mailman_log('error', 'Error in bulkdeliver: %s\nTraceback:\n%s',
+               str(e), traceback.format_exc())
+        raise
