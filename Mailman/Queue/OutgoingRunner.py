@@ -446,16 +446,22 @@ class OutgoingRunner(Runner, BounceMixin):
         if msgdata.get('tolist') and not msgdata.get('_nolist'):
             try:
                 # Get all list members
-                members = mlist.getMemberCPAddresses()
+                members = mlist.getRegularMemberKeys()
                 if members:
-                    msgdata['recips'] = [mlist.getMemberEmail(member) for member in members]
+                    msgdata['recips'] = [mlist.getMemberCPAddress(m) for m in members 
+                                       if mlist.getDeliveryStatus(m) == MemberAdaptor.ENABLED]
                     mailman_log('debug', 'OutgoingRunner._process_regular: Expanded list members for message %s: %s',
                               msgid, str(msgdata['recips']))
                 else:
                     mailman_log('error', 'OutgoingRunner._process_regular: No members found for list %s',
                               mlist.internal_name())
             except Exception as e:
-                mailman_log('error', 'OutgoingRunner._process_regular: Error getting list members: %s', str(e))
+                mailman_log('error', 'OutgoingRunner._process_regular: Error getting list members: %s\nTraceback:\n%s',
+                          str(e), traceback.format_exc())
+                # Try to continue with existing recipients if any
+                if not msgdata.get('recips'):
+                    mailman_log('error', 'OutgoingRunner._process_regular: No recipients available for message %s', msgid)
+                    return False
         
         # Call the delivery module
         try:
