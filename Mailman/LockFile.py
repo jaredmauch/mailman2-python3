@@ -221,75 +221,48 @@ class LockFile:
         self.__touch()
         # Find out current claim's temp filename
         winner = self.__read()
-        # Now twiddle ours to the given pid
-        self.__tmpfname = '%s.%s.%d' % (
+        
+        # Create a new temporary file with the target PID
+        new_tmpfname = '%s.%s.%d' % (
             self.__lockfile, socket.gethostname(), pid)
-        # Create a hard link from the global lock file to the temp file.  This
-        # actually does things in reverse order of normal operation because we
-        # know that lockfile exists, and tmpfname better not!
-        mailman_log('debug', 'Attempting to transfer lock from %s to %s', winner, self.__tmpfname)
-        
-        # Add retry mechanism for link count issues
-        max_retries = 3
-        retry_delay = 0.1  # 100ms delay between retries
-        
-        for attempt in range(max_retries):
+            
+        try:
+            # Write the new PID and hostname to the new temp file
+            with open(new_tmpfname, 'w') as fp:
+                fp.write('%d %s\n' % (pid, socket.gethostname()))
+            os.chmod(new_tmpfname, 0o660)
+            
+            # Use atomic rename to transfer the lock
+            os.rename(new_tmpfname, self.__lockfile)
+            
+            # Toggle off our ownership of the file so we don't try to finalize it
+            # in our __del__()
+            self.__owned = False
+            
+            # Unlink the old winner, completing the transfer
             try:
-                # Create the temp file first
-                with open(self.__tmpfname, 'w') as fp:
-                    fp.write('%d %s\n' % (pid, socket.gethostname()))
-                os.chmod(self.__tmpfname, 0o660)
-                
-                # Try to create the hard link
-                os.link(self.__lockfile, self.__tmpfname)
-                
-                # Now update the lock file to contain a reference to the new owner
-                self.__write()
-                
-                # Toggle off our ownership of the file so we don't try to finalize it
-                # in our __del__()
-                self.__owned = False
-                
-                # Unlink the old winner, completing the transfer
                 os.unlink(winner)
+            except OSError:
+                pass
                 
-                # And do some sanity checks
-                link_count = self.__linkcount()
-                if link_count != 2:
-                    # Try to recover by cleaning up and retrying
-                    try:
-                        os.unlink(self.__tmpfname)
-                        if attempt < max_retries - 1:
-                            mailman_log('debug', 'Link count is %d, retrying transfer (attempt %d/%d)',
-                                       link_count, attempt + 1, max_retries)
-                            time.sleep(retry_delay)
-                            continue
-                    except OSError:
-                        pass
-                    
-                    mailman_log('error', 'Lock transfer failed: link count is %d, expected 2 for lockfile %s (temp file: %s)',
-                               link_count, self.__lockfile, self.__tmpfname)
-                    raise LockError('Lock transfer failed: link count is %d, expected 2' % link_count)
+            # Update our temp filename for future operations
+            self.__tmpfname = new_tmpfname
+            
+            # Verify the lock is still valid
+            if not self.locked():
+                raise LockError('Lock transfer failed: lock not acquired')
                 
-                if not self.locked():
-                    mailman_log('error', 'Lock transfer failed: lock not acquired for lockfile %s (temp file: %s)',
-                               self.__lockfile, self.__tmpfname)
-                    raise LockError('Lock transfer failed: lock not acquired')
-                
-                mailman_log('debug', 'Successfully transferred lock from %s to %s', winner, self.__tmpfname)
-                return
-                
-            except OSError as e:
-                if attempt < max_retries - 1:
-                    mailman_log('debug', 'Error during lock transfer (attempt %d/%d): %s',
-                               attempt + 1, max_retries, str(e))
-                    time.sleep(retry_delay)
-                    continue
-                mailman_log('error', 'Error during lock transfer: %s', str(e))
-                raise LockError('Lock transfer failed: %s' % str(e))
-        
-        # If we get here, all retries failed
-        raise LockError('Lock transfer failed after %d attempts' % max_retries)
+            mailman_log('debug', 'Successfully transferred lock from %s to %s', winner, new_tmpfname)
+            return
+            
+        except OSError as e:
+            # Clean up on failure
+            try:
+                os.unlink(new_tmpfname)
+            except OSError:
+                pass
+            mailman_log('error', 'Error during lock transfer: %s', str(e))
+            raise LockError('Lock transfer failed: %s' % str(e))
 
     def _take_possession(self):
         """Try to take possession of the lock file.
