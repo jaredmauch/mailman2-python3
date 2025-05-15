@@ -100,9 +100,11 @@ class Results:
             return
         body = part.get_payload(decode=True)
         if (part.get_content_charset(None)):
+            # Use get() with default value for lang
+            lang = msgdata.get('lang', mlist_obj.preferred_language)
             body = str(body, part.get_content_charset(),
                            errors='replace').encode(
-                           Utils.GetCharSet(self.msgdata['lang']),
+                           Utils.GetCharSet(lang),
                            errors='replace')
         # text/plain parts better have string payloads
         if not isinstance(body, (str, bytes)):
