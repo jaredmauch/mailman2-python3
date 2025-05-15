@@ -186,10 +186,6 @@ class Runner:
             files = self._switchboard.files()
             filecnt = len(files)
             
-            # Only log at debug level if we found files to process
-            if filecnt > 0:
-                syslog('debug', 'Runner._oneloop: Found %d files to process', filecnt)
-            
             # Process each file
             for filebase in files:
                 try:
@@ -198,41 +194,22 @@ class Runner:
                     if msg is None:
                         continue
                         
-                    syslog('info', 'Runner._oneloop: Successfully dequeued file %s', filebase)
-                    
                     # Process the message
                     try:
-                        # Get the list name from the message data
-                        listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
-                        
-                        # Process the message
-                        result = self._dispose(listname, msg, msgdata)
-                        
-                        # If the message should be kept in the queue, requeue it
-                        if result:
-                            self._switchboard.enqueue(msg, msgdata)
-                            syslog('info', 'Runner._oneloop: Message requeued for later processing: %s', filebase)
-                        else:
-                            syslog('info', 'Runner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
-                                  filebase, msg.get('message-id', 'n/a'))
-                            
+                        self._dopost(msg, msgdata)
                     except Exception as e:
-                        syslog('error', 'Runner._oneloop: Error processing message: %s\n%s',
-                              str(e), traceback.format_exc())
-                        # Move to shunt queue on error
-                        self._shunt.enqueue(msg, msgdata)
+                        syslog('error', 'Runner._oneloop: Error processing message %s: %s', filebase, str(e))
+                        continue
                         
                 except Exception as e:
-                    syslog('error', 'Runner._oneloop: Error dequeuing file %s: %s\n%s',
-                          filebase, str(e), traceback.format_exc())
+                    syslog('error', 'Runner._oneloop: Error dequeuing file %s: %s', filebase, str(e))
+                    continue
                     
-            # Only log completion at debug level if we processed files
-            if filecnt > 0:
-                syslog('debug', 'Runner._oneloop: Loop complete, processed %d files', filecnt)
-                
         except Exception as e:
-            syslog('error', 'Runner._oneloop: Unexpected error in main loop: %s\n%s',
-                  str(e), traceback.format_exc())
+            syslog('error', 'Runner._oneloop: Error in main loop: %s', str(e))
+            return 0
+            
+        return filecnt
 
     def _validate_message(self, msg, msgdata):
         """Validate and convert message if needed.

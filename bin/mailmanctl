@@ -103,6 +103,7 @@ import errno
 import pwd
 import grp
 import socket
+import psutil  # Add psutil import
 
 import paths
 from Mailman import mm_cfg
@@ -210,8 +211,8 @@ def get_lock_data():
 
 
 def qrunner_state():
-    # 1 if proc exists on host (but is it qrunner? ;)
-    # 0 if host matches but no proc
+    # 1 if proc exists on host and is owned by mailman user
+    # 0 if host matches but no proc or wrong owner
     # hostname if hostname doesn't match
     hostname, pid, tempfile = get_lock_data()
     if hostname != socket.gethostname():
@@ -219,10 +220,44 @@ def qrunner_state():
     # Find out if the process exists by calling kill with a signal 0.
     try:
         os.kill(pid, 0)
+        # Process exists, now check if it's owned by the mailman user
+        mailman_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER).pw_uid
+        try:
+            # Try to get process owner using platform-specific methods
+            if os.name == 'posix':
+                # On Unix-like systems, try to get process owner
+                try:
+                    # Try using /proc on Linux
+                    if os.path.exists('/proc'):
+                        with open(f'/proc/{pid}/status') as f:
+                            for line in f:
+                                if line.startswith('Uid:'):
+                                    uid = int(line.split()[1])
+                                    if uid != mailman_uid:
+                                        syslog('error', 'Process %d exists but is owned by uid %d, not mailman user %d',
+                                               pid, uid, mailman_uid)
+                                        return 0
+                                    break
+                    else:
+                        # On other Unix systems, we can't easily check the owner
+                        # without external tools, so we'll assume it's valid
+                        # if the process exists
+                        return 1
+                except (IOError, OSError) as e:
+                    syslog('error', 'Error checking process %d ownership: %s', pid, str(e))
+                    return 0
+            else:
+                # On non-Unix systems, we can't easily check the owner
+                # without external tools, so we'll assume it's valid
+                # if the process exists
+                return 1
+            return 1
+        except Exception as e:
+            syslog('error', 'Error checking process %d ownership: %s', pid, str(e))
+            return 0
     except OSError as e:
         if e.errno != errno.ESRCH: raise
         return 0
-    return 1
 
 
 def acquire_lock_1(force):
@@ -233,10 +268,12 @@ def acquire_lock_1(force):
         lock.lock(0.1)
         return lock
     except LockFile.TimeOutError:
-        # If we're not forcing or the lock can't be determined to be stale.
-        if not force or qrunner_state():
+        # Check if the lock is stale by examining the process
+        status = qrunner_state()
+        if status == 1:
+            # Process exists and is running, so lock is valid
             raise
-        # Force removal of lock first
+        # Lock appears to be stale - clean it up
         try:
             # Read the current lock file content
             with open(LOCKFILE) as fp:

@@ -201,19 +201,31 @@ def process(mlist, msg, msgdata):
     msg['Content-Type'] = 'multipart/mixed'
 
 
-
 def decorate(mlist, template, what, extradict=None):
     # `what' is just a descriptive phrase used in the log message
     
     # If template is None, return empty string
     if template is None:
+        syslog('error', 'Template is None for %s', what)
         return ''
     
     # If template is a Message object, get its content
     if isinstance(template, Message):
-        template = template.get_payload(decode=True)
-        if isinstance(template, bytes):
-            template = template.decode('utf-8', 'replace')
+        try:
+            template = template.get_payload(decode=True)
+            if isinstance(template, bytes):
+                template = template.decode('utf-8', 'replace')
+        except Exception as e:
+            syslog('error', 'Error getting payload from Message template for %s: %s', what, str(e))
+            return ''
+    
+    # Ensure template is a string
+    if not isinstance(template, str):
+        try:
+            template = str(template)
+        except Exception as e:
+            syslog('error', 'Error converting template to string for %s: %s', what, str(e))
+            return ''
     
     # If template is only whitespace, ignore it.
     if len(re.sub(r'\s', '', template)) == 0:

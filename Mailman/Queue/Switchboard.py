@@ -114,61 +114,50 @@ class Switchboard:
         # Store any additional keyword arguments in msgdata
         msgdata.update(kwargs)
             
-        mailman_log('debug', 'Switchboard.enqueue: Starting to enqueue message for list %s', listname or 'unknown')
-        
         # Convert string message to Message object if needed
         if isinstance(msg, str):
             try:
                 msg = email.message_from_string(msg)
-                mailman_log('debug', 'Switchboard.enqueue: Converted string message to Message object')
             except Exception as e:
                 mailman_log('error', 'Switchboard.enqueue: Failed to convert string message to Message object: %s', str(e))
                 raise
         
         # Generate a unique filebase
         filebase = self._make_filebase(msg, msgdata)
-        mailman_log('debug', 'Switchboard.enqueue: Generated filebase %s', filebase)
         
         # Calculate the filename
         filename = os.path.join(self.__whichq, filebase + '.pck')
-        mailman_log('debug', 'Switchboard.enqueue: Target filename is %s', filename)
         
         # Create a lock file
         lockfile = filename + '.lock'
         try:
             fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
             os.close(fd)
-            mailman_log('debug', 'Switchboard.enqueue: Created lock file for %s', filebase)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 mailman_log('error', 'Switchboard.enqueue: Failed to create lock file for %s: %s', filebase, str(e))
                 raise
-            mailman_log('debug', 'Switchboard.enqueue: Lock file already exists for %s', filebase)
             return None
 
         try:
             # Write the message and metadata
             try:
                 self._enqueue(filename, msg, msgdata, _plaintext)
-                mailman_log('debug', 'Switchboard.enqueue: Successfully wrote message and data to %s', filebase)
             except Exception as e:
                 mailman_log('error', 'Switchboard.enqueue: Failed to write message to %s: %s', filebase, str(e))
                 raise
 
-            mailman_log('debug', 'Switchboard.enqueue: Successfully enqueued message to %s', filebase)
             return filebase
         finally:
             # Always clean up the lock file
             try:
                 os.unlink(lockfile)
-                mailman_log('debug', 'Switchboard.enqueue: Cleaned up lock file %s', lockfile)
             except OSError:
                 pass
 
     def dequeue(self, filebase):
         # Calculate the filename from the given filebase.
         filename = os.path.join(self.__whichq, filebase + '.pck')
-        mailman_log('debug', 'Switchboard.dequeue: Attempting to dequeue file %s', filebase)
         
         # Create a lock file
         lockfile = filename + '.lock'
@@ -176,19 +165,16 @@ class Switchboard:
             # Try to create the lock file
             fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
             os.close(fd)
-            mailman_log('debug', 'Switchboard.dequeue: Created lock file for %s', filebase)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 mailman_log('error', 'Switchboard.dequeue: Failed to create lock file for %s: %s', filebase, str(e))
                 raise
-            mailman_log('debug', 'Switchboard.dequeue: Lock file already exists for %s', filebase)
             return None, None
 
         try:
             # Read the message and metadata
             try:
                 msg, data = self._dequeue(filename)
-                mailman_log('debug', 'Switchboard.dequeue: Successfully read message and data from %s', filebase)
             except Exception as e:
                 mailman_log('error', 'Switchboard.dequeue: Failed to read message from %s: %s', filebase, str(e))
                 raise
@@ -198,13 +184,11 @@ class Switchboard:
                 mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', filename, type(data))
                 return None, None
                 
-            mailman_log('debug', 'Switchboard.dequeue: Successfully dequeued file %s', filebase)
             return msg, data
         finally:
             # Always clean up the lock file
             try:
                 os.unlink(lockfile)
-                mailman_log('debug', 'Switchboard.dequeue: Cleaned up lock file %s', lockfile)
             except OSError:
                 pass
 
