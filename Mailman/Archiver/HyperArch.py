@@ -642,12 +642,42 @@ class HyperArchive(pipermail.T):
         #
         dir = maillist.archive_dir()
         self.database = HyperDatabase.HyperDatabase(dir, maillist)
-        self.__super_init(dir, reload=1, database=self.database)
-
+        
+        # Initialize basic attributes first
+        self.archives = []        # Archives
+        self._dirty_archives = [] # Archives that will have to be updated
+        self.sequence = 0         # Sequence variable used for numbering articles
+        self.update_TOC = 0       # Does the TOC need updating?
         self.maillist = maillist
         self._lock_file = None
         self.lang = maillist.preferred_language
         self.charset = Utils.GetCharSet(maillist.preferred_language)
+
+        # Try to load previously pickled state
+        try:
+            f = open(os.path.join(dir, 'pipermail.pck'), 'rb')
+            self.message(C_('Reloading pickled archive state'))
+            try:
+                # Try UTF-8 first for newer files
+                d = pickle.load(f, fix_imports=True, encoding='utf-8')
+            except (UnicodeDecodeError, pickle.UnpicklingError):
+                # Fall back to latin1 for older files
+                f.seek(0)
+                d = pickle.load(f, fix_imports=True, encoding='latin1')
+            f.close()
+            
+            if isinstance(d, bytes):
+                # If we got bytes, try to unpickle it
+                d = pickle.loads(d, fix_imports=True, encoding='latin1')
+            
+            # Only update attributes that don't conflict with our initialization
+            for key, value in list(d.items()):
+                if key not in ('archives', '_dirty_archives', 'sequence', 'update_TOC',
+                             'maillist', '_lock_file', 'lang', 'charset', 'database'):
+                    setattr(self, key, value)
+        except (IOError, EOFError, pickle.UnpicklingError) as e:
+            syslog('error', 'Error loading archive state: %s', e)
+            # Continue with default initialization
 
         if hasattr(self.maillist,'archive_volume_frequency'):
             if self.maillist.archive_volume_frequency == 0:
