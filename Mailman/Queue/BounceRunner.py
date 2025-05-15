@@ -60,7 +60,8 @@ class BounceMixin:
     def __init__(self):
         """Initialize the bounce mixin."""
         self._bouncecnt = 0
-        self._next_action = time.time()
+        # Set initial next action time to 1 hour in the future
+        self._next_action = time.time() + 3600
         syslog('debug', 'BounceMixin: Initialized with next action time: %s',
                time.ctime(self._next_action))
 
