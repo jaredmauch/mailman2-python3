@@ -88,7 +88,10 @@ class Deliverer(object):
         try:
             pluser = self.getMemberLanguage(name)
         except AttributeError:
-            pluser = self.preferred_language
+            try:
+                pluser = self.preferred_language
+            except AttributeError:
+                pluser = 'en'  # Default to English if no language is available
         # Need to set this here to get the proper l10n of the Subject:
         i18n.set_language(pluser)
         if self.welcome_msg:
