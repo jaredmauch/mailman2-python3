@@ -34,7 +34,8 @@ import time
 import traceback
 from io import StringIO, BytesIO
 
-from email.parser import Parser, message_from_string
+from email.parser import Parser
+from email import message_from_string
 from email.generator import Generator
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
