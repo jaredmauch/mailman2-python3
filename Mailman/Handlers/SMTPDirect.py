@@ -169,8 +169,22 @@ def process(mlist, msg, msgdata):
     # Get the list of recipients
     recips = msgdata.get('recipients', [])
     if not recips:
-        mailman_log('error', 'No recipients found in msgdata for message %s',
-                   msg.get('message-id', 'unknown'))
+        # Get message details for logging
+        msgid = msg.get('message-id', 'unknown')
+        sender = msg.get('from', 'unknown')
+        subject = msg.get('subject', 'no subject')
+        to = msg.get('to', 'no to')
+        cc = msg.get('cc', 'no cc')
+        
+        mailman_log('error', 
+            'No recipients found in msgdata for message:\n'
+            '  Message-ID: %s\n'
+            '  From: %s\n'
+            '  Subject: %s\n'
+            '  To: %s\n'
+            '  Cc: %s\n'
+            '  List: %s',
+            msgid, sender, subject, to, cc, mlist.internal_name())
         return
 
     # Check for spam headers first

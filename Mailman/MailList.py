@@ -1124,38 +1124,20 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def AddMember(self, userdesc, remote=None):
         """Add a new member to the list.
 
-        This is the main entry point for adding a new member.  It handles all
-        the necessary checks and notifications.
+        Args:
+            userdesc: A UserDesc object containing the member's information
+            remote: Optional remote address making the request
         """
-        # Get the member's address and full name
+        # Make sure we have a lock
+        assert self._locked, 'List must be locked before pending operations'
+        
+        # Get the member's email address
         email = userdesc.address
-        name = userdesc.fullname
-        password = userdesc.password
-        digest = userdesc.digest
-        lang = userdesc.language
-
-        # Check if the address is banned
-        pattern = self.GetBannedPattern(email)
-        if pattern:
-            syslog('vette',
-                   '%s banned address: %s (matched: %s)',
-                   self.real_name, email, pattern)
-            raise Errors.MembershipIsBanned(pattern)
-
-        # Check if the address is already a member
-        if self.isMember(email):
-            syslog('vette',
-                   '%s already a member: %s',
-                   self.real_name, email)
-            raise Errors.AlreadyAMember(email)
-
-        # Check if the address is pending
-        if self.CheckPending(email):
-            syslog('vette',
-                   '%s pending address: %s',
-                   self.real_name, email)
-            raise Errors.MembershipIsPending(email)
-
+        
+        # Ensure language is set
+        if not hasattr(userdesc, 'language') or userdesc.language is None:
+            userdesc.language = self.preferred_language
+            
         # If we need confirmation, pend the subscription
         if self.subscribe_policy in (2, 3) and not self.HasAutoApprovedSender(email):
             # Pend the subscription
@@ -1163,7 +1145,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                                    userdesc, remote)
             confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
                                     cookie)
-            lang = self.getMemberLanguage(email)
+            lang = userdesc.language
             text = Utils.maketext(
                 'verify.txt',
                 {'email'      : email,

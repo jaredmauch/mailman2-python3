@@ -30,8 +30,8 @@ class UserDesc:
             self.password = password
         if digest is not None:
             self.digest = digest
-        if lang is not None:
-            self.language = lang
+        # Always set language, defaulting to None if not provided
+        self.language = lang
 
     def __iadd__(self, other):
         if getattr(other, 'address', None) is not None:
