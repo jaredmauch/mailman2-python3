@@ -86,6 +86,48 @@ def getDecodedHeaders(msg, lcset):
 
 
 def process(mlist, msg, msgdata):
+    # Check for Google Groups messages first
+    google_groups_headers = [
+        'X-Google-Groups-Id',
+        'X-Google-Groups-Info',
+        'X-Google-Groups-Url',
+        'X-Google-Groups-Name',
+        'X-Google-Groups-Email'
+    ]
+    
+    for header in google_groups_headers:
+        if msg.get(header):
+            syslog('vette', 'Google Groups message detected via header %s, discarding', header)
+            # Send bounce to the message's errors-to address
+            try:
+                bounce_msg = Message()
+                bounce_msg['From'] = mlist.GetBounceEmail()
+                # Use the message's errors-to header if present, otherwise use the From address
+                bounce_to = msg.get('errors-to') or msg.get('from', 'unknown')
+                bounce_msg['To'] = bounce_to
+                bounce_msg['Subject'] = 'Message rejected: Google Groups not allowed'
+                bounce_msg['Message-ID'] = Utils.unique_message_id(mlist)
+                bounce_msg['Date'] = Utils.formatdate(localtime=True)
+                bounce_msg['X-Mailman-From'] = msg.get('from', 'unknown')
+                bounce_msg['X-Mailman-To'] = msg.get('to', 'unknown')
+                bounce_msg['X-Mailman-List'] = mlist.internal_name()
+                bounce_msg['X-Mailman-Reason'] = 'Google Groups messages are not allowed'
+                
+                # Include original message headers
+                bounce_text = 'Original message headers:\n'
+                for name, value in msg.items():
+                    bounce_text += f'{name}: {value}\n'
+                bounce_msg.set_payload(bounce_text)
+                
+                # Send the bounce
+                mlist.BounceMessage(bounce_msg, msgdata)
+                syslog('vette', 'Sent bounce to %s for rejected Google Groups message', bounce_to)
+            except Exception as e:
+                syslog('error', 'Failed to send bounce for Google Groups message: %s', str(e))
+            
+            # Discard the original message
+            raise Errors.DiscardMessage
+
     # Before anything else, check DMARC if necessary.  We do this as early
     # as possible so reject/discard actions trump other holds/approvals and
     # wrap/munge actions get flagged even for approved messages.

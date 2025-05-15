@@ -47,6 +47,7 @@ from Mailman.Message import Message
 from Mailman.Handlers.Decorate import decorate
 from Mailman.Logging.Syslog import mailman_log
 import Mailman.SafeDict
+from Mailman.Queue.Switchboard import get_switchboard
 
 import email
 from email.utils import formataddr
@@ -429,14 +430,19 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         mailman_log('smtp-failure', 'All recipients refused: %s, msgid: %s',
                e, msgid)
         refused = e.recipients
+        # Move message to bad queue since all recipients were refused
+        badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+        badq.enqueue(msg, msgdata)
     except smtplib.SMTPResponseException as e:
         mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
                e.smtp_code, e.smtp_error, msgid)
         # Properly handle permanent vs temporary failures
         if e.smtp_code >= 500 and e.smtp_code != 552:
-            # Permanent failure - add to refused
+            # Permanent failure - add to refused and move to bad queue
             for r in recips:
                 refused[r] = (e.smtp_code, e.smtp_error)
+            badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+            badq.enqueue(msg, msgdata)
         else:
             # Temporary failure - don't add to refused
             mailman_log('smtp-failure', 'Temporary SMTP failure, will retry: %s', e.smtp_error)
@@ -446,4 +452,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         error = str(e)
         for r in recips:
             refused[r] = (-1, error)
+        # Move message to bad queue for low level errors
+        badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+        badq.enqueue(msg, msgdata)
     failures.update(refused)
