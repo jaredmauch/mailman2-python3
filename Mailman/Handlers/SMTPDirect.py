@@ -169,12 +169,14 @@ def process(mlist, msg, msgdata):
     # Get the list of recipients
     recips = msgdata.get('recipients', [])
     if not recips:
-        mailman_log('error', 'No recipients found in msgdata')
+        mailman_log('error', 'No recipients found in msgdata for message %s',
+                   msg.get('message-id', 'unknown'))
         return
 
     # Check for spam headers first
     if msg.get('x-google-group-id'):
-        mailman_log('error', 'Silently dropping message with X-Google-Group-Id header')
+        mailman_log('error', 'Silently dropping message with X-Google-Group-Id header: %s',
+                   msg.get('message-id', 'unknown'))
         # Add all recipients to refused list with 550 error
         for r in recips:
             refused[r] = (550, 'Message rejected due to spam detection')

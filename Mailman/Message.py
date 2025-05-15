@@ -314,3 +314,8 @@ class OwnerNotification(UserNotification):
                            'mlist': mlist,
                            'version': mm_cfg.QUEUE_VERSION,
                            }, **_kws)
+
+
+# Make UserNotification and OwnerNotification available as Message attributes
+Message.UserNotification = UserNotification
+Message.OwnerNotification = OwnerNotification
