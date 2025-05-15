@@ -357,28 +357,29 @@ class CommandRunner(Runner):
             syslog('vette', 'Precedence: %s message discarded by: %s',
                    precedence, mlist_obj.GetRequestEmail())
             return False
-        # Do replybot for commands
-        mlist_obj.Load()
-        Replybot = get_replybot()
-        Replybot.process(mlist_obj, msg, msgdata)
-        if mlist_obj.autorespond_requests == 1:
-            syslog('vette', 'replied and discard')
-            # w/discard
-            return False
-        # Now craft the response
-        res = Results(mlist_obj, msg, msgdata)
-        # BAW: Not all the functions of this qrunner require the list to be
-        # locked.  Still, it's more convenient to lock it here and now and
-        # deal with lock failures in one place.
+
+        # Lock the list before any operations
         try:
             mlist_obj.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
         except LockFile.TimeOutError:
             # Oh well, try again later
             return True
-        # This message will have been delivered to one of mylist-request,
-        # mylist-join, or mylist-leave, and the message metadata will contain
-        # a key to which one was used.
+
         try:
+            # Do replybot for commands
+            mlist_obj.Load()
+            Replybot = get_replybot()
+            Replybot.process(mlist_obj, msg, msgdata)
+            if mlist_obj.autorespond_requests == 1:
+                syslog('vette', 'replied and discard')
+                # w/discard
+                return False
+
+            # Now craft the response
+            res = Results(mlist_obj, msg, msgdata)
+            # This message will have been delivered to one of mylist-request,
+            # mylist-join, or mylist-leave, and the message metadata will contain
+            # a key to which one was used.
             ret = BADCMD
             if msgdata.get('torequest', False):
                 ret = res.process()
