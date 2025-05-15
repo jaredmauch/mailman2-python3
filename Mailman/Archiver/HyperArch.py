@@ -37,10 +37,14 @@ from . import HyperDatabase
 from . import pipermail
 import weakref
 import binascii
+from io import StringIO, BytesIO
+import pickle
 
 from email.header import decode_header, make_header
 from email.errors import HeaderParseError
 from email.charset import Charset
+from email import message_from_file
+from email.generator import Generator
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -449,7 +453,7 @@ class Article(pipermail.Article):
             if cset == 'us-ascii':
                 cset = 'iso-8859-1' # assume this for English list
             ustr = str(field, cset, 'replace')
-        return u''.join(ustr.splitlines())
+        return ''.join(ustr.splitlines())
 
     def as_html(self):
         d = self.__dict__.copy()
@@ -899,7 +903,9 @@ class HyperArchive(pipermail.T):
             content = archfile.read()
             # Create a temporary file to store the content
             import tempfile
-            with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+            with tempfile.NamedTemporaryFile(mode='w+', encoding='utf-8', delete=False) as tmp:
+                if isinstance(content, bytes):
+                    content = content.decode('utf-8', errors='replace')
                 tmp.write(content)
                 tmp_path = tmp.name
             
@@ -955,3 +961,44 @@ class HyperArchive(pipermail.T):
             article.html_body = processed_lines
 
         return article
+
+    def close(self):
+        "Close an archive, save its state, and update any changed archives."
+        self.update_dirty_archives()
+        self.update_TOC = 0
+        self.write_TOC()
+        # Save the collective state
+        self.message(C_('Pickling archive state into ')
+                     + os.path.join(self.basedir, 'pipermail.pck'))
+        self.database.close()
+        del self.database
+
+        omask = os.umask(0o007)
+        try:
+            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'wb')
+        finally:
+            os.umask(omask)
+        # Use protocol 4 for Python 2/3 compatibility
+        pickle.dump(self.getstate(), f, protocol=4, fix_imports=True)
+        f.close()
+
+    def getstate(self):
+        """Get the current state of the archive."""
+        try:
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
+            return pickle.dumps(self.__dict__, protocol, fix_imports=True)
+        except Exception as e:
+            syslog('error', 'Error getting archive state: %s', e)
+            return None
+
+    def setstate(self, state):
+        """Set the state of the archive."""
+        try:
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
+            self.__dict__ = pickle.loads(state, fix_imports=True, encoding='latin1')
+        except Exception as e:
+            syslog('error', 'Error setting archive state: %s', e)
+            return False
+        return True
