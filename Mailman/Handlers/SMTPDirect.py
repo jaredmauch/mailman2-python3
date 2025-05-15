@@ -166,27 +166,33 @@ def process(mlist, msg, msgdata):
     envsender = msgdata.get('envsender', msg.get_sender())
     if envsender is None:
         envsender = mlist.GetBouncesEmail()
-    # Get the list of recipients
-    recips = msgdata.get('recipients', [])
+    
+    # Get the list of recipients with better validation
+    recips = msgdata.get('recips', [])
     if not recips:
-        # Get message details for logging
-        msgid = msg.get('message-id', 'unknown')
-        sender = msg.get('from', 'unknown')
-        subject = msg.get('subject', 'no subject')
-        to = msg.get('to', 'no to')
-        cc = msg.get('cc', 'no cc')
-        
-        mailman_log('error', 
-            'No recipients found in msgdata for message:\n'
-            '  Message-ID: %s\n'
-            '  From: %s\n'
-            '  Subject: %s\n'
-            '  To: %s\n'
-            '  Cc: %s\n'
-            '  List: %s',
-            msgid, sender, subject, to, cc, mlist.internal_name())
-        return
-
+        # Try to get from message headers as fallback
+        recips = msg.get_all('to', []) + msg.get_all('cc', [])
+        if not recips:
+            # Get message details for logging
+            msgid = msg.get('message-id', 'unknown')
+            sender = msg.get('from', 'unknown')
+            subject = msg.get('subject', 'no subject')
+            to = msg.get('to', 'no to')
+            cc = msg.get('cc', 'no cc')
+            
+            mailman_log('error', 
+                'No recipients found in msgdata for message:\n'
+                '  Message-ID: %s\n'
+                '  From: %s\n'
+                '  Subject: %s\n'
+                '  To: %s\n'
+                '  Cc: %s\n'
+                '  List: %s\n'
+                '  Pipeline: %s',
+                msgid, sender, subject, to, cc, mlist.internal_name(),
+                msgdata.get('pipeline', 'No pipeline'))
+            return
+    
     # Check for spam headers first
     if msg.get('x-google-group-id'):
         mailman_log('error', 'Silently dropping message with X-Google-Group-Id header: %s',

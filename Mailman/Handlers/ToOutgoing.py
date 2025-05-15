@@ -52,19 +52,30 @@ def process(mlist, msg, msgdata):
         mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
         raise
     
-    # Get recipients from the message or list
-    recips = msg.get_all('to', []) + msg.get_all('cc', [])
+    # Get recipients from msgdata first, then fall back to message headers
+    recips = msgdata.get('recips', [])
     if not recips:
-        recips = [mlist.GetMemberEmail() for member in mlist.GetMemberCPAddresses()]
+        # Try to get from message headers
+        recips = msg.get_all('to', []) + msg.get_all('cc', [])
+        if not recips:
+            # If still no recipients, get from list membership
+            recips = [mlist.GetMemberEmail() for member in mlist.GetMemberCPAddresses()]
+            mailman_log('debug', 'ToOutgoing: No recipients found in msgdata or headers, using list members for message %s', msgid)
+    
+    # Ensure we have at least one recipient
+    if not recips:
+        mailman_log('error', 'ToOutgoing: No recipients found for message %s', msgid)
+        raise ValueError('No recipients found for message')
     
     # Add the message to the outgoing queue
     try:
         mailman_log('debug', 'ToOutgoing: Attempting to enqueue message %s for list %s',
                    msgid, mlist.internal_name())
+        # Ensure recipients are preserved in msgdata
+        msgdata['recips'] = recips
+        msgdata['recipient'] = recips[0] if recips else None
         outgoingq.enqueue(msg, msgdata, 
-                         listname=mlist.internal_name(),
-                         recips=recips,
-                         recipient=recips[0] if recips else None)
+                         listname=mlist.internal_name())
         mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
                    msgid, mlist.internal_name())
         mailman_log('debug', 'ToOutgoing: Message %s is now in outgoing queue', msgid)
