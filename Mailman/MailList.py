@@ -52,7 +52,6 @@ from Mailman.UserDesc import UserDesc
 from Mailman.Archiver import Archiver
 from Mailman.Autoresponder import Autoresponder
 from Mailman.Bouncer import Bouncer
-from Mailman.Deliverer import Deliverer
 from Mailman.Digester import Digester
 from Mailman.GatewayManager import GatewayManager
 from Mailman.HTMLFormatter import HTMLFormatter
@@ -80,9 +79,7 @@ EMPTYSTRING = ''
 OR = '|'
 
 # Use mixins here just to avoid having any one chunk be too large.
-class MailList(HTMLFormatter, Deliverer, ListAdmin,
-               Archiver, Digester, SecurityManager, Bouncer, GatewayManager,
-               Autoresponder, TopicMgr, Pending.Pending):
+class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bouncer, GatewayManager, Autoresponder, TopicMgr, Pending.Pending):
     #
     # A MailList object's basic Python object model support
     #
