@@ -5,13 +5,13 @@ import os
 import re
 import sys
 import time
+import string
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
 
-# Work around for some misguided Python packages that add iso-8859-1
-# accented characters to string.lowercase.
-lowercase = lowercase[:26]
+# Use string.ascii_lowercase instead of the old lowercase variable
+lowercase = string.ascii_lowercase
 
 __version__ = '0.09 (Mailman edition)'
 VERSION = __version__
@@ -26,7 +26,6 @@ from Mailman.i18n import _, C_
 SPACE = ' '
 
 
-
 msgid_pat = re.compile(r'(<.*>)')
 def strip_separators(s):
     "Remove quotes or parenthesization from a Message-ID string"
