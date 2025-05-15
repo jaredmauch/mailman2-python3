@@ -28,55 +28,17 @@ import email.message
 from email.message import Message
 from email.parser import Parser
 from email.errors import MessageParseError
+from email.generator import BytesGenerator
 
 from Mailman import mm_cfg
 from Mailman.Message import Message
 
-
 def _safeparser(fp):
     try:
         return email.message_from_file(fp, Mailman.Message.Message)
     except MessageParseError:
         # Don't return None since that will stop a mailbox iterator
         return ''
-
-
-class BinaryGenerator(email.generator.Generator):
-    """A generator that writes to a binary file."""
-    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, *args, **kwargs):
-        # Create a text buffer that we'll write to first
-        self._buffer = StringIO()
-        super().__init__(self._buffer, mangle_from_, maxheaderlen, *args, **kwargs)
-        # Store the binary file object
-        self._binary_fp = outfp
-
-    def write(self, s):
-        """Override write to handle string-to-bytes conversion."""
-        if isinstance(s, str):
-            s = s.encode('utf-8', 'replace')
-        self._buffer.write(s)
-
-    def _write_lines(self, lines):
-        """Override to handle both string and bytes input."""
-        for line in lines:
-            if isinstance(line, bytes):
-                try:
-                    line = line.decode('utf-8', 'replace')
-                except UnicodeError:
-                    line = line.decode('latin-1', 'replace')
-            self._buffer.write(line)
-
-    def flatten(self, msg, unixfrom=False, linesep='\n'):
-        """Override to write the buffer contents to binary file."""
-        # Reset the buffer
-        self._buffer.seek(0)
-        self._buffer.truncate()
-        # Write the message to the buffer
-        super().flatten(msg, unixfrom=unixfrom, linesep=linesep)
-        # Get the content and write it to binary file
-        content = self._buffer.getvalue().encode('utf-8', 'replace')
-        self._binary_fp.write(content)
-
 
 class Mailbox(mailbox.mbox):
     def __init__(self, fp):
@@ -120,8 +82,8 @@ class Mailbox(mailbox.mbox):
                 self.fp.write(b'\n')
         # Seek to the last char of the mailbox
         self.fp.seek(0, 2)
-        # Create a BinaryGenerator instance to write the message to the file
-        g = BinaryGenerator(self.fp, mangle_from_=False, maxheaderlen=0)
+        # Create a BytesGenerator instance to write the message to the file
+        g = BytesGenerator(self.fp, mangle_from_=False, maxheaderlen=0)
         g.flatten(msg, unixfrom=True)
         # Add one more trailing newline for separation with the next message
         self.fp.write(b'\n')
