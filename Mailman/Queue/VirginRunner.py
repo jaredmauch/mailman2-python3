@@ -35,14 +35,14 @@ class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
     # Override the minimum retry delay for virgin messages
     MIN_RETRY_DELAY = 60  # 1 minute minimum delay between retries
-    # Maximum age for retry tracking data
-    _max_retry_age = 86400  # 24 hours in seconds
+    # Maximum age for message tracking data
+    _max_tracking_age = 86400  # 24 hours in seconds
     # Cleanup interval for message tracking data
     _cleanup_interval = 3600  # 1 hour in seconds
 
-    def _check_retry_delay(self, msgid, filebase):
-        """Check if enough time has passed since the last retry attempt.
-        Returns True if the message can be processed, False if it should be delayed."""
+    def _check_message_processed(self, msgid, filebase):
+        """Check if a message has already been processed and if retry delay is met.
+        Returns True if the message can be processed, False if it's a duplicate or retry delay not met."""
         try:
             with self._processed_lock:
                 current_time = time.time()
@@ -53,11 +53,11 @@ class VirginRunner(IncomingRunner):
                         mailman_log('debug', 'VirginRunner: Starting cleanup of old message tracking data')
                         # Only clean up entries older than cleanup_interval
                         cutoff_time = current_time - self._cleanup_interval
-                        # Clean up retry times first
-                        old_msgids = [mid for mid, retry_time in self._retry_times.items() 
-                                    if retry_time < cutoff_time]
+                        # Clean up old message IDs
+                        old_msgids = [mid for mid, process_time in self._processed_times.items() 
+                                    if process_time < cutoff_time]
                         for mid in old_msgids:
-                            self._retry_times.pop(mid, None)
+                            self._processed_times.pop(mid, None)
                             self._processed_messages.discard(mid)
                         self._last_cleanup = current_time
                         mailman_log('debug', 'VirginRunner: Cleaned up %d old message entries', len(old_msgids))
@@ -65,58 +65,41 @@ class VirginRunner(IncomingRunner):
                         mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
                         # Continue processing even if cleanup fails
                 
-                # Check retry delay
-                last_retry = self._retry_times.get(msgid)
-                time_since_last_retry = 0 if last_retry is None else current_time - last_retry
-                
-                # Log detailed retry information at debug level
-                mailman_log('debug', 'VirginRunner: Retry check for message %s (file: %s):', msgid, filebase)
-                mailman_log('debug', '  Last retry time: %s', time.ctime(last_retry) if last_retry else 'Never')
-                mailman_log('debug', '  Current time: %s', time.ctime(current_time))
-                mailman_log('debug', '  Time since last retry: %d seconds', time_since_last_retry)
-                mailman_log('debug', '  Minimum retry delay: %d seconds', self.MIN_RETRY_DELAY)
-                
-                # If message has never been retried (last_retry is None), it can be processed
-                if last_retry is None:
-                    # Update both data structures atomically
-                    try:
-                        self._processed_messages.add(msgid)
-                        self._retry_times[msgid] = current_time
-                        mailman_log('debug', 'VirginRunner: Message %s (file: %s) has never been retried, proceeding with processing',
+                # Check if message has been processed
+                if msgid in self._processed_messages:
+                    # Check retry delay
+                    last_retry = self._processed_times.get(msgid)
+                    if last_retry is not None:
+                        time_since_last_retry = current_time - last_retry
+                        if time_since_last_retry < self.MIN_RETRY_DELAY:
+                            mailman_log('info', 'VirginRunner: Message %s (file: %s) retry delay not met. Time since last retry: %d seconds, minimum required: %d seconds',
+                                       msgid, filebase, time_since_last_retry, self.MIN_RETRY_DELAY)
+                            return False
+                        else:
+                            mailman_log('debug', 'VirginRunner: Message %s (file: %s) retry delay met. Time since last retry: %d seconds',
+                                       msgid, filebase, time_since_last_retry)
+                    else:
+                        mailman_log('info', 'VirginRunner: Duplicate message detected: %s (file: %s)',
                                    msgid, filebase)
-                        return True
-                    except Exception as e:
-                        # If we fail to update the tracking data, remove the message from processed set
-                        self._processed_messages.discard(msgid)
-                        self._retry_times.pop(msgid, None)
-                        mailman_log('error', 'VirginRunner: Failed to update tracking data for message %s: %s',
-                                   msgid, str(e))
                         return False
                 
-                # For messages that have been retried before, check the delay
-                if time_since_last_retry < self.MIN_RETRY_DELAY:
-                    # Log at info level when retry check fails
-                    mailman_log('info', 'VirginRunner: Message %s (file: %s) retried too soon. Time since last retry: %d seconds, minimum required: %d seconds',
-                               msgid, filebase, time_since_last_retry, self.MIN_RETRY_DELAY)
-                    return False
-                
-                # Update both data structures atomically
+                # Mark message as processed
                 try:
                     self._processed_messages.add(msgid)
-                    self._retry_times[msgid] = current_time
-                    mailman_log('debug', 'VirginRunner: Message %s (file: %s) passed retry check, proceeding with processing',
+                    self._processed_times[msgid] = current_time
+                    mailman_log('debug', 'VirginRunner: Message %s (file: %s) marked for processing',
                                msgid, filebase)
                     return True
                 except Exception as e:
                     # If we fail to update the tracking data, remove the message from processed set
                     self._processed_messages.discard(msgid)
-                    self._retry_times.pop(msgid, None)
+                    self._processed_times.pop(msgid, None)
                     mailman_log('error', 'VirginRunner: Failed to update tracking data for message %s: %s',
                                msgid, str(e))
                     return False
                     
         except Exception as e:
-            mailman_log('error', 'VirginRunner: Unexpected error in retry check for message %s: %s',
+            mailman_log('error', 'VirginRunner: Unexpected error in message check for %s: %s',
                        msgid, str(e))
             return False
 
@@ -124,6 +107,11 @@ class VirginRunner(IncomingRunner):
         """Process a virgin message."""
         msgid = msg.get('message-id', 'n/a')
         filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Check if message has already been processed
+        if not self._check_message_processed(msgid, filebase):
+            self._shunt.enqueue(msg, msgdata)
+            return False
         
         mailman_log('debug', 'VirginRunner._dispose: Starting to process virgin message %s (file: %s)',
                    msgid, filebase)
@@ -165,11 +153,12 @@ class VirginRunner(IncomingRunner):
             mailman_log('debug', 'VirginRunner: Starting cleanup of old message tracking data')
             now = time.time()
             old_msgids = []
-            for msgid, last_retry in list(self._retry_times.items()):
-                if now - last_retry > self._max_retry_age:
+            for msgid, process_time in list(self._processed_times.items()):
+                if now - process_time > self._max_tracking_age:
                     old_msgids.append(msgid)
             for msgid in old_msgids:
-                del self._retry_times[msgid]
+                del self._processed_times[msgid]
+                self._processed_messages.discard(msgid)
             mailman_log('debug', 'VirginRunner: Cleaned up %d old message entries', len(old_msgids))
         except Exception as e:
             mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
