@@ -89,7 +89,20 @@ def change_header(name, value, mlist, msg, msgdata, delete=True, repl=True):
         (msgdata.get('from_is_list') == 0 and mlist.from_is_list == 2)) and 
         not msgdata.get('_fasttrack')
        ) or name.lower() in ('from', 'reply-to', 'cc'):
+        # Store the header in msgdata for later use
         msgdata.setdefault('add_header', {})[name] = value
+        # Also add the header to the message if it's not From, Reply-To, or Cc
+        if name.lower() not in ('from', 'reply-to', 'cc'):
+            if delete:
+                del msg[name]
+            if isinstance(value, Header):
+                msg[name] = value
+            else:
+                try:
+                    msg[name] = str(value)
+                except UnicodeEncodeError:
+                    msg[name] = Header(value,
+                                     Utils.GetCharSet(mlist.preferred_language))
     elif repl or name not in msg:
         if delete:
             del msg[name]
