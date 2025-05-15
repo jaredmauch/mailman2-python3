@@ -231,7 +231,7 @@ To obtain instructions, send a message containing just the word "help".
         resp.append(_('\n- Done.\n\n'))
         # Encode any strings into the list charset, so we don't try to
         # join strings and invalid ASCII.
-        charset = Utils.GetCharSet(self.msgdata['lang'])
+        charset = Utils.GetCharSet(self.msgdata.get('lang', self.mlist.preferred_language))
         encoded_resp = []
         for item in resp:
             if isinstance(item, str):
