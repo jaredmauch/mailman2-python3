@@ -414,6 +414,18 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         del msg['sender']
         msg['Sender'] = '"%s" <%s>' % (mlist.real_name, envsender)
 
+    # Check for spam indicators
+    if msg.get('X-Google-Group-Id'):
+        mailman_log('smtp-failure', 'Message rejected: Contains X-Google-Group-Id header, likely spam')
+        # Add all recipients to refused list
+        for r in recips:
+            refused[r] = (550, 'Message rejected: Contains X-Google-Group-Id header, likely spam')
+        # Move message to bad queue
+        badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+        badq.enqueue(msg, msgdata)
+        failures.update(refused)
+        return
+
     # Get the plain, flattened text of the message
     msgtext = msg.as_string(mangle_from_=False)
     # Ensure the message text is properly encoded as UTF-8

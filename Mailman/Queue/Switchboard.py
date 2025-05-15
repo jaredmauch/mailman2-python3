@@ -159,6 +159,11 @@ class Switchboard:
         # Calculate the filename from the given filebase.
         filename = os.path.join(self.__whichq, filebase + '.pck')
         
+        # Check if file exists before proceeding
+        if not os.path.exists(filename):
+            mailman_log('warning', 'Queue file does not exist: %s', filename)
+            return None, None
+            
         # Create a lock file
         lockfile = filename + '.lock'
         try:
