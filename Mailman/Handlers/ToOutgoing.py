@@ -52,11 +52,19 @@ def process(mlist, msg, msgdata):
         mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
         raise
     
+    # Get recipients from the message or list
+    recips = msg.get_all('to', []) + msg.get_all('cc', [])
+    if not recips:
+        recips = [mlist.GetMemberEmail() for member in mlist.GetMemberCPAddresses()]
+    
     # Add the message to the outgoing queue
     try:
         mailman_log('debug', 'ToOutgoing: Attempting to enqueue message %s for list %s',
                    msgid, mlist.internal_name())
-        outgoingq.enqueue(msg, msgdata, listname=mlist.internal_name())
+        outgoingq.enqueue(msg, msgdata, 
+                         listname=mlist.internal_name(),
+                         recips=recips,
+                         recipient=recips[0] if recips else None)
         mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
                    msgid, mlist.internal_name())
         mailman_log('debug', 'ToOutgoing: Message %s is now in outgoing queue', msgid)

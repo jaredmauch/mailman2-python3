@@ -61,7 +61,8 @@ def main():
                     '_plaintext': 1,
                     'envsender': Utils.get_site_email(extra='bounces'),
                     'pipeline': mm_cfg.OWNER_PIPELINE,
-                    'toowner': 1
+                    'toowner': 1,
+                    'recipient': Utils.get_site_email(listname, 'owner')
                 })
 
 
