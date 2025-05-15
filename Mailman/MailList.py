@@ -1187,6 +1187,7 @@ class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bo
         """Add a member right now."""
         # Import Deliverer locally to avoid circular import issues
         from Mailman.Deliverer import Deliverer
+        deliverer = Deliverer()
         assert self.Locked()
         if ack is None:
             ack = self.send_welcome_msg
@@ -1238,8 +1239,8 @@ class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bo
             otrans = i18n.get_translation()
             i18n.set_language(lang)
             try:
-                self.SendSubscribeAck(email, self.getMemberPassword(email),
-                                      digest, text)
+                deliverer.SendSubscribeAck(email, self.getMemberPassword(email),
+                                          digest, text)
             finally:
                 i18n.set_translation(otrans)
         if admin_notif:
