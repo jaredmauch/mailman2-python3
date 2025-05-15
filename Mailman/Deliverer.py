@@ -50,7 +50,6 @@ from Mailman.Logging.Syslog import mailman_log
 from Mailman.Utils import validate_ip_address
 import Mailman.Handlers.Replybot as Replybot
 from Mailman.i18n import _
-from Mailman.Queue.Runner import Runner
 from Mailman import LockFile
 
 # Lazy imports to avoid circular dependencies

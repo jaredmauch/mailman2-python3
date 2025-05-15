@@ -337,13 +337,8 @@ class Runner:
             return False
 
     def _open_list(self, listname):
-        # We no longer cache the list instances.  Because of changes to
-        # MailList.py needed to avoid not reloading an updated list, caching
-        # is not as effective as it once was.  Also, with OldStyleMemberships
-        # as the MemberAdaptor, there was a self-reference to the list which
-        # kept all lists in the cache.  Changing this reference to a
-        # weakref.proxy created other issues.
         try:
+            import Mailman.MailList as MailList
             mlist = MailList.MailList(listname, lock=False)
         except Errors.MMListError as e:
             self.log_error('list_open_error', e, listname=listname)
