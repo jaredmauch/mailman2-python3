@@ -324,6 +324,13 @@ def ch_oneline(headerstr):
     # copied and modified from ToDigest.py and Utils.py
     # return (string, cset) tuple as check for failure
     try:
+        # Ensure headerstr is a string, not bytes
+        if isinstance(headerstr, bytes):
+            try:
+                headerstr = headerstr.decode('utf-8')
+            except UnicodeDecodeError:
+                headerstr = headerstr.decode('us-ascii', 'replace')
+        
         d = decode_header(headerstr)
         # at this point, we should rstrip() every string because some
         # MUA deliberately add trailing spaces when composing return
@@ -341,4 +348,9 @@ def ch_oneline(headerstr):
         return oneline.encode(cset, 'replace'), cset
     except (LookupError, UnicodeError, ValueError, HeaderParseError):
         # possibly charset problem. return with undecoded string in one line.
+        if isinstance(headerstr, bytes):
+            try:
+                headerstr = headerstr.decode('utf-8')
+            except UnicodeDecodeError:
+                headerstr = headerstr.decode('us-ascii', 'replace')
         return ''.join(headerstr.splitlines()), 'us-ascii'
