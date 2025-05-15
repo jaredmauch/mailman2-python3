@@ -24,6 +24,14 @@
 
 import re
 import sys
+import email
+import email.message
+import email.utils
+from email.header import decode_header, make_header, Header
+from email.errors import HeaderParseError
+from email.iterators import typed_subpart_iterator
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -38,12 +46,6 @@ from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
 from Mailman import LockFile
 from Mailman import Pending
-
-from email.header import decode_header, make_header, Header
-from email.errors import HeaderParseError
-from email.iterators import typed_subpart_iterator
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
 
 # Lazy imports to avoid circular dependencies
 def get_replybot():
