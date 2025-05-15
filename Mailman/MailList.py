@@ -1183,11 +1183,9 @@ class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bo
         # If we get here, we can add the member directly
         self.ApprovedAddMember(userdesc, whence=remote or '')
 
-    def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='', whence=''):
+    def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='',
+                          whence=''):
         """Add a member right now."""
-        # Import Deliverer locally to avoid circular import issues
-        from Mailman.Deliverer import Deliverer
-        deliverer = Deliverer()
         assert self.Locked()
         if ack is None:
             ack = self.send_welcome_msg
@@ -1235,14 +1233,8 @@ class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bo
         syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
                kind, formataddr((name, email)), whence)
         if ack:
-            lang = self.preferred_language
-            otrans = i18n.get_translation()
-            i18n.set_language(lang)
-            try:
-                deliverer.SendSubscribeAck(email, self.getMemberPassword(email),
-                                          digest, text)
-            finally:
-                i18n.set_translation(otrans)
+            self.SendSubscribeAck(email, self.getMemberPassword(email),
+                                digest, text)
         if admin_notif:
             lang = self.preferred_language
             otrans = i18n.get_translation()
