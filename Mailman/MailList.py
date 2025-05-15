@@ -52,6 +52,7 @@ from Mailman.UserDesc import UserDesc
 from Mailman.Archiver import Archiver
 from Mailman.Autoresponder import Autoresponder
 from Mailman.Bouncer import Bouncer
+from Mailman.Deliverer import Deliverer
 from Mailman.Digester import Digester
 from Mailman.GatewayManager import GatewayManager
 from Mailman.HTMLFormatter import HTMLFormatter
