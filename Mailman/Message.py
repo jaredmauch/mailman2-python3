@@ -258,63 +258,100 @@ class Message(EmailMessage):
 
 
 class UserNotification(Message):
-    """A message sent to a user."""
+    """Class for internally crafted messages."""
+
     def __init__(self, recip, sender, subject=None, text=None, lang=None):
         Message.__init__(self)
-        self['To'] = recip
+        charset = None
+        if lang is not None:
+            charset = Charset(GetCharSet(lang))
+        if text is not None:
+            self.set_payload(text, charset)
+        if subject is None:
+            subject = '(no subject)'
+        self['Subject'] = Header(subject, charset, header_name='Subject',
+                                 errors='replace')
         self['From'] = sender
-        if subject:
-            self['Subject'] = subject
-        if text:
-            self.set_payload(text)
-        self['Auto-Submitted'] = 'auto-generated'
-        self['Precedence'] = 'bulk'
-        self['X-Auto-Response-Suppress'] = 'OOF, AutoReply'
-        self['X-Mailman-Version'] = mm_cfg.VERSION
-        self['X-No-Archive'] = 'yes'
-        self.lang = lang
+        if isinstance(recip, list):
+            self['To'] = COMMASPACE.join(recip)
+            self.recips = recip
+        else:
+            self['To'] = recip
+            self.recips = [recip]
 
     def send(self, mlist, noprecedence=False, **_kws):
-        """Send the message to the recipient."""
-        if not noprecedence:
-            self['Precedence'] = 'bulk'
+        """Sends the message by enqueuing it to the `virgin' queue.
+
+        This is used for all internally crafted messages.
+        """
+        # Since we're crafting the message from whole cloth, let's make sure
+        # this message has a Message-ID.  Yes, the MTA would give us one, but
+        # this is useful for logging to logs/smtp.
+        if 'message-id' not in self:
+            self['Message-ID'] = unique_message_id(mlist)
+        # Ditto for Date: which is required by RFC 2822
+        if 'date' not in self:
+            self['Date'] = email.utils.formatdate(localtime=1)
+        # UserNotifications are typically for admin messages, and for messages
+        # other than list explosions.  Send these out as Precedence: bulk, but
+        # don't override an existing Precedence: header.
+        # Also, if the message is To: the list-owner address, set Precedence:
+        # list.  See note below in OwnerNotification.
+        if not ('precedence' in self or noprecedence):
+            if self.get('to') == mlist.GetOwnerEmail():
+                self['Precedence'] = 'list'
+            else:
+                self['Precedence'] = 'bulk'
         self._enqueue(mlist, **_kws)
 
     def _enqueue(self, mlist, **_kws):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
-        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-        outq.enqueue(self, {'recipient': self['To'],
-                           'sender': self['From'],
-                           'lang': self.lang,
-                           'mlist': mlist,
-                           'version': mm_cfg.QUEUE_VERSION,
-                           }, **_kws)
+        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        # The message metadata better have a `recip' attribute
+        virginq.enqueue(self,
+                        listname = mlist.internal_name(),
+                        recips = self.recips,
+                        nodecorate = 1,
+                        reduced_list_headers = 1,
+                        **_kws)
 
 
 class OwnerNotification(UserNotification):
-    """A message sent to the list owner."""
+    """Like user notifications, but this message goes to the list owners."""
+
     def __init__(self, mlist, subject=None, text=None, tomoderators=1):
+        recips = mlist.owner[:]
         if tomoderators:
-            recip = mlist.GetOwnerEmail()
-        else:
-            recip = mlist.GetRequestEmail()
-        UserNotification.__init__(self, recip, mlist.GetBouncesEmail(),
-                                subject, text, mlist.preferred_language)
-        self['Reply-To'] = mlist.GetRequestEmail()
-        self['X-List-Administrivia'] = 'yes'
+            recips.extend(mlist.moderator)
+        # We have to set the owner to the site's -bounces address, otherwise
+        # we'll get a mail loop if an owner's address bounces.
+        sender = get_site_email(mlist.host_name, 'bounces')
+        lang = mlist.preferred_language
+        UserNotification.__init__(self, recips, sender, subject, text, lang)
+        # Hack the To header to look like it's going to the -owner address
+        del self['to']
+        self['To'] = mlist.GetOwnerEmail()
+        self._sender = sender
+        # User notifications are normally sent with Precedence: bulk.  This
+        # is appropriate as they can be backscatter of rejected spam.
+        # Owner notifications are not backscatter and are perhaps more
+        # important than 'bulk' so give them Precedence: list by default.
+        # (LP: #1313146)
+        self['Precedence'] = 'list'
 
     def _enqueue(self, mlist, **_kws):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
-        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-        outq.enqueue(self, {'recipient': self['To'],
-                           'sender': self['From'],
-                           'lang': self.lang,
-                           'mlist': mlist,
-                           'version': mm_cfg.QUEUE_VERSION,
-                           }, **_kws)
-
+        virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
+        # The message metadata better have a `recip' attribute
+        virginq.enqueue(self,
+                        listname = mlist.internal_name(),
+                        recips = self.recips,
+                        nodecorate = 1,
+                        reduced_list_headers = 1,
+                        envsender = self._sender,
+                        **_kws)
 
 # Make UserNotification and OwnerNotification available as Message attributes
 Message.UserNotification = UserNotification
