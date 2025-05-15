@@ -191,7 +191,18 @@ class Results:
     def send_response(self):
         # Helper
         def indent(lines):
-            return ['    ' + line for line in lines]
+            """Indent each line with 4 spaces."""
+            result = []
+            for line in lines:
+                if isinstance(line, bytes):
+                    try:
+                        # Try UTF-8 first
+                        line = line.decode('utf-8')
+                    except UnicodeDecodeError:
+                        # Fall back to latin-1 if UTF-8 fails
+                        line = line.decode('latin-1')
+                result.append('    ' + line)
+            return result
         # Quick exit for some commands which don't need a response
         if not self.respond:
             return
