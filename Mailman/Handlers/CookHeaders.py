@@ -205,119 +205,58 @@ def munge_from_header(mlist, msg, msgdata):
     change_header('From', new_from, mlist, msg, msgdata)
 
 def prefix_subject(mlist, msg, msgdata):
-    # Add the subject prefix unless the message is a digest or is being fast
-    # tracked (e.g. internally crafted, delivered to a single user such as the
-    # list admin).
+    """Add the list's subject prefix to the message's Subject: header."""
+    # Get the subject and charset
+    subject = msg.get('subject', '')
+    if not subject:
+        return
+    
+    # Get the list's charset
+    cset = mlist.preferred_language
+    
+    # Get the prefix
     prefix = mlist.subject_prefix.strip()
     if not prefix:
         return
-    subject = msg.get('subject', '')
-    # Try to figure out what the continuation_ws is for the header
-    if isinstance(subject, Header):
-        lines = str(subject).splitlines()
-    else:
-        lines = subject.splitlines()
-    ws = ' '
-    if len(lines) > 1 and lines[1] and lines[1][0] in ' \t':
-        ws = lines[1][0]
-    msgdata['origsubj'] = subject
-    # The subject may be multilingual but we take the first charset as major
-    # one and try to decode.  If it is decodable, returned subject is in one
-    # line and cset is properly set.  If fail, subject is mime-encoded and
-    # cset is set as us-ascii.  See detail for ch_oneline() (CookHeaders one
-    # line function).
-    subject, cset = ch_oneline(subject)
-    # TK: Python interpreter has evolved to be strict on ascii charset code
-    # range.  It is safe to use unicode string when manupilating header
-    # contents with re module.  It would be best to return unicode in
-    # ch_oneline() but here is temporary solution.
-    subject = str(subject, cset)
-    # If the subject_prefix contains '%d', it is replaced with the
-    # mailing list sequential number.  Sequential number format allows
-    # '%d' or '%05d' like pattern.
-    prefix_pattern = re.escape(prefix)
-    # unescape '%' :-<
-    prefix_pattern = '%'.join(prefix_pattern.split(r'\%'))
-    p = re.compile(r'%\d*d')
-    if p.search(prefix, 1):
-        # prefix have number, so we should search prefix w/number in subject.
-        # Also, force new style.
-        prefix_pattern = p.sub(r'\s*\d+\s*', prefix_pattern)
-        old_style = False
-    else:
-        old_style = mm_cfg.OLD_STYLE_PREFIXING
-    subject = re.sub(prefix_pattern, '', subject)
-    # Previously the following re didn't have the first \s*. It would fail
-    # if the incoming Subject: was like '[prefix] Re: Re: Re:' because of the
-    # leading space after stripping the prefix. It is not known what MUA would
-    # create such a Subject:, but the issue was reported.
-    rematch = re.match(
-                       r'(\s*(RE|AW|SV|VS)\s*(\[\d+\])?\s*:\s*)+',
-                        subject, re.I)
-    if rematch:
-        subject = subject[rematch.end():]
-        recolon = 'Re:'
-    else:
-        recolon = ''
-    # Strip leading and trailing whitespace from subject.
-    subject = subject.strip()
-    # At this point, subject may become null if someone post mail with
-    # Subject: [subject prefix]
-    if subject == '':
-        # We want the i18n context to be the list's preferred_language.  It
-        # could be the poster's.
-        otrans = i18n.get_translation()
-        i18n.set_language(mlist.preferred_language)
-        subject = _('(no subject)')
-        i18n.set_translation(otrans)
-        cset = Utils.GetCharSet(mlist.preferred_language)
-        subject = str(subject, cset)
-    # and substitute %d in prefix with post_id
+        
+    # Handle the subject encoding
     try:
-        prefix = prefix % mlist.post_id
-    except TypeError:
-        pass
-    # If charset is 'us-ascii', try to concatnate as string because there
-    # is some weirdness in Header module (TK)
-    if cset == 'us-ascii':
-        try:
-            if old_style:
-                h = u' '.join([recolon, prefix, subject])
-            else:
-                if recolon:
-                    h = u' '.join([prefix, recolon, subject])
-                else:
-                    h = u' '.join([prefix, subject])
-            h = h.encode('us-ascii')
-            h = uheader(mlist, h, 'Subject', continuation_ws=ws)
-            change_header('Subject', h, mlist, msg, msgdata)
-            ss = u' '.join([recolon, subject])
-            ss = ss.encode('us-ascii')
-            ss = uheader(mlist, ss, 'Subject', continuation_ws=ws)
-            msgdata['stripped_subject'] = ss
-            return
-        except UnicodeError:
-            pass
-    # Get the header as a Header instance, with proper unicode conversion
-    # Because of rfc2047 encoding, spaces between encoded words can be
-    # insignificant, so we need to append spaces to our encoded stuff.
-    prefix += ' '
-    if recolon:
-        recolon += ' '
-    if old_style:
-        h = uheader(mlist, recolon, 'Subject', continuation_ws=ws)
-        h.append(prefix)
-    else:
-        h = uheader(mlist, prefix, 'Subject', continuation_ws=ws)
-        h.append(recolon)
-    # TK: Subject is concatenated and unicode string.
-    subject = subject.encode(cset, 'replace')
-    h.append(subject, cset)
-    change_header('Subject', h, mlist, msg, msgdata)
-    ss = uheader(mlist, recolon, 'Subject', continuation_ws=ws)
-    ss.append(subject, cset)
-    msgdata['stripped_subject'] = ss
-
+        # If subject is already a string, use it directly
+        if isinstance(subject, str):
+            subject_str = subject
+        else:
+            # Try to decode the subject
+            try:
+                subject_str = str(subject, cset)
+            except (UnicodeError, LookupError):
+                # If that fails, try utf-8
+                subject_str = str(subject, 'utf-8', 'replace')
+    except Exception as e:
+        mailman_log('error', 'Error decoding subject: %s', str(e))
+        return
+        
+    # Add the prefix if it's not already there
+    if not subject_str.startswith(prefix):
+        msg['Subject'] = prefix + ' ' + subject_str
+    
+    # Mark message as processed
+    mailman_log('debug', 'CookHeaders: Adding X-BeenThere header for message %s', msgid)
+    change_header('X-BeenThere', mlist.GetListEmail(),
+                 mlist, msg, msgdata, delete=False)
+    
+    # Add standard headers
+    mailman_log('debug', 'CookHeaders: Adding standard headers for message %s', msgid)
+    change_header('X-Mailman-Version', mm_cfg.VERSION,
+                 mlist, msg, msgdata, repl=False)
+    change_header('Precedence', 'list',
+                 mlist, msg, msgdata, repl=False)
+    
+    # Handle From: header munging if needed
+    if (msgdata.get('from_is_list') or mlist.from_is_list) and not msgdata.get('_fasttrack'):
+        mailman_log('debug', 'CookHeaders: Munging From header for message %s', msgid)
+        munge_from_header(mlist, msg, msgdata)
+    
+    mailman_log('debug', 'CookHeaders: Finished processing message %s', msgid)
 
 def ch_oneline(headerstr):
     # Decode header string in one line and convert into single charset
