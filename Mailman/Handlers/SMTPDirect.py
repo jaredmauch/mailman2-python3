@@ -388,8 +388,9 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
 
 
 def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
-    # Initialize recips at the start
+    # Initialize recips and refused at the start
     recips = []
+    refused = {}
     try:
         # Check for spam headers first
         if msg.get('x-google-group-id'):
@@ -401,7 +402,6 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
             badq.enqueue(msg, msgdata)
             # Update failures dict
-            failures = msgdata.get('failures', {})
             failures.update(refused)
             msgdata['failures'] = failures
             return
@@ -444,7 +444,6 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
         if isinstance(msgtext, str):
             msgtext = msgtext.encode('utf-8')
 
-        refused = {}
         msgid = msg.get('Message-ID', 'n/a')
         # Ensure msgid is a string
         if isinstance(msgid, bytes):

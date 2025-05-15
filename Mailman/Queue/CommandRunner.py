@@ -119,6 +119,12 @@ class Results:
         ret = CONTINUE
         for line in self.commands:
             if line and line.strip():
+                # Ensure line is a string
+                if isinstance(line, bytes):
+                    try:
+                        line = line.decode('utf-8')
+                    except UnicodeDecodeError:
+                        line = line.decode('latin-1')
                 args = line.split()
                 cmd = args.pop(0).lower()
                 ret = self.do_command(cmd, args)
@@ -132,9 +138,15 @@ class Results:
     def do_command(self, cmd, args=None):
         if args is None:
             args = ()
+        # Ensure cmd is a string
+        if isinstance(cmd, bytes):
+            try:
+                cmd = cmd.decode('utf-8')
+            except UnicodeDecodeError:
+                cmd = cmd.decode('latin-1')
         # Try to import a command handler module for this command
-        modname = 'Mailman.Commands.cmd_' + cmd
         try:
+            modname = 'Mailman.Commands.cmd_' + cmd
             __import__(modname)
             handler = sys.modules[modname]
         # ValueError can be raised if cmd has dots in it.
