@@ -36,7 +36,7 @@ from Mailman.Logging.Syslog import mailman_log
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Queue.BounceRunner import BounceMixin
-from Mailman.MemberAdaptor import MemberAdaptor
+from Mailman.MemberAdaptor import MemberAdaptor, ENABLED
 import Mailman.Message as Message
 
 # Lazy import to avoid circular dependency
@@ -450,7 +450,7 @@ class OutgoingRunner(Runner, BounceMixin):
                 members = mlist.getRegularMemberKeys()
                 if members:
                     msgdata['recips'] = [mlist.getMemberCPAddress(m) for m in members 
-                                       if mlist.getDeliveryStatus(m) == MemberAdaptor.ENABLED]
+                                       if mlist.getDeliveryStatus(m) == ENABLED]
                     mailman_log('debug', 'OutgoingRunner._process_regular: Expanded list members for message %s: %s',
                               msgid, str(msgdata['recips']))
                 else:
