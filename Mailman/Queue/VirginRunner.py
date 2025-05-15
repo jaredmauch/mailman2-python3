@@ -30,6 +30,7 @@ import time
 import traceback
 from Mailman import Errors
 import threading
+import email.header
 
 
 class VirginRunner(IncomingRunner):
@@ -90,10 +91,21 @@ class VirginRunner(IncomingRunner):
                         # Continue processing even if cleanup fails
                 
                 # For welcome messages, check content and recipients
-                subject = msg.get('subject', '').lower()
+                subject = msg.get('subject', '')
+                if isinstance(subject, email.header.Header):
+                    subject = str(subject)
+                subject = subject.lower()
+                
                 if 'welcome to the' in subject:
                     # Create a unique key based on subject, to, and from
-                    content_key = f"{subject}|{msg.get('to', '')}|{msg.get('from', '')}"
+                    to_addr = msg.get('to', '')
+                    from_addr = msg.get('from', '')
+                    if isinstance(to_addr, email.header.Header):
+                        to_addr = str(to_addr)
+                    if isinstance(from_addr, email.header.Header):
+                        from_addr = str(from_addr)
+                        
+                    content_key = f"{subject}|{to_addr}|{from_addr}"
                     if content_key in self._processed_messages:
                         mailman_log('info', 'VirginRunner: Duplicate welcome message detected: %s (file: %s)',
                                    content_key, filebase)

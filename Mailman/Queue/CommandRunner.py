@@ -264,7 +264,7 @@ To obtain instructions, send a message containing just the word "help".
             recip,
             self.mlist.GetOwnerEmail(),
             _('The results of your email commands'),
-            lang=self.msgdata['lang'])
+            lang=self.msgdata.get('lang', self.mlist.preferred_language))
         msg.set_type('multipart/mixed')
         msg.attach(results)
         if mm_cfg.RESPONSE_INCLUDE_LEVEL == 1:
@@ -380,13 +380,13 @@ class CommandRunner(Runner):
         # a key to which one was used.
         try:
             ret = BADCMD
-            if msgdata.get('torequest'):
+            if msgdata.get('torequest', False):
                 ret = res.process()
-            elif msgdata.get('tojoin'):
+            elif msgdata.get('tojoin', False):
                 ret = res.do_command('join')
-            elif msgdata.get('toleave'):
+            elif msgdata.get('toleave', False):
                 ret = res.do_command('leave')
-            elif msgdata.get('toconfirm'):
+            elif msgdata.get('toconfirm', False):
                 mo = re.match(mm_cfg.VERP_CONFIRM_REGEXP, msg.get('to', ''), re.IGNORECASE)
                 if mo:
                     ret = res.do_command('confirm', (mo.group('cookie'),))
