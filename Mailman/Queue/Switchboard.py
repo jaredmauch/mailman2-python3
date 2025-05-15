@@ -129,26 +129,23 @@ class Switchboard:
                 msgdata['recipient'] = msgdata['recips'][0]
                 mailman_log('debug', 'Switchboard.enqueue: Set recipient from recips for message: %s',
                            msg.get('message-id', 'n/a'))
-            # Only fall back to message headers if recips wasn't set
-            elif not msgdata.get('recips') and msg.get('to'):
+            # Then try envelope-to header
+            elif msg.get('envelope-to'):
+                msgdata['recipient'] = msg.get('envelope-to')
+                mailman_log('debug', 'Switchboard.enqueue: Set recipient from envelope-to header for message: %s',
+                           msg.get('message-id', 'n/a'))
+            # Finally try To header
+            elif msg.get('to'):
                 # Parse the To header to get the first recipient
                 addrs = email.utils.getaddresses([msg.get('to')])
                 if addrs and addrs[0][1]:
                     msgdata['recipient'] = addrs[0][1]
                     mailman_log('debug', 'Switchboard.enqueue: Set recipient from To header for message: %s',
                                msg.get('message-id', 'n/a'))
-                elif msg.get('envelope-to'):
-                    msgdata['recipient'] = msg.get('envelope-to')
-                    mailman_log('debug', 'Switchboard.enqueue: Set recipient from envelope-to header for message: %s',
-                               msg.get('message-id', 'n/a'))
                 else:
                     mailman_log('error', 'Switchboard.enqueue: No valid recipient found in To header for message: %s',
                                msg.get('message-id', 'n/a'))
                     raise ValueError('No valid recipient found in To header')
-            elif msg.get('envelope-to'):
-                msgdata['recipient'] = msg.get('envelope-to')
-                mailman_log('debug', 'Switchboard.enqueue: Set recipient from envelope-to header for message: %s',
-                           msg.get('message-id', 'n/a'))
             else:
                 mailman_log('error', 'Switchboard.enqueue: No recipient found in msgdata for message: %s',
                            msg.get('message-id', 'n/a'))
@@ -164,10 +161,21 @@ class Switchboard:
             # Otherwise try to get recipients from message headers
             else:
                 recips = []
-                for header in ('to', 'cc', 'bcc'):
-                    if msg.get(header):
-                        addrs = email.utils.getaddresses([msg.get(header)])
-                        recips.extend([addr[1] for addr in addrs if addr[1]])
+                # First try envelope-to header
+                if msg.get('envelope-to'):
+                    recips.append(msg.get('envelope-to'))
+                # Then try To header
+                if msg.get('to'):
+                    addrs = email.utils.getaddresses([msg.get('to')])
+                    recips.extend([addr[1] for addr in addrs if addr[1]])
+                # Then try Cc header
+                if msg.get('cc'):
+                    addrs = email.utils.getaddresses([msg.get('cc')])
+                    recips.extend([addr[1] for addr in addrs if addr[1]])
+                # Finally try Bcc header
+                if msg.get('bcc'):
+                    addrs = email.utils.getaddresses([msg.get('bcc')])
+                    recips.extend([addr[1] for addr in addrs if addr[1]])
                 
                 if recips:
                     msgdata['recips'] = recips
