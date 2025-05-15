@@ -194,8 +194,9 @@ class Archiver:
         # itself must be locked.
         if mm_cfg.ARCHIVE_TO_MBOX in (1, 2):
             try:
-                with self.__archive_file(self.ArchiveFileName()) as mbox:
-                    mbox.AppendMessage(msg)
+                mbox = self.__archive_file(self.ArchiveFileName())
+                mbox.AppendMessage(msg)
+                mbox.fp.close()
             except IOError as msg:
                 syslog('error', 'Archive file access failure:\n\t%s %s', 
                        self.ArchiveFileName(), msg)

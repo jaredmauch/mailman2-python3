@@ -206,7 +206,7 @@ def process(mlist, msg, msgdata):
         return
 
     # Chunkify the recipients
-    chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS_PER_CHUNK)
+    chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS)
     # Choose the delivery function based on VERP settings
     if msgdata.get('verp'):
         deliveryfunc = verpdeliver
