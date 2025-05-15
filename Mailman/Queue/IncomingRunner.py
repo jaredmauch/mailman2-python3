@@ -362,10 +362,16 @@ class IncomingRunner(Runner):
                             import sys
                             MailList = sys.modules['Mailman.MailList'].MailList
                             mlist = MailList(listname, lock=0)
-                        except Errors.MMUnknownListError:
-                            mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s', listname)
-                            self._shunt.enqueue(msg, msgdata)
-                            continue
+                        except (Errors.BadListNameError, Errors.MMUnknownListError) as e:
+                            # List doesn't exist or has invalid name - move message to bad queue
+                            mailman_log('error', 'List not found: %s - moving message to bad queue', listname)
+                            try:
+                                badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
+                                badq.enqueue(msg, listname=listname, tolist=listname)
+                                return True
+                            except Exception as e:
+                                mailman_log('error', 'Failed to move message to bad queue: %s', str(e))
+                                return False
                         
                         # Process the message
                         result = self._dispose(mlist, msg, msgdata)

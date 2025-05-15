@@ -96,7 +96,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             # pipe to the wrapper in an MTA alias or other delivery process
             # contains shell special characters so allow only defined characters
             # (default = '[-+_.=a-z0-9]').
-            if len(re.sub(r'[%s]' % mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS.replace('-', r'\-'), '', name)) > 0:
+            pattern = mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS.replace('-', r'\-')
+            if len(re.sub(r'[%s]' % pattern, '', name)) > 0:
                 raise Errors.BadListNameError(name)
             # Validate what will be the list's posting address
             postingaddr = '%s@%s' % (name, mm_cfg.DEFAULT_EMAIL_HOST)
