@@ -1122,98 +1122,77 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         msg.send(self)
 
     def AddMember(self, userdesc, remote=None):
-        """Front end to member subscription."""
-        assert self.Locked()
-        email = Utils.LCDomain(userdesc.address)
-        name = getattr(userdesc, 'fullname', '')
-        lang = getattr(userdesc, 'language', self.preferred_language)
-        digest = getattr(userdesc, 'digest', None)
-        password = getattr(userdesc, 'password', Utils.MakeRandomPassword())
-        if digest is None:
-            if self.nondigestable:
-                digest = 0
-            else:
-                digest = 1
-        Utils.ValidateEmail(email)
-        if self.isMember(email):
-            raise Errors.MMAlreadyAMember(email)
-        if self.CheckPending(email):
-            raise Errors.MMAlreadyPending(email)
-        if email.lower() == self.GetListEmail().lower():
-            raise Errors.MMBadEmailError
-        realname = self.real_name
+        """Add a new member to the list.
+
+        This is the main entry point for adding a new member.  It handles all
+        the necessary checks and notifications.
+        """
+        # Get the member's address and full name
+        email = userdesc.address
+        name = userdesc.fullname
+        password = userdesc.password
+        digest = userdesc.digest
+        lang = userdesc.language
+
+        # Check if the address is banned
         pattern = self.GetBannedPattern(email)
         if pattern:
-            whence = f' from {remote}' if remote else ''
-            syslog('vette', '%s banned subscription: %s%s (matched: %s)',
-                   realname, email, whence, pattern)
+            syslog('vette',
+                   '%s banned address: %s (matched: %s)',
+                   self.real_name, email, pattern)
             raise Errors.MembershipIsBanned(pattern)
-        if remote and getattr(mm_cfg, 'BLOCK_SPAMHAUS_LISTED_IP_SUBSCRIBE', False):
-            if Utils.banned_ip(remote):
-                whence = f' from {remote}'
-                syslog('vette', '%s banned subscription: %s%s (Spamhaus IP)',
-                       realname, email, whence)
-                raise Errors.MembershipIsBanned('Spamhaus IP')
-        if email and getattr(mm_cfg, 'BLOCK_SPAMHAUS_LISTED_DBL_SUBSCRIBE', False):
-            if Utils.banned_domain(email):
-                syslog('vette', '%s banned subscription: %s (Spamhaus DBL)',
-                       realname, email)
-                raise Errors.MembershipIsBanned('Spamhaus DBL')
-        if digest and not self.digestable:
-            raise Errors.MMCantDigestError
-        elif not digest and not self.nondigestable:
-            raise Errors.MMMustDigestError
-        userdesc.address = email
-        userdesc.fullname = name
-        userdesc.digest = digest
-        userdesc.language = lang
-        userdesc.password = password
-        if self.subscribe_policy == 0:
-            self.ApprovedAddMember(userdesc, whence=remote or '')
-        elif self.subscribe_policy == 1 or self.subscribe_policy == 3:
-            cookie = self.pend_new(Pending.SUBSCRIPTION, userdesc)
-            if remote is None:
-                oremote = by = remote = ''
-            else:
-                oremote = remote
-                by = ' ' + remote
-                remote = _(' from %(remote)s')
-            recipient = self.GetMemberAdminEmail(email)
-            confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1), cookie)
+
+        # Check if the address is already a member
+        if self.isMember(email):
+            syslog('vette',
+                   '%s already a member: %s',
+                   self.real_name, email)
+            raise Errors.AlreadyAMember(email)
+
+        # Check if the address is pending
+        if self.CheckPending(email):
+            syslog('vette',
+                   '%s pending address: %s',
+                   self.real_name, email)
+            raise Errors.MembershipIsPending(email)
+
+        # If we need confirmation, pend the subscription
+        if self.subscribe_policy in (2, 3) and not self.HasAutoApprovedSender(email):
+            # Pend the subscription
+            cookie = self.pend_new(Pending.SUBSCRIPTION,
+                                   userdesc, remote)
+            confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
+                                    cookie)
+            lang = self.getMemberLanguage(email)
             text = Utils.maketext(
                 'verify.txt',
-                {'email': email,
-                 'listaddr': self.GetListEmail(),
-                 'listname': realname,
-                 'cookie': cookie,
+                {'email'      : email,
+                 'listaddr'   : self.GetListEmail(),
+                 'listname'   : self.real_name,
+                 'cookie'     : cookie,
                  'requestaddr': self.getListAddress('request'),
-                 'remote': remote,
-                 'listadmin': self.GetOwnerEmail(),
-                 'confirmurl': confirmurl,
+                 'remote'     : remote or '',
+                 'listadmin'  : self.GetOwnerEmail(),
+                 'confirmurl' : confirmurl,
                  }, lang=lang, mlist=self)
+            # BAW: We don't pass the Subject: into the UserNotification
+            # constructor because it will encode it in the charset of the language
+            # being used.  For non-us-ascii charsets, this means it will probably
+            # quopri quote it, and thus replies will also be quopri encoded.  But
+            # CommandRunner doesn't yet grok such headers.  So, just set the
+            # Subject: in a separate step, although we have to delete the one
+            # UserNotification adds.
             msg = Message.UserNotification(
-                recipient, self.GetRequestEmail(cookie),
+                email, self.GetRequestEmail(cookie),
                 text=text, lang=lang)
             del msg['subject']
-            msg['Subject'] = self.GetConfirmJoinSubject(realname, cookie)
+            msg['Subject'] = self.GetConfirmJoinSubject(self.real_name, cookie)
             msg['Reply-To'] = self.GetRequestEmail(cookie)
-            if oremote.lower().endswith(email.lower()):
-                autosub = 'auto-replied'
-            else:
-                autosub = 'auto-generated'
-            del msg['auto-submitted']
-            msg['Auto-Submitted'] = autosub
             msg.send(self)
-            who = formataddr((name, email))
-            syslog('subscribe', '%s: pending %s %s',
-                   self.internal_name(), who, by)
-            raise Errors.MMSubscribeNeedsConfirmation
-        elif self.HasAutoApprovedSender(email):
-            self.ApprovedAddMember(userdesc)
-        else:
-            self.HoldSubscription(email, name, password, digest, lang)
-            raise Errors.MMNeedApproval(
-                f'subscriptions to {realname} require moderator approval')
+            return
+
+        # If we get here, we can add the member directly
+        self.ApprovedAddMember(userdesc, whence=remote or '')
 
     def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='', whence=''):
         """Add a member right now."""

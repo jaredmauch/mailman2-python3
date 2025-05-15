@@ -1749,3 +1749,22 @@ def ValidateListName(listname):
         return False
     # Check if the list name contains any characters not in the acceptable pattern
     return len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname, flags=re.IGNORECASE)) == 0
+
+def formataddr(pair):
+    """The inverse of parseaddr(), this takes a 2-tuple of (name, address)
+    and returns the string value suitable for an RFC 2822 From, To or Cc
+    header.
+
+    If the first element of pair is false, then the second element is
+    returned unmodified.
+    """
+    name, address = pair
+    if name:
+        # If name is bytes, decode it to str
+        if isinstance(name, bytes):
+            name = name.decode('utf-8', 'replace')
+        # If name contains non-ASCII characters, encode it
+        if any(ord(c) > 127 for c in name):
+            name = email.header.Header(name, 'utf-8').encode()
+        return '%s <%s>' % (name, address)
+    return address
