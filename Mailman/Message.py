@@ -284,10 +284,38 @@ class UserNotification(Message):
         charset = None
         if lang is not None:
             charset = Charset(GetCharSet(lang))
+            # Ensure we have a valid charset that can handle non-ASCII
+            if charset.output_charset == 'ascii':
+                charset.output_charset = 'utf-8'
         if text is not None:
+            # Handle text encoding properly
+            if isinstance(text, bytes):
+                try:
+                    # Try to decode using the provided charset
+                    if charset:
+                        text = text.decode(charset.input_charset, 'replace')
+                    else:
+                        # Fall back to UTF-8 if no charset provided
+                        text = text.decode('utf-8', 'replace')
+                except (UnicodeDecodeError, LookupError):
+                    # Last resort: latin-1
+                    text = text.decode('latin-1', 'replace')
+            elif not isinstance(text, str):
+                text = str(text)
             self.set_payload(text, charset)
         if subject is None:
             subject = '(no subject)'
+        # Handle subject encoding properly
+        if isinstance(subject, bytes):
+            try:
+                if charset:
+                    subject = subject.decode(charset.input_charset, 'replace')
+                else:
+                    subject = subject.decode('utf-8', 'replace')
+            except (UnicodeDecodeError, LookupError):
+                subject = subject.decode('latin-1', 'replace')
+        elif not isinstance(subject, str):
+            subject = str(subject)
         self['Subject'] = Header(subject, charset, header_name='Subject',
                                  errors='replace')
         self['From'] = sender
