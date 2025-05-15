@@ -128,29 +128,81 @@ class NewsRunner(Runner):
                    mlist.internal_name(), str(e))
             return True
 
-    def _oneloop(self):
-        # If NNTP is not enabled, sleep for a while before checking again
-        if not self._nntp:
-            # Check the stop flag every second during sleep
-            for _ in range(60):
-                if self._stop:
-                    return 0
-                time.sleep(1)
-            return 0
-            
-        # Get one message from the queue
-        msg = self._switchboard.dequeue()
-        if msg is None:
-            return 0
-            
-        # Process the message
+    def _onefile(self, msg, msgdata):
+        """Process a single news message.
+        
+        This method overrides the base class's _onefile to add news-specific
+        validation and processing.
+        
+        Args:
+            msg: The message to process
+            msgdata: Additional message metadata
+        """
         try:
-            self._dopost(msg)
+            # Validate the message
+            if not self._validate_message(msg, msgdata):
+                syslog('error', 'NewsRunner._onefile: Message validation failed')
+                self._shunt.enqueue(msg, msgdata)
+                return
+                
+            # Get the list name from the message data
+            listname = msgdata.get('listname')
+            if not listname:
+                syslog('error', 'NewsRunner._onefile: No listname in message data')
+                self._shunt.enqueue(msg, msgdata)
+                return
+                
+            # Open the list
+            try:
+                mlist = self._open_list(listname)
+            except Exception as e:
+                self.log_error('list_open_error', str(e), listname=listname)
+                self._shunt.enqueue(msg, msgdata)
+                return
+                
+            # Process the message
+            try:
+                keepqueued = self._dispose(mlist, msg, msgdata)
+                if keepqueued:
+                    self._switchboard.enqueue(msg, msgdata)
+            except Exception as e:
+                self._handle_error(e, msg=msg, mlist=mlist)
+                
         except Exception as e:
-            mailman_log('error', 'NewsRunner error: %s', str(e))
-            # Put the message back in the queue
-            self._switchboard.enqueue(msg, msgdata={})
-        return 1
+            syslog('error', 'NewsRunner._onefile: Unexpected error: %s', str(e))
+            self._shunt.enqueue(msg, msgdata)
+
+    def _oneloop(self):
+        """Process one batch of messages from the news queue."""
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Process each file
+            for filebase in files:
+                try:
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        continue
+                        
+                    # Process the message
+                    try:
+                        self._onefile(msg, msgdata)
+                    except Exception as e:
+                        syslog('error', 'NewsRunner._oneloop: Error processing message %s: %s', filebase, str(e))
+                        continue
+                        
+                except Exception as e:
+                    syslog('error', 'NewsRunner._oneloop: Error dequeuing file %s: %s', filebase, str(e))
+                    continue
+                    
+        except Exception as e:
+            syslog('error', 'NewsRunner._oneloop: Error in main loop: %s', str(e))
+            return 0
+            
+        return filecnt
 
     def _queue_news(self, listname, msg, msgdata):
         """Queue a news message for processing."""

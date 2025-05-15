@@ -40,6 +40,7 @@ import email.errors
 class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
+    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
     
     # Message tracking configuration - can be overridden by subclasses
     _track_messages = False  # Whether to track processed messages
@@ -73,6 +74,10 @@ class Runner:
             self._retry_times = {}
             self._last_cleanup = time.time()
             self._cleanup_interval = 3600
+            
+            # Initialize error tracking attributes
+            self._last_error_time = 0
+            self._error_count = 0
             
             syslog('debug', 'Runner: Initialization complete')
         except Exception as e:
@@ -112,17 +117,32 @@ class Runner:
             # subprocesses we've created and do any other necessary cleanups.
             self._cleanup()
 
-    def log_error(self, error_type, error, msg=None, mlist=None, **context):
-        """Structured error logging with context."""
-        context.update({
+    def log_error(self, error_type, error_msg, **kwargs):
+        """Log an error with the given type and message.
+        
+        Args:
+            error_type: A string identifying the type of error
+            error_msg: The error message to log
+            **kwargs: Additional context to include in the log message
+        """
+        context = {
             'runner': self.__class__.__name__,
-            'list': mlist.internal_name() if mlist else 'N/A',
-            'msg_id': msg.get('message-id', 'N/A') if msg else 'N/A',
             'error_type': error_type,
-            'error': str(error)
-        })
-        syslog('error', '%(runner)s: %(error_type)s - list: %(list)s, msg: %(msg_id)s, error: %(error)s',
-            context)
+            'error_msg': error_msg,
+        }
+        context.update(kwargs)
+        
+        # Format the error message
+        msg_parts = ['%s: %s' % (error_type, error_msg)]
+        if 'msg' in context:
+            msg_parts.append('Message-ID: %s' % context['msg'].get('message-id', 'unknown'))
+        if 'listname' in context:
+            msg_parts.append('List: %s' % context['listname'])
+        if 'traceback' in context:
+            msg_parts.append('Traceback:\n%s' % context['traceback'])
+            
+        # Log the error
+        syslog('error', ' '.join(msg_parts))
 
     def log_warning(self, warning_type, msg=None, mlist=None, **context):
         """Structured warning logging with context."""
@@ -196,7 +216,7 @@ class Runner:
                         
                     # Process the message
                     try:
-                        self._dopost(msg, msgdata)
+                        self._onefile(msg, msgdata)
                     except Exception as e:
                         syslog('error', 'Runner._oneloop: Error processing message %s: %s', filebase, str(e))
                         continue
