@@ -101,7 +101,12 @@ class BounceMixin:
             if now >= self._next_action:
                 syslog('debug', 'BounceMixin._doperiodic: Processing bounces, next action scheduled for %s',
                        time.ctime(self._next_action))
-                # ... periodic processing logic ...
+                # Process bounces
+                self._process_bounces()
+                # Update next action time to 1 hour from now
+                self._next_action = now + 3600
+                syslog('debug', 'BounceMixin._doperiodic: Next action scheduled for %s',
+                       time.ctime(self._next_action))
         except Exception as e:
             syslog('error', 'BounceMixin._doperiodic: Error during periodic processing: %s', str(e))
 
