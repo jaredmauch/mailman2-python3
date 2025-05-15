@@ -1085,3 +1085,329 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         msg.send(self)
         
         return cookie
+
+    def InviteNewMember(self, userdesc, text=''):
+        """Invite a new member to the list."""
+        invitee = userdesc.address
+        Utils.ValidateEmail(invitee)
+        pattern = self.GetBannedPattern(invitee)
+        if pattern:
+            syslog('vette', '%s banned invitation: %s (matched: %s)',
+                   self.real_name, invitee, pattern)
+            raise Errors.MembershipIsBanned(pattern)
+        userdesc.invitation = self.internal_name()
+        cookie = self.pend_new(Pending.SUBSCRIPTION, userdesc)
+        requestaddr = self.getListAddress('request')
+        confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1), cookie)
+        listname = self.real_name
+        text += Utils.maketext(
+            'invite.txt',
+            {'email': invitee,
+             'listname': listname,
+             'hostname': self.host_name,
+             'confirmurl': confirmurl,
+             'requestaddr': requestaddr,
+             'cookie': cookie,
+             'listowner': self.GetOwnerEmail(),
+             }, mlist=self)
+        sender = self.GetRequestEmail(cookie)
+        msg = Message.UserNotification(
+            invitee, sender,
+            text=text, lang=self.preferred_language)
+        subj = self.GetConfirmJoinSubject(listname, cookie)
+        del msg['subject']
+        msg['Subject'] = subj
+        del msg['auto-submitted']
+        msg['Auto-Submitted'] = 'auto-generated'
+        msg.send(self)
+
+    def AddMember(self, userdesc, remote=None):
+        """Front end to member subscription."""
+        assert self.Locked()
+        email = Utils.LCDomain(userdesc.address)
+        name = getattr(userdesc, 'fullname', '')
+        lang = getattr(userdesc, 'language', self.preferred_language)
+        digest = getattr(userdesc, 'digest', None)
+        password = getattr(userdesc, 'password', Utils.MakeRandomPassword())
+        if digest is None:
+            if self.nondigestable:
+                digest = 0
+            else:
+                digest = 1
+        Utils.ValidateEmail(email)
+        if self.isMember(email):
+            raise Errors.MMAlreadyAMember(email)
+        if self.CheckPending(email):
+            raise Errors.MMAlreadyPending(email)
+        if email.lower() == self.GetListEmail().lower():
+            raise Errors.MMBadEmailError
+        realname = self.real_name
+        pattern = self.GetBannedPattern(email)
+        if pattern:
+            whence = f' from {remote}' if remote else ''
+            syslog('vette', '%s banned subscription: %s%s (matched: %s)',
+                   realname, email, whence, pattern)
+            raise Errors.MembershipIsBanned(pattern)
+        if remote and getattr(mm_cfg, 'BLOCK_SPAMHAUS_LISTED_IP_SUBSCRIBE', False):
+            if Utils.banned_ip(remote):
+                whence = f' from {remote}'
+                syslog('vette', '%s banned subscription: %s%s (Spamhaus IP)',
+                       realname, email, whence)
+                raise Errors.MembershipIsBanned('Spamhaus IP')
+        if email and getattr(mm_cfg, 'BLOCK_SPAMHAUS_LISTED_DBL_SUBSCRIBE', False):
+            if Utils.banned_domain(email):
+                syslog('vette', '%s banned subscription: %s (Spamhaus DBL)',
+                       realname, email)
+                raise Errors.MembershipIsBanned('Spamhaus DBL')
+        if digest and not self.digestable:
+            raise Errors.MMCantDigestError
+        elif not digest and not self.nondigestable:
+            raise Errors.MMMustDigestError
+        userdesc.address = email
+        userdesc.fullname = name
+        userdesc.digest = digest
+        userdesc.language = lang
+        userdesc.password = password
+        if self.subscribe_policy == 0:
+            self.ApprovedAddMember(userdesc, whence=remote or '')
+        elif self.subscribe_policy == 1 or self.subscribe_policy == 3:
+            cookie = self.pend_new(Pending.SUBSCRIPTION, userdesc)
+            if remote is None:
+                oremote = by = remote = ''
+            else:
+                oremote = remote
+                by = ' ' + remote
+                remote = _(' from %(remote)s')
+            recipient = self.GetMemberAdminEmail(email)
+            confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1), cookie)
+            text = Utils.maketext(
+                'verify.txt',
+                {'email': email,
+                 'listaddr': self.GetListEmail(),
+                 'listname': realname,
+                 'cookie': cookie,
+                 'requestaddr': self.getListAddress('request'),
+                 'remote': remote,
+                 'listadmin': self.GetOwnerEmail(),
+                 'confirmurl': confirmurl,
+                 }, lang=lang, mlist=self)
+            msg = Message.UserNotification(
+                recipient, self.GetRequestEmail(cookie),
+                text=text, lang=lang)
+            del msg['subject']
+            msg['Subject'] = self.GetConfirmJoinSubject(realname, cookie)
+            msg['Reply-To'] = self.GetRequestEmail(cookie)
+            if oremote.lower().endswith(email.lower()):
+                autosub = 'auto-replied'
+            else:
+                autosub = 'auto-generated'
+            del msg['auto-submitted']
+            msg['Auto-Submitted'] = autosub
+            msg.send(self)
+            who = formataddr((name, email))
+            syslog('subscribe', '%s: pending %s %s',
+                   self.internal_name(), who, by)
+            raise Errors.MMSubscribeNeedsConfirmation
+        elif self.HasAutoApprovedSender(email):
+            self.ApprovedAddMember(userdesc)
+        else:
+            self.HoldSubscription(email, name, password, digest, lang)
+            raise Errors.MMNeedApproval(
+                f'subscriptions to {realname} require moderator approval')
+
+    def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='', whence=''):
+        """Add a member right now."""
+        assert self.Locked()
+        if ack is None:
+            ack = self.send_welcome_msg
+        if admin_notif is None:
+            admin_notif = self.admin_notify_mchanges
+        email = Utils.LCDomain(userdesc.address)
+        name = getattr(userdesc, 'fullname', '')
+        lang = getattr(userdesc, 'language', self.preferred_language)
+        digest = getattr(userdesc, 'digest', None)
+        password = getattr(userdesc, 'password', Utils.MakeRandomPassword())
+        if digest is None:
+            if self.nondigestable:
+                digest = 0
+            else:
+                digest = 1
+        Utils.ValidateEmail(email)
+        if self.isMember(email):
+            raise Errors.MMAlreadyAMember(email)
+        pattern = self.GetBannedPattern(email)
+        if pattern:
+            source = f' from {whence}' if whence else ''
+            syslog('vette', '%s banned subscription: %s%s (matched: %s)',
+                   self.real_name, email, source, pattern)
+            raise Errors.MembershipIsBanned(pattern)
+        self.addNewMember(email, realname=name, digest=digest,
+                          password=password, language=lang)
+        self.setMemberOption(email, mm_cfg.DisableMime,
+                             1 - self.mime_is_default_digest)
+        self.setMemberOption(email, mm_cfg.Moderate,
+                             self.default_member_moderation)
+        kind = ' (digest)' if digest else ''
+        syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
+               kind, formataddr((name, email)), whence)
+        if ack:
+            lang = self.preferred_language
+            otrans = i18n.get_translation()
+            i18n.set_language(lang)
+            try:
+                self.SendSubscribeAck(email, self.getMemberPassword(email),
+                                      digest, text)
+            finally:
+                i18n.set_translation(otrans)
+        if admin_notif:
+            lang = self.preferred_language
+            otrans = i18n.get_translation()
+            i18n.set_language(lang)
+            try:
+                whence_str = "" if whence is None else f"({_(whence)})"
+                realname = self.real_name
+                subject = _('%(realname)s subscription notification')
+            finally:
+                i18n.set_translation(otrans)
+            if isinstance(name, bytes):
+                name = name.decode(Utils.GetCharSet(lang), 'replace')
+            text = Utils.maketext(
+                "adminsubscribeack.txt",
+                {"listname": realname,
+                 "member": formataddr((name, email)),
+                 "whence": whence_str
+                 }, mlist=self)
+            msg = Message.OwnerNotification(self, subject, text)
+            msg.send(self)
+
+    def DeleteMember(self, name, whence=None, admin_notif=None, userack=True):
+        realname, email = parseaddr(name)
+        if self.unsubscribe_policy == 0:
+            self.ApprovedDeleteMember(name, whence, admin_notif, userack)
+        else:
+            self.HoldUnsubscription(email)
+            raise Errors.MMNeedApproval('unsubscriptions require moderator approval')
+
+    def ApprovedDeleteMember(self, name, whence=None, admin_notif=None, userack=None):
+        if userack is None:
+            userack = self.send_goodbye_msg
+        if admin_notif is None:
+            admin_notif = self.admin_notify_mchanges
+        fullname, emailaddr = parseaddr(name)
+        userlang = self.getMemberLanguage(emailaddr)
+        self.removeMember(emailaddr)
+        if userack:
+            self.SendUnsubscribeAck(emailaddr, userlang)
+        i18n.set_language(self.preferred_language)
+        if admin_notif:
+            realname = self.real_name
+            subject = _('%(realname)s unsubscribe notification')
+            text = Utils.maketext(
+                'adminunsubscribeack.txt',
+                {'member': name,
+                 'listname': self.real_name,
+                 "whence": "" if whence is None else f"({_(whence)})"
+                 }, mlist=self)
+            msg = Message.OwnerNotification(self, subject, text)
+            msg.send(self)
+        if whence:
+            whence_str = f'; {whence}'
+        else:
+            whence_str = ''
+        syslog('subscribe', '%s: deleted %s%s',
+               self.internal_name(), name, whence_str)
+
+    def ChangeMemberName(self, addr, name, globally):
+        self.setMemberName(addr, name)
+        if not globally:
+            return
+        for listname in Utils.list_names():
+            if listname == self.internal_name():
+                continue
+            mlist = MailList(listname, lock=0)
+            if mlist.host_name != self.host_name:
+                continue
+            if not mlist.isMember(addr):
+                continue
+            mlist.Lock()
+            try:
+                mlist.setMemberName(addr, name)
+                mlist.Save()
+            finally:
+                mlist.Unlock()
+
+    def ChangeMemberAddress(self, oldaddr, newaddr, globally):
+        newaddr = Utils.LCDomain(newaddr)
+        Utils.ValidateEmail(newaddr)
+        if not globally and (self.isMember(newaddr) and
+                newaddr == self.getMemberCPAddress(newaddr)):
+            raise Errors.MMAlreadyAMember
+        if newaddr == self.GetListEmail().lower():
+            raise Errors.MMBadEmailError
+        realname = self.real_name
+        pattern = self.GetBannedPattern(newaddr)
+        if pattern:
+            syslog('vette',
+                   '%s banned address change: %s -> %s (matched: %s)',
+                   realname, oldaddr, newaddr, pattern)
+            raise Errors.MembershipIsBanned(pattern)
+        cookie = self.pend_new(Pending.CHANGE_OF_ADDRESS,
+                               oldaddr, newaddr, globally)
+        confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
+                                cookie)
+        lang = self.getMemberLanguage(oldaddr)
+        text = Utils.maketext(
+            'verify.txt',
+            {'email': newaddr,
+             'listaddr': self.GetListEmail(),
+             'listname': realname,
+             'cookie': cookie,
+             'requestaddr': self.getListAddress('request'),
+             'remote': '',
+             'listadmin': self.GetOwnerEmail(),
+             'confirmurl': confirmurl,
+             }, lang=lang, mlist=self)
+        msg = Message.UserNotification(
+            newaddr, self.GetRequestEmail(cookie),
+            text=text, lang=lang)
+        del msg['subject']
+        msg['Subject'] = self.GetConfirmJoinSubject(realname, cookie)
+        msg['Reply-To'] = self.GetRequestEmail(cookie)
+        msg.send(self)
+
+    def ApprovedChangeMemberAddress(self, oldaddr, newaddr, globally):
+        pattern = self.GetBannedPattern(newaddr)
+        if pattern:
+            syslog('vette',
+                   '%s banned address change: %s -> %s (matched: %s)',
+                   self.real_name, oldaddr, newaddr, pattern)
+            raise Errors.MembershipIsBanned(pattern)
+        cpoldaddr = self.getMemberCPAddress(oldaddr)
+        if self.isMember(newaddr) and (self.getMemberCPAddress(newaddr) == newaddr):
+            if cpoldaddr != newaddr:
+                self.removeMember(oldaddr)
+        else:
+            self.changeMemberAddress(oldaddr, newaddr)
+            self.log_and_notify_admin(cpoldaddr, newaddr)
+        if not globally:
+            return
+        for listname in Utils.list_names():
+            if listname == self.internal_name():
+                continue
+            mlist = MailList(listname, lock=0)
+            if mlist.host_name != self.host_name:
+                continue
+            if not mlist.isMember(oldaddr):
+                continue
+            if mlist.GetBannedPattern(newaddr):
+                continue
+            mlist.Lock()
+            try:
+                mlist.ApprovedChangeMemberAddress(oldaddr, newaddr, False)
+                mlist.Save()
+            finally:
+                mlist.Unlock()
+
+    def log_and_notify_admin(self, oldaddr, newaddr):
+        syslog('subscribe', '%s: changed address %s -> %s',
+               self.internal_name(), oldaddr, newaddr)
