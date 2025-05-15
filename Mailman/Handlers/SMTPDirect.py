@@ -402,7 +402,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             failures.update(refused)
             msgdata['failures'] = failures
             # Raise RejectMessage to properly handle the rejection
-            raise Errors.RejectMessage('Message rejected due to spam detection')
+            raise Mailman.Errors.RejectMessage('Message rejected due to spam detection')
 
         # Get the list of recipients
         recips = msgdata.get('recipients', [])

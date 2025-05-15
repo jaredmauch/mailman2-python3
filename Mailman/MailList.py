@@ -1411,3 +1411,24 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
     def log_and_notify_admin(self, oldaddr, newaddr):
         syslog('subscribe', '%s: changed address %s -> %s',
                self.internal_name(), oldaddr, newaddr)
+
+    def CheckPending(self, email, unsub=False):
+        """Check if there is already an unexpired pending (un)subscription for
+        this email.
+        """
+        if not mm_cfg.REFUSE_SECOND_PENDING:
+            return False
+        pends = self._Pending__load()
+        # Save and reload the db to evict expired pendings.
+        self._Pending__save(pends)
+        pends = self._Pending__load()
+        for k, v in list(pends.items()):
+            if k in ('evictions', 'version'):
+                continue
+            op, data = v[:2]
+            if (op == Pending.SUBSCRIPTION and not unsub and
+                    data.address.lower() == email.lower() or
+                    op == Pending.UNSUBSCRIPTION and unsub and
+                    data.lower() == email.lower()):
+                return True
+        return False
