@@ -256,6 +256,25 @@ class Message(EmailMessage):
         g.flatten(self, unixfrom=unixfrom)
         return fp.getvalue()
 
+    def get_sender_info(self, preserve_case=0, headers=None):
+        """Return a tuple of (realname, address) representing the author of the email.
+
+        The method will return the first available sender information from:
+        1. From:
+        2. unixfrom
+        3. Reply-To:
+        4. Sender:
+
+        The return address is always lower cased, unless `preserve_case' is true.
+        Optional `headers' gives an alternative search order, with None meaning,
+        search the unixfrom header.  Items in `headers' are field names without
+        the trailing colon.
+        """
+        pairs = self.get_senders(preserve_case, headers)
+        if pairs:
+            return pairs[0]
+        return ('', '')
+
 
 class UserNotification(Message):
     """Class for internally crafted messages."""
