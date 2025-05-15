@@ -323,10 +323,6 @@ class IncomingRunner(Runner):
 
     def _oneloop(self):
         """Process one batch of messages from the incoming queue."""
-        # First, list all the files in our queue directory.
-        # Switchboard.files() is guaranteed to hand us the files in FIFO
-        # order.  Return an integer count of the number of files that were
-        # available for this qrunner to process.
         try:
             # Get the list of files to process
             files = self._switchboard.files()
@@ -339,6 +335,10 @@ class IncomingRunner(Runner):
             # Process each file
             for filebase in files:
                 try:
+                    # Check if we need to cleanup old messages
+                    if time.time() - self._last_cleanup > self._cleanup_interval:
+                        self._cleanup_old_messages()
+                    
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
                     
@@ -347,33 +347,24 @@ class IncomingRunner(Runner):
                         mailman_log('error', 'IncomingRunner._oneloop: Failed to dequeue file %s (got None values)', filebase)
                         continue
                     
+                    msgid = msg.get('message-id', 'n/a')
+                    
+                    # Check if message was recently processed
+                    if self._check_message_processed(msgid, filebase, msg):
+                        continue
+                    
+                    # Get the list name
+                    listname = msgdata.get('listname', 'unknown')
+                    try:
+                        mlist = MailList.MailList(listname, lock=False)
+                    except Errors.MMUnknownListError:
+                        mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s for message %s',
+                                  listname, msgid)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+                    
                     # Process the message
                     try:
-                        # Get the list name from the message data
-                        listname = msgdata.get('listname', mm_cfg.MAILMAN_SITE_LIST)
-                        
-                        # Create a MailList object using lazy import
-                        try:
-                            # Import MailList here to avoid circular imports
-                            import Mailman.MailList as MailList
-                            mlist = MailList.MailList(listname, lock=0)
-                        except ImportError:
-                            # If we can't import MailList, try to get it from sys.modules
-                            import sys
-                            MailList = sys.modules['Mailman.MailList'].MailList
-                            mlist = MailList(listname, lock=0)
-                        except (Errors.BadListNameError, Errors.MMUnknownListError) as e:
-                            # List doesn't exist or has invalid name - move message to bad queue
-                            mailman_log('error', 'List not found: %s - moving message to bad queue', listname)
-                            try:
-                                badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
-                                badq.enqueue(msg, listname=listname, tolist=listname)
-                                return True
-                            except Exception as e:
-                                mailman_log('error', 'Failed to move message to bad queue: %s', str(e))
-                                return False
-                        
-                        # Process the message
                         result = self._dispose(mlist, msg, msgdata)
                         
                         # If the message should be kept in the queue, requeue it
@@ -382,13 +373,16 @@ class IncomingRunner(Runner):
                             mailman_log('info', 'IncomingRunner._oneloop: Message requeued for later processing: %s', filebase)
                         else:
                             mailman_log('info', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
-                                      filebase, msg.get('message-id', 'n/a'))
+                                      filebase, msgid)
                             
                     except Exception as e:
                         mailman_log('error', 'IncomingRunner._oneloop: Error processing message: %s\n%s',
                                   str(e), traceback.format_exc())
                         # Move to shunt queue on error
                         self._shunt.enqueue(msg, msgdata)
+                    finally:
+                        # Always mark message as processed
+                        self._mark_message_processed(msgid)
                         
                 except Exception as e:
                     mailman_log('error', 'IncomingRunner._oneloop: Error dequeuing file %s: %s\n%s',
@@ -401,6 +395,9 @@ class IncomingRunner(Runner):
         except Exception as e:
             mailman_log('error', 'IncomingRunner._oneloop: Unexpected error in main loop: %s\n%s',
                       str(e), traceback.format_exc())
+            # Don't re-raise the exception to keep the runner alive
+            return False
+        return True
 
     def _check_retry_delay(self, msgid, filebase):
         """Check if enough time has passed since the last retry attempt."""
