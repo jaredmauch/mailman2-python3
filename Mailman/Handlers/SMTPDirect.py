@@ -399,7 +399,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     refused = {}
     try:
         # Get the list of recipients
-        recips = msgdata.get('recipients', [])
+        recips = msgdata.get('recips', [])
         if not recips:
             mailman_log('error', 'SMTPDirect: No recipients found in msgdata for message:\n%s', msg.get('Message-ID', 'n/a'))
             return
