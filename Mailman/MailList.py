@@ -1185,6 +1185,8 @@ class MailList(HTMLFormatter, ListAdmin, Archiver, Digester, SecurityManager, Bo
 
     def ApprovedAddMember(self, userdesc, ack=None, admin_notif=None, text='', whence=''):
         """Add a member right now."""
+        # Import Deliverer locally to avoid circular import issues
+        from Mailman.Deliverer import Deliverer
         assert self.Locked()
         if ack is None:
             ack = self.send_welcome_msg
