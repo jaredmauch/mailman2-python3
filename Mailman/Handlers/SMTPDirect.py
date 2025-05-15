@@ -157,66 +157,40 @@ class Connection(object):
 
 
 def process(mlist, msg, msgdata):
+    """Process the message for delivery.
+
+    This is the main entry point for the SMTPDirect handler.
+    """
+    t0 = time.time()
+    refused = {}
+    envsender = msgdata.get('envsender', msg.get_sender())
+    if envsender is None:
+        envsender = mlist.GetBouncesEmail()
+    # Get the list of recipients
+    recips = msgdata.get('recipients', [])
+    if not recips:
+        mailman_log('error', 'No recipients found in msgdata')
+        return
+
+    # Check for spam headers first
+    if msg.get('x-google-group-id'):
+        mailman_log('error', 'Rejecting message with X-Google-Group-Id header')
+        # Add all recipients to refused list with 550 error
+        for r in recips:
+            refused[r] = (550, 'Message rejected due to spam detection')
+        # Update failures dict
+        msgdata['failures'] = refused
+        return
+
+    # Chunkify the recipients
+    chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS_PER_CHUNK)
+    # Choose the delivery function based on VERP settings
+    if msgdata.get('verp'):
+        deliveryfunc = verpdeliver
+    else:
+        deliveryfunc = bulkdeliver
+
     try:
-        # Convert email.message.Message to Mailman.Message.Message if needed
-        if isinstance(msg, email.message.Message):
-            newmsg = Message()
-            # Copy attributes
-            for k, v in msg.items():
-                newmsg[k] = v
-            # Copy payload with proper MIME handling
-            if msg.is_multipart():
-                for part in msg.get_payload():
-                    if isinstance(part, email.message.Message):
-                        newmsg.attach(part)
-                    else:
-                        # Handle non-Message payloads
-                        newpart = Message()
-                        newpart.set_payload(part)
-                        newmsg.attach(newpart)
-            else:
-                newmsg.set_payload(msg.get_payload())
-            msg = newmsg
-
-        recips = msgdata.get('recips')
-        if not recips:
-            # Nobody to deliver to!
-            return
-        # Calculate the non-VERP envelope sender.
-        envsender = msgdata.get('envsender')
-        if envsender is None:
-            if mlist:
-                envsender = mlist.GetBouncesEmail()
-            else:
-                envsender = Mailman.Utils.get_site_email(extra='bounces')
-
-        # Time to split up the recipient list
-        deliveryfunc = None
-        if ('personalize' not in msgdata or msgdata['personalize']) and (
-               msgdata.get('verp') or mlist.personalize):
-            chunks = [[recip] for recip in recips]
-            msgdata['personalize'] = 1
-            deliveryfunc = verpdeliver
-        elif Mailman.mm_cfg.SMTP_MAX_RCPTS <= 0:
-            chunks = [recips]
-        else:
-            chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS)
-
-        # See if this is an unshunted message for which some were undelivered
-        if 'undelivered' in msgdata:
-            chunks = msgdata['undelivered']
-
-        # If we're doing bulk delivery, then we can stitch up the message now.
-        if deliveryfunc is None:
-            # Be sure never to decorate the message more than once!
-            if not msgdata.get('decorated'):
-                decorate(mlist, msg, msgdata)
-                msgdata['decorated'] = True
-            deliveryfunc = bulkdeliver
-
-        refused = {}
-        t0 = time.time()
-        # Open the initial connection
         origrecips = msgdata['recips']
         origsender = msgdata.get('original_sender', msg.get_sender())
         conn = Connection()
@@ -227,6 +201,13 @@ def process(mlist, msg, msgdata):
                 msgdata['recips'] = chunk
                 try:
                     deliveryfunc(mlist, msg, msgdata, envsender, refused, conn)
+                except Mailman.Errors.RejectMessage as e:
+                    # Handle message rejection gracefully
+                    mailman_log('error', 'Message rejected: %s', str(e))
+                    # Add all recipients in this chunk to refused list
+                    for r in chunk:
+                        refused[r] = (550, str(e))
+                    continue
                 except Exception as e:
                     mailman_log('error', 
                         'Delivery error for chunk: %s\nError: %s\n%s',
@@ -392,18 +373,6 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
     recips = []
     refused = {}
     try:
-        # Check for spam headers first
-        if msg.get('x-google-group-id'):
-            mailman_log('error', 'Rejecting message with X-Google-Group-Id header')
-            # Add all recipients to refused list with 550 error
-            for r in msgdata.get('recipients', []):
-                refused[r] = (550, 'Message rejected due to spam detection')
-            # Update failures dict
-            failures.update(refused)
-            msgdata['failures'] = failures
-            # Raise RejectMessage to properly handle the rejection
-            raise Mailman.Errors.RejectMessage('Message rejected due to spam detection')
-
         # Get the list of recipients
         recips = msgdata.get('recipients', [])
         if not recips:
