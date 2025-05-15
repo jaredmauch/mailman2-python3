@@ -177,7 +177,7 @@ HTML_TO_PLAIN_TEXT_COMMAND = '/usr/bin/lynx -dump %(filename)s'
 # A Python regular expression character class which defines the characters
 # allowed in list names.  Lists cannot be created with names containing any
 # character that doesn't match this class.  Do not include '/' in this list.
-ACCEPTABLE_LISTNAME_CHARACTERS = '[-+_.=a-z0-9]'
+ACCEPTABLE_LISTNAME_CHARACTERS = r'[-+_.=a-z0-9]'
 
 # The number of characters in the longest listname in the installation.  The
 # fix for LP: #1780874 truncates list names in web URLs to this length to avoid

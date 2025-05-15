@@ -278,9 +278,9 @@ class Article(pipermail.Article):
                 i18n.set_language(lang)
                 if self.author == self.email:
                     self.author = self.email = re.sub('@', _(' at '),
-                                                      self.email)
+                                                      self.email, flags=re.IGNORECASE)
                 else:
-                    self.email = re.sub('@', _(' at '), self.email)
+                    self.email = re.sub('@', _(' at '), self.email, flags=re.IGNORECASE)
             finally:
                 i18n.set_translation(otrans)
 
@@ -413,7 +413,7 @@ class Article(pipermail.Article):
                     i18n.set_language(self._lang)
                     atmark = str(_(' at '), Utils.GetCharSet(self._lang))
                     subject = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
-                              r'\g<1>' + atmark + r'\g<2>', subject)
+                              r'\g<1>' + atmark + r'\g<2>', subject, flags=re.IGNORECASE)
                 finally:
                     i18n.set_translation(otrans)
             self.decoded['subject'] = subject
@@ -426,14 +426,14 @@ class Article(pipermail.Article):
         if prefix:
             prefix_pat = re.escape(prefix)
             prefix_pat = '%'.join(prefix_pat.split(r'\%'))
-            prefix_pat = re.sub(r'%\d*d', r'\s*\d+\s*', prefix_pat)
-            subject = re.sub(prefix_pat, '', subject)
+            prefix_pat = re.sub(r'%\d*d', r'\s*\d+\s*', prefix_pat, flags=re.IGNORECASE)
+            subject = re.sub(prefix_pat, '', subject, flags=re.IGNORECASE)
         subject = subject.lstrip()
         # MAS Should we strip FW and FWD too?
         strip_pat = re.compile(r'^((RE|AW|SV|VS)(\[\d+\])?:\s*)+', re.I)
         stripped = strip_pat.sub('', subject)
         # Also remove whitespace to avoid folding/unfolding differences
-        stripped = re.sub(r'\s', '', stripped)
+        stripped = re.sub(r'\s', '', stripped, flags=re.IGNORECASE)
         return stripped
 
     def decode_charset(self, field):
@@ -469,7 +469,7 @@ class Article(pipermail.Article):
             d["in_reply_to_url"] = url_quote(self._message_id)
             if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
                 # Point the mailto url back to the list
-                author = re.sub('@', _(' at '), self.author)
+                author = re.sub('@', _(' at '), self.author, flags=re.IGNORECASE)
                 emailurl = self._mlist.GetListEmail()
             else:
                 author = self.author
@@ -580,7 +580,7 @@ class Article(pipermail.Article):
                 i18n.set_language(self._lang)
                 atmark = str(_(' at '), cset)
                 body = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
-                              r'\g<1>' + atmark + r'\g<2>', body)
+                              r'\g<1>' + atmark + r'\g<2>', body, flags=re.IGNORECASE)
             finally:
                 i18n.set_translation(otrans)
         # Return body to character set of article.
@@ -916,7 +916,7 @@ class HyperArchive(pipermail.T):
             _('September'), _('October'),  _('November'), _('December')
             ]
         for each in list(self._volre.keys()):
-            match = re.match(self._volre[each], volname)
+            match = re.match(self._volre[each], volname, re.IGNORECASE)
             # Let ValueErrors percolate up
             if match:
                 year = int(match.group('year'))
@@ -976,7 +976,7 @@ class HyperArchive(pipermail.T):
     def volNameToDate(self, volname):
         volname = volname.strip()
         for each in list(self._volre.keys()):
-            match = re.match(self._volre[each],volname)
+            match = re.match(self._volre[each],volname, re.IGNORECASE)
             if match:
                 year = int(match.group('year'))
                 month = 1
@@ -1052,7 +1052,7 @@ class HyperArchive(pipermail.T):
         author = self.get_header("author", article)
         if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
             try:
-                author = re.sub('@', _(' at '), author)
+                author = re.sub('@', _(' at '), author, flags=re.IGNORECASE)
             except UnicodeError:
                 # Non-ASCII author contains '@' ... no valid email anyway
                 pass
@@ -1224,7 +1224,7 @@ class HyperArchive(pipermail.T):
                     text = jr.group(1)
                     length = len(text)
                     if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
-                        text = re.sub('@', atmark, text)
+                        text = re.sub('@', atmark, text, flags=re.IGNORECASE)
                         URL = self.maillist.GetScriptURL(
                             'listinfo', absolute=1)
                     else:

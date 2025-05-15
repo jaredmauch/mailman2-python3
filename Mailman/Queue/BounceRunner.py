@@ -295,7 +295,7 @@ def verp_bounce(mlist, msg):
             if not to:
                 continue
             try:
-                mo = re.search(mm_cfg.VERP_REGEXP, to)
+                mo = re.search(mm_cfg.VERP_REGEXP, to, re.IGNORECASE)
                 if not mo:
                     continue
                 if bmailbox != mo.group('bounces'):
@@ -329,7 +329,7 @@ def verp_probe(mlist, msg):
         to = parseaddr(field)[1]
         if not to:
             continue                          # empty header
-        mo = re.search(mm_cfg.VERP_PROBE_REGEXP, to)
+        mo = re.search(mm_cfg.VERP_PROBE_REGEXP, to, re.IGNORECASE)
         if not mo:
             continue                          # no match of regexp
         try:

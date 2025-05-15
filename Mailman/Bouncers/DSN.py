@@ -81,7 +81,7 @@ def process(msg):
             header = header.decode('us-ascii', errors='replace')
         # Look for IP addresses in Received headers
         # Support both IPv4 and IPv6 formats
-        ip_match = re.search(r'\[([0-9a-fA-F:.]+)\]', header)
+        ip_match = re.search(r'\[([0-9a-fA-F:.]+)\]', header, re.IGNORECASE)
         if ip_match:
             ip = ip_match.group(1)
             break

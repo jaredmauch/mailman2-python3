@@ -100,7 +100,7 @@ def list_exists(listname):
     #
     # But first ensure the list name doesn't contain a path traversal
     # attack.
-    if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) > 0:
+    if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname, flags=re.IGNORECASE)) > 0:
         remote = os.environ.get('HTTP_FORWARDED_FOR',
                  os.environ.get('HTTP_X_FORWARDED_FOR',
                  os.environ.get('REMOTE_ADDR',
@@ -146,7 +146,7 @@ def wrap(text, column=70, honor_leading_ws=True):
     """
     wrapped = ''
     # first split the text into paragraphs, defined as a blank line
-    paras = re.split('\n\n', text)
+    paras = re.split(r'\n\n', text)
     for para in paras:
         # fill
         lines = []
@@ -1101,7 +1101,7 @@ def strip_verbose_pattern(pattern):
         elif c == ']' and inclass:
             inclass = False
             newpattern += c
-        elif re.search(r'\s', c):
+        elif re.search(r'\s', c, re.IGNORECASE):
             if inclass:
                 if c == NL:
                     newpattern += '\\n'
@@ -1491,7 +1491,7 @@ def check_eq_domains(email, domains_list):
     except ValueError:
         return []
     domain = domain.lower()
-    domains_list = re.sub(r'\s', '', domains_list).lower()
+    domains_list = re.sub(r'\s', '', domains_list, flags=re.IGNORECASE).lower()
     domains = domains_list.split(';')
     domains_list = []
     for d in domains:
@@ -1526,8 +1526,8 @@ def xml_to_unicode(s, cset):
     """
     if isinstance(s, bytes):
         us = s.decode(cset, 'replace')
-        us = re.sub(u'&(#[0-9]+);', _invert_xml, us)
-        us = re.sub(u'(?i)\\\\(u[a-f0-9]{4})', _invert_xml, us)
+        us = re.sub(r'&(#[0-9]+);', _invert_xml, us, flags=re.IGNORECASE)
+        us = re.sub(r'(?i)\\\\(u[a-f0-9]{4})', _invert_xml, us, flags=re.IGNORECASE)
         return us
     else:
         return s
@@ -1642,8 +1642,8 @@ def banned_domain(email):
             return False
         # Newer versions of dnspython use strings property instead of strings attribute
         text = ans.rrset.to_text() if hasattr(ans, 'rrset') else str(ans)
-        if re.search(r'127\.0\.1\.\d{1,3}$', text, re.MULTILINE):
-            if not re.search(r'127\.0\.1\.255$', text, re.MULTILINE):
+        if re.search(r'127\.0\.1\.\d{1,3}$', text, re.MULTILINE | re.IGNORECASE):
+            if not re.search(r'127\.0\.1\.255$', text, re.MULTILINE | re.IGNORECASE):
                 return True
     except dns.resolver.NXDOMAIN:
         # Domain not found in blocklist
@@ -1748,4 +1748,4 @@ def ValidateListName(listname):
     if not listname:
         return False
     # Check if the list name contains any characters not in the acceptable pattern
-    return len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) == 0
+    return len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname, flags=re.IGNORECASE)) == 0

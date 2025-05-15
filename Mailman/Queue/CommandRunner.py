@@ -159,8 +159,8 @@ class Results:
                 return BADCMD
             if self.subjcmdretried < 1:
                 self.subjcmdretried += 1
-                if re.search('^.*:.+', cmd):
-                    cmd = re.sub('.*:', '', cmd).lower()
+                if re.search(r'^.*:.+', cmd, re.IGNORECASE):
+                    cmd = re.sub(r'.*:', '', cmd).lower()
                     return self.do_command(cmd, args)
             if self.subjcmdretried < 2 and args:
                 self.subjcmdretried += 1
@@ -329,7 +329,7 @@ class CommandRunner(Runner):
             elif msgdata.get('toleave'):
                 ret = res.do_command('leave')
             elif msgdata.get('toconfirm'):
-                mo = re.match(mm_cfg.VERP_CONFIRM_REGEXP, msg.get('to', ''))
+                mo = re.match(mm_cfg.VERP_CONFIRM_REGEXP, msg.get('to', ''), re.IGNORECASE)
                 if mo:
                     ret = res.do_command('confirm', (mo.group('cookie'),))
             if ret == BADCMD and mm_cfg.DISCARD_MESSAGE_WITH_NO_COMMAND:

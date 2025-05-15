@@ -132,8 +132,7 @@ class Archiver:
         if self.archive_private:
             return url
         else:
-            hostname = re.match('[^:]*://([^/]*)/.*', url).group(1)\
-                       or mm_cfg.DEFAULT_URL_HOST
+            hostname = re.match(r'[^:]*://([^/]*)/.*', url, re.IGNORECASE).group(1)
             url = mm_cfg.PUBLIC_ARCHIVE_URL % {
                 'listname': self.internal_name(),
                 'hostname': hostname
