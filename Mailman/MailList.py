@@ -1136,7 +1136,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         """
         # Make sure we have a lock
         if not self.Locked():
-            raise Errors.MMListNotLockedError(
+            raise LockFile.NotLockedError(
                 'List must be locked before pending operations')
         
         # Get the member's email address
