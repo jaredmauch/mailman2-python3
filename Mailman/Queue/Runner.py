@@ -231,16 +231,22 @@ class Runner:
                         if result:
                             # Message was successfully processed, finish and remove the file
                             self._switchboard.finish(filebase)
-                            syslog('debug', 'Runner._oneloop: Successfully processed message %s, removed file %s',
+                            # Only log significant events
+                            if filecnt > 10:  # Log only when processing large batches
+                                syslog('debug', 'Runner._oneloop: Successfully processed message %s, removed file %s',
                                       msg.get('message-id', 'n/a'), filebase)
                         elif result is False:
                             # Message needs to be requeued
                             self._switchboard.enqueue(msg, msgdata)
-                            syslog('debug', 'Runner._oneloop: Requeued message %s', msg.get('message-id', 'n/a'))
+                            # Only log significant events
+                            if filecnt > 10:  # Log only when processing large batches
+                                syslog('debug', 'Runner._oneloop: Requeued message %s', msg.get('message-id', 'n/a'))
                         else:
                             # Message was shunted
                             self._shunt.enqueue(msg, msgdata)
-                            syslog('debug', 'Runner._oneloop: Shunted message %s', msg.get('message-id', 'n/a'))
+                            # Only log significant events
+                            if filecnt > 10:  # Log only when processing large batches
+                                syslog('debug', 'Runner._oneloop: Shunted message %s', msg.get('message-id', 'n/a'))
                         return True
                     except Exception as e:
                         syslog('error', 'Runner._oneloop: Error processing message %s: %s\nTraceback:\n%s',
@@ -291,7 +297,9 @@ class Runner:
         try:
             # Convert message if needed
             if not isinstance(msg, Message.Message):
-                syslog('debug', 'Runner._validate_message: Converting message %s to Mailman.Message', msgid)
+                # Only log conversion if it's a significant event
+                if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                    syslog('debug', 'Runner._validate_message: Converting complex message %s to Mailman.Message', msgid)
                 msg = self._convert_message(msg)
             
             # Validate required Mailman.Message methods
@@ -319,7 +327,9 @@ class Runner:
                 syslog('error', 'Runner._validate_message: Message %s missing To/Recipients', msgid)
                 return msg, False
                 
-            syslog('debug', 'Runner._validate_message: Message %s validation successful', msgid)
+            # Only log successful validation for complex messages
+            if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                syslog('debug', 'Runner._validate_message: Complex message %s validation successful', msgid)
             return msg, True
             
         except Exception as e:
@@ -350,11 +360,15 @@ class Runner:
                 if result:
                     # If _dispose returns True, requeue the message
                     self._switchboard.enqueue(msg, msgdata)
-                    syslog('debug', 'Runner._onefile: Message requeued for %s', listname)
+                    # Only log significant events
+                    if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                        syslog('debug', 'Runner._onefile: Complex message requeued for %s', listname)
                 else:
                     # If _dispose returns False, finish processing and remove the file
                     self._switchboard.finish(msgdata.get('filebase', ''))
-                    syslog('debug', 'Runner._onefile: Message processing completed for %s', listname)
+                    # Only log significant events
+                    if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                        syslog('debug', 'Runner._onefile: Complex message processing completed for %s', listname)
                 return result
             except Exception as e:
                 self._handle_error(e, msg=msg, mlist=mlist)
@@ -389,8 +403,10 @@ class Runner:
     def _snooze(self, filecnt):
         """Sleep for a while, but check for stop flag periodically."""
         if filecnt > 0:
-            syslog('debug', 'Runner._snooze: Sleeping for %d seconds after processing %d files', 
-                   self.SLEEPTIME, filecnt)
+            # Only log if we're sleeping for more than 5 seconds
+            if self.SLEEPTIME > 5:
+                syslog('debug', 'Runner._snooze: Sleeping for %d seconds after processing %d files', 
+                       self.SLEEPTIME, filecnt)
         for _ in range(self.SLEEPTIME):
             if self._stop:
                 syslog('debug', 'Runner._snooze: Stop flag detected, waking up')
@@ -443,26 +459,34 @@ class Runner:
         last_retry = self._retry_times.get(msgid, 0)
         
         if now - last_retry < self.MIN_RETRY_DELAY:
-            syslog('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay not met. Last retry: %s, Now: %s, Delay needed: %s',
-                   msgid, filebase, time.ctime(last_retry), time.ctime(now), self.MIN_RETRY_DELAY)
+            # Only log if this is a significant delay
+            if self.MIN_RETRY_DELAY > 300:  # 5 minutes
+                syslog('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay not met. Last retry: %s, Now: %s, Delay needed: %s',
+                       msgid, filebase, time.ctime(last_retry), time.ctime(now), self.MIN_RETRY_DELAY)
             return False
         
-        syslog('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay met. Last retry: %s, Now: %s',
-               msgid, filebase, time.ctime(last_retry), time.ctime(now))
+        # Only log if this is a significant delay
+        if self.MIN_RETRY_DELAY > 300:  # 5 minutes
+            syslog('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay met. Last retry: %s, Now: %s',
+                   msgid, filebase, time.ctime(last_retry), time.ctime(now))
         return True
 
     def _mark_message_processed(self, msgid):
         """Mark a message as processed."""
         with self._processed_lock:
             self._processed_messages.add(msgid)
-            syslog('debug', 'Runner._mark_message_processed: Marked message %s as processed', msgid)
+            # Only log if we're tracking a large number of messages
+            if len(self._processed_messages) > 1000:
+                syslog('debug', 'Runner._mark_message_processed: Marked message %s as processed', msgid)
 
     def _unmark_message_processed(self, msgid):
         """Remove a message from the processed set."""
         with self._processed_lock:
             if msgid in self._processed_messages:
                 self._processed_messages.remove(msgid)
-                syslog('debug', 'Runner._unmark_message_processed: Removed message %s from processed set', msgid)
+                # Only log if we're tracking a large number of messages
+                if len(self._processed_messages) > 1000:
+                    syslog('debug', 'Runner._unmark_message_processed: Removed message %s from processed set', msgid)
 
     def _cleanup_old_messages(self):
         """Clean up old message tracking data if message tracking is enabled."""
@@ -476,12 +500,16 @@ class Runner:
 
             with self._processed_lock:
                 if len(self._processed_messages) > self._max_processed_messages:
-                    syslog('debug', '%s: Clearing processed messages set (size: %d)',
-                           self.__class__.__name__, len(self._processed_messages))
+                    # Only log if we're clearing a significant number of messages
+                    if len(self._processed_messages) > 1000:
+                        syslog('debug', '%s: Clearing processed messages set (size: %d)',
+                               self.__class__.__name__, len(self._processed_messages))
                     self._processed_messages.clear()
                 if len(self._retry_times) > self._max_retry_times:
-                    syslog('debug', '%s: Clearing retry times dict (size: %d)',
-                           self.__class__.__name__, len(self._retry_times))
+                    # Only log if we're clearing a significant number of retry times
+                    if len(self._retry_times) > 1000:
+                        syslog('debug', '%s: Clearing retry times dict (size: %d)',
+                               self.__class__.__name__, len(self._retry_times))
                     self._retry_times.clear()
                 self._last_cleanup = now
         except Exception as e:
