@@ -204,7 +204,8 @@ class Runner:
         try:
             # Get the list of files to process
             files = self._switchboard.files()
-            filecnt = len(files)
+            total_files = len(files)
+            processed_files = 0
             
             # Process each file
             for filebase in files:
@@ -228,24 +229,25 @@ class Runner:
                     # Process the message
                     try:
                         result = self._onefile(mlist, msg, msgdata)
+                        processed_files += 1
                         if result:
                             # Message was successfully processed, finish and remove the file
                             self._switchboard.finish(filebase)
                             # Only log significant events
-                            if filecnt > 10:  # Log only when processing large batches
+                            if total_files > 10:  # Log only when processing large batches
                                 syslog('debug', 'Runner._oneloop: Successfully processed message %s, removed file %s',
                                       msg.get('message-id', 'n/a'), filebase)
                         elif result is False:
                             # Message needs to be requeued
                             self._switchboard.enqueue(msg, msgdata)
                             # Only log significant events
-                            if filecnt > 10:  # Log only when processing large batches
+                            if total_files > 10:  # Log only when processing large batches
                                 syslog('debug', 'Runner._oneloop: Requeued message %s', msg.get('message-id', 'n/a'))
                         else:
                             # Message was shunted
                             self._shunt.enqueue(msg, msgdata)
                             # Only log significant events
-                            if filecnt > 10:  # Log only when processing large batches
+                            if total_files > 10:  # Log only when processing large batches
                                 syslog('debug', 'Runner._oneloop: Shunted message %s', msg.get('message-id', 'n/a'))
                         return True
                     except Exception as e:
@@ -262,7 +264,7 @@ class Runner:
             syslog('error', 'Runner._oneloop: Error in main loop: %s', str(e))
             return 0
             
-        return filecnt
+        return processed_files
 
     def _convert_message(self, msg):
         """Convert email.message.Message to Mailman.Message with proper handling of nested messages.
@@ -405,7 +407,7 @@ class Runner:
         if filecnt > 0:
             # Only log if we're sleeping for more than 5 seconds
             if self.SLEEPTIME > 5:
-                syslog('debug', 'Runner._snooze: Sleeping for %d seconds after processing %d files', 
+                syslog('debug', 'Runner._snooze: Sleeping for %d seconds after processing %d files in this iteration', 
                        self.SLEEPTIME, filecnt)
         for _ in range(self.SLEEPTIME):
             if self._stop:
