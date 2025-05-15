@@ -90,6 +90,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # No timeout by default.  If you want to timeout, open the list
         # unlocked, then lock explicitly.
         #
+        # Initialize the lock state
+        self._locked = False
+        
         # Validate list name early if provided
         if name is not None:
             # Problems and potential attacks can occur if the list name in the
@@ -139,9 +142,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 func(self)
         if lock:
             # This will load the database.
-                self.Lock()
+            self.Lock()
         else:
-                self.Load()
+            self.Load()
 
     def __getattr__(self, name):
         # First check if the attribute exists in the class itself
@@ -183,6 +186,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                        self.internal_name(), e)
                 self.Unlock()
                 raise
+            # Set the locked state
+            self._locked = True
         except Exception as e:
             syslog('error', 'Failed to lock list %s: %s', 
                    self.internal_name(), e)
@@ -190,10 +195,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             raise
 
     def Unlock(self):
+        """Unlock the list."""
         self.__lock.unlock(unconditionally=1)
+        self._locked = False
 
     def Locked(self):
-        return self.__lock.locked()
+        """Check if the list is locked."""
+        return self.__lock.locked() and self._locked
 
 
     #
@@ -1129,7 +1137,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             remote: Optional remote address making the request
         """
         # Make sure we have a lock
-        assert self._locked, 'List must be locked before pending operations'
+        if not self.Locked():
+            raise Errors.MMListNotLockedError(
+                'List must be locked before pending operations')
         
         # Get the member's email address
         email = userdesc.address
