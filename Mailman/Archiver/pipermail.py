@@ -289,6 +289,9 @@ class T(object):
                 f.seek(0)
                 d = pickle.load(f, fix_imports=True, encoding='latin1')
             f.close()
+            if isinstance(d, bytes):
+                # If we got bytes, try to unpickle it
+                d = pickle.loads(d, fix_imports=True, encoding='latin1')
             for key, value in list(d.items()):
                 setattr(self, key, value)
         except (IOError, EOFError):
