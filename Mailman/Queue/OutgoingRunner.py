@@ -382,68 +382,60 @@ class OutgoingRunner(Runner, BounceMixin):
     def _process_regular(self, mlist, msg, msgdata):
         """Process a regular outgoing message."""
         msgid = msg.get('message-id', 'n/a')
-        try:
-            mailman_log('debug', 'OutgoingRunner._process_regular: Processing regular message %s', msgid)
+        
+        # Get recipient from msgdata or message headers
+        recipient = msgdata.get('recipient')
+        if not recipient:
+            # Try to get recipient from To header
+            to = msg.get('to')
+            if to:
+                # Parse the To header to get the first recipient
+                addrs = email.utils.getaddresses([to])
+                if addrs:
+                    recipient = addrs[0][1]
             
-            # Get recipient information
-            recipient = msgdata.get('recipient')
-            if not recipient:
-                # Try to get recipient from message headers
-                recipient = msg.get('to')
-                if not recipient:
-                    mailman_log('error', 'OutgoingRunner._process_regular: No recipient found for message %s', msgid)
-                    return False
-            
-            # Ensure recipient is a string and fully qualified
-            if isinstance(recipient, (list, tuple)):
-                recipient = recipient[0]  # Take first recipient if multiple
-            if not '@' in recipient:
-                mailman_log('error', 'OutgoingRunner._process_regular: Invalid recipient address %s for message %s',
-                           recipient, msgid)
-                return False
-            
-            mailman_log('debug', 'OutgoingRunner._process_regular: Regular message for recipient %s', recipient)
-            
-            # For system messages (_nolist=1), we need to handle them differently
-            if msgdata.get('_nolist'):
-                mailman_log('debug', 'OutgoingRunner._process_regular: Processing system message %s', msgid)
-                # System messages should be sent directly via SMTP
-                try:
-                    conn = self._get_smtp_connection()
-                    if not conn:
-                        mailman_log('error', 'OutgoingRunner._process_regular: Failed to get SMTP connection for message %s', msgid)
-                        return False
-                    
-                    # Send the message
-                    sender = msg.get('from', msgdata.get('original_sender', mm_cfg.MAILMAN_SITE_LIST))
-                    if not sender or not '@' in sender:
-                        sender = mm_cfg.MAILMAN_SITE_LIST
-                    
-                    mailman_log('debug', 'OutgoingRunner._process_regular: Sending system message %s from %s to %s',
-                               msgid, sender, recipient)
-                    
-                    conn.sendmail(sender, [recipient], str(msg))
-                    conn.quit()
-                    
-                    mailman_log('debug', 'OutgoingRunner._process_regular: Successfully sent system message %s', msgid)
-                    return True
-                    
-                except Exception as e:
-                    mailman_log('error', 'OutgoingRunner._process_regular: SMTP error for system message %s: %s',
-                               msgid, str(e))
-                    return False
-            
-            # For regular list messages, use the delivery module
-            mailman_log('debug', 'OutgoingRunner._process_regular: Using delivery module for message %s', msgid)
-            self._func(mlist, msg, msgdata)
-            
-            mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
-            return True
-            
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner._process_regular: Error processing regular message %s: %s\nTraceback:\n%s',
-                       msgid, str(e), traceback.format_exc())
+        if not recipient:
+            mailman_log('error', 'No recipients found in msgdata for message: %s', msgid)
             return False
+            
+        # Set the recipient in msgdata for future use
+        msgdata['recipient'] = recipient
+            
+        # For system messages (_nolist=1), we need to handle them differently
+        if msgdata.get('_nolist'):
+            mailman_log('debug', 'OutgoingRunner._process_regular: Processing system message %s', msgid)
+            # System messages should be sent directly via SMTP
+            try:
+                conn = self._get_smtp_connection()
+                if not conn:
+                    mailman_log('error', 'OutgoingRunner._process_regular: Failed to get SMTP connection for message %s', msgid)
+                    return False
+                
+                # Send the message
+                sender = msg.get('from', msgdata.get('original_sender', mm_cfg.MAILMAN_SITE_LIST))
+                if not sender or not '@' in sender:
+                    sender = mm_cfg.MAILMAN_SITE_LIST
+                
+                mailman_log('debug', 'OutgoingRunner._process_regular: Sending system message %s from %s to %s',
+                           msgid, sender, recipient)
+                
+                conn.sendmail(sender, [recipient], str(msg))
+                conn.quit()
+                
+                mailman_log('debug', 'OutgoingRunner._process_regular: Successfully sent system message %s', msgid)
+                return True
+                
+            except Exception as e:
+                mailman_log('error', 'OutgoingRunner._process_regular: SMTP error for system message %s: %s',
+                           msgid, str(e))
+                return False
+        
+        # For regular list messages, use the delivery module
+        mailman_log('debug', 'OutgoingRunner._process_regular: Using delivery module for message %s', msgid)
+        self._func(mlist, msg, msgdata)
+        
+        mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
+        return True
 
     def _check_retry_delay(self, msgid, filebase):
         """Check if enough time has passed since the last retry attempt."""

@@ -269,6 +269,25 @@ class CommandRunner(Runner):
             tuple: (msg, success) where success is True if validation passed
         """
         try:
+            # Convert email.message.Message to Mailman.Message if needed
+            if isinstance(msg, email.message.Message) and not isinstance(msg, Message):
+                mailman_msg = Message()
+                # Copy all attributes from the original message
+                for key, value in msg.items():
+                    mailman_msg[key] = value
+                # Copy the payload with proper MIME handling
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        if isinstance(part, email.message.Message):
+                            mailman_msg.attach(part)
+                        else:
+                            newpart = Message()
+                            newpart.set_payload(part)
+                            mailman_msg.attach(newpart)
+                else:
+                    mailman_msg.set_payload(msg.get_payload())
+                msg = mailman_msg
+
             # Check for required headers
             if not msg.get('message-id'):
                 syslog('error', 'CommandRunner._validate_message: Missing Message-ID header')
