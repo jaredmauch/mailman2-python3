@@ -264,9 +264,9 @@ class CommandRunner(Runner):
                 syslog('error', 'CommandRunner._validate_message: Missing From header')
                 return msg, False
                 
-            # Check for command in msgdata
-            if not msgdata.get('command'):
-                syslog('error', 'CommandRunner._validate_message: No command in msgdata')
+            # Check for command type in msgdata
+            if not any(key in msgdata for key in ('torequest', 'tojoin', 'toleave', 'toconfirm')):
+                syslog('error', 'CommandRunner._validate_message: No command type found in msgdata')
                 return msg, False
                 
             return msg, True

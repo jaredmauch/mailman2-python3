@@ -29,6 +29,7 @@ from Mailman.Logging.Syslog import mailman_log
 import time
 import traceback
 from Mailman import Errors
+import threading
 
 
 class VirginRunner(IncomingRunner):
@@ -39,6 +40,29 @@ class VirginRunner(IncomingRunner):
     _max_tracking_age = 86400  # 24 hours in seconds
     # Cleanup interval for message tracking data
     _cleanup_interval = 3600  # 1 hour in seconds
+
+    # Message tracking configuration
+    _processed_messages = set()
+    _processed_lock = threading.Lock()
+    _last_cleanup = time.time()
+    _max_processed_messages = 10000
+    _processed_times = {}  # Track processing times for messages
+
+    def __init__(self, slice=None, numslices=1):
+        mailman_log('debug', 'VirginRunner: Starting initialization')
+        try:
+            Runner.__init__(self, slice, numslices)
+            
+            # Initialize processed messages tracking
+            self._processed_messages = set()
+            self._processed_times = {}
+            self._last_cleanup = time.time()
+            
+            mailman_log('debug', 'VirginRunner: Initialization complete')
+        except Exception as e:
+            mailman_log('error', 'VirginRunner: Initialization failed: %s\nTraceback:\n%s',
+                       str(e), traceback.format_exc())
+            raise
 
     def _check_message_processed(self, msgid, filebase):
         """Check if a message has already been processed and if retry delay is met.
@@ -149,19 +173,16 @@ class VirginRunner(IncomingRunner):
 
     def _cleanup_old_messages(self):
         """Clean up old message tracking data."""
-        try:
-            mailman_log('debug', 'VirginRunner: Starting cleanup of old message tracking data')
-            now = time.time()
-            old_msgids = []
-            for msgid, process_time in list(self._processed_times.items()):
-                if now - process_time > self._max_tracking_age:
-                    old_msgids.append(msgid)
-            for msgid in old_msgids:
-                del self._processed_times[msgid]
-                self._processed_messages.discard(msgid)
-            mailman_log('debug', 'VirginRunner: Cleaned up %d old message entries', len(old_msgids))
-        except Exception as e:
-            mailman_log('error', 'VirginRunner: Error during cleanup: %s', str(e))
+        with self._processed_lock:
+            if len(self._processed_messages) > self._max_processed_messages:
+                mailman_log('debug', 'VirginRunner._cleanup_old_messages: Clearing processed messages set (size: %d)',
+                           len(self._processed_messages))
+                self._processed_messages.clear()
+            if len(self._processed_times) > self._max_processed_messages:
+                mailman_log('debug', 'VirginRunner._cleanup_old_messages: Clearing processed times dict (size: %d)',
+                           len(self._processed_times))
+                self._processed_times.clear()
+            self._last_cleanup = time.time()
 
     def _onefile(self, msg, msgdata):
         """Process a single file from the queue."""
@@ -184,3 +205,12 @@ class VirginRunner(IncomingRunner):
             return keepqueued
         finally:
             mlist.Unlock()
+
+    def _unmark_message_processed(self, msgid):
+        """Remove a message from the processed messages set."""
+        with self._processed_lock:
+            if msgid in self._processed_messages:
+                self._processed_messages.remove(msgid)
+                if msgid in self._processed_times:
+                    del self._processed_times[msgid]
+                mailman_log('debug', 'VirginRunner: Unmarked message %s as processed', msgid)
