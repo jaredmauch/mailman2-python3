@@ -40,6 +40,7 @@ import paths
 import email.errors
 from Mailman.Message import Message
 from email.parser import Parser
+from email import message_from_string
 
 from Mailman import mm_cfg
 from Mailman import MailList

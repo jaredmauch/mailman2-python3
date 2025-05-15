@@ -38,6 +38,8 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman import Errors
 from Mailman.i18n import _
+from Mailman.Message import Message
+from email import message_from_string
 
 # Work around known problems with some RedHat cron daemons
 import signal
