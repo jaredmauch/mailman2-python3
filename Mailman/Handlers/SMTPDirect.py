@@ -40,7 +40,7 @@ import pickle
 import email.message
 from email.message import Message
 
-import Mailman.mm_cfg
+from Mailman import mm_cfg
 import Mailman.Utils
 import Mailman.Errors
 from Mailman.Message import Message
@@ -64,21 +64,21 @@ class Connection(object):
     def __connect(self):
         try:
             self.__conn = smtplib.SMTP()
-            self.__conn.set_debuglevel(Mailman.mm_cfg.SMTPLIB_DEBUG_LEVEL)
+            self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
             # Ensure we have a valid hostname for TLS
-            helo_host = Mailman.mm_cfg.SMTP_HELO_HOST
+            helo_host = mm_cfg.SMTP_HELO_HOST
             if not helo_host or helo_host.startswith('.'):
-                helo_host = Mailman.mm_cfg.SMTPHOST
+                helo_host = mm_cfg.SMTPHOST
             if not helo_host or helo_host.startswith('.'):
                 # If we still don't have a valid hostname, use localhost
                 helo_host = 'localhost'
             mailman_log('smtp', 'Connecting to SMTP server %s:%s with HELO %s', 
-                   Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT, helo_host)
-            self.__conn.connect(Mailman.mm_cfg.SMTPHOST, Mailman.mm_cfg.SMTPPORT)
+                   mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, helo_host)
+            self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
             # Set the hostname for TLS
             self.__conn._host = helo_host
-            if Mailman.mm_cfg.SMTP_AUTH:
-                if Mailman.mm_cfg.SMTP_USE_TLS:
+            if mm_cfg.SMTP_AUTH:
+                if mm_cfg.SMTP_USE_TLS:
                     mailman_log('smtp', 'Using TLS with hostname: %s', helo_host)
                     try:
                         # Use native TLS support
@@ -89,7 +89,7 @@ class Connection(object):
                         self.quit()
                         raise
                 try:
-                    self.__conn.login(Mailman.mm_cfg.SMTP_USER, Mailman.mm_cfg.SMTP_PASSWD)
+                    self.__conn.login(mm_cfg.SMTP_USER, mm_cfg.SMTP_PASSWD)
                 except smtplib.SMTPHeloError as e:
                     mailman_log('smtp-failure', 'SMTP HELO error: %s\nTraceback:\n%s', 
                            str(e), traceback.format_exc())
@@ -111,7 +111,7 @@ class Connection(object):
             self.quit()
             raise
 
-        self.__numsessions = Mailman.mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION
+        self.__numsessions = mm_cfg.SMTP_MAX_SESSIONS_PER_CONNECTION
 
     def sendmail(self, envsender, recips, msgtext):
         if self.__conn is None:
@@ -206,7 +206,7 @@ def process(mlist, msg, msgdata):
         return
 
     # Chunkify the recipients
-    chunks = chunkify(recips, Mailman.mm_cfg.SMTP_MAX_RCPTS_PER_CHUNK)
+    chunks = chunkify(recips, mm_cfg.SMTP_MAX_RCPTS_PER_CHUNK)
     # Choose the delivery function based on VERP settings
     if msgdata.get('verp'):
         deliveryfunc = verpdeliver
@@ -254,9 +254,9 @@ def process(mlist, msg, msgdata):
                           'listname': listname,
                           'sender'  : origsender,
                           })
-        if Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE:
-            mailman_log(Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
-                    Mailman.mm_cfg.SMTP_LOG_EVERY_MESSAGE[1] % d.copy())
+        if mm_cfg.SMTP_LOG_EVERY_MESSAGE:
+            mailman_log(mm_cfg.SMTP_LOG_EVERY_MESSAGE[0],
+                    mm_cfg.SMTP_LOG_EVERY_MESSAGE[1] % d.copy())
 
     except Exception as e:
         mailman_log('error', 'Error in SMTPDirect.process: %s\nTraceback:\n%s',
@@ -341,7 +341,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                          'mailbox': rmailbox,
                          'host'   : DOT.join(rdomain),
                          }
-                    envsender = '%s@%s' % ((Mailman.mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
+                    envsender = '%s@%s' % ((mm_cfg.VERP_FORMAT % d), DOT.join(bdomain))
                 except Exception as e:
                     mailman_log('error', 'Failed to parse email addresses for VERP: %s', e)
                     continue
@@ -380,9 +380,9 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
             if recip in msgdata.get('add-dup-header', {}):
                 msgcopy['X-Mailman-Copy'] = 'yes'
             # If desired, add the RCPT_BASE64_HEADER_NAME header
-            if len(Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
-                del msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME]
-                msgcopy[Mailman.mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
+            if len(mm_cfg.RCPT_BASE64_HEADER_NAME) > 0:
+                del msgcopy[mm_cfg.RCPT_BASE64_HEADER_NAME]
+                msgcopy[mm_cfg.RCPT_BASE64_HEADER_NAME] = b64encode(recip)
             # For the final delivery stage, we can just bulk deliver to a party of
             # one. ;)
             bulkdeliver(mlist, msgcopy, msgdata, envsender, failures, conn)
@@ -451,7 +451,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
                    e, msgid)
             refused = e.recipients
             # Move message to bad queue since all recipients were refused
-            badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+            badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
             badq.enqueue(msg, msgdata)
         except smtplib.SMTPResponseException as e:
             mailman_log('smtp-failure', 'SMTP session failure: %s, %s, msgid: %s',
@@ -461,7 +461,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
                 # Permanent failure - add to refused and move to bad queue
                 for r in recips:
                     refused[r] = (e.smtp_code, e.smtp_error)
-                badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+                badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
                 badq.enqueue(msg, msgdata)
             else:
                 # Temporary failure - don't add to refused
@@ -473,7 +473,7 @@ def bulkdeliver(mlist, msg, msgdata, envsender, failures, conn):
             for r in recips:
                 refused[r] = (-1, error)
             # Move message to bad queue for low level errors
-            badq = get_switchboard(Mailman.mm_cfg.BADQUEUE_DIR)
+            badq = get_switchboard(mm_cfg.BADQUEUE_DIR)
             badq.enqueue(msg, msgdata)
         failures.update(refused)
     except Exception as e:

@@ -35,7 +35,7 @@ class ArchRunner(Runner):
         # original message.
         clobber = 0
         originaldate = msg.get('date')
-        receivedtime = formatdate(msgdata['received_time'])
+        receivedtime = formatdate(msgdata.get('received_time', time.time()))
         if not originaldate:
             clobber = 1
         elif mm_cfg.ARCHIVER_CLOBBER_DATE_POLICY == 1:
