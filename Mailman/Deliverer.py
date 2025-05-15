@@ -94,9 +94,9 @@ class Deliverer(object):
                 pluser = 'en'  # Default to English if no language is available
         # Need to set this here to get the proper l10n of the Subject:
         i18n.set_language(pluser)
-        if self.welcome_msg:
-            welcome = Utils.wrap(self.welcome_msg) + '\n'
-        else:
+        try:
+            welcome = Utils.wrap(self.welcome_msg) + '\n' if self.welcome_msg else ''
+        except AttributeError:
             welcome = ''
         if self.umbrella_list:
             addr = self.GetMemberAdminEmail(name)
