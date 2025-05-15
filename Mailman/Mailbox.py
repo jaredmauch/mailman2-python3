@@ -45,7 +45,7 @@ class BinaryGenerator(email.generator.Generator):
     """A generator that writes to a binary file."""
     def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, *args, **kwargs):
         # Create a text buffer that we'll write to first
-        self._buffer = StringIO()
+        self._buffer = BytesIO()
         super().__init__(self._buffer, mangle_from_, maxheaderlen, *args, **kwargs)
         # Store the binary file object
         self._binary_fp = outfp
@@ -53,24 +53,19 @@ class BinaryGenerator(email.generator.Generator):
     def _write_lines(self, lines):
         # Override to handle both string and bytes input
         for line in lines:
-            if isinstance(line, bytes):
-                try:
-                    line = line.decode('utf-8', 'replace')
-                except UnicodeError:
-                    line = line.decode('latin-1', 'replace')
+            if isinstance(line, str):
+                line = line.encode('utf-8', 'replace')
             self._buffer.write(line)
 
     def flatten(self, msg, unixfrom=False, linesep='\n'):
         # Override to write the buffer contents to binary file
         super().flatten(msg, unixfrom=unixfrom, linesep=linesep)
-        # Get the text content and encode it
+        # Get the content and write it directly to binary file
         content = self._buffer.getvalue()
         # Reset the buffer
         self._buffer.seek(0)
         self._buffer.truncate()
         # Write to binary file
-        if isinstance(content, str):
-            content = content.encode('utf-8', 'replace')
         self._binary_fp.write(content)
 
 
