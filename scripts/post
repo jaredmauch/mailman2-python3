@@ -39,6 +39,7 @@ from Mailman.i18n import _
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Utils import LogStdErr
 from Mailman.Logging.Syslog import mailman_log
+from Mailman.Message import Message
 
 LogStdErr("error", "post")
 
@@ -60,19 +61,26 @@ def main():
     # Read the message from stdin
     msgtext = sys.stdin.read()
     # Parse the message to get headers for logging
-    msg = message_from_string(msgtext)
+    emsg = message_from_string(msgtext)
+    if not isinstance(emsg, Message):
+        mmsg = Message()
+        for k, v in emsg.items():
+            mmsg[k] = v
+        mmsg.set_payload(emsg.get_payload())
+    else:
+        mmsg = emsg
     # Log the inbound message
     mailman_log('post', 'inbound message to %s from %s, subject: %s, message-id: %s',
-           listname, msg.get('from', 'unknown'),
-           msg.get('subject', '(no subject)'),
-           msg.get('message-id', 'n/a'))
+           listname, mmsg.get('from', 'unknown'),
+           mmsg.get('subject', '(no subject)'),
+           mmsg.get('message-id', 'n/a'))
     # Immediately queue the message for the incoming qrunner to process.  The
     # advantage to this approach is that messages should never get lost --
     # some MTAs have a hard limit to the time a filter prog can run.  Postfix
     # is a good example; if the limit is hit, the proc is SIGKILL'd giving us
     # no chance to save the message.
     inq = get_switchboard(mm_cfg.INQUEUE_DIR)
-    qfile = inq.enqueue(msgtext,
+    qfile = inq.enqueue(mmsg,
                        msgdata={'listname': listname,
                                'tolist': 1,
                                '_plaintext': 1})
