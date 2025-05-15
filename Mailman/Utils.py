@@ -1763,8 +1763,9 @@ def formataddr(pair):
         # If name is bytes, decode it to str
         if isinstance(name, bytes):
             name = name.decode('utf-8', 'replace')
-        # If name contains non-ASCII characters, encode it
-        if any(ord(c) > 127 for c in name):
+        # If name contains non-ASCII characters and is not already encoded,
+        # encode it
+        if isinstance(name, str) and any(ord(c) > 127 for c in name):
             name = email.header.Header(name, 'utf-8').encode()
         return '%s <%s>' % (name, address)
     return address
