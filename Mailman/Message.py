@@ -308,11 +308,8 @@ class UserNotification(Message):
         # Not imported at module scope to avoid import loop
         from Mailman.Queue.sbcache import get_switchboard
         virginq = get_switchboard(mm_cfg.VIRGINQUEUE_DIR)
-        # Ensure recipient information is always included
-        if 'msgdata' in _kws:
-            msgdata = _kws['msgdata']
-        else:
-            msgdata = {}
+        # Get base msgdata from kwargs if it exists
+        msgdata = _kws.pop('msgdata', {})
         # Always set recipient information
         msgdata['recips'] = self.recips
         msgdata['recipient'] = self.recips[0] if self.recips else None
