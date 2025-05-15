@@ -33,6 +33,8 @@ from Mailman import Utils
 from Mailman.i18n import _
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Utils import LogStdErr
+from Mailman.Message import Message
+from email import message_from_string
 
 LogStdErr('error', 'mailcmd')
 
@@ -54,10 +56,16 @@ def main():
     # is a good example; if the limit is hit, the proc is SIGKILL'd giving us
     # no chance to save the message.
     cmdq = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-    cmdq.enqueue(sys.stdin.read(),
-                 msgdata={'listname': listname,
-                         'torequest': 1,
-                         '_plaintext': 1})
+    msgtext = sys.stdin.read()
+    emsg = message_from_string(msgtext)
+    if not isinstance(emsg, Message):
+        mmsg = Message()
+        for k, v in emsg.items():
+            mmsg[k] = v
+        mmsg.set_payload(emsg.get_payload())
+    else:
+        mmsg = emsg
+    cmdq.enqueue(mmsg, msgdata={'listname': listname, 'torequest': 1, '_plaintext': 1})
 
 
 
