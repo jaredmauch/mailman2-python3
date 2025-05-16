@@ -84,7 +84,7 @@ class Pending(object):
 
     def __load(self):
         try:
-            obj = Utils.load_pickle(self.__pendfile)
+            obj = load_pickle(self.__pendfile)
             if obj == None:
                 return {'evictions': {}}
             else:
