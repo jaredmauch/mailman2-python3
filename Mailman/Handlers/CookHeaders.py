@@ -254,25 +254,6 @@ def prefix_subject(mlist, msg, msgdata):
     # Add the prefix if it's not already there
     if not subject_str.startswith(prefix):
         msg['Subject'] = prefix + ' ' + subject_str
-    
-    # Mark message as processed
-    mailman_log('debug', 'CookHeaders: Adding X-BeenThere header for message %s', msgid)
-    change_header('X-BeenThere', mlist.GetListEmail(),
-                 mlist, msg, msgdata, delete=False)
-    
-    # Add standard headers
-    mailman_log('debug', 'CookHeaders: Adding standard headers for message %s', msgid)
-    change_header('X-Mailman-Version', mm_cfg.VERSION,
-                 mlist, msg, msgdata, repl=False)
-    change_header('Precedence', 'list',
-                 mlist, msg, msgdata, repl=False)
-    
-    # Handle From: header munging if needed
-    if (msgdata.get('from_is_list') or mlist.from_is_list) and not msgdata.get('_fasttrack'):
-        mailman_log('debug', 'CookHeaders: Munging From header for message %s', msgid)
-        munge_from_header(mlist, msg, msgdata)
-    
-    mailman_log('debug', 'CookHeaders: Finished processing message %s', msgid)
 
 def ch_oneline(headerstr):
     # Decode header string in one line and convert into single charset
