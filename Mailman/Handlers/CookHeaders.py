@@ -237,6 +237,9 @@ def prefix_subject(mlist, msg, msgdata):
         # If subject is already a string, use it directly
         if isinstance(subject, str):
             subject_str = subject
+        # If subject is a Header object, convert it to string
+        elif isinstance(subject, Header):
+            subject_str = str(subject)
         else:
             # Try to decode the subject
             try:

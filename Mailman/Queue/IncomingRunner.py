@@ -383,15 +383,20 @@ class IncomingRunner(Runner):
                         self._shunt.enqueue(msg, msgdata)
                         continue
                     
-                    msgid = msg.get('message-id', 'n/a')
+                    # Try to get message-id early for logging purposes
+                    try:
+                        msgid = msg.get('message-id', 'n/a')
+                    except Exception as e:
+                        msgid = 'unknown'
+                        mailman_log('error', 'IncomingRunner._oneloop: Error getting message-id for file %s: %s', filebase, str(e))
                     
                     # Get the list name
                     listname = msgdata.get('listname', 'unknown')
                     try:
                         mlist = MailList.MailList(listname, lock=False)
                     except Errors.MMUnknownListError:
-                        mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s for message %s',
-                                  listname, msgid)
+                        mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s for message %s (file: %s)',
+                                  listname, msgid, filebase)
                         self._shunt.enqueue(msg, msgdata)
                         continue
                     
@@ -402,14 +407,15 @@ class IncomingRunner(Runner):
                         # If the message should be kept in the queue, requeue it
                         if result:
                             self._switchboard.enqueue(msg, msgdata)
-                            mailman_log('info', 'IncomingRunner._oneloop: Message requeued for later processing: %s', filebase)
+                            mailman_log('info', 'IncomingRunner._oneloop: Message requeued for later processing: %s (msgid: %s)', 
+                                      filebase, msgid)
                         else:
                             mailman_log('info', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
                                       filebase, msgid)
                             
                     except Exception as e:
-                        mailman_log('error', 'IncomingRunner._oneloop: Error processing message: %s\n%s',
-                                  str(e), traceback.format_exc())
+                        mailman_log('error', 'IncomingRunner._oneloop: Error processing message %s (file: %s): %s\n%s',
+                                  msgid, filebase, str(e), traceback.format_exc())
                         # Move to shunt queue on error
                         self._shunt.enqueue(msg, msgdata)
                         
