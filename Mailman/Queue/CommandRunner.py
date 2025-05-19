@@ -186,9 +186,11 @@ class Results:
                 return BADCMD
             if self.subjcmdretried < 1:
                 self.subjcmdretried += 1
-                if re.search(r'^.*:.+', cmd, re.IGNORECASE):
-                    cmd = re.sub(r'.*:', '', cmd).lower()
-                    return self.do_command(cmd, args)
+                # Handle both "Re:" and "Re:" without space
+                if re.search(r'^.*:[^\s]*', cmd, re.IGNORECASE):
+                    cmd = re.sub(r'.*:', '', cmd).strip().lower()
+                    if cmd:  # Only retry if we have a command after removing prefix
+                        return self.do_command(cmd, args)
             if self.subjcmdretried < 2 and args:
                 self.subjcmdretried += 1
                 cmd = args.pop(0).lower()
