@@ -376,9 +376,16 @@ def show_pending_subs(mlist, form):
                      CheckBox(f'ban-%d' % id, 1).Format() +
                      '&nbsp;' + _('Permanently ban from this list') +
                      '</label>')
-        # While the address may be a unicode, it must be ascii
-        paddr = addr.encode('us-ascii', 'replace')
-        table.AddRow(['%s<br><em>%s</em><br>%s' % (paddr,
+        # Ensure the address is properly decoded for display
+        if isinstance(addr, bytes):
+            try:
+                addr = addr.decode('utf-8')
+            except UnicodeDecodeError:
+                try:
+                    addr = addr.decode('latin-1')
+                except UnicodeDecodeError:
+                    addr = addr.decode('ascii', 'replace')
+        table.AddRow(['%s<br><em>%s</em><br>%s' % (Utils.websafe(addr),
                                                    Utils.websafe(fullname),
                                                    displaytime),
                       radio,
