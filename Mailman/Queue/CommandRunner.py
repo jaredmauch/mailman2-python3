@@ -67,6 +67,25 @@ STOP = 1
 BADCMD = 2
 BADSUBJ = 3
 
+# List of valid commands that can be imported
+VALID_COMMANDS = {
+    'confirm',    # Confirm subscription/unsubscription
+    'echo',       # Echo command
+    'end',        # End command
+    'help',       # Help command
+    'info',       # List information
+    'join',       # Join list
+    'leave',      # Leave list
+    'lists',      # List all lists
+    'password',   # Password command
+    'remove',     # Remove from list
+    'set',        # Set options
+    'stop',       # Stop command
+    'subscribe',  # Subscribe to list
+    'unsubscribe',# Unsubscribe from list
+    'who'         # Who command
+}
+
 class Results:
     def __init__(self, mlist_obj, msg, msgdata):
         self.mlist = mlist_obj
@@ -147,63 +166,41 @@ class Results:
     def do_command(self, cmd, args=None):
         if args is None:
             args = ()
-        # Ensure cmd is a string
-        if isinstance(cmd, bytes):
-            try:
-                cmd = cmd.decode('utf-8')
-            except UnicodeDecodeError:
-                cmd = cmd.decode('latin-1')
-        # Try to import a command handler module for this command
-        try:
-            # Clean the command name to prevent injection
-            cmd = re.sub(r'[^a-zA-Z0-9_]', '', cmd)
-            if not cmd:
-                return BADCMD
-            modname = 'Mailman.Commands.cmd_' + cmd
-            __import__(modname)
-            handler = sys.modules[modname]
-        # ValueError can be raised if cmd has dots in it.
-        # and KeyError if cmd is otherwise good but ends with a dot.
-        # and TypeError if cmd has a null byte.
-        except (ImportError, ValueError, KeyError, TypeError) as e:
-            mailman_log('error', 'CommandRunner: Failed to import command module %s: %s',
-                       modname, str(e))
+        # Clean the command name to prevent injection
+        cmd = cmd.lower().strip()
+        # Only try to import valid commands
+        if cmd not in VALID_COMMANDS:
             # If we're on line zero, it was the Subject: header that didn't
             # contain a command.  It's possible there's a Re: prefix (or
             # localized version thereof) on the Subject: line that's messing
             # things up.  Pop the prefix off and try again... once.
-            #
-            # At least one MUA (163.com web mail) has been observed that
-            # inserts 'Re:' with no following space, so try to account for
-            # that too.
-            #
-            # If that still didn't work it isn't enough to stop processing.
-            # BAW: should we include a message that the Subject: was ignored?
-            #
-            # But first, be sure we're looking at the Subject: and not past
-            # it already.
             if self.lineno != 0:
                 return BADCMD
             if self.subjcmdretried < 1:
                 self.subjcmdretried += 1
                 if re.search('^.*:.+', cmd):
-                    cmd = re.sub('.*:', '', cmd).lower()
+                    cmd = re.sub('.*:', '', cmd).lower().strip()
                     return self.do_command(cmd, args)
             if self.subjcmdretried < 2 and args:
                 self.subjcmdretried += 1
-                cmd = args.pop(0).lower()
+                cmd = args.pop(0).lower().strip()
                 return self.do_command(cmd, args)
             return BADSUBJ
+
+        # Try to import a command handler module for this command
+        modname = 'Mailman.Commands.cmd_' + cmd
         try:
-            if handler.process(self, args):
-                return STOP
-            else:
-                return CONTINUE
-        except Exception as e:
-            mailman_log('error', 'CommandRunner: Error processing command %s: %s\nTraceback:\n%s',
-                       cmd, str(e), traceback.format_exc())
-            self.results.append(_('Error processing command: %s') % str(e))
+            __import__(modname)
+            handler = sys.modules[modname]
+        except (ImportError, ValueError, KeyError, TypeError) as e:
+            syslog('error', 'CommandRunner: Failed to import command module %s: %s',
+                   modname, str(e))
+            return BADCMD
+
+        if handler.process(self, args):
             return STOP
+        else:
+            return CONTINUE
 
     def send_response(self):
         # Helper
