@@ -72,98 +72,76 @@ def load_pickle(fp):
         return None
 
 
-def testfile(dbfile, verbose=False, listname=None):
-    # Use our safe loader
-    loadfunc = load_pickle
-    if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
-        loadfunc = marshal.load
-    elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-        loadfunc = load_pickle
-    else:
-        assert 0
-    if verbose:
-        print('Processing file: %s' % dbfile)
-        print('  File type: %s' % ('marshal' if dbfile.endswith('.db') else 'pickle'))
-        print('  File size: %d bytes' % os.path.getsize(dbfile))
-    fp = open(dbfile, 'rb')
+def testfile(dbfile, listname=None, verbose=0):
+    """Test the integrity of a list's config database file."""
     try:
-        data = loadfunc(fp)
         if verbose:
-            print('  Successfully loaded data')
-            if isinstance(data, dict):
-                print('  Number of entries: %d' % len(data))
-                if 'version' in data:
-                    print('  Database version: %s' % data['version'])
-                # Add detailed debugging for request.pck files
-                if dbfile.endswith('request.pck'):
-                    print('  Request data structure:')
-                    for key, value in data.items():
-                        print('    Key: %s' % key)
-                        print('    Value type: %s' % type(value))
-                        if isinstance(value, (str, bytes)):
-                            print('    Value length: %d' % len(value))
-                            if len(str(value)) < 100:  # Only print short values
-                                print('    Value: %s' % value)
-                        elif isinstance(value, (list, tuple)):
-                            print('    Number of items: %d' % len(value))
-                            if len(value) > 0:
-                                print('    First item type: %s' % type(value[0]))
-                                if isinstance(value[0], (str, bytes)) and len(str(value[0])) < 100:
-                                    print('    First item: %s' % value[0])
-        # Handle string/bytes conversion with better error handling
-        if isinstance(data, bytes):
+            print('  Loading file %s for list %s...' % 
+                  (os.path.basename(dbfile), listname or 'unknown'))
+        if dbfile.endswith('.pck'):
+            # Try to load the pickle file
             try:
-                data = data.decode('utf-8', 'replace')
-            except Exception as e:
-                if verbose:
-                    print('  Warning: Error decoding bytes in %s for list %s: %s' % 
-                          (os.path.basename(dbfile), listname or 'unknown', str(e)))
-                data = str(data)
-        elif isinstance(data, dict):
-            new_data = {}
-            for k, v in data.items():
-                try:
-                    if isinstance(k, bytes):
-                        k = k.decode('utf-8', 'replace')
-                    if isinstance(v, bytes):
-                        v = v.decode('utf-8', 'replace')
-                    elif isinstance(v, (list, tuple)):
-                        v = list(v)
-                        for i, item in enumerate(v):
-                            if isinstance(item, bytes):
-                                try:
-                                    v[i] = item.decode('utf-8', 'replace')
-                                except Exception as e:
-                                    if verbose:
-                                        print('  Warning: Error decoding list item in %s for list %s: %s' % 
-                                              (os.path.basename(dbfile), listname or 'unknown', str(e)))
-                                    v[i] = str(item)
-                    new_data[k] = v
-                except Exception as e:
-                    if verbose:
-                        print('  Warning: Error processing dictionary item in %s for list %s: %s' % 
-                              (os.path.basename(dbfile), listname or 'unknown', str(e)))
-                    new_data[str(k)] = str(v)
-            data = new_data
-        elif isinstance(data, (list, tuple)):
-            data = list(data)
-            for i, item in enumerate(data):
-                if isinstance(item, bytes):
+                with open(dbfile, 'rb') as fp:
+                    # First try to detect Python 2 pickle
                     try:
-                        data[i] = item.decode('utf-8', 'replace')
-                    except Exception as e:
+                        fp.seek(0)
+                        header = fp.read(2)
+                        is_py2_pickle = header.startswith(b'c') or header.startswith(b'C')
                         if verbose:
-                            print('  Warning: Error decoding list item in %s for list %s: %s' % 
-                                  (os.path.basename(dbfile), listname or 'unknown', str(e)))
-                        data[i] = str(item)
-        return data
-    except Exception as e:
+                            print('  Python 2 pickle detected: %s' % ('Yes' if is_py2_pickle else 'No'))
+                    except:
+                        is_py2_pickle = False
+                    
+                    # Now load the actual data
+                    fp.seek(0)
+                    data = pickle.load(fp)
+                    if verbose:
+                        # Get pickle version info
+                        fp.seek(0)
+                        version = pickle.format_version
+                        protocol = pickle.HIGHEST_PROTOCOL
+                        print('  Pickle format version: %s' % version)
+                        print('  Pickle protocol: %d' % protocol)
+                        if is_py2_pickle:
+                            print('  WARNING: This file was likely written with Python 2')
+                            print('  String data may need special handling for Python 3 compatibility')
+            except (EOFError, pickle.UnpicklingError) as e:
+                print('  Error loading file %s for list %s: %s' % 
+                      (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                # Always print error for request.pck files, even if not verbose
+                if dbfile.endswith('request.pck'):
+                    print('  File %s for list %s: ERROR - %s' % 
+                          (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                raise
+        elif dbfile.endswith('.db'):
+            # Try to load the marshal file
+            try:
+                with open(dbfile, 'rb') as fp:
+                    data = marshal.load(fp)
+                    if verbose:
+                        print('  Marshal format version: %d' % marshal.version)
+                        if marshal.version < 2:
+                            print('  WARNING: This file was likely written with Python 2')
+                            print('  String data may need special handling for Python 3 compatibility')
+            except (EOFError, ValueError) as e:
+                print('  Error loading file %s for list %s: %s' % 
+                      (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                # Always print error for request.pck files, even if not verbose
+                if dbfile.endswith('request.pck'):
+                    print('  File %s for list %s: ERROR - %s' % 
+                          (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                raise
         if verbose:
-            print('  Error loading file %s for list %s: %s' % 
+            print('  File %s for list %s: OK' % 
+                  (os.path.basename(dbfile), listname or 'unknown'))
+    except Exception as e:
+        print('  Error loading file %s for list %s: %s' % 
+              (os.path.basename(dbfile), listname or 'unknown', str(e)))
+        # Always print error for request.pck files, even if not verbose
+        if dbfile.endswith('request.pck'):
+            print('  File %s for list %s: ERROR - %s' % 
                   (os.path.basename(dbfile), listname or 'unknown', str(e)))
         raise
-    finally:
-        fp.close()
 
 
 def main():
@@ -223,9 +201,7 @@ def main():
             for dbfile in dbfiles:
                 if os.path.exists(dbfile):
                     try:
-                        testfile(dbfile, args.verbose, listname)
-                        if args.verbose:
-                            print('  File %s: OK' % os.path.basename(dbfile))
+                        testfile(dbfile, listname, args.verbose)
                     except Exception as e:
                         print('  File %s: ERROR - %s' % (os.path.basename(dbfile), str(e)))
                 elif args.verbose:
