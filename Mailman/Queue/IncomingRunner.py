@@ -362,23 +362,28 @@ class IncomingRunner(Runner):
             # Process each file
             for filebase in files:
                 try:
-                    # Check if we need to cleanup old messages
-                    if time.time() - self._last_cleanup > self._cleanup_interval:
-                        self._cleanup_old_messages()
-                    
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
                     
-                    # Skip if dequeue failed
-                    if msg is None or msgdata is None:
-                        mailman_log('error', 'IncomingRunner._oneloop: Failed to dequeue file %s (got None values)', filebase)
+                    # If dequeue failed due to file being locked, skip it
+                    if msg is None and msgdata is None:
+                        # Check if the file is locked
+                        lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                        if os.path.exists(lockfile):
+                            mailman_log('debug', 'IncomingRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                            continue
+                        # For other None,None cases, shunt the message
+                        mailman_log('error', 'IncomingRunner._oneloop: Failed to dequeue file %s (got None values), shunting', filebase)
+                        # Create a basic message and metadata if we don't have them
+                        msg = Message()
+                        msgdata = {}
+                        # Add the original queue information
+                        msgdata['whichq'] = self.QDIR
+                        # Shunt the message
+                        self._shunt.enqueue(msg, msgdata)
                         continue
                     
                     msgid = msg.get('message-id', 'n/a')
-                    
-                    # Check if message was recently processed
-                    if self._check_message_processed(msgid, filebase, msg):
-                        continue
                     
                     # Get the list name
                     listname = msgdata.get('listname', 'unknown')
@@ -407,9 +412,6 @@ class IncomingRunner(Runner):
                                   str(e), traceback.format_exc())
                         # Move to shunt queue on error
                         self._shunt.enqueue(msg, msgdata)
-                    finally:
-                        # Always mark message as processed
-                        self._mark_message_processed(msgid)
                         
                 except Exception as e:
                     mailman_log('error', 'IncomingRunner._oneloop: Error dequeuing file %s: %s\n%s',
