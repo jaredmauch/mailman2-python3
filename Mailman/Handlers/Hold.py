@@ -110,7 +110,9 @@ class MessageTooBig(Errors.HoldMessage):
 class ModeratedNewsgroup(ModeratedPost):
     reason = _('Posting to a moderated newsgroup')
 
-
+class HTMLViewerRequired(Errors.HoldMessage):
+    reason = _('Message contains HTML viewer required text')
+    rejection = _('Your message contains text indicating it requires an HTML viewer, which is not allowed.')
 
 # And reset the translator
 _ = i18n._
@@ -138,6 +140,23 @@ def process(mlist, msg, msgdata):
         # delivering.  This feature does not appear to be configurable.  *Boggle*.
         if not sender or sender[:len(listname)+6] == adminaddr:
             sender = msg.get_sender(use_envelope=0)
+        #
+        # Check for HTML viewer required text in text/plain parts
+        for part in msg.walk():
+            if part.get_content_type() == 'text/plain':
+                payload = part.get_payload(decode=True)
+                if payload:
+                    try:
+                        text = payload.decode('utf-8', errors='replace')
+                        if "An HTML viewer is required to see this message" in text:
+                            hold_for_approval(mlist, msg, msgdata, HTMLViewerRequired)
+                            return
+                    except (UnicodeDecodeError, AttributeError):
+                        # If we can't decode the payload, try as bytes
+                        if isinstance(payload, bytes):
+                            if b"An HTML viewer is required to see this message" in payload:
+                                hold_for_approval(mlist, msg, msgdata, HTMLViewerRequired)
+                                return
         #
         # Possible administrivia?
         if mlist.administrivia and Utils.is_administrivia(msg):
