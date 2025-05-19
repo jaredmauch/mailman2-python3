@@ -254,14 +254,12 @@ def hold_for_approval(mlist, msg, msgdata, exc):
                 mlist.Unlock()
         else:
             cookie = mlist.pend_new(Pending.HELD_MESSAGE, id)
-            
         # We may want to send a notification to the original sender too
         fromusenet = msgdata.get('fromusenet')
         # Since we're sending two messages, which may potentially be in different
         # languages (the user's preferred and the list's preferred for the admin),
         # we need to play some i18n games here.  Since the current language
         # context ought to be set up for the user, let's craft his message first.
-        
         if not fromusenet and ackp(msg) and mlist.respond_to_post_requests and \
                mlist.autorespondToSender(sender, mlist.getMemberLanguage(sender)):
             # Get a confirmation cookie
@@ -294,7 +292,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
                 text = MIMEText(
                     Utils.maketext('postauth.txt', d, raw=1, mlist=mlist),
                     _charset=charset)
-                dmsg = MIMEText(Utils.wrap(_("""\
+                dmsg = MIMEText(Utils.wrap(_("""
 If you reply to this message, keeping the Subject: header intact, Mailman will
 discard the held message.  Do this if the message is spam.  If you reply to
 this message and include an Approved: header with the list password in it, the
@@ -312,12 +310,15 @@ also appear in the first line of the body of the reply.""")),
                 nmsg.send(mlist, **{'tomoderators': 1})
             finally:
                 i18n.set_translation(otranslation)
-        # Log the held message
-        syslog('vette', '%s post from %s held, message-id=%s: %s',
+        # Log the held message (info level, not error)
+        syslog('info', '[HOLD] %s post from %s held for approval, message-id=%s, reason=%s',
                listname, sender, message_id, reason)
         # raise the specific MessageHeld exception to exit out of the message
         # delivery pipeline
         raise exc
+    except Errors.HoldMessage:
+        # Already handled above, do not log traceback
+        raise
     except Exception as e:
         syslog('error', 'Error in Hold.hold_for_approval: %s\nTraceback:\n%s',
                str(e), traceback.format_exc())
