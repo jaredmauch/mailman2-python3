@@ -933,17 +933,6 @@ def process_form(mlist, doc, cgidata):
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
 
-        # Check if there are any pending requests
-        admindburl = mlist.GetScriptURL('admindb', absolute=1)
-        if not mlist.NumRequestsPending():
-            replacements = {
-                'admindburl': admindburl,
-                'logout_url': '%s/logout' % admindburl
-            }
-            output = mlist.ParseTags('admindb_empty.html', replacements, mlist.preferred_language)
-            doc.AddItem(output)
-            return
-
         # Create a form for the overview with proper encoding
         form = Form(mlist.GetScriptURL('admindb', absolute=1), 
                    mlist=mlist, 
@@ -968,19 +957,12 @@ def process_form(mlist, doc, cgidata):
             # Process the form data
             process_submissions(mlist, cgidata)
             # Show success message
-            replacements = {
-                'admindburl': admindburl
-            }
-            output = mlist.ParseTags('admindb_success.html', replacements, mlist.preferred_language)
-            doc.AddItem(output)
+            doc.AddItem(Header(2, _('Database Updated...')))
             return
 
         # If we get here, something went wrong
-        replacements = {
-            'admindburl': admindburl
-        }
-        output = mlist.ParseTags('admindb_error.html', replacements, mlist.preferred_language)
-        doc.AddItem(output)
+        doc.AddItem(Header(2, _('Error')))
+        doc.AddItem(Bold(_('Invalid form submission.')))
 
     except Exception as e:
         mailman_log('error', 'admindb: Error in process_form: %s\n%s', 
