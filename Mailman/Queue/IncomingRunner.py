@@ -179,15 +179,15 @@ class IncomingRunner(Runner):
             mailman_log('debug', '  Is list post: %s', is_list_post)
             
             # Log recipients information
-            recipients = msgdata.get('recipients', [])
+            recipients = msgdata.get('recips', [])
             mailman_log('debug', '  Recipients: %s', recipients)
             if not recipients:
-                mailman_log('error', 'IncomingRunner: No recipients found in msgdata for message %s', msgid)
-                mailman_log('error', '  Message data: %s', str(msgdata))
-                mailman_log('error', '  To header: %s', msg.get('to', 'unknown'))
-                mailman_log('error', '  Cc header: %s', msg.get('cc', 'unknown'))
-                mailman_log('error', '  Resent-To: %s', msg.get('resent-to', 'unknown'))
-                mailman_log('error', '  Resent-Cc: %s', msg.get('resent-cc', 'unknown'))
+                mailman_log('warning', 'IncomingRunner: No recipients found in msgdata for message %s, pipeline handlers may set them', msgid)
+                mailman_log('debug', '  Message data: %s', str(msgdata))
+                mailman_log('debug', '  To header: %s', msg.get('to', 'unknown'))
+                mailman_log('debug', '  Cc header: %s', msg.get('cc', 'unknown'))
+                mailman_log('debug', '  Resent-To: %s', msg.get('resent-to', 'unknown'))
+                mailman_log('debug', '  Resent-Cc: %s', msg.get('resent-cc', 'unknown'))
             
             # Convert Python's Message to Mailman's Message if needed
             msg = self._convert_message(msg)
