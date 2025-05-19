@@ -30,6 +30,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman import MemberAdaptor
+from Mailman import Autoresponder
 
 ISREGULAR = 1
 ISDIGEST = 2
@@ -41,7 +42,7 @@ ISDIGEST = 2
 # Actually, fix /all/ errors
 
 
-class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
+class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autoresponder):
     def __init__(self, mlist):
         self.__mlist = mlist
         self.archive = mm_cfg.DEFAULT_ARCHIVE  # Initialize archive attribute
@@ -52,10 +53,8 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         self.digest_is_default = mm_cfg.DEFAULT_DIGEST_IS_DEFAULT  # Initialize digest_is_default attribute
         self.mime_is_default_digest = mm_cfg.DEFAULT_MIME_IS_DEFAULT_DIGEST  # Initialize mime_is_default_digest attribute
         self._pending = {}  # Initialize _pending dictionary for pending operations
-        self.autoresponse_graceperiod = 90  # days, default from Autoresponder class
-        self.autorespond_admin = mm_cfg.DEFAULT_AUTORESPOND_ADMIN  # Initialize autorespond_admin attribute
-        self.autorespond_requests = mm_cfg.DEFAULT_AUTORESPOND_REQUESTS  # Initialize autorespond_requests attribute
-        self.autorespond_postings = mm_cfg.DEFAULT_AUTORESPOND_POSTINGS  # Initialize autorespond_postings attribute
+        # Initialize Autoresponder attributes
+        self.InitVars()
 
     def GetMailmanHeader(self):
         """Return the standard Mailman header HTML for this list."""
