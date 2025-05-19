@@ -101,17 +101,11 @@ def main():
     # See if the user want to see this page in other language
     try:
         if os.environ.get('REQUEST_METHOD') == 'POST':
+            # Get the content length
             content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            if content_length > 0:
-                # Limit content length to prevent DoS
-                if content_length > mm_cfg.MAX_CONTENT_LENGTH:
-                    print('Status: 413 Request Entity Too Large')
-                    listinfo_overview(_('Request too large'))
-                    return
-                form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
-                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-            else:
-                cgidata = {}
+            # Read the form data
+            form_data = sys.stdin.read(content_length)
+            cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
         else:
             query_string = os.environ.get('QUERY_STRING', '')
             cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)

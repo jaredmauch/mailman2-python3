@@ -118,19 +118,11 @@ def main():
     # for the results.  If not, use the list's preferred language.
     try:
         if os.environ.get('REQUEST_METHOD') == 'POST':
+            # Get the content length
             content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            if content_length > 0:
-                # Limit content length to prevent DoS
-                if content_length > mm_cfg.MAX_CONTENT_LENGTH:
-                    print('Status: 413 Request Entity Too Large')
-                    doc.AddItem(Header(2, _("Error")))
-                    doc.AddItem(Bold(_('Request too large')))
-                    print(doc.Format())
-                    return
-                form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
-                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-            else:
-                cgidata = {}
+            # Read the form data
+            form_data = sys.stdin.read(content_length)
+            cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
         else:
             query_string = os.environ.get('QUERY_STRING', '')
             cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
