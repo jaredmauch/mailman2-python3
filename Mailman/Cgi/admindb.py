@@ -94,34 +94,15 @@ def helds_by_skey(mlist, ssort=SSENDER):
 
 
 def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
-    """Create radio buttons with proper table formatting.
-    
-    This is a hack because we can't use RadioButtonArray here - horizontal placement
-    can be confusing to the user and vertical placement takes up too much real-estate.
-    """
+    # We can't use a RadioButtonArray here because horizontal placement can be
+    # confusing to the user and vertical placement takes up too much
+    # real-estate.  This is a hack!
     space = '&nbsp;' * spacing
-    btns = Table(cellspacing='5', cellpadding='0', border='0', width='100%')
-    
-    # Add labels row with proper alignment
-    label_cells = []
-    for text in labels:
-        cell = space + text + space
-        label_cells.append(cell)
-    btns.AddRow(label_cells)
-    
-    # Add radio buttons row with proper alignment and hidden labels
-    button_cells = []
-    for label, value, default in zip(labels, values, defaults):
-        cell = Center(RadioButton(btnname, value, default).Format() +
-                     '<div class="hidden">' + Utils.websafe(label) + '</div>')
-        button_cells.append(cell)
-    btns.AddRow(button_cells)
-    
-    # Set proper alignment for all cells
-    for row in range(2):
-        for col in range(len(labels)):
-            btns.AddCellInfo(row, col, align='center', valign='middle')
-    
+    btns = Table(cellspacing='5', cellpadding='0')
+    btns.AddRow([space + text + space for text in labels])
+    btns.AddRow([Center(RadioButton(btnname, value, default).Format()
+                     + '<div class=hidden>' + label + '</div>')
+                 for label, value, default in zip(labels, values, defaults)])
     return btns
 
 
@@ -833,7 +814,7 @@ def show_post_requests(mlist, id, info, total, count, form):
         reason = _('Error decoding reason')
     
     # Create the form table with proper encoding
-    t = Table(cellspacing=0, cellpadding=0, width='100%')
+    t = Table(cellspacing=0, cellpadding=0)
     t.AddRow([Bold(_('From:')), Utils.websafe(sender)])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
@@ -936,8 +917,7 @@ def process_form(mlist, doc, cgidata):
         # Create a form for the overview with proper encoding
         form = Form(mlist.GetScriptURL('admindb', absolute=1), 
                    mlist=mlist, 
-                   contexts=AUTH_CONTEXTS,
-                   encoding='multipart/form-data')
+                   contexts=AUTH_CONTEXTS)
         form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
 
         # Get the action from the form data with proper encoding
@@ -948,8 +928,6 @@ def process_form(mlist, doc, cgidata):
             show_pending_unsubs(mlist, form)
             show_helds_overview(mlist, form)
             doc.AddItem(form)
-            # Add the footer
-            doc.AddItem(mlist.GetMailmanFooter())
             return
 
         # Process the form submission
