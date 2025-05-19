@@ -190,7 +190,11 @@ def process(mlist, msg, msgdata):
         # moderator's address for the group?
         if mlist.gateway_to_news and mlist.news_moderation == 2:
             hold_for_approval(mlist, msg, msgdata, ModeratedNewsgroup)
+    except Errors.HoldMessage:
+        # These are expected conditions, not errors
+        raise
     except Exception as e:
+        # Only log unexpected errors
         syslog('error', 'Error in Hold.process: %s\nTraceback:\n%s',
                str(e), traceback.format_exc())
         raise

@@ -199,10 +199,18 @@ class Switchboard:
     def dequeue(self, filebase):
         # Calculate the filename from the given filebase.
         filename = os.path.join(self.__whichq, filebase + '.pck')
+        bakfile = os.path.join(self.__whichq, filebase + '.bak')
+        psvfile = os.path.join(self.__whichq, filebase + '.psv')
         
         # Check if file exists before proceeding
         if not os.path.exists(filename):
-            mailman_log('warning', 'Queue file does not exist: %s', filename)
+            # Check if it's been moved to backup or shunt
+            if os.path.exists(bakfile):
+                mailman_log('debug', 'Queue file %s has been moved to backup file %s', filename, bakfile)
+            elif os.path.exists(psvfile):
+                mailman_log('debug', 'Queue file %s has been moved to shunt queue %s', filename, psvfile)
+            else:
+                mailman_log('warning', 'Queue file does not exist: %s (not found in backup or shunt either)', filename)
             return None, None
             
         # Create a lock file
@@ -215,6 +223,7 @@ class Switchboard:
             if e.errno != errno.EEXIST:
                 mailman_log('error', 'Switchboard.dequeue: Failed to create lock file for %s: %s', filebase, str(e))
                 raise
+            mailman_log('debug', 'Queue file %s is currently locked by another process', filename)
             return None, None
 
         try:
@@ -225,14 +234,16 @@ class Switchboard:
                 if data is not None:
                     data['filebase'] = filebase
                 # Log the full msgdata after dequeuing
-                mailman_log('debug', 'Switchboard.dequeue: Full msgdata after dequeuing:\n%s', str(data))
+                mailman_log('debug', 'Switchboard.dequeue: Successfully dequeued file %s', filebase)
             except Exception as e:
-                mailman_log('error', 'Switchboard.dequeue: Failed to read message from %s: %s', filebase, str(e))
+                mailman_log('error', 'Switchboard.dequeue: Failed to read message from %s: %s\nTraceback:\n%s', 
+                           filebase, str(e), traceback.format_exc())
                 raise
 
             # Validate data structure before returning
             if not isinstance(data, dict):
-                mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', filename, type(data))
+                mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', 
+                           filename, type(data))
                 return None, None
                 
             return msg, data

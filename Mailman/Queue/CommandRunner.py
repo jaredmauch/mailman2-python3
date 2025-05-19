@@ -104,7 +104,11 @@ class Results:
         # Extract the subject header and do RFC 2047 decoding
         subj = msg.get('subject', '')
         try:
-            subj = str(make_header(decode_header(subj)))
+            # If subj is already a Header object, convert it to string first
+            if isinstance(subj, Header):
+                subj = str(subj)
+            else:
+                subj = str(make_header(decode_header(subj)))
             # TK: Currently we don't allow 8bit or multibyte in mail command.
             # MAS: However, an l10n 'Re:' may contain non-ascii so ignore it.
             subj = subj.encode('us-ascii', 'ignore').decode('us-ascii')
