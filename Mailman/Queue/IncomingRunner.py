@@ -361,6 +361,11 @@ class IncomingRunner(Runner):
             
             # Process each file
             for filebase in files:
+                # Check stop flag at the start of each file
+                if self._stop:
+                    mailman_log('debug', 'IncomingRunner._oneloop: Stop flag detected, stopping processing')
+                    return filecnt
+                    
                 try:
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)

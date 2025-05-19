@@ -76,6 +76,8 @@ import sys
 import argparse
 import signal
 import time
+import os
+import threading
 
 import paths
 from Mailman import mm_cfg
@@ -150,7 +152,14 @@ def set_signals(loop):
         loop.stop()
         loop.status = signal.SIGTERM
         syslog('qrunner', '%s qrunner caught SIGTERM.  Stopping.', loop.name())
+        # Force exit after 5 seconds
+        def force_exit():
+            time.sleep(5)
+            syslog('qrunner', '%s qrunner forcing exit after timeout.', loop.name())
+            os._exit(signal.SIGTERM)
+        threading.Thread(target=force_exit, daemon=True).start()
     signal.signal(signal.SIGTERM, sigterm_handler)
+    
     # Set up the SIGINT handler for stopping the loop.  For us, SIGINT is
     # the same as SIGTERM, but our parent treats the exit statuses
     # differently (it restarts a SIGINT but not a SIGTERM).
@@ -159,7 +168,14 @@ def set_signals(loop):
         loop.stop()
         loop.status = signal.SIGINT
         syslog('qrunner', '%s qrunner caught SIGINT.  Stopping.', loop.name())
+        # Force exit after 5 seconds
+        def force_exit():
+            time.sleep(5)
+            syslog('qrunner', '%s qrunner forcing exit after timeout.', loop.name())
+            os._exit(signal.SIGINT)
+        threading.Thread(target=force_exit, daemon=True).start()
     signal.signal(signal.SIGINT, sigint_handler)
+    
     # SIGHUP just tells us to close our log files.  They'll be
     # automatically reopened at the next log print :)
     def sighup_handler(signum, frame, loop=loop):

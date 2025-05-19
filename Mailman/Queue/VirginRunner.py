@@ -35,8 +35,6 @@ import email.header
 
 class VirginRunner(IncomingRunner):
     QDIR = mm_cfg.VIRGINQUEUE_DIR
-    # Override the minimum retry delay for virgin messages
-    MIN_RETRY_DELAY = 60  # 1 minute minimum delay between retries
     # Maximum age for message tracking data
     _max_tracking_age = 86400  # 24 hours in seconds
     # Cleanup interval for message tracking data
@@ -66,8 +64,8 @@ class VirginRunner(IncomingRunner):
             raise
 
     def _check_message_processed(self, msgid, filebase, msg):
-        """Check if a message has already been processed and if retry delay is met.
-        Returns True if the message can be processed, False if it's a duplicate or retry delay not met."""
+        """Check if a message has already been processed.
+        Returns True if the message can be processed, False if it's a duplicate."""
         try:
             with self._processed_lock:
                 current_time = time.time()
@@ -117,21 +115,9 @@ class VirginRunner(IncomingRunner):
                 
                 # For other messages, check message ID
                 if msgid in self._processed_messages:
-                    # Check retry delay
-                    last_retry = self._processed_times.get(msgid)
-                    if last_retry is not None:
-                        time_since_last_retry = current_time - last_retry
-                        if time_since_last_retry < self.MIN_RETRY_DELAY:
-                            mailman_log('info', 'VirginRunner: Message %s (file: %s) retry delay not met. Time since last retry: %d seconds, minimum required: %d seconds',
-                                       msgid, filebase, time_since_last_retry, self.MIN_RETRY_DELAY)
-                            return False
-                        else:
-                            mailman_log('debug', 'VirginRunner: Message %s (file: %s) retry delay met. Time since last retry: %d seconds',
-                                       msgid, filebase, time_since_last_retry)
-                    else:
-                        mailman_log('info', 'VirginRunner: Duplicate message detected: %s (file: %s)',
-                                   msgid, filebase)
-                        return False
+                    mailman_log('info', 'VirginRunner: Duplicate message detected: %s (file: %s)',
+                               msgid, filebase)
+                    return False
                 
                 # Mark message as processed
                 try:
@@ -154,50 +140,10 @@ class VirginRunner(IncomingRunner):
             return False
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process a virgin message."""
-        msgid = msg.get('message-id', 'n/a')
-        filebase = msgdata.get('_filebase', 'unknown')
-        
-        # Check if message has already been processed
-        if not self._check_message_processed(msgid, filebase, msg):
-            self._shunt.enqueue(msg, msgdata)
-            return False
-        
-        mailman_log('debug', 'VirginRunner._dispose: Starting to process virgin message %s (file: %s)',
-                   msgid, filebase)
-        
-        # Ensure we have a MailList object
-        if isinstance(mlist, str):
-            try:
-                # Lazy import to avoid circular dependency
-                from Mailman.MailList import MailList
-                mlist = MailList(mlist, lock=0)
-                should_unlock = True
-            except Errors.MMUnknownListError:
-                mailman_log('error', 'VirginRunner: Unknown list %s', mlist)
-                self._shunt.enqueue(msg, msgdata)
-                return False
-        else:
-            should_unlock = False
-        
-        try:
-            # Process the message using IncomingRunner's _dispose method
-            result = super()._dispose(mlist, msg, msgdata)
-            
-            mailman_log('debug', 'VirginRunner._dispose: Finished processing virgin message %s (file: %s)',
-                       msgid, filebase)
-            
-            return result
-        except Exception as e:
-            # Log the full traceback for debugging
-            mailman_log('error', 'VirginRunner: Error processing message %s (file: %s):\n%s\nTraceback:\n%s',
-                       msgid, filebase, str(e), traceback.format_exc())
-            # Move the message to the shunt queue
-            self._shunt.enqueue(msg, msgdata)
-            return False
-        finally:
-            if should_unlock:
-                mlist.Unlock()
+        # We need to fasttrack this message through any handlers that touch
+        # it.  E.g. especially CookHeaders.
+        msgdata['_fasttrack'] = 1
+        return IncomingRunner._dispose(self, mlist, msg, msgdata)
 
     def _get_pipeline(self, mlist, msg, msgdata):
         # It's okay to hardcode this, since it'll be the same for all
