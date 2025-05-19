@@ -145,6 +145,10 @@ def main():
     # Now that we know which list to use, set the system's language to it.
     i18n.set_language(mlist.preferred_language)
 
+    # Initialize the document
+    doc = Document()
+    doc.set_language(mlist.preferred_language)
+
     # Make sure the user is authorized to see this page.
     try:
         if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
@@ -159,8 +163,6 @@ def main():
             cgidata = urllib.parse.parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
     except Exception:
         # Someone crafted a POST with a bad Content-Type:.
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
