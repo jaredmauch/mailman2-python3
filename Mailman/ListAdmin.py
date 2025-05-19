@@ -205,8 +205,11 @@ class ListAdmin(object):
 
     def NumRequestsPending(self):
         self.__opendb()
-        # Subtract one for the version pseudo-entry
-        return len(self.__db) - 1
+        if not self.__db:
+            return 0
+        # For Python 2 pickles, the version pseudo-entry might not exist
+        # Just return the length of the dictionary
+        return len(self.__db)
 
     def __getmsgids(self, rtype):
         self.__opendb()
