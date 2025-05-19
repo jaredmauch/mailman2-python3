@@ -259,12 +259,13 @@ class Switchboard:
         
         # First check if the backup file exists
         if not os.path.exists(bakfile):
-            mailman_log('error', 'Switchboard.finish: Backup file does not exist: %s', bakfile)
-            # Try to clean up the .pck file if it exists
+            # Only log at debug level if the .pck file still exists (message still being processed)
             if os.path.exists(pckfile):
+                mailman_log('debug', 'Switchboard.finish: Backup file does not exist: %s', bakfile)
+                # Try to clean up the .pck file if it exists
                 try:
                     os.unlink(pckfile)
-                    mailman_log('info', 'Switchboard.finish: Removed stale .pck file: %s', pckfile)
+                    mailman_log('debug', 'Switchboard.finish: Removed stale .pck file: %s', pckfile)
                 except OSError as e:
                     mailman_log('error', 'Switchboard.finish: Failed to remove stale .pck file %s: %s',
                               pckfile, str(e))
@@ -291,7 +292,7 @@ class Switchboard:
                         mailman_log('error', 'Switchboard.finish: Failed to move backup file to shunt queue: %s -> %s',
                                   bakfile, psvfile)
                     else:
-                        mailman_log('info', 'Switchboard.finish: Successfully moved backup file to shunt queue: %s -> %s',
+                        mailman_log('debug', 'Switchboard.finish: Successfully moved backup file to shunt queue: %s -> %s',
                                   bakfile, psvfile)
                 except OSError as e:
                     mailman_log('error', 'Switchboard.finish: Failed to move backup file to shunt queue: %s -> %s: %s',
@@ -304,7 +305,7 @@ class Switchboard:
                     if os.path.exists(bakfile):
                         mailman_log('error', 'Switchboard.finish: Failed to unlink backup file: %s', bakfile)
                     else:
-                        mailman_log('info', 'Switchboard.finish: Successfully unlinked backup file: %s', bakfile)
+                        mailman_log('debug', 'Switchboard.finish: Successfully unlinked backup file: %s', bakfile)
                 except OSError as e:
                     mailman_log('error', 'Switchboard.finish: Failed to unlink backup file %s: %s',
                               bakfile, str(e))
