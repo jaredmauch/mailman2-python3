@@ -123,195 +123,139 @@ def output_success_page(doc):
 
 
 def main():
+    global ssort
+    # Figure out which list is being requested
+    parts = Utils.GetPathPieces()
+    if not parts:
+        handle_no_list()
+        return
+
+    listname = parts[0].lower()
     try:
-        # Log page load with process identity
-        mailman_log('info', 'admindb: Page load started')
-        mailman_log('info', 'Process identity - EUID: %d, EGID: %d, RUID: %d, RGID: %d',
-                   os.geteuid(), os.getegid(), os.getuid(), os.getgid())
-        
-        # Initialize document early
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        # Send this with a 404 status.
+        print('Status: 404 Not Found')
+        handle_no_list(_(f'No such list <em>{safelistname}</em>'))
+        syslog('error', 'admindb: No such list "%s": %s\n', listname, e)
+        return
+
+    # Now that we know which list to use, set the system's language to it.
+    i18n.set_language(mlist.preferred_language)
+
+    # Make sure the user is authorized to see this page.
+    try:
+        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
+            content_type = os.environ.get('CONTENT_TYPE', '')
+            if content_type.startswith('application/x-www-form-urlencoded'):
+                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+                form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=1)
+            else:
+                raise ValueError('Invalid content type')
+        else:
+            cgidata = urllib.parse.parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        
-        # Parse form data first since we need it for authentication
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    # CSRF check
+    safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
+                                  'admindb')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.get('adminpw', [''])[0]:
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthListModerator,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.get('adminpw', [''])[0]):
+        if 'adminpw' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (admindb): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admindb', msg=msg)
+        return
+
+    # Add logout function. Note that admindb may be accessed with
+    # site-wide admin, moderator and list admin privileges.
+    # site admin may have site or admin cookie. (or both?)
+    # See if this is a logout request
+    if len(parts) >= 2 and parts[1] == 'logout':
+        if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
+            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
+        if mlist.AuthContextInfo(mm_cfg.AuthListModerator)[0]:
+            print(mlist.ZapCookie(mm_cfg.AuthListModerator))
+        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
+        Auth.loginpage(mlist, 'admindb', frontpage=1)
+        return
+
+    # We need a signal handler to catch the SIGTERM that can come from Apache
+    # when the user hits the browser's STOP button.  See the comment in
+    # admin.py for details.
+    def sigterm_handler(signum, frame, mlist=mlist):
         try:
-            if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
-                content_type = os.environ.get('CONTENT_TYPE', '')
-                if content_type.startswith('application/x-www-form-urlencoded'):
-                    content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                    if content_length > 0:
-                        form_data = sys.stdin.buffer.read(content_length)
-                        try:
-                            # Try UTF-8 first
-                            form_data = form_data.decode('utf-8')
-                        except UnicodeDecodeError:
-                            try:
-                                # Fall back to the list's preferred charset
-                                charset = Utils.GetCharSet(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-                                form_data = form_data.decode(charset)
-                            except (UnicodeDecodeError, LookupError):
-                                # Last resort: latin-1
-                                form_data = form_data.decode('latin-1', 'replace')
-                        cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-                    else:
-                        cgidata = {}
-                else:
-                    mailman_log('error', 'admindb: Invalid content type: %s', content_type)
-                    raise ValueError('Invalid content type')
-            else:
-                query_string = os.environ.get('QUERY_STRING', '')
-                cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-        except Exception as e:
-            mailman_log('error', 'admindb: Invalid form data: %s\n%s', str(e), traceback.format_exc())
-            try:
-                doc = output_error_page('400 Bad Request', 'Error', 'Invalid options to CGI script.')
-                return output_success_page(doc)
-            except Exception as output_error:
-                mailman_log('error', 'admindb: Failed to output error page: %s\n%s', 
-                           str(output_error), traceback.format_exc())
-                raise
-
-        # Get the list name
-        parts = Utils.GetPathPieces()
-        if not parts:
-            try:
-                doc = handle_no_list()
-                return output_success_page(doc)
-            except Exception as e:
-                mailman_log('error', 'admindb: Failed to handle no list case: %s\n%s', 
-                           str(e), traceback.format_exc())
-                raise
-
-        listname = parts[0].lower()
-        mailman_log('info', 'admindb: Processing list "%s"', listname)
-
-        # Check if list directory exists before trying to load
-        listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
-        if not os.path.exists(listdir):
-            mailman_log('error', 'admindb: List directory does not exist: %s', listdir)
-            try:
-                doc = output_error_page('404 Not Found', 'Error', 
-                                       'No such list <em>%s</em>' % Utils.websafe(listname),
-                                       'The list directory does not exist.')
-                return output_success_page(doc)
-            except Exception as e:
-                mailman_log('error', 'admindb: Failed to output list not found error: %s\n%s', 
-                           str(e), traceback.format_exc())
-                raise
-
-        try:
-            mlist = MailList.MailList(listname, lock=0)
-        except Errors.MMListError as e:
-            mailman_log('error', 'admindb: No such list "%s": %s\n%s', 
-                       listname, e, traceback.format_exc())
-            try:
-                doc = output_error_page('404 Not Found', 'Error',
-                                       'No such list <em>%s</em>' % Utils.websafe(listname),
-                                       'The list configuration could not be loaded.')
-                return output_success_page(doc)
-            except Exception as output_error:
-                mailman_log('error', 'admindb: Failed to output list error page: %s\n%s', 
-                           str(output_error), traceback.format_exc())
-                raise
-        except PermissionError as e:
-            mailman_log('error', 'admindb: Permission error accessing list "%s": %s\n%s', 
-                       listname, e, traceback.format_exc())
-            try:
-                doc = output_error_page('500 Internal Server Error', 'Error',
-                                       'Permission error accessing list <em>%s</em>' % Utils.websafe(listname),
-                                       str(e))
-                return output_success_page(doc)
-            except Exception as output_error:
-                mailman_log('error', 'admindb: Failed to output permission error page: %s\n%s', 
-                           str(output_error), traceback.format_exc())
-                raise
-        except Exception as e:
-            mailman_log('error', 'admindb: Unexpected error loading list "%s": %s\n%s',
-                       listname, str(e), traceback.format_exc())
-            try:
-                doc = output_error_page('500 Internal Server Error', 'Error',
-                                       'Error accessing list <em>%s</em>' % Utils.websafe(listname),
-                                       str(e))
-                return output_success_page(doc)
-            except Exception as output_error:
-                mailman_log('error', 'admindb: Failed to output unexpected error page: %s\n%s', 
-                           str(output_error), traceback.format_exc())
-                raise
-
-        # Now that we know what list has been requested, all subsequent admin
-        # pages are shown in that list's preferred language.
-        doc.set_language(mlist.preferred_language)
-
-        # Must be authenticated to get any farther
-        if not mlist.WebAuthenticate(AUTH_CONTEXTS, cgidata.get('adminpw', [''])[0]):
-            if 'admlogin' in cgidata:
-                # This is a re-authorization attempt
-                msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
-                remote = os.environ.get('HTTP_FORWARDED_FOR',
-                         os.environ.get('HTTP_X_FORWARDED_FOR',
-                         os.environ.get('REMOTE_ADDR',
-                                        'unidentified origin')))
-                mailman_log('security',
-                           'Authorization failed (admindb): list=%s: remote=%s\n%s',
-                           listname, remote, traceback.format_exc())
-            else:
-                msg = ''
-            try:
-                Auth.loginpage(mlist, 'admindb', msg=msg)
-            except Exception as e:
-                mailman_log('error', 'admindb: Failed to display login page: %s\n%s', 
-                           str(e), traceback.format_exc())
-                raise
-            return
-
-        # We need a signal handler to catch the SIGTERM that can come from Apache
-        # when the user hits the browser's STOP button.  See the comment in
-        # admin.py for details.
-        def sigterm_handler(signum, frame, mlist=mlist):
-            try:
-                # Make sure the list gets unlocked...
-                mlist.Unlock()
-                # Log the termination
-                mailman_log('info', 'admindb: SIGTERM received, unlocking list and exiting')
-            except Exception as e:
-                mailman_log('error', 'admindb: Error in SIGTERM handler: %s\n%s', 
-                           str(e), traceback.format_exc())
-            finally:
-                # ...and ensure we exit, otherwise race conditions could cause us to
-                # enter MailList.Save() while we're in the unlocked state, and that
-                # could be bad!
-                sys.exit(0)
-
-        mlist.Lock()
-        try:
-            # Install the emergency shutdown signal handler
-            signal.signal(signal.SIGTERM, sigterm_handler)
-
-            try:
-                process_form(mlist, doc, cgidata)
-                mlist.Save()
-                # Output the success page with proper headers
-                return output_success_page(doc)
-            except PermissionError as e:
-                mailman_log('error', 'admindb: Permission error processing form: %s\n%s',
-                           str(e), traceback.format_exc())
-                doc = output_error_page('500 Internal Server Error', 'Error',
-                                       'Permission error while processing request',
-                                       str(e))
-                return output_success_page(doc)
-            except Exception as e:
-                mailman_log('error', 'admindb: Error processing form: %s\n%s',
-                           str(e), traceback.format_exc())
-                doc = output_error_page('500 Internal Server Error', 'Error',
-                                       'Error processing request',
-                                       str(e))
-                return output_success_page(doc)
-        finally:
+            # Make sure the list gets unlocked...
             mlist.Unlock()
-    except Exception as e:
-        mailman_log('error', 'admindb: Unhandled exception in main(): %s\n%s', 
-                   str(e), traceback.format_exc())
-        raise
+            # Log the termination
+            syslog('info', 'admindb: SIGTERM received, unlocking list and exiting')
+        except Exception as e:
+            syslog('error', 'admindb: Error in SIGTERM handler: %s', str(e))
+        finally:
+            # ...and ensure we exit, otherwise race conditions could cause us to
+            # enter MailList.Save() while we're in the unlocked state, and that
+            # could be bad!
+            sys.exit(0)
+
+    mlist.Lock()
+    try:
+        # Install the emergency shutdown signal handler
+        signal.signal(signal.SIGTERM, sigterm_handler)
+
+        try:
+            process_form(mlist, doc, cgidata)
+            mlist.Save()
+            # Output the success page with proper headers
+            print(doc.Format())
+        except PermissionError as e:
+            syslog('error', 'admindb: Permission error processing form: %s', str(e))
+            doc = Document()
+            doc.set_language(mlist.preferred_language)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Permission error while processing request')))
+            print(doc.Format())
+        except Exception as e:
+            syslog('error', 'admindb: Error processing form: %s', str(e))
+            doc = Document()
+            doc.set_language(mlist.preferred_language)
+            doc.AddItem(Header(2, _("Error")))
+            doc.AddItem(Bold(_('Error processing request')))
+            print(doc.Format())
+    finally:
+        mlist.Unlock()
 
 
 def handle_no_list(msg=''):
