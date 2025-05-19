@@ -429,11 +429,93 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def setBounceInfo(self, member, info):
         assert self.__mlist.Locked()
         self.__assertIsMember(member)
-        member = member.lower()
-        if info is None:
-            if member in self.__mlist.bounce_info:
-                del self.__mlist.bounce_info[member]
-            if member in self.__mlist.delivery_status:
-                del self.__mlist.delivery_status[member]
+        self.__mlist.bounce_info[member.lower()] = info
+
+    def ProcessConfirmation(self, cookie, msg):
+        """Process a confirmation request.
+        
+        Args:
+            cookie: The confirmation cookie string
+            msg: The message containing the confirmation request
+            
+        Returns:
+            A tuple of (action_type, action_data) where action_type is one of:
+            - Pending.SUBSCRIPTION
+            - Pending.UNSUBSCRIPTION
+            - Pending.HELD_MESSAGE
+            And action_data contains the relevant data for that action type.
+            
+        Raises:
+            Errors.MMBadConfirmation: If the confirmation string is invalid
+            Errors.MMNeedApproval: If the request needs moderator approval
+            Errors.MMAlreadyAMember: If the user is already a member
+            Errors.NotAMemberError: If the user is not a member
+            Errors.MembershipIsBanned: If the user is banned
+            Errors.HostileSubscriptionError: If the subscription is hostile
+            Errors.MMBadPasswordError: If the approval password is bad
+        """
+        from Mailman import Pending
+        from Mailman import Utils
+        from Mailman import Errors
+        
+        # Get the pending request
+        try:
+            action, data = Pending.unpickle(cookie)
+        except Exception as e:
+            raise Errors.MMBadConfirmation(str(e))
+            
+        # Check if the request has expired
+        if time.time() > data.get('expiration', 0):
+            raise Errors.MMBadConfirmation('Confirmation expired')
+            
+        # Process based on action type
+        if action == Pending.SUBSCRIPTION:
+            # Check if already a member
+            if self.isMember(data['email']):
+                raise Errors.MMAlreadyAMember(data['email'])
+                
+            # Check if banned
+            if self.__mlist.isBanned(data['email']):
+                raise Errors.MembershipIsBanned(data['email'])
+                
+            # Add the member
+            self.addNewMember(
+                data['email'],
+                digest=data.get('digest', 0),
+                password=data.get('password', Utils.MakeRandomPassword()),
+                language=data.get('language', self.__mlist.preferred_language),
+                realname=data.get('realname', '')
+            )
+            
+        elif action == Pending.UNSUBSCRIPTION:
+            # Check if member
+            if not self.isMember(data['email']):
+                raise Errors.NotAMemberError(data['email'])
+                
+            # Remove the member
+            self.removeMember(data['email'])
+            
+        elif action == Pending.HELD_MESSAGE:
+            # Process held message
+            if data.get('approval_password'):
+                if data['approval_password'] != self.__mlist.mod_password:
+                    raise Errors.MMBadPasswordError()
+                    
+            # Forward to moderator if needed
+            if data.get('need_approval'):
+                self.__mlist.HoldMessage(msg)
+                raise Errors.MMNeedApproval()
+                
+            # Process the message
+            if data.get('action') == 'approve':
+                self.__mlist.ApproveMessage(msg)
+            else:
+                self.__mlist.DiscardMessage(msg)
+                
         else:
-            self.__mlist.bounce_info[member] = info
+            raise Errors.MMBadConfirmation('Unknown action type')
+            
+        # Remove the pending request
+        Pending.remove(cookie)
+        
+        return action, data

@@ -46,6 +46,7 @@ from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
 from Mailman import LockFile
 from Mailman import Pending
+import traceback
 
 # Lazy imports to avoid circular dependencies
 def get_replybot():
@@ -154,13 +155,19 @@ class Results:
                 cmd = cmd.decode('latin-1')
         # Try to import a command handler module for this command
         try:
+            # Clean the command name to prevent injection
+            cmd = re.sub(r'[^a-zA-Z0-9_]', '', cmd)
+            if not cmd:
+                return BADCMD
             modname = 'Mailman.Commands.cmd_' + cmd
             __import__(modname)
             handler = sys.modules[modname]
         # ValueError can be raised if cmd has dots in it.
         # and KeyError if cmd is otherwise good but ends with a dot.
         # and TypeError if cmd has a null byte.
-        except (ImportError, ValueError, KeyError, TypeError):
+        except (ImportError, ValueError, KeyError, TypeError) as e:
+            mailman_log('error', 'CommandRunner: Failed to import command module %s: %s',
+                       modname, str(e))
             # If we're on line zero, it was the Subject: header that didn't
             # contain a command.  It's possible there's a Re: prefix (or
             # localized version thereof) on the Subject: line that's messing
@@ -187,10 +194,16 @@ class Results:
                 cmd = args.pop(0).lower()
                 return self.do_command(cmd, args)
             return BADSUBJ
-        if handler.process(self, args):
+        try:
+            if handler.process(self, args):
+                return STOP
+            else:
+                return CONTINUE
+        except Exception as e:
+            mailman_log('error', 'CommandRunner: Error processing command %s: %s\nTraceback:\n%s',
+                       cmd, str(e), traceback.format_exc())
+            self.results.append(_('Error processing command: %s') % str(e))
             return STOP
-        else:
-            return CONTINUE
 
     def send_response(self):
         # Helper
