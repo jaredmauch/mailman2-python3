@@ -367,16 +367,23 @@ class IncomingRunner(Runner):
                     return filecnt
                     
                 try:
+                    # Check if the file exists before dequeuing
+                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
+                    if not os.path.exists(pckfile):
+                        mailman_log('error', 'IncomingRunner._oneloop: File %s does not exist, skipping', pckfile)
+                        continue
+                        
+                    # Check if file is locked
+                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                    if os.path.exists(lockfile):
+                        mailman_log('debug', 'IncomingRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                        continue
+                    
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
                     
                     # If dequeue failed due to file being locked, skip it
                     if msg is None and msgdata is None:
-                        # Check if the file is locked
-                        lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
-                        if os.path.exists(lockfile):
-                            mailman_log('debug', 'IncomingRunner._oneloop: File %s is locked by another process, skipping', filebase)
-                            continue
                         # For other None,None cases, shunt the message
                         mailman_log('error', 'IncomingRunner._oneloop: Failed to dequeue file %s (got None values), shunting', filebase)
                         # Create a basic message and metadata if we don't have them
