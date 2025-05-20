@@ -183,6 +183,10 @@ class Runner:
             self._error_count += 1
             if self._error_count >= 10:  # Too many errors in short time
                 syslog('error', '%s: Too many errors, stopping runner', self.__class__.__name__)
+                # Log stack trace before stopping
+                s = StringIO()
+                traceback.print_stack(file=s)
+                syslog('error', 'Stack trace at stop:\n%s', s.getvalue())
                 self.stop()
         else:
             self._error_count = 1

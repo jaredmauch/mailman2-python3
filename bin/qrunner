@@ -78,6 +78,8 @@ import signal
 import time
 import os
 import threading
+import traceback
+from io import StringIO
 
 import paths
 from Mailman import mm_cfg
@@ -152,6 +154,10 @@ def set_signals(loop):
         loop.stop()
         loop.status = signal.SIGTERM
         syslog('qrunner', '%s qrunner caught SIGTERM.  Stopping.', loop.name())
+        # Log traceback
+        s = StringIO()
+        traceback.print_stack(file=s)
+        syslog('error', 'Traceback on SIGTERM:\n%s', s.getvalue())
         # Force exit after 5 seconds
         def force_exit():
             time.sleep(5)
@@ -168,6 +174,10 @@ def set_signals(loop):
         loop.stop()
         loop.status = signal.SIGINT
         syslog('qrunner', '%s qrunner caught SIGINT.  Stopping.', loop.name())
+        # Log traceback
+        s = StringIO()
+        traceback.print_stack(file=s)
+        syslog('error', 'Traceback on SIGINT:\n%s', s.getvalue())
         # Force exit after 5 seconds
         def force_exit():
             time.sleep(5)

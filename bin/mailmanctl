@@ -474,20 +474,7 @@ def check_global_circuit_breaker():
     Returns:
         bool: True if we should stop all runners, False otherwise
     """
-    global _global_restart_times
-    now = time.time()
-    
-    # Remove old timestamps outside the window
-    _global_restart_times = [t for t in _global_restart_times if now - t < GLOBAL_RESTART_WINDOW]
-    
-    # Add current timestamp
-    _global_restart_times.append(now)
-    
-    # Check if we've exceeded the limit
-    if len(_global_restart_times) > GLOBAL_MAX_RESTARTS:
-        syslog('error', 'Global circuit breaker triggered: %d restarts in %d seconds',
-               len(_global_restart_times), GLOBAL_RESTART_WINDOW)
-        return True
+    # Circuit breaker disabled - always return False
     return False
 
 
