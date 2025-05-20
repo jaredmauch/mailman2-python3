@@ -74,6 +74,8 @@ PYTHON_FILES = $(shell find . -name "*.py")
 PYTHON_DIRS = $(shell find . -type d -name "Mailman")
 INSTALLED_SCRIPTS = $(shell find $(DESTDIR)$(prefix)/bin -type f -executable 2>/dev/null || true)
 SOURCE_SCRIPTS = $(shell find build/bin -type f -executable -name "*.py" 2>/dev/null || true)
+PYLINT = pylint
+PYLINT_FLAGS = --disable=C0111,C0103,C0303,W0311,W0603,W0621,R0903,R0913,R0914,R0915
 
 # Detect number of CPUs for parallel builds
 ifeq ($(shell uname -s),Darwin)
@@ -129,6 +131,19 @@ define check_lang_file
 	fi; \
 	exit 1;
 endef
+
+# Add lint target
+.PHONY: lint
+lint:
+	@echo "Running pylint on installed Python files..."
+	@if [ -d "$(DESTDIR)$(prefix)" ]; then \
+		find $(DESTDIR)$(prefix) -name "*.py" -type f -print0 | \
+		xargs -0 $(PYLINT) $(PYLINT_FLAGS) || true; \
+	else \
+		echo "No installed files found at $(DESTDIR)$(prefix)"; \
+		echo "Please run 'make install' first"; \
+		exit 1; \
+	fi
 
 # Rules
 

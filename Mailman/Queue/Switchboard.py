@@ -213,46 +213,23 @@ class Switchboard:
                 mailman_log('warning', 'Queue file does not exist: %s (not found in backup or shunt either)', filename)
             return None, None
             
-        # Create a lock file
-        lockfile = filename + '.lock'
+        # Read the message object and metadata.
+        fp = open(filename, 'rb')
+        # Move the file to the backup file name for processing.  If this
+        # process crashes uncleanly the .bak file will be used to re-instate
+        # the .pck file in order to try again.
+        os.rename(filename, bakfile)
         try:
-            # Try to create the lock file
-            fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-            os.close(fd)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                mailman_log('error', 'Switchboard.dequeue: Failed to create lock file for %s: %s', filebase, str(e))
-                raise
-            mailman_log('debug', 'Queue file %s is currently locked by another process', filename)
-            return None, None
-
-        try:
-            # Read the message and metadata
-            try:
-                msg, data = self._dequeue(filename)
-                # Add filebase to msgdata for cleanup
-                if data is not None:
-                    data['filebase'] = filebase
-                # Log the full msgdata after dequeuing
-                mailman_log('debug', 'Switchboard.dequeue: Successfully dequeued file %s', filebase)
-            except Exception as e:
-                mailman_log('error', 'Switchboard.dequeue: Failed to read message from %s: %s\nTraceback:\n%s', 
-                           filebase, str(e), traceback.format_exc())
-                raise
-
-            # Validate data structure before returning
-            if not isinstance(data, dict):
-                mailman_log('error', 'Switchboard.dequeue: Invalid data structure in %s: expected dict, got %s', 
-                           filename, type(data))
-                return None, None
-                
-            return msg, data
+            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+            data = pickle.load(fp, fix_imports=True, encoding='latin1')
         finally:
-            # Always clean up the lock file
-            try:
-                os.unlink(lockfile)
-            except OSError:
-                pass
+            fp.close()
+        if data.get('_parsemsg'):
+            msg = email.message_from_string(msg, Message)
+        # Add filebase to msgdata for cleanup
+        if data is not None:
+            data['filebase'] = filebase
+        return msg, data
 
     def finish(self, filebase, preserve=False):
         """Finish processing a file by either removing it or moving it to the shunt queue.
