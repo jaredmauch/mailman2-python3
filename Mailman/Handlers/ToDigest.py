@@ -228,7 +228,11 @@ def send_digests(mlist, mboxpath):
     # Set up the digest state
     volume = mlist.volume
     issue = mlist.next_digest_number
-    digestid = _('%(realname)s Digest, Vol %(volume)d, Issue %(issue)d')
+    digestid = _('%(realname)s Digest, Vol %(volume)d, Issue %(issue)d') % {
+        'realname': mlist.real_name,
+        'volume': volume,
+        'issue': issue
+    }
     
     # Get the list's preferred language and charset
     lang = mlist.preferred_language

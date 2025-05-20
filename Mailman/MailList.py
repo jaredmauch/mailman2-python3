@@ -248,7 +248,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
             cset = i18n.get_translation().charset() or \
                        Utils.GetCharSet(self.preferred_language)
             subj = Header(
-     _('Your confirmation is required to join the %(listname)s mailing list'),
+     _('Your confirmation is required to join the %(listname)s mailing list') % {'listname': listname},
                           cset, header_name='subject')
             return subj
         else:
@@ -259,7 +259,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
             cset = i18n.get_translation().charset() or \
                        Utils.GetCharSet(self.preferred_language)
             subj = Header(
-     _('Your confirmation is required to leave the %(listname)s mailing list'),
+     _('Your confirmation is required to leave the %(listname)s mailing list') % {'listname': listname},
                           cset, header_name='subject')
             return subj
         else:

@@ -289,7 +289,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
             d['confirmurl'] = '%s/%s' % (mlist.GetScriptURL('confirm', absolute=1),
                                          cookie)
             lang = msgdata.get('lang', mlist.getMemberLanguage(sender))
-            subject = _('Your message to %(listname)s awaits moderator approval')
+            subject = _('Your message to %(listname)s awaits moderator approval') % {'listname': listname}
             text = Utils.maketext('postheld.txt', d, lang=lang, mlist=mlist)
             nmsg = UserNotification(sender, owneraddr, subject, text, lang)
             nmsg.send(mlist)

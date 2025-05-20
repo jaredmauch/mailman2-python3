@@ -191,7 +191,12 @@ def pending_requests(mlist):
                 pending.append(_("""\
 From: %(sender)s on %(date)s
 Subject: %(subject)s
-Cause: %(reason)s"""))
+Cause: %(reason)s""") % {
+                    'sender': sender,
+                    'date': date,
+                    'subject': subject,
+                    'reason': reason
+                })
                 pending.append('')
             except Exception as e:
                 mailman_log('error', 'Error processing held message record %d: %s\n%s',

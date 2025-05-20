@@ -327,7 +327,7 @@ class Bouncer(object):
         # BAW: See the comment in MailList.py ChangeMemberAddress() for why we
         # set the Subject this way.
         del msg['subject']
-        msg['Subject'] = 'confirm ' + info.cookie
+        msg['Subject'] = _('confirm %(cookie)s') % {'cookie': info.cookie}
         # Send without Precedence: bulk.  Bug #808821.
         msg.send(self, noprecedence=True)
         info.noticesleft -= 1
