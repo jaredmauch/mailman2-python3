@@ -54,7 +54,7 @@ def process(mlist, msg, msgdata):
         
     # Create the response message
     outmsg = UserNotification(sender, mlist.GetBouncesEmail(),
-                            _('Automatic response from %(listname)s'),
+                            _('Automatic response from %(listname)s') % {'listname': mlist.real_name},
                             lang=msgdata.get('lang', mlist.preferred_language))
                             
     # Set the message content

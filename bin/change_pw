@@ -188,7 +188,7 @@ def main():
                 adminurl = mlist.GetScriptURL('admin', absolute=1)
                 msg = Mailman.Message.UserNotification(
                     mlist.owner[:], Utils.get_site_email(),
-                    _('Your new %(listname)s list password'),
+                    _('Your new %(listname)s list password') % {'listname': listname},
                     _('''\
 The site administrator at %(hostname)s has changed the password for your
 mailing list %(listname)s.  It is now

@@ -55,7 +55,7 @@ def process(mlist, msg, msgdata):
     # Craft the outgoing message, with all headers and attributes
     # necessary for general delivery.  Then enqueue it to the outgoing
     # queue.
-    subject = _('%(realname)s post acknowledgement')
+    subject = _('%(realname)s post acknowledgement') % {'realname': realname}
     usermsg = Mailman.Message.UserNotification(sender, mlist.GetBouncesEmail(),
                                        subject, text, lang)
     usermsg.send(mlist)

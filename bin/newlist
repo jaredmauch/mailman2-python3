@@ -258,7 +258,7 @@ def main():
         try:
             msg = Mailman.Message.UserNotification(
                 owner_mail, siteowner,
-                _(f'Your new mailing list: {listname}'),
+                _('Your new mailing list: %(listname)s') % {'listname': listname},
                 text, mlist.preferred_language)
             msg.send(mlist)
         finally:

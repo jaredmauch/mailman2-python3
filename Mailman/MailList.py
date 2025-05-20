@@ -1265,7 +1265,7 @@ bad regexp in bounce_matching_header line: %s
             try:
                 whence_str = "" if whence is None else f"({_(whence)})"
                 realname = self.real_name
-                subject = _('%(realname)s subscription notification')
+                subject = _('%(realname)s subscription notification') % {'realname': realname}
             finally:
                 i18n.set_translation(otrans)
             text = Utils.maketext(
@@ -1298,7 +1298,7 @@ bad regexp in bounce_matching_header line: %s
         i18n.set_language(self.preferred_language)
         if admin_notif:
             realname = self.real_name
-            subject = _('%(realname)s unsubscribe notification')
+            subject = _('%(realname)s unsubscribe notification') % {'realname': realname}
             text = Utils.maketext(
                 'adminunsubscribeack.txt',
                 {'member': name,

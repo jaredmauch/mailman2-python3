@@ -126,7 +126,7 @@ your membership administrative address, %(addr)s.'''))
         realname = self.real_name
         msg = UserNotification(
             self.GetMemberAdminEmail(name), self.GetRequestEmail(),
-            _('Welcome to the "%(realname)s" mailing list%(digmode)s'),
+            _('Welcome to the "%(realname)s" mailing list%(digmode)s') % {'realname': realname, 'digmode': digmode},
             text, pluser)
         msg['X-No-Archive'] = 'yes'
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
@@ -136,7 +136,7 @@ your membership administrative address, %(addr)s.'''))
         i18n.set_language(lang)
         msg = UserNotification(
             self.GetMemberAdminEmail(addr), self.GetBouncesEmail(),
-            _('You have been unsubscribed from the %(realname)s mailing list'),
+            _('You have been unsubscribed from the %(realname)s mailing list') % {'realname': realname},
             Utils.wrap(self.goodbye_msg), lang)
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
 
