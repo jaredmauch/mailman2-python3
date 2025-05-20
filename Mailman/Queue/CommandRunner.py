@@ -46,6 +46,7 @@ from Mailman.i18n import _
 from Mailman.Queue.Runner import Runner
 from Mailman import LockFile
 from Mailman import Pending
+from Mailman import MailList
 import traceback
 import os
 
