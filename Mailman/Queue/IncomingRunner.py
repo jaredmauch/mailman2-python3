@@ -157,87 +157,39 @@ class IncomingRunner(Runner):
         return Runner._convert_message(self, msg)
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process an incoming message."""
-        msgid = msg.get('message-id', 'n/a')
-        filebase = msgdata.get('_filebase', 'unknown')
-        
+        # Try to get the list lock.
         try:
-            # Enhanced logging for message details
-            mailman_log('debug', 'IncomingRunner._dispose: Starting to process message %s (file: %s)', msgid, filebase)
-            mailman_log('debug', 'Message details:')
-            mailman_log('debug', '  Message ID: %s', msgid)
-            mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
-            mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
-            mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
-            mailman_log('debug', '  Message type: %s', type(msg).__name__)
-            mailman_log('debug', '  Message data: %s', str(msgdata))
-            mailman_log('debug', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
-            
-            # Check if this is an administrative message
-            is_admin = msgdata.get('admin_type', False)
-            mailman_log('debug', '  Is admin message: %s', is_admin)
-            
-            # Check if this is a list post
-            is_list_post = msgdata.get('list_post', False)
-            mailman_log('debug', '  Is list post: %s', is_list_post)
-            
-            # Log recipients information
-            recipients = msgdata.get('recips', [])
-            mailman_log('debug', '  Recipients: %s', recipients)
-            if not recipients:
-                mailman_log('warning', 'IncomingRunner: No recipients found in msgdata for message %s, pipeline handlers may set them', msgid)
-                mailman_log('debug', '  Message data: %s', str(msgdata))
-                mailman_log('debug', '  To header: %s', msg.get('to', 'unknown'))
-                mailman_log('debug', '  Cc header: %s', msg.get('cc', 'unknown'))
-                mailman_log('debug', '  Resent-To: %s', msg.get('resent-to', 'unknown'))
-                mailman_log('debug', '  Resent-Cc: %s', msg.get('resent-cc', 'unknown'))
-            
-            # Convert Python's Message to Mailman's Message if needed
-            msg = self._convert_message(msg)
-            
-            # Check if this is a bounce message
-            if self._is_bounce(msg):
-                mailman_log('debug', 'IncomingRunner._dispose: Message %s is a bounce, routing to bounce queue', msgid)
-                # Route to bounce queue
-                bounce_queue = Switchboard(mm_cfg.BOUNCEQUEUE_DIR)
-                bounce_queue.enqueue(msg, msgdata)
-                return False
-            
-            # Get the pipeline
+            mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
+        except LockFile.TimeOutError:
+            # Oh well, try again later
+            return 1
+        # Process the message through a handler pipeline.  The handler
+        # pipeline can actually come from one of three places: the message
+        # metadata, the mlist, or the global pipeline.
+        #
+        # If a message was requeued due to an uncaught exception, its metadata
+        # will contain the retry pipeline.  Use this above all else.
+        # Otherwise, if the mlist has a `pipeline' attribute, it should be
+        # used.  Final fallback is the global pipeline.
+        try:
             pipeline = self._get_pipeline(mlist, msg, msgdata)
-            if not pipeline:
-                mailman_log('error', 'IncomingRunner._dispose: No pipeline found for message %s', msgid)
-                return False
-            
-            # Process the message through the pipeline
-            try:
-                more = self._dopipeline(mlist, msg, msgdata, pipeline)
-                if more:
-                    mailman_log('debug', 'IncomingRunner._dispose: Message %s needs more processing', msgid)
-                    return True
-            except Exception as e:
-                mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
-                           msgid, str(e), traceback.format_exc())
-                return False
-            
-            mailman_log('debug', 'IncomingRunner._dispose: Successfully processed message %s', msgid)
-            return True
-            
-        except Exception as e:
-            mailman_log('error', 'IncomingRunner._dispose: Error processing message %s: %s\nTraceback:\n%s',
-                       msgid, str(e), traceback.format_exc())
-            return False
+            msgdata['pipeline'] = pipeline
+            more = self._dopipeline(mlist, msg, msgdata, pipeline)
+            if not more:
+                del msgdata['pipeline']
+            mlist.Save()
+            return more
+        finally:
+            mlist.Unlock()
 
     def _get_pipeline(self, mlist, msg, msgdata):
-        """Get the pipeline for processing the message."""
         # We must return a copy of the list, otherwise, the first message that
         # flows through the pipeline will empty it out!
         return msgdata.get('pipeline',
-                          getattr(mlist, 'pipeline',
-                                 mm_cfg.GLOBAL_PIPELINE))[:]
+                           getattr(mlist, 'pipeline',
+                                   mm_cfg.GLOBAL_PIPELINE))[:]
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
-        """Process the message through the pipeline of handlers."""
         while pipeline:
             handler = pipeline.pop(0)
             modname = 'Mailman.Handlers.' + handler
@@ -245,12 +197,15 @@ class IncomingRunner(Runner):
             try:
                 pid = os.getpid()
                 sys.modules[modname].process(mlist, msg, msgdata)
-                # Failsafe -- a child may have leaked through
+                # Failsafe -- a child may have leaked through.
                 if pid != os.getpid():
                     mailman_log('error', 'Child process leaked through: %s', modname)
                     os._exit(1)
             except Errors.DiscardMessage:
-                # Throw the message away
+                # Throw the message away; we need do nothing else with it.
+                # We do need to push the current handler back in the pipeline
+                # just in case the syslog call throws an exception and the
+                # message is shunted.
                 pipeline.insert(0, handler)
                 mailman_log('vette', """Message discarded, msgid: %s
         list: %s,
@@ -259,10 +214,14 @@ class IncomingRunner(Runner):
                        mlist.real_name, handler)
                 return 0
             except Errors.HoldMessage:
-                # Let the approval process take it from here
+                # Let the approval process take it from here.  The message no
+                # longer needs to be queued.
                 return 0
             except Errors.RejectMessage as e:
-                # Log rejection and bounce message
+                # Log this.
+                # We do need to push the current handler back in the pipeline
+                # just in case the syslog call or BounceMessage throws an
+                # exception and the message is shunted.
                 pipeline.insert(0, handler)
                 mailman_log('vette', """Message rejected, msgid: %s
         list: %s,
@@ -272,8 +231,9 @@ class IncomingRunner(Runner):
                        mlist.real_name, handler, e.notice())
                 mlist.BounceMessage(msg, msgdata, e)
                 return 0
-            except Exception as e:
+            except:
                 # Push this pipeline module back on the stack, then re-raise
+                # the exception.
                 pipeline.insert(0, handler)
                 raise
         # We've successfully completed handling of this message

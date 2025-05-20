@@ -204,71 +204,69 @@ class Runner:
         return True
 
     def _oneloop(self):
-        """Process one batch of messages from the queue."""
-        try:
-            # Get the list of files to process
-            files = self._switchboard.files()
-            total_files = len(files)
-            processed_files = 0
-            
-            # Process each file
-            for filebase in files:
+        # First, list all the files in our queue directory.
+        # Switchboard.files() is guaranteed to hand us the files in FIFO
+        # order.  Return an integer count of the number of files that were
+        # available for this qrunner to process.
+        files = self._switchboard.files()
+        for filebase in files:
+            try:
+                # Ask the switchboard for the message and metadata objects
+                # associated with this filebase.
+                msg, msgdata = self._switchboard.dequeue(filebase)
+            except Exception as e:
+                # This used to just catch email.Errors.MessageParseError,
+                # but other problems can occur in message parsing, e.g.
+                # ValueError, and exceptions can occur in unpickling too.
+                # We don't want the runner to die, so we just log and skip
+                # this entry, but maybe preserve it for analysis.
+                self._log(e)
+                if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
+                    syslog('error',
+                           'Skipping and preserving unparseable message: %s',
+                           filebase)
+                    preserve = True
+                else:
+                    syslog('error',
+                           'Ignoring unparseable message: %s', filebase)
+                    preserve = False
+                self._switchboard.finish(filebase, preserve=preserve)
+                continue
+            try:
+                self._onefile(msg, msgdata)
+                self._switchboard.finish(filebase)
+            except Exception as e:
+                # All runners that implement _dispose() must guarantee that
+                # exceptions are caught and dealt with properly.  Still, there
+                # may be a bug in the infrastructure, and we do not want those
+                # to cause messages to be lost.  Any uncaught exceptions will
+                # cause the message to be stored in the shunt queue for human
+                # intervention.
+                self._log(e)
+                # Put a marker in the metadata for unshunting
+                msgdata['whichq'] = self._switchboard.whichq()
+                # It is possible that shunting can throw an exception, e.g. a
+                # permissions problem or a MemoryError due to a really large
+                # message.  Try to be graceful.
                 try:
-                    # Dequeue the file
-                    msg, msgdata = self._switchboard.dequeue(filebase)
-                    if msg is None or msgdata is None:
-                        syslog('error', 'Runner._oneloop: Failed to dequeue file %s (got None values)', filebase)
-                        continue
-
-                    # Get the list name
-                    listname = msgdata.get('listname', 'unknown')
-                    try:
-                        mlist = MailList.MailList(listname, lock=False)
-                    except Errors.MMUnknownListError:
-                        syslog('error', 'Runner._oneloop: Unknown list %s for message %s',
-                                  listname, msg.get('message-id', 'n/a'))
-                        self._shunt.enqueue(msg, msgdata)
-                        continue
-
-                    # Process the message
-                    try:
-                        result = self._onefile(mlist, msg, msgdata)
-                        processed_files += 1
-                        if result:
-                            # Message was successfully processed, finish and remove the file
-                            self._switchboard.finish(filebase)
-                            # Only log significant events
-                            if total_files > 10:  # Log only when processing large batches
-                                syslog('debug', 'Runner._oneloop: Successfully processed message %s, removed file %s',
-                                      msg.get('message-id', 'n/a'), filebase)
-                        elif result is False:
-                            # Message needs to be requeued
-                            self._switchboard.enqueue(msg, msgdata)
-                            # Only log significant events
-                            if total_files > 10:  # Log only when processing large batches
-                                syslog('debug', 'Runner._oneloop: Requeued message %s', msg.get('message-id', 'n/a'))
-                        else:
-                            # Message was shunted
-                            self._shunt.enqueue(msg, msgdata)
-                            # Only log significant events
-                            if total_files > 10:  # Log only when processing large batches
-                                syslog('debug', 'Runner._oneloop: Shunted message %s', msg.get('message-id', 'n/a'))
-                        return True
-                    except Exception as e:
-                        syslog('error', 'Runner._oneloop: Error processing message %s: %s\nTraceback:\n%s',
-                                  msg.get('message-id', 'n/a'), str(e), traceback.format_exc())
-                        self._shunt.enqueue(msg, msgdata)
-                        return False
+                    new_filebase = self._shunt.enqueue(msg, msgdata)
+                    syslog('error', 'SHUNTING: %s', new_filebase)
+                    self._switchboard.finish(filebase)
                 except Exception as e:
-                    syslog('error', 'Runner._oneloop: Error processing file %s: %s\nTraceback:\n%s',
-                              filebase, str(e), traceback.format_exc())
-                    continue
-                    
-        except Exception as e:
-            syslog('error', 'Runner._oneloop: Error in main loop: %s', str(e))
-            return 0
-            
-        return processed_files
+                    # The message wasn't successfully shunted.  Log the
+                    # exception and try to preserve the original queue entry
+                    # for possible analysis.
+                    self._log(e)
+                    syslog('error',
+                           'SHUNTING FAILED, preserving original entry: %s',
+                           filebase)
+                    self._switchboard.finish(filebase, preserve=True)
+            # Other work we want to do each time through the loop
+            Utils.reap(self._kids, once=True)
+            self._doperiodic()
+            if self._shortcircuit():
+                break
+        return len(files)
 
     def _convert_message(self, msg):
         """Convert email.message.Message to Mailman.Message with proper handling of nested messages.

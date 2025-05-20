@@ -81,22 +81,22 @@ class OutgoingRunner(Runner, BounceMixin):
             self._last_cleanup = time.time()
             
             # We look this function up only at startup time
-            self._modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
-            mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', self._modname)
+            modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
+            mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', modname)
             
             try:
-                mod = __import__(self._modname)
+                mod = __import__(modname)
                 mailman_log('debug', 'OutgoingRunner: Successfully imported delivery module')
             except ImportError as e:
-                mailman_log('error', 'OutgoingRunner: Failed to import delivery module %s: %s', self._modname, str(e))
+                mailman_log('error', 'OutgoingRunner: Failed to import delivery module %s: %s', modname, str(e))
                 mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
                 raise
                 
             try:
-                self._func = getattr(sys.modules[self._modname], 'process')
+                self._func = getattr(sys.modules[modname], 'process')
                 mailman_log('debug', 'OutgoingRunner: Successfully got process function from module')
             except AttributeError as e:
-                mailman_log('error', 'OutgoingRunner: Failed to get process function from module %s: %s', self._modname, str(e))
+                mailman_log('error', 'OutgoingRunner: Failed to get process function from module %s: %s', modname, str(e))
                 mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
                 raise
             
@@ -242,100 +242,77 @@ class OutgoingRunner(Runner, BounceMixin):
             return msg, False
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process an outgoing message."""
-        msgid = msg.get('message-id', 'n/a')
-        filebase = msgdata.get('_filebase', 'unknown')
-        
-        # Log the full msgdata at the start of processing
-        mailman_log('debug', 'OutgoingRunner._dispose: Full msgdata at start:\n%s', str(msgdata))
-        
-        # Ensure we have a MailList object
-        if isinstance(mlist, str):
-            try:
-                mlist = get_mail_list()(mlist, lock=0)
-                should_unlock = True
-            except Errors.MMUnknownListError:
-                mailman_log('error', 'OutgoingRunner: Unknown list %s', mlist)
-                self._shunt.enqueue(msg, msgdata)
-                return True
-        else:
-            should_unlock = False
-        
+        # See if we should retry delivery of this message again.
+        deliver_after = msgdata.get('deliver_after', 0)
+        if time.time() < deliver_after:
+            return True
+        # Make sure we have the most up-to-date state
+        mlist.Load()
         try:
-            mailman_log('debug', 'OutgoingRunner._dispose: Starting to process outgoing message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-            
-            # Check retry delay and duplicate processing
-            if not self._check_retry_delay(msgid, filebase):
-                mailman_log('debug', 'OutgoingRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-                return False
-
-            # Make sure we have the most up-to-date state
-            try:
-                mlist.Load()
-                mailman_log('debug', 'OutgoingRunner._dispose: Successfully loaded list %s', mlist.internal_name())
-            except Errors.MMCorruptListDatabaseError as e:
-                mailman_log('error', 'OutgoingRunner._dispose: Failed to load list %s: %s\nTraceback:\n%s',
-                           mlist.internal_name(), str(e), traceback.format_exc())
-                self._unmark_message_processed(msgid)
-                return False
-            except Exception as e:
-                mailman_log('error', 'OutgoingRunner._dispose: Unexpected error loading list %s: %s\nTraceback:\n%s',
-                           mlist.internal_name(), str(e), traceback.format_exc())
-                self._unmark_message_processed(msgid)
-                return False
-
-            # Validate message type first
-            msg, success = self._validate_message(msg, msgdata)
-            if not success:
-                mailman_log('error', 'OutgoingRunner._dispose: Message validation failed for message %s', msgid)
-                self._unmark_message_processed(msgid)
-                return False
-
-            # Log the full msgdata after validation
-            mailman_log('debug', 'OutgoingRunner._dispose: Full msgdata after validation:\n%s', str(msgdata))
-
-            # Validate message headers
-            if not msg.get('message-id'):
-                mailman_log('error', 'OutgoingRunner._dispose: Message missing Message-ID header')
-                self._unmark_message_processed(msgid)
-                return False
-
-            # Process the outgoing message
-            try:
-                mailman_log('debug', 'OutgoingRunner._dispose: Processing outgoing message %s', msgid)
-                
-                # Get message type and recipient
-                msgtype = msgdata.get('_msgtype', 'unknown')
-                recipient = msgdata.get('recipient', 'unknown')
-                
-                mailman_log('debug', 'OutgoingRunner._dispose: Message %s is type %s for recipient %s',
-                           msgid, msgtype, recipient)
-                
-                # Process based on message type
-                if msgtype == 'bounce':
-                    success = self._process_bounce(mlist, msg, msgdata)
-                elif msgtype == 'admin':
-                    success = self._process_admin(mlist, msg, msgdata)
-                else:
-                    success = self._process_regular(mlist, msg, msgdata)
-                    
-                if success:
-                    mailman_log('debug', 'OutgoingRunner._dispose: Successfully processed outgoing message %s', msgid)
-                    return True
-                else:
-                    mailman_log('error', 'OutgoingRunner._dispose: Failed to process outgoing message %s', msgid)
-                    return False
-
-            except Exception as e:
-                mailman_log('error', 'OutgoingRunner._dispose: Error processing outgoing message %s: %s\nTraceback:\n%s',
-                           msgid, str(e), traceback.format_exc())
-                self._unmark_message_processed(msgid)
-                return False
-                
-        finally:
-            if should_unlock:
-                mlist.Unlock()
+            pid = os.getpid()
+            self._func(mlist, msg, msgdata)
+            # Failsafe -- a child may have leaked through.
+            if pid != os.getpid():
+                mailman_log('error', 'child process leaked thru: %s', mm_cfg.DELIVERY_MODULE)
+                os._exit(1)
+            self.__logged = False
+        except socket.error:
+            # There was a problem connecting to the SMTP server.  Log this
+            # once, but crank up our sleep time so we don't fill the error
+            # log.
+            port = mm_cfg.SMTPPORT
+            if port == 0:
+                port = 'smtp'
+            # Log this just once.
+            if not self.__logged:
+                mailman_log('error', 'Cannot connect to SMTP server %s on port %s',
+                           mm_cfg.SMTPHOST, port)
+                self.__logged = True
+            self._snooze(0)
+            return True
+        except Errors.SomeRecipientsFailed as e:
+            # Handle local rejects of probe messages differently.
+            if msgdata.get('probe_token') and e.permfailures:
+                self._probe_bounce(mlist, msgdata['probe_token'])
+            else:
+                # Delivery failed at SMTP time for some or all of the
+                # recipients.  Permanent failures are registered as bounces,
+                # but temporary failures are retried for later.
+                #
+                # BAW: msg is going to be the original message that failed
+                # delivery, not a bounce message.  This may be confusing if
+                # this is what's sent to the user in the probe message.  Maybe
+                # we should craft a bounce-like message containing information
+                # about the permanent SMTP failure?
+                if e.permfailures:
+                    self._queue_bounces(mlist.internal_name(), e.permfailures,
+                                        msg)
+                # Move temporary failures to the qfiles/retry queue which will
+                # occasionally move them back here for another shot at
+                # delivery.
+                if e.tempfailures:
+                    now = time.time()
+                    recips = e.tempfailures
+                    last_recip_count = msgdata.get('last_recip_count', 0)
+                    deliver_until = msgdata.get('deliver_until', now)
+                    if len(recips) == last_recip_count:
+                        # We didn't make any progress, so don't attempt
+                        # delivery any longer.  BAW: is this the best
+                        # disposition?
+                        if now > deliver_until:
+                            return False
+                    else:
+                        # Keep trying to delivery this message for a while
+                        deliver_until = now + mm_cfg.DELIVERY_RETRY_PERIOD
+                    # Don't retry delivery too soon.
+                    deliver_after = now + mm_cfg.DELIVERY_RETRY_WAIT
+                    msgdata['deliver_after'] = deliver_after
+                    msgdata['last_recip_count'] = len(recips)
+                    msgdata['deliver_until'] = deliver_until
+                    msgdata['recips'] = recips
+                    self.__retryq.enqueue(msg, msgdata)
+        # We've successfully completed handling of this message
+        return False
 
     def _process_bounce(self, mlist, msg, msgdata):
         """Process a bounce message."""

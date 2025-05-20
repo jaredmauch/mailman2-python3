@@ -48,6 +48,17 @@ class VirginRunner(IncomingRunner):
     _processed_times = {}  # Track processing times for messages
 
     def __init__(self, slice=None, numslices=1):
+        IncomingRunner.__init__(self, slice, numslices)
+        # VirginRunner is a subclass of IncomingRunner, but we want to use a
+        # different pipeline for processing virgin messages.  The main
+        # difference is that we don't need to do bounce detection, and we can
+        # skip a few other checks.
+        self._pipeline = self._get_pipeline()
+        # VirginRunner is a subclass of IncomingRunner, but we want to use a
+        # different pipeline for processing virgin messages.  The main
+        # difference is that we don't need to do bounce detection, and we can
+        # skip a few other checks.
+        self._fasttrack = 1
         mailman_log('debug', 'VirginRunner: Starting initialization')
         try:
             Runner.__init__(self, slice, numslices)
