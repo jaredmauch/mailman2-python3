@@ -351,73 +351,122 @@ class CommandRunner(Runner):
             return msg, False
 
     def _dispose(self, mlist, msg, msgdata):
-        # Validate message type first
-        msg, success = self._validate_message(msg, msgdata)
-        if not success:
-            mailman_log('error', 'Message validation failed for command message')
-            return False
-
-        # Get the list name from the mlist object
+        """Process a command message.
+        
+        Args:
+            mlist: The MailList instance this message is destined for
+            msg: The Message object representing the message
+            msgdata: Dictionary of message metadata
+            
+        Returns:
+            bool: True if message should be requeued, False if processing is complete
+        """
+        msgid = msg.get('message-id', 'n/a')
+        filebase = msgdata.get('_filebase', 'unknown')
+        
+        # Ensure we have a MailList object
+        if isinstance(mlist, str):
+            try:
+                mlist = get_maillist()(mlist, lock=0)
+                should_unlock = True
+            except Errors.MMUnknownListError:
+                syslog('error', 'CommandRunner: Unknown list %s', mlist)
+                self._shunt.enqueue(msg, msgdata)
+                return False
+        else:
+            should_unlock = False
+        
         try:
-            listname = mlist.internal_name() if hasattr(mlist, 'internal_name') else str(mlist)
-            MailList = get_maillist()
-            mlist_obj = MailList(listname, lock=False)
-        except Errors.MMListError as e:
-            mailman_log('error', 'Failed to get MailList object for %s: %s', listname, str(e))
-            return False
+            syslog('debug', 'CommandRunner._dispose: Starting to process command message %s (file: %s) for list %s',
+                   msgid, filebase, mlist.internal_name())
+            
+            # Check retry delay and duplicate processing
+            if not self._check_retry_delay(msgid, filebase):
+                syslog('debug', 'CommandRunner._dispose: Message %s failed retry delay check, skipping', msgid)
+                return True
 
-        # The policy here is similar to the Replybot policy.  If a message has
-        # "Precedence: bulk|junk|list" and no "X-Ack: yes" header, we discard
-        # it to prevent replybot response storms.
-        precedence = msg.get('precedence', '').lower()
-        ack = msg.get('x-ack', '').lower()
-        if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
-            syslog('vette', 'Precedence: %s message discarded by: %s',
-                   precedence, mlist_obj.GetRequestEmail())
-            return False
-
-        # Lock the list before any operations
-        try:
-            mlist_obj.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
-        except LockFile.TimeOutError:
-            # Oh well, try again later
-            return True
-
-        try:
-            # Do replybot for commands
-            mlist_obj.Load()
-            Replybot = get_replybot()
-            Replybot.process(mlist_obj, msg, msgdata)
-            if mlist_obj.autorespond_requests == 1:
-                syslog('vette', 'replied and discard')
-                # w/discard
+            # Validate message type first
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                syslog('error', 'CommandRunner._dispose: Message validation failed for message %s', msgid)
+                msgdata['_validation_failure'] = 'Missing required headers'
+                self._shunt.enqueue(msg, msgdata)
                 return False
 
-            # Now craft the response
-            res = Results(mlist_obj, msg, msgdata)
-            # This message will have been delivered to one of mylist-request,
-            # mylist-join, or mylist-leave, and the message metadata will contain
-            # a key to which one was used.
-            ret = BADCMD
-            if msgdata.get('torequest', False):
-                ret = res.process()
-            elif msgdata.get('tojoin', False):
-                ret = res.do_command('join')
-            elif msgdata.get('toleave', False):
-                ret = res.do_command('leave')
-            elif msgdata.get('toconfirm', False):
-                mo = re.match(mm_cfg.VERP_CONFIRM_REGEXP, msg.get('to', ''), re.IGNORECASE)
-                if mo:
-                    ret = res.do_command('confirm', (mo.group('cookie'),))
-            if ret == BADCMD and mm_cfg.DISCARD_MESSAGE_WITH_NO_COMMAND:
-                syslog('vette',
-                       'No command, message discarded, msgid: %s',
-                       msg.get('message-id', 'n/a'))
-            else:
-                res.send_response()
-                mlist_obj.Save()
+            # The policy here is similar to the Replybot policy.  If a message has
+            # "Precedence: bulk|junk|list" and no "X-Ack: yes" header, we discard
+            # it to prevent replybot response storms.
+            precedence = msg.get('precedence', '').lower()
+            ack = msg.get('x-ack', '').lower()
+            if ack != 'yes' and precedence in ('bulk', 'junk', 'list'):
+                syslog('vette', 'Precedence: %s message discarded by: %s',
+                       precedence, mlist.GetRequestEmail())
+                return False
+
+            # Lock the list before any operations
+            try:
+                mlist.Lock(timeout=mm_cfg.LIST_LOCK_TIMEOUT)
+            except LockFile.TimeOutError:
+                # Oh well, try again later
+                return True
+
+            try:
+                # Check if list is temporarily unavailable
+                try:
+                    mlist.Load()
+                except Errors.MMCorruptListDatabaseError as e:
+                    syslog('error', 'CommandRunner._dispose: List %s is temporarily unavailable: %s',
+                           mlist.internal_name(), str(e))
+                    return True
+                except Exception as e:
+                    syslog('error', 'CommandRunner._dispose: Error loading list %s: %s',
+                           mlist.internal_name(), str(e))
+                    return True
+
+                # Do replybot for commands
+                Replybot = get_replybot()
+                Replybot.process(mlist, msg, msgdata)
+                if mlist.autorespond_requests == 1:
+                    syslog('vette', 'replied and discard')
+                    # w/discard
+                    return False
+
+                # Now craft the response
+                res = Results(mlist, msg, msgdata)
+                # This message will have been delivered to one of mylist-request,
+                # mylist-join, or mylist-leave, and the message metadata will contain
+                # a key to which one was used.
+                ret = BADCMD
+                if msgdata.get('torequest', False):
+                    ret = res.process()
+                elif msgdata.get('tojoin', False):
+                    ret = res.do_command('join')
+                elif msgdata.get('toleave', False):
+                    ret = res.do_command('leave')
+                elif msgdata.get('toconfirm', False):
+                    mo = re.match(mm_cfg.VERP_CONFIRM_REGEXP, msg.get('to', ''), re.IGNORECASE)
+                    if mo:
+                        ret = res.do_command('confirm', (mo.group('cookie'),))
+                if ret == BADCMD and mm_cfg.DISCARD_MESSAGE_WITH_NO_COMMAND:
+                    syslog('vette',
+                           'No command, message discarded, msgid: %s',
+                           msg.get('message-id', 'n/a'))
+                    return False
+                else:
+                    res.send_response()
+                    mlist.Save()
+                    return False
+            finally:
+                mlist.Unlock()
+                
+        except Exception as e:
+            syslog('error', 'CommandRunner._dispose: Error processing command message %s: %s\nTraceback:\n%s',
+                   msgid, str(e), traceback.format_exc())
+            self._shunt.enqueue(msg, msgdata)
+            return False
         finally:
-            mlist_obj.Unlock()
+            if should_unlock:
+                mlist.Unlock()
 
     def _oneloop(self):
         """Process one batch of messages from the command queue."""
@@ -462,19 +511,19 @@ class CommandRunner(Runner):
                         self._shunt.enqueue(msg, msgdata)
                         continue
 
-                    # Validate message
-                    msg, success = self._validate_message(msg, msgdata)
-                    if not success:
-                        syslog('error', 'CommandRunner._oneloop: Message validation failed for %s', filebase)
-                        continue
-
                     # Process message
                     try:
-                        self._dispose(mlist, msg, msgdata)
+                        success = self._dispose(mlist, msg, msgdata)
+                        if not success:
+                            # If _dispose returns False, the message was shunted or discarded
+                            # Remove it from the queue
+                            self._switchboard.finish(filebase)
                     except Exception as e:
                         syslog('error', 'CommandRunner._oneloop: Error processing message %s: %s',
                               msg.get('message-id', 'n/a'), str(e))
                         self._shunt.enqueue(msg, msgdata)
+                        # Remove the message from the queue after shunting
+                        self._switchboard.finish(filebase)
                 except Exception as e:
                     syslog('error', 'CommandRunner._oneloop: Error processing file %s: %s', filebase, str(e))
         except Exception as e:
