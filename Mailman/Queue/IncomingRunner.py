@@ -116,9 +116,12 @@ from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import LockFile
 from Mailman.Queue.Runner import Runner
+from Mailman.Queue.Switchboard import Switchboard
 from Mailman.Logging.Syslog import mailman_log
 import Mailman.MailList as MailList
 import Mailman.Message
+import threading
+import email.header
 
 
 class PipelineError(Exception):
@@ -191,6 +194,14 @@ class IncomingRunner(Runner):
             
             # Convert Python's Message to Mailman's Message if needed
             msg = self._convert_message(msg)
+            
+            # Check if this is a bounce message
+            if self._is_bounce(msg):
+                mailman_log('debug', 'IncomingRunner._dispose: Message %s is a bounce, routing to bounce queue', msgid)
+                # Route to bounce queue
+                bounce_queue = Switchboard(mm_cfg.BOUNCEQUEUE_DIR)
+                bounce_queue.enqueue(msg, msgdata)
+                return False
             
             # Get the pipeline
             pipeline = self._get_pipeline(mlist, msg, msgdata)
@@ -282,19 +293,26 @@ class IncomingRunner(Runner):
             return False
 
     def _is_bounce(self, msg):
-        """Check if the message is a bounce."""
-        try:
-            # Check common bounce headers
-            bounce_headers = ['X-Failed-Recipients', 'X-Original-To', 'Return-Path']
-            for header in bounce_headers:
-                if msg.get(header):
-                    mailman_log('debug', 'IncomingRunner._is_bounce: Message has bounce header %s', header)
-                    return True
-            return False
-        except Exception as e:
-            mailman_log('error', 'IncomingRunner._is_bounce: Error checking bounce: %s\nTraceback:\n%s',
-                       str(e), traceback.format_exc())
-            return False
+        """Check if a message is a bounce message."""
+        # Check for common bounce headers
+        if msg.get('x-failed-recipients'):
+            return True
+        if msg.get('x-original-to'):
+            return True
+        if msg.get('return-path', '').startswith('<>'):
+            return True
+        # Check content type for multipart/report
+        if msg.get('content-type', '').startswith('multipart/report'):
+            return True
+        # Check for common bounce subjects
+        subject = msg.get('subject', '').lower()
+        bounce_subjects = ['delivery status', 'failure notice', 'mail delivery failed',
+                          'mail delivery system', 'mail system error', 'returned mail',
+                          'undeliverable', 'undelivered mail']
+        for bounce_subject in bounce_subjects:
+            if bounce_subject in subject:
+                return True
+        return False
 
     def _process_command(self, mlist, msg, msgdata):
         """Process a command message."""
