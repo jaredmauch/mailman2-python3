@@ -418,9 +418,29 @@ class IncomingRunner(Runner):
                         
                         # If the message should be kept in the queue, requeue it
                         if result:
-                            self._switchboard.enqueue(msg, msgdata)
+                            # Get pipeline information for logging
+                            pipeline = msgdata.get('pipeline', [])
+                            current_handler = pipeline[0] if pipeline else 'unknown'
+                            next_handler = pipeline[1] if len(pipeline) > 1 else 'none'
+                            
+                            # Get retry information
+                            retry_count = msgdata.get('retry_count', 0)
+                            last_retry = self._retry_times.get(msgid, 0)
+                            next_retry = time.ctime(last_retry + self.MIN_RETRY_DELAY) if last_retry else 'unknown'
+                            
+                            # Log detailed requeue information
                             mailman_log('info', 'IncomingRunner._oneloop: Message requeued for later processing: %s (msgid: %s)', 
                                       filebase, msgid)
+                            mailman_log('debug', '  Current state:')
+                            mailman_log('debug', '    - Current handler: %s', current_handler)
+                            mailman_log('debug', '    - Next handler: %s', next_handler)
+                            mailman_log('debug', '    - Retry count: %d', retry_count)
+                            mailman_log('debug', '    - Last retry: %s', time.ctime(last_retry) if last_retry else 'none')
+                            mailman_log('debug', '    - Next retry: %s', next_retry)
+                            mailman_log('debug', '    - List: %s', mlist.internal_name())
+                            mailman_log('debug', '    - Message type: %s', msgdata.get('_msgtype', 'unknown'))
+                            
+                            self._switchboard.enqueue(msg, msgdata)
                         else:
                             mailman_log('info', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
                                       filebase, msgid)
