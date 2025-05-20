@@ -530,3 +530,39 @@ class OutgoingRunner(Runner, BounceMixin):
         mailman_log('debug', 'OutgoingRunner: Cleanup complete')
 
     _doperiodic = BounceMixin._doperiodic
+
+    def _oneloop(self):
+        """Process one batch of messages from the outgoing queue."""
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Process each file
+            for filebase in files:
+                try:
+                    # Check if the file exists before dequeuing
+                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
+                    if not os.path.exists(pckfile):
+                        mailman_log('error', 'OutgoingRunner._oneloop: File %s does not exist, skipping', pckfile)
+                        continue
+                        
+                    # Check if file is locked
+                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                    if os.path.exists(lockfile):
+                        mailman_log('debug', 'OutgoingRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                        continue
+                    
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        continue
+                    
+                    # Process the message
+                    self._dispose(msg.list, msg, msgdata)
+                except Exception as e:
+                    mailman_log('error', 'OutgoingRunner._oneloop: Error processing file %s: %s', filebase, str(e))
+                    mailman_log('error', 'OutgoingRunner._oneloop: Traceback: %s', traceback.format_exc())
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner._oneloop: Error processing outgoing queue: %s', str(e))
+            mailman_log('error', 'OutgoingRunner._oneloop: Traceback: %s', traceback.format_exc())

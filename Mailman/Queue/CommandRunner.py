@@ -47,6 +47,7 @@ from Mailman.Queue.Runner import Runner
 from Mailman import LockFile
 from Mailman import Pending
 import traceback
+import os
 
 # Lazy imports to avoid circular dependencies
 def get_replybot():
@@ -416,6 +417,46 @@ class CommandRunner(Runner):
                 mlist_obj.Save()
         finally:
             mlist_obj.Unlock()
+
+    def _oneloop(self):
+        """Process one batch of messages from the command queue."""
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Process each file
+            for filebase in files:
+                try:
+                    # Check if the file exists before dequeuing
+                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
+                    if not os.path.exists(pckfile):
+                        syslog('error', 'CommandRunner._oneloop: File %s does not exist, skipping', pckfile)
+                        continue
+                        
+                    # Check if file is locked
+                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                    if os.path.exists(lockfile):
+                        syslog('debug', 'CommandRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                        continue
+                    
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        continue
+
+                    # Validate message
+                    msg, success = self._validate_message(msg, msgdata)
+                    if not success:
+                        syslog('error', 'CommandRunner._oneloop: Message validation failed for %s', filebase)
+                        continue
+
+                    # Process message
+                    self._dispose(msg.mlist, msg, msgdata)
+                except Exception as e:
+                    syslog('error', 'CommandRunner._oneloop: Error processing file %s: %s', filebase, str(e))
+        except Exception as e:
+            syslog('error', 'CommandRunner._oneloop: Error processing command queue: %s', str(e))
 
 # Set up i18n
 _ = i18n._

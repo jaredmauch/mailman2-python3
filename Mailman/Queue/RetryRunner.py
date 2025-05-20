@@ -326,6 +326,18 @@ The message has been moved to the shunt queue.
             # Process each file
             for filebase in files:
                 try:
+                    # Check if the file exists before dequeuing
+                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
+                    if not os.path.exists(pckfile):
+                        mailman_log('error', 'RetryRunner._oneloop: File %s does not exist, skipping', pckfile)
+                        continue
+                        
+                    # Check if file is locked
+                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                    if os.path.exists(lockfile):
+                        mailman_log('debug', 'RetryRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                        continue
+                    
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
                     if msg is None:

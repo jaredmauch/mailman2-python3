@@ -31,7 +31,7 @@ def process(mlist, msg, msgdata):
     msgid = msg.get('message-id', 'n/a')
     
     # Log the start of processing with enhanced details
-    mailman_log('info', 'ToOutgoing: Starting to process message %s for list %s',
+    mailman_log('debug', 'ToOutgoing: Starting to process message %s for list %s',
                msgid, mlist.internal_name())
     mailman_log('debug', 'ToOutgoing: Message details:')
     mailman_log('debug', '  Message ID: %s', msgid)
@@ -80,7 +80,7 @@ def process(mlist, msg, msgdata):
         
         outgoingq.enqueue(msg, msgdata, 
                          listname=mlist.internal_name())
-        mailman_log('info', 'ToOutgoing: Successfully queued message %s for list %s',
+        mailman_log('debug', 'ToOutgoing: Successfully queued message %s for list %s',
                    msgid, mlist.internal_name())
         mailman_log('debug', 'ToOutgoing: Message %s is now in outgoing queue', msgid)
     except Exception as e:
