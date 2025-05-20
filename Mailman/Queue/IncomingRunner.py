@@ -414,6 +414,12 @@ class IncomingRunner(Runner):
                         msgdata['whichq'] = self.QDIR
                         # Shunt the message
                         self._shunt.enqueue(msg, msgdata)
+                        # Remove the original file
+                        try:
+                            os.unlink(pckfile)
+                            mailman_log('debug', 'IncomingRunner._oneloop: Removed original file %s', pckfile)
+                        except OSError as e:
+                            mailman_log('error', 'IncomingRunner._oneloop: Failed to remove original file %s: %s', pckfile, str(e))
                         continue
                     
                     # Try to get message-id early for logging purposes
@@ -431,6 +437,12 @@ class IncomingRunner(Runner):
                         mailman_log('error', 'IncomingRunner._oneloop: Unknown list %s for message %s (file: %s)',
                                   listname, msgid, filebase)
                         self._shunt.enqueue(msg, msgdata)
+                        # Remove the original file
+                        try:
+                            os.unlink(pckfile)
+                            mailman_log('debug', 'IncomingRunner._oneloop: Removed original file %s', pckfile)
+                        except OSError as e:
+                            mailman_log('error', 'IncomingRunner._oneloop: Failed to remove original file %s: %s', pckfile, str(e))
                         continue
                     
                     # Process the message
@@ -461,16 +473,34 @@ class IncomingRunner(Runner):
                             mailman_log('debug', '    - List: %s', mlist.internal_name())
                             mailman_log('debug', '    - Message type: %s', msgdata.get('_msgtype', 'unknown'))
                             
+                            # Requeue the message and remove the original file
                             self._switchboard.enqueue(msg, msgdata)
+                            try:
+                                os.unlink(pckfile)
+                                mailman_log('debug', 'IncomingRunner._oneloop: Removed original file %s', pckfile)
+                            except OSError as e:
+                                mailman_log('error', 'IncomingRunner._oneloop: Failed to remove original file %s: %s', pckfile, str(e))
                         else:
                             mailman_log('info', 'IncomingRunner._oneloop: Message processing complete, moving to shunt queue %s (msgid: %s)',
                                       filebase, msgid)
+                            # Move to shunt queue and remove the original file
+                            self._shunt.enqueue(msg, msgdata)
+                            try:
+                                os.unlink(pckfile)
+                                mailman_log('debug', 'IncomingRunner._oneloop: Removed original file %s', pckfile)
+                            except OSError as e:
+                                mailman_log('error', 'IncomingRunner._oneloop: Failed to remove original file %s: %s', pckfile, str(e))
                             
                     except Exception as e:
                         mailman_log('error', 'IncomingRunner._oneloop: Error processing message %s (file: %s): %s\n%s',
                                   msgid, filebase, str(e), traceback.format_exc())
-                        # Move to shunt queue on error
+                        # Move to shunt queue on error and remove the original file
                         self._shunt.enqueue(msg, msgdata)
+                        try:
+                            os.unlink(pckfile)
+                            mailman_log('debug', 'IncomingRunner._oneloop: Removed original file %s', pckfile)
+                        except OSError as e:
+                            mailman_log('error', 'IncomingRunner._oneloop: Failed to remove original file %s: %s', pckfile, str(e))
                         
                 except Exception as e:
                     mailman_log('error', 'IncomingRunner._oneloop: Error dequeuing file %s: %s\n%s',
