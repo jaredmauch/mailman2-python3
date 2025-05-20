@@ -445,6 +445,22 @@ class CommandRunner(Runner):
                     if msg is None:
                         continue
 
+                    # Get the list name from msgdata
+                    listname = msgdata.get('listname')
+                    if not listname:
+                        syslog('error', 'CommandRunner._oneloop: No listname in message data for file %s', filebase)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+                        
+                    # Open the list
+                    try:
+                        mlist = MailList.MailList(listname, lock=False)
+                    except Errors.MMUnknownListError:
+                        syslog('error', 'CommandRunner._oneloop: Unknown list %s for message %s (file: %s)',
+                              listname, msg.get('message-id', 'n/a'), filebase)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+
                     # Validate message
                     msg, success = self._validate_message(msg, msgdata)
                     if not success:
@@ -452,7 +468,12 @@ class CommandRunner(Runner):
                         continue
 
                     # Process message
-                    self._dispose(msg.mlist, msg, msgdata)
+                    try:
+                        self._dispose(mlist, msg, msgdata)
+                    except Exception as e:
+                        syslog('error', 'CommandRunner._oneloop: Error processing message %s: %s',
+                              msg.get('message-id', 'n/a'), str(e))
+                        self._shunt.enqueue(msg, msgdata)
                 except Exception as e:
                     syslog('error', 'CommandRunner._oneloop: Error processing file %s: %s', filebase, str(e))
         except Exception as e:

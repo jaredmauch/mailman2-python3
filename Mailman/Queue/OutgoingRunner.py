@@ -558,8 +558,29 @@ class OutgoingRunner(Runner, BounceMixin):
                     if msg is None:
                         continue
                     
+                    # Get the list name from msgdata
+                    listname = msgdata.get('listname')
+                    if not listname:
+                        mailman_log('error', 'OutgoingRunner._oneloop: No listname in message data for file %s', filebase)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+                        
+                    # Open the list
+                    try:
+                        mlist = get_mail_list()(listname, lock=False)
+                    except Errors.MMUnknownListError:
+                        mailman_log('error', 'OutgoingRunner._oneloop: Unknown list %s for message %s (file: %s)',
+                                  listname, msg.get('message-id', 'n/a'), filebase)
+                        self._shunt.enqueue(msg, msgdata)
+                        continue
+                    
                     # Process the message
-                    self._dispose(msg.list, msg, msgdata)
+                    try:
+                        self._dispose(mlist, msg, msgdata)
+                    except Exception as e:
+                        mailman_log('error', 'OutgoingRunner._oneloop: Error processing message %s: %s\nTraceback:\n%s',
+                                  msg.get('message-id', 'n/a'), str(e), traceback.format_exc())
+                        self._shunt.enqueue(msg, msgdata)
                 except Exception as e:
                     mailman_log('error', 'OutgoingRunner._oneloop: Error processing file %s: %s', filebase, str(e))
                     mailman_log('error', 'OutgoingRunner._oneloop: Traceback: %s', traceback.format_exc())
