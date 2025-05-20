@@ -305,7 +305,10 @@ class IncomingRunner(Runner):
         if msg.get('content-type', '').startswith('multipart/report'):
             return True
         # Check for common bounce subjects
-        subject = msg.get('subject', '').lower()
+        subject = msg.get('subject', '')
+        if isinstance(subject, email.header.Header):
+            subject = str(subject)
+        subject = subject.lower()
         bounce_subjects = ['delivery status', 'failure notice', 'mail delivery failed',
                           'mail delivery system', 'mail system error', 'returned mail',
                           'undeliverable', 'undelivered mail']
