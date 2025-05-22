@@ -1202,12 +1202,14 @@ def change_password(mlist, user, newpw, confirmpw):
 
 def global_options(mlist, user, globalopts):
     # Is there anything to do?
+    has_changes = False
     for attr in dir(globalopts):
         if attr.startswith('_'):
             continue
         if getattr(globalopts, attr) is not None:
+            has_changes = True
             break
-    else:
+    if not has_changes:
         return
 
     def sigterm_handler(signum, frame, mlist=mlist):
@@ -1226,18 +1228,15 @@ def global_options(mlist, user, globalopts):
 
         if globalopts.enable is not None:
             mlist.setDeliveryStatus(user, globalopts.enable)
-
         if globalopts.remind is not None:
             mlist.setMemberOption(user, mm_cfg.SuppressPasswordReminder,
-                                  globalopts.remind)
-
+                                globalopts.remind)
         if globalopts.nodupes is not None:
             mlist.setMemberOption(user, mm_cfg.DontReceiveDuplicates,
-                                  globalopts.nodupes)
-
+                                globalopts.nodupes)
         if globalopts.mime is not None:
-            mlist.setMemberOption(user, mm_cfg.DisableMime, globalopts.mime)
-
+            mlist.setMemberOption(user, mm_cfg.DisableMime,
+                                globalopts.mime)
         mlist.Save()
     finally:
         mlist.Unlock()
