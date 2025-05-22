@@ -609,10 +609,22 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
                 if b'&nbsp;' in raw_bytes or b'&amp;' in raw_bytes or b'&lt;' in raw_bytes or b'&gt;' in raw_bytes:
                     # If it contains HTML entities, try UTF-8 first
                     try:
-                        return raw_bytes.decode('utf-8'), path
+                        text = raw_bytes.decode('utf-8')
+                        # Ensure HTML entities are preserved
+                        text = text.replace('&nbsp;', '&nbsp;')
+                        text = text.replace('&amp;', '&amp;')
+                        text = text.replace('&lt;', '&lt;')
+                        text = text.replace('&gt;', '&gt;')
+                        return text, path
                     except UnicodeDecodeError:
                         # If UTF-8 fails, try ISO-8859-1 which is safe for HTML entities
-                        return raw_bytes.decode('iso-8859-1'), path
+                        text = raw_bytes.decode('iso-8859-1')
+                        # Ensure HTML entities are preserved
+                        text = text.replace('&nbsp;', '&nbsp;')
+                        text = text.replace('&amp;', '&amp;')
+                        text = text.replace('&lt;', '&lt;')
+                        text = text.replace('&gt;', '&gt;')
+                        return text, path
                 else:
                     # If no HTML entities, try all encodings in sequence
                     try:
