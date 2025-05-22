@@ -25,6 +25,8 @@ This is the adaptor used by default in Mailman 2.1.
 """
 
 import time
+import re
+import fnmatch
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -55,6 +57,36 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         self._pending = {}  # Initialize _pending dictionary for pending operations
         # Initialize Autoresponder attributes
         self.InitVars()
+
+    def HasAutoApprovedSender(self, email):
+        """Check if the sender's email address is in the auto-approve list.
+        
+        Args:
+            email: The email address to check
+            
+        Returns:
+            bool: True if the sender is auto-approved, False otherwise
+        """
+        # Check if the email is in the accept_these_nonmembers list
+        if email.lower() in [addr.lower() for addr in self.__mlist.accept_these_nonmembers]:
+            return True
+            
+        # Check if the email matches any patterns in accept_these_nonmembers
+        for pattern in self.__mlist.accept_these_nonmembers:
+            if pattern.startswith('^') or pattern.endswith('$'):
+                # This is a regex pattern
+                try:
+                    if re.match(pattern, email, re.IGNORECASE):
+                        return True
+                except re.error:
+                    # Invalid regex pattern, skip it
+                    continue
+            elif '*' in pattern or '?' in pattern:
+                # This is a glob pattern
+                if fnmatch.fnmatch(email.lower(), pattern.lower()):
+                    return True
+                    
+        return False
 
     def GetMailmanHeader(self):
         """Return the standard Mailman header HTML for this list."""
@@ -117,13 +149,13 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         missing = []
         val = self.__mlist.members.get(lcmember, missing)
         if val is not missing:
-            if type(val) == str:
+            if isinstance(val, str):
                 return val, ISREGULAR
             else:
                 return lcmember, ISREGULAR
         val = self.__mlist.digest_members.get(lcmember, missing)
         if val is not missing:
-            if type(val) == str:
+            if isinstance(val, str):
                 return val, ISDIGEST
             else:
                 return lcmember, ISDIGEST
@@ -138,13 +170,13 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
     def getMemberKey(self, member):
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return member.lower()
 
     def getMemberCPAddress(self, member):
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return cpaddr
 
     def getMemberCPAddresses(self, members):
@@ -153,7 +185,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
     def getMemberPassword(self, member):
         secret = self.__mlist.passwords.get(member.lower())
         if secret is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return secret
 
     def authenticateMember(self, member, response):
@@ -164,7 +196,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
 
     def __assertIsMember(self, member):
         if not self.isMember(member):
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
 
     def getMemberLanguage(self, member):
         lang = self.__mlist.language.get(
@@ -236,7 +268,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         assert self.__mlist.Locked()
         # Make sure this address isn't already a member
         if self.isMember(member):
-            raise Exception(Errors.MMAlreadyAMember, member)
+            raise Errors.MMAlreadyAMember(member)
         # Parse the keywords
         digest = 0
         password = Utils.MakeRandomPassword()

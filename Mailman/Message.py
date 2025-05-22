@@ -302,6 +302,9 @@ class UserNotification(Message):
                     text = text.decode('latin-1', 'replace')
             elif not isinstance(text, str):
                 text = str(text)
+            # Ensure we're using a charset that can handle the text
+            if charset is None or charset.output_charset == 'ascii':
+                charset = Charset('utf-8')
             self.set_payload(text, charset)
         if subject is None:
             subject = '(no subject)'
@@ -316,6 +319,9 @@ class UserNotification(Message):
                 subject = subject.decode('latin-1', 'replace')
         elif not isinstance(subject, str):
             subject = str(subject)
+        # Ensure we're using a charset that can handle the subject
+        if charset is None or charset.output_charset == 'ascii':
+            charset = Charset('utf-8')
         self['Subject'] = Header(subject, charset, header_name='Subject',
                                  errors='replace')
         self['From'] = sender

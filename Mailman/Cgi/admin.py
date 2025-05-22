@@ -249,7 +249,7 @@ def main():
             # POST methods, even if their actions have a query string, don't get
             # put into FieldStorage's keys :-(
             qs = parsedqs.get('VARHELP')
-            if qs and type(qs) is list:
+            if qs and isinstance(qs, list):
                 varhelp = qs[0]
         if varhelp:
             option_help(mlist, varhelp)
@@ -636,7 +636,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     if isinstance(description, bytes):
         description = description.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
     mailman_log('debug', 'Description: %s', description)
-    if type(description) is str:
+    if isinstance(description, str):
         table.AddRow([description])
         table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         options = options[1:]
@@ -655,7 +655,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
 
     for item in options:
         mailman_log('debug', 'Processing item: %s', str(item))
-        if type(item) == str:
+        if isinstance(item, str):
             # The very first banner option (string in an options list) is
             # treated as a general description, while any others are
             # treated as section headers - centered and italicized...
@@ -1097,7 +1097,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 'letter': letter,
                 'findfrag': findfrag
             }
-            if type(url) is str:
+            if isinstance(url, str):
                 url = url.encode(Utils.GetCharSet(mlist.preferred_language),
                                  errors='ignore')
             if letter == bucket:
@@ -1262,7 +1262,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     qsenviron = os.environ.get('QUERY_STRING')
     if qsenviron:
         qs = urllib.parse.parse_qs(qsenviron).get('legend')
-        if qs and type(qs) is list:
+        if qs and isinstance(qs, list):
             qs = qs[0]
         if qs == 'yes':
             addlegend = 'legend=yes&'
@@ -1299,7 +1299,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 'i': i,
                 'findfrag': findfrag
             }
-            if type(thisurl) is str:
+            if isinstance(thisurl, str):
                 thisurl = thisurl.encode(
                                  Utils.GetCharSet(mlist.preferred_language),
                                  errors='ignore')
