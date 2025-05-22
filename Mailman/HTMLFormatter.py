@@ -418,19 +418,40 @@ class HTMLFormatter(object):
                     if '&' in repl:
                         parts[i] = repl
                     else:
-                        repl = repl.encode(charset, 'replace')
+                        # Ensure proper encoding/decoding
+                        try:
+                            # First try to decode if it's already encoded
+                            if isinstance(repl, bytes):
+                                repl = repl.decode(charset, 'replace')
+                            # Then encode and decode to ensure proper charset
+                            repl = repl.encode(charset, 'replace').decode(charset, 'replace')
+                            parts[i] = repl
+                        except (UnicodeError, LookupError):
+                            # Fallback to utf-8 if charset fails
+                            repl = repl.encode('utf-8', 'replace').decode('utf-8', 'replace')
+                            parts[i] = repl
+                elif isinstance(repl, bytes):
+                    try:
                         repl = repl.decode(charset, 'replace')
                         parts[i] = repl
-                elif isinstance(repl, bytes):
-                    repl = repl.decode(charset, 'replace')
-                    parts[i] = repl
+                    except (UnicodeError, LookupError):
+                        repl = repl.decode('utf-8', 'replace')
+                        parts[i] = repl
                 else:
                     parts[i] = str(repl)
             else:
                 parts[i] = ''
             i = i + 2
             
-        return EMPTYSTRING.join(parts)
+        # Join parts and ensure proper encoding
+        result = EMPTYSTRING.join(parts)
+        try:
+            # Ensure the final output is properly encoded
+            if isinstance(result, bytes):
+                result = result.decode(charset, 'replace')
+            return result
+        except (UnicodeError, LookupError):
+            return result.decode('utf-8', 'replace')
 
     def GetStandardReplacements(self, lang=None, replacements=None):
         """Get the standard replacements for this list."""
