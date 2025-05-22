@@ -406,7 +406,7 @@ class HTMLFormatter(object):
         # Convert replacement keys to lowercase for case-insensitive matching
         replacements = {k.lower(): v for k, v in replacements.items()}
             
-        # Split on MM tags, case-insensitive
+        # Split on MM tags, case-insensitive, but preserve HTML entities
         parts = re.split('(</?[Mm][Mm]-[^>]*>)', text)
         i = 1
         while i < len(parts):
@@ -414,10 +414,18 @@ class HTMLFormatter(object):
             if tag in replacements:
                 repl = replacements[tag]
                 if isinstance(repl, str):
-                    repl = repl.encode(charset, 'replace')
-                if isinstance(repl, bytes):
+                    # Don't encode HTML entities
+                    if '&' in repl:
+                        parts[i] = repl
+                    else:
+                        repl = repl.encode(charset, 'replace')
+                        repl = repl.decode(charset, 'replace')
+                        parts[i] = repl
+                elif isinstance(repl, bytes):
                     repl = repl.decode(charset, 'replace')
-                parts[i] = repl
+                    parts[i] = repl
+                else:
+                    parts[i] = str(repl)
             else:
                 parts[i] = ''
             i = i + 2
