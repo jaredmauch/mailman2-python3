@@ -201,6 +201,7 @@ class Switchboard:
         filename = os.path.join(self.__whichq, filebase + '.pck')
         bakfile = os.path.join(self.__whichq, filebase + '.bak')
         psvfile = os.path.join(self.__whichq, filebase + '.psv')
+        lockfile = filename + '.lock'
         
         # Check if file exists before proceeding
         if not os.path.exists(filename):
@@ -213,23 +214,62 @@ class Switchboard:
                 mailman_log('warning', 'Queue file does not exist: %s (not found in backup or shunt either)', filename)
             return None, None
             
-        # Read the message object and metadata.
-        fp = open(filename, 'rb')
-        # Move the file to the backup file name for processing.  If this
-        # process crashes uncleanly the .bak file will be used to re-instate
-        # the .pck file in order to try again.
-        os.rename(filename, bakfile)
+        # Create a lock file
         try:
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-            data = pickle.load(fp, fix_imports=True, encoding='latin1')
+            lock_fd = os.open(lockfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            os.close(lock_fd)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                mailman_log('warning', 'Lock file exists for %s (full path: %s)', filename, lockfile)
+                return None, None
+            else:
+                mailman_log('error', 'Failed to create lock file %s (full path: %s): %s', filename, lockfile, str(e))
+                return None, None
+
+        try:
+            # First read the file contents
+            try:
+                with open(filename, 'rb') as fp:
+                    content = fp.read()
+                    if not content:
+                        mailman_log('error', 'Empty queue file: %s', filename)
+                        return None, None
+                    
+                    # Create a BytesIO object to read from the content
+                    from io import BytesIO
+                    fp = BytesIO(content)
+                    
+                    try:
+                        msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    except (EOFError, pickle.UnpicklingError) as e:
+                        mailman_log('error', 'Error loading queue file %s: %s', filename, str(e))
+                        return None, None
+            except (IOError, OSError) as e:
+                mailman_log('error', 'Error reading queue file %s: %s', filename, str(e))
+                return None, None
+
+            # Now that we've successfully read the file, move it to backup
+            try:
+                os.rename(filename, bakfile)
+            except (IOError, OSError) as e:
+                mailman_log('error', 'Error moving queue file %s to backup: %s', filename, str(e))
+                return None, None
+
+            if data.get('_parsemsg'):
+                msg = email.message_from_string(msg, Message)
+            # Add filebase to msgdata for cleanup
+            if data is not None:
+                data['filebase'] = filebase
+            return msg, data
+
         finally:
-            fp.close()
-        if data.get('_parsemsg'):
-            msg = email.message_from_string(msg, Message)
-        # Add filebase to msgdata for cleanup
-        if data is not None:
-            data['filebase'] = filebase
-        return msg, data
+            # Always clean up the lock file
+            try:
+                if os.path.exists(lockfile):
+                    os.unlink(lockfile)
+            except OSError:
+                pass
 
     def finish(self, filebase, preserve=False):
         """Finish processing a file by either removing it or moving it to the shunt queue.
