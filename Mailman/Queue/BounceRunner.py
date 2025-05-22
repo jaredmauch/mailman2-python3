@@ -65,6 +65,65 @@ class BounceMixin:
         syslog('debug', 'BounceMixin: Initialized with next action time: %s',
                time.ctime(self._next_action))
 
+    def _process_bounces(self):
+        """Process pending bounces."""
+        try:
+            syslog('debug', 'BounceMixin._process_bounces: Starting bounce processing')
+            
+            # Get all lists
+            listnames = Utils.list_names()
+            for listname in listnames:
+                try:
+                    mlist = get_mail_list()(listname, lock=0)
+                    try:
+                        # Process bounces for this list
+                        self._process_list_bounces(mlist)
+                    finally:
+                        mlist.Unlock()
+                except Exception as e:
+                    syslog('error', 'BounceMixin._process_bounces: Error processing list %s: %s',
+                           listname, str(e))
+                    continue
+            
+            syslog('debug', 'BounceMixin._process_bounces: Completed bounce processing')
+            
+        except Exception as e:
+            syslog('error', 'BounceMixin._process_bounces: Error during bounce processing: %s\nTraceback:\n%s',
+                   str(e), traceback.format_exc())
+
+    def _process_list_bounces(self, mlist):
+        """Process bounces for a specific list."""
+        try:
+            syslog('debug', 'BounceMixin._process_list_bounces: Processing bounces for list %s',
+                   mlist.internal_name())
+            
+            # Get all bouncing members
+            bouncing_members = mlist.getBouncingMembers()
+            for member in bouncing_members:
+                try:
+                    # Get bounce info for this member
+                    info = mlist.getBounceInfo(member)
+                    if not info:
+                        continue
+                        
+                    # Check if member should be disabled
+                    if info.score >= mlist.bounce_score_threshold:
+                        syslog('debug', 'BounceMixin._process_list_bounces: Disabling member %s due to bounce score %f',
+                               member, info.score)
+                        mlist.disableBouncingMember(member, info)
+                        
+                except Exception as e:
+                    syslog('error', 'BounceMixin._process_list_bounces: Error processing member %s: %s',
+                           member, str(e))
+                    continue
+                    
+            syslog('debug', 'BounceMixin._process_list_bounces: Completed processing bounces for list %s',
+                   mlist.internal_name())
+            
+        except Exception as e:
+            syslog('error', 'BounceMixin._process_list_bounces: Error processing list %s: %s\nTraceback:\n%s',
+                   mlist.internal_name(), str(e), traceback.format_exc())
+
     def _register_bounces(self, mlist, bounces):
         """Register bounce information for a list."""
         try:

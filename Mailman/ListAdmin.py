@@ -553,37 +553,36 @@ class ListAdmin(object):
             # Restore the user's preferred language.
             i18n.set_language(lang)
 
-    def __handlesubscription(self, record, value, comment):
-        global _
-        stime, addr, fullname, password, digest, lang = record
-        if value == mm_cfg.DEFER:
-            return DEFER
-        elif value == mm_cfg.DISCARD:
-            mailman_log('vette', '%s: discarded subscription request from %s',
-                   self.internal_name(), addr)
+    def __handlesubscription(self, data, value, comment):
+        """Handle a subscription request.
+        
+        Args:
+            data: A tuple of (userdesc, remote) where userdesc is a UserDesc object
+                  and remote is the remote address making the request
+            value: The action to take (APPROVE, DEFER, REJECT)
+            comment: Optional comment for the action
+            
+        Returns:
+            The status of the action (APPROVE, DEFER, REJECT)
+        """
+        userdesc, remote = data
+        if value == mm_cfg.APPROVE:
+            self.ApprovedAddMember(userdesc, whence=remote or '')
+            return mm_cfg.APPROVE
         elif value == mm_cfg.REJECT:
-            self.__refuse(_('Subscription request'), addr,
-                          comment or _('[No reason given]'),
-                          lang=lang)
-            mailman_log('vette', """%s: rejected subscription request from %s
-\tReason: %s""", self.internal_name(), addr, comment or '[No reason given]')
-        else:
-            # subscribe
-            if value != mm_cfg.SUBSCRIBE:
-                raise ValueError(f'Invalid value: {value}, expected {mm_cfg.SUBSCRIBE}')
-            try:
-                _ = D_
-                whence = _('via admin approval')
-                _ = i18n._
-                userdesc = UserDesc(addr, fullname, password, digest, lang)
-                self.ApprovedAddMember(userdesc, whence=whence)
-            except Errors.MMAlreadyAMember:
-                # User has already been subscribed, after sending the request
-                pass
-            # TBD: disgusting hack: ApprovedAddMember() can end up closing
-            # the request database.
-            self.__opendb()
-        return REMOVE
+            # Send rejection notice
+            lang = userdesc.language
+            text = Utils.maketext(
+                'reject.txt',
+                {'listname': self.real_name,
+                 'comment': comment or '',
+                 }, lang=lang, mlist=self)
+            msg = Message.UserNotification(
+                userdesc.address, self.GetRequestEmail(),
+                text=text, lang=lang)
+            msg.send(self)
+            return mm_cfg.REJECT
+        return mm_cfg.DEFER
 
     def HoldUnsubscription(self, addr):
         # Assure the database is open for writing
@@ -618,7 +617,7 @@ class ListAdmin(object):
     def __handleunsubscription(self, record, value, comment):
         addr = record
         if value == mm_cfg.DEFER:
-            return DEFER
+            return mm_cfg.DEFER
         elif value == mm_cfg.DISCARD:
             mailman_log('vette', '%s: discarded unsubscription request from %s',
                    self.internal_name(), addr)
