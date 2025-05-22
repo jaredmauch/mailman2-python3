@@ -92,11 +92,11 @@ class OutgoingRunner(Runner, BounceMixin):
             
             # We look this function up only at startup time
             modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
-            mailman_log('debug', 'OutgoingRunner: Attempting to import delivery module: %s', modname)
+            mailman_log('trace', 'OutgoingRunner: Attempting to import delivery module: %s', modname)
             
             try:
                 mod = __import__(modname)
-                mailman_log('debug', 'OutgoingRunner: Successfully imported delivery module')
+                mailman_log('trace', 'OutgoingRunner: Successfully imported delivery module')
             except ImportError as e:
                 mailman_log('error', 'OutgoingRunner: Failed to import delivery module %s: %s', modname, str(e))
                 mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
@@ -104,7 +104,7 @@ class OutgoingRunner(Runner, BounceMixin):
                 
             try:
                 self._func = getattr(sys.modules[modname], 'process')
-                mailman_log('debug', 'OutgoingRunner: Successfully got process function from module')
+                mailman_log('trace', 'OutgoingRunner: Successfully got process function from module')
             except AttributeError as e:
                 mailman_log('error', 'OutgoingRunner: Failed to get process function from module %s: %s', modname, str(e))
                 mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
