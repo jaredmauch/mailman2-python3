@@ -605,38 +605,20 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
         try:
             with open(path, 'rb') as fp:
                 raw_bytes = fp.read()
-                # First check if the file contains HTML entities
-                if b'&nbsp;' in raw_bytes or b'&amp;' in raw_bytes or b'&lt;' in raw_bytes or b'&gt;' in raw_bytes:
-                    # If it contains HTML entities, try UTF-8 first
-                    try:
-                        text = raw_bytes.decode('utf-8')
-                        # Ensure HTML entities are preserved
-                        text = text.replace('&nbsp;', '&nbsp;')
-                        text = text.replace('&amp;', '&amp;')
-                        text = text.replace('&lt;', '&lt;')
-                        text = text.replace('&gt;', '&gt;')
-                        return text, path
-                    except UnicodeDecodeError:
-                        # If UTF-8 fails, try ISO-8859-1 which is safe for HTML entities
-                        text = raw_bytes.decode('iso-8859-1')
-                        # Ensure HTML entities are preserved
-                        text = text.replace('&nbsp;', '&nbsp;')
-                        text = text.replace('&amp;', '&amp;')
-                        text = text.replace('&lt;', '&lt;')
-                        text = text.replace('&gt;', '&gt;')
-                        return text, path
-                else:
-                    # If no HTML entities, try all encodings in sequence
-                    try:
-                        return raw_bytes.decode('utf-8'), path
-                    except UnicodeDecodeError:
+                # First try UTF-8 since that's the most common encoding
+                try:
+                    text = raw_bytes.decode('utf-8')
+                    return text, path
+                except UnicodeDecodeError:
+                    # If UTF-8 fails, try other encodings
+                    for encoding in ['euc-jp', 'iso-8859-1', 'latin1']:
                         try:
-                            return raw_bytes.decode('euc-jp'), path
+                            text = raw_bytes.decode(encoding)
+                            return text, path
                         except UnicodeDecodeError:
-                            try:
-                                return raw_bytes.decode('iso-8859-1'), path
-                            except UnicodeDecodeError:
-                                return raw_bytes.decode('latin1'), path
+                            continue
+                    # If all encodings fail, use UTF-8 with replacement
+                    return raw_bytes.decode('utf-8', 'replace'), path
         except IOError:
             return None, None
 
