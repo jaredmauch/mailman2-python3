@@ -62,6 +62,10 @@ class OutgoingRunner(Runner, BounceMixin):
     _max_processed_messages = 10000
     _max_retry_times = 10000
     
+    # Message counting
+    _total_messages_processed = 0
+    _total_messages_lock = threading.Lock()
+    
     # Retry configuration
     MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
     MAX_RETRIES = 5  # Maximum number of retry attempts
@@ -71,7 +75,7 @@ class OutgoingRunner(Runner, BounceMixin):
     _error_count = 0
     _last_error_time = 0
     _error_window = 300  # 5 minutes window for error counting
-    _max_errors = 10  # Maximum errors before stopping
+    _max_errors = 10
 
     def __init__(self, slice=None, numslices=1):
         mailman_log('debug', 'OutgoingRunner: Starting initialization')
@@ -519,6 +523,9 @@ class OutgoingRunner(Runner, BounceMixin):
             Runner._cleanup(self)
             self._cleanup_old_messages()
             self._cleanup_resources(None, {})
+            # Log total messages processed
+            with self._total_messages_lock:
+                mailman_log('debug', 'OutgoingRunner: Total messages processed: %d', self._total_messages_processed)
         except Exception as e:
             mailman_log('error', 'Cleanup failed: %s', str(e))
         mailman_log('debug', 'OutgoingRunner: Cleanup complete')
@@ -571,6 +578,9 @@ class OutgoingRunner(Runner, BounceMixin):
                     # Process the message
                     try:
                         self._dispose(mlist, msg, msgdata)
+                        # Increment message counter on successful processing
+                        with self._total_messages_lock:
+                            self._total_messages_processed += 1
                     except Exception as e:
                         mailman_log('error', 'OutgoingRunner._oneloop: Error processing message %s: %s\nTraceback:\n%s',
                                   msg.get('message-id', 'n/a'), str(e), traceback.format_exc())
