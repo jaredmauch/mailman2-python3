@@ -600,113 +600,65 @@ def findtext(templatefile, dict=None, raw=0, lang=None, mlist=None):
     # If lang is None, use the default language from mm_cfg
     if lang is None:
         lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
+
+    def read_template_file(path):
+        try:
+            with open(path, 'rb') as fp:
+                raw_bytes = fp.read()
+                # First check if the file contains HTML entities
+                if b'&nbsp;' in raw_bytes or b'&amp;' in raw_bytes or b'&lt;' in raw_bytes or b'&gt;' in raw_bytes:
+                    # If it contains HTML entities, try UTF-8 first
+                    try:
+                        return raw_bytes.decode('utf-8'), path
+                    except UnicodeDecodeError:
+                        # If UTF-8 fails, try ISO-8859-1 which is safe for HTML entities
+                        return raw_bytes.decode('iso-8859-1'), path
+                else:
+                    # If no HTML entities, try all encodings in sequence
+                    try:
+                        return raw_bytes.decode('utf-8'), path
+                    except UnicodeDecodeError:
+                        try:
+                            return raw_bytes.decode('euc-jp'), path
+                        except UnicodeDecodeError:
+                            try:
+                                return raw_bytes.decode('iso-8859-1'), path
+                            except UnicodeDecodeError:
+                                return raw_bytes.decode('latin1'), path
+        except IOError:
+            return None, None
+
     # First try the list's language-specific template directory
     if lang and mlist:
         path = os.path.join(mlist.fullpath(), 'templates', lang, templatefile)
         if os.path.exists(path):
-            try:
-                with open(path, 'rb') as fp:
-                    raw_bytes = fp.read()
-                    # Try UTF-8 first
-                    try:
-                        text = raw_bytes.decode('utf-8')
-                        return text, path
-                    except UnicodeDecodeError:
-                        # Try EUC-JP for Japanese text
-                        try:
-                            text = raw_bytes.decode('euc-jp')
-                            return text, path
-                        except UnicodeDecodeError:
-                            # Try ISO-8859-1 next
-                            try:
-                                text = raw_bytes.decode('iso-8859-1')
-                                return text, path
-                            except UnicodeDecodeError:
-                                # Finally try latin1 as a last resort
-                                text = raw_bytes.decode('latin1')
-                                return text, path
-            except IOError:
-                pass
+            result = read_template_file(path)
+            if result[0] is not None:
+                return result
+
     # Then try the site's language-specific template directory
     if lang:
         path = os.path.join(mm_cfg.TEMPLATE_DIR, lang, templatefile)
         if os.path.exists(path):
-            try:
-                with open(path, 'rb') as fp:
-                    raw_bytes = fp.read()
-                    # Try UTF-8 first
-                    try:
-                        text = raw_bytes.decode('utf-8')
-                        return text, path
-                    except UnicodeDecodeError:
-                        # Try EUC-JP for Japanese text
-                        try:
-                            text = raw_bytes.decode('euc-jp')
-                            return text, path
-                        except UnicodeDecodeError:
-                            # Try ISO-8859-1 next
-                            try:
-                                text = raw_bytes.decode('iso-8859-1')
-                                return text, path
-                            except UnicodeDecodeError:
-                                # Finally try latin1 as a last resort
-                                text = raw_bytes.decode('latin1')
-                                return text, path
-            except IOError:
-                pass
+            result = read_template_file(path)
+            if result[0] is not None:
+                return result
+
     # Then try the list's default template directory
     if mlist:
         path = os.path.join(mlist.fullpath(), 'templates', templatefile)
         if os.path.exists(path):
-            try:
-                with open(path, 'rb') as fp:
-                    raw_bytes = fp.read()
-                    # Try UTF-8 first
-                    try:
-                        text = raw_bytes.decode('utf-8')
-                        return text, path
-                    except UnicodeDecodeError:
-                        # Try EUC-JP for Japanese text
-                        try:
-                            text = raw_bytes.decode('euc-jp')
-                            return text, path
-                        except UnicodeDecodeError:
-                            # Try ISO-8859-1 next
-                            try:
-                                text = raw_bytes.decode('iso-8859-1')
-                                return text, path
-                            except UnicodeDecodeError:
-                                # Finally try latin1 as a last resort
-                                text = raw_bytes.decode('latin1')
-                                return text, path
-            except IOError:
-                pass
+            result = read_template_file(path)
+            if result[0] is not None:
+                return result
+
     # Finally try the site's default template directory
     path = os.path.join(mm_cfg.TEMPLATE_DIR, templatefile)
     if os.path.exists(path):
-        try:
-            with open(path, 'rb') as fp:
-                raw_bytes = fp.read()
-                # Try UTF-8 first
-                try:
-                    text = raw_bytes.decode('utf-8')
-                    return text, path
-                except UnicodeDecodeError:
-                    # Try EUC-JP for Japanese text
-                    try:
-                        text = raw_bytes.decode('euc-jp')
-                        return text, path
-                    except UnicodeDecodeError:
-                        # Try ISO-8859-1 next
-                        try:
-                            text = raw_bytes.decode('iso-8859-1')
-                            return text, path
-                        except UnicodeDecodeError:
-                            # Finally try latin1 as a last resort
-                            text = raw_bytes.decode('latin1')
-                            return text, path
-        except IOError:
-            pass
+        result = read_template_file(path)
+        if result[0] is not None:
+            return result
+
     return None, None
 
 
