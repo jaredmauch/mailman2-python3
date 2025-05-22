@@ -196,7 +196,7 @@ class Privacy(GUIBase):
 
             <p>In the text boxes below, add one address per line; start the
             line with a ^ character to designate a <a href=
-            "https://docs.python.org/2/library/re.html"
+            "https://docs.python.org/3/library/re.html"
             >Python regular expression</a>.  When entering backslashes, do so
             as if you were using Python raw strings (i.e. you generally just
             use a single backslash).

@@ -261,7 +261,7 @@ KNOWN_SPAMMERS = []
 # normalized unicodes against normalized unicode headers.  This setting
 # determines the normalization form.  It is one of 'NFC', 'NFD', 'NFKC' or
 # 'NFKD'.  See
-# https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
+# https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize
 NORMALIZE_FORM = 'NFKC'
 
 

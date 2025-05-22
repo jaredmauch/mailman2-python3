@@ -450,7 +450,7 @@ def option_help(mlist, varhelp):
     item = None
     reflist = varhelp.split('/')
     if len(reflist) >= 2:
-        category = subcat = None
+        category, subcat = None, None
         if len(reflist) == 2:
             category, varname = reflist
         elif len(reflist) == 3:
@@ -514,18 +514,59 @@ def option_help(mlist, varhelp):
     doc.AddItem(mlist.GetMailmanFooter())
     print(doc.Format())
 
+def add_standard_headers(doc, mlist, title, category=None, subcat=None):
+    """Add standard headers to admin pages.
+    
+    Args:
+        doc: The Document object
+        mlist: The MailList object
+        title: The page title
+        category: Optional category name
+        subcat: Optional subcategory name
+    """
+    # Set the page title
+    doc.SetTitle(title)
+    
+    # Add the main header
+    doc.AddItem(Header(2, title))
+    
+    # Add navigation breadcrumbs if category/subcat provided
+    if category:
+        adminurl = mlist.GetScriptURL('admin')
+        categories = mlist.GetConfigCategories()
+        category_label = _(categories[category][0])
+        if isinstance(category_label, bytes):
+            category_label = category_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
+            
+        breadcrumbs = []
+        breadcrumbs.append(Link(adminurl, _('Admin')))
+        breadcrumbs.append(Link(f'{adminurl}/{category}', category_label))
+        
+        if subcat:
+            subcat_label = _(categories[category][1].get(subcat, [subcat])[0])
+            if isinstance(subcat_label, bytes):
+                subcat_label = subcat_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
+            breadcrumbs.append(Link(f'{adminurl}/{category}/{subcat}', subcat_label))
+            
+        doc.AddItem(Center(' &gt; '.join(breadcrumbs)))
+    
+    # Add horizontal rule
+    doc.AddItem('<hr>')
+
 def show_results(mlist, doc, category, subcat, cgidata):
     # Produce the results page
     adminurl = mlist.GetScriptURL('admin')
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
     if isinstance(label, bytes):
-        label = label.decode('latin1', 'replace')
+        label = label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         
-    doc.SetTitle(_('%(realname)s Administration (%(label)s)') % {
+    # Add standard headers
+    title = _('%(realname)s Administration (%(label)s)') % {
         'realname': mlist.real_name,
         'label': label
-    })
+    }
+    add_standard_headers(doc, mlist, title, category, subcat)
     
     # Use ParseTags for the main content
     replacements = {
@@ -538,6 +579,11 @@ def show_results(mlist, doc, category, subcat, cgidata):
         'archiveurl': mlist.GetBaseArchiveURL(),
         'rmlisturl': mlist.GetScriptURL('rmlist') if mm_cfg.OWNERS_CAN_DELETE_THEIR_OWN_LISTS and mlist.internal_name() != mm_cfg.MAILMAN_SITE_LIST else None
     }
+    
+    # Ensure all replacements are properly encoded for the list's language
+    for key, value in replacements.items():
+        if isinstance(value, bytes):
+            replacements[key] = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
     
     output = mlist.ParseTags('admin_results.html', replacements, mlist.preferred_language)
     doc.AddItem(output)
@@ -586,7 +632,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     mailman_log('debug', 'Got config categories: %s', str(categories))
     label = _(categories[category][0])
     if isinstance(label, bytes):
-        label = label.decode('latin1', 'replace')
+        label = label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
     mailman_log('debug', 'Category label: %s', label)
 
     table.AddRow([Center(Header(2, label))])
@@ -597,7 +643,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     # description if it is a string
     description = options[0]
     if isinstance(description, bytes):
-        description = description.decode('latin1', 'replace')
+        description = description.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
     mailman_log('debug', 'Description: %s', description)
     if type(description) is str:
         table.AddRow([description])
@@ -623,7 +669,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
             # treated as a general description, while any others are
             # treated as section headers - centered and italicized...
             if isinstance(item, bytes):
-                item = item.decode('latin1', 'replace')
+                item = item.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             formatted_text = '[%s]' % item
             item = Bold(formatted_text).Format()
             table.AddRow([Center(Italic(item))])
@@ -707,16 +753,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
           kind == mm_cfg.Host or kind == mm_cfg.Number):
         # Ensure value is a string, decoding bytes if necessary
         if isinstance(value, bytes):
-            try:
-                # Try UTF-8 first
-                value = value.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
-                try:
-                    # Try EUC-JP for Japanese text
-                    value = value.decode('euc-jp', 'replace')
-                except UnicodeDecodeError:
-                    # Fall back to latin1
-                    value = value.decode('latin1', 'replace')
+            value = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         return TextBox(varname, value, params)
     elif kind == mm_cfg.Text:
         if params:
@@ -725,16 +762,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             r, c = None, None
         # Ensure value is a string, decoding bytes if necessary
         if isinstance(value, bytes):
-            try:
-                # Try UTF-8 first
-                value = value.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
-                try:
-                    # Try EUC-JP for Japanese text
-                    value = value.decode('euc-jp', 'replace')
-                except UnicodeDecodeError:
-                    # Fall back to latin1
-                    value = value.decode('latin1', 'replace')
+            value = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         return TextArea(varname, value or '', r, c)
     elif kind in (mm_cfg.EmailList, mm_cfg.EmailListEx):
         if params:
@@ -743,16 +771,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             r, c = None, None
         # Ensure value is a string, decoding bytes if necessary
         if isinstance(value, bytes):
-            try:
-                # Try UTF-8 first
-                value = value.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
-                try:
-                    # Try EUC-JP for Japanese text
-                    value = value.decode('euc-jp', 'replace')
-                except UnicodeDecodeError:
-                    # Fall back to latin1
-                    value = value.decode('latin1', 'replace')
+            value = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         res = NL.join(value)
         return TextArea(varname, res, r, c, wrap='off')
     elif kind == mm_cfg.FileUpload:
@@ -819,11 +838,11 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         data = getattr(mlist, varname)
         for name, pattern, desc, empty in data:
             if isinstance(name, bytes):
-                name = name.decode('latin1', 'replace')
+                name = name.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             if isinstance(pattern, bytes):
-                pattern = pattern.decode('latin1', 'replace')
+                pattern = pattern.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             if isinstance(desc, bytes):
-                desc = desc.decode('latin1', 'replace')
+                desc = desc.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             makebox(i, name, pattern, desc, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -889,7 +908,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         data = getattr(mlist, varname)
         for pattern, action, empty in data:
             if isinstance(pattern, bytes):
-                pattern = pattern.decode('latin1', 'replace')
+                pattern = pattern.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             makebox(i, pattern, action, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -942,43 +961,24 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     adminurl = mlist.GetScriptURL('admin', absolute=1)
     container = Container()
     header = Table(width="100%")
-    # If we're in the list subcategory, show the membership list
+    
+    # Add standard headers based on subcat
     if subcat == 'add':
-        header.AddRow([Center(Header(2, _('Mass Subscriptions')))])
-        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
-                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
-        container.AddItem(header)
-        mass_subscribe(mlist, container)
-        return container
-    if subcat == 'remove':
-        header.AddRow([Center(Header(2, _('Mass Removals')))])
-        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
-                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
-        container.AddItem(header)
-        mass_remove(mlist, container)
-        return container
-    if subcat == 'change':
-        header.AddRow([Center(Header(2, _('Address Change')))])
-        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
-                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
-        container.AddItem(header)
-        address_change(mlist, container)
-        return container
-    if subcat == 'sync':
-        header.AddRow([Center(Header(2, _('Sync Membership List')))])
-        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
-                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
-        container.AddItem(header)
-        mass_sync(mlist, container)
-        return container
-    # Otherwise...
-    header.AddRow([Center(Header(2, _('Membership List')))])
-    header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
-                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
-    container.AddItem(header)
+        title = _('Mass Subscriptions')
+    elif subcat == 'remove':
+        title = _('Mass Removals')
+    elif subcat == 'change':
+        title = _('Address Change')
+    elif subcat == 'sync':
+        title = _('Sync Membership List')
+    else:
+        title = _('Membership List')
+        
+    add_standard_headers(doc, mlist, title, 'members', subcat)
+    
     # Add a "search for member" button
     table = Table(width='100%')
-    link = Link('https://docs.python.org/2/library/re.html'
+    link = Link('https://docs.python.org/3/library/re.html'
                 '#regular-expression-syntax',
                 _('(help)')).Format()
     table.AddRow([Label(_('Find member %(link)s:') % {'link': link}),

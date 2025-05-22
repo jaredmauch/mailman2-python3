@@ -49,7 +49,7 @@ specifically excluded.
 Regular expression syntax is Perl5-like, using the Python re module.  Complete
 specifications are at:
 
-https://docs.python.org/2/library/re.html
+https://docs.python.org/3/library/re.html
 
 Address matches are case-insensitive, but case-preserved addresses are
 displayed.
