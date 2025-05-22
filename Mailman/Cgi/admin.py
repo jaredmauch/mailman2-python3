@@ -514,7 +514,7 @@ def option_help(mlist, varhelp):
     doc.AddItem(mlist.GetMailmanFooter())
     print(doc.Format())
 
-def add_standard_headers(doc, mlist, title, category=None, subcat=None):
+def add_standard_headers(doc, mlist, title, category, subcat):
     """Add standard headers to admin pages.
     
     Args:
@@ -531,24 +531,15 @@ def add_standard_headers(doc, mlist, title, category=None, subcat=None):
     doc.AddItem(Header(2, title))
     
     # Add navigation breadcrumbs if category/subcat provided
+    breadcrumbs = []
+    breadcrumbs.append(Link(mlist.GetScriptURL('admin'), _('%(realname)s administrative interface')))
     if category:
-        adminurl = mlist.GetScriptURL('admin')
-        categories = mlist.GetConfigCategories()
-        category_label = _(categories[category][0])
-        if isinstance(category_label, bytes):
-            category_label = category_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-            
-        breadcrumbs = []
-        breadcrumbs.append(Link(adminurl, _('Admin')))
-        breadcrumbs.append(Link(f'{adminurl}/{category}', category_label))
-        
-        if subcat:
-            subcat_label = _(categories[category][1].get(subcat, [subcat])[0])
-            if isinstance(subcat_label, bytes):
-                subcat_label = subcat_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-            breadcrumbs.append(Link(f'{adminurl}/{category}/{subcat}', subcat_label))
-            
-        doc.AddItem(Center(' &gt; '.join(breadcrumbs)))
+        breadcrumbs.append(Link(mlist.GetScriptURL('admin') + '/' + category, _(category)))
+    if subcat:
+        breadcrumbs.append(Link(mlist.GetScriptURL('admin') + '/' + category + '/' + subcat, _(subcat)))
+    # Convert each breadcrumb item to a string before joining
+    breadcrumbs = [str(item) for item in breadcrumbs]
+    doc.AddItem(Center(' > '.join(breadcrumbs)))
     
     # Add horizontal rule
     doc.AddItem('<hr>')
