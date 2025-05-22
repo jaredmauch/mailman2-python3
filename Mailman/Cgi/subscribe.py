@@ -210,7 +210,7 @@ def process_form(mlist, doc, cgidata, lang):
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
-                results.append(_('reCAPTCHA validation failed: {e_codes}'))
+                results.append(_('reCAPTCHA validation failed: {}').format(e_codes))
         except urllib.error.URLError as e:
             e_reason = e.reason
             results.append(_('reCAPTCHA could not be validated: {e_reason}'))
