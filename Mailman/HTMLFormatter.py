@@ -504,7 +504,7 @@ class HTMLFormatter(object):
             if mm_cfg.IMAGE_LOGOS:
                 replacements['<mm-favicon>'] = mm_cfg.IMAGE_LOGOS + mm_cfg.SHORTCUT_ICON
                 
-            mailman_log('debug', 'Added %d standard replacements', len(replacements))
+            mailman_log('trace', 'Added %d standard replacements', len(replacements))
             
         except Exception as e:
             mailman_log('error', 'Error getting standard replacements: %s', str(e))
