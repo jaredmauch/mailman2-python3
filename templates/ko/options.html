@@ -1,42 +1,102 @@
 <!-- $Revision: 5046 $ -->
 <html>
 <head>
-    <title><MM-Presentable-User> ÀÇ <MM-List-Name> ¿¡¼­ »ç¿ëÀÚ ¼³Á¤ÇÏ±â
-    </title>
-</head>
-<BODY BGCOLOR="#ffffff">
-    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
-        <FONT COLOR="#000000" SIZE=+1>
-        <MM-List-Name> ÀÇ 
-        <MM-Presentable-User> »ç¿ëÀÚ ¼³Á¤ÇÏ±â
-        </FONT></B></TD></TR>
-    </TABLE>
-<MM-Form-Start>
-<p>
-<table width="100%" border="0" cellspacing="5" cellpadding="5">
-    <tr><td>
-	<MM-List-Name> ¸ÞÀÏ¸µ ¸®½ºÆ®¿¡¼­ <b><MM-Presentable-User></b>
-	»ç¿ëÀÚÀÇ °¡ÀÔ »óÅÂ, ÆÐ½º¿öµå, ±âÅ¸ ¿É¼ÇµîÀ» ´Ù·ì´Ï´Ù.
-        </td><td><mm-logout-button></td>
-    </tr><tr>
-        <td colspan="2">
-        <MM-Case-Preserved-User>
-
-        <MM-Disabled-Notice>
-
-        <p><mm-results>
-        </td>
-    </tr>
+<title><mm-presentable-user> ì˜ <mm-list-name> ì—ì„œ ì‚¬ìš©ìž ì„¤ì •í•˜ê¸°
+    </mm-list-name></mm-presentable-user></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
+<font color="#000000" size="+1">
+<mm-list-name> ì˜ 
+        <mm-presentable-user> ì‚¬ìš©ìž ì„¤ì •í•˜ê¸°
+        </mm-presentable-user></mm-list-name></font></b></td></tr>
 </table>
-
+<mm-form-start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
-        <FONT COLOR="#000000">
-        <B><MM-List-Name> È¸¿ø Á¤º¸ º¯°æÇÏ±â</B>
-        </FONT></TD></TR>
-    <tr><td colspan="2">You can change the address that you are subscribed
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-name> ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì—ì„œ <b><mm-presentable-user></mm-presentable-user></b>
+	ì‚¬ìš©ìžì˜ ê°€ìž… ìƒíƒœ, íŒ¨ìŠ¤ì›Œë“œ, ê¸°íƒ€ ì˜µì…˜ë“±ì„ ë‹¤ë£¹ë‹ˆë‹¤.
+        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-logout-button></mm-logout-button></td>
+</tr><tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<mm-case-preserved-user>
+<mm-disabled-notice>
+<p><mm-results>
+</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
+</tr>
+</table>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<font color="#000000">
+<b><mm-list-name> íšŒì› ì •ë³´ ë³€ê²½í•˜ê¸°</mm-list-name></b>
+</font></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">You can change the address that you are subscribed
         to the mailing list with by entering the new address in the
         fields below.  Note that a confirmation email will be sent to
         the new address, and the change must be confirmed before it is
@@ -51,258 +111,231 @@
         lists that you are subscribed to at <mm-host>, turn on the
         <em>Change globally</em> check box.
 
-        </td></tr>
-    <tr><td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-        <tr><td bgcolor="#dddddd"><div align="right">»õ·Î¿î E¸ÞÀÏ ÁÖ¼Ò:</div></td>
-            <td><mm-new-address-box></td>
-            </tr>
-        <tr><td bgcolor="#dddddd"><div align="right">È®ÀÎÀ»À§ÇØ ÇÑ¹ø ´õ ÀÔ·Â
-            :</div></td> 
-            <td><mm-confirm-address-box></td>
-            </tr>
-        </tr></table></center>
-        </td>
-        <td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-            <tr><td bgcolor="#dddddd"><div align="right">ÀÌ¸§
-            (¼±ÅÃ»çÇ×):</div></td>
-            <td><mm-fullname-box></td>
-            </tr>
-        </table></center>
-        </td>
-        </tr>
-    <tr><td colspan="2"><center><mm-change-address-button>
-        <p><mm-global-change-of-address>ÀüÃ¼ÀûÀ¸·Î º¯°æ</center></td>
-    </tr>
-</table>
-
+        </mm-host></p></p></mm-pending-days></p></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ìƒˆë¡œìš´ Eë©”ì¼ ì£¼ì†Œ:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
+</tr>
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">í™•ì¸ì„ìœ„í•´ í•œë²ˆ ë” ìž…ë ¥
+            :</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
+</tr>
+</table></center></td></tr></table>
+<td><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ì´ë¦„
+            (ì„ íƒì‚¬í•­):</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
+</tr>
+</table></center>
+</td>
+<tr><td colspan="2"><center><mm-change-address-button>
+<p><mm-global-change-of-address>ì „ì²´ì ìœ¼ë¡œ ë³€ê²½</mm-global-change-of-address></p></mm-change-address-button></center></td>
+</tr>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
-    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> Å»ÅðÇÏ±â</B></td>
-
-        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-Host> ÀÇ ´Ù¸¥ ¸ÞÀÏ¸µ ¸®½ºÆ® °¡ÀÔ »óÈ²</B>
-        </FONT></TD></TR>
-
-    <tr><td>
-        ÀÌ ¸ÞÀÏ¸µ ¸®½ºÆ®·Î ºÎÅÍ Å»ÅðÇÏ±â À§ÇØ È®ÀÎ Ã¼Å© ¹Ú½º¸¦ Ã¼Å©
-	ÇÏ½Ã°í ÀÌ ¹öÆ°À» ´©¸£½Ã±â ¹Ù¶ø´Ï´Ù.
-        <strong>°æ°í:</strong>
-	ÀÌ µ¿ÀÛÀº Áï°¢ÀûÀ¸·Î ÀÏ¾î ³³´Ï´Ù. µ¹ÀÌÅ³ ¼ö ¾ø½À´Ï´Ù.
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b><mm-list-name> íƒˆí‡´í•˜ê¸°</mm-list-name></b></font></td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b><mm-host> ì˜ ë‹¤ë¥¸ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ ê°€ìž… ìƒí™©</mm-host></b>
+</font></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+        ì´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ë¡œ ë¶€í„° íƒˆí‡´í•˜ê¸° ìœ„í•´ í™•ì¸ ì²´í¬ ë°•ìŠ¤ë¥¼ ì²´í¬
+	í•˜ì‹œê³  ì´ ë²„íŠ¼ì„ ëˆ„ë¥´ì‹œê¸° ë°”ëžë‹ˆë‹¤.
+        <strong>ê²½ê³ :</strong>
+	ì´ ë™ìž‘ì€ ì¦‰ê°ì ìœ¼ë¡œ ì¼ì–´ ë‚©ë‹ˆë‹¤. ëŒì´í‚¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
         <p>
-        <center><MM-Unsubscribe-Button></center></td>
-    <td>
-	¿©·¯ºÐÀÇ È¸¿øÀÌ½Å <mm-host> »óÀÇ ´Ù¸¥ ¸ÞÀÏ¸µ ¸®½ºÆ® °¡ÀÔ »óÈ² 
-	¹× ¿É¼Ç ÆäÀÌÁö¸¦ º¸½Ã°íÀÚ ÇÑ´Ù¸é ÀÌ°ÍÀ» »ç¿ëÇÏ½Ê½Ã¿À.
+<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
+	ì—¬ëŸ¬ë¶„ì˜ íšŒì›ì´ì‹  <mm-host> ìƒì˜ ë‹¤ë¥¸ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ ê°€ìž… ìƒí™© 
+	ë° ì˜µì…˜ íŽ˜ì´ì§€ë¥¼ ë³´ì‹œê³ ìž í•œë‹¤ë©´ ì´ê²ƒì„ ì‚¬ìš©í•˜ì‹­ì‹œì˜¤.
         <p>
-        <center><MM-Other-Subscriptions-Submit></center>
-        </TD></TR>
+<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
+</p></mm-host></td></tr>
 </table>
-
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>¼³Á¤ÇÏ½Å <MM-List-Name> ºñ¹Ð¹øÈ£</B>
-        </FONT></TD></TR>
-
-    <tr valign="TOP"><td WIDTH="50%">
-        <a name=reminder>
-        <center>
-        <h3>ºñ¹Ð¹øÈ£¸¦ ÀØÀ¸¼Ì³ª¿ä?</h3>
-        </center>
-	¾Æ·¡ ¹öÆ°À» ´©¸£½Ã¸é ¸ÞÀÏ¸µ ¸®½ºÆ®¿¡ µî·ÏµÈ ´ç½ÅÀÇ E¸ÞÀÏ ÁÖ¼Ò·Î 
-	ºñ¹Ð¹øÈ£°¡ º¸³»¾î Áý´Ï´Ù.
-        <p><MM-Umbrella-Notice>
-        <center>
-        <MM-Email-My-Pw>
-        </center>
-        </td>
-
-    <td WIDTH="50%">
-        <a name=changepw>
-        <center>
-        <h3>Change Your Password</h3>
-        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
-            <TR><TD BGCOLOR="#dddddd"><div align="right">»õ 
-                ºñ¹Ð¹øÈ£:</div></TD>
-                <TD><MM-New-Pass-Box></TD>
-                </TR>
-            <TR>
-                <TD BGCOLOR="#dddddd"><div align="right">ÇÑ¹ø´õ
-                ÀÔ·Â:</div></TD>
-                <TD><MM-Confirm-Pass-Box></TD>
-            </TR>
-        </table>
-
-        <MM-Change-Pass-Button>
-        <p><center><mm-global-pw-changes-button>ÀüÃ¼ÀûÀ¸·Î º¯°æ
-        </center>
-</TABLE>
-
-<p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> ¸ÞÀÏ¸µ ¸®½ºÆ® ±¸µ¶ ¿É¼Ç</B>
-        </FONT></TD></TR>
-</table>
-
-<p>
-<i><strong>Ã¼Å©µÇ¾î ÀÖ´Â Ç×¸ñÀÌ ÇöÀç ¼±ÅÃµÇ¾îÁø °ÍÀÔ´Ï´Ù.</strong></i>
-
-<p>¸î¸î ¼³Á¤ÀÇ °æ¿ì <em>ÀüÃ¼ÀûÀ¸·Î ¼³Á¤</em>ÇÒ ¼ö ÀÖ½À´Ï´Ù. <mm-host>
-¿¡ ´ç½ÅÀÌ È¸¿øÀÌ½Å ÀÌ ¸ÞÀÏ¸µ ¸®½ºÆ®¿¡ ¼³Á¤º¯°æÀ» °¡ÇÏ°Ô µË´Ï´Ù. ´ç½ÅÀÌ
-<em>°¡ÀÔÇÏ½Å ´Ù¸¥ ¸®½ºÆ® ¸ñ·Ï</em>À» º¸½Ç·Á¸é À§¿¡ ÀÖ´Â °ÍÀ» Å¬¸¯ÇÏ¿©
-ÁÖ½Ã±â ¹Ù¶ø´Ï´Ù.
-<p>
-<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
-    <tr><TD BGCOLOR="#cccccc">
-        <a name="disable">
-        <strong>ÆíÁö ¹è´Þ</strong></a><p>
-        ÀÌ ¸ÞÀÏ¸µ ¸®½ºÆ®¿¡¼­ ¹ß»ýÇÑ ±ÛÀ» ¹Þ¾Æ º¸½Ç·Á¸é <em>¿¹</em>
-	·Î ¼³Á¤ÇÏ½Ã±â ¹Ù¶ø´Ï´Ù. ¸¸¾à ¿©·¯ºÐÀÌ Àá±ñµ¿¾È ¸ÞÀÏÀ» ¹ÞÁö
-	¾ÊÀ¸½Ç·Á¸é <em>¾Æ´Ï¿ä</em>·Î ¼¼ÆÃÇÏ½Ã±â ¹Ù¶ø´Ï´Ù. (¿¹¸¦ µé¸é
-	, ¹æÇÐµ¿¾È) ¸¸¾à ¿©·¯ºÐÀÌ ÆíÁö ¹è´ÞÀ» ±ÝÁöÇÏ½Å´Ù¸é ¿©·¯ºÐ
-	¹æÇÐ ÈÄ¿¡ ´Ù½Ã Àç°¡µ¿ ½ÃÅ°´Â °É ÀØÁö ¸¶½Ã±â ¹Ù¶ø´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <mm-delivery-enable-button>¿¹<br>
-        <mm-delivery-disable-button>¾Æ´Ï¿ä<p>
-        <mm-global-deliver-button><i>ÀüÃ¼ÀûÀ¸·Î ¼³Á¤</i>
-        </td></tr>
-
-<!--Start-Digests-Delete-->
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>¹­À½¹è´Þ ¼³Á¤</strong><p>
-	¸¸¾à ¿©·¯ºÐÀÌ ¼³Á¤À» "¿¹"¶ó°í ÇÏ½Å´Ù¸é ¹­À½¹è´ÞÀ» ½ÅÃ»ÇÏ´Â °ÍÀÔ´Ï´Ù.
-	(º¸Åë ÇÏ·ç¿¡ ÇÑ¹ø Á¤µµ º¸³»Áý´Ï´Ù.) ´ë½Å º¸³¾¶§, ´Ü ÇÑÅë¸¸ º¸³»°Ô
-	µË´Ï´Ù. ¸¸¾à ¹­À½¹è´ÞÀÌ "¾Æ´Ï¿ä"·Î ¹Ù²Ù°Ô µÈ´Ù¸é, ±× ÈÄ¿¡ ÇÑ¹øÀÇ
-	¹­À½¹è´Þ ÆíÁö¸¦ ¹Þ°Ô µÉ °ÍÀÔ´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <MM-Undigest-Radio-Button>¾Æ´Ï¿ä<br>
-        <MM-Digest-Radio-Button>¿¹
-        </td></tr>
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>MIME È¤Àº Æò¹® ¹­À½ ¹è´ÞÁß ¾î¶² °É ¼±ÅÃÇÏ½Ã°Ú½À´Ï±î?</strong><p>
-	´ç½ÅÀÇ ¸ÞÀÏ ÇÁ·Î±×·¥Àº MIME¸¦ Áö¿øÇÏ°Å³ª, È¤Àº ÇÏÁö ¾ÊÀ» °ÍÀÔ´Ï´Ù.
-	ÀÏ¹ÝÀûÀ¸·Î MIME ¹­À½¹è´ÞÀÌ ±âº»ÀÔ´Ï´Ù. ¸¸¾à MIME Çü½ÄÀ» ÀÐ´Âµ¥,
-	¹®Á¦°¡ ÀÖÀ¸¸é "Æò¹®"À» ¼±ÅÃÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <MM-Mime-Digests-Button>MIME<br>
-        <MM-Plain-Digests-Button>Æò¹®
-        </td></tr>
-<!--End-Digests-Delete-->
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>ÀÚ½ÅÀÌ º¸³½ ¿ìÆí¹°À» ¹ÞÀ» °Ç°¡¿ä?</strong><p>
-	ÀÏ¹ÝÀûÀ¸·Î ¿©·¯ºÐÀÌ ¸®½ºÆ®¿¡ ±ÛÀ» º¸³»°Ô µÇ¸é ¿©·¯ºÐÀÌ º¸³½
-	¸Þ¼¼Áö¸¦ ´Ù½Ã ¹Þ°Ô µË´Ï´Ù. ¸¸¾à ÀÌ º¹»çº»À» ¹Þ±æ ¿øÇÏÁö ¾ÊÀ¸
-	½Ã¸é, ÀÌ ¿É¼ÇÀ» <em>¾Æ´Ï¿ä</em>·Î ¼³Á¤ÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-receive-own-mail-button>¾Æ´Ï¿ä<br>
-        <mm-receive-own-mail-button>¿¹
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>¸®½ºÆ®¿¡ º¸³½ "¸ÞÀÏ È®ÀÎ" ¸ÞÀÏÀ» ¹Þ¾Æ º¸½Ç °Ç°¡¿ä?
-        </strong><p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-ack-posts-button>¾Æ´Ï¿ä<br>
-        <mm-ack-posts-button>¿¹
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>ÀÌ ¸®½ºÆ®¿¡¼­ º¸³»´Â ºñ¹Ð¹øÈ£ ÆíÁö¸¦ º¸³¾ °Ç°¡¿ä?</strong><p>
-	ÇÑ´Þ¿¡ ÇÑ¹ø ¿©·¯ºÐÀÌ °¡ÀÔÇÑ È£½ºÆ®·Î ºÎÅÍ ºñ¹Ð¹øÈ£¸¦ ´ãÀº
-	ÆíÁö¸¦ ¹Þ°Ô µÉ °Í ÀÔ´Ï´Ù. ¿©·¯ºÐÀÌ ÀÌ ¼³Á¤Àº <em>¾Æ´Ï¿ä</em>
-	·Î ¼³Á¤ÇÔÀ¸·Î½á ±× ¸ÞÀÏÀ» ¹ÞÁö ¾ÊÀ» ¼ö ÀÖ½À´Ï´Ù. ¸¸¾à ´ç½ÅÀÌ
-	°¡ÀÔÇÑ ¸ðµç ¸®½ºÆ®ÀÇ ÀÌ ¼³Á¤ ºÎºÐÀ» <em>¾Æ´Ï¿ä</em>·Î ¼³Á¤
-	ÇÑ´Ù¸é ÆÐ½º¿öµå ÆíÁö´Â ¿©·¯ºÐ¿¡°Ô °¡Áö ¾ÊÀ» °ÍÀÔ´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-get-password-reminder-button>¾Æ´Ï¿ä<br>
-        <mm-get-password-reminder-button>¿¹<p>
-        <mm-global-remind-button><i>ÀüÃ¼ÀûÀ¸·Î º¯°æ</i>
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>°¡ÀÔÀÚ ¸í´Ü¿¡¼­ ¿©·¯ºÐÀÇ ÀÌ¸§À» ¼û±æ±î¿ä?</strong><p>
-	¾î¶² »ç¶÷ÀÌ ¸®½ºÆ® È¸¿øÀ» º¼¶§, ´ç½ÅÀÇ E¸ÞÀÏ ÁÖ¼Ò´Â º¸Åë 
-	º¸ÀÌ°Ô µË´Ï´Ù. ¹°·Ð ½ºÆÐ¸Ó°¡ E¸ÞÀÏÀ» °¡Á®°¡µµ »ó°ü¾ø°Ô º¯Á¶
-	µË´Ï´Ù. ¸¸¾à ¿©·¯ºÐÀÌ È¸¿ø ¸ñ·Ï¿¡ ÀÚ½ÅÀÇ E¸ÞÀÏ ÁÖ¼Ò°¡ º¸ÀÌ±æ
-	¿øÇÏÁö ¾ÊÀ¸½Ã´Ù¸é ÀÌ ¼³Á¤À» <em>¾Æ´Ï¿ä</em>¸¦ ¼±ÅÃÇÏ¿© ÁÖ½Ê½Ã¿À.
-        </td><td bgcolor="#cccccc">
-        <MM-Public-Subscription-Button>¾Æ´Ï¿ä<br>
-        <MM-Hide-Subscription-Button>¿¹
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>¿©·¯ºÐÀÌ »ç¿ëÇÒ ¾ð¾î´Â ¹«¾ùÀÔ´Ï±î?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <MM-list-langs>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-	<strong>°¡ÀÔÇÏ°íÀÚ ÇÏ´Â ÁÖÁ¦ÀÇ ºÐ·ù´Â ¾î¶² °ÍÀÔ´Ï±î?</strong><p>
-		ÇÏ³ª ÀÌ»óÀÇ ÁÖÁ¦¸¦ ¼±ÅÃÇÔÀ¸·Î½á ´ç½ÅÀº ¸ÞÀÏ¸µ ¸®½ºÆ®ÀÇ
-		Æ®·¡ÇÈÀ» °É·¯³¾ ¼ö ÀÖÀ¸¸ç, ÁÖÁ¦¿Í ¸Â´Â ¸Þ¼¼Áö¸¸ ¹ÞÀ»
-		¼ö ÀÖ½À´Ï´Ù. ¸¸¾à ¿©·¯ºÐÀÌ ¼±ÅÃÇÑ ÁÖÁ¦¿Í ¸Þ¼¼Áö°¡ ¸Â
-		´Â ´Ù¸é ¿©·¯ºÐ¿¡°Ô ¹è´ÞµÇÁö¸¸ ±×·¸Áö ¾ÊÀ» °æ¿ì ¹è´Þ
-		µÇÁö ¾Ê½À´Ï´Ù.
-
-		<p>¸¸¾à ¸Þ¼¼Áö°¡ ¾î¶°ÇÑ ÁÖÁ¦¿Íµµ ¸ÂÁö ¾Ê´Â´Ù¸é ¹è´Þ
-		±ÔÄ¢Àº ¾Æ·¡ ¼³Á¤¿¡ ÀÇÁ¸ÇÏ°Ô µË´Ï´Ù. ¸¸¾à ¿©·¯ºÐÀÌ 
-		°ü½ÉÀÖ¾îÇÏ´Â ÁÖÁ¦¸¦ ¼±ÅÃÇÏÁö ¾ÊÀ¸½Ã¸é ¿©·¯ºÐÀº
-		¸ÞÀÏ¸µ ¸®½ºÆ®·Î ¿À´Â ¸ðµç ¸Þ¼¼Áö¸¦ ¹ÞÀ» °ÍÀÔ´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <mm-topics>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-	<strong>ÁÖÁ¦ °É·¯³»±â¿¡¼­ ¾î¶°ÇÑ ÆÐÅÏ°úµµ ¸ÂÁö ¾Ê´Â ¸Þ¼¼Áö¸¦
-		¹Þ¾Æº¸½Ã°Ú½À´Ï±î?</strong><p>
-		ÀÌ ¼³ÀûÀº ´ÜÁö ¿©·¯ºÐÀÌ À§ÀÇ ÁÖÁ¦Áß ÇÏ³ª¶óµµ °¡ÀÔÇÏ¼Å¾ß
-		Àû¿ëµÇ´Â ¼³Á¤ÀÔ´Ï´Ù. ÁÖÁ¦ °É·¯³»±â ÆÐÅÏ°ú ¸ÂÁö ¾ÊÀ» °æ¿ì
-		¿¡ ±× ¸Þ¼¼Áö¸¦ ¾î¶»°Ô Ã³¸®ÇÏ´Â°¡¿¡ ´ëÇÑ ¼³Á¤À» ÇÏ°í ÀÖ½À´Ï´Ù.
-		<em>¾Æ´Ï¿ä</em> ·Î ¼±ÅÃÇÏ½Ã¸é, ÁÖÁ¦ °É·¯³»±â ÆÐÅÏ°ú 
-		¾î´À°Íµµ ¸ÂÁö ¾ÊÀº ¸Þ¼¼Áö´Â ¿©·¯ºÐ¿¡°Ô ¹è´ÞµÇÁö ¾ÊÀ¸¸é
-		<em>¿¹</em>·Î ¼±ÅÃÇÏ½Ã¸é ¿©·¯ºÐ¿¡°Ô ¹è´ÞµË´Ï´Ù.
-
-		<p>¸¸¾à °ü½ÉÀÖ´Â ÁÖÁ¦°¡ ¾øÀ¸½Ã¸é ¸ÞÀÏ¸µ ¸®½ºÆ®·Î ¿À´Â
-		¸ðµç ¸Þ¼¼Áö¸¦ ¹Þ°Ô µÉ °ÍÀÔ´Ï´Ù.
-        </td><td bgcolor="#cccccc">
-        <mm-suppress-nonmatching-topics>¾Æ´Ï¿ä<br>
-        <mm-receive-nonmatching-topics>¿¹
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>¸Þ¼¼Áö°¡ Áßº¹µÇ´Â °ÍÀº ¹ÞÁö ¾ÊÀ»±î¿ä?</strong><p>
-
-		¿©·¯ºÐÀÌ ¸®½ºÆ® ¸Þ¼¼ÁöÀÇ Çì´õÀÇ <tt>To:</tt> È¤Àº <tt>Cc:</tt>
-		ºÎºÐ¿¡ ¿©·¯ºÐÀÇ ÁÖ¼Ò°¡ µé¾î ÀÖÀ¸¸é ¸ÞÀÏ¸µ ¸®½ºÆ®·Î ºÎÅÍ
-		¿©·¯ Áßº¹µÇ´Â ¸Þ¼¼Áö¸¦ ¹Þ°Ô µË´Ï´Ù. <em>¿¹</em>·Î ¼±ÅÃ
-		ÇÏ½Ã¸é Áßº¹µÇ´Â °ÍÀ» ¹ÞÁö ¾ÊÀ¸¸ç <em>¾Æ´Ï¿ä</em>·Î ¼±ÅÃ
-		ÇÏ½Ã¸é ¸ÞÀÏ¸µ ¸®½ºÆ®·Î ºÎÅÍ ¸Þ¼¼Áö¸¦ ¹Þ°Ô µË´Ï´Ù.
-
-		<p>¸¸¾à ¸®½ºÆ®°¡ <em>È¸¿ø °³º°È­µÈ ¸Þ¼¼Áö</em>°¡ °¡´É
-		ÇÏ°Ô µÇ¾î ÀÖ´Ù¸é ´ç½ÅÀº <tt>X-Mailman-Copy: yes</tt>
-		Çì´õ¸¦ ´õÇÔÀ¸·Î½á ¸ðµç º¹»ç¸Þ¼¼Áö¿¡ ´ëÇØ ¼±º°ÇÒ ¼ö ÀÖ
-		½À´Ï´Ù.
-
-        </td><td bgcolor="#cccccc">
-        <mm-receive-duplicates-button>¾Æ´Ï¿ä<br>
-        <mm-dont-receive-duplicates-button>¿¹<p>
-        <mm-global-nodupes-button><i>ÀüÃ¼ÀûÀ¸·Î º¯°æ</i>
-        </td></tr>
-
-    <tr><TD colspan="2">
-        <center><MM-options-Submit-button></center>
-        </td></tr>
-
-</table>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>ì„¤ì •í•˜ì‹  <mm-list-name> ë¹„ë°€ë²ˆí˜¸</mm-list-name></b>
+</font></td></tr>
+<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="reminder">
+<center>
+<h3>ë¹„ë°€ë²ˆí˜¸ë¥¼ ìžŠìœ¼ì…¨ë‚˜ìš”?</h3>
 </center>
+	ì•„ëž˜ ë²„íŠ¼ì„ ëˆ„ë¥´ì‹œë©´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡ëœ ë‹¹ì‹ ì˜ Eë©”ì¼ ì£¼ì†Œë¡œ 
+	ë¹„ë°€ë²ˆí˜¸ê°€ ë³´ë‚´ì–´ ì§‘ë‹ˆë‹¤.
+        <p><mm-umbrella-notice>
+<center>
+<mm-email-my-pw>
+</mm-email-my-pw></center>
+</mm-umbrella-notice></p></a></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="changepw">
+<center>
+<h3>Change Your Password</h3>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ìƒˆ 
+                ë¹„ë°€ë²ˆí˜¸:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">í•œë²ˆë”
+                ìž…ë ¥:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
+</tr>
+</table>
+<mm-change-pass-button>
+<p><center><mm-global-pw-changes-button>ì „ì²´ì ìœ¼ë¡œ ë³€ê²½
+        </mm-global-pw-changes-button></center>
+</p></mm-change-pass-button></center></a></td></tr></table>
 <p>
-<MM-Form-End>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b><mm-list-name> ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ êµ¬ë… ì˜µì…˜</mm-list-name></b>
+</font></td></tr>
+</table>
+<p>
+<i><strong>ì²´í¬ë˜ì–´ ìžˆëŠ” í•­ëª©ì´ í˜„ìž¬ ì„ íƒë˜ì–´ì§„ ê²ƒìž…ë‹ˆë‹¤.</strong></i>
+<p>ëª‡ëª‡ ì„¤ì •ì˜ ê²½ìš° <em>ì „ì²´ì ìœ¼ë¡œ ì„¤ì •</em>í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. <mm-host>
+ì— ë‹¹ì‹ ì´ íšŒì›ì´ì‹  ì´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì— ì„¤ì •ë³€ê²½ì„ ê°€í•˜ê²Œ ë©ë‹ˆë‹¤. ë‹¹ì‹ ì´
+<em>ê°€ìž…í•˜ì‹  ë‹¤ë¥¸ ë¦¬ìŠ¤íŠ¸ ëª©ë¡</em>ì„ ë³´ì‹¤ë ¤ë©´ ìœ„ì— ìžˆëŠ” ê²ƒì„ í´ë¦­í•˜ì—¬
+ì£¼ì‹œê¸° ë°”ëžë‹ˆë‹¤.
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<a name="disable">
+<strong>íŽ¸ì§€ ë°°ë‹¬</strong></a><p>
+        ì´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë°œìƒí•œ ê¸€ì„ ë°›ì•„ ë³´ì‹¤ë ¤ë©´ <em>ì˜ˆ</em>
+	ë¡œ ì„¤ì •í•˜ì‹œê¸° ë°”ëžë‹ˆë‹¤. ë§Œì•½ ì—¬ëŸ¬ë¶„ì´ ìž ê¹ë™ì•ˆ ë©”ì¼ì„ ë°›ì§€
+	ì•Šìœ¼ì‹¤ë ¤ë©´ <em>ì•„ë‹ˆìš”</em>ë¡œ ì„¸íŒ…í•˜ì‹œê¸° ë°”ëžë‹ˆë‹¤. (ì˜ˆë¥¼ ë“¤ë©´
+	, ë°©í•™ë™ì•ˆ) ë§Œì•½ ì—¬ëŸ¬ë¶„ì´ íŽ¸ì§€ ë°°ë‹¬ì„ ê¸ˆì§€í•˜ì‹ ë‹¤ë©´ ì—¬ëŸ¬ë¶„
+	ë°©í•™ í›„ì— ë‹¤ì‹œ ìž¬ê°€ë™ ì‹œí‚¤ëŠ” ê±¸ ìžŠì§€ ë§ˆì‹œê¸° ë°”ëžë‹ˆë‹¤.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-delivery-enable-button>ì˜ˆ<br/>
+<mm-delivery-disable-button>ì•„ë‹ˆìš”<p>
+<mm-global-deliver-button><i>ì „ì²´ì ìœ¼ë¡œ ì„¤ì •</i>
+</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+<!--Start-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ë¬¶ìŒë°°ë‹¬ ì„¤ì •</strong><p>
+	ë§Œì•½ ì—¬ëŸ¬ë¶„ì´ ì„¤ì •ì„ "ì˜ˆ"ë¼ê³  í•˜ì‹ ë‹¤ë©´ ë¬¶ìŒë°°ë‹¬ì„ ì‹ ì²­í•˜ëŠ” ê²ƒìž…ë‹ˆë‹¤.
+	(ë³´í†µ í•˜ë£¨ì— í•œë²ˆ ì •ë„ ë³´ë‚´ì§‘ë‹ˆë‹¤.) ëŒ€ì‹  ë³´ë‚¼ë•Œ, ë‹¨ í•œí†µë§Œ ë³´ë‚´ê²Œ
+	ë©ë‹ˆë‹¤. ë§Œì•½ ë¬¶ìŒë°°ë‹¬ì´ "ì•„ë‹ˆìš”"ë¡œ ë°”ê¾¸ê²Œ ëœë‹¤ë©´, ê·¸ í›„ì— í•œë²ˆì˜
+	ë¬¶ìŒë°°ë‹¬ íŽ¸ì§€ë¥¼ ë°›ê²Œ ë  ê²ƒìž…ë‹ˆë‹¤.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-undigest-radio-button>ì•„ë‹ˆìš”<br/>
+<mm-digest-radio-button>ì˜ˆ
+        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>MIME í˜¹ì€ í‰ë¬¸ ë¬¶ìŒ ë°°ë‹¬ì¤‘ ì–´ë–¤ ê±¸ ì„ íƒí•˜ì‹œê² ìŠµë‹ˆê¹Œ?</strong><p>
+	ë‹¹ì‹ ì˜ ë©”ì¼ í”„ë¡œê·¸ëž¨ì€ MIMEë¥¼ ì§€ì›í•˜ê±°ë‚˜, í˜¹ì€ í•˜ì§€ ì•Šì„ ê²ƒìž…ë‹ˆë‹¤.
+	ì¼ë°˜ì ìœ¼ë¡œ MIME ë¬¶ìŒë°°ë‹¬ì´ ê¸°ë³¸ìž…ë‹ˆë‹¤. ë§Œì•½ MIME í˜•ì‹ì„ ì½ëŠ”ë°,
+	ë¬¸ì œê°€ ìžˆìœ¼ë©´ "í‰ë¬¸"ì„ ì„ íƒí•˜ì‹œê¸° ë°”ëžë‹ˆë‹¤.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-mime-digests-button>MIME<br/>
+<mm-plain-digests-button>í‰ë¬¸
+        </mm-plain-digests-button></mm-mime-digests-button></td></tr>
+<!--End-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ìžì‹ ì´ ë³´ë‚¸ ìš°íŽ¸ë¬¼ì„ ë°›ì„ ê±´ê°€ìš”?</strong><p>
+	ì¼ë°˜ì ìœ¼ë¡œ ì—¬ëŸ¬ë¶„ì´ ë¦¬ìŠ¤íŠ¸ì— ê¸€ì„ ë³´ë‚´ê²Œ ë˜ë©´ ì—¬ëŸ¬ë¶„ì´ ë³´ë‚¸
+	ë©”ì„¸ì§€ë¥¼ ë‹¤ì‹œ ë°›ê²Œ ë©ë‹ˆë‹¤. ë§Œì•½ ì´ ë³µì‚¬ë³¸ì„ ë°›ê¸¸ ì›í•˜ì§€ ì•Šìœ¼
+	ì‹œë©´, ì´ ì˜µì…˜ì„ <em>ì•„ë‹ˆìš”</em>ë¡œ ì„¤ì •í•˜ì‹œê¸° ë°”ëžë‹ˆë‹¤.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-receive-own-mail-button>ì•„ë‹ˆìš”<br/>
+<mm-receive-own-mail-button>ì˜ˆ
+        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ë¦¬ìŠ¤íŠ¸ì— ë³´ë‚¸ "ë©”ì¼ í™•ì¸" ë©”ì¼ì„ ë°›ì•„ ë³´ì‹¤ ê±´ê°€ìš”?
+        </strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-ack-posts-button>ì•„ë‹ˆìš”<br/>
+<mm-ack-posts-button>ì˜ˆ
+        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ì´ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë³´ë‚´ëŠ” ë¹„ë°€ë²ˆí˜¸ íŽ¸ì§€ë¥¼ ë³´ë‚¼ ê±´ê°€ìš”?</strong><p>
+	í•œë‹¬ì— í•œë²ˆ ì—¬ëŸ¬ë¶„ì´ ê°€ìž…í•œ í˜¸ìŠ¤íŠ¸ë¡œ ë¶€í„° ë¹„ë°€ë²ˆí˜¸ë¥¼ ë‹´ì€
+	íŽ¸ì§€ë¥¼ ë°›ê²Œ ë  ê²ƒ ìž…ë‹ˆë‹¤. ì—¬ëŸ¬ë¶„ì´ ì´ ì„¤ì •ì€ <em>ì•„ë‹ˆìš”</em>
+	ë¡œ ì„¤ì •í•¨ìœ¼ë¡œì¨ ê·¸ ë©”ì¼ì„ ë°›ì§€ ì•Šì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ë§Œì•½ ë‹¹ì‹ ì´
+	ê°€ìž…í•œ ëª¨ë“  ë¦¬ìŠ¤íŠ¸ì˜ ì´ ì„¤ì • ë¶€ë¶„ì„ <em>ì•„ë‹ˆìš”</em>ë¡œ ì„¤ì •
+	í•œë‹¤ë©´ íŒ¨ìŠ¤ì›Œë“œ íŽ¸ì§€ëŠ” ì—¬ëŸ¬ë¶„ì—ê²Œ ê°€ì§€ ì•Šì„ ê²ƒìž…ë‹ˆë‹¤.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-get-password-reminder-button>ì•„ë‹ˆìš”<br/>
+<mm-get-password-reminder-button>ì˜ˆ<p>
+<mm-global-remind-button><i>ì „ì²´ì ìœ¼ë¡œ ë³€ê²½</i>
+</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ê°€ìž…ìž ëª…ë‹¨ì—ì„œ ì—¬ëŸ¬ë¶„ì˜ ì´ë¦„ì„ ìˆ¨ê¸¸ê¹Œìš”?</strong><p>
+	ì–´ë–¤ ì‚¬ëžŒì´ ë¦¬ìŠ¤íŠ¸ íšŒì›ì„ ë³¼ë•Œ, ë‹¹ì‹ ì˜ Eë©”ì¼ ì£¼ì†ŒëŠ” ë³´í†µ 
+	ë³´ì´ê²Œ ë©ë‹ˆë‹¤. ë¬¼ë¡  ìŠ¤íŒ¨ë¨¸ê°€ Eë©”ì¼ì„ ê°€ì ¸ê°€ë„ ìƒê´€ì—†ê²Œ ë³€ì¡°
+	ë©ë‹ˆë‹¤. ë§Œì•½ ì—¬ëŸ¬ë¶„ì´ íšŒì› ëª©ë¡ì— ìžì‹ ì˜ Eë©”ì¼ ì£¼ì†Œê°€ ë³´ì´ê¸¸
+	ì›í•˜ì§€ ì•Šìœ¼ì‹œë‹¤ë©´ ì´ ì„¤ì •ì„ <em>ì•„ë‹ˆìš”</em>ë¥¼ ì„ íƒí•˜ì—¬ ì£¼ì‹­ì‹œì˜¤.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-public-subscription-button>ì•„ë‹ˆìš”<br/>
+<mm-hide-subscription-button>ì˜ˆ
+        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ì—¬ëŸ¬ë¶„ì´ ì‚¬ìš©í•  ì–¸ì–´ëŠ” ë¬´ì—‡ìž…ë‹ˆê¹Œ?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-langs>
+</mm-list-langs></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ê°€ìž…í•˜ê³ ìž í•˜ëŠ” ì£¼ì œì˜ ë¶„ë¥˜ëŠ” ì–´ë–¤ ê²ƒìž…ë‹ˆê¹Œ?</strong><p>
+		í•˜ë‚˜ ì´ìƒì˜ ì£¼ì œë¥¼ ì„ íƒí•¨ìœ¼ë¡œì¨ ë‹¹ì‹ ì€ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì˜
+		íŠ¸ëž˜í”½ì„ ê±¸ëŸ¬ë‚¼ ìˆ˜ ìžˆìœ¼ë©°, ì£¼ì œì™€ ë§žëŠ” ë©”ì„¸ì§€ë§Œ ë°›ì„
+		ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ë§Œì•½ ì—¬ëŸ¬ë¶„ì´ ì„ íƒí•œ ì£¼ì œì™€ ë©”ì„¸ì§€ê°€ ë§ž
+		ëŠ” ë‹¤ë©´ ì—¬ëŸ¬ë¶„ì—ê²Œ ë°°ë‹¬ë˜ì§€ë§Œ ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° ë°°ë‹¬
+		ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 
-<MM-Mailman-Footer>
-</body>
+		<p>ë§Œì•½ ë©”ì„¸ì§€ê°€ ì–´ë– í•œ ì£¼ì œì™€ë„ ë§žì§€ ì•ŠëŠ”ë‹¤ë©´ ë°°ë‹¬
+		ê·œì¹™ì€ ì•„ëž˜ ì„¤ì •ì— ì˜ì¡´í•˜ê²Œ ë©ë‹ˆë‹¤. ë§Œì•½ ì—¬ëŸ¬ë¶„ì´ 
+		ê´€ì‹¬ìžˆì–´í•˜ëŠ” ì£¼ì œë¥¼ ì„ íƒí•˜ì§€ ì•Šìœ¼ì‹œë©´ ì—¬ëŸ¬ë¶„ì€
+		ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ë¡œ ì˜¤ëŠ” ëª¨ë“  ë©”ì„¸ì§€ë¥¼ ë°›ì„ ê²ƒìž…ë‹ˆë‹¤.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-topics>
+</mm-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ì£¼ì œ ê±¸ëŸ¬ë‚´ê¸°ì—ì„œ ì–´ë– í•œ íŒ¨í„´ê³¼ë„ ë§žì§€ ì•ŠëŠ” ë©”ì„¸ì§€ë¥¼
+		ë°›ì•„ë³´ì‹œê² ìŠµë‹ˆê¹Œ?</strong><p>
+		ì´ ì„¤ì ì€ ë‹¨ì§€ ì—¬ëŸ¬ë¶„ì´ ìœ„ì˜ ì£¼ì œì¤‘ í•˜ë‚˜ë¼ë„ ê°€ìž…í•˜ì…”ì•¼
+		ì ìš©ë˜ëŠ” ì„¤ì •ìž…ë‹ˆë‹¤. ì£¼ì œ ê±¸ëŸ¬ë‚´ê¸° íŒ¨í„´ê³¼ ë§žì§€ ì•Šì„ ê²½ìš°
+		ì— ê·¸ ë©”ì„¸ì§€ë¥¼ ì–´ë–»ê²Œ ì²˜ë¦¬í•˜ëŠ”ê°€ì— ëŒ€í•œ ì„¤ì •ì„ í•˜ê³  ìžˆìŠµë‹ˆë‹¤.
+		<em>ì•„ë‹ˆìš”</em> ë¡œ ì„ íƒí•˜ì‹œë©´, ì£¼ì œ ê±¸ëŸ¬ë‚´ê¸° íŒ¨í„´ê³¼ 
+		ì–´ëŠê²ƒë„ ë§žì§€ ì•Šì€ ë©”ì„¸ì§€ëŠ” ì—¬ëŸ¬ë¶„ì—ê²Œ ë°°ë‹¬ë˜ì§€ ì•Šìœ¼ë©´
+		<em>ì˜ˆ</em>ë¡œ ì„ íƒí•˜ì‹œë©´ ì—¬ëŸ¬ë¶„ì—ê²Œ ë°°ë‹¬ë©ë‹ˆë‹¤.
+
+		<p>ë§Œì•½ ê´€ì‹¬ìžˆëŠ” ì£¼ì œê°€ ì—†ìœ¼ì‹œë©´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ë¡œ ì˜¤ëŠ”
+		ëª¨ë“  ë©”ì„¸ì§€ë¥¼ ë°›ê²Œ ë  ê²ƒìž…ë‹ˆë‹¤.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-suppress-nonmatching-topics>ì•„ë‹ˆìš”<br/>
+<mm-receive-nonmatching-topics>ì˜ˆ
+        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>ë©”ì„¸ì§€ê°€ ì¤‘ë³µë˜ëŠ” ê²ƒì€ ë°›ì§€ ì•Šì„ê¹Œìš”?</strong><p>
+
+		ì—¬ëŸ¬ë¶„ì´ ë¦¬ìŠ¤íŠ¸ ë©”ì„¸ì§€ì˜ í—¤ë”ì˜ <tt>To:</tt> í˜¹ì€ <tt>Cc:</tt>
+		ë¶€ë¶„ì— ì—¬ëŸ¬ë¶„ì˜ ì£¼ì†Œê°€ ë“¤ì–´ ìžˆìœ¼ë©´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ë¡œ ë¶€í„°
+		ì—¬ëŸ¬ ì¤‘ë³µë˜ëŠ” ë©”ì„¸ì§€ë¥¼ ë°›ê²Œ ë©ë‹ˆë‹¤. <em>ì˜ˆ</em>ë¡œ ì„ íƒ
+		í•˜ì‹œë©´ ì¤‘ë³µë˜ëŠ” ê²ƒì„ ë°›ì§€ ì•Šìœ¼ë©° <em>ì•„ë‹ˆìš”</em>ë¡œ ì„ íƒ
+		í•˜ì‹œë©´ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ë¡œ ë¶€í„° ë©”ì„¸ì§€ë¥¼ ë°›ê²Œ ë©ë‹ˆë‹¤.
+
+		<p>ë§Œì•½ ë¦¬ìŠ¤íŠ¸ê°€ <em>íšŒì› ê°œë³„í™”ëœ ë©”ì„¸ì§€</em>ê°€ ê°€ëŠ¥
+		í•˜ê²Œ ë˜ì–´ ìžˆë‹¤ë©´ ë‹¹ì‹ ì€ <tt>X-Mailman-Copy: yes</tt>
+		í—¤ë”ë¥¼ ë”í•¨ìœ¼ë¡œì¨ ëª¨ë“  ë³µì‚¬ë©”ì„¸ì§€ì— ëŒ€í•´ ì„ ë³„í•  ìˆ˜ ìžˆ
+		ìŠµë‹ˆë‹¤.
+
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-receive-duplicates-button>ì•„ë‹ˆìš”<br/>
+<mm-dont-receive-duplicates-button>ì˜ˆ<p>
+<mm-global-nodupes-button><i>ì „ì²´ì ìœ¼ë¡œ ë³€ê²½</i>
+</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-options-submit-button></mm-options-submit-button></center>
+</td></tr>
+</table>
+<p>
+<mm-form-end>
+<mm-mailman-footer>
+</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></p></mm-form-start></body>
 </html>

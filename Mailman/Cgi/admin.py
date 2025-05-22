@@ -694,9 +694,11 @@ def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
     val = get_item_gui_value(mlist, category, kind, varname, params, extra)
     table.AddRow([descr, val])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_ADMINITEM_COLOR}',
+                      role='cell')
     table.AddCellInfo(table.GetCurrentRowIndex(), 1,
-                      bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_ADMINITEM_COLOR}',
+                      role='cell')
 
 def get_item_characteristics(record):
     # Break out the components of an item description from its description
@@ -832,7 +834,7 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
                                             selected=1),
                               ])
             table.AddRow(['<hr>'])
-            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
+            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2, role='cell')
         # Now for each element in the existing data, create a widget
         i = 1
         data = getattr(mlist, varname)
@@ -877,32 +879,20 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
                                    rows=4, cols=30, wrap='off')])
             values = [mm_cfg.DEFER, mm_cfg.HOLD, mm_cfg.REJECT,
                       mm_cfg.DISCARD, mm_cfg.ACCEPT]
-            try:
-                checked = values.index(action)
-            except ValueError:
-                checked = 0
-            radio = RadioButtonArray(
-                actiontag,
-                (_('Defer'), _('Hold'), _('Reject'),
-                 _('Discard'), _('Accept')),
-                values=values,
-                checked=checked).Format()
-            table.AddRow([Label(_('Action:')), radio])
+            legends = [_('Defer'), _('Hold'), _('Reject'),
+                       _('Discard'), _('Accept')]
+            table.AddRow([Label(_('Action:')),
+                          SelectOptions(actiontag, values, legends,
+                                       selected=values.index(action))])
             if not empty:
-                table.AddRow([SubmitButton(addtag, _('Add new item...')),
+                table.AddRow([SubmitButton(addtag, _('Add new rule...')),
                               SelectOptions(wheretag, ('before', 'after'),
                                             (_('...before this one.'),
                                              _('...after this one.')),
                                             selected=1),
                               ])
-                # BAW: IWBNI we could disable the up and down buttons for the
-                # first and last item respectively, but it's not easy to know
-                # which is the last item, so let's not worry about that for
-                # now.
-                table.AddRow([SubmitButton(uptag, _('Move rule up')),
-                              SubmitButton(downtag, _('Move rule down'))])
             table.AddRow(['<hr>'])
-            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
+            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2, role='cell')
         # Now for each element in the existing data, create a widget
         i = 1
         data = getattr(mlist, varname)

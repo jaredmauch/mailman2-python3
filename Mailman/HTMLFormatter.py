@@ -113,7 +113,7 @@ class HTMLFormatter(object):
         else:
             optval = self.getMemberOption(user, option)
         if optval == value:
-            checked = ' CHECKED'
+            checked = ' checked'
         else:
             checked = ''
         name = {mm_cfg.DontReceiveOwnPosts      : 'dontreceive',
@@ -126,15 +126,15 @@ class HTMLFormatter(object):
                 mm_cfg.ReceiveNonmatchingTopics : 'rcvtopic',
                 mm_cfg.DontReceiveDuplicates    : 'nodupes',
                 }[option]
-        return '<input type=radio name="%s" value="%d"%s>' % (
+        return '<input type="radio" name="%s" value="%d"%s>' % (
             name, value, checked)
 
     def FormatDigestButton(self):
         if self.digest_is_default:
-            checked = ' CHECKED'
+            checked = ' checked'
         else:
             checked = ''
-        return '<input type=radio name="digest" value="1"%s>' % checked
+        return '<input type="radio" name="digest" value="1"%s>' % checked
 
     def FormatDisabledNotice(self, user):
         status = self.getDeliveryStatus(user)
@@ -158,24 +158,27 @@ class HTMLFormatter(object):
             link = Link('#disable', _('Mail delivery')).Format()
             mailto = Link('mailto:' + self.GetOwnerEmail(),
                           _('the list administrator')).Format()
-            return _(f'''<p>{note}
-
-            <p>You may have disabled list delivery intentionally,
-            or it may have been triggered by bounces from your email
-            address.  In either case, to re-enable delivery, change the
-            {link} option below.  Contact {mailto} if you have any
-            questions or need assistance.''')
+            return _(f'''<div class="notice">
+                <p>{note}</p>
+                <p>You may have disabled list delivery intentionally,
+                or it may have been triggered by bounces from your email
+                address.  In either case, to re-enable delivery, change the
+                {link} option below.  Contact {mailto} if you have any
+                questions or need assistance.</p>
+            </div>''')
         elif info and info.score > 0:
             # Provide information about their current bounce score.  We know
             # their membership is currently enabled.
             score = info.score
             total = self.bounce_score_threshold
-            return _(f'''<p>We have received some recent bounces from your
-            address.  Your current <em>bounce score</em> is {score} out of a
-            maximum of {total}.  Please double check that your subscribed
-            address is correct and that there are no problems with delivery to
-            this address.  Your bounce score will be automatically reset if
-            the problems are corrected soon.''')
+            return _(f'''<div class="notice">
+                <p>We have received some recent bounces from your
+                address.  Your current <em>bounce score</em> is {score} out of a
+                maximum of {total}.  Please double check that your subscribed
+                address is correct and that there are no problems with delivery to
+                this address.  Your bounce score will be automatically reset if
+                the problems are corrected soon.</p>
+            </div>''')
         else:
             return ''
 

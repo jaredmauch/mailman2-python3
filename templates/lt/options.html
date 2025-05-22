@@ -1,278 +1,311 @@
 <!-- $Revision: 6065 $ -->
 <html>
 <head>
-    <link rel="SHORTCUT ICON" href="<mm-favicon>">
-    <title><MM-Presentable-User> dalyvio nustatymai forumui <MM-List-Name>
-    </title>
-</head>
-<BODY BGCOLOR="#ffffff">
-    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
-        <FONT COLOR="#000000" SIZE=+1>
-        <MM-List-Name> forumo nustatymai dalyviui
-        <MM-Presentable-User>
-        </FONT></B></TD></TR>
-    </TABLE>
-<p>
-<table width="100%" border="0" cellspacing="5" cellpadding="5">
-    <tr><td>
-        <b><MM-Presentable-User></b> bûsena, slaptaşodşiai ir nustatymai forumui <MM-List-Name>.
-        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
-    </tr><tr>
-        <td colspan="2">
-        <MM-Case-Preserved-User>
-
-        <MM-Disabled-Notice>
-
-        <p><mm-results>
-        </td>
-    </tr>
+<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
+<title><mm-presentable-user> dalyvio nustatymai forumui <mm-list-name>
+</mm-list-name></mm-presentable-user></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
+<font color="#000000" size="+1">
+<mm-list-name> forumo nustatymai dalyviui
+        <mm-presentable-user>
+</mm-presentable-user></mm-list-name></font></b></td></tr>
 </table>
-
-<MM-Form-Start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
-        <FONT COLOR="#000000">
-        <B>Forumo <MM-List-Name> narystës informacijos pakeitimai</B>
-        </FONT></TD></TR>
-    <tr><td colspan="2">
-    	&Scaron;iame lauke galite pakeisti nurodytà dalyvio el. pa&scaron;to adresà.
-	Tuo atveju jums bus i&scaron;siøstas lai&scaron;kas ir pakeitimai ásigalios tik po to,
-	kai Jûs patvirtinsite juos.
-	<p>Patvirtinimui skiriama dienø: <mm-pending-days>.
-        <p>Taip pat galite pakeisti vardà, kuriuo pasira&scaron;ote
-        (pvz. <em>Tomas Jonu&scaron;as</em>).
-        <p>Jeigu norite, kad bûtø pakeisti visø forumø <mm-host> nustatymai,
-	paşytmëkite vëliavëlæ <em>Bendri pakeitimai</em>.
-
-        </td></tr>
-    <tr><td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-        <tr><td bgcolor="#dddddd"><div align="right">Naujas adresas:</div></td>
-            <td><mm-new-address-box></td>
-            </tr>
-        <tr><td bgcolor="#dddddd"><div align="right">Patvirtinimas:</div></td>
-            <td><mm-confirm-address-box></td>
-            </tr>
-        </tr></table></center>
-        </td>
-        <td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-            <tr><td bgcolor="#dddddd"><div align="right">Jûsø vardas (nebûtina):</div></td>
-            <td><mm-fullname-box></td>
-            </tr>
-        </table></center>
-        </td>
-        </tr>
-    <tr><td colspan="2"><center><mm-change-address-button>
-        <p><mm-global-change-of-address>Bendri pakeitimai</center></td>
-    </tr>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<b><mm-presentable-user></mm-presentable-user></b> bÃ»sena, slaptaÃ¾odÃ¾iai ir nustatymai forumui <mm-list-name>.
+        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
+</tr><tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<mm-case-preserved-user>
+<mm-disabled-notice>
+<p><mm-results>
+</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
+</tr>
 </table>
-
+<mm-form-start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
-    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Atsisakyti <MM-List-Name></B></td>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<font color="#000000">
+<b>Forumo <mm-list-name> narystÃ«s informacijos pakeitimai</mm-list-name></b>
+</font></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+    	Å iame lauke galite pakeisti nurodytÃ  dalyvio el. paÅ¡to adresÃ .
+	Tuo atveju jums bus iÅ¡siÃ¸stas laiÅ¡kas ir pakeitimai Ã¡sigalios tik po to,
+	kai JÃ»s patvirtinsite juos.
+	<p>Patvirtinimui skiriama dienÃ¸: <mm-pending-days>.
+        <p>Taip pat galite pakeisti vardÃ , kuriuo pasiraÅ¡ote
+        (pvz. <em>Tomas JonuÅ¡as</em>).
+        <p>Jeigu norite, kad bÃ»tÃ¸ pakeisti visÃ¸ forumÃ¸ <mm-host> nustatymai,
+	paÃ¾ytmÃ«kite vÃ«liavÃ«lÃ¦ <em>Bendri pakeitimai</em>.
 
-        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Kiti Jûsø prisijungimai <MM-Host></B>
-        </FONT></TD></TR>
-
-    <tr><td>
-        I&scaron;junkite vëliavëlæ ir paspauskite &scaron;á mygtukà,
-	jeigu norite atsisakyti &scaron;io forumo.  <strong>Atsargiai:</strong>
-        Tai ávyksta nedelsiant!
+        </mm-host></p></p></mm-pending-days></p></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Naujas adresas:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
+</tr>
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Patvirtinimas:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
+</tr>
+</table></center></td></tr></table>
+<td><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">JÃ»sÃ¸ vardas (nebÃ»tina):</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
+</tr>
+</table></center>
+</td>
+<tr><td colspan="2"><center><mm-change-address-button>
+<p><mm-global-change-of-address>Bendri pakeitimai</mm-global-change-of-address></p></mm-change-address-button></center></td>
+</tr>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>Atsisakyti <mm-list-name></mm-list-name></b></font></td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>Kiti JÃ»sÃ¸ prisijungimai <mm-host></mm-host></b>
+</font></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+        IÅ¡junkite vÃ«liavÃ«lÃ¦ ir paspauskite Å¡Ã¡ mygtukÃ ,
+	jeigu norite atsisakyti Å¡io forumo.  <strong>Atsargiai:</strong>
+        Tai Ã¡vyksta nedelsiant!
         <p>
-        <center><MM-Unsubscribe-Button></center></td>
-    <td>
-        Galiet perşiûrëti sàra&scaron;à <mm-host> forumø, kuriuose Jûs dalyvaujate.
-	Pasinaudokite tuo, jei norite pakeisti visø jø nustatymus.
+<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
+        Galiet perÃ¾iÃ»rÃ«ti sÃ raÅ¡Ã  <mm-host> forumÃ¸, kuriuose JÃ»s dalyvaujate.
+	Pasinaudokite tuo, jei norite pakeisti visÃ¸ jÃ¸ nustatymus.
         <p>
-        <center><MM-Other-Subscriptions-Submit></center>
-        </TD></TR>
+<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
+</p></mm-host></td></tr>
 </table>
-
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Jûsø <MM-List-Name> slaptaşodis</B>
-        </FONT></TD></TR>
-
-    <tr valign="TOP"><td WIDTH="50%">
-        <a name=reminder>
-        <center>
-        <h3>Pamir&scaron;ote slaptaşodá?</h3>
-        </center>
-        Paspauskite &scaron;á mygtukà, jeigu norite, kad slaptaşodis bûtø i&scaron;siøstas Jûsø adresu.
-        <p><MM-Umbrella-Notice>
-        <center>
-        <MM-Email-My-Pw>
-        </center>
-        </td>
-
-    <td WIDTH="50%">
-        <a name=changepw>
-        <center>
-        <h3>Pakeisti slaptaşodá</h3>
-        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
-            <TR><TD BGCOLOR="#dddddd"><div align="right">Naujas slaptaşodis:</div></TD>
-                <TD><MM-New-Pass-Box></TD>
-                </TR>
-            <TR>
-                <TD BGCOLOR="#dddddd"><div align="right">Pakartokite slaptaşodá:</div></TD>
-                <TD><MM-Confirm-Pass-Box></TD>
-            </TR>
-        </table>
-
-        <MM-Change-Pass-Button>
-        <p><center><mm-global-pw-changes-button>Bendri pakeitimai.
-        </center>
-</TABLE>
-
-<p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Jûsø nustatymai forumui <MM-List-Name></B>
-        </FONT></TD></TR>
-</table>
-
-<p>
-<i><strong>Pradşioje paşymëti dabartiniai nustatymai.</strong></i>
-
-<p>Atkreipkite dëmesá, kad daliai nustatymø yra vëliavëlë <em>Bendri pakeitimai</em>.
-Paşymëjus &scaron;ià vëliavëlæ pakeèiami Jûsø nustatymai visuose <mm-host> forumuose.
-<p>Paspauskie <em>parodyti kitus mano forumus</em> jei norite pamatti kur dar Jûsø esate prisijungæ.
-<p>
-<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
-    <tr><TD BGCOLOR="#cccccc">
-        <a name="disable"><strong>Pa&scaron;to pristatymas</strong></a><p>
-        Ájungæ &scaron;á nustatymà gausite forumui skirtus lai&scaron;kus.
-	I&scaron;jungæ &scaron;á nustatymà lai&scaron;kø negausite, nors ir liksite prisijungæ.
-        Naudokite &scaron;á nustatymà pvz. i&scaron;vykdami atostogauti,
-	tik nepamir&scaron;kite gráşæ vël ájungti pristatymà!
-        </td><td bgcolor="#cccccc">
-        <mm-delivery-enable-button>Ájungta<br>
-        <mm-delivery-disable-button>I&scaron;jungta<p>
-        <mm-global-deliver-button><i>Bendri pakeitimai</i>
-        </td></tr>
-
-<!--Start-Digests-Delete-->
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Rinkiniø siuntimas</strong><p>
-        Jeigu ájungsite rinkiniø siuntimà, Jums bus siuntinëjami
-	apjungti forumo lai&scaron;kai. Tai turëtø vykti kartà á dienà,
-	taèiau ypaè aktyviuose forumuose gali bûti ir daşniau.
-	Jei nepasirinksite rinkiniø siuntimo, tada gausite kiekvienà lai&scaron;kà
-	nedelsiant. Kai i&scaron;jungiate rinkiniø siuntimà, turëtumëte gauti
-	paskutiná Jums nei&scaron;siøstø lai&scaron;kø rinkiná, kitus lai&scaron;kus gausite po vienà.
-        </td><td bgcolor="#cccccc">
-        <MM-Undigest-Radio-Button>I&scaron;jungta<br>
-        <MM-Digest-Radio-Button>Ájungta
-        </td></tr>
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>MIME ar vientiso teksto formato rinkiniai?</strong><p>
-	Jûsø pa&scaron;to programa gali palaikyti MIME rinkinius arba ne.
-	MIME rinkiniai daugumai vartotojø yra patogesni,
-	taèiau pasirinkite vioentisà tekstà jei negalite normaliai
-	perskaityti MIME rinkiniø.
-        </td><td bgcolor="#cccccc">
-        <MM-Mime-Digests-Button>MIME<br>
-        <MM-Plain-Digests-Button>Vientisas tekstas<p>
-        <mm-global-mime-button><i>Bendri pakeitimai</i>
-        </td></tr>
-<!--End-Digests-Delete-->
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Ar norite gauti savo siøstus á forumà lai&scaron;kus??</strong>
-	<p>Áprastu nustatymu gausite visus á forumà siøstus, tame tarpe 
-	ir savo lai&scaron;kus. Jeigu nenorite gauti savo siøstø lai&scaron;kø kopijos
-	èia nustatykite <em>Ne</em>.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-receive-own-mail-button>Ne<br>
-        <mm-receive-own-mail-button>Taip
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Ar patvirtini kiekvienà á forumà nusiøstà lai&scaron;kà?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-ack-posts-button>Ne<br>
-        <mm-ack-posts-button>Taip
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Ar siuntinëti &scaron;io formo slaptaşodşio priminimus?</strong><p>
-	Kartà á mënesá gausite lai&scaron;kà su i&scaron;vardintais Jûsø uşsisakytø
-	pasirinktø forumø slaptaşodşiais. Jeigu visiems uşsisakytiems forumams
-	i&scaron;jungsite &scaron;á parametrà, tada slaptaşodşiø priminimo lai&scaron;kas jums 
-	nebus siuntinëjamas.
-	</td><td bgcolor="#cccccc">
-        <mm-dont-get-password-reminder-button>I&scaron;jungta<br>
-        <mm-get-password-reminder-button>Ájungta<p>
-        <mm-global-remind-button><i>Bendri pakeitimai</i>
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Ar paslëpti Jûsø adresà nuo forumo dalyviø?</strong><p>
-	Kiekvienas perşiûrëdamas forumo nariø sàra&scaron;à mato ir Jûsø adresà.
-	(Tuo kartais piktybi&scaron;kai pasinaudoja nepageidaujamos reklamos 
-	SPAM siuntinëtojai.) Nurodykite <em>Paslëpti</em> jei nenorite
-	rodyti Jûsø adreso.
-	</td><td bgcolor="#cccccc">
-        <MM-Public-Subscription-Button>Rodyti<br>
-        <MM-Hide-Subscription-Button>Paslëpti
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Jûsø pasirinkta kalba:</strong><p>
-        </td><td bgcolor="#cccccc">
-        <MM-list-langs>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Kokiø temø lai&scaron;kus norite auşsisakyti??</strong><p>
-	    Pasirinkdami vienà ar kità temà galite sumaşinti gaunamø lai&scaron;kø srautà.
-	    Gausite tik tuos lai&scaron;kus, kurie atitinka Jûsø pasirinktas temas.
-	    <p>Jei nenurodysite në vienos temos, gausite visus forumo lai&scaron;kus.
-        </td><td bgcolor="#cccccc">
-        <mm-topics>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Ar norite gauti lai&scaron;kus, kurie neatitinka në vienos Jûsø nurodytos temos?</strong><p>
-		&Scaron;is nustatymas veikia tik tuo atveju, jei esate nurodæ bent vienà temà.
-		Jei pasirinksite <em>Ne</em>, tada gausite tik Jûsø pasirinktø temø lai&scaron;kus.
-		Jei pasirinksite <em>Taip</em>, tada gausite visus lai&scaron;kus.
-                <p>Jeigu nenurodëte në vienos temos, tada gausite visus lai&scaron;kus
-		nepriklausomai nuo &scaron;io nustatymo.
-        </td><td bgcolor="#cccccc">
-        <mm-suppress-nonmatching-topics>Taip<br>
-        <mm-receive-nonmatching-topics>Ne
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Apsaugoti nuo lai&scaron;kø dubliavimo?</strong><p>
-                Jei Jûsø adresas nurodytas lauke <tt>To:</tt> arba
-                <tt>Cc:</tt> galite pasirinti negauti antros lai&scaron;ko kopijos.
-                Pasirinkite <em>Taip</em> jei nenorite gauti kopijø;
-		pasirinkite <em>Ne</em> jei norite gauti visus lai&scaron;kus.
-		<p>Jei forumas leidşia asmeninius lai&scaron;kus, tada kiekvienai
-		lai&scaron;ko kopijai pridedama antra&scaron;të <tt>X-Mailman-Copy: yes</tt>.
-        </td><td bgcolor="#cccccc">
-        <mm-receive-duplicates-button>Ne<br>
-        <mm-dont-receive-duplicates-button>Taip<p>
-        <mm-global-nodupes-button><i>Bendri pakeitimai</i>
-        </td></tr>
-
-    <tr><TD colspan="2">
-        <center><MM-options-Submit-button></center>
-        </td></tr>
-
-</table>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>JÃ»sÃ¸ <mm-list-name> slaptaÃ¾odis</mm-list-name></b>
+</font></td></tr>
+<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="reminder">
+<center>
+<h3>PamirÅ¡ote slaptaÃ¾odÃ¡?</h3>
 </center>
+        Paspauskite Å¡Ã¡ mygtukÃ , jeigu norite, kad slaptaÃ¾odis bÃ»tÃ¸ iÅ¡siÃ¸stas JÃ»sÃ¸ adresu.
+        <p><mm-umbrella-notice>
+<center>
+<mm-email-my-pw>
+</mm-email-my-pw></center>
+</mm-umbrella-notice></p></a></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="changepw">
+<center>
+<h3>Pakeisti slaptaÃ¾odÃ¡</h3>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Naujas slaptaÃ¾odis:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Pakartokite slaptaÃ¾odÃ¡:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
+</tr>
+</table>
+<mm-change-pass-button>
+<p><center><mm-global-pw-changes-button>Bendri pakeitimai.
+        </mm-global-pw-changes-button></center>
+</p></mm-change-pass-button></center></a></td></tr></table>
 <p>
-<MM-Form-End>
-
-<MM-Mailman-Footer>
-</body>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>JÃ»sÃ¸ nustatymai forumui <mm-list-name></mm-list-name></b>
+</font></td></tr>
+</table>
+<p>
+<i><strong>PradÃ¾ioje paÃ¾ymÃ«ti dabartiniai nustatymai.</strong></i>
+<p>Atkreipkite dÃ«mesÃ¡, kad daliai nustatymÃ¸ yra vÃ«liavÃ«lÃ« <em>Bendri pakeitimai</em>.
+PaÃ¾ymÃ«jus Å¡iÃ  vÃ«liavÃ«lÃ¦ pakeÃ¨iami JÃ»sÃ¸ nustatymai visuose <mm-host> forumuose.
+<p>Paspauskie <em>parodyti kitus mano forumus</em> jei norite pamatti kur dar JÃ»sÃ¸ esate prisijungÃ¦.
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<a name="disable"><strong>PaÅ¡to pristatymas</strong></a><p>
+        ÃjungÃ¦ Å¡Ã¡ nustatymÃ  gausite forumui skirtus laiÅ¡kus.
+	IÅ¡jungÃ¦ Å¡Ã¡ nustatymÃ  laiÅ¡kÃ¸ negausite, nors ir liksite prisijungÃ¦.
+        Naudokite Å¡Ã¡ nustatymÃ  pvz. iÅ¡vykdami atostogauti,
+	tik nepamirÅ¡kite grÃ¡Ã¾Ã¦ vÃ«l Ã¡jungti pristatymÃ !
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-delivery-enable-button>Ãjungta<br/>
+<mm-delivery-disable-button>IÅ¡jungta<p>
+<mm-global-deliver-button><i>Bendri pakeitimai</i>
+</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+<!--Start-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>RinkiniÃ¸ siuntimas</strong><p>
+        Jeigu Ã¡jungsite rinkiniÃ¸ siuntimÃ , Jums bus siuntinÃ«jami
+	apjungti forumo laiÅ¡kai. Tai turÃ«tÃ¸ vykti kartÃ  Ã¡ dienÃ ,
+	taÃ¨iau ypaÃ¨ aktyviuose forumuose gali bÃ»ti ir daÃ¾niau.
+	Jei nepasirinksite rinkiniÃ¸ siuntimo, tada gausite kiekvienÃ  laiÅ¡kÃ 
+	nedelsiant. Kai iÅ¡jungiate rinkiniÃ¸ siuntimÃ , turÃ«tumÃ«te gauti
+	paskutinÃ¡ Jums neiÅ¡siÃ¸stÃ¸ laiÅ¡kÃ¸ rinkinÃ¡, kitus laiÅ¡kus gausite po vienÃ .
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-undigest-radio-button>IÅ¡jungta<br/>
+<mm-digest-radio-button>Ãjungta
+        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>MIME ar vientiso teksto formato rinkiniai?</strong><p>
+	JÃ»sÃ¸ paÅ¡to programa gali palaikyti MIME rinkinius arba ne.
+	MIME rinkiniai daugumai vartotojÃ¸ yra patogesni,
+	taÃ¨iau pasirinkite vioentisÃ  tekstÃ  jei negalite normaliai
+	perskaityti MIME rinkiniÃ¸.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-mime-digests-button>MIME<br/>
+<mm-plain-digests-button>Vientisas tekstas<p>
+<mm-global-mime-button><i>Bendri pakeitimai</i>
+</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+<!--End-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ar norite gauti savo siÃ¸stus Ã¡ forumÃ  laiÅ¡kus??</strong>
+<p>Ãprastu nustatymu gausite visus Ã¡ forumÃ  siÃ¸stus, tame tarpe 
+	ir savo laiÅ¡kus. Jeigu nenorite gauti savo siÃ¸stÃ¸ laiÅ¡kÃ¸ kopijos
+	Ã¨ia nustatykite <em>Ne</em>.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-receive-own-mail-button>Ne<br/>
+<mm-receive-own-mail-button>Taip
+        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ar patvirtini kiekvienÃ  Ã¡ forumÃ  nusiÃ¸stÃ  laiÅ¡kÃ ?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-ack-posts-button>Ne<br/>
+<mm-ack-posts-button>Taip
+        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ar siuntinÃ«ti Å¡io formo slaptaÃ¾odÃ¾io priminimus?</strong><p>
+	KartÃ  Ã¡ mÃ«nesÃ¡ gausite laiÅ¡kÃ  su iÅ¡vardintais JÃ»sÃ¸ uÃ¾sisakytÃ¸
+	pasirinktÃ¸ forumÃ¸ slaptaÃ¾odÃ¾iais. Jeigu visiems uÃ¾sisakytiems forumams
+	iÅ¡jungsite Å¡Ã¡ parametrÃ , tada slaptaÃ¾odÃ¾iÃ¸ priminimo laiÅ¡kas jums 
+	nebus siuntinÃ«jamas.
+	</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-get-password-reminder-button>IÅ¡jungta<br/>
+<mm-get-password-reminder-button>Ãjungta<p>
+<mm-global-remind-button><i>Bendri pakeitimai</i>
+</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ar paslÃ«pti JÃ»sÃ¸ adresÃ  nuo forumo dalyviÃ¸?</strong><p>
+	Kiekvienas perÃ¾iÃ»rÃ«damas forumo nariÃ¸ sÃ raÅ¡Ã  mato ir JÃ»sÃ¸ adresÃ .
+	(Tuo kartais piktybiÅ¡kai pasinaudoja nepageidaujamos reklamos 
+	SPAM siuntinÃ«tojai.) Nurodykite <em>PaslÃ«pti</em> jei nenorite
+	rodyti JÃ»sÃ¸ adreso.
+	</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-public-subscription-button>Rodyti<br/>
+<mm-hide-subscription-button>PaslÃ«pti
+        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>JÃ»sÃ¸ pasirinkta kalba:</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-langs>
+</mm-list-langs></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>KokiÃ¸ temÃ¸ laiÅ¡kus norite auÃ¾sisakyti??</strong><p>
+	    Pasirinkdami vienÃ  ar kitÃ  temÃ  galite sumaÃ¾inti gaunamÃ¸ laiÅ¡kÃ¸ srautÃ .
+	    Gausite tik tuos laiÅ¡kus, kurie atitinka JÃ»sÃ¸ pasirinktas temas.
+	    <p>Jei nenurodysite nÃ« vienos temos, gausite visus forumo laiÅ¡kus.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-topics>
+</mm-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ar norite gauti laiÅ¡kus, kurie neatitinka nÃ« vienos JÃ»sÃ¸ nurodytos temos?</strong><p>
+		Å is nustatymas veikia tik tuo atveju, jei esate nurodÃ¦ bent vienÃ  temÃ .
+		Jei pasirinksite <em>Ne</em>, tada gausite tik JÃ»sÃ¸ pasirinktÃ¸ temÃ¸ laiÅ¡kus.
+		Jei pasirinksite <em>Taip</em>, tada gausite visus laiÅ¡kus.
+                <p>Jeigu nenurodÃ«te nÃ« vienos temos, tada gausite visus laiÅ¡kus
+		nepriklausomai nuo Å¡io nustatymo.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-suppress-nonmatching-topics>Taip<br/>
+<mm-receive-nonmatching-topics>Ne
+        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Apsaugoti nuo laiÅ¡kÃ¸ dubliavimo?</strong><p>
+                Jei JÃ»sÃ¸ adresas nurodytas lauke <tt>To:</tt> arba
+                <tt>Cc:</tt> galite pasirinti negauti antros laiÅ¡ko kopijos.
+                Pasirinkite <em>Taip</em> jei nenorite gauti kopijÃ¸;
+		pasirinkite <em>Ne</em> jei norite gauti visus laiÅ¡kus.
+		<p>Jei forumas leidÃ¾ia asmeninius laiÅ¡kus, tada kiekvienai
+		laiÅ¡ko kopijai pridedama antraÅ¡tÃ« <tt>X-Mailman-Copy: yes</tt>.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-receive-duplicates-button>Ne<br/>
+<mm-dont-receive-duplicates-button>Taip<p>
+<mm-global-nodupes-button><i>Bendri pakeitimai</i>
+</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-options-submit-button></mm-options-submit-button></center>
+</td></tr>
+</table>
+<p>
+<mm-form-end>
+<mm-mailman-footer>
+</mm-mailman-footer></mm-form-end></p></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
 </html>

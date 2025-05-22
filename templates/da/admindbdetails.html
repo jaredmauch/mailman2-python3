@@ -1,62 +1,123 @@
-Administrative anmodninger kan vises p&aring; to m&aring;der, enten som en <a
-href="%(summaryurl)s">oversigt</a>, eller med <em>alle detaljer</em>.
-P&aring; oversigtssiden vises b&aring;de ventende tilmeldinger/frameldinger og
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Administrative anmodninger kan vises på to måder, enten som en <a href="%(summaryurl)s">oversigt</a>, eller med <em>alle detaljer</em>.
+På oversigtssiden vises både ventende tilmeldinger/frameldinger og
 e-mail som afventer godkendelse for at blive distribueret via listen.
-Detailsiden viser ogs&aring; email-headers og et uddrag af
+Detailsiden viser også email-headers og et uddrag af
 indholdet i dem.
 
-<p>P&aring; begge sider kan du angive f&oslash;lgende tiltag:
+<p>På begge sider kan du angive følgende tiltag:
 
 <ul>
-<li><b>Afvent</b> -- Uds&aelig;t afg&oslash;relsen. Intet bliver gjort med
-    denne anmodning nu, men e-mail der venter p&aring; godkendelse kan du
+<li><b>Afvent</b> -- Udsæt afgørelsen. Intet bliver gjort med
+    denne anmodning nu, men e-mail der venter på godkendelse kan du
     behandle eller videresende (se nedenfor).
 
 <li><b>Godkend</b> -- Accepter meddelelsen som den er og distribuer den
-    til listen. For anmodninger om medlemskab, iv&aelig;rks&aelig;ttelse af framelding eller
+    til listen. For anmodninger om medlemskab, iværksættelse af framelding eller
     tilmelding.
 
 <li><b>Afvis</b> -- Slet meddelelsen og giv besked tilbage til
     afsenderen om at meddelelsen ikke blev godkendt. For anmodninger om
-    medlemskab, afslag p&aring; framelding eller tilmelding. I alle tilf&aelig;lde b&oslash;r
-    du ogs&aring; angive en grund i den tilh&oslash;rende tekstboks.
+    medlemskab, afslag på framelding eller tilmelding. I alle tilfælde bør
+    du også angive en grund i den tilhørende tekstboks.
 
 <li><b>Slet</b> -- Slet meddelelsen uden at at sende besked
-    til afsender. Den almindelige reaktion p&aring; reklame-email (spam).
-    For anmodninger om medlemskab, afslag p&aring; framelding eller tilmelding, uden
-    at den som pr&oslash;vede at fra- eller tilmelde sig listen f&aring;r noget at vide
+    til afsender. Den almindelige reaktion på reklame-email (spam).
+    For anmodninger om medlemskab, afslag på framelding eller tilmelding, uden
+    at den som prøvede at fra- eller tilmelde sig listen får noget at vide
     om det.
 
-</ul>
-
-<p>Marker <b>Gem meddelelse</b> hvis du &oslash;nsker at gemme en kopi til
-systemets administrator. Dette kan v&aelig;re nyttigt for meddelelser som er
+</li></li></li></li></ul>
+<p>Marker <b>Gem meddelelse</b> hvis du ønsker at gemme en kopi til
+systemets administrator. Dette kan være nyttigt for meddelelser som er
 knyttet til misbrug af systemet og som du egentlig vil slette, men som du
-&oslash;nsker se se n&aelig;rmere p&aring; senere.
+ønsker se se nærmere på senere.
 
 <p>Marker <b>Videresend meddelelser</b> og angiv en e-mailadrese
 hvis du vil videresende meddelelsen til andre. For at redigere en e-mail
-der holdes tilbage f&oslash;r den sendes til listen, b&oslash;r du sende den til dig selv
+der holdes tilbage før den sendes til listen, bør du sende den til dig selv
 (eller evt. listens ejere), og slette den oprindelige e-mail.
-N&aring;r e-mailen ankommer til din indboks, kan du redigere den og udf&oslash;re de &aelig;ndringer
-du &oslash;nsker, og derefter sende den til listen igen, med et <tt>Approved:</tt> felt
+Når e-mailen ankommer til din indboks, kan du redigere den og udføre de ændringer
+du ønsker, og derefter sende den til listen igen, med et <tt>Approved:</tt> felt
 i brevhovedet efterfulgt af listens adgangskode. Husk at det er normal netikette
-i s&aring;danne tilf&aelig;lde at angive at du har redigeret indholdet.
+i sådanne tilfælde at angive at du har redigeret indholdet.
 
 <p>Hvis afsenderen er medlem af listen men er modereret, kan du fjerne
-moderationsflaget hvis du &oslash;nsker det. Dette er nyttigt n&aring;r du har opsat
-listen s&aring;dan at nye medlemmer har en pr&oslash;vetid p&aring; listen, og du har bestemt
-at nu er pr&oslash;vetiden udl&oslash;bet for medlemmet.
+moderationsflaget hvis du ønsker det. Dette er nyttigt når du har opsat
+listen sådan at nye medlemmer har en prøvetid på listen, og du har bestemt
+at nu er prøvetiden udløbet for medlemmet.
 
-<p>Hvis afsenderen ikke er medlem af listen, kan du f&aring; e-mailadressen lagt
-i et af <em>afsenderfiltrene</em>. Afsenderfiltre er forklaret p&aring; <a
-href="%(filterurl)s">Filtrering p&aring; afsender</a>-siden, og kan v&aelig;re
+<p>Hvis afsenderen ikke er medlem af listen, kan du få e-mailadressen lagt
+i et af <em>afsenderfiltrene</em>. Afsenderfiltre er forklaret på <a href="%(filterurl)s">Filtrering på afsender</a>-siden, og kan være
 <b>auto-godkendelse</b>, <b>auto-tilbageholdelse</b>, <b>auto-afvisning</b>, eller
-<b>auto-sletning</b>. Denne valgmulighed vil ikke v&aelig;re tilg&aelig;ngelig hvis adressen
+<b>auto-sletning</b>. Denne valgmulighed vil ikke være tilgængelig hvis adressen
 allerede findes i et filter.
 
-<p>Klik p&aring; <em>Udf&oslash;r</em> knappen &oslash;verst eller nederst p&aring; siden,
-n&aring;r du har foretaget dine valg.
-Det vil aktivere dine afg&oslash;relser.
+<p>Klik på <em>Udfør</em> knappen øverst eller nederst på siden,
+når du har foretaget dine valg.
+Det vil aktivere dine afgørelser.
 
 <p><a href="%(summaryurl)s">Tilbage til oversigtssiden</a>.
+</p></p></p></p></p></p></p>

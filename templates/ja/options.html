@@ -1,299 +1,333 @@
 <!-- $Revision: 6837 $ -->
 <html>
 <head>
-    <link rel="SHORTCUT ICON" href="<mm-favicon>">
-<title><MM-List-Name> �᡼��󥰥ꥹ�ȤǤ� <MM-Presentable-User> ������</title>
-
-</head>
-<BODY BGCOLOR="#ffffff">
-    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
-	<FONT COLOR="#000000" SIZE=+1>
-        <MM-List-Name> �᡼��󥰥ꥹ�ȤǤ� <MM-Presentable-User> ������
-	</FONT></B></TD></TR>
-    </TABLE>
-<p>
-<table width="100%" border="0" cellspacing="5" cellpadding="5">
-    <tr><td>
-        <b><MM-List-Name> �᡼��󥰥ꥹ�ȤǤ�<MM-Presentable-User></b> �����
-        �������������ѥ���ɡ����ץ��������������
-        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
-    </tr><tr>
-        <td colspan="2">
-        <MM-Case-Preserved-User>
-
-        <MM-Disabled-Notice>
-
-        <p><mm-results>
-        </td>
-    </tr>
+<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
+<title><mm-list-name> メーリングリストでの <mm-presentable-user> の設定</mm-presentable-user></mm-list-name></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
+<font color="#000000" size="+1">
+<mm-list-name> メーリングリストでの <mm-presentable-user> の設定
+	</mm-presentable-user></mm-list-name></font></b></td></tr>
 </table>
-
-<MM-Form-Start>
 <p>
-<table width="100%" border="0" cellspacing="0" cellpadding="5">
-    <tr><td width="100%" bgcolor="#fff0d0" colspan="2">
-        <font color="#000000">
-        <b><MM-List-Name> ������ɥ쥹���ѹ�</b>
-        </font></td></tr>
-    <tr><td colspan="2">�᡼��󥰥ꥹ�Ȥ���Ͽ�����������ɥ쥹
-        ���ѹ�����ˤϡ�������˿��������ɥ쥹�����Ϥ��Ƥ���������
-        �ʤ������ɥ쥹�������ǧ�Υ᡼����Ф����ǧ������ޤ�
-	��������α����ޤ���
-
-        <p>��<mm-pending-days>��˳�ǧ�δ��¤��ڤ�ޤ���
-
-        <p>�ޤ������ץ����Ǥ��ʤ��μ�̾(��:<em>������ɧ</em>)��
-	���ꤷ�����ѹ�������Ǥ��ޤ���
-
-        <p><mm-host>����Ͽ����Ƥ��뤹�٤ƤΥ᡼��󥰥ꥹ�Ȥ�
-        ������ɥ쥹���ѹ������硢
-        <em>�����ѹ�</em>�ܥå���������å����Ƥ���������
-        </td></tr>
-    <tr><td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-        <tr><td bgcolor="#dddddd"><div align="right">�����ɥ쥹:</div></td>
-            <td><mm-new-address-box></td>
-            </tr>
-        <tr><td bgcolor="#dddddd"><div align="right">
-            ��ǧ�Ѻ�����:</div></td>
-            <td><mm-confirm-address-box></td>
-            </tr>
-        </tr></table></center>
-        </td>
-        <td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-            <tr><td bgcolor="#dddddd"><div align="right">̾��
-            (��ά��):</div></td>
-            <td><mm-fullname-box></td>
-            </tr>
-        </table></center>
-        </td>
-        </tr>
-    <tr><td colspan="2"><center><mm-change-address-button>
-            <p><mm-global-change-of-address>�����ѹ�
-            </center></td>
-    </tr>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<b><mm-list-name> メーリングリストでの<mm-presentable-user></mm-presentable-user></mm-list-name></b> さんの
+        会員設定状況、パスワード、オプションの設定状況。
+        </td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
+</tr><tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<mm-case-preserved-user>
+<mm-disabled-notice>
+<p><mm-results>
+</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
+</tr>
 </table>
-
+<mm-form-start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
-    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> ����񤹤�</B></td>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<font color="#000000">
+<b><mm-list-name> 会員アドレスの変更</mm-list-name></b>
+</font></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">メーリングリストに登録した配送アドレス
+        を変更するには、下の欄に新しいアドレスを入力してください。
+        なお新アドレスに送る確認のメールに対する確認があるまで
+	処理は保留されます。
 
-        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>���ʤ���¾�� <MM-Host> �Ǥ��������</B>
-        </FONT></TD></TR>
+        <p>約<mm-pending-days>後に確認の期限が切れます。
 
-    <tr><td>
-        ��񤹤�ˤϳ�ǧ�ܥå���������å����ơ�����
-        �ܥ���򥯥�å����Ƥ���������<strong>�ٹ�:</strong>
-        �����ľ��������³����λ���ޤ���
+        <p>また、オプションであなたの実名(例:<em>寺田寅彦</em>)を
+	設定したり変更したりできます。
+
+        <p><mm-host>に登録されているすべてのメーリングリストの
+        会員アドレスを変更する場合、
+        <em>全部変更</em>ボックスをチェックしてください。
+        </mm-host></p></p></mm-pending-days></p></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">新アドレス:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
+</tr>
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">
+            確認用再入力:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
+</tr>
+</table></center></td></tr></table>
+<td><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">名前
+            (省略可):</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
+</tr>
+</table></center>
+</td>
+<tr><td colspan="2"><center><mm-change-address-button>
+<p><mm-global-change-of-address>全部変更
+            </mm-global-change-of-address></p></mm-change-address-button></center></td>
+</tr>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b><mm-list-name> を退会する</mm-list-name></b></font></td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>あなたの他の <mm-host> での入会状況</mm-host></b>
+</font></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+        退会するには確認ボックスをチェックして、この
+        ボタンをクリックしてください。<strong>警告:</strong>
+        これは直ちに退会手続きを完了します。
         <p>
-        <center><MM-Unsubscribe-Button></center></td>
-    <td>
-        <mm-host>�����񤷤Ƥ������ƤΥ᡼��󥰥ꥹ��
-        �Υꥹ�Ȥ򸫤뤳�Ȥ��Ǥ��ޤ���¾�β�����ץ�����
-        �ѹ�����ΤǤ���Ф�������Ѥ��Ƥ���������
+<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
+<mm-host>で入会している全てのメーリングリスト
+        のリストを見ることができます。他の会員オプションも
+        変更するのであればこれを利用してください。
 
         <p>
-        <center><MM-Other-Subscriptions-Submit></center>
-	</TD></TR>
+<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
+</p></mm-host></td></tr>
 </table>
-
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> �Υѥ����</B>
-	</FONT></TD></TR>
-    <tr valign="TOP"><td WIDTH="50%">
-        <a name=reminder>
-        <center>
-        <h3>�ѥ���ɤ�˺�줿��?</h3>
-        </center>
-        ���Υܥ���򥯥�å�����ȡ��᡼��ǥѥ���ɤ��������ޤ���
-        <p><MM-Umbrella-Notice>
-        <center>
-        <MM-Email-My-Pw>
-        </center>
-        </td>
-
-<td WIDTH="50%">
-        <a name=changepw>
-        <center>
-        <h3>�ѥ�����ѹ�</h3>
-        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
-            <TR><TD BGCOLOR="#dddddd"><div align="right">
-                ���ѥ����:</div></TD>
-	        <TD><MM-New-Pass-Box></TD>
-                </TR>
-            <TR>
-	        <TD BGCOLOR="#dddddd"><div align="right">
-                ��ǧ�Ѻ�����:</div></TD>
-	        <TD><MM-Confirm-Pass-Box></TD>
-            </TR>
-        </table>
-        <MM-Change-Pass-Button>
-        <p><center><mm-global-pw-changes-button>�����ѹ�
-        </center>
-</TABLE>
-
-<p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> �β�����ץ����</B>
-	</FONT></TD></TR>
-</table>
-
-<p>
-<i><strong>���ߤ����꤬�����å�����Ƥ��ޤ���</strong></i>
-<p><em>��������</em>�Υ����å��ܥå���������å�����ȡ�
-���񤷤Ƥ���<mm-host>�����᡼��󥰥ꥹ�ȤǤ�������ѹ����뤳�Ȥ��Ǥ��ޤ���
-���<em>¾�Υ᡼��󥰥ꥹ�Ȥؤ��������</em>�ǡ�
-��ʬ�����񤷤Ƥ���᡼��󥰥ꥹ�Ȥ�Ĵ�٤뤳�Ȥ��Ǥ��ޤ���
-<p>
-<TABLE BORDER="0" CELLSPACING="2" CELLPADDING="3" WIDTH="100%">
-    <tr><TD BGCOLOR="#cccccc">
-        <a name="disable">
-        <strong> �᡼������ </strong> <br>
-        �᡼��󥰥ꥹ�Ȥ���Ƥ��줿�᡼��������򳫻Ϥ�����Ȥ��ϡ�
-	���Υ��ץ�����<em>ͭ��</em>�ˤ��ޤ���<em>���</em>�����֤ȡ�
-        ���Ū�˥᡼���������ߤ�뤳�Ȥ��Ǥ��ޤ�
-        (�㤨��û���֤εٲ���ʤ�)����������ߤ����Ȥ��ϡ�
-        �ٲˤ�����ä���ͭ�������ꤷľ�����Ȥ�˺��ʤ���
-        </td><td bgcolor="#cccccc">
-        <mm-delivery-enable-button> ͭ��<br>
-        <mm-delivery-disable-button> ���<p>
-        <mm-global-deliver-button><i>��������</i>
-        </td></tr>
-
-<!--Start-Digests-Delete-->
-    <tr><TD BGCOLOR="#cccccc">
-        <strong> �ޤȤ��ɤߥ⡼�ɤ�����</strong> <br>
-        ͭ�� �����֤ȡ���ƤΤ��Ӥ˥᡼������餺�����٤ƤΥ᡼���
-	����1�̤ˤޤȤ�ƥ᡼�뤬�Ϥ��ޤ����ޤȤ��ɤߥ⡼�ɤ������
-        ͭ�� ���� ̵�� ���ѹ�����ȡ��Ǹ��1�̤ΤޤȤ�᡼�뤬�����ޤ���
-        </td><td bgcolor="#cccccc">
-        <MM-Undigest-Radio-Button> ̵��<br>
-        <MM-Digest-Radio-Button> ͭ��
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong> �ޤȤ��ɤߥ᡼��������������
-	ʿʸ�ޤ���MIME��ź�եե����������</strong><p>
-        �᡼�륽�եȤˤ�äƤ� MIME�����ǤޤȤ��ɤߥ᡼����ɤ�ʤ�
-        ��Τ⤢��ޤ�������Ū�ˤ�MIME���������������Ǥ�����
-        MIME�����Υ᡼�뤬�ɤ�ʤ�����ʿʸ������Ǥ���������
-        </td><td bgcolor="#cccccc">
-        <MM-Mime-Digests-Button> MIME <br>
-        <MM-Plain-Digests-Button> ʿʸ <p>
-        <mm-global-mime-button><i>��������</i>
-        </td></tr>
-<!--End-Digests-Delete-->
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong> ��ʬ����Ƥ����᡼���������ޤ���? </strong><p>
-        �̾�ϡ���ʬ���ꥹ�Ȥ���Ƥ����᡼��Υ��ԡ����������ޤ���
-        ��ʬ����Ƥ����᡼��Υ��ԡ��������ꤿ���ʤ���С�
-        ���Υ��ץ�����<em>������</em>�����ꤷ�Ƥ���������
-        </td><td bgcolor="#cccccc">
-        <mm-dont-receive-own-mail-button> ������ <br>
-        <mm-receive-own-mail-button> �Ϥ�
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong> �ꥹ�Ȥؤ���Ƥ��Ф����ǧ���Τ�ɬ�פǤ���?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-ack-posts-button> ������<br>
-        <mm-ack-posts-button> �Ϥ�
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>���Υꥹ�Ȥ���Υѥ�������Τ�������ޤ���?</strong><p>
-        �Ϥ������֤ȡ����Υۥ��ȤǱ��Ѥ����ƥ᡼��󥰥ꥹ�Ȥ��顢���
-        �ѥ������˺���Υ᡼��������뤳�Ȥˤʤ�ޤ���
-        <em>������</em>�����֤ȡ����Υ᡼��󥰥ꥹ�Ȥ������˺����
-        ��������ߤ�뤳�Ȥ��Ǥ��ޤ����������������å�����
-	<em>������</em>�����ꤹ��ȡ���˺���Υ᡼��ϴ����������ʤ��ʤ�ޤ���
-        </td><td bgcolor="#cccccc">
-        <mm-dont-get-password-reminder-button>������<br>
-        <mm-get-password-reminder-button>�Ϥ�<p>
-        <mm-global-remind-button><i>��������</i>
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong> ����ꥹ�Ȥǥ��ɥ쥹����ɽ���ˤ��ޤ���? </strong><br>
-        �ꥹ�Ȥβ��̾���ˤϡ����ʤ��Υ᡼�륢�ɥ쥹��ɽ������ޤ�
-        (���������ǥ᡼��Υ��ɥ쥹�������ɤ������ɽ���򤢤��ޤ��ˤ��Ƥ��ޤ�)��
-        ���̾���˼�ʬ�Υ᡼�륢�ɥ쥹��ɽ�����������ʤ����ϡ�
-        <em>�����Ƥ�������</em>�����Ӥޤ���
-        </td><td bgcolor="#cccccc">
-        <MM-Public-Subscription-Button> ɽ�����ޤ� <br>
-        <MM-Hide-Subscription-Button> �����Ƥ�������
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong> �ɤθ����Ȥ��ޤ���?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <MM-list-langs>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>���������������ʬ���?</strong><p>
-	�᡼��󥰥ꥹ�Ȥ�����Ф����᡼���
-	�ե��륿�򤫤��뤳�Ȥ��Ǥ��ޤ���
-	������ꤿ�����������Ǥ���������
-	���򤷤�����˳������ʤ��᡼��������ʤ��ʤ�ޤ���
-
-	<p>�ɤ�����ˤ⳺�����ʤ��᡼���������§�ϡ����ι��ܤ����ꤷ�ޤ���
-	������������򤷤ʤ���С����٤ƤΥ᡼����������ޤ���
-        </td><td bgcolor="#cccccc">
-        <mm-topics>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>�ɤ�����ե��륿�ˤ���פ��ʤ��᡼���������ޤ���?</strong><p>
-	�����������������򤷤����ˡ�
-	�ɤ�����ˤ⳺�����ʤ��᡼����Ф���ǥե���Ȥ�������§����ޤ���
-	<em>������</em>�����֤ȡ��ɤ�����ˤ⳺�����ʤ��᡼����������ޤ���
-	<em>�Ϥ�</em>�����֤ȡ��ɤ�����ˤ⳺�����ʤ��᡼����������ޤ���
-
-	<p>��������ǲ�����������򤷤ʤ��ä����ϡ�
-	���Υ��ץ����Ǥ�����ˤ�����餺��
-	���٤ƤΥ᡼����������ޤ���
-        </td><td bgcolor="#cccccc">
-        <mm-suppress-nonmatching-topics>������<br>
-        <mm-receive-nonmatching-topics>�Ϥ�
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>��ʣ�����᡼���������ʤ��褦�ˤ��ޤ���?</strong><p>
-
-            ��ʬ���ȤΥ��ɥ쥹��<tt>To:</tt>�ޤ���<tt>Cc:</tt>�إå���
-            �ޤޤ�Ƥ���Ȥ��ϡ��᡼��󥰥ꥹ�Ȥ���Υ᡼���������ʤ�
-            �褦�ˤ��뤳�Ȥ��Ǥ��ޤ���
-            <em>�Ϥ�</em>�����֤ȡ���ʣ����᡼���������ޤ���
-            <em>������</em>�����֤ȡ���ʣ����᡼���������ޤ���
-
-            <p>�ꥹ�Ȥ��Ŀ��������⡼�ɤˤʤäƤ����硢
-            �֤������פ����֤� <tt>X-Mailman-Copy: yes</tt> �Ȥ���
-            �إå����դ��褦�ˤʤ�ޤ���
-
-        </td><td bgcolor="#cccccc">
-        <mm-receive-duplicates-button>������<br>
-        <mm-dont-receive-duplicates-button>�Ϥ�<br>
-        <mm-global-nodupes-button><i>��������</i>
-        </td></tr>
-
-    <tr><TD colspan="2">
-        <center><MM-options-Submit-button></center>
-        </td></tr>
-
-</table>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b><mm-list-name> のパスワード</mm-list-name></b>
+</font></td></tr>
+<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="reminder">
+<center>
+<h3>パスワードを忘れたら?</h3>
 </center>
-
+        このボタンをクリックすると、メールでパスワードを送信します。
+        <p><mm-umbrella-notice>
+<center>
+<mm-email-my-pw>
+</mm-email-my-pw></center>
+</mm-umbrella-notice></p></a></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="changepw">
+<center>
+<h3>パスワード変更</h3>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">
+                新パスワード:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">
+                確認用再入力:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
+</tr>
+</table>
+<mm-change-pass-button>
+<p><center><mm-global-pw-changes-button>全部変更
+        </mm-global-pw-changes-button></center>
+</p></mm-change-pass-button></center></a></td></tr></table>
 <p>
-<MM-Form-End>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b><mm-list-name> の会員オプション</mm-list-name></b>
+</font></td></tr>
+</table>
+<p>
+<i><strong>現在の設定がチェックされています。</strong></i>
+<p><em>全部設定</em>のチェックボックスをチェックすると、
+入会している<mm-host>の全メーリングリストでの設定を変更することができます。
+上の<em>他のメーリングリストへの入会状況</em>で、
+自分が入会しているメーリングリストを調べることができます。
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<a name="disable">
+<strong> メール配送 </strong> <br/>
+        メーリングリストに投稿されたメールの配送を開始させるときは、
+	このオプションを<em>有効</em>にします。<em>停止</em>を選ぶと、
+        一時的にメールの配送を止めることができます
+        (例えば短期間の休暇中など)。配送を停止したときは、
+        休暇が終わったら有効に設定し直すことをお忘れなく。
+        </a></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-delivery-enable-button> 有効<br/>
+<mm-delivery-disable-button> 停止<p>
+<mm-global-deliver-button><i>全部設定</i>
+</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+<!--Start-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong> まとめ読みモードに設定</strong> <br/>
+        有効 を選ぶと、投稿のたびにメールを送らず、すべてのメールを
+	毎日1通にまとめてメールが届きます。まとめ読みモードの設定を
+        有効 から 無効 に変更すると、最後に1通のまとめメールが送られます。
+        </td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-undigest-radio-button> 無効<br/>
+<mm-digest-radio-button> 有効
+        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong> まとめ読みメールを受け取る形式。
+	平文またはMIMEの添付ファイル形式。</strong><p>
+        メールソフトによっては MIME形式でまとめ読みメールを読めない
+        ものもあります。一般的にはMIME形式の方が便利ですが、
+        MIME形式のメールが読めない場合は平文を選んでください。
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-mime-digests-button> MIME <br/>
+<mm-plain-digests-button> 平文 <p>
+<mm-global-mime-button><i>全部設定</i>
+</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+<!--End-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong> 自分が投稿したメールを受け取りますか? </strong><p>
+        通常は、自分がリストに投稿したメールのコピーを送信します。
+        自分が投稿したメールのコピーを受け取りたくなければ、
+        このオプションを<em>いいえ</em>に設定してください。
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-receive-own-mail-button> いいえ <br/>
+<mm-receive-own-mail-button> はい
+        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong> リストへの投稿に対する確認通知が必要ですか?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-ack-posts-button> いいえ<br/>
+<mm-ack-posts-button> はい
+        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>このリストからのパスワード通知を受け取りますか?</strong><p>
+        はいを選ぶと、このホストで運用される各メーリングリストから、毎月
+        パスワード備忘通知メールを受け取ることになります。
+        <em>いいえ</em>を選ぶと、このメーリングリストからの備忘通知
+        の送信を止めることができます。全部設定をチェックして
+	<em>いいえ</em>を設定すると、備忘通知メールは完全に送られなくなります。
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-get-password-reminder-button>いいえ<br/>
+<mm-get-password-reminder-button>はい<p>
+<mm-global-remind-button><i>全部設定</i>
+</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong> 会員リストでアドレスを非表示にしますか? </strong><br/>
+        リストの会員名簿には、あなたのメールアドレスが表示されます
+        (ただし迷惑メールのアドレス収集を防ぐために表示をあいまいにしています)。
+        会員名簿に自分のメールアドレスを表示させたくない場合は、
+        <em>隠してください</em>を選びます。
+        </td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-public-subscription-button> 表示します <br/>
+<mm-hide-subscription-button> 隠してください
+        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong> どの言語を使いますか?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-langs>
+</mm-list-langs></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>受信したい話題の分類は?</strong><p>
+	メーリングリストに送り出されるメールに
+	フィルタをかけることができます。
+	受け取りたい話題を選んでください。
+	選択した話題に該当しないメールは送られなくなります。
 
-<MM-Mailman-Footer>
-</body>
+	<p>どの話題にも該当しないメールの配送規則は、下の項目で設定します。
+	何も話題を選択しなければ、すべてのメールを配送します。
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-topics>
+</mm-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>どの話題フィルタにも合致しないメールを受け取りますか?</strong><p>
+	前の設定で話題を選択した場合に、
+	どの話題にも該当しないメールに対するデフォルトの配送規則を決めます。
+	<em>いいえ</em>を選ぶと、どの話題にも該当しないメールは配送しません。
+	<em>はい</em>を選ぶと、どの話題にも該当しないメールを配送します。
+
+	<p>前の設定で何も話題を選択しなかった場合は、
+	このオプションでの設定にかかわらず、
+	すべてのメールを配送します。
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-suppress-nonmatching-topics>いいえ<br/>
+<mm-receive-nonmatching-topics>はい
+        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>重複したメールを受け取らないようにしますか?</strong><p>
+
+            自分自身のアドレスが<tt>To:</tt>または<tt>Cc:</tt>ヘッダに
+            含まれているときは、メーリングリストからのメールを受け取らない
+            ようにすることができます。
+            <em>はい</em>を選ぶと、重複するメールを受け取りません。
+            <em>いいえ</em>を選ぶと、重複するメールも受け取ります。
+
+            <p>リストが個人別配送モードになっている場合、
+            「いいえ」を選ぶと <tt>X-Mailman-Copy: yes</tt> という
+            ヘッダが付くようになります。
+
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-receive-duplicates-button>いいえ<br/>
+<mm-dont-receive-duplicates-button>はい<br/>
+<mm-global-nodupes-button><i>全部設定</i>
+</mm-global-nodupes-button></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-options-submit-button></mm-options-submit-button></center>
+</td></tr>
+</table>
+<p>
+<mm-form-end>
+<mm-mailman-footer>
+</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
 </html>

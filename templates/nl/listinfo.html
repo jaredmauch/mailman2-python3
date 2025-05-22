@@ -1,141 +1,202 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Revision: 7947 $ -->
-<HTML>
-  <HEAD>
-    <TITLE><MM-List-Name> Informatiepagina</TITLE>
-  
-  </HEAD>
-  <BODY BGCOLOR="#ffffff">
 
-    <P>
-      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
-	<TR>
-	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
-	<MM-List-Description></FONT></B>
-	  </TD>
-	</TR>
-	<tr>
-	    <td colspan="2">
-	      <p>&nbsp;
-	    </td>
-	  </tr>
-	  <tr>
-	    <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
-	      <B><FONT COLOR="#000000">Over <MM-List-Name></FONT></B>
-	    </TD>
-            <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
-              <MM-lang-form-start><MM-displang-box> <MM-list-langs>
-              <MM-form-end>
-            </TD>
-	  </TR>
-	    <tr>
-	      <td colspan="2">
-		<P><MM-List-Info></P>
-	  <p>Om alle eerdere berichten op deze lijst te raadplegen, kijk in het <MM-Archive><MM-List-Name> Archief</MM-Archive>.
-	      <MM-Restricted-List-Message>
-	  </p>
-	</TD>
-      </TR>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">Gebruik van <MM-List-Name></FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  Om een bericht naar alle leden van de lijst te sturen, adresseert u het aan:<br>
-	  <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
+<!-- $Revision: 7947 $ -->
+<html>
+<head>
+<title><mm-list-name> Informatiepagina</mm-list-name></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000" size="+1"><mm-list-name> --
+	<mm-list-description></mm-list-description></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p> 
+	    </p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Over <mm-list-name></mm-list-name></font></b>
+</td>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-lang-form-start><mm-displang-box> <mm-list-langs>
+<mm-form-end>
+</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p><mm-list-info></mm-list-info></p>
+<p>Om alle eerdere berichten op deze lijst te raadplegen, kijk in het <mm-archive><mm-list-name> Archief</mm-list-name></mm-archive>.
+	      <mm-restricted-list-message>
+</mm-restricted-list-message></p>
+</td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Gebruik van <mm-list-name></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+	  Om een bericht naar alle leden van de lijst te sturen, adresseert u het aan:<br/>
+<a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.
 	  
 	  <p>Hieronder kunt u uzelf aanmelden als lid van de lijst of uw persoonlijke instellingen wijzigen.
-	    </td>
-      </tr>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">Aanmelden bij <MM-List-Name></FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  <P>
-	    Om u aan te melden bij <MM-List-Name> vult u onderstaand formulier in.
-	  <MM-List-Subscription-Msg>
-	  <ul>
-    <MM-Subscribe-Form-Start>
-	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
-		WIDTH="70%">
-		<TR>
-		  <TD BGCOLOR="#dddddd" WIDTH="55%">Uw e-mailadres:</TD>
-		  <TD WIDTH="33%"><MM-Subscribe-Box>
-	</TD>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <tr>
-        <td bgcolor="#dddddd" width="55%">Uw naam (optioneel):</td>
-        <td width="33%"><mm-fullname-box></td>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <TR>
-	<TD COLSPAN="3"><FONT SIZE=-1>U kunt hieronder een wachtwoord invullen. Dit voorziet
+	    </p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Aanmelden bij <mm-list-name></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p>
+	    Om u aan te melden bij <mm-list-name> vult u onderstaand formulier in.
+	  <mm-list-subscription-msg>
+<ul>
+<mm-subscribe-form-start>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Uw e-mailadres:</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
+</mm-subscribe-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Uw naam (optioneel):</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">U kunt hieronder een wachtwoord invullen. Dit voorziet
 	in een zekere mate van bescherming en moet voorkomen dat anderen kunnen knoeien met
 	uw lidmaatschap. <b>Gebruik niet een eerder door u gebruikt wachtwoord</b>,
 	omdat het af en toe onversleuteld naar u gemaild zal worden.
 	
-            <br><br>Als u ervoor kiest om geen wachtwoord in te vullen, wordt een automatisch 
+            <br/><br/>Als u ervoor kiest om geen wachtwoord in te vullen, wordt een automatisch 
             gegenereerd wachtwoord naar u toegezonden zodra u uw aanmelding hebt
             bevestigd. U kunt steeds om toezending van uw wachtwoord vragen wanneer u uw
             persoonlijke instellingen wilt wijzigen.
-	    <MM-Reminder>
-	    </font>
-	</TD>
-      </TR>  
-      <TR>
-	<TD BGCOLOR="#dddddd">Kies een wachtwoord:</TD>
-	<TD><MM-New-Password-Box></TD>
-	<TD>&nbsp;</TD></TR>
-      <TR> 
-	<TD BGCOLOR="#dddddd">Herhaal het wachtwoord ter bevestiging:</TD>
-	<TD><MM-Confirm-Password></TD>
-	<TD>&nbsp; </TD></TR>
-      <tr>
-        <TD BGCOLOR="#dddddd">Wat is uw voorkeurstaal voor de berichten?</TD> 
-        <TD> <MM-list-langs></TD>
-        <TD>&nbsp; </TD></TR>
-      <mm-digest-question-start>
-      <tr>
-	<td>Wilt u de berichten gebundeld ontvangen in een dagelijkse verzamelmail?
+	    <mm-reminder>
+</mm-reminder></font>
+</td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Kies een wachtwoord:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;"> </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Herhaal het wachtwoord ter bevestiging:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
+<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Wat is uw voorkeurstaal voor de berichten?</td>
+<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td>
+<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
+<mm-digest-question-start>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;">Wilt u de berichten gebundeld ontvangen in een dagelijkse verzamelmail?
 	  </td>
-	<td><MM-Undigest-Radio-Button> Nee
-	    <MM-Digest-Radio-Button>  Ja
-	</TD>
-      </tr>
-      <mm-digest-question-end>
-      <mm-recaptcha-ui>
-      <mm-captcha-ui>
-      <tr>
-	<td colspan="3">
-	  <center><MM-Subscribe-Button></center>
-    </td>
-    </tr>
-    </TABLE>
-    <MM-Form-End>
-    </ul>
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	<a name="Subscribers">
-        <B><FONT COLOR="#000000"><MM-List-Name> leden</FONT></B></a>
-      </TD>
-    </TR>
-    <tr>
-      <TD COLSPAN="2" WIDTH="100%">
-	<MM-Roster-Form-Start>
-	<MM-Roster-Option>
-	    <MM-Form-End>
-	  <p>
-	<MM-Options-Form-Start>
-	<MM-Editing-Options>
-		<MM-Form-End>
-      </td>
-    </tr>
-  </table>
-<MM-Mailman-Footer>
-</BODY>
-</HTML>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> Nee
+	    <mm-digest-radio-button>  Ja
+	</mm-digest-radio-button></mm-undigest-radio-button></td>
+</tr>
+<mm-digest-question-end>
+<mm-recaptcha-ui>
+<mm-captcha-ui>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-subscribe-button></mm-subscribe-button></center>
+</td>
+</tr>
+</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
+<mm-form-end>
+</mm-form-end></mm-subscribe-form-start></ul>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<a name="Subscribers">
+<b><font color="#000000"><mm-list-name> leden</mm-list-name></font></b></a>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-roster-form-start>
+<mm-roster-option>
+<mm-form-end>
+<p>
+<mm-options-form-start>
+<mm-editing-options>
+<mm-form-end>
+</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
+</tr>
+</mm-list-subscription-msg></mm-list-name></p></td></tr></table>
+<mm-mailman-footer>
+</mm-mailman-footer></p></body>
+</html>

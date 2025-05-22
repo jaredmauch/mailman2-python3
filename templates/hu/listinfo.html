@@ -1,143 +1,206 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Revision: 6029 $ -->
-<HTML>
-  <HEAD>
-   <TITLE><MM-List-Name> Inform&aacute;ci&oacute;s lapja</TITLE>
-  </HEAD>
-  <BODY BGCOLOR="#ffffff">
-    <P>
-      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
-	<TR>
-	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
-	<MM-List-Description></FONT></B>
-	  </TD>
-	</TR>
-	<tr>
-	    <td colspan="2">
-	      <p>&nbsp;
-	    </td>
-	  </tr>
-	  <tr>
-	    <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
-	      <B><FONT COLOR="#000000"><MM-List-Name> list&aacute;r&oacute;l</FONT></B>
-	    </TD>
-            <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
-	      <MM-lang-form-start><MM-displang-box> <MM-list-langs>
-	      <MM-form-end>
-	    </TD>
-	  </TR>
-	    <tr>
-	      <td colspan="2">
-		<P><MM-List-Info></P>
-	  <p>Ha a kor&aacute;bbi leveleket, hozz&aacute;sz&oacute;l&aacute;sokat szeretn&eacute;d l&aacute;tni, l&aacute;togasd meg
-	     a(z) <MM-Archive><MM-List-Name> arch&iacute;vumot </MM-Archive>.
-              <MM-Restricted-List-Message>
-	  </p>
-	</TD>
-      </TR>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000"><MM-List-Name> lista haszn&aacute;lata</FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  Ha a list&aacute;ra szeretn&eacute;l &iacute;rni, akkor erre a c&iacute;mre k&uuml;ldd hozz&aacute;sz&oacute;l&aacute;sodat:
-	  <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
 
-	  <p>Itt lejjebb feliratkozhatsz a list&aacute;ra, vagy m&oacute;dos&iacute;thatod
-              a listatags&aacute;gi param&eacute;tereidet.
-	</td>
-      </tr>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">Feliratkoz&aacute;s a(z) <MM-List-Name> list&aacute;ra</FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  <P>
- 	  T&ouml;ltsd ki az al&aacute;bbi &#369;rlapot a(z) <MM-List-Name> list&aacute;ra val&oacute; feliratkoz&aacute;shoz.	    
-	  <MM-List-Subscription-Msg>
-	  <P>Feliratkoz&aacute;s el&#337;tt k&eacute;rlek olvasd el a listaszerver
-            <A HREF="/illik.html">illemtan&aacute;t</A>!
+<!-- $Revision: 6029 $ -->
+<html>
+<head>
+<title><mm-list-name> Információs lapja</mm-list-name></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000" size="+1"><mm-list-name> --
+	<mm-list-description></mm-list-description></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p> 
+	    </p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000"><mm-list-name> listáról</mm-list-name></font></b>
+</td>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-lang-form-start><mm-displang-box> <mm-list-langs>
+<mm-form-end>
+</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p><mm-list-info></mm-list-info></p>
+<p>Ha a korábbi leveleket, hozzászólásokat szeretnéd látni, látogasd meg
+	     a(z) <mm-archive><mm-list-name> archívumot </mm-list-name></mm-archive>.
+              <mm-restricted-list-message>
+</mm-restricted-list-message></p>
+</td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000"><mm-list-name> lista használata</mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+	  Ha a listára szeretnél írni, akkor erre a címre küldd hozzászólásodat:
+	  <a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.
+
+	  <p>Itt lejjebb feliratkozhatsz a listára, vagy módosíthatod
+              a listatagsági paramétereidet.
+	</p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Feliratkozás a(z) <mm-list-name> listára</mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p>
+ 	  Töltsd ki az alábbi űrlapot a(z) <mm-list-name> listára való feliratkozáshoz.	    
+	  <mm-list-subscription-msg>
+<p>Feliratkozás előtt kérlek olvasd el a listaszerver
+            <a href="/illik.html">illemtanát</a>!
 
 	  <ul>
-    <MM-Subscribe-Form-Start>
-	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
-		WIDTH="70%">
-		<TR>
-		  <TD BGCOLOR="#dddddd" WIDTH="55%">E-mail c&iacute;med:</TD>
-		  <TD WIDTH="33%"><MM-Subscribe-Box>
-	</TD>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <TR>
-	<td bgcolor="#dddddd" width="55%">Neved (opcion&aacute;lis):</td>
-        <td width="33%"><mm-fullname-box></td>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <TR>
-	      <TD COLSPAN="3"><FONT SIZE=-1>Meg kell adnod egy jelsz&oacute;t.
-  A jelsz&oacute; csak enyhe biztons&aacute;got ny&uacute;jt, de megel&#337;zheted vele,
-  hogy m&aacute;sok tudtod n&eacute;lk&uuml;l m&oacute;dos&iacute;ts&aacute;k listatags&aacute;gi be&aacute;ll&iacute;t&aacute;saidat!
-  <b>Ne haszn&aacute;lj olyan jelszavakat amiket m&aacute;shol haszn&aacute;lsz</b>,
-  mivel havonta egyszer eml&eacute;keztet&#337;&uuml;l sima sz&ouml;veges form&aacute;ban elk&uuml;ld&eacute;sre fog ker&uuml;lni. 
+<mm-subscribe-form-start>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">E-mail címed:</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
+</mm-subscribe-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Neved (opcionális):</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">Meg kell adnod egy jelszót.
+  A jelszó csak enyhe biztonságot nyújt, de megelőzheted vele,
+  hogy mások tudtod nélkül módosítsák listatagsági beállításaidat!
+  <b>Ne használj olyan jelszavakat amiket máshol használsz</b>,
+  mivel havonta egyszer emlékeztetőül sima szöveges formában elküldésre fog kerülni. 
   
-  <br><br>Ha nem adsz meg jelsz&oacute;t, akkor a Mailman automatikusan l&eacute;trehoz egyet, &eacute;s
-  feliratkoz&aacute;sod meger&#337;s&iacute;t&eacute;se ut&aacute;n elk&uuml;ldi neked. Szem&eacute;lyes be&aacute;ll&iacute;t&aacute;said szerkeszt&eacute;s&eacute;n&eacute;l
-  term&eacute;szetesen b&aacute;rmikor e-mailben kik&eacute;rheted a jelszavadat.
-	    <MM-Reminder>
-	    </font>
-	</TD>
-      </TR>  
-      <TR>
-	<TD BGCOLOR="#dddddd">A jelsz&oacute;:</TD>
-	<TD><MM-New-Password-Box></TD>
-	<TD>&nbsp;</TD></TR>
-      <TR> 
-	<TD BGCOLOR="#dddddd">A jelsz&oacute; m&eacute;g egyszer:</TD>
-	<TD><MM-Confirm-Password></TD>
-	<TD>&nbsp; </TD></TR>
-    <tr>
-      <TD BGCOLOR="#dddddd">Milyen nyelven szeretn&eacute;d a list&aacute;t haszn&aacute;lni?</TD>
-      <TD><MM-list-langs></TD>
-      <TD>&nbsp; </TD></TR>
-	<mm-digest-question-start>
-    <tr>
-	<td>Szeretn&eacute;d a list&aacute;t digest form&aacute;ban kapni, naponta 1-2 lev&eacute;lben?</td>
-	<td><MM-Undigest-Radio-Button> Nem
-	    <MM-Digest-Radio-Button>  Igen
-	</TD>
-      </tr>
-      <tr>
-    <mm-digest-question-end>
-    <mm-recaptcha-ui>
-    <mm-captcha-ui>
-	<td colspan="3">
-	  <center><MM-Subscribe-Button></center>
-    </td>
-    </tr>
-    </TABLE>
-    <MM-Form-End>
-    </ul>
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	<a name="subscribers">
-        <B><FONT COLOR="#000000"><MM-List-Name> lista tagjai</FONT></B></a>
-      </TD>
-    </TR>
-    <tr>
-      <TD COLSPAN="2" WIDTH="100%">
-	<MM-Roster-Form-Start>
-	<MM-Roster-Option>
-	    <MM-Form-End>
-	  <p>
-	<MM-Options-Form-Start>
-	<MM-Editing-Options>
-		<MM-Form-End>
-      </td>
-    </tr>
-  </table>
-<MM-Mailman-Footer>
-</BODY>
-</HTML>
+  <br/><br/>Ha nem adsz meg jelszót, akkor a Mailman automatikusan létrehoz egyet, és
+  feliratkozásod megerősítése után elküldi neked. Személyes beállításaid szerkesztésénél
+  természetesen bármikor e-mailben kikérheted a jelszavadat.
+	    <mm-reminder>
+</mm-reminder></font>
+</td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">A jelszó:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;"> </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">A jelszó még egyszer:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
+<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Milyen nyelven szeretnéd a listát használni?</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-list-langs></mm-list-langs></td>
+<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
+<mm-digest-question-start>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;">Szeretnéd a listát digest formában kapni, naponta 1-2 levélben?</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> Nem
+	    <mm-digest-radio-button>  Igen
+	</mm-digest-radio-button></mm-undigest-radio-button></td>
+</tr>
+<tr>
+<mm-digest-question-end>
+<mm-recaptcha-ui>
+<mm-captcha-ui>
+<td colspan="3">
+<center><mm-subscribe-button></mm-subscribe-button></center>
+</td>
+</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></tr>
+</mm-digest-question-start></table>
+<mm-form-end>
+</mm-form-end></mm-subscribe-form-start></ul>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<a name="subscribers">
+<b><font color="#000000"><mm-list-name> lista tagjai</mm-list-name></font></b></a>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-roster-form-start>
+<mm-roster-option>
+<mm-form-end>
+<p>
+<mm-options-form-start>
+<mm-editing-options>
+<mm-form-end>
+</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
+</tr>
+</p></mm-list-subscription-msg></mm-list-name></p></td></tr></table>
+<mm-mailman-footer>
+</mm-mailman-footer></p></body>
+</html>

@@ -186,10 +186,16 @@ def process_request(doc, cgidata, mlist):
 
     title = _('Mailing list deletion results')
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("List Deletion Results"),
+        border=0,
+        width='100%'
+    )
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
     if not problems:
         table.AddRow([_(f'''You have successfully deleted the mailing list
     <b>{listname}</b>.''')])
@@ -214,10 +220,16 @@ def request_deletion(doc, mlist, errmsg=None):
     title = _('Permanently remove mailing list <em>{realname}</em>')
     doc.SetTitle(_('Permanently remove mailing list {realname}'))
 
-    table = Table(border=0, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("List Deletion Form"),
+        border=0,
+        width='100%'
+    )
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
 
     # Add any error message
     if errmsg:
@@ -243,26 +255,38 @@ def request_deletion(doc, mlist, errmsg=None):
     """)])
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
     form = Form(mlist.GetScriptURL('rmlist'))
-    ftable = Table(border=0, cols='2', width='100%',
-                   cellspacing=3, cellpadding=4)
+    ftable = Table(
+        role="table",
+        aria_label=_("List Deletion Form Fields"),
+        border=0,
+        cols='2',
+        width='100%',
+        cellspacing=3,
+        cellpadding=4
+    )
     
     ftable.AddRow([Label(_('List password:')), PasswordBox('password')])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
-    ftable.AddRow([Label(_('Also delete archives?')),
-                   RadioButtonArray('delarchives', (_('No'), _('Yes')),
-                                    checked=0, values=(0, 1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddRow([Label(_('Delete archives?')),
+                   RadioButtonArray('delarchives',
+                                    (_('No'), _('Yes')),
+                                    checked=0,
+                                    values=(0, 1))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
-    ftable.AddRow([Center(Link(
-        mlist.GetScriptURL('admin'),
-        _('<b>Cancel</b> and return to list administration')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
-
-    ftable.AddRow([Center(SubmitButton('doit', _('Delete this list')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddRow([Center(SubmitButton('doit', _('Delete List')))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
     form.AddItem(ftable)
     table.AddRow([form])
     doc.AddItem(table)

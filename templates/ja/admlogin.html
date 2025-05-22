@@ -1,40 +1,101 @@
 <html>
 <head>
-  <title>%(listname)s %(who)s Ç§¾Ú</title>
+<title>%(listname)s %(who)s èªè¨¼</title>
 <script>function sf(){document.f.adminpw.focus();}</script>
-</head>
-<body bgcolor="#ffffff" onLoad="sf()">
-<FORM METHOD=POST ACTION="%(path)s" name="f">
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff" onload="sf()">
+<form action="%(path)s" method="POST" name="f">
 %(message)s
-  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
-	    Ç§¾Ú</FONT></B>
-      </TD>
-    </TR>
-    <tr>
-      <TD><div ALIGN="Right">¥ê¥¹¥È %(who)s ¥Ñ¥¹¥ï¡¼¥É:</div></TD>
-      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
-    </tr>
-    <tr>
-      <td colspan=2 align=middle><INPUT type="SUBMIT"
-                                        name="admlogin"
-					value="¥í¥°¥¤¥ó...">
-      </td>
-    </tr>
-  </TABLE>
-      <p><strong><em>½ÅÍ×:</em></strong> 
-      ¤³¤³¤«¤éÀè¤Ï¥Ö¥é¥¦¥¶¤Î¥¯¥Ã¥­¡¼¤òÍ­¸ú¤Ë¤·¤Æ¤¯¤À¤µ¤¤¡£
-      ¥¯¥Ã¥­¡¼¤¬Ìµ¸ú¤À¤È´ÉÍıÀßÄê¤òÊÑ¹¹¤Ç¤­¤Ş¤»¤ó¡£
+  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
+<b><font color="#000000" size="+1">%(listname)s %(who)s
+	    èªè¨¼</font></b>
+</td>
+</tr>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">ãƒªã‚¹ãƒˆ %(who)s ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><input name="adminpw" size="30" type="password"/></td>
+</tr>
+<tr>
+<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"><input name="admlogin" type="SUBMIT" value="ãƒ­ã‚°ã‚¤ãƒ³..."/>
+</td>
+</tr>
+</table>
+<p><strong><em>é‡è¦:</em></strong> 
+      ã“ã“ã‹ã‚‰å…ˆã¯ãƒ–ãƒ©ã‚¦ã‚¶ã®ã‚¯ãƒƒã‚­ãƒ¼ã‚’æœ‰åŠ¹ã«ã—ã¦ãã ã•ã„ã€‚
+      ã‚¯ãƒƒã‚­ãƒ¼ãŒç„¡åŠ¹ã ã¨ç®¡ç†è¨­å®šã‚’å¤‰æ›´ã§ãã¾ã›ã‚“ã€‚
 
-      <p>´ÉÍı¥¤¥ó¥¿¡¼¥Õ¥§¡¼¥¹¤Ç¤Î´ÉÍıÁàºî¤ò¤¹¤ë¤¿¤Ó¤ËÇ§¾Ú¤¬Í×µá
-      ¤µ¤ì¤Ê¤¤¤è¤¦¤Ë¡¢¥»¥Ã¥·¥ç¥ó¥¯¥Ã¥­¡¼¤òÈ¯¹Ô¤·¤Ş¤¹¡£
-      ¤³¤Î¥¯¥Ã¥­¡¼¤Ï¥Ö¥é¥¦¥¶¤Î½ªÎ»»ş¤«¡¢ÌÀ¼¨Åª¤Ë<em>¥í¥°¥¢¥¦¥È</em>
-      ¤·¤¿»ş¤Ë¼«Æ°Åª¤Ë¼º¸ú¤·¤Ş¤¹¡£
-      (Ç§¾Ú¤¬´°Î»¤¹¤ë¤È¡¢<em>Â¾¤Î´ÉÍı¹àÌÜ</em>¤Î²¼¤Ë
-      ¥í¥°¥¢¥¦¥È¤Î¥ê¥ó¥¯¤¬É½¼¨¤µ¤ì¤Ş¤¹)¡£
+      <p>ç®¡ç†ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã§ã®ç®¡ç†æ“ä½œã‚’ã™ã‚‹ãŸã³ã«èªè¨¼ãŒè¦æ±‚
+      ã•ã‚Œãªã„ã‚ˆã†ã«ã€ã‚»ãƒƒã‚·ãƒ§ãƒ³ã‚¯ãƒƒã‚­ãƒ¼ã‚’ç™ºè¡Œã—ã¾ã™ã€‚
+      ã“ã®ã‚¯ãƒƒã‚­ãƒ¼ã¯ãƒ–ãƒ©ã‚¦ã‚¶ã®çµ‚äº†æ™‚ã‹ã€æ˜ç¤ºçš„ã«<em>ãƒ­ã‚°ã‚¢ã‚¦ãƒˆ</em>
+      ã—ãŸæ™‚ã«è‡ªå‹•çš„ã«å¤±åŠ¹ã—ã¾ã™ã€‚
+      (èªè¨¼ãŒå®Œäº†ã™ã‚‹ã¨ã€<em>ä»–ã®ç®¡ç†é …ç›®</em>ã®ä¸‹ã«
+      ãƒ­ã‚°ã‚¢ã‚¦ãƒˆã®ãƒªãƒ³ã‚¯ãŒè¡¨ç¤ºã•ã‚Œã¾ã™)ã€‚
 
-</FORM>
+</p></p></form>
 </body>
 </html>

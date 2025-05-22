@@ -1,36 +1,97 @@
 <html>
 <head>
-  <title>%(listname)s %(who)s Authentication</title>
+<title>%(listname)s %(who)s Authentication</title>
 <script>function sf(){document.f.adminpw.focus();}</script>
-</head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
 <body bgcolor="#ffffff" onload="sf()">
-<FORM METHOD=POST ACTION="%(path)s" name="f">
+<form action="%(path)s" method="POST" name="f">
 %(message)s
-  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
-	    认证</FONT></B>
-      </TD>
-    </TR>
-    <tr>
-      <TD><div ALIGN="Right">显示 %(who)s密码:</div></TD>
-      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
-    </tr>
-    <tr>
-      <td colspan=2 align=middle><INPUT type="SUBMIT"
-                                        name="admlogin"
-					value="登录...">
-      </td>
-    </tr>
-  </TABLE>
-      <p><strong><em>重要:</em></strong> 从此时起，您的浏览器必须开启
+  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
+<b><font color="#000000" size="+1">%(listname)s %(who)s
+	    认证</font></b>
+</td>
+</tr>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">显示 %(who)s密码:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><input name="adminpw" size="30" type="password"/></td>
+</tr>
+<tr>
+<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"><input name="admlogin" type="SUBMIT" value="登录..."/>
+</td>
+</tr>
+</table>
+<p><strong><em>重要:</em></strong> 从此时起，您的浏览器必须开启
 	  cookie，否则您所做的所有修改均不会生效。
   
       <p>在Mainman的管理界面中使用了Session cookie, 这样您就无需对每
 	  一个管理操作均进行重新认证。您关闭浏览器时，cookie自动失效；您
 	  也可以通过点击<em>其他管理活动</em>下（在您成功登录后即可看到该
 	  项）的<em>登出</em>链接来使cookie失效。
-</FORM>
+</p></p></form>
 </body>
 </html>

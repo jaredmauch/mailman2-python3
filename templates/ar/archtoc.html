@@ -1,14 +1,78 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html dir="rtl">
-  <HEAD>
-     <title>أرشيفات القائمة %(listname)s</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-     <META NAME="robots" CONTENT="noindex,follow">
+<head>
+<title>أرشيفات القائمة %(listname)s</title>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="noindex,follow" name="robots"/>
      %(meta)s
-  </HEAD>
-  <BODY BGCOLOR="#ffffff">
-     <h1>أرشيفات القائمة %(listname)s</h1>
-     <p>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<h1>أرشيفات القائمة %(listname)s</h1>
+<p>
       يمكنك الحصول على  <a href="%(listinfo)s">معلومات أكثر حول هذه القائمة</a>
       أو يمكنك  <a href="%(fullarch)s">تحميل الأرشيف الخام الكامل</a>
       (%(size)s).
@@ -17,5 +81,5 @@
      %(archive_listing_start)s
      %(archive_listing)s
      %(archive_listing_end)s
-     </BODY>
-     </HTML>
+     </body>
+</html>

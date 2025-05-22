@@ -1,311 +1,343 @@
 <html>
 <head>
-    <link rel="SHORTCUT ICON" href="<mm-favicon>">
-    <title><MM-Presentable-User> i&ccedil;in <MM-List-Name> mesaj listesi &uuml;yelik yapılandırması
-    </title>
-</head>
-<BODY BGCOLOR="#ffffff">
-    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
-        <FONT COLOR="#000000" SIZE=+1>
-        <MM-Presentable-User> i&ccedil;in <MM-List-Name> mesaj listesi &uuml;yelik
-        yapılandırması
-        </FONT></B></TD></TR>
-    </TABLE>
-<p>
-<table width="100%" border="0" cellspacing="5" cellpadding="5">
-    <tr><td>
-        <b><MM-Presentable-User></b> kullanıcısının &uuml;yelik durumu,
-        şifresi ve <MM-List-Name> mesaj listesi i&ccedil;in se&ccedil;enekleri.
-        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
-    </tr><tr>
-        <td colspan="2">
-        <MM-Case-Preserved-User>
-
-        <MM-Disabled-Notice>
-
-        <p><mm-results>
-        </td>
-    </tr>
+<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
+<title><mm-presentable-user> iÃ§in <mm-list-name> mesaj listesi Ã¼yelik yapÃ½landÃ½rmasÃ½
+    </mm-list-name></mm-presentable-user></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
+<font color="#000000" size="+1">
+<mm-presentable-user> iÃ§in <mm-list-name> mesaj listesi Ã¼yelik
+        yapÃ½landÃ½rmasÃ½
+        </mm-list-name></mm-presentable-user></font></b></td></tr>
 </table>
-
-<MM-Form-Start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
-        <FONT COLOR="#000000">
-        <B><MM-List-Name> &uuml;yelik bilgilerinizin değişimi</B>
-        </FONT></TD></TR>
-    <tr><td colspan="2">Mesaj listesine &uuml;ye olduğunuz e-posta adresini, aşağıdaki
-        alanlara yeni bir adres girerek değiştirebilirsiniz. Yeni adrese
-        bir onay mesajı gidecek ve değişiklik, onaylanmadan işleme konulmayacaktır.
-
-        <p>Onay s&uuml;releri yaklaşık <mm-pending-days> i&ccedil;inde biter.
-
-        <p>İsteğe bağlı olarak ger&ccedil;ek adınızı da burada ayarlayabilir veya değiştirebilirsiniz
-        (&ouml;rneğin <em>John Smith</em>).
-
-        <p>&Uuml;yelik değişikliklerinin <mm-host> &uuml;zerinde &uuml;ye olduğunuz t&uuml;m
-        listelerde ge&ccedil;erli olmasını istiyorsanız, <em>Global olarak değiştir</em>
-        onay kutusunu işaretleyin.
-
-        </td></tr>
-    <tr><td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-        <tr><td bgcolor="#dddddd"><div align="right">Yeni adres:</div></td>
-            <td><mm-new-address-box></td>
-            </tr>
-        <tr><td bgcolor="#dddddd"><div align="right">Onay i&ccedil;in
-            tekrar girin:</div></td> 
-            <td><mm-confirm-address-box></td>
-            </tr>
-        </tr></table></center>
-        </td>
-        <td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-            <tr><td bgcolor="#dddddd"><div align="right">İsminiz
-            (isteğe bağlı):</div></td>
-            <td><mm-fullname-box></td>
-            </tr>
-        </table></center>
-        </td>
-        </tr>
-    <tr><td colspan="2"><center><mm-change-address-button>
-        <p><mm-global-change-of-address>Global olarak değiştir</center></td>
-    </tr>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<b><mm-presentable-user></mm-presentable-user></b> kullanÃ½cÃ½sÃ½nÃ½n Ã¼yelik durumu,
+        Ã¾ifresi ve <mm-list-name> mesaj listesi iÃ§in seÃ§enekleri.
+        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
+</tr><tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<mm-case-preserved-user>
+<mm-disabled-notice>
+<p><mm-results>
+</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
+</tr>
 </table>
-
+<mm-form-start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
-    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> Listesinden &Ccedil;ıkış</B></td>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<font color="#000000">
+<b><mm-list-name> Ã¼yelik bilgilerinizin deÃ°iÃ¾imi</mm-list-name></b>
+</font></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">Mesaj listesine Ã¼ye olduÃ°unuz e-posta adresini, aÃ¾aÃ°Ã½daki
+        alanlara yeni bir adres girerek deÃ°iÃ¾tirebilirsiniz. Yeni adrese
+        bir onay mesajÃ½ gidecek ve deÃ°iÃ¾iklik, onaylanmadan iÃ¾leme konulmayacaktÃ½r.
 
-        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Diğer <MM-Host> &uuml;yelikleriniz</B>
-        </FONT></TD></TR>
+        <p>Onay sÃ¼releri yaklaÃ¾Ã½k <mm-pending-days> iÃ§inde biter.
 
-    <tr><td>
-        Onay kutusunu işaretleyip bu d&uuml;ğmeye tıklayarak, bu listedeki
-        &uuml;yeliğinizi bitirebilirsiniz. <strong>Uyarı:</strong>
-        Bu eylem anında ger&ccedil;ekleşecektir!
+        <p>ÃsteÃ°e baÃ°lÃ½ olarak gerÃ§ek adÃ½nÃ½zÃ½ da burada ayarlayabilir veya deÃ°iÃ¾tirebilirsiniz
+        (Ã¶rneÃ°in <em>John Smith</em>).
+
+        <p>Ãœyelik deÃ°iÃ¾ikliklerinin <mm-host> Ã¼zerinde Ã¼ye olduÃ°unuz tÃ¼m
+        listelerde geÃ§erli olmasÃ½nÃ½ istiyorsanÃ½z, <em>Global olarak deÃ°iÃ¾tir</em>
+        onay kutusunu iÃ¾aretleyin.
+
+        </mm-host></p></p></mm-pending-days></p></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Yeni adres:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
+</tr>
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Onay iÃ§in
+            tekrar girin:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
+</tr>
+</table></center></td></tr></table>
+<td><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ãsminiz
+            (isteÃ°e baÃ°lÃ½):</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
+</tr>
+</table></center>
+</td>
+<tr><td colspan="2"><center><mm-change-address-button>
+<p><mm-global-change-of-address>Global olarak deÃ°iÃ¾tir</mm-global-change-of-address></p></mm-change-address-button></center></td>
+</tr>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b><mm-list-name> Listesinden Ã‡Ã½kÃ½Ã¾</mm-list-name></b></font></td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>DiÃ°er <mm-host> Ã¼yelikleriniz</mm-host></b>
+</font></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+        Onay kutusunu iÃ¾aretleyip bu dÃ¼Ã°meye tÃ½klayarak, bu listedeki
+        Ã¼yeliÃ°inizi bitirebilirsiniz. <strong>UyarÃ½:</strong>
+        Bu eylem anÃ½nda gerÃ§ekleÃ¾ecektir!
         <p>
-        <center><MM-Unsubscribe-Button></center></td>
-    <td>
-        <mm-host> &uuml;zerinde &uuml;yesi olduğunuz t&uuml;m diğer mesaj listelerinin
-        bir listesini g&ouml;rebilirsiniz. Bunu, aynı &uuml;yelik se&ccedil;eneklerini
-        diğer listelerde de yapmak istiyorsanız kullanın.
+<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
+<mm-host> Ã¼zerinde Ã¼yesi olduÃ°unuz tÃ¼m diÃ°er mesaj listelerinin
+        bir listesini gÃ¶rebilirsiniz. Bunu, aynÃ½ Ã¼yelik seÃ§eneklerini
+        diÃ°er listelerde de yapmak istiyorsanÃ½z kullanÃ½n.
 
         <p>
-        <center><MM-Other-Subscriptions-Submit></center>
-        </TD></TR>
+<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
+</p></mm-host></td></tr>
 </table>
-
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Your <MM-List-Name> Password</B>
-        </FONT></TD></TR>
-
-    <tr valign="TOP"><td WIDTH="50%">
-        <a name=reminder>
-        <center>
-        <h3>Şifrenizi mi Unuttunuz?</h3>
-        </center>
-        &Uuml;yelik adresinize şifrenizin yollanmasını istiyorsanız bu
-        d&uuml;ğmeye tıklayın.
-        <p><MM-Umbrella-Notice>
-        <center>
-        <MM-Email-My-Pw>
-        </center>
-        </td>
-
-    <td WIDTH="50%">
-        <a name=changepw>
-        <center>
-        <h3>Şifre Değişimi</h3>
-        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
-            <TR><TD BGCOLOR="#dddddd"><div align="right">Yeni
-                şifre:</div></TD>
-                <TD><MM-New-Pass-Box></TD>
-                </TR>
-            <TR>
-                <TD BGCOLOR="#dddddd"><div align="right">Onay i&ccedil;in
-                tekrar yeni şifre:</div></TD>
-                <TD><MM-Confirm-Pass-Box></TD>
-            </TR>
-        </table>
-
-        <MM-Change-Pass-Button>
-        <p><center><mm-global-pw-changes-button>Global olarak değiştir.
-        </center>
-</TABLE>
-
-<p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B><MM-List-Name> &Uuml;yelik Se&ccedil;enekleriniz</B>
-        </FONT></TD></TR>
-</table>
-
-<p>
-<i><strong>Şu andaki değerleriniz se&ccedil;ili olanlardır.</strong></i>
-
-<p>Bazı se&ccedil;eneklerde bir <em>Global olarak ayarla</em> onay kutusu
-olduğuna dikkat edin. Bu kutuyu işaretlemek <mm-host> &uuml;zerindeki
-t&uuml;m mesaj listesi &uuml;yeliklerinizde o se&ccedil;eneğin değiştirilmesine neden olur.
-Yukarıda <em>Diğer &uuml;yeliklerimi listele</em> d&uuml;ğmesine tıklayarak
-&uuml;ye olduğunuz diğer mesaj listelerini g&ouml;rebilirsiniz.
-<p>
-<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
-    <tr><TD BGCOLOR="#cccccc">
-        <a name="disable">
-        <strong>Mesaj g&ouml;nderimi</strong></a><p>
-        Bu se&ccedil;eneği <em>Etkin</em> se&ccedil;erek bu mesaj listesine g&ouml;nderilen
-        mesajların size iletilmesini sağlayabilirsiniz. <em>Devre Dışı</em>
-        se&ccedil;eneğini se&ccedil;erseniz, listeye hala &uuml;ye olursunuz, fakat size
-        listeden bir s&uuml;reliğine mesaj gelmesini durdurabilirsiniz (&ouml;rneğin
-        tatile &ccedil;ıktığınızda). Eğer mesaj g&ouml;nderimini devre dışı bırakırsanız
-        geri geldiğinizde tekrar etkinleştirmeyi unutmayın; kendisi 
-        otomatik olarak etkinleşmeyecektir.
-        </td><td bgcolor="#cccccc">
-        <mm-delivery-enable-button>Etkin<br>
-        <mm-delivery-disable-button>Devre dışı<p>
-        <mm-global-deliver-button><i>Global olarak ayarla</i>
-        </td></tr>
-
-<!--Start-Digests-Delete-->
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Toplu Mesaj Modunu Ayarla</strong><p>
-        Toplu mesaj modunu a&ccedil;arsanız mesajları g&ouml;nderildikleri anda tek tek
-        almak yerine toplu şekilde (genellikle
-        g&uuml;nde bir kez, fakat olasılıkla yoğun listelerde birden &ccedil;ok) alırsınız.
-        Toplu mesaj modu a&ccedil;ık konumundan kapalı konumuna getirilirse
-        son bir toplu mesaj alabilirsiniz.
-        </td><td bgcolor="#cccccc">
-        <MM-Undigest-Radio-Button>A&ccedil;ık<br>
-        <MM-Digest-Radio-Button>Kapalı
-        </td></tr>
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>MIME veya D&uuml;z Yazı Toplu Mesaj Alımı</strong><p>
-        E-posta okuyucunuz MIME toplu mesajları desteklemiyor olabilir.
-        Genelde MIME toplu mesajlar tercih edilir ama bunları okurken
-        sorun yaşıyorsanız d&uuml;z yazı toplu mesajları se&ccedil;in.
-        </td><td bgcolor="#cccccc">
-        <MM-Mime-Digests-Button>MIME<br>
-        <MM-Plain-Digests-Button>D&uuml;z Yazı<p>
-        <mm-global-mime-button><i>Global olarak ayarla</i>
-        </td></tr>
-<!--End-Digests-Delete-->
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Mesaja kendi g&ouml;nderdiğiniz mesajları istiyor musunuz?</strong><p>
-        Genellikle listeye g&ouml;nderdiğiniz t&uuml;m mesajların bir kopyasını
-        alırsınız. Eğer bu kopyayı almak istemiyorsanız, bu se&ccedil;eneği
-        <em>Hayır</em> olarak ayarlayın.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-receive-own-mail-button>Hayır<br>
-        <mm-receive-own-mail-button>Evet
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Listeye mesaj g&ouml;nderdiğinizde bilgi mesajı almak istiyor musunuz?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-ack-posts-button>Hayır<br>
-        <mm-ack-posts-button>Evet
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Bu liste i&ccedil;in şifre hatırlatıcı e-posta almak istiyor musunuz?</strong><p>
-        Ayda bir, bu sunucuda &uuml;ye olduğunuz t&uuml;m listeler i&ccedil;in
-        şifre hatırlatıcı i&ccedil;eren bir e-posta alırsınız. Bunu, bu liste
-        i&ccedil;in, <em>Hayır</em> se&ccedil;eneğini se&ccedil;erek kapatabilirsiniz.
-        &Uuml;ye olduğunuz t&uuml;m listeler i&ccedil;in şifre hatırlatıcıları kapatırsanız
-        size hi&ccedil;bir hatırlatıcı e-posta g&ouml;nderilmeyecektir.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-get-password-reminder-button>Hayır<br>
-        <mm-get-password-reminder-button>Evet<p>
-        <mm-global-remind-button><i>Global olarak ayarla</i>
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>&Uuml;ye listesinde kendinizi gizlemek istiyor musunuz?</strong><p>
-        Birisi liste &uuml;yelerini g&ouml;r&uuml;nt&uuml;lediğinde e-posta adresiniz normalde
-        g&ouml;r&uuml;n&uuml;r (spam toplayıcıları engellemek i&ccedil;in değiştirilmiş bir şekilde).
-        Eğer &uuml;yelik adresinizin bu listede hi&ccedil; g&ouml;r&uuml;nmesini istemiyorsanız,
-        bu se&ccedil;enek i&ccedil;in <em>Evet</em> se&ccedil;in.
-        </td><td bgcolor="#cccccc">
-        <MM-Public-Subscription-Button>Hayır<br>
-        <MM-Hide-Subscription-Button>Evet
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Hangi dili tercih edersiniz?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <MM-list-langs>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Hangi konu kategorilerine &uuml;ye olmak istersiniz?</strong><p>
-                Bir veya birden fazla konu se&ccedil;erek mesaj listesindeki
-                trafiği filtreleyebilirsiniz, b&ouml;ylece mesajların sadece
-                bir kısmını alırsınız. Eğer bir mesaj se&ccedil;tiğiniz konulardan
-                bir ile eşleşirse, o mesajı alırsınız, aksi halde almazsınız.
-
-                <p>Eğer bir mesaj hi&ccedil;bir konuyla eşleşmiyorsa, G&ouml;nderim kuralı
-                aşağıdaki se&ccedil;eneğe uyacaktır. Eğer herhangi bir konu
-                se&ccedil;mezseniz, mesaj listesine g&ouml;nderilen t&uuml;m mesajları
-                alırsınız.
-        </td><td bgcolor="#cccccc">
-        <mm-topics>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Hi&ccedil;bir konu filtresine uymayan mesajları almak istiyor musunuz?</strong><p>
-
-                Bu se&ccedil;enek yukarıda en az bir konuya &uuml;ye olduysanız
-                etkilidir. Hi&ccedil;bir konu filtresine uymayan mesajlar i&ccedil;in
-                varsayılan g&ouml;nderim kuralını tanımlar. Burada <em>Hayır</em>
-                se&ccedil;eneğini se&ccedil;mek, eğer bir mesaj konu filtreleri ile
-                eşleşmiyorsa, o mesajı almayacağınızı g&ouml;sterir, <em>Evet</em>
-                se&ccedil;mek, filtrelerle eşleşmeyen mesajların da size
-                geleceğini g&ouml;sterir.
-
-                <p>Eğer yukarıda herhangi bir konu se&ccedil;mediyseniz,
-                mesaj listesine atılan t&uuml;m mesajları alırsınız.
-        </td><td bgcolor="#cccccc">
-        <mm-suppress-nonmatching-topics>Hayır<br>
-        <mm-receive-nonmatching-topics>Evet
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Mesajların kopyaları engellensin mi?</strong><p>
-
-                Bir liste mesajının <tt>Alıcı:</tt> veya <tt>Cc:</tt>
-                başlıklarında a&ccedil;ık olarak adresiniz varsa, mesaj listesinden
-                mesajın başka bir kopyasını almamayı tercih edebilirsiniz.
-                Mesaj listesinden gelecek kopyaları engellemek i&ccedil;in <em>Evet</em>,
-                kopyaları almak i&ccedil;in <em>Hayır</em> se&ccedil;in.
-
-                <p>Listede &uuml;yeye kişiselleştirilmiş mesajlar etkinse
-                ve kopyaları almayı tercih ederseniz, her kopya bir
-                <tt>X-Mailman-Copy: yes</tt> başlığı i&ccedil;erecektir.
-
-        </td><td bgcolor="#cccccc">
-        <mm-receive-duplicates-button>Hayır<br>
-        <mm-dont-receive-duplicates-button>Evet<p>
-        <mm-global-nodupes-button><i>Global olarak ayarla</i>
-        </td></tr>
-
-    <tr><TD colspan="2">
-        <center><MM-options-Submit-button></center>
-        </td></tr>
-
-</table>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>Your <mm-list-name> Password</mm-list-name></b>
+</font></td></tr>
+<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="reminder">
+<center>
+<h3>Ãifrenizi mi Unuttunuz?</h3>
 </center>
+        Ãœyelik adresinize Ã¾ifrenizin yollanmasÃ½nÃ½ istiyorsanÃ½z bu
+        dÃ¼Ã°meye tÃ½klayÃ½n.
+        <p><mm-umbrella-notice>
+<center>
+<mm-email-my-pw>
+</mm-email-my-pw></center>
+</mm-umbrella-notice></p></a></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="changepw">
+<center>
+<h3>Ãifre DeÃ°iÃ¾imi</h3>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Yeni
+                Ã¾ifre:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Onay iÃ§in
+                tekrar yeni Ã¾ifre:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
+</tr>
+</table>
+<mm-change-pass-button>
+<p><center><mm-global-pw-changes-button>Global olarak deÃ°iÃ¾tir.
+        </mm-global-pw-changes-button></center>
+</p></mm-change-pass-button></center></a></td></tr></table>
 <p>
-<MM-Form-End>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b><mm-list-name> Ãœyelik SeÃ§enekleriniz</mm-list-name></b>
+</font></td></tr>
+</table>
+<p>
+<i><strong>Ãu andaki deÃ°erleriniz seÃ§ili olanlardÃ½r.</strong></i>
+<p>BazÃ½ seÃ§eneklerde bir <em>Global olarak ayarla</em> onay kutusu
+olduÃ°una dikkat edin. Bu kutuyu iÃ¾aretlemek <mm-host> Ã¼zerindeki
+tÃ¼m mesaj listesi Ã¼yeliklerinizde o seÃ§eneÃ°in deÃ°iÃ¾tirilmesine neden olur.
+YukarÃ½da <em>DiÃ°er Ã¼yeliklerimi listele</em> dÃ¼Ã°mesine tÃ½klayarak
+Ã¼ye olduÃ°unuz diÃ°er mesaj listelerini gÃ¶rebilirsiniz.
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<a name="disable">
+<strong>Mesaj gÃ¶nderimi</strong></a><p>
+        Bu seÃ§eneÃ°i <em>Etkin</em> seÃ§erek bu mesaj listesine gÃ¶nderilen
+        mesajlarÃ½n size iletilmesini saÃ°layabilirsiniz. <em>Devre DÃ½Ã¾Ã½</em>
+        seÃ§eneÃ°ini seÃ§erseniz, listeye hala Ã¼ye olursunuz, fakat size
+        listeden bir sÃ¼reliÃ°ine mesaj gelmesini durdurabilirsiniz (Ã¶rneÃ°in
+        tatile Ã§Ã½ktÃ½Ã°Ã½nÃ½zda). EÃ°er mesaj gÃ¶nderimini devre dÃ½Ã¾Ã½ bÃ½rakÃ½rsanÃ½z
+        geri geldiÃ°inizde tekrar etkinleÃ¾tirmeyi unutmayÃ½n; kendisi 
+        otomatik olarak etkinleÃ¾meyecektir.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-delivery-enable-button>Etkin<br/>
+<mm-delivery-disable-button>Devre dÃ½Ã¾Ã½<p>
+<mm-global-deliver-button><i>Global olarak ayarla</i>
+</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+<!--Start-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Toplu Mesaj Modunu Ayarla</strong><p>
+        Toplu mesaj modunu aÃ§arsanÃ½z mesajlarÃ½ gÃ¶nderildikleri anda tek tek
+        almak yerine toplu Ã¾ekilde (genellikle
+        gÃ¼nde bir kez, fakat olasÃ½lÃ½kla yoÃ°un listelerde birden Ã§ok) alÃ½rsÃ½nÃ½z.
+        Toplu mesaj modu aÃ§Ã½k konumundan kapalÃ½ konumuna getirilirse
+        son bir toplu mesaj alabilirsiniz.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-undigest-radio-button>AÃ§Ã½k<br/>
+<mm-digest-radio-button>KapalÃ½
+        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>MIME veya DÃ¼z YazÃ½ Toplu Mesaj AlÃ½mÃ½</strong><p>
+        E-posta okuyucunuz MIME toplu mesajlarÃ½ desteklemiyor olabilir.
+        Genelde MIME toplu mesajlar tercih edilir ama bunlarÃ½ okurken
+        sorun yaÃ¾Ã½yorsanÃ½z dÃ¼z yazÃ½ toplu mesajlarÃ½ seÃ§in.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-mime-digests-button>MIME<br/>
+<mm-plain-digests-button>DÃ¼z YazÃ½<p>
+<mm-global-mime-button><i>Global olarak ayarla</i>
+</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+<!--End-Digests-Delete-->
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Mesaja kendi gÃ¶nderdiÃ°iniz mesajlarÃ½ istiyor musunuz?</strong><p>
+        Genellikle listeye gÃ¶nderdiÃ°iniz tÃ¼m mesajlarÃ½n bir kopyasÃ½nÃ½
+        alÃ½rsÃ½nÃ½z. EÃ°er bu kopyayÃ½ almak istemiyorsanÃ½z, bu seÃ§eneÃ°i
+        <em>HayÃ½r</em> olarak ayarlayÃ½n.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-receive-own-mail-button>HayÃ½r<br/>
+<mm-receive-own-mail-button>Evet
+        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Listeye mesaj gÃ¶nderdiÃ°inizde bilgi mesajÃ½ almak istiyor musunuz?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-ack-posts-button>HayÃ½r<br/>
+<mm-ack-posts-button>Evet
+        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Bu liste iÃ§in Ã¾ifre hatÃ½rlatÃ½cÃ½ e-posta almak istiyor musunuz?</strong><p>
+        Ayda bir, bu sunucuda Ã¼ye olduÃ°unuz tÃ¼m listeler iÃ§in
+        Ã¾ifre hatÃ½rlatÃ½cÃ½ iÃ§eren bir e-posta alÃ½rsÃ½nÃ½z. Bunu, bu liste
+        iÃ§in, <em>HayÃ½r</em> seÃ§eneÃ°ini seÃ§erek kapatabilirsiniz.
+        Ãœye olduÃ°unuz tÃ¼m listeler iÃ§in Ã¾ifre hatÃ½rlatÃ½cÃ½larÃ½ kapatÃ½rsanÃ½z
+        size hiÃ§bir hatÃ½rlatÃ½cÃ½ e-posta gÃ¶nderilmeyecektir.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-get-password-reminder-button>HayÃ½r<br/>
+<mm-get-password-reminder-button>Evet<p>
+<mm-global-remind-button><i>Global olarak ayarla</i>
+</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ãœye listesinde kendinizi gizlemek istiyor musunuz?</strong><p>
+        Birisi liste Ã¼yelerini gÃ¶rÃ¼ntÃ¼lediÃ°inde e-posta adresiniz normalde
+        gÃ¶rÃ¼nÃ¼r (spam toplayÃ½cÃ½larÃ½ engellemek iÃ§in deÃ°iÃ¾tirilmiÃ¾ bir Ã¾ekilde).
+        EÃ°er Ã¼yelik adresinizin bu listede hiÃ§ gÃ¶rÃ¼nmesini istemiyorsanÃ½z,
+        bu seÃ§enek iÃ§in <em>Evet</em> seÃ§in.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-public-subscription-button>HayÃ½r<br/>
+<mm-hide-subscription-button>Evet
+        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Hangi dili tercih edersiniz?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-langs>
+</mm-list-langs></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Hangi konu kategorilerine Ã¼ye olmak istersiniz?</strong><p>
+                Bir veya birden fazla konu seÃ§erek mesaj listesindeki
+                trafiÃ°i filtreleyebilirsiniz, bÃ¶ylece mesajlarÃ½n sadece
+                bir kÃ½smÃ½nÃ½ alÃ½rsÃ½nÃ½z. EÃ°er bir mesaj seÃ§tiÃ°iniz konulardan
+                bir ile eÃ¾leÃ¾irse, o mesajÃ½ alÃ½rsÃ½nÃ½z, aksi halde almazsÃ½nÃ½z.
 
-<MM-Mailman-Footer>
-</body>
+                <p>EÃ°er bir mesaj hiÃ§bir konuyla eÃ¾leÃ¾miyorsa, GÃ¶nderim kuralÃ½
+                aÃ¾aÃ°Ã½daki seÃ§eneÃ°e uyacaktÃ½r. EÃ°er herhangi bir konu
+                seÃ§mezseniz, mesaj listesine gÃ¶nderilen tÃ¼m mesajlarÃ½
+                alÃ½rsÃ½nÃ½z.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-topics>
+</mm-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>HiÃ§bir konu filtresine uymayan mesajlarÃ½ almak istiyor musunuz?</strong><p>
+
+                Bu seÃ§enek yukarÃ½da en az bir konuya Ã¼ye olduysanÃ½z
+                etkilidir. HiÃ§bir konu filtresine uymayan mesajlar iÃ§in
+                varsayÃ½lan gÃ¶nderim kuralÃ½nÃ½ tanÃ½mlar. Burada <em>HayÃ½r</em>
+                seÃ§eneÃ°ini seÃ§mek, eÃ°er bir mesaj konu filtreleri ile
+                eÃ¾leÃ¾miyorsa, o mesajÃ½ almayacaÃ°Ã½nÃ½zÃ½ gÃ¶sterir, <em>Evet</em>
+                seÃ§mek, filtrelerle eÃ¾leÃ¾meyen mesajlarÃ½n da size
+                geleceÃ°ini gÃ¶sterir.
+
+                <p>EÃ°er yukarÃ½da herhangi bir konu seÃ§mediyseniz,
+                mesaj listesine atÃ½lan tÃ¼m mesajlarÃ½ alÃ½rsÃ½nÃ½z.
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-suppress-nonmatching-topics>HayÃ½r<br/>
+<mm-receive-nonmatching-topics>Evet
+        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>MesajlarÃ½n kopyalarÃ½ engellensin mi?</strong><p>
+
+                Bir liste mesajÃ½nÃ½n <tt>AlÃ½cÃ½:</tt> veya <tt>Cc:</tt>
+                baÃ¾lÃ½klarÃ½nda aÃ§Ã½k olarak adresiniz varsa, mesaj listesinden
+                mesajÃ½n baÃ¾ka bir kopyasÃ½nÃ½ almamayÃ½ tercih edebilirsiniz.
+                Mesaj listesinden gelecek kopyalarÃ½ engellemek iÃ§in <em>Evet</em>,
+                kopyalarÃ½ almak iÃ§in <em>HayÃ½r</em> seÃ§in.
+
+                <p>Listede Ã¼yeye kiÃ¾iselleÃ¾tirilmiÃ¾ mesajlar etkinse
+                ve kopyalarÃ½ almayÃ½ tercih ederseniz, her kopya bir
+                <tt>X-Mailman-Copy: yes</tt> baÃ¾lÃ½Ã°Ã½ iÃ§erecektir.
+
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-receive-duplicates-button>HayÃ½r<br/>
+<mm-dont-receive-duplicates-button>Evet<p>
+<mm-global-nodupes-button><i>Global olarak ayarla</i>
+</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-options-submit-button></mm-options-submit-button></center>
+</td></tr>
+</table>
+<p>
+<mm-form-end>
+<mm-mailman-footer>
+</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
 </html>
-

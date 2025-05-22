@@ -298,10 +298,16 @@ def process_request(doc, cgidata):
 
     title = _('Mailing list creation results')
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("List Creation Results"),
+        border=0,
+        width='100%'
+    )
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
     table.AddRow([_(f'''You have successfully created the mailing list
     <b>{listname}</b> and notification has been sent to the list owner
     <b>{owner}</b>.  You can now:''')])
@@ -326,10 +332,15 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Set up the document
     title = _(f"Create a {hostname} Mailing List")
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("List Creation Form"),
+        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
+    )
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
     # Add any error message
     if errmsg:
         table.AddRow([Header(3, Bold(
@@ -358,25 +369,34 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Build the form for the necessary input
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
     form = Form(Utils.ScriptURL('create'))
-    ftable = Table(border=0, cols='2', width='100%',
-                   cellspacing=3, cellpadding=4)
+    ftable = Table(
+        role="table",
+        aria_label=_("List Creation Form Fields"),
+        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
+    )
 
     ftable.AddRow([Center(Italic(_('List Identity')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
 
     listname = cgidata.get('listname', [''])[0]
-    # MAS: Don't websafe twice.  TextBox does it.
     ftable.AddRow([Label(_('Name of list:')),
-                   TextBox('listname', listname)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+                   TextBox('listname', listname, aria_label=_('Name of list'))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     owner = cgidata.get('owner', [''])[0]
-    # MAS: Don't websafe twice.  TextBox does it.
     ftable.AddRow([Label(_('Initial list owner address:')),
-                   TextBox('owner', owner)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+                   TextBox('owner', owner, aria_label=_('Initial list owner address'))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     try:
         autogen = int(cgidata.get('autogen', ['0'])[0])
@@ -385,21 +405,34 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddRow([Label(_('Auto-generate initial list password?')),
                    RadioButtonArray('autogen', (_('No'), _('Yes')),
                                     checked=autogen,
-                                    values=(0, 1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+                                    values=(0, 1),
+                                    aria_label=_('Auto-generate initial list password'))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     safepasswd = Utils.websafe(cgidata.get('password', [''])[0])
     ftable.AddRow([Label(_('Initial list password:')),
                    PasswordBox('password', safepasswd)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     safeconfirm = Utils.websafe(cgidata.get('confirm', [''])[0])
     ftable.AddRow([Label(_('Confirm initial password:')),
                    PasswordBox('confirm', safeconfirm)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     try:
         notify = int(cgidata.get('notify', ['1'])[0])
@@ -411,7 +444,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
     ftable.AddRow([Center(Italic(_('List Characteristics')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
 
     ftable.AddRow([
         Label(_(f"""Should new members be quarantined before they
@@ -420,8 +453,12 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
         RadioButtonArray('moderate', (_('No'), _('Yes')),
                          checked=moderate,
                          values=(0,1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
     # Create the table of initially supported languages, sorted on the long
     # name of the language.
     revmap = {}
@@ -451,22 +488,34 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
                                  [_(Utils.GetLanguageDescr(L)) for L in langs],
                                  checked=checked,
                                  values=langs)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     ftable.AddRow([Label(_('Send "list created" email to list owner?')),
                    RadioButtonArray('notify', (_('No'), _('Yes')),
                                     checked=notify,
                                     values=(0, 1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     ftable.AddRow(['<hr>'])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
     ftable.AddRow([Label(_("List creator's (authentication) password:")),
                    PasswordBox('auth')])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     ftable.AddRow([Center(SubmitButton('doit', _('Create List'))),
                    Center(SubmitButton('clear', _('Clear Form')))])

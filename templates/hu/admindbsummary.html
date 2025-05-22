@@ -1,13 +1,77 @@
-Ezen az oldalon a(z) <a href="%(adminurl)s"><em>%(listname)s</em>
-levelez&#337;list&aacute;hoz</a> tartoz&oacute; beavatkoz&aacute;sra v&aacute;r&oacute; teend&#337;k kivonatolt
-list&aacute;ja tal&aacute;lhat&oacute;.
-El&#337;l a j&oacute;v&aacute;hagy&aacute;sra v&aacute;r&oacute; fel- &eacute;s leiratkoz&aacute;sok, ha vannak,
-majd az enged&eacute;lyez&eacute;sre v&aacute;r&oacute; &uuml;zenetek tal&aacute;lhat&oacute;ak.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Ezen az oldalon a(z) <a href="%(adminurl)s"><em>%(listname)s</em>
+levelezőlistához</a> tartozó beavatkozásra váró teendők kivonatolt
+listája található.
+Elől a jóváhagyásra váró fel- és leiratkozások, ha vannak,
+majd az engedélyezésre váró üzenetek találhatóak.
 
-<p>Mindenegyes k&eacute;relemhez v&aacute;lasszuk ki a megfelel&#337; parancsot,
-majd ezek ut&aacute;n kattintsunk az <b>&Ouml;sszes v&aacute;ltoztat&aacute;s ment&eacute;se</b>
-gombra. B&#337;vebb inform&aacute;ci&oacute;t <a href="%(detailsurl)s">ezen</a> az
-oldalon lehet tal&aacute;lni.
+<p>Mindenegyes kérelemhez válasszuk ki a megfelelő parancsot,
+majd ezek után kattintsunk az <b>Összes változtatás mentése</b>
+gombra. Bővebb információt <a href="%(detailsurl)s">ezen</a> az
+oldalon lehet találni.
 
-<p>Az &ouml;sszes f&uuml;gg&#337;ben l&eacute;v&#337; teend&#337; r&eacute;szletesen <a href="%(viewallurl)s">ezen</a>
-az oldalon &eacute;rhet&#337; el.
+<p>Az összes függőben lévő teendő részletesen <a href="%(viewallurl)s">ezen</a>
+az oldalon érhető el.
+</p></p>

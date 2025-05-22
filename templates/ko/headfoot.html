@@ -1,22 +1,85 @@
-ÀÌ ¹®¼­´Â ¸ŞÀÏ¸µ ¸®½ºÆ®¿¡ ¿¹¾àµÇ¾î ÀÖ´Â Æ¯¼ºÀÇ <b>%(attribute)s</b>
-Çü½ÄÀ» Æ÷ÇÔÇÏ°í ÀÖ½À´Ï´Ù. ´õ ÀÚ¼¼ÇÑ ¼³¸íÀº 
-<a href="https://docs.python.org/3/library/stdtypes.html#string-formatting-operations">PythonÀÇ
-¹®ÀÚ¿­ Çü½Ä ±ÔÄ¢</a>À» º¸½Ã±â ¹Ù¶ø´Ï´Ù. ¸î¸î À¯¿ëÇÑ ¼Ó¼ºÀº ¾Æ·¡¿Í °°½À´Ï´Ù.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>ì´ ë¬¸ì„œëŠ” ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì— ì˜ˆì•½ë˜ì–´ ìˆëŠ” íŠ¹ì„±ì˜ <b>%(attribute)s</b>
+í˜•ì‹ì„ í¬í•¨í•˜ê³  ìˆìŠµë‹ˆë‹¤. ë” ìì„¸í•œ ì„¤ëª…ì€ 
+<a href="https://docs.python.org/3/library/stdtypes.html#string-formatting-operations">Pythonì˜
+ë¬¸ìì—´ í˜•ì‹ ê·œì¹™</a>ì„ ë³´ì‹œê¸° ë°”ëë‹ˆë‹¤. ëª‡ëª‡ ìœ ìš©í•œ ì†ì„±ì€ ì•„ë˜ì™€ ê°™ìŠµë‹ˆë‹¤.
 
 <ul>
-    <li><b>real_name</b> - ¸®½ºÆ®ÀÇ ÀÌ¸§À» ³ªÅ¸³À´Ï´Ù. º¸Åë ´ë¹®ÀÚ·Î
-    ³ªÅ¸³³´Ï´Ù.
+<li><b>real_name</b> - ë¦¬ìŠ¤íŠ¸ì˜ ì´ë¦„ì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤. ë³´í†µ ëŒ€ë¬¸ìë¡œ
+    ë‚˜íƒ€ë‚©ë‹ˆë‹¤.
 
-    <li><b>list_name</b> - ½ÇÁ¦ URL ¿¡¼­ »ç¿ëµÇ´Â ¸®½ºÆ®ÀÇ ÀÌ¸§
+    <li><b>list_name</b> - ì‹¤ì œ URL ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë¦¬ìŠ¤íŠ¸ì˜ ì´ë¦„
 
-    <li><b>host_name</b> - ¸ŞÀÏ¸µ ¸®½ºÆ®°¡ ¿î¿µµÇ´Â È£½ºÆ®ÀÇ ÀÌ¸§
+    <li><b>host_name</b> - ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ê°€ ìš´ì˜ë˜ëŠ” í˜¸ìŠ¤íŠ¸ì˜ ì´ë¦„
 
-    <li><b>web_page_url</b> - Mailman ÀÇ ±âº» URL ÀÔ´Ï´Ù.
-    ÀÌ°ÍÀº ¸ŞÀÏ¸µ ¸®½ºÆ®ÀÇ ¸ñ·ÏÁ¤º¸ ÆäÀÌÁö¸¦ ³ªÅ¸³»´Â
-    <em>listinfo/%(list_name)s</em> ¿Í °°ÀÌ Ã·°¡ µÉ ¼ö ÀÖ½À´Ï´Ù.
+    <li><b>web_page_url</b> - Mailman ì˜ ê¸°ë³¸ URL ì…ë‹ˆë‹¤.
+    ì´ê²ƒì€ ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì˜ ëª©ë¡ì •ë³´ í˜ì´ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ”
+    <em>listinfo/%(list_name)s</em> ì™€ ê°™ì´ ì²¨ê°€ ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 
-    <li><b>description</b> - ¸ŞÀÏ¸µ ¸®½ºÆ®ÀÇ °£·«ÇÑ ¼³¸í
+    <li><b>description</b> - ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì˜ ê°„ëµí•œ ì„¤ëª…
 
-    <li><b>info</b> - ¸ŞÀÏ¸µ ¸®½ºÆ®ÀÇ ÀüÃ¼ ¼³¸í
-     <li><b>cgiext</b> - CGI ½ºÅ©¸³Æ®¸¦ À§ÇÑ È®Àå.
-</ul>
+    <li><b>info</b> - ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ì˜ ì „ì²´ ì„¤ëª…
+     <li><b>cgiext</b> - CGI ìŠ¤í¬ë¦½íŠ¸ë¥¼ ìœ„í•œ í™•ì¥.
+</li></li></li></li></li></li></li></ul>

@@ -1,9 +1,72 @@
-Le richieste amministrative vengono visualizzate in due modalit&agrave;:
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Le richieste amministrative vengono visualizzate in due modalità:
 in una <a href="%(summaryurl)s">pagina riassuntiva</a>, oppure in una
 pagina <em>dettagliata</em>.  La pagina riassuntiva contiene le richieste
 pendenti di iscrizione e di cancellazione e i messaggi in attesa di 
 approvazione raggruppati per indirizzo del mittente.  La pagina
-dettagliata presenta una visualizzazione pi&ugrave; dettagliata di
+dettagliata presenta una visualizzazione più dettagliata di
 ciascun messaggio, compresi tutte le intestazioni i una parte del 
 testo del messaggio. 
 
@@ -11,7 +74,7 @@ testo del messaggio.
 
 <ul> <li><b>Rimando la decisione</b> -- Rimanda la decisione ad un momento
 successivo.  Non viene intrapresa alcuna azione in merito a questa richiesta
-amministrativa pendente, ma per i messaggi in attesa &egrave; comunque
+amministrativa pendente, ma per i messaggi in attesa è comunque
 possibile inoltrarli o conservarli (vedi sotto).
 
 <li><b>Approvo</b> -- Approva il messaggio inviandolo alla lista.  Se si tratta
@@ -26,39 +89,38 @@ casella di testo.
 <li><b>Scarta</b> -- Scarta il messaggio senza inviare alcuna informazione al
 mittente.  Se si tratta di una richiesta di iscrizione o cancellazione, la
 richiesta viene semplicemente scartata senza inviare alcune informazione a chi
-ha presentato la richiesta.  Di solito, questa azione &egrave; riservata ai
-messaggi di spam. </ul>
-
+ha presentato la richiesta.  Di solito, questa azione è riservata ai
+messaggi di spam. </li></li></li></li></ul>
 <p>Per i messaggi mendenti, abilita l'opzione <b>Conserva</b> se desideri
-salvare una copia del messaggio per l'amministratore del sito.  Questa &egrave;
+salvare una copia del messaggio per l'amministratore del sito.  Questa è
 un'opzione utile per i messaggi di abuso che vuoi scartare, ma dei quali vuoi
 tenere una copia per usi futuri.
 
 <p>Abilita l'opzione <b>Inoltra a</b> ed indica l'indirizzo a cui inoltrare i
-messaggi per inviare i messaggi a qualcuno che non &egrave; iscritto alla
+messaggi per inviare i messaggi a qualcuno che non è iscritto alla
 lista.  Se desideri modificare un messaggio prima che sia inviato alla lista
 devi inoltrarlo a te (o ad un altro gestore della lista) e scartare il
 messaggio originale.  Quando ricevi il messaggio apporta le modifiche che
 desideri ed invia di nuovo il messaggio alla lista includendo nella prima riga
 del messaggio il campo <tt>Approved:</tt> con la password della lista.  In
 questo caso, la Netiquette richiede che nel messaggio inviato venga inclusa una
-nota che indica che il testo del messaggio &egrave; stato modificato.
+nota che indica che il testo del messaggio è stato modificato.
 
-<p>Se il mittente del messaggio &egrave; un membro sottoposto 
-a moderazione, &egrave; possibile rimuovere lo stato di 
-moderazione.  Questa opzione &egrave; utile nel caso in 
+<p>Se il mittente del messaggio è un membro sottoposto 
+a moderazione, è possibile rimuovere lo stato di 
+moderazione.  Questa opzione è utile nel caso in 
 cui una lista sia configurata per sottoporre a moderazione tutti 
 i nuovi iscritti alla lista e tu hai deciso che quell'iscritto
-&egrave; una persona di cui ci si pu&ograve; fidare e che 
-pu&ograve; inviare messaggi in lista senza bisogno di approvazione.
+è una persona di cui ci si può fidare e che 
+può inviare messaggi in lista senza bisogno di approvazione.
 
-<p>Se il mittente non &grave; un membro della lista, puoi aggiungere
-il suo indirizzo al <em>filtro mittenti</em>.  Il filtro mittenti &egrave;
+<p>Se il mittente non ` un membro della lista, puoi aggiungere
+il suo indirizzo al <em>filtro mittenti</em>.  Il filtro mittenti è
 descritto nella <a href="%(filterurl)s">pagina dei filtri sul mittente 
-delle opzioni di privacy</a>, e pu&grave; essere una di queste 
+delle opzioni di privacy</a>, e pu` essere una di queste 
 opzioni: <b>Accetta</b>, <b>Sospendi</b>, <b>Rigetta</b> o 
-<b>Scarta</b>.  Questa opzione non &grave; disponibile
-se l'indirizzo del mittente &egrave; gi&agrave; presente in una
+<b>Scarta</b>.  Questa opzione non ` disponibile
+se l'indirizzo del mittente è già presente in una
 delle liste dei filtri di mittenti.
 
 <p>Quando hai finito, clicca sul pulsante <em>Manda tutto</em> che si
@@ -67,3 +129,4 @@ tutte le azioni per le richieste amministrative per le quali hai
 preso una decisione.
 
 <p><a href="%(summaryurl)s">Ritorna alla pagina riassuntiva</a>.
+</p></p></p></p></p></p></p>

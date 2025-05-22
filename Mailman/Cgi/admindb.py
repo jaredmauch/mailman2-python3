@@ -286,11 +286,18 @@ def show_pending_subs(mlist, form):
         return 0
     form.AddItem('<hr>')
     form.AddItem(Center(Header(2, _('Subscription Requests'))))
-    table = Table(border=2)
+    table = Table(
+        role="table",
+        aria_label=_("Pending Subscription Requests"),
+        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
+    )
     table.AddRow([Center(Bold(_('Address/name/time'))),
                   Center(Bold(_('Your decision'))),
                   Center(Bold(_('Reason for refusal')))
                   ])
+    table.AddCellInfo(table.GetCurrentRowIndex(), 0, role="columnheader", scope="col")
+    table.AddCellInfo(table.GetCurrentRowIndex(), 1, role="columnheader", scope="col")
+    table.AddCellInfo(table.GetCurrentRowIndex(), 2, role="columnheader", scope="col")
     # Alphabetical order by email address
     byaddrs = {}
     for id in pendingsubs:
@@ -349,11 +356,18 @@ def show_pending_unsubs(mlist, form):
     pendingunsubs = mlist.GetUnsubscriptionIds()
     if not pendingunsubs:
         return 0
-    table = Table(border=2)
+    table = Table(
+        role="table",
+        aria_label=_("Pending Unsubscription Requests"),
+        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
+    )
     table.AddRow([Center(Bold(_('User address/name'))),
                   Center(Bold(_('Your decision'))),
                   Center(Bold(_('Reason for refusal')))
                   ])
+    table.AddCellInfo(table.GetCurrentRowIndex(), 0, role="columnheader", scope="col")
+    table.AddCellInfo(table.GetCurrentRowIndex(), 1, role="columnheader", scope="col")
+    table.AddCellInfo(table.GetCurrentRowIndex(), 2, role="columnheader", scope="col")
     # Alphabetical order by email address
     byaddrs = {}
     for id in pendingunsubs:
@@ -435,7 +449,11 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                 (ssort == SSENDER, ssort == SSENDERTIME, ssort == STIME))))
     # Add the by-sender overview tables
     admindburl = mlist.GetScriptURL('admindb', absolute=1)
-    table = Table(border=0)
+    table = Table(
+        role="table",
+        aria_label=_("Held Messages Overview"),
+        border=0
+    )
     form.AddItem(table)
     skeys = list(byskey.keys())
     skeys.sort()
@@ -445,19 +463,27 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
         esender = Utils.websafe(sender)
         senderurl = admindburl + '?sender=' + qsender
         # The encompassing sender table
-        stable = Table(border=1)
+        stable = Table(
+            role="table",
+            aria_label=_("Messages from {sender}").format(sender=esender),
+            border=1
+        )
         stable.AddRow([Center(Bold(_('From:')).Format() + esender)])
-        stable.AddCellInfo(stable.GetCurrentRowIndex(), 0, colspan=2)
-        left = Table(border=0)
+        stable.AddCellInfo(stable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        left = Table(
+            role="table",
+            aria_label=_("Actions for messages from {sender}").format(sender=esender),
+            border=0
+        )
         left.AddRow([_('Action to take on all these held messages:')])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         btns = hacky_radio_buttons(
             'senderaction-' + qsender,
             (_('Defer'), _('Accept'), _('Reject'), _('Discard')),
             (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT, mm_cfg.DISCARD),
             (1, 0, 0, 0))
         left.AddRow([btns])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         left.AddRow([
             '<label>' +
             CheckBox('senderpreserve-' + qsender, 1).Format() +
@@ -465,7 +491,7 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             _('Preserve messages for the site administrator') +
             '</label>'
             ])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         left.AddRow([
             '<label>' +
             CheckBox('senderforward-' + qsender, 1).Format() +
@@ -473,12 +499,12 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             _('Forward messages (individually) to:') +
             '</label>'
             ])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         left.AddRow([
             TextBox('senderforwardto-' + qsender,
                     value=mlist.GetOwnerEmail())
             ])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         # If the sender is a member and the message is being held due to a
         # moderation bit, give the admin a chance to clear the member's mod
         # bit.  If this sender is not a member and is not already on one of
@@ -496,7 +522,7 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             else:
                 left.AddRow(
                     [_('<em>The sender is now a member of this list</em>')])
-            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         elif sender not in (mlist.accept_these_nonmembers +
                              mlist.hold_these_nonmembers +
                              mlist.reject_these_nonmembers +
@@ -508,14 +534,14 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                 _(f'Add <b>{esender}</b> to one of these sender filters:') +
                 '</label>'
                 ])
-            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
             btns = hacky_radio_buttons(
                 'senderfilter-' + qsender,
                 (_('Accepts'), _('Holds'), _('Rejects'), _('Discards')),
                 (mm_cfg.ACCEPT, mm_cfg.HOLD, mm_cfg.REJECT, mm_cfg.DISCARD),
                 (0, 0, 0, 1))
             left.AddRow([btns])
-            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
             if sender not in mlist.ban_list:
                 left.AddRow([
                     '<label>' +
@@ -523,14 +549,18 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                     '&nbsp;' +
                     _(f"""Ban <b>{esender}</b> from ever subscribing to this
                     mailing list""") + '</label>'])
-                left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
-        right = Table(border=0)
+                left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        right = Table(
+            role="table",
+            aria_label=_("Actions for messages from {sender}").format(sender=esender),
+            border=0
+        )
         right.AddRow([
             _(f"""Click on the message number to view the individual
             message, or you can """) +
             Link(senderurl, _(f'view all messages from {esender}')).Format()
             ])
-        right.AddCellInfo(right.GetCurrentRowIndex(), 0, colspan=2)
+        right.AddCellInfo(right.GetCurrentRowIndex(), 0, colspan=2, role="cell")
         right.AddRow(['&nbsp;', '&nbsp;'])
         counter = 1
         for ptime, id in byskey[skey]:
@@ -553,7 +583,11 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                 charset = Utils.GetCharSet(mlist.preferred_language)
                 dispsubj = format_subject(subject, charset)
                 
-                t = Table(border=0)
+                t = Table(
+                    role="table",
+                    aria_label=_("Message {counter}").format(counter=counter),
+                    border=0
+                )
                 t.AddRow([Link(admindburl + '?msgid=%d' % id, '[%d]' % counter),
                           Bold(_('Subject:')),
                           Utils.websafe(dispsubj)

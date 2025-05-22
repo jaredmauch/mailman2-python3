@@ -1,147 +1,207 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <!-- $Revision: 6065 $ -->
-<HTML>
-  <HEAD>
-    <TITLE><MM-List-Name> Informacijos puslapis</TITLE>
-  
-  </HEAD>
-  <BODY BGCOLOR="#ffffff">
+<html>
+<head>
+<title><mm-list-name> Informacijos puslapis</mm-list-name></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000" size="+1"><mm-list-name> --
+	<mm-list-description></mm-list-description></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p>Â 
+	    </p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Apie <mm-list-name></mm-list-name></font></b>
+</td>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-lang-form-start><mm-displang-box> <mm-list-langs>
+<mm-form-end>
+</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p><mm-list-info></mm-list-info></p>
+<p> Jei norite perÃ¾iÃ»rÃ«ti anksÃ¨iau siÃ¸stus laiÅ¡kus,
+	      aplankykite forumo <mm-archive><mm-list-name>
+		  Archyvus</mm-list-name></mm-archive>.
+	      <mm-restricted-list-message>
+</mm-restricted-list-message></p>
+</td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Naudojant <mm-list-name></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+	  Jei norite iÅ¡siÃ¸sti laiÅ¡kÃ  visiems forumo dalyvams, iÅ¡siÃ¸skite Ã¾inutÃ¦ adresu
+	  <a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.
 
-    <P>
-      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
-	<TR>
-	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
-	<MM-List-Description></FONT></B>
-	  </TD>
-	</TR>
-	<tr>
-	    <td colspan="2">
-	      <p>&nbsp;
-	    </td>
-	  </tr>
-	  <tr>
-	    <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
-	      <B><FONT COLOR="#000000">Apie <MM-List-Name></FONT></B>
-	    </TD>
-            <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
-              <MM-lang-form-start><MM-displang-box> <MM-list-langs>
-              <MM-form-end>
-            </TD>
-	  </TR>
-	    <tr>
-	      <td colspan="2">
-		<P><MM-List-Info></P>
-	  <p> Jei norite perşiûrëti anksèiau siøstus lai&scaron;kus,
-	      aplankykite forumo <MM-Archive><MM-List-Name>
-		  Archyvus</MM-Archive>.
-	      <MM-Restricted-List-Message>
-	  </p>
-	</TD>
-      </TR>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">Naudojant <MM-List-Name></FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  Jei norite i&scaron;siøsti lai&scaron;kà visiems forumo dalyvams, i&scaron;siøskite şinutæ adresu
-	  <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
-
-	  <p>Toliau galite prisijungti prie forumo arba pakeisti Jûsø nustatymus.
-	</td>
-      </tr>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">Prisijungti prie <MM-List-Name></FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  <P>
-	    Prisijunkite prie <MM-List-Name> uşpildydami &scaron;iuos laukus:
-	  <MM-List-Subscription-Msg>
-	  <ul>
-    <MM-Subscribe-Form-Start>
-	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
-		WIDTH="70%">
-		<TR>
-		  <TD BGCOLOR="#dddddd" WIDTH="55%">Jûsø el.pa&scaron;to adresas:</TD>
-		  <TD WIDTH="33%"><MM-Subscribe-Box>
-	</TD>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <tr>
-        <td bgcolor="#dddddd" width="55%">Jûsø vardas (nebûtina):</td>
-        <td width="33%"><mm-fullname-box></td>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <TR>
-	<TD COLSPAN="3"><FONT SIZE=-1>Èia áveskite slaptaşodá.
-		Èia veikia negrieşta saugumo sistema, jûsø slaptaşodis
-		ateityje gali bûti siunèiamas ne&scaron;ifruotu tekstu,
-		todël nenaudokite slaptaşodşiø, kuriais saugote ypaè
+	  <p>Toliau galite prisijungti prie forumo arba pakeisti JÃ»sÃ¸ nustatymus.
+	</p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">Prisijungti prie <mm-list-name></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p>
+	    Prisijunkite prie <mm-list-name> uÃ¾pildydami Å¡iuos laukus:
+	  <mm-list-subscription-msg>
+<ul>
+<mm-subscribe-form-start>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">JÃ»sÃ¸ el.paÅ¡to adresas:</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
+</mm-subscribe-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%">Â </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">JÃ»sÃ¸ vardas (nebÃ»tina):</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%">Â </td></tr>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">Ãˆia Ã¡veskite slaptaÃ¾odÃ¡.
+		Ãˆia veikia negrieÃ¾ta saugumo sistema, jÃ»sÃ¸ slaptaÃ¾odis
+		ateityje gali bÃ»ti siunÃ¨iamas neÅ¡ifruotu tekstu,
+		todÃ«l nenaudokite slaptaÃ¾odÃ¾iÃ¸, kuriais saugote ypaÃ¨
 		atsakingus duomenis.
 		
-		<br><br>Jei neávesite slaptaşodşio, sistema já sukurs automati&scaron;kai
-		ir i&scaron;siøs Jums kai tik patvirtinsite prisijungimà prie forumo.
+		<br/><br/>Jei neÃ¡vesite slaptaÃ¾odÃ¾io, sistema jÃ¡ sukurs automatiÅ¡kai
+		ir iÅ¡siÃ¸s Jums kai tik patvirtinsite prisijungimÃ  prie forumo.
 		
-		<p>Jei pamir&scaron;ite slaptaşodá, galësi nurodyti sistemai,
-		kad já i&scaron;siøstø Jûsø el.pa&scaron;to adresu.
+		<p>Jei pamirÅ¡ite slaptaÃ¾odÃ¡, galÃ«si nurodyti sistemai,
+		kad jÃ¡ iÅ¡siÃ¸stÃ¸ JÃ»sÃ¸ el.paÅ¡to adresu.
 
-	    <MM-Reminder>
-	    </font>
-	</TD>
-      </TR>  
-      <TR>
-	<TD BGCOLOR="#dddddd">Pasirinkite slaptaşodá:</TD>
-	<TD><MM-New-Password-Box></TD>
-	<TD>&nbsp;</TD></TR>
-      <TR> 
-	<TD BGCOLOR="#dddddd">Pakartokite slaptaşodá:</TD>
-	<TD><MM-Confirm-Password></TD>
-	<TD>&nbsp; </TD></TR>
-      <tr>
-        <TD BGCOLOR="#dddddd">Pasirinkite kalbà?</TD>
-        <TD> <MM-list-langs></TD>
-        <TD>&nbsp; </TD></TR>
-      <mm-digest-question-start>
-      <tr>
-	<td>Ar norite gauti dienos lai&scaron;kø rinkinius?
+	    <mm-reminder>
+</mm-reminder></p></font>
+</td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Pasirinkite slaptaÃ¾odÃ¡:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;">Â </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Pakartokite slaptaÃ¾odÃ¡:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
+<td style="padding: 8px; border: 1px solid #ccc;">Â  </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Pasirinkite kalbÃ ?</td>
+<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td>
+<td style="padding: 8px; border: 1px solid #ccc;">Â  </td></tr>
+<mm-digest-question-start>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;">Ar norite gauti dienos laiÅ¡kÃ¸ rinkinius?
 	  </td>
-	<td><MM-Undigest-Radio-Button> Ne
-	    <MM-Digest-Radio-Button>  Taip
-	</TD>
-      </tr>
-      <mm-digest-question-end>
-      <mm-recaptcha-ui>
-      <mm-captcha-ui>
-      <tr>
-	<td colspan="3">
-	  <center><MM-Subscribe-Button></center>
-    </td>
-    </tr>
-    </TABLE>
-    <MM-Form-End>
-    </ul>
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	<a name="subscribers">
-        <B><FONT COLOR="#000000"><MM-List-Name> Nariai</FONT></B></a>
-      </TD>
-    </TR>
-    <tr>
-      <TD COLSPAN="2" WIDTH="100%">
-	<MM-Roster-Form-Start>
-	<MM-Roster-Option>
-	    <MM-Form-End>
-	  <p>
-	<MM-Options-Form-Start>
-	<MM-Editing-Options>
-		<MM-Form-End>
-      </td>
-    </tr>
-  </table>
-<MM-Mailman-Footer>
-</BODY>
-</HTML>
-
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> Ne
+	    <mm-digest-radio-button>  Taip
+	</mm-digest-radio-button></mm-undigest-radio-button></td>
+</tr>
+<mm-digest-question-end>
+<mm-recaptcha-ui>
+<mm-captcha-ui>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-subscribe-button></mm-subscribe-button></center>
+</td>
+</tr>
+</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
+<mm-form-end>
+</mm-form-end></mm-subscribe-form-start></ul>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<a name="subscribers">
+<b><font color="#000000"><mm-list-name> Nariai</mm-list-name></font></b></a>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-roster-form-start>
+<mm-roster-option>
+<mm-form-end>
+<p>
+<mm-options-form-start>
+<mm-editing-options>
+<mm-form-end>
+</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
+</tr>
+</mm-list-subscription-msg></mm-list-name></p></td></tr></table>
+<mm-mailman-footer>
+</mm-mailman-footer></p></body>
+</html>

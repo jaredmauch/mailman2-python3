@@ -1006,20 +1006,28 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
     # but the user still wants to get that topic message?
     usertopics = mlist.getMemberTopics(user)
     if mlist.topics:
-        table = Table(border="0")
-        for name, pattern, description, emptyflag in mlist.topics:
-            if emptyflag:
-                continue
-            quotedname = urllib.parse.quote_plus(name)
-            details = Link(mlist.GetScriptURL('options') +
-                           '/%s/?VARHELP=%s' % (user, quotedname),
-                           ' (Details)')
-            if name in usertopics:
-                checked = 1
-            else:
-                checked = 0
-            table.AddRow([CheckBox('usertopic', quotedname, checked=checked),
-                          name + details.Format()])
+        table = Table(
+            role="table",
+            aria_label=_("Topic Filter Details"),
+            border=3,
+            width='100%'
+        )
+        table.AddRow([Center(Bold(_('Topic filter details')))])
+        table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
+                          style=f'background-color: {mm_cfg.WEB_SUBHEADER_COLOR}',
+                          role="cell")
+        table.AddRow([Bold(Label(_('Name:'))),
+                      Utils.websafe(name)])
+        table.AddRow([Bold(Label(_('Pattern (as regexp):'))),
+                      '<pre>' + Utils.websafe(OR.join(pattern.splitlines()))
+                       + '</pre>'])
+        table.AddRow([Bold(Label(_('Description:'))),
+                      Utils.websafe(description)])
+        # Make colors look nice
+        for row in range(1, 4):
+            table.AddCellInfo(row, 0,
+                             style=f'background-color: {mm_cfg.WEB_ADMINITEM_COLOR}',
+                             role="cell")
         topicsfield = table.Format()
     else:
         topicsfield = _('<em>No topics defined</em>')
@@ -1056,12 +1064,20 @@ def loginpage(mlist, doc, user, lang):
     # Set up the title
     doc.SetTitle(title)
     # We use a subtable here so we can put a language selection box in
-    table = Table(width='100%', border=0, cellspacing=4, cellpadding=5)
+    table = Table(
+        role="table",
+        aria_label=_("Member Options"),
+        width='100%',
+        border=0,
+        cellspacing=4,
+        cellpadding=5
+    )
     # If only one language is enabled for this mailing list, omit the choice
     # buttons.
     table.AddRow([Center(Header(2, title))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
     if len(mlist.available_languages) > 1:
         langform = Form(actionurl)
         langform.AddItem(SubmitButton('displang-button',
@@ -1075,7 +1091,14 @@ def loginpage(mlist, doc, user, lang):
     # Set up the login page
     form = Form(actionurl)
     form.AddItem(Hidden('language', lang))
-    table = Table(width='100%', border=0, cellspacing=4, cellpadding=5)
+    table = Table(
+        role="table",
+        aria_label=_("Login Form"),
+        width='100%',
+        border=0,
+        cellspacing=4,
+        cellpadding=5
+    )
     table.AddRow([_(f"""In order to change your membership option, you must
     first log in by giving your {extra}membership password in the section
     below.  If you don't remember your membership password, you can have it
@@ -1088,7 +1111,14 @@ def loginpage(mlist, doc, user, lang):
     effect.
     """)])
     # Password and login button
-    ptable = Table(width='50%', border=0, cellspacing=4, cellpadding=5)
+    ptable = Table(
+        role="table",
+        aria_label=_("Password Form"),
+        width='50%',
+        border=0,
+        cellspacing=4,
+        cellpadding=5
+    )
     if user is None:
         ptable.AddRow([Label(_('Email address:')),
                        TextBox('email', size=20)])
@@ -1102,7 +1132,8 @@ def loginpage(mlist, doc, user, lang):
     # Unsubscribe section
     table.AddRow([Center(Header(2, _('Unsubscribe')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
 
     table.AddRow([_(f"""By clicking on the <em>Unsubscribe</em> button, a
     confirmation message will be emailed to you.  This message will have a
@@ -1114,7 +1145,8 @@ def loginpage(mlist, doc, user, lang):
     # Password reminder section
     table.AddRow([Center(Header(2, _('Password reminder')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
 
     table.AddRow([_(f"""By clicking on the <em>Remind</em> button, your
     password will be emailed to you.""")])
@@ -1230,10 +1262,16 @@ def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
         print(doc.Format())
         return
 
-    table = Table(border=3, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("Topic Filter Details"),
+        border=3,
+        width='100%'
+    )
     table.AddRow([Center(Bold(_('Topic filter details')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
-                      bgcolor=mm_cfg.WEB_SUBHEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_SUBHEADER_COLOR}',
+                      role="cell")
     table.AddRow([Bold(Label(_('Name:'))),
                   Utils.websafe(name)])
     table.AddRow([Bold(Label(_('Pattern (as regexp):'))),
@@ -1243,7 +1281,9 @@ def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
                   Utils.websafe(description)])
     # Make colors look nice
     for row in range(1, 4):
-        table.AddCellInfo(row, 0, bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
+        table.AddCellInfo(row, 0,
+                         style=f'background-color: {mm_cfg.WEB_ADMINITEM_COLOR}',
+                         role="cell")
 
     options_page(mlist, doc, user, cpuser, userlang, table.Format())
     print(doc.Format())

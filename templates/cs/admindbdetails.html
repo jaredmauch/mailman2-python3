@@ -1,66 +1,129 @@
-Administrativn&iacute; po�adavky mohou b&yacute;t zobrazeny dv�ma zp�soby. Bu�
-<a href="%(summaryurl)s">hromadn�</a> a nebo <em>detailn�</em>.
-P�i hromadn&eacute;m zobrazen&iacute; jsou v&scaron;echny po�adavky poch&aacute;zej&iacute;c&iacute; od
-stejn&eacute;ho u�ivatele zobrazeny dohromady a m��e o nich b&yacute;t rozhodnuto
-najednou. P�i detailn&iacute;m zobrazen&iacute; je ka�d&yacute; p�&iacute;sp�vek zobrazen
-samostatn� a administr&aacute;tor rozhoduje o ka�d&eacute;m p�&iacute;sp�vku zvl&aacute;&scaron;�.
-Detailn&iacute; zobrazen&iacute; obsahuje nav&iacute;c v&scaron;echny hlavi�ky a �&aacute;st z t�la
-zpr&aacute;vy.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Administrativní po¾adavky mohou být zobrazeny dvìma zpùsoby. Buï
+<a href="%(summaryurl)s">hromadnì</a> a nebo <em>detailnì</em>.
+Pøi hromadném zobrazení jsou všechny po¾adavky pocházející od
+stejného u¾ivatele zobrazeny dohromady a mù¾e o nich být rozhodnuto
+najednou. Pøi detailním zobrazení je ka¾dý pøíspìvek zobrazen
+samostatnì a administrátor rozhoduje o ka¾dém pøíspìvku zvláš».
+Detailní zobrazení obsahuje navíc všechny hlavièky a èást z tìla
+zprávy.
 
-<p>Pro pozastaven&eacute; p�&iacute;sp�vky vyberte jednu z t�chto akc&iacute;:
+<p>Pro pozastavené pøíspìvky vyberte jednu z tìchto akcí:
 <ul>
-<li><b>Ponechat</b> - Nech zpr&aacute;vu �ekat ve front�, nem&aacute; to vliv na
-nastaven&iacute; forwardov&aacute;n&iacute;, to znamen&aacute;, �e zpr&aacute;vu m��ete forwardovat
-a p�itom ponechat ve front�
+<li><b>Ponechat</b> - Nech zprávu èekat ve frontì, nemá to vliv na
+nastavení forwardování, to znamená, ¾e zprávu mù¾ete forwardovat
+a pøitom ponechat ve frontì
 
-<li><b>Akceptovat</b> - Roze&scaron;li zpr&aacute;vu do konference. Pokud se
-nejedn&aacute; o zpr&aacute;vu, ale o po�adavek na p�ihl&aacute;&scaron;en&iacute; &uacute;�astn&iacute;ka, p�ihlas
+<li><b>Akceptovat</b> - Rozešli zprávu do konference. Pokud se
+nejedná o zprávu, ale o po¾adavek na pøihlášení úèastníka, pøihlas
 ho.
 
-<li><b>Zam&iacute;tnout</b> - Vra� zpr&aacute;vu odes&iacute;lateli. M��ete uv&eacute;st i d�vod,
-kter&yacute; bude uveden v zam&iacute;tav&eacute; odpov�di. Zpr&aacute;va bude z fronty
-vymaz&aacute;na. Pokud se jedn&aacute; o po�adavek na p�ihl&aacute;&scaron;en&iacute;, bude zam&iacute;tnut.
+<li><b>Zamítnout</b> - Vra» zprávu odesílateli. Mù¾ete uvést i dùvod,
+který bude uveden v zamítavé odpovìdi. Zpráva bude z fronty
+vymazána. Pokud se jedná o po¾adavek na pøihlášení, bude zamítnut.
 
-<li><b>Zahodit</b> - vhodn&eacute; pro SPAM. Zpr&aacute;va potichu zmiz&iacute;, nikomu se
-nic nepos&iacute;l&aacute;. I kdy� se jedn&aacute; o po�adavek na p�ihl&aacute;&scaron;en&iacute;, nebude se
-pos&iacute;lat �&aacute;dn&eacute; ozn&aacute;men&iacute;.
-</ul>
+<li><b>Zahodit</b> - vhodné pro SPAM. Zpráva potichu zmizí, nikomu se
+nic neposílá. I kdy¾ se jedná o po¾adavek na pøihlášení, nebude se
+posílat ¾ádné oznámení.
+</li></li></li></li></ul>
+<p>Vybráním volby <b>Ponechat</b> mù¾ete napø. ponechat zprávu ve
+frontì pro správce serveru. To vyu¾ijete asi pøedevším u zpráv, které
+nejsou obyèejným spamem, ale vy¾adují další odvetné akce.
 
-<p>Vybr&aacute;n&iacute;m volby <b>Ponechat</b> m��ete nap�. ponechat zpr&aacute;vu ve
-front� pro spr&aacute;vce serveru. To vyu�ijete asi p�edev&scaron;&iacute;m u zpr&aacute;v, kter&eacute;
-nejsou oby�ejn&yacute;m spamem, ale vy�aduj&iacute; dal&scaron;&iacute; odvetn&eacute; akce.
+S pomocí volby<b>Pøeposlat</b> mù¾ete kopii zprávy odeslat na adresu,
+kterou vyplníte do vstupního pole vedle této volby. Pokud potøebujete
+nìjaký pøíspìvek modifikovat, pøed rozesláním u¾ivatelùm, musíte si
+jej pøeposlat na svou adresu a pùvodní zprávu zahodit. Poté co zprávu
+upravíte, musíte ji poslat zpìt do konference, pøípadnì s hlavièkou 
+<tt>Approved:</tt> do které doplníte heslo pro danou
+konferenci. Netiquetta vy¾aduje, abyste v takovém pøípadì do textu
+uvedli upozornìní, ¾e jste zprávu pozmìnili a vysvìtlili, proè jste
+to udìlali.
 
-S pomoc&iacute; volby<b>P�eposlat</b> m��ete kopii zpr&aacute;vy odeslat na adresu,
-kterou vypln&iacute;te do vstupn&iacute;ho pole vedle t&eacute;to volby. Pokud pot�ebujete
-n�jak&yacute; p�&iacute;sp�vek modifikovat, p�ed rozesl&aacute;n&iacute;m u�ivatel�m, mus&iacute;te si
-jej p�eposlat na svou adresu a p�vodn&iacute; zpr&aacute;vu zahodit. Pot&eacute; co zpr&aacute;vu
-uprav&iacute;te, mus&iacute;te ji poslat zp�t do konference, p�&iacute;padn� s hlavi�kou 
-<tt>Approved:</tt> do kter&eacute; dopln&iacute;te heslo pro danou
-konferenci. Netiquetta vy�aduje, abyste v takov&eacute;m p�&iacute;pad� do textu
-uvedli upozorn�n&iacute;, �e jste zpr&aacute;vu pozm�nili a vysv�tlili, pro� jste
-to ud�lali.
+<p>Pokud má pøispìvatel nastaven pøíznak moderovat, co¾ se typicky
+pou¾ívá u nových úèastníkù, kdy se nejdøíve èeká, jakou úroveò budou
+mít jejich pøíspìvky, mù¾ete souèasnì s propuštìním pøíspìvku do
+distribuce tento pøíznak zrušit, tak¾e u¾ivatel bude moci nadále
+pøispívat sám.
 
-<p>Pokud m&aacute; p�isp�vatel nastaven p�&iacute;znak moderovat, co� se typicky
-pou�&iacute;v&aacute; u nov&yacute;ch &uacute;�astn&iacute;k�, kdy se nejd�&iacute;ve �ek&aacute;, jakou &uacute;rove� budou
-m&iacute;t jejich p�&iacute;sp�vky, m��ete sou�asn� s propu&scaron;t�n&iacute;m p�&iacute;sp�vku do
-distribuce tento p�&iacute;znak zru&scaron;it, tak�e u�ivatel bude moci nad&aacute;le
-p�isp&iacute;vat s&aacute;m.
-
-<p>Pokud odes&iacute;latel nen&iacute; &uacute;�astn&iacute;kem konference, m��ete jeho emailovou
-adresu vlo�it do <em>filtru odes&iacute;latel�</em>. Jak tyto filtry funguj&iacute;
-je pops&aacute;no na <a href="%(filterurl)s">str&aacute;nce s konfigurac&iacute; filtrov&aacute;n&iacute;
-</a>. P�&iacute;sp�vky mohou b&yacute;t na z&aacute;klad� filtr� bu� automaticky
-akceptov&aacute;ny, automaticky pozdr�eny do rozhodnut&iacute; moder&aacute;tora,
-automaticky vr&aacute;ceny a nebo automaticky zahozeny (SPAM). Pokud
-odes&iacute;latel je &uacute;�astn&iacute;kem a nebo u� je zaveden ve filtrech, tato volba
+<p>Pokud odesílatel není úèastníkem konference, mù¾ete jeho emailovou
+adresu vlo¾it do <em>filtru odesílatelù</em>. Jak tyto filtry fungují
+je popsáno na <a href="%(filterurl)s">stránce s konfigurací filtrování
+</a>. Pøíspìvky mohou být na základì filtrù buï automaticky
+akceptovány, automaticky pozdr¾eny do rozhodnutí moderátora,
+automaticky vráceny a nebo automaticky zahozeny (SPAM). Pokud
+odesílatel je úèastníkem a nebo u¾ je zaveden ve filtrech, tato volba
 nebude k dispozici.
 
-<p>Pokud jste ji� pro&scaron;li celou str&aacute;nkou klikn�te na jej&iacute;m horn&iacute;m nebo
-spodn&iacute;m okraji na tla�&iacute;tko <em>Potvrdit v&scaron;echny zm�ny</em>. T&iacute;m se 
-p�enesou proveden&eacute; zm�ny do datab&aacute;ze a server podle dan&yacute;ch pokyn� provede
-pot�ebn&eacute; operace. Pokud u n�kter&eacute; polo�ky nevyberete ani jednu volbu,
-polo�ka nebude nijak ovlivn�na a z�stane ulo�ena v datab&aacute;zi. Budete o ni
-moci rozhodnout kdykoliv p�&iacute;&scaron;t�.
+<p>Pokud jste ji¾ prošli celou stránkou kliknìte na jejím horním nebo
+spodním okraji na tlaèítko <em>Potvrdit všechny zmìny</em>. Tím se 
+pøenesou provedené zmìny do databáze a server podle daných pokynù provede
+potøebné operace. Pokud u nìkteré polo¾ky nevyberete ani jednu volbu,
+polo¾ka nebude nijak ovlivnìna a zùstane ulo¾ena v databázi. Budete o ni
+moci rozhodnout kdykoliv pøíštì.
 
 
-<p><a href="%(summaryurl)s">Zp�t na p�ehled �ekaj&iacute;c&iacute;ch po�adavk�</a>.
+<p><a href="%(summaryurl)s">Zpìt na pøehled èekajících po¾adavkù</a>.
+</p></p></p></p></p></p>

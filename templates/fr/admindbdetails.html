@@ -1,63 +1,118 @@
-Les requ&ecirc;tes administratives peuvent &ecirc;tre affich&eacute;es de 
-deux fa&ccedil;ons diff&eacute;rentes, sur une <a
- href="%(summaryurl)s">page r&eacute;sum&eacute;e</a> ou sur une page
- <em>d&eacute;taill&eacute;e</em>. La page r&eacute;sum&eacute;e contient 
-les requ&ecirc;tes en attente, les demandes de r&eacute;siliation d'abonnement 
-ainsi que les soumissions mises en attente d'approbation, group&eacute;es 
-en fonction de l'adresse courriel de l'exp&eacute;diteur. La page d&eacute;taill&eacute;e contient une vue plus d&eacute;taill&eacute;e de chaque message en attente 
-avec tous les en-t&ecirc;tes du message et un extrait de son corps.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Les requêtes administratives peuvent être affichées de 
+deux façons différentes, sur une <a href="%(summaryurl)s">page résumée</a> ou sur une page
+ <em>détaillée</em>. La page résumée contient 
+les requêtes en attente, les demandes de résiliation d'abonnement 
+ainsi que les soumissions mises en attente d'approbation, groupées 
+en fonction de l'adresse courriel de l'expéditeur. La page détaillée contient une vue plus détaillée de chaque message en attente 
+avec tous les en-têtes du message et un extrait de son corps.
 
 <p>Sur toutes les pages, les mesures suivantes sont disponibles:  </p>
- 
 <ul>
-  <li><b>Diff&eacute;rer</b> -- Reporter votre d&eacute;cision jusqu'&agrave; 
-une date ult&eacute;rieure. Dans ce cas rien n'est fait concernant cette requ&ecirc;te administrative en attente, mais vous pourrez tout de m&ecirc;me faire-suivre
+<li><b>Différer</b> -- Reporter votre décision jusqu'à 
+une date ultérieure. Dans ce cas rien n'est fait concernant cette requête administrative en attente, mais vous pourrez tout de même faire-suivre
 ou conserver le message (voir ci-dessous).          </li>
-   <li><b>Approuver</b> -- Approuver le message, en l'envoyant &agrave; la 
-liste. Pour les demandes d'abonnement, approuver les modifications &agrave; 
+<li><b>Approuver</b> -- Approuver le message, en l'envoyant à la 
+liste. Pour les demandes d'abonnement, approuver les modifications à 
 apporter aux options de l'abonnement.          </li>
-   <li><b>Rejeter</b> -- Rejeter le message, en envoyant un avis de rejet 
-&agrave; l'exp&eacute;diteur et en ignorant le message original. Pour les 
-demandes d'abonnements, rejeter les modifications demand&eacute;es. Dans tous
-les cas, vous devrez joindre un motif de rejet dans la zone de texte appropri&eacute;e.</li>
-   <li><b>Ignorer</b> -- Supprimer le message original, sans envoi d'avis de
-rejet. Pour les demandes d'abonnement, ceci ignore tout simplement la requ&ecirc;te 
-sans envoyer un avis &agrave; celui qui l'a &eacute;mise. Ceci est la mesure 
-idoine pour les spam av&eacute;r&eacute;s. </li>
- 
+<li><b>Rejeter</b> -- Rejeter le message, en envoyant un avis de rejet 
+à l'expéditeur et en ignorant le message original. Pour les 
+demandes d'abonnements, rejeter les modifications demandées. Dans tous
+les cas, vous devrez joindre un motif de rejet dans la zone de texte appropriée.</li>
+<li><b>Ignorer</b> -- Supprimer le message original, sans envoi d'avis de
+rejet. Pour les demandes d'abonnement, ceci ignore tout simplement la requête 
+sans envoyer un avis à celui qui l'a émise. Ceci est la mesure 
+idoine pour les spam avérés. </li>
 </ul>
-    
-<p>Pour les messages en attente, activer l'option <b>Pr&eacute;server</b>
-  si vous souhaitez conserver une copie du message &agrave; l'attention de 
+<p>Pour les messages en attente, activer l'option <b>Préserver</b>
+  si vous souhaitez conserver une copie du message à l'attention de 
 l'administrateur du site. Ceci est utile pour les messages abusifs que vous 
 voulez ignorer mais dont vous souhaitez garder une trace pour une analyse 
-ult&eacute;rieure.  </p>
- 
-<p>Activez l'option <b>Faire-suivre &agrave;</b>, et remplissez l'adresse 
-destinataire, si vous souhaitez faire-suivre le message &agrave; quelqu'un
-qui n'est pas abonn&eacute; &agrave; la liste. Pour modifier un message en 
-attente avant qu'il ne soit envoy&eacute; &agrave; la liste, vous devez le 
-faire-suivre &agrave; votre adresse personnelle (ou &agrave; celle du propri&eacute;taire de la liste), puis ignorer le message original. Le message appara&icirc;t 
-alors dans votre bo&icirc;te &agrave; lettre, vous pourrez ainsi effectuer 
-les modifications puis les envoyer &agrave; la liste en ajoutant l'en-t&ecirc;te 
+ultérieure.  </p>
+<p>Activez l'option <b>Faire-suivre à</b>, et remplissez l'adresse 
+destinataire, si vous souhaitez faire-suivre le message à quelqu'un
+qui n'est pas abonné à la liste. Pour modifier un message en 
+attente avant qu'il ne soit envoyé à la liste, vous devez le 
+faire-suivre à votre adresse personnelle (ou à celle du propriétaire de la liste), puis ignorer le message original. Le message apparaît 
+alors dans votre boîte à lettre, vous pourrez ainsi effectuer 
+les modifications puis les envoyer à la liste en ajoutant l'en-tête 
 <tt>Approved:</tt> avec le mot de passe de la liste comme valeur. Pour respecter
-la "netiquette", il est pr&eacute;f&eacute;rable d'ajouter une note dans
-le message final sp&eacute;cifiant que le texte original a &eacute;t&eacute;
-modifi&eacute;.  </p>
- 
-<p>Si l'exp&eacute;diteur est un abonn&eacute; dont les soumissions sont sujettes
-&agrave; approbation, vous pourrez &eacute;ventuellement d&eacute;sactiver 
-cette option. Cela est utile lorsque votre liste est configur&eacute;e de 
-sorte que les nouveaux abonn&eacute;s soient sujets &agrave; approbation et
-vous vous rendez compte que cet abonn&eacute; peut soumettre sans approbation.</p>
- 
-<p>Si l'exp&eacute;diteur n'est pas abonn&eacute; &agrave; la liste, vous 
-pourrez ajouter son adresse courriel dans un <em>filtre exp&eacute;diteur</em>. 
-Les filtres exp&eacute;diteurs sont d&eacute;crits dans <a href="%(filterurl)s">la page de confidentialit&eacute; des filtres exp&eacute;diteurs</a> et peuvent avoir l'une des valeurs suivantes : <b>auto-accept (Accept&eacute;), <b>auto-hold</b> (Attente), <b>auto-reject</b> (Rejet) et <b>auto-discard</b> (Ignor&eacute;). Cette option ne sera pas disponible si l'adresse fait d&eacute;j&agrave; l'objet de filtres exp&eacute;diteurs.</p>
- 
-<p><b>Quand vous en aurez termin&eacute;, cliquez sur le bouton <em>Soumettre 
-toutes les donn&eacute;es</em> en t&ecirc;te ou au bas de la page. Ce bouton soumettra
-toutes les mesures s&eacute;lectionn&eacute;es pour toutes les requ&ecirc;tes
-administratives pour lesquelles vous avez pris une d&eacute;cision.   </b></p>
- 
-<p><a href="%(summaryurl)s">Retourner &agrave; la page r&eacute;sum&eacute;e</a>.
+la "netiquette", il est préférable d'ajouter une note dans
+le message final spécifiant que le texte original a été
+modifié.  </p>
+<p>Si l'expéditeur est un abonné dont les soumissions sont sujettes
+à approbation, vous pourrez éventuellement désactiver 
+cette option. Cela est utile lorsque votre liste est configurée de 
+sorte que les nouveaux abonnés soient sujets à approbation et
+vous vous rendez compte que cet abonné peut soumettre sans approbation.</p>
+<p>Si l'expéditeur n'est pas abonné à la liste, vous 
+pourrez ajouter son adresse courriel dans un <em>filtre expéditeur</em>. 
+Les filtres expéditeurs sont décrits dans <a href="%(filterurl)s">la page de confidentialité des filtres expéditeurs</a> et peuvent avoir l'une des valeurs suivantes : <b>auto-accept (Accepté), <b>auto-hold</b> (Attente), <b>auto-reject</b> (Rejet) et <b>auto-discard</b> (Ignoré). Cette option ne sera pas disponible si l'adresse fait déjà l'objet de filtres expéditeurs.</b></p>
+<p><b>Quand vous en aurez terminé, cliquez sur le bouton <em>Soumettre 
+toutes les données</em> en tête ou au bas de la page. Ce bouton soumettra
+toutes les mesures sélectionnées pour toutes les requêtes
+administratives pour lesquelles vous avez pris une décision.   </b></p>
+<p><a href="%(summaryurl)s">Retourner à la page résumée</a>.
+</p>

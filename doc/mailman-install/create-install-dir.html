@@ -1,53 +1,44 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<link rel="STYLESHEET" href="mailman-install.css" type='text/css' />
-<link rel="first" href="mailman-install.html" title='GNU mailman - installation Manual' />
-<link rel='last' href='about.html' title='About this document...' />
-<link rel='help' href='about.html' title='About this document...' />
-<link rel="prev" href="node4.html" />
-<link rel="parent" href="node3.html" />
-<link rel="next" href="building.html" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name='aesop' content='information' />
+<link href="mailman-install.css" rel="STYLESHEET" type="text/css"/>
+<link href="mailman-install.html" rel="first" title="GNU mailman - installation Manual"/>
+<link href="about.html" rel="last" title="About this document..."/>
+<link href="about.html" rel="help" title="About this document..."/>
+<link href="node4.html" rel="prev"/>
+<link href="node3.html" rel="parent"/>
+<link href="building.html" rel="next"/>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="information" name="aesop"/>
 <title>2.2 Create the installation directory</title>
 </head>
 <body>
 <div class="navigation">
-<div id='top-navigation-panel' xml:id='top-navigation-panel'>
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div id="top-navigation-panel" xml:id="top-navigation-panel">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="2.1 add the group"
-  href="node4.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="2 set up your"
-  href="node3.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="3 build and install"
-  href="building.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - Installation Manual</td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node4.html" rel="prev" title="2.1 add the group"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node3.html" rel="parent" title="2 set up your"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="building.html" rel="next" title="3 build and install"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node4.html">2.1 Add the group</a>
+<a class="sectref" href="node4.html" rel="prev">2.1 Add the group</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="node3.html">2 Set up your</a>
+<a class="sectref" href="node3.html" rel="parent">2 Set up your</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="building.html">3 Build and install</a>
+<a class="sectref" href="building.html" rel="next">3 Build and install</a>
 </div>
-<hr /></div>
+<hr/></div>
 </div>
 <!--End of Navigation Panel-->
-
 <h2><a name="SECTION001220000000000000000"></a><a name="create-install-dir"></a>
-<br>
+<br/>
 2.2 Create the installation directory
 </h2>
 Typically, Mailman is installed into a single directory, which includes both
@@ -58,8 +49,7 @@ available options.
 
 <p>
 The default is to install all of Mailman to
-<span class="file">/usr/local/mailman</span><a name="tex2html2"
-  href="#foot746"><sup>2</sup></a>.  You can change this base installation directory (referred to here
+<span class="file">/usr/local/mailman</span><a href="#foot746" name="tex2html2"><sup>2</sup></a>.  You can change this base installation directory (referred to here
 as <var>$prefix</var>) by specifying the directory with the
 <b class="programopt">--prefix</b> <b class="program">configure</b> option.  If you're upgrading from
 a previous version of Mailman, you may want to use the <b class="programopt">--prefix</b>
@@ -73,12 +63,10 @@ You cannot install Mailman on a filesystem that is mounted with the
 programs for its security.  If this describes your environment, simply install
 Mailman in a location that allows setgid programs.
 </div>
-
 <p>
 Make sure the installation directory is set to group <code>mailman</code> (or
 whatever you're going to specify with <b class="programopt">--with-groupname</b>) and has
-the setgid bit set<a name="tex2html3"
-  href="#foot747"><sup>3</sup></a>.  You probably also want to guarantee that this
+the setgid bit set<a href="#foot747" name="tex2html3"><sup>3</sup></a>.  You probably also want to guarantee that this
 directory is readable and executable by everyone.  For example, these shell
 commands will accomplish this:
 
@@ -88,7 +76,6 @@ commands will accomplish this:
     % chgrp mailman .
     % chmod a+rx,g+ws .
 </pre></div>
-
 <p>
 <div class="warning"><b class="label">Warning:</b>
 
@@ -97,62 +84,49 @@ that the source tarball has been unpacked to and in which you run
 <b class="program">configure</b>, but it can, if you wish, be a subdirectory, e.g.,
 <var>$prefix/src</var>.
 </div>
-
 <p>
 You are now ready to configure and install the Mailman software.
 
 <p>
-<br><hr><h4>Footnotes</h4>
+<br/><hr/><h4>Footnotes</h4>
 <dl>
-<dt><a name="foot746">.../usr/local/mailman</a><A
- href="create-install-dir.html#tex2html2"><sup>2</sup></a></dt>
+<dt><a name="foot746">.../usr/local/mailman</a><a href="create-install-dir.html#tex2html2"><sup>2</sup></a></dt>
 <dd>This is the default for Mailman 2.1.
 Earlier versions of Mailman installed everything under <span class="file">/home/mailman</span> by
 default.
 
 </dd>
-<dt><a name="foot747">... set</a><A
- href="create-install-dir.html#tex2html3"><sup>3</sup></a></dt>
+<dt><a name="foot747">... set</a><a href="create-install-dir.html#tex2html3"><sup>3</sup></a></dt>
 <dd>BSD users should see the <a href="bsd-issues.html#bsd-issues">15.2</a> section
 for additional information.
 
 </dd>
 </dl>
 <div class="navigation">
-<div class='online-navigation'>
-<p></p><hr />
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div class="online-navigation">
+<p></p><hr>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="2.1 add the group"
-  href="node4.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="2 set up your"
-  href="node3.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="3 build and install"
-  href="building.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - Installation Manual</td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node4.html" rel="prev" title="2.1 add the group"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node3.html" rel="parent" title="2 set up your"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="building.html" rel="next" title="3 build and install"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node4.html">2.1 Add the group</a>
+<a class="sectref" href="node4.html" rel="prev">2.1 Add the group</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="node3.html">2 Set up your</a>
+<a class="sectref" href="node3.html" rel="parent">2 Set up your</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="building.html">3 Build and install</a>
+<a class="sectref" href="building.html" rel="next">3 Build and install</a>
 </div>
-</div>
-<hr />
+</hr></div>
+<hr/>
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-
-</body>
+</p></p></p></p></p></p></p></body>
 </html>

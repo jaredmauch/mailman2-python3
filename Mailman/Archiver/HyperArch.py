@@ -840,12 +840,12 @@ class HyperArchive(pipermail.T):
         if os.path.exists(gzfile):
             file = gzfile
             url = arch + '.txt.gz'
-            templ = '<td><A href="%(url)s">[ ' + _('Gzip\'d Text%(sz)s') \
+            templ = '<td role="cell"><a href="%(url)s" role="link">[ ' + _('Gzip\'d Text%(sz)s') \
                     + ']</a></td>'
         elif os.path.exists(txtfile):
             file = txtfile
             url = arch + '.txt'
-            templ = '<td><A href="%(url)s">[ ' + _('Text%(sz)s') + ']</a></td>'
+            templ = '<td role="cell"><a href="%(url)s" role="link">[ ' + _('Text%(sz)s') + ']</a></td>'
         else:
             # neither found?
             file = None
