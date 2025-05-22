@@ -240,7 +240,8 @@ def main():
             'realname': mlist.real_name,
             'message': message
         }
-        output = mlist.ParseTags('private.html', replacements, lang)
+        # Use list's preferred language as fallback before authentication
+        output = mlist.ParseTags('private.html', replacements, mlist.preferred_language)
         print(output)
         return
 
