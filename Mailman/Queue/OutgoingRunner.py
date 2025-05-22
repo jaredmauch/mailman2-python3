@@ -66,6 +66,12 @@ class OutgoingRunner(Runner, BounceMixin):
     MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
     MAX_RETRIES = 5  # Maximum number of retry attempts
     _retry_times = {}  # Track last retry time for each message
+    
+    # Error tracking
+    _error_count = 0
+    _last_error_time = 0
+    _error_window = 300  # 5 minutes window for error counting
+    _max_errors = 10  # Maximum errors before stopping
 
     def __init__(self, slice=None, numslices=1):
         mailman_log('debug', 'OutgoingRunner: Starting initialization')
@@ -79,6 +85,10 @@ class OutgoingRunner(Runner, BounceMixin):
             # Initialize processed messages tracking
             self._processed_messages = set()
             self._last_cleanup = time.time()
+            
+            # Initialize error tracking
+            self._error_count = 0
+            self._last_error_time = 0
             
             # We look this function up only at startup time
             modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
@@ -367,91 +377,98 @@ class OutgoingRunner(Runner, BounceMixin):
         """Process a regular outgoing message."""
         msgid = msg.get('message-id', 'n/a')
         
-        # Get recipient from msgdata or message headers
-        recipient = msgdata.get('recipient')
-        if not recipient:
-            # Try to get recipient from To header
-            to = msg.get('to')
-            if to:
-                # Parse the To header to get the first recipient
-                addrs = email.utils.getaddresses([to])
-                if addrs:
-                    recipient = addrs[0][1]
-            
-        if not recipient:
-            mailman_log('error', 'OutgoingRunner: No recipients found in msgdata for message: %s', msgid)
-            return False
-            
-        # Set the recipient in msgdata for future use
-        msgdata['recipient'] = recipient
-            
-        # For system messages (_nolist=1), we need to handle them differently
-        if msgdata.get('_nolist'):
-            mailman_log('debug', 'OutgoingRunner._process_regular: Processing system message %s', msgid)
-            # System messages should be sent directly via SMTP
-            try:
-                conn = self._get_smtp_connection()
-                if not conn:
-                    mailman_log('error', 'OutgoingRunner._process_regular: Failed to get SMTP connection for message %s', msgid)
-                    return False
-                
-                # Send the message
-                sender = msg.get('from', msgdata.get('original_sender', mm_cfg.MAILMAN_SITE_LIST))
-                if not sender or not '@' in sender:
-                    sender = mm_cfg.MAILMAN_SITE_LIST
-                
-                mailman_log('debug', 'OutgoingRunner._process_regular: Sending system message %s from %s to %s',
-                           msgid, sender, recipient)
-                
-                conn.sendmail(sender, [recipient], str(msg))
-                conn.quit()
-                
-                mailman_log('debug', 'OutgoingRunner._process_regular: Successfully sent system message %s', msgid)
-                return True
-                
-            except Exception as e:
-                mailman_log('error', 'OutgoingRunner._process_regular: SMTP error for system message %s: %s',
-                           msgid, str(e))
-                return False
-        
-        # For regular list messages, use the delivery module
-        mailman_log('debug', 'OutgoingRunner._process_regular: Using delivery module for message %s', msgid)
-        
-        # Log the state before calling the delivery module
-        mailman_log('debug', 'OutgoingRunner._process_regular: Pre-delivery msgdata:\n%s', str(msgdata))
-        
-        # Ensure we have the list members if this is a list message
-        if msgdata.get('tolist') and not msgdata.get('_nolist'):
-            try:
-                # Get all list members
-                members = mlist.getRegularMemberKeys()
-                if members:
-                    msgdata['recips'] = [mlist.getMemberCPAddress(m) for m in members 
-                                       if mlist.getDeliveryStatus(m) == ENABLED]
-                    mailman_log('debug', 'OutgoingRunner._process_regular: Expanded list members for message %s: %s',
-                              msgid, str(msgdata['recips']))
-                else:
-                    mailman_log('error', 'OutgoingRunner._process_regular: No members found for list %s',
-                              mlist.internal_name())
-            except Exception as e:
-                mailman_log('error', 'OutgoingRunner._process_regular: Error getting list members: %s\nTraceback:\n%s',
-                          str(e), traceback.format_exc())
-                # Try to continue with existing recipients if any
-                if not msgdata.get('recips'):
-                    mailman_log('error', 'OutgoingRunner._process_regular: No recipients available for message %s', msgid)
-                    return False
-        
-        # Call the delivery module
         try:
-            self._func(mlist, msg, msgdata)
-            # Log the state after calling the delivery module
-            mailman_log('debug', 'OutgoingRunner._process_regular: Post-delivery msgdata:\n%s', str(msgdata))
-            mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
-            return True
+            # Get recipient from msgdata or message headers
+            recipient = msgdata.get('recipient')
+            if not recipient:
+                # Try to get recipient from To header
+                to = msg.get('to')
+                if to:
+                    # Parse the To header to get the first recipient
+                    addrs = email.utils.getaddresses([to])
+                    if addrs:
+                        recipient = addrs[0][1]
+            
+            if not recipient:
+                mailman_log('error', 'OutgoingRunner: No recipients found in msgdata for message: %s', msgid)
+                return self._handle_error(ValueError('No recipients found'), msg, mlist)
+                
+            # Set the recipient in msgdata for future use
+            msgdata['recipient'] = recipient
+                
+            # For system messages (_nolist=1), we need to handle them differently
+            if msgdata.get('_nolist'):
+                mailman_log('debug', 'OutgoingRunner._process_regular: Processing system message %s', msgid)
+                # System messages should be sent directly via SMTP
+                try:
+                    conn = self._get_smtp_connection()
+                    if not conn:
+                        mailman_log('error', 'OutgoingRunner._process_regular: Failed to get SMTP connection for message %s', msgid)
+                        return self._handle_error(ConnectionError('Failed to get SMTP connection'), msg, mlist)
+                    
+                    # Send the message
+                    sender = msg.get('from', msgdata.get('original_sender', mm_cfg.MAILMAN_SITE_LIST))
+                    if not sender or not '@' in sender:
+                        sender = mm_cfg.MAILMAN_SITE_LIST
+                    
+                    mailman_log('debug', 'OutgoingRunner._process_regular: Sending system message %s from %s to %s',
+                               msgid, sender, recipient)
+                    
+                    conn.sendmail(sender, [recipient], str(msg))
+                    conn.quit()
+                    
+                    mailman_log('debug', 'OutgoingRunner._process_regular: Successfully sent system message %s', msgid)
+                    return True
+                    
+                except Exception as e:
+                    mailman_log('error', 'OutgoingRunner._process_regular: SMTP error for system message %s: %s',
+                               msgid, str(e))
+                    return self._handle_error(e, msg, mlist)
+            
+            # For regular list messages, use the delivery module
+            mailman_log('debug', 'OutgoingRunner._process_regular: Using delivery module for message %s', msgid)
+            
+            # Log the state before calling the delivery module
+            mailman_log('debug', 'OutgoingRunner._process_regular: Pre-delivery msgdata:\n%s', str(msgdata))
+            
+            # Ensure we have the list members if this is a list message
+            if msgdata.get('tolist') and not msgdata.get('_nolist'):
+                try:
+                    # Get all list members
+                    members = mlist.getRegularMemberKeys()
+                    if members:
+                        msgdata['recips'] = [mlist.getMemberCPAddress(m) for m in members 
+                                           if mlist.getDeliveryStatus(m) == ENABLED]
+                        mailman_log('debug', 'OutgoingRunner._process_regular: Expanded list members for message %s: %s',
+                                  msgid, str(msgdata['recips']))
+                    else:
+                        mailman_log('error', 'OutgoingRunner._process_regular: No members found for list %s',
+                                  mlist.internal_name())
+                        return self._handle_error(ValueError('No list members found'), msg, mlist)
+                except Exception as e:
+                    mailman_log('error', 'OutgoingRunner._process_regular: Error getting list members: %s\nTraceback:\n%s',
+                              str(e), traceback.format_exc())
+                    # Try to continue with existing recipients if any
+                    if not msgdata.get('recips'):
+                        mailman_log('error', 'OutgoingRunner._process_regular: No recipients available for message %s', msgid)
+                        return self._handle_error(ValueError('No recipients available'), msg, mlist)
+            
+            # Call the delivery module
+            try:
+                self._func(mlist, msg, msgdata)
+                # Log the state after calling the delivery module
+                mailman_log('debug', 'OutgoingRunner._process_regular: Post-delivery msgdata:\n%s', str(msgdata))
+                mailman_log('debug', 'OutgoingRunner._process_regular: Successfully processed regular message %s', msgid)
+                return True
+            except Exception as e:
+                mailman_log('error', 'OutgoingRunner._process_regular: Error in delivery module: %s\nTraceback:\n%s',
+                           str(e), traceback.format_exc())
+                return self._handle_error(e, msg, mlist)
+                
         except Exception as e:
-            mailman_log('error', 'OutgoingRunner._process_regular: Error in delivery module: %s\nTraceback:\n%s',
+            mailman_log('error', 'OutgoingRunner._process_regular: Unexpected error: %s\nTraceback:\n%s',
                        str(e), traceback.format_exc())
-            return False
+            return self._handle_error(e, msg, mlist)
 
     def _check_retry_delay(self, msgid, filebase):
         """Check if enough time has passed since the last retry attempt."""
@@ -564,3 +581,47 @@ class OutgoingRunner(Runner, BounceMixin):
         except Exception as e:
             mailman_log('error', 'OutgoingRunner._oneloop: Error processing outgoing queue: %s', str(e))
             mailman_log('error', 'OutgoingRunner._oneloop: Traceback: %s', traceback.format_exc())
+
+    def _handle_error(self, exc, msg=None, mlist=None, preserve=True):
+        """Enhanced error handling with circuit breaker and detailed logging."""
+        now = time.time()
+        msgid = msg.get('message-id', 'n/a') if msg else 'n/a'
+        
+        # Log the error with full context
+        mailman_log('error', 'OutgoingRunner: Error processing message %s: %s', msgid, str(exc))
+        mailman_log('error', 'OutgoingRunner: Error type: %s', type(exc).__name__)
+        
+        # Log full traceback
+        s = StringIO()
+        traceback.print_exc(file=s)
+        mailman_log('error', 'OutgoingRunner: Traceback:\n%s', s.getvalue())
+        
+        # Log system state
+        mailman_log('error', 'OutgoingRunner: System state - SMTP host: %s, port: %s, auth: %s',
+                   mm_cfg.SMTPHOST, mm_cfg.SMTPPORT, mm_cfg.SMTP_AUTH)
+        
+        # Circuit breaker logic
+        if now - self._last_error_time < self._error_window:
+            self._error_count += 1
+            if self._error_count >= self._max_errors:
+                mailman_log('error', 'OutgoingRunner: Too many errors (%d) in %d seconds, stopping runner',
+                           self._error_count, self._error_window)
+                # Log stack trace before stopping
+                s = StringIO()
+                traceback.print_stack(file=s)
+                mailman_log('error', 'OutgoingRunner: Stack trace at stop:\n%s', s.getvalue())
+                self.stop()
+        else:
+            self._error_count = 1
+        self._last_error_time = now
+        
+        # Handle message preservation
+        if preserve and msg:
+            try:
+                msgdata = {'whichq': self._switchboard.whichq()}
+                new_filebase = self._shunt.enqueue(msg, msgdata)
+                mailman_log('error', 'OutgoingRunner: Shunted message to: %s', new_filebase)
+            except Exception as e:
+                mailman_log('error', 'OutgoingRunner: Failed to shunt message: %s', str(e))
+                return False
+        return True
