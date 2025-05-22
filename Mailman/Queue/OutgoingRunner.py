@@ -54,6 +54,10 @@ DEAL_WITH_PERMFAILURES_EVERY = 10
 
 class OutgoingRunner(Runner, BounceMixin):
     QDIR = mm_cfg.OUTQUEUE_DIR
+    # Process coordination
+    _pid_file = os.path.join(mm_cfg.LOCK_DIR, 'outgoing.pid')
+    _pid_lock = threading.Lock()
+    
     # Shared processed messages tracking with size limits
     _processed_messages = set()
     _processed_lock = threading.Lock()
@@ -80,6 +84,11 @@ class OutgoingRunner(Runner, BounceMixin):
     def __init__(self, slice=None, numslices=1):
         mailman_log('debug', 'OutgoingRunner: Starting initialization')
         try:
+            # Check if another instance is already running
+            if not self._acquire_pid_lock():
+                mailman_log('error', 'OutgoingRunner: Another instance is already running')
+                raise RuntimeError('Another OutgoingRunner instance is already running')
+                
             Runner.__init__(self, slice, numslices)
             mailman_log('debug', 'OutgoingRunner: Base Runner initialized')
             
@@ -104,6 +113,7 @@ class OutgoingRunner(Runner, BounceMixin):
             except ImportError as e:
                 mailman_log('error', 'OutgoingRunner: Failed to import delivery module %s: %s', modname, str(e))
                 mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+                self._release_pid_lock()
                 raise
                 
             try:
@@ -112,6 +122,7 @@ class OutgoingRunner(Runner, BounceMixin):
             except AttributeError as e:
                 mailman_log('error', 'OutgoingRunner: Failed to get process function from module %s: %s', modname, str(e))
                 mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+                self._release_pid_lock()
                 raise
             
             # This prevents smtp server connection problems from filling up the
@@ -124,7 +135,46 @@ class OutgoingRunner(Runner, BounceMixin):
         except Exception as e:
             mailman_log('error', 'OutgoingRunner: Initialization failed: %s', str(e))
             mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+            self._release_pid_lock()
             raise
+
+    def _acquire_pid_lock(self):
+        """Try to acquire the PID lock file."""
+        try:
+            with self._pid_lock:
+                if os.path.exists(self._pid_file):
+                    # Check if the process is still running
+                    try:
+                        with open(self._pid_file, 'r') as f:
+                            pid = int(f.read().strip())
+                        # Check if process exists
+                        try:
+                            os.kill(pid, 0)
+                            # Process exists, can't acquire lock
+                            return False
+                        except OSError:
+                            # Process doesn't exist, can acquire lock
+                            pass
+                    except (ValueError, IOError):
+                        # Invalid PID file, can acquire lock
+                        pass
+                
+                # Write our PID to the lock file
+                with open(self._pid_file, 'w') as f:
+                    f.write(str(os.getpid()))
+                return True
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner: Error acquiring PID lock: %s', str(e))
+            return False
+
+    def _release_pid_lock(self):
+        """Release the PID lock file."""
+        try:
+            with self._pid_lock:
+                if os.path.exists(self._pid_file):
+                    os.unlink(self._pid_file)
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner: Error releasing PID lock: %s', str(e))
 
     def _unmark_message_processed(self, msgid):
         """Remove a message from the processed messages set."""
@@ -528,6 +578,9 @@ class OutgoingRunner(Runner, BounceMixin):
                 mailman_log('debug', 'OutgoingRunner: Total messages processed: %d', self._total_messages_processed)
         except Exception as e:
             mailman_log('error', 'Cleanup failed: %s', str(e))
+        finally:
+            # Always release the PID lock during cleanup
+            self._release_pid_lock()
         mailman_log('debug', 'OutgoingRunner: Cleanup complete')
 
     _doperiodic = BounceMixin._doperiodic
