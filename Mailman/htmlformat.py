@@ -434,7 +434,10 @@ class Document(Container):
             if mm_cfg.WEB_HEAD_ADD:
                 output.append(mm_cfg.WEB_HEAD_ADD)
             output.append('%s</head>' % tab)
-            output.append('%s<body>' % tab)
+            # Get language direction
+            direction = Utils.GetDirection(self.language)
+            # Add body tag with direction attribute
+            output.append('%s<body dir="%s">' % (tab, direction))
             quals = []
             # Default link colors
             if mm_cfg.WEB_VLINK_COLOR:
@@ -445,10 +448,8 @@ class Document(Container):
                 kws.setdefault('link', mm_cfg.WEB_LINK_COLOR)
             for k, v in list(kws.items()):
                 quals.append('%s="%s"' % (k, v))
-            output.append('%s<body>' % tab)
-            # Language direction
-            direction = Utils.GetDirection(self.language)
-            output.append('dir="%s">' % direction)
+            if quals:
+                output[-1] = output[-1][:-1] + ' ' + ' '.join(quals) + '>'
         # Always do this...
         output.append(Container.Format(self, indent))
         if not self.suppress_head:
