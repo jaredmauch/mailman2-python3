@@ -1124,7 +1124,8 @@ bad regexp in bounce_matching_header line: %s
                    self.real_name, invitee, pattern)
             raise Errors.MembershipIsBanned(pattern)
         userdesc.invitation = self.internal_name()
-        cookie = self.pend_new(Pending.SUBSCRIPTION, userdesc)
+        cookie = self.pend_new(Pending.SUBSCRIPTION,
+                               (userdesc, None))
         requestaddr = self.getListAddress('request')
         confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1), cookie)
         listname = self.real_name
@@ -1172,7 +1173,7 @@ bad regexp in bounce_matching_header line: %s
         if self.subscribe_policy in (2, 3) and not self.HasAutoApprovedSender(email):
             # Pend the subscription
             cookie = self.pend_new(Pending.SUBSCRIPTION,
-                                   userdesc, remote)
+                                   (userdesc, remote))
             confirmurl = '%s/%s' % (self.GetScriptURL('confirm', absolute=1),
                                     cookie)
             lang = userdesc.language

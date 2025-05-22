@@ -505,21 +505,24 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
             
         # Process based on action type
         if action == Pending.SUBSCRIPTION:
+            # Extract userdesc and remote from data
+            userdesc, remote = data
+            
             # Check if already a member
-            if self.isMember(data['email']):
-                raise Errors.MMAlreadyAMember(data['email'])
+            if self.isMember(userdesc.address):
+                raise Errors.MMAlreadyAMember(userdesc.address)
                 
             # Check if banned
-            if self.__mlist.isBanned(data['email']):
-                raise Errors.MembershipIsBanned(data['email'])
+            if self.__mlist.isBanned(userdesc.address):
+                raise Errors.MembershipIsBanned(userdesc.address)
                 
             # Add the member
             self.addNewMember(
-                data['email'],
-                digest=data.get('digest', 0),
-                password=data.get('password', Utils.MakeRandomPassword()),
-                language=data.get('language', self.__mlist.preferred_language),
-                realname=data.get('realname', '')
+                userdesc.address,
+                digest=userdesc.digest,
+                password=userdesc.password,
+                language=userdesc.language,
+                realname=userdesc.fullname
             )
             
         elif action == Pending.UNSUBSCRIPTION:
