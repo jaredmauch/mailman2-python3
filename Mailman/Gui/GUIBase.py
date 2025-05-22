@@ -160,7 +160,7 @@ class GUIBase:
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         for item in self.GetConfigInfo(mlist, category, subcat):
             # Skip descriptions and legacy non-attributes
-            if not type(item) is tuple or len(item) < 5:
+            if not isinstance(item, tuple) or len(item) < 5:
                 continue
             # Unpack the gui item description
             property, wtype, args, deps, desc = item[0:5]
@@ -241,3 +241,9 @@ class GUIBase:
                     """))
                 return fixed
         return val
+
+    def AddItem(self, item):
+        """Add an item to the list of items to be displayed."""
+        if not isinstance(item, tuple) or len(item) < 5:
+            raise ValueError('Item must be a tuple with at least 5 elements')
+        self.items.append(item)

@@ -50,7 +50,7 @@ def HTMLFormatObject(item, indent):
     "Return a presentation of an object, invoking their Format method if any."
     if item is None:
         return ''
-    if type(item) == type(''):
+    if isinstance(item, str):
         return item
     elif not hasattr(item, "Format"):
         return str(item)
@@ -658,7 +658,13 @@ class WidgetArray(object):
         # for CheckedBoxes it is a vector.  Subclasses will assert length.
 
     def ischecked(self, i):
-        raise NotImplemented
+        if isinstance(self.checked, int):
+            return i == self.checked
+        elif isinstance(self.checked, tuple):
+            return i in self.checked
+        elif isinstance(self.checked, list):
+            return i in self.checked
+        return 0
 
     def Format(self, indent=0):
         t = Table(cellspacing=5)

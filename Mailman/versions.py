@@ -346,12 +346,12 @@ def UpdateOldVars(l, stored_state):
     # transfer the list data type for holding members and digest members
     # to the dict data type starting file format version 11
     #
-    if type(l.members) is list:
+    if isinstance(l.members, list):
         members = {}
         for m in l.members:
             members[m] = 1
         l.members = members
-    if type(l.digest_members) is list:
+    if isinstance(l.digest_members, list):
         dmembers = {}
         for dm in l.digest_members:
             dmembers[dm] = 1
@@ -371,7 +371,7 @@ def UpdateOldVars(l, stored_state):
         if k.lower() != k:
             l.members[k.lower()] = Utils.LCDomain(k)
             del l.members[k]
-        elif type(l.members[k]) == str and k == l.members[k].lower():
+        elif isinstance(l.members[k], str) and k == l.members[k].lower():
             # already converted
             pass
         else:
@@ -380,7 +380,7 @@ def UpdateOldVars(l, stored_state):
         if k.lower() != k:
             l.digest_members[k.lower()] = Utils.LCDomain(k)
             del l.digest_members[k]
-        elif type(l.digest_members[k]) == str and \
+        elif isinstance(l.digest_members[k], str) and \
                  k == l.digest_members[k].lower():
             # already converted
             pass

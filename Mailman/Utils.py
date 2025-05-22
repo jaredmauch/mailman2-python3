@@ -228,11 +228,13 @@ def ParseEmail(email):
 
 
 def LCDomain(addr):
-    "returns the address with the domain part lowercased"
-    atind = addr.find('@')
-    if atind == -1: # no domain part
-        return addr
-    return addr[:atind] + '@' + addr[atind+1:].lower()
+    """Convert an email address to lowercase, preserving the domain part."""
+    if isinstance(addr, str):
+        at = addr.find('@')
+        if at == -1:
+            return addr.lower()
+        return addr[:at].lower() + addr[at:]
+    return addr
 
 
 # TBD: what other characters should be disallowed?
