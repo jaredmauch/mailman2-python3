@@ -420,14 +420,31 @@ class Runner:
         """
         pass
 
-    def _snooze(self, secs):
-        """Sleep for the specified number of seconds, but wake up if the
-        stop flag is set.
-
+    def _snooze(self, filecnt):
+        """Sleep for a while, but check for stop flag periodically.
+        
+        Implements exponential backoff when no files are found to process.
+        
         Args:
-            secs: Number of seconds to sleep.
+            filecnt: Number of files processed in the last iteration
         """
-        endtime = time.time() + secs
+        if filecnt > 0:
+            # Reset backoff when files are found
+            self._current_backoff = self.INITIAL_BACKOFF
+            # Only log if we're sleeping for more than 5 seconds
+            if self.SLEEPTIME > 5:
+                syslog('debug', '%s: Sleeping for %d seconds after processing %d files in this iteration', 
+                       self.__class__.__name__, self.SLEEPTIME, filecnt)
+            sleep_time = self.SLEEPTIME
+        else:
+            # No files found, use exponential backoff
+            sleep_time = min(self._current_backoff, self.MAX_BACKOFF)
+            syslog('debug', '%s: No files to process, sleeping for %d seconds', 
+                   self.__class__.__name__, sleep_time)
+            # Double the backoff time for next iteration, up to MAX_BACKOFF
+            self._current_backoff = min(self._current_backoff * 2, self.MAX_BACKOFF)
+            
+        endtime = time.time() + sleep_time
         while time.time() < endtime and not self._stop:
             time.sleep(0.1)
 
