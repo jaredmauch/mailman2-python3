@@ -53,7 +53,7 @@ class Runner:
     _cleanup_interval = 3600  # Cleanup interval in seconds
 
     def __init__(self, slice=None, numslices=1):
-        syslog('debug', 'Runner: Starting initialization')
+        syslog('debug', '%s: Starting initialization', self.__class__.__name__)
         try:
             self._stop = 0
             self._slice = slice
@@ -79,10 +79,10 @@ class Runner:
             self._last_error_time = 0
             self._error_count = 0
             
-            syslog('debug', 'Runner: Initialization complete')
+            syslog('debug', '%s: Initialization complete', self.__class__.__name__)
         except Exception as e:
-            syslog('error', 'Runner: Initialization failed: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
+            syslog('error', '%s: Initialization failed: %s\nTraceback:\n%s',
+                   self.__class__.__name__, str(e), traceback.format_exc())
             raise
 
     def __repr__(self):
@@ -432,15 +432,15 @@ class Runner:
     #
     def _cleanup(self):
         """Clean up resources."""
-        syslog('debug', 'Runner: Starting cleanup')
+        syslog('debug', '%s: Starting cleanup', self.__class__.__name__)
         try:
             self._cleanup_old_messages()
             # Clean up any stale locks
             self._switchboard.cleanup_stale_locks()
         except Exception as e:
-            syslog('error', 'Runner: Cleanup failed: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-        syslog('debug', 'Runner: Cleanup complete')
+            syslog('error', '%s: Cleanup failed: %s\nTraceback:\n%s',
+                   self.__class__.__name__, str(e), traceback.format_exc())
+        syslog('debug', '%s: Cleanup complete', self.__class__.__name__)
 
     def _dispose(self, mlist, msg, msgdata):
         """Dispose of a single message destined for a mailing list.
