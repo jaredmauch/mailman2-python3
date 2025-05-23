@@ -27,6 +27,7 @@ import sys
 from io import StringIO
 import threading
 import email.message
+import fcntl
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -56,7 +57,7 @@ class OutgoingRunner(Runner, BounceMixin):
     QDIR = mm_cfg.OUTQUEUE_DIR
     # Process coordination
     _pid_file = os.path.join(mm_cfg.LOCK_DIR, 'outgoing.pid')
-    _pid_lock = threading.Lock()
+    _pid_lock = None
     _running = False
     
     # Shared processed messages tracking with size limits
@@ -83,7 +84,8 @@ class OutgoingRunner(Runner, BounceMixin):
     _max_errors = 10
 
     def __init__(self, slice=None, numslices=1):
-        mailman_log('debug', 'OutgoingRunner: Starting initialization')
+        """Initialize the outgoing queue runner."""
+        mailman_log('debug', 'OutgoingRunner: Initializing with slice=%s, numslices=%s', slice, numslices)
         try:
             # Check if another instance is already running
             if not self._acquire_pid_lock():
@@ -141,73 +143,69 @@ class OutgoingRunner(Runner, BounceMixin):
             raise
 
     def run(self):
-        """Run the OutgoingRunner main loop."""
-        if not self._running:
-            mailman_log('error', 'OutgoingRunner: Not properly initialized')
-            return
-            
+        """Run the outgoing queue runner."""
         mailman_log('debug', 'OutgoingRunner: Starting main loop')
+        self._running = True
+        
+        # Try to acquire the PID lock
+        if not self._acquire_pid_lock():
+            mailman_log('error', 'OutgoingRunner: Failed to acquire PID lock, exiting')
+            return
+
         try:
-            while self._running and not self._stop:
+            while self._running:
                 try:
                     self._oneloop()
-                    # Sleep briefly to prevent CPU spinning
-                    time.sleep(1)
+                    # Sleep for a bit to avoid CPU spinning
+                    time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
                 except Exception as e:
                     mailman_log('error', 'OutgoingRunner: Error in main loop: %s', str(e))
-                    mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
-                    # Don't exit on error, just continue the loop
-                    time.sleep(5)  # Sleep longer on error
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Fatal error in main loop: %s', str(e))
-            mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+                    mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+                    # Don't exit on error, just log and continue
+                    time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
         finally:
-            self._cleanup()
+            self._running = False
+            self._release_pid_lock()
+            mailman_log('debug', 'OutgoingRunner: Main loop ended')
 
     def stop(self):
-        """Stop the OutgoingRunner."""
-        mailman_log('debug', 'OutgoingRunner: Stopping')
+        """Stop the outgoing queue runner."""
+        mailman_log('debug', 'OutgoingRunner: Stopping runner')
         self._running = False
-        self._stop = True
-        self._cleanup()
+        self._release_pid_lock()
+        Runner._cleanup(self)
+        mailman_log('debug', 'OutgoingRunner: Runner stopped')
 
     def _acquire_pid_lock(self):
         """Try to acquire the PID lock file."""
         try:
-            with self._pid_lock:
-                if os.path.exists(self._pid_file):
-                    # Check if the process is still running
-                    try:
-                        with open(self._pid_file, 'r') as f:
-                            pid = int(f.read().strip())
-                        # Check if process exists
-                        try:
-                            os.kill(pid, 0)
-                            # Process exists, can't acquire lock
-                            return False
-                        except OSError:
-                            # Process doesn't exist, can acquire lock
-                            pass
-                    except (ValueError, IOError):
-                        # Invalid PID file, can acquire lock
-                        pass
-                
-                # Write our PID to the lock file
-                with open(self._pid_file, 'w') as f:
-                    f.write(str(os.getpid()))
-                return True
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Error acquiring PID lock: %s', str(e))
+            self._pid_lock = open(self._pid_file, 'w')
+            fcntl.flock(self._pid_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            # Write our PID to the file
+            self._pid_lock.seek(0)
+            self._pid_lock.write(str(os.getpid()))
+            self._pid_lock.truncate()
+            self._pid_lock.flush()
+            mailman_log('debug', 'OutgoingRunner: Acquired PID lock file %s', self._pid_file)
+            return True
+        except IOError:
+            mailman_log('error', 'OutgoingRunner: Another instance is already running (PID file: %s)', self._pid_file)
+            if self._pid_lock:
+                self._pid_lock.close()
+                self._pid_lock = None
             return False
 
     def _release_pid_lock(self):
         """Release the PID lock file."""
-        try:
-            with self._pid_lock:
-                if os.path.exists(self._pid_file):
-                    os.unlink(self._pid_file)
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Error releasing PID lock: %s', str(e))
+        if self._pid_lock:
+            try:
+                fcntl.flock(self._pid_lock, fcntl.LOCK_UN)
+                self._pid_lock.close()
+                os.unlink(self._pid_file)
+                mailman_log('debug', 'OutgoingRunner: Released PID lock file %s', self._pid_file)
+            except (IOError, OSError) as e:
+                mailman_log('error', 'OutgoingRunner: Error releasing PID lock: %s', str(e))
+            self._pid_lock = None
 
     def _unmark_message_processed(self, msgid):
         """Remove a message from the processed messages set."""
@@ -599,88 +597,68 @@ class OutgoingRunner(Runner, BounceMixin):
             return False
 
     def _cleanup(self):
-        """Clean up resources."""
-        if not self._running:
-            return
-            
+        """Clean up the outgoing queue runner."""
         mailman_log('debug', 'OutgoingRunner: Starting cleanup')
         try:
-            BounceMixin._cleanup(self)
-            Runner._cleanup(self)
-            self._cleanup_old_messages()
-            self._cleanup_resources(None, {})
             # Log total messages processed
             with self._total_messages_lock:
                 mailman_log('debug', 'OutgoingRunner: Total messages processed: %d', self._total_messages_processed)
-        except Exception as e:
-            mailman_log('error', 'Cleanup failed: %s', str(e))
-        finally:
-            # Always release the PID lock during cleanup
+            
+            # Call parent class cleanup
+            Runner._cleanup(self)
+            
+            # Release PID lock if we have it
             self._release_pid_lock()
-            self._running = False
-        mailman_log('debug', 'OutgoingRunner: Cleanup complete')
+            
+            mailman_log('debug', 'OutgoingRunner: Cleanup complete')
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner: Error during cleanup: %s', str(e))
+            mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+            raise
 
     _doperiodic = BounceMixin._doperiodic
 
     def _oneloop(self):
         """Process one batch of messages from the outgoing queue."""
+        mailman_log('debug', 'OutgoingRunner: Starting one loop iteration')
         try:
             # Get the list of files to process
             files = self._switchboard.files()
-            filecnt = len(files)
+            if not files:
+                mailman_log('debug', 'OutgoingRunner: No files to process')
+                return
+
+            mailman_log('debug', 'OutgoingRunner: Processing %d files', len(files))
             
             # Process each file
             for filebase in files:
                 try:
-                    # Check if the file exists before dequeuing
-                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
-                    if not os.path.exists(pckfile):
-                        mailman_log('error', 'OutgoingRunner._oneloop: File %s does not exist, skipping', pckfile)
-                        continue
-                        
-                    # Check if file is locked
-                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
-                    if os.path.exists(lockfile):
-                        mailman_log('debug', 'OutgoingRunner._oneloop: File %s is locked by another process, skipping', filebase)
-                        continue
-                    
-                    # Dequeue the file
+                    # Try to get the file from the switchboard
                     msg, msgdata = self._switchboard.dequeue(filebase)
-                    if msg is None:
-                        continue
-                    
-                    # Get the list name from msgdata
-                    listname = msgdata.get('listname')
-                    if not listname:
-                        mailman_log('error', 'OutgoingRunner._oneloop: No listname in message data for file %s', filebase)
-                        self._shunt.enqueue(msg, msgdata)
-                        continue
-                        
-                    # Open the list
-                    try:
-                        mlist = get_mail_list()(listname, lock=False)
-                    except Errors.MMUnknownListError:
-                        mailman_log('error', 'OutgoingRunner._oneloop: Unknown list %s for message %s (file: %s)',
-                                  listname, msg.get('message-id', 'n/a'), filebase)
-                        self._shunt.enqueue(msg, msgdata)
-                        continue
-                    
-                    # Process the message
-                    try:
-                        self._dispose(mlist, msg, msgdata)
-                        # Increment message counter on successful processing
-                        with self._total_messages_lock:
-                            self._total_messages_processed += 1
-                    except Exception as e:
-                        mailman_log('error', 'OutgoingRunner._oneloop: Error processing message %s: %s\nTraceback:\n%s',
-                                  msg.get('message-id', 'n/a'), str(e), traceback.format_exc())
-                        self._shunt.enqueue(msg, msgdata)
                 except Exception as e:
-                    mailman_log('error', 'OutgoingRunner._oneloop: Error processing file %s: %s', filebase, str(e))
-                    mailman_log('error', 'OutgoingRunner._oneloop: Traceback: %s', traceback.format_exc())
+                    mailman_log('error', 'OutgoingRunner: Error dequeuing %s: %s', filebase, str(e))
+                    mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+                    continue
+
+                if msg is None:
+                    mailman_log('debug', 'OutgoingRunner: No message data for %s', filebase)
+                    continue
+
+                try:
+                    # Process the message
+                    self._dispose(msg, msgdata)
+                    with self._total_messages_lock:
+                        self._total_messages_processed += 1
+                    mailman_log('debug', 'OutgoingRunner: Successfully processed message %s', filebase)
+                except Exception as e:
+                    mailman_log('error', 'OutgoingRunner: Error processing %s: %s', filebase, str(e))
+                    mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+                    self._handle_error(e, msg, None)
+
         except Exception as e:
-            mailman_log('error', 'OutgoingRunner._oneloop: Error processing outgoing queue: %s', str(e))
-            mailman_log('error', 'OutgoingRunner._oneloop: Traceback: %s', traceback.format_exc())
+            mailman_log('error', 'OutgoingRunner: Error in _oneloop: %s', str(e))
+            mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+            raise
 
     def _handle_error(self, exc, msg=None, mlist=None, preserve=True):
         """Enhanced error handling with circuit breaker and detailed logging."""
