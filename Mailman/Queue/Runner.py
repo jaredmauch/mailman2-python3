@@ -24,6 +24,7 @@ import traceback
 from io import StringIO
 from functools import wraps
 import threading
+import os
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -54,6 +55,7 @@ class Runner:
     _last_cleanup = time.time()  # Last cleanup time
     _cleanup_interval = 3600  # Cleanup interval in seconds
     _current_backoff = INITIAL_BACKOFF  # Current backoff time in seconds
+    _last_mtime = 0  # Last directory modification time
 
     def __init__(self, slice=None, numslices=1):
         syslog('debug', '%s: Starting initialization', self.__class__.__name__)
@@ -81,6 +83,9 @@ class Runner:
             # Initialize error tracking attributes
             self._last_error_time = 0
             self._error_count = 0
+            
+            self._current_backoff = self.INITIAL_BACKOFF
+            self._last_mtime = 0
             
             syslog('debug', '%s: Initialization complete', self.__class__.__name__)
         except Exception as e:
@@ -207,39 +212,43 @@ class Runner:
         return True
 
     def _oneloop(self):
-        # First, list all the files in our queue directory.
-        # Switchboard.files() is guaranteed to hand us the files in FIFO
-        # order.  Return an integer count of the number of files that were
-        # available for this qrunner to process.
+        """Run one iteration of the runner's main loop.
+        
+        Returns:
+            int: Number of files processed, or 0 if no files found
+        """
+        # Check if directory has been modified since last check
+        try:
+            st = os.stat(self.QDIR)
+            current_mtime = st.st_mtime
+            if current_mtime <= self._last_mtime:
+                # Directory hasn't changed, use backoff
+                self._snooze(self._current_backoff)
+                # Double the backoff time, up to MAX_BACKOFF
+                self._current_backoff = min(self._current_backoff * 2, self.MAX_BACKOFF)
+                return 0
+            # Directory has changed, reset backoff
+            self._current_backoff = self.INITIAL_BACKOFF
+            self._last_mtime = current_mtime
+        except OSError as e:
+            syslog('error', '%s: Error checking directory %s: %s',
+                   self.__class__.__name__, self.QDIR, str(e))
+            return 0
+
+        # Process files in the directory
         files = self._switchboard.files()
         if not files:
             syslog('debug', '%s: No files to process', self.__class__.__name__)
             return 0
-            
+
+        # Process each file
         for filebase in files:
+            if self._stop:
+                break
             try:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
-            except Exception as e:
-                # This used to just catch email.Errors.MessageParseError,
-                # but other problems can occur in message parsing, e.g.
-                # ValueError, and exceptions can occur in unpickling too.
-                # We don't want the runner to die, so we just log and skip
-                # this entry, but maybe preserve it for analysis.
-                self._log(e)
-                if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
-                    syslog('error',
-                           'Skipping and preserving unparseable message: %s',
-                           filebase)
-                    preserve = True
-                else:
-                    syslog('error',
-                           'Ignoring unparseable message: %s', filebase)
-                    preserve = False
-                self._switchboard.finish(filebase, preserve=preserve)
-                continue
-            try:
                 self._onefile(msg, msgdata)
                 self._switchboard.finish(filebase)
             except Exception as e:
@@ -411,32 +420,16 @@ class Runner:
         """
         pass
 
-    def _snooze(self, filecnt):
-        """Sleep for a while, but check for stop flag periodically.
-        
-        Implements exponential backoff when no files are found to process.
+    def _snooze(self, secs):
+        """Sleep for the specified number of seconds, but wake up if the
+        stop flag is set.
+
+        Args:
+            secs: Number of seconds to sleep.
         """
-        if filecnt > 0:
-            # Reset backoff when files are found
-            self._current_backoff = self.INITIAL_BACKOFF
-            # Only log if we're sleeping for more than 5 seconds
-            if self.SLEEPTIME > 5:
-                syslog('debug', '%s: Sleeping for %d seconds after processing %d files in this iteration', 
-                       self.__class__.__name__, self.SLEEPTIME, filecnt)
-            sleep_time = self.SLEEPTIME
-        else:
-            # No files found, use exponential backoff
-            sleep_time = min(self._current_backoff, self.MAX_BACKOFF)
-            syslog('debug', '%s: No files to process, sleeping for %d seconds', 
-                   self.__class__.__name__, sleep_time)
-            # Double the backoff time for next iteration, up to MAX_BACKOFF
-            self._current_backoff = min(self._current_backoff * 2, self.MAX_BACKOFF)
-            
-        for _ in range(sleep_time):
-            if self._stop:
-                syslog('debug', '%s: Stop flag detected, waking up', self.__class__.__name__)
-                return
-            time.sleep(1)
+        endtime = time.time() + secs
+        while time.time() < endtime and not self._stop:
+            time.sleep(0.1)
 
     def _shortcircuit(self):
         """Return a true value if the individual file processing loop should
