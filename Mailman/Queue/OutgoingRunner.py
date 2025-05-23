@@ -57,6 +57,7 @@ class OutgoingRunner(Runner, BounceMixin):
     # Process coordination
     _pid_file = os.path.join(mm_cfg.LOCK_DIR, 'outgoing.pid')
     _pid_lock = threading.Lock()
+    _running = False
     
     # Shared processed messages tracking with size limits
     _processed_messages = set()
@@ -131,12 +132,44 @@ class OutgoingRunner(Runner, BounceMixin):
             self.__logged = False
             mailman_log('debug', 'OutgoingRunner: Initializing retry queue')
             self.__retryq = Switchboard(mm_cfg.RETRYQUEUE_DIR)
+            self._running = True
             mailman_log('debug', 'OutgoingRunner: Initialization complete')
         except Exception as e:
             mailman_log('error', 'OutgoingRunner: Initialization failed: %s', str(e))
             mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
             self._release_pid_lock()
             raise
+
+    def run(self):
+        """Run the OutgoingRunner main loop."""
+        if not self._running:
+            mailman_log('error', 'OutgoingRunner: Not properly initialized')
+            return
+            
+        mailman_log('debug', 'OutgoingRunner: Starting main loop')
+        try:
+            while self._running and not self._stop:
+                try:
+                    self._oneloop()
+                    # Sleep briefly to prevent CPU spinning
+                    time.sleep(1)
+                except Exception as e:
+                    mailman_log('error', 'OutgoingRunner: Error in main loop: %s', str(e))
+                    mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+                    # Don't exit on error, just continue the loop
+                    time.sleep(5)  # Sleep longer on error
+        except Exception as e:
+            mailman_log('error', 'OutgoingRunner: Fatal error in main loop: %s', str(e))
+            mailman_log('error', 'OutgoingRunner: Traceback: %s', traceback.format_exc())
+        finally:
+            self._cleanup()
+
+    def stop(self):
+        """Stop the OutgoingRunner."""
+        mailman_log('debug', 'OutgoingRunner: Stopping')
+        self._running = False
+        self._stop = True
+        self._cleanup()
 
     def _acquire_pid_lock(self):
         """Try to acquire the PID lock file."""
@@ -567,6 +600,9 @@ class OutgoingRunner(Runner, BounceMixin):
 
     def _cleanup(self):
         """Clean up resources."""
+        if not self._running:
+            return
+            
         mailman_log('debug', 'OutgoingRunner: Starting cleanup')
         try:
             BounceMixin._cleanup(self)
@@ -581,6 +617,7 @@ class OutgoingRunner(Runner, BounceMixin):
         finally:
             # Always release the PID lock during cleanup
             self._release_pid_lock()
+            self._running = False
         mailman_log('debug', 'OutgoingRunner: Cleanup complete')
 
     _doperiodic = BounceMixin._doperiodic
