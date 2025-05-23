@@ -36,7 +36,7 @@ in the file data/master-qrunner.pid but you normally don't need to use this
 pid directly.  The `start', `stop', `restart', and `reopen' commands handle
 everything for you.
 
-Usage: %(PROGRAM)s [options] [ start | stop | restart | reopen | status ]
+Usage: %(PROGRAM)s [options] [ start | stop | restart | reopen ]
 
 Options:
 
@@ -90,20 +90,17 @@ Commands:
 
     reopen  - This will close all log files, causing them to be re-opened the
               next time a message is written to them
-
-    status  - Checks if all qrunners are running as expected.
 """
 
 import sys
 import os
 import time
-import argparse
+import getopt
 import signal
 import errno
 import pwd
 import grp
 import socket
-import psutil  # Add psutil import
 
 import paths
 from Mailman import mm_cfg
@@ -127,63 +124,34 @@ LOCK_LIFETIME = mm_cfg.days(1) + mm_cfg.hours(6)
 SNOOZE = mm_cfg.days(1)
 MAX_RESTARTS = 10
 
-# Global circuit breaker settings
-GLOBAL_RESTART_WINDOW = 30  # 30 seconds window
-GLOBAL_MAX_RESTARTS = 100   # Maximum restarts in window
-_global_restart_times = []  # List of timestamps for restarts
-
 LogStdErr('error', 'mailmanctl', manual_reprime=0)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Primary start-up and shutdown script for Mailman\'s qrunner daemon.')
-    parser.add_argument('command', choices=['start', 'stop', 'restart', 'reopen', 'status'],
-                       help='Command to execute')
-    parser.add_argument('-n', '--no-restart', action='store_true',
-                       help='Don\'t restart the qrunners when they exit because of an error or a SIGINT')
-    parser.add_argument('-u', '--run-as-user', action='store_true',
-                       help='Run as current user instead of mailman user')
-    parser.add_argument('-s', '--stale-lock-cleanup', action='store_true',
-                       help='Clean up stale locks before starting')
-    parser.add_argument('-q', '--quiet', action='store_true',
-                       help='Don\'t print status messages')
-    return parser.parse_args()
-
-
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    # In Python 3, sys.argv[0] is already a string
-    program = str(sys.argv[0])  # Ensure it's a string
-    doc = C_(__doc__) % {'PROGRAM': program}  # Let C_() handle the translation and formatting
-    print(doc, file=fd)
+    print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
+
 def kill_watcher(sig):
     try:
-        with open(mm_cfg.PIDFILE, 'r') as fp:
-            content = fp.read().strip().split()
-            if len(content) >= 2:
-                pid = int(content[0])
-                hostname = content[1]
-                if hostname != socket.gethostname():
-                    print(C_('PID file hostname mismatch: expected %(expected)s, got %(got)s') % 
-                          {'expected': socket.gethostname(), 'got': hostname}, file=sys.stderr)
-                    return
-            else:
-                raise ValueError('Invalid PID file format')
+        fp = open(mm_cfg.PIDFILE)
+        pidstr = fp.read()
+        fp.close()
+        pid = int(pidstr.strip())
     except (IOError, ValueError) as e:
         # For i18n convenience
         pidfile = mm_cfg.PIDFILE
         print(C_('PID unreadable in: %(pidfile)s'), file=sys.stderr)
         print(e, file=sys.stderr)
         print(C_('Is qrunner even running?'), file=sys.stderr)
-        print(C_('Lock file path: %(lockfile)s') % {'lockfile': LOCKFILE}, file=sys.stderr)
         return
     try:
         os.kill(pid, sig)
@@ -195,29 +163,21 @@ def kill_watcher(sig):
         os.unlink(mm_cfg.PIDFILE)
 
 
+
 def get_lock_data():
     # Return the hostname, pid, and tempfile
-    try:
-        with open(LOCKFILE) as fp:
-            content = fp.read().strip().split()
-            if len(content) != 2:
-                syslog('error', 'Invalid lock file format in %s: expected "pid hostname"', LOCKFILE)
-                raise LockFile.LockError('Invalid lock file format')
-            try:
-                pid = int(content[0])
-                hostname = content[1]
-            except ValueError as e:
-                syslog('error', 'Invalid PID in lock file %s: %s', LOCKFILE, e)
-                raise LockFile.LockError('Invalid PID in lock file')
-            return hostname, pid, None  # tempfile is not used in this format
-    except IOError as e:
-        syslog('error', 'Could not read lock file %s: %s', LOCKFILE, e)
-        raise LockFile.LockError('Could not read lock file')
+    fp = open(LOCKFILE)
+    filename = os.path.split(fp.read().strip())[1]
+    fp.close()
+    parts = filename.split('.')
+    hostname = DOT.join(parts[1:-1])
+    pid = int(parts[-1])
+    return hostname, int(pid), filename
 
 
 def qrunner_state():
-    # 1 if proc exists on host and is owned by mailman user
-    # 0 if host matches but no proc or wrong owner
+    # 1 if proc exists on host (but is it qrunner? ;)
+    # 0 if host matches but no proc
     # hostname if hostname doesn't match
     hostname, pid, tempfile = get_lock_data()
     if hostname != socket.gethostname():
@@ -225,44 +185,10 @@ def qrunner_state():
     # Find out if the process exists by calling kill with a signal 0.
     try:
         os.kill(pid, 0)
-        # Process exists, now check if it's owned by the mailman user
-        mailman_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER).pw_uid
-        try:
-            # Try to get process owner using platform-specific methods
-            if os.name == 'posix':
-                # On Unix-like systems, try to get process owner
-                try:
-                    # Try using /proc on Linux
-                    if os.path.exists('/proc'):
-                        with open(f'/proc/{pid}/status') as f:
-                            for line in f:
-                                if line.startswith('Uid:'):
-                                    uid = int(line.split()[1])
-                                    if uid != mailman_uid:
-                                        syslog('error', 'Process %d exists but is owned by uid %d, not mailman user %d',
-                                               pid, uid, mailman_uid)
-                                        return 0
-                                    break
-                    else:
-                        # On other Unix systems, we can't easily check the owner
-                        # without external tools, so we'll assume it's valid
-                        # if the process exists
-                        return 1
-                except (IOError, OSError) as e:
-                    syslog('error', 'Error checking process %d ownership: %s', pid, str(e))
-                    return 0
-            else:
-                # On non-Unix systems, we can't easily check the owner
-                # without external tools, so we'll assume it's valid
-                # if the process exists
-                return 1
-            return 1
-        except Exception as e:
-            syslog('error', 'Error checking process %d ownership: %s', pid, str(e))
-            return 0
     except OSError as e:
         if e.errno != errno.ESRCH: raise
         return 0
+    return 1
 
 
 def acquire_lock_1(force):
@@ -273,28 +199,14 @@ def acquire_lock_1(force):
         lock.lock(0.1)
         return lock
     except LockFile.TimeOutError:
-        # Check if the lock is stale by examining the process
-        status = qrunner_state()
-        if status == 1:
-            # Process exists and is running, so lock is valid
+        # If we're not forcing or the lock can't be determined to be stale.
+        if not force or qrunner_state():
             raise
-        # Lock appears to be stale - clean it up
-        try:
-            # Read the current lock file content
-            with open(LOCKFILE) as fp:
-                content = fp.read().strip()
-                if content:
-                    # Try to clean up any stale lock files
-                    lock.clean_stale_locks()
-        except (IOError, OSError) as e:
-            syslog('error', 'Error cleaning up stale lock: %s', str(e))
-        # Remove the lock file
-        try:
-            os.unlink(LOCKFILE)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                syslog('error', 'Error removing lock file: %s', str(e))
-        # Try to acquire the lock again
+        # Force removal of lock first
+        lock._disown()
+        hostname, pid, tempfile = get_lock_data()
+        os.unlink(LOCKFILE)
+        os.unlink(os.path.join(mm_cfg.LOCK_DIR, tempfile))
         return acquire_lock_1(force=0)
 
 
@@ -330,69 +242,36 @@ Lock host: %(status)s
 Exiting."""), file=sys.stderr)
 
 
+
 def start_runner(qrname, slice, count):
-    """Start a qrunner process in the background.
-    
-    Args:
-        qrname: Name of the runner to start
-        slice: Slice number for this runner
-        count: Total number of slices
-        
-    Returns:
-        int: PID of the started process
-    """
     pid = os.fork()
     if pid:
         # parent
         return pid
     # child
-    try:
-        # Create a new session and become the session leader
-        os.setsid()
-        
-        # Be sure to close any open std{in,out,err}
-        devnull = os.open('/dev/null', 0)
-        os.dup2(devnull, 0)
-        os.dup2(devnull, 1)
-        os.dup2(devnull, 2)
-        
-        # Instead of cd'ing to root, cd to the Mailman installation home
-        os.chdir(mm_cfg.PREFIX)
-        
-        # Set our file mode creation umask
-        os.umask(0o07)
-        
-        # Craft the command line arguments for the exec() call
-        rswitch = '--runner=%s:%d:%d' % (qrname, slice, count)
-        exe = os.path.join(mm_cfg.BIN_DIR, 'qrunner')
-        # mm_cfg.PYTHON, which is the absolute path to the Python interpreter,
-        # must be given as argv[0] due to Python's library search algorithm.
-        os.execl(mm_cfg.PYTHON, mm_cfg.PYTHON, exe, rswitch, '-s')
-        # Should never get here
-        raise RuntimeError('os.execl() failed')
-    except Exception as e:
-        syslog('error', 'Failed to start %s runner (slice %d): %s', 
-               qrname, slice, str(e))
-        os._exit(1)
+    #
+    # Craft the command line arguments for the exec() call.
+    rswitch = '--runner=%s:%d:%d' % (qrname, slice, count)
+    exe = os.path.join(mm_cfg.BIN_DIR, 'qrunner')
+    # mm_cfg.PYTHON, which is the absolute path to the Python interpreter,
+    # must be given as argv[0] due to Python's library search algorithm.
+    os.execl(mm_cfg.PYTHON, mm_cfg.PYTHON, exe, rswitch, '-s')
+    # Should never get here
+    raise RuntimeError('os.execl() failed')
 
 
 def start_all_runners():
     kids = {}
     for qrname, count in mm_cfg.QRUNNERS:
         for slice in range(count):
-            try:
-                # queue runner name, slice, numslices, restart count
-                info = (qrname, slice, count, 0)
-                pid = start_runner(qrname, slice, count)
-                kids[pid] = info
-            except Exception as e:
-                # Log the failure but continue with other runners
-                syslog('error', 'Failed to start %s runner (slice %d): %s', 
-                       qrname, slice, str(e))
-                continue
+            # queue runner name, slice, numslices, restart count
+            info = (qrname, slice, count, 0)
+            pid = start_runner(qrname, slice, count)
+            kids[pid] = info
     return kids
 
 
+
 def check_for_site_list():
     sitelistname = mm_cfg.MAILMAN_SITE_LIST
     try:
@@ -427,315 +306,212 @@ def check_privs():
             'Run this program as root or as the %(name)s user, or use -u.'))
 
 
-def check_status():
-    """Check if all qrunners are running as expected."""
-    # First check if the master process is running
-    try:
-        with open(mm_cfg.PIDFILE, 'r') as fp:
-            content = fp.read().strip().split()
-            if len(content) >= 2:
-                pid = int(content[0])
-                hostname = content[1]
-                if hostname != socket.gethostname():
-                    print(C_('PID file hostname mismatch: expected %(expected)s, got %(got)s') % 
-                          {'expected': socket.gethostname(), 'got': hostname}, file=sys.stderr)
-                    return False
-            else:
-                raise ValueError('Invalid PID file format')
-        try:
-            os.kill(pid, 0)  # Check if process exists
-            print(C_('Master qrunner process is running (pid: %(pid)d)') % {'pid': pid})
-        except OSError:
-            print(C_('Master qrunner process is not running (stale pid file)'))
-            return False
-    except (IOError, ValueError) as e:
-        print(C_('Master qrunner process is not running (no pid file)'))
-        print(e, file=sys.stderr)
-        return False
-
-    # Check if the lock file exists and is valid
-    try:
-        hostname, pid, tempfile = get_lock_data()
-        if hostname != socket.gethostname():
-            print(C_('Lock file is held by another host: %(hostname)s') % {'hostname': hostname})
-            return False
-        try:
-            os.kill(pid, 0)
-            print(C_('Lock file is valid (pid: %(pid)d)') % {'pid': pid})
-        except OSError:
-            print(C_('Lock file is stale (process %(pid)d not running)') % {'pid': pid})
-            return False
-    except (IOError, ValueError):
-        print(C_('No lock file found'))
-        return False
-
-    # Check if all expected qrunners are running
-    expected_runners = dict(mm_cfg.QRUNNERS)
-    running_runners = {}
-    
-    # Get all running qrunner processes
-    for line in os.popen('ps aux | grep qrunner | grep -v grep').readlines():
-        parts = line.split()
-        if len(parts) >= 12:  # Ensure we have enough parts
-            cmd = parts[10]  # The command is typically at index 10
-            if '--runner=' in cmd:
-                runner_name = cmd.split('--runner=')[1].split(':')[0]
-                running_runners[runner_name] = running_runners.get(runner_name, 0) + 1
-
-    # Compare expected vs running
-    all_running = True
-    for runner, count in expected_runners.items():
-        actual = running_runners.get(runner, 0)
-        if actual != count:
-            print(C_('%(runner)s: expected %(count)d instances, found %(actual)d') % 
-                  {'runner': runner, 'count': count, 'actual': actual})
-            all_running = False
-        else:
-            print(C_('%(runner)s: %(count)d instances running') % 
-                  {'runner': runner, 'count': count})
-
-    return all_running
-
-
-def check_global_circuit_breaker():
-    """Check if we've exceeded the global restart limit.
-    
-    Returns:
-        bool: True if we should stop all runners, False otherwise
-    """
-    # Circuit breaker disabled - always return False
-    return False
-
-
-def stop_all_processes(kids, lock=None):
-    """Stop all child processes and clean up, similar to mailmanctl stop.
-    
-    Args:
-        kids: Dictionary of child processes
-        lock: Optional lock to release
-    """
-    # First send SIGTERM to all children
-    for pid in list(kids.keys()):
-        try:
-            os.kill(pid, signal.SIGTERM)
-        except OSError as e:
-            if e.errno != errno.ESRCH:
-                raise
-    
-    # Wait for all children to exit
-    while kids:
-        try:
-            pid, status = os.wait()
-            if pid in kids:
-                del kids[pid]
-        except OSError as e:
-            if e.errno == errno.ECHILD:
-                break
-            elif e.errno != errno.EINTR:
-                raise
-            continue
-    
-    # Clean up PID file
-    try:
-        os.unlink(mm_cfg.PIDFILE)
-        syslog('qrunner', 'Removed PID file: %s', mm_cfg.PIDFILE)
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            syslog('error', 'Failed to remove PID file %s: %s', mm_cfg.PIDFILE, str(e))
-    
-    # Release lock if provided
-    if lock:
-        try:
-            lock.unlock(unconditionally=1)
-        except Exception as e:
-            syslog('error', 'Failed to release lock: %s', str(e))
-
-
+
 def main():
+    global quiet
     try:
-        args = parse_args()
-    except SystemExit:
-        usage(1)
+        opts, args = getopt.getopt(sys.argv[1:], 'hnu:sq',
+                                   ['help', 'no-restart', 'run-as-user=',
+                                    'stale-lock-cleanup', 'quiet'])
+    except getopt.error as msg:
+        usage(1, msg)
 
-    # Check that we're running as the right user
-    if not args.run_as_user:
-        try:
-            mailman_uid = pwd.getpwnam(mm_cfg.MAILMAN_USER).pw_uid
-            mailman_gid = grp.getgrnam(mm_cfg.MAILMAN_GROUP).gr_gid
-        except (KeyError, AttributeError):
-            print(C_('Cannot determine mailman user/group'), file=sys.stderr)
-            sys.exit(1)
+    restart = 1
+    checkprivs = 1
+    force = 0
+    quiet = 0
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-n', '--no-restart'):
+            restart = 0
+        elif opt in ('-u', '--run-as-user'):
+            checkprivs = 0
+        elif opt in ('-s', '--stale-lock-cleanup'):
+            force = 1
+        elif opt in ('-q', '--quiet'):
+            quiet = 1
 
-        if os.getuid() == 0:
-            # We're root, so switch to the mailman user/group
-            os.setgid(mailman_gid)
-            os.setuid(mailman_uid)
-        elif os.getuid() != mailman_uid or os.getgid() != mailman_gid:
-            print(C_('Must be run as the mailman user'), file=sys.stderr)
-            sys.exit(1)
+    if len(args) < 1:
+        usage(1, C_('No command given.'))
+    elif len(args) > 1:
+        command = COMMASPACE.join(args)
+        usage(1, C_('Bad command: %(command)s'))
 
-    # Handle the command
-    if args.command == 'status':
-        if check_status():
-            sys.exit(0)
-        else:
-            sys.exit(1)
-    elif args.command == 'start':
-        # Check if we're already running
-        if os.path.exists(mm_cfg.PIDFILE):
-            try:
-                with open(mm_cfg.PIDFILE) as fp:
-                    pid = int(fp.read().strip())
-                if check_pid(pid):
-                    print(C_('Mailman qrunner is already running (pid: %(pid)d)'), file=sys.stderr)
-                    sys.exit(1)
-            except (ValueError, IOError):
-                pass
+    if checkprivs:
+        check_privs()
+    else:
+        print(C_('Warning!  You may encounter permission problems.'))
 
-        # Try to acquire the lock
-        try:
-            lock = acquire_lock(args.stale_lock_cleanup)
-        except LockFile.TimeOutError:
-            sys.exit(1)
-
-        # Fork to daemonize
+    # Handle the commands
+    command = args[0].lower()
+    if command == 'stop':
+        # Sent the master qrunner process a SIGINT, which is equivalent to
+        # giving cron/qrunner a ctrl-c or KeyboardInterrupt.  This will
+        # effectively shut everything down.
+        if not quiet:
+            print(C_("Shutting down Mailman's master qrunner"))
+        kill_watcher(signal.SIGTERM)
+    elif command == 'restart':
+        # Sent the master qrunner process a SIGHUP.  This will cause the
+        # master qrunner to kill and restart all the worker qrunners, and to
+        # close and re-open its log files.
+        if not quiet:
+            print(C_("Restarting Mailman's master qrunner"))
+        kill_watcher(signal.SIGINT)
+    elif command == 'reopen':
+        if not quiet:
+            print(C_('Re-opening all log files'))
+        kill_watcher(signal.SIGHUP)
+    elif command == 'start':
+        # First, complain loudly if there's no site list.
+        check_for_site_list()
+        # Here's the scoop on the processes we're about to create.  We'll need
+        # one for each qrunner, and one for a master child process watcher /
+        # lock refresher process.
+        #
+        # The child watcher process simply waits on the pids of the children
+        # qrunners.  Unless explicitly disabled by a mailmanctl switch (or the
+        # children are killed with SIGTERM instead of SIGINT), the watcher
+        # will automatically restart any child process that exits.  This
+        # allows us to be more robust, and also to implement restart by simply
+        # SIGINT'ing the qrunner children, and letting the watcher restart
+        # them.
+        #
+        # Under normal operation, we have a child per queue.  This lets us get
+        # the most out of the available resources, since a qrunner with no
+        # files in its queue directory is pretty cheap, but having a separate
+        # runner process per queue allows for a very responsive system.  Some
+        # people want a more traditional (i.e. MM2.0.x) cron-invoked qrunner.
+        # No problem, but using mailmanctl isn't the answer.  So while
+        # mailmanctl hard codes some things, others, such as the number of
+        # qrunners per queue, is configurable in mm_cfg.py.
+        #
+        # First, acquire the master mailmanctl lock
+        lock = acquire_lock(force)
+        if not lock:
+            return
+        # Daemon process startup according to Stevens, Advanced Programming in
+        # the UNIX Environment, Chapter 13.
         pid = os.fork()
         if pid:
             # parent
-            if not args.quiet:
+            if not quiet:
                 print(C_("Starting Mailman's master qrunner."))
-            # Give up the lock "ownership". This just means the foreground
+            # Give up the lock "ownership".  This just means the foreground
             # process won't close/unlock the lock when it finalizes this lock
-            # instance. We'll let the master watcher subproc own the lock.
+            # instance.  We'll let the mater watcher subproc own the lock.
             lock._transfer_to(pid)
-            
-            # Wait briefly to ensure child process starts
-            time.sleep(1)
-            
-            # Verify the child process is running
-            try:
-                os.kill(pid, 0)  # Check if process exists
-                if not args.quiet:
-                    print(C_('Master qrunner started successfully (pid: %d)') % pid)
-                    syslog('qrunner', 'Master qrunner started successfully (pid: %d)', pid)
-            except OSError as e:
-                if e.errno == errno.ESRCH:
-                    print(C_('Error: Master process failed to start'), file=sys.stderr)
-                    return
-                raise
             return
-
         # child
+        lock._take_possession()
+        # First, save our pid in a file for "mailmanctl stop" rendezvous.  We
+        # want the perms on the .pid file to be rw-rw----
+        omask = os.umask(6)
         try:
-            lock._take_possession()
-            
-            # Create a new session and become the session leader
-            os.setsid()
-            
-            # Be sure to close any open std{in,out,err}
-            devnull = os.open('/dev/null', 0)
-            os.dup2(devnull, 0)
-            os.dup2(devnull, 1)
-            os.dup2(devnull, 2)
-            
-            # Instead of cd'ing to root, cd to the Mailman installation home
-            os.chdir(mm_cfg.PREFIX)
-            
-            # Set our file mode creation umask
-            os.umask(0o07)
-            
-            # Write our PID to the PID file
-            try:
-                with open(mm_cfg.PIDFILE, 'w') as fp:
-                    fp.write(str(os.getpid()))
-            except IOError as e:
-                syslog('error', 'Failed to write PID file: %s', str(e))
-                os._exit(1)
+            fp = open(mm_cfg.PIDFILE, 'w')
+            print(os.getpid(), file=fp)
+            fp.close()
+        finally:
+            os.umask(omask)
+        # Create a new session and become the session leader, but since we
+        # won't be opening any terminal devices, don't do the ultra-paranoid
+        # suggestion of doing a second fork after the setsid() call.
+        os.setsid()
 
-            # Start all runners
-            kids = start_all_runners()
-            if not kids:
-                syslog('error', 'No runners started successfully')
-                os._exit(1)
+        # Be sure to close any open std{in,out,err}
+        devnull = os.open('/dev/null', 0)
+        os.dup2(devnull, 0)
+        os.dup2(devnull, 1)
+        os.dup2(devnull, 2)
 
-            # Set up a SIGALRM handler to refresh the lock once per day
-            def sigalrm_handler(signum, frame, lock=lock):
-                lock.refresh()
-                signal.alarm(mm_cfg.days(1))
-            signal.signal(signal.SIGALRM, sigalrm_handler)
+        # Instead of cd'ing to root, cd to the Mailman installation home
+        os.chdir(mm_cfg.PREFIX)
+        # Set our file mode creation umask
+        os.umask(0o07)
+        # I don't think we have any unneeded file descriptors.
+        #
+        # Now start all the qrunners.  This returns a dictionary where the
+        # keys are qrunner pids and the values are tuples of the following
+        # form: (qrname, slice, count).  This does its own fork and exec, and
+        # sets up its own signal handlers.
+        kids = start_all_runners()
+        # Set up a SIGALRM handler to refresh the lock once per day.  The lock
+        # lifetime is 1day+6hours so this should be plenty.
+        def sigalrm_handler(signum, frame, lock=lock):
+            lock.refresh()
             signal.alarm(mm_cfg.days(1))
-
-            # Set up a SIGHUP handler
-            def sighup_handler(signum, frame, kids=kids):
-                syslog.close()
-                for pid in list(kids.keys()):
-                    os.kill(pid, signal.SIGHUP)
-                syslog('qrunner',
-                       'Master watcher caught SIGHUP.  Re-opening log files.')
-            signal.signal(signal.SIGHUP, sighup_handler)
-
-            # Set up a SIGTERM handler
-            def sigterm_handler(signum, frame, kids=kids):
-                for pid in list(kids.keys()):
-                    try:
-                        os.kill(pid, signal.SIGTERM)
-                    except OSError as e:
-                        if e.errno != errno.ESRCH: raise
-                syslog('qrunner', 'Master watcher caught SIGTERM.  Exiting.')
-            signal.signal(signal.SIGTERM, sigterm_handler)
-
-            # Set up a SIGINT handler
-            def sigint_handler(signum, frame, kids=kids):
-                for pid in list(kids.keys()):
-                    os.kill(pid, signal.SIGINT)
-                syslog('qrunner', 'Master watcher caught SIGINT.  Restarting.')
-            signal.signal(signal.SIGINT, sigint_handler)
-
-            # Now we're ready to simply do our wait/restart loop
-            while True:
+        signal.signal(signal.SIGALRM, sigalrm_handler)
+        signal.alarm(mm_cfg.days(1))
+        # Set up a SIGHUP handler so that if we get one, we'll pass it along
+        # to all the qrunner children.  This will tell them to close and
+        # reopen their log files
+        def sighup_handler(signum, frame, kids=kids):
+            # Closing our syslog will cause it to be re-opened at the next log
+            # print output.
+            syslog.close()
+            for pid in list(kids.keys()):
+                os.kill(pid, signal.SIGHUP)
+            # And just to tweak things...
+            syslog('qrunner',
+                   'Master watcher caught SIGHUP.  Re-opening log files.')
+        signal.signal(signal.SIGHUP, sighup_handler)
+        # We also need to install a SIGTERM handler because that's what init
+        # will kill this process with when changing run levels.
+        def sigterm_handler(signum, frame, kids=kids):
+            for pid in list(kids.keys()):
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except OSError as e:
+                    if e.errno != errno.ESRCH: raise
+            syslog('qrunner', 'Master watcher caught SIGTERM.  Exiting.')
+        signal.signal(signal.SIGTERM, sigterm_handler)
+        # Finally, we need a SIGINT handler which will cause the sub-qrunners
+        # to exit, but the master will restart SIGINT'd sub-processes unless
+        # the -n flag was given.
+        def sigint_handler(signum, frame, kids=kids):
+            for pid in list(kids.keys()):
+                os.kill(pid, signal.SIGINT)
+            syslog('qrunner', 'Master watcher caught SIGINT.  Restarting.')
+        signal.signal(signal.SIGINT, sigint_handler)
+        # Now we're ready to simply do our wait/restart loop.  This is the
+        # master qrunner watcher.
+        try:
+            while 1:
                 try:
                     pid, status = os.wait()
                 except OSError as e:
-                    # No children? We're done
+                    # No children?  We're done
                     if e.errno == errno.ECHILD:
                         break
                     # If the system call got interrupted, just restart it.
                     elif e.errno != errno.EINTR:
                         raise
                     continue
-
                 killsig = exitstatus = None
                 if os.WIFSIGNALED(status):
                     killsig = os.WTERMSIG(status)
                 if os.WIFEXITED(status):
                     exitstatus = os.WEXITSTATUS(status)
-
+                # We'll restart the process unless we were given the
+                # "no-restart" switch, or if the process was SIGTERM'd or
+                # exitted with a SIGTERM exit status.  This lets us better
+                # handle runaway restarts (say, if the subproc had a syntax
+                # error!)
                 restarting = ''
-                if not args.no_restart:
-                    # Only restart if the runner exited with SIGINT (normal exit)
-                    # and not SIGTERM (error or forced stop)
-                    if exitstatus == signal.SIGINT:
+                if restart:
+                    if (exitstatus == None and killsig != signal.SIGTERM) or \
+                       (killsig == None and exitstatus != signal.SIGTERM):
+                        # Then
                         restarting = '[restarting]'
-
                 qrname, slice, count, restarts = kids[pid]
                 del kids[pid]
-                
-                # Only log abnormal exits
-                if killsig == signal.SIGTERM or \
-                   (exitstatus is not None and exitstatus != signal.SIGINT):
-                    syslog('qrunner', """\
-Master qrunner detected abnormal subprocess exit
+                syslog('qrunner', """\
+Master qrunner detected subprocess exit
 (pid: %d, sig: %s, sts: %s, class: %s, slice: %d/%d) %s""",
                        pid, killsig, exitstatus, qrname,
                        slice+1, count, restarting)
-
-                if restarting and check_global_circuit_breaker():
-                    syslog('error', 'Global circuit breaker triggered - stopping all runners')
-                    # Stop all processes and clean up
-                    stop_all_processes(kids, lock)
-                    # Exit the main loop
-                    break
-                
+                # See if we've reached the maximum number of allowable restarts
                 if exitstatus != signal.SIGINT:
                     restarts += 1
                 if restarts > MAX_RESTARTS:
@@ -743,24 +519,25 @@ Master qrunner detected abnormal subprocess exit
 Qrunner %s reached maximum restart limit of %d, not restarting.""",
                            qrname, MAX_RESTARTS)
                     restarting = ''
-
-                # Now perhaps restart the process
+                # Now perhaps restart the process unless it exited with a
+                # SIGTERM or we aren't restarting.
                 if restarting:
                     newpid = start_runner(qrname, slice, count)
                     kids[newpid] = (qrname, slice, count, restarts)
-
         finally:
-            # all of our children are exited cleanly
+            # Should we leave the main loop for any reason, we want to be sure
+            # all of our children are exited cleanly.  Send SIGTERMs to all
+            # the child processes and wait for them all to exit.
             for pid in list(kids.keys()):
                 try:
                     os.kill(pid, signal.SIGTERM)
                 except OSError as e:
                     if e.errno == errno.ESRCH:
+                        # The child has already exited
                         syslog('qrunner', 'ESRCH on pid: %d', pid)
                         del kids[pid]
-
             # Wait for all the children to go away
-            while True:
+            while 1:
                 try:
                     pid, status = os.wait()
                 except OSError as e:
@@ -769,26 +546,11 @@ Qrunner %s reached maximum restart limit of %d, not restarting.""",
                     elif e.errno != errno.EINTR:
                         raise
                     continue
-
-            # Finally, give up the lock
-            lock.unlock(unconditionally=1)
-            os._exit(0)
-    elif args.command == 'stop':
-        kill_watcher(signal.SIGTERM)
-        try:
-            os.unlink(mm_cfg.PIDFILE)
-            syslog('qrunner', 'Removed PID file: %s', mm_cfg.PIDFILE)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                syslog('error', 'Failed to remove PID file %s: %s', mm_cfg.PIDFILE, str(e))
-    elif args.command == 'restart':
-        kill_watcher(signal.SIGINT)
-        start_all_runners()
-    elif args.command == 'reopen':
-        kill_watcher(signal.SIGHUP)
-    else:
-        usage(1, C_('Unknown command: %(command)s'))
+        # Finally, give up the lock
+        lock.unlock(unconditionally=1)
+        os._exit(0)
 
 
+
 if __name__ == '__main__':
     main()
