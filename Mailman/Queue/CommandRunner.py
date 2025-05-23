@@ -473,7 +473,11 @@ class CommandRunner(Runner):
         try:
             # Get the list of files to process
             files = self._switchboard.files()
-            filecnt = len(files)
+            if not files:
+                syslog('debug', 'CommandRunner: No files to process')
+                return
+
+            syslog('debug', 'CommandRunner: Processing %d files', len(files))
             
             # Process each file
             for filebase in files:
@@ -493,6 +497,7 @@ class CommandRunner(Runner):
                     # Dequeue the file
                     msg, msgdata = self._switchboard.dequeue(filebase)
                     if msg is None:
+                        syslog('debug', 'CommandRunner._oneloop: No message data for %s', filebase)
                         continue
 
                     # Get the list name from msgdata
@@ -511,23 +516,26 @@ class CommandRunner(Runner):
                         self._shunt.enqueue(msg, msgdata)
                         continue
 
-                    # Process message
                     try:
-                        success = self._dispose(mlist, msg, msgdata)
-                        if not success:
-                            # If _dispose returns False, the message was shunted or discarded
-                            # Remove it from the queue
-                            self._switchboard.finish(filebase)
+                        # Process the message
+                        self._dispose(mlist, msg, msgdata)
+                        syslog('debug', 'CommandRunner: Successfully processed message %s', filebase)
                     except Exception as e:
-                        syslog('error', 'CommandRunner._oneloop: Error processing message %s: %s',
-                              msg.get('message-id', 'n/a'), str(e))
-                        self._shunt.enqueue(msg, msgdata)
-                        # Remove the message from the queue after shunting
-                        self._switchboard.finish(filebase)
+                        syslog('error', 'CommandRunner: Error processing %s: %s', filebase, str(e))
+                        syslog('error', 'CommandRunner: Traceback:\n%s', traceback.format_exc())
+                        self._handle_error(e, msg, mlist)
+                    finally:
+                        mlist.Unlock()
+
                 except Exception as e:
-                    syslog('error', 'CommandRunner._oneloop: Error processing file %s: %s', filebase, str(e))
+                    syslog('error', 'CommandRunner: Error processing file %s: %s', filebase, str(e))
+                    syslog('error', 'CommandRunner: Traceback:\n%s', traceback.format_exc())
+                    continue
+
         except Exception as e:
-            syslog('error', 'CommandRunner._oneloop: Error processing command queue: %s', str(e))
+            syslog('error', 'CommandRunner: Error in _oneloop: %s', str(e))
+            syslog('error', 'CommandRunner: Traceback:\n%s', traceback.format_exc())
+            raise
 
 # Set up i18n
 _ = i18n._

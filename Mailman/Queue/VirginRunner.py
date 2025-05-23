@@ -31,6 +31,7 @@ import traceback
 from Mailman import Errors
 import threading
 import email.header
+import os
 
 
 class VirginRunner(IncomingRunner):
@@ -204,3 +205,67 @@ class VirginRunner(IncomingRunner):
                 if msgid in self._processed_times:
                     del self._processed_times[msgid]
                 mailman_log('debug', 'VirginRunner: Unmarked message %s as processed', msgid)
+
+    def _oneloop(self):
+        """Process one batch of messages from the virgin queue."""
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            if not files:
+                mailman_log('debug', 'VirginRunner: No files to process')
+                return
+
+            mailman_log('debug', 'VirginRunner: Processing %d files', len(files))
+            
+            # Process each file
+            for filebase in files:
+                try:
+                    # Check if the file exists before dequeuing
+                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
+                    if not os.path.exists(pckfile):
+                        mailman_log('error', 'VirginRunner._oneloop: File %s does not exist, skipping', pckfile)
+                        continue
+                        
+                    # Check if file is locked
+                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                    if os.path.exists(lockfile):
+                        mailman_log('debug', 'VirginRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                        continue
+                    
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        mailman_log('debug', 'VirginRunner._oneloop: No message data for %s', filebase)
+                        continue
+
+                    # Get message ID for tracking
+                    msgid = msg.get('message-id', 'n/a')
+                    
+                    # Check if message has already been processed
+                    if not self._check_message_processed(msgid, filebase, msg):
+                        mailman_log('debug', 'VirginRunner._oneloop: Message %s already processed, skipping', msgid)
+                        continue
+
+                    try:
+                        # Process the message
+                        success = self._onefile(msg, msgdata)
+                        if success:
+                            mailman_log('debug', 'VirginRunner: Successfully processed message %s', msgid)
+                        else:
+                            mailman_log('debug', 'VirginRunner: Message %s requeued for later processing', msgid)
+                    except Exception as e:
+                        mailman_log('error', 'VirginRunner: Error processing %s: %s', msgid, str(e))
+                        mailman_log('error', 'VirginRunner: Traceback:\n%s', traceback.format_exc())
+                        self._handle_error(e, msg, None)
+                        # Unmark the message as processed since it failed
+                        self._unmark_message_processed(msgid)
+
+                except Exception as e:
+                    mailman_log('error', 'VirginRunner: Error processing file %s: %s', filebase, str(e))
+                    mailman_log('error', 'VirginRunner: Traceback:\n%s', traceback.format_exc())
+                    continue
+
+        except Exception as e:
+            mailman_log('error', 'VirginRunner: Error in _oneloop: %s', str(e))
+            mailman_log('error', 'VirginRunner: Traceback:\n%s', traceback.format_exc())
+            raise
