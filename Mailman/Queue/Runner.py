@@ -41,6 +41,8 @@ class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
     MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
+    MAX_BACKOFF = 60  # Maximum backoff time in seconds
+    INITIAL_BACKOFF = 1  # Initial backoff time in seconds
     
     # Message tracking configuration - can be overridden by subclasses
     _track_messages = False  # Whether to track processed messages
@@ -51,6 +53,7 @@ class Runner:
     _retry_times = {}  # Dictionary of retry times
     _last_cleanup = time.time()  # Last cleanup time
     _cleanup_interval = 3600  # Cleanup interval in seconds
+    _current_backoff = INITIAL_BACKOFF  # Current backoff time in seconds
 
     def __init__(self, slice=None, numslices=1):
         syslog('debug', '%s: Starting initialization', self.__class__.__name__)
@@ -209,6 +212,10 @@ class Runner:
         # order.  Return an integer count of the number of files that were
         # available for this qrunner to process.
         files = self._switchboard.files()
+        if not files:
+            syslog('debug', '%s: No files to process', self.__class__.__name__)
+            return 0
+            
         for filebase in files:
             try:
                 # Ask the switchboard for the message and metadata objects
@@ -405,15 +412,29 @@ class Runner:
         pass
 
     def _snooze(self, filecnt):
-        """Sleep for a while, but check for stop flag periodically."""
+        """Sleep for a while, but check for stop flag periodically.
+        
+        Implements exponential backoff when no files are found to process.
+        """
         if filecnt > 0:
+            # Reset backoff when files are found
+            self._current_backoff = self.INITIAL_BACKOFF
             # Only log if we're sleeping for more than 5 seconds
             if self.SLEEPTIME > 5:
-                syslog('debug', 'Runner._snooze: Sleeping for %d seconds after processing %d files in this iteration', 
-                       self.SLEEPTIME, filecnt)
-        for _ in range(self.SLEEPTIME):
+                syslog('debug', '%s: Sleeping for %d seconds after processing %d files in this iteration', 
+                       self.__class__.__name__, self.SLEEPTIME, filecnt)
+            sleep_time = self.SLEEPTIME
+        else:
+            # No files found, use exponential backoff
+            sleep_time = min(self._current_backoff, self.MAX_BACKOFF)
+            syslog('debug', '%s: No files to process, sleeping for %d seconds', 
+                   self.__class__.__name__, sleep_time)
+            # Double the backoff time for next iteration, up to MAX_BACKOFF
+            self._current_backoff = min(self._current_backoff * 2, self.MAX_BACKOFF)
+            
+        for _ in range(sleep_time):
             if self._stop:
-                syslog('debug', 'Runner._snooze: Stop flag detected, waking up')
+                syslog('debug', '%s: Stop flag detected, waking up', self.__class__.__name__)
                 return
             time.sleep(1)
 
