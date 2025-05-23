@@ -938,10 +938,10 @@ QRUNNERS = [
     ('CommandRunner',  1), # commands and bounces from the outside world
     ('IncomingRunner', 4), # posts from the outside world
     ('NewsRunner',     1), # outgoing messages to the nntpd
-    ('OutgoingRunner', 8), # outgoing messages to the smtpd
+    ('OutgoingRunner', 1), # outgoing messages to the smtpd (single instance with process coordination)
     ('VirginRunner',   1), # internally crafted (virgin birth) messages
     ('RetryRunner',    1), # retry temporarily failed deliveries
-    ]
+]
 
 # Set this to Yes to use the `Maildir' delivery option.  If you change this
 # you will need to re-run bin/genaliases for MTAs that don't use list
