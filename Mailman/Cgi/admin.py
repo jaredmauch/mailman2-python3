@@ -559,6 +559,51 @@ def show_results(mlist, doc, category, subcat, cgidata):
     }
     add_standard_headers(doc, mlist, title, category, subcat)
     
+    # Create a table for configuration categories
+    cat_table = Table(border=0, width='100%')
+    cat_table.AddRow([Center(Header(2, _('Configuration Categories')))])
+    cat_table.AddCellInfo(cat_table.GetCurrentRowIndex(), 0, colspan=2,
+                         bgcolor=mm_cfg.WEB_HEADER_COLOR)
+    
+    # Add category links
+    for cat in categories.keys():
+        cat_label = _(categories[cat][0])
+        if isinstance(cat_label, bytes):
+            cat_label = cat_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
+        url = '%s/%s' % (adminurl, cat)
+        
+        # Get subcategories if they exist
+        subcats = mlist.GetConfigSubCategories(cat)
+        if subcats:
+            # Create a container for the category and its subcategories
+            container = Container()
+            if cat == category:
+                container.AddItem(Bold(Link(url, cat_label)))
+            else:
+                container.AddItem(Link(url, cat_label))
+            
+            # Add subcategory links
+            subcat_list = UnorderedList()
+            for subcat_name, subcat_label in subcats:
+                subcat_url = '%s/%s/%s' % (adminurl, cat, subcat_name)
+                if isinstance(subcat_label, bytes):
+                    subcat_label = subcat_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
+                if cat == category and subcat_name == subcat:
+                    subcat_list.AddItem(Bold(Link(subcat_url, subcat_label)))
+                else:
+                    subcat_list.AddItem(Link(subcat_url, subcat_label))
+            container.AddItem(subcat_list)
+            cat_table.AddRow([container])
+        else:
+            # No subcategories, just add the category link
+            if cat == category:
+                cat_table.AddRow([Bold(Link(url, cat_label))])
+            else:
+                cat_table.AddRow([Link(url, cat_label)])
+    
+    doc.AddItem(cat_table)
+    doc.AddItem('<hr>')
+    
     # Use ParseTags for the main content
     replacements = {
         'realname': mlist.real_name,
