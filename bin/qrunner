@@ -269,6 +269,9 @@ def main():
         # Now start up the main loop
         syslog('qrunner', '%s qrunner started.', loop.name())
         qrunner.run()
+        # Only exit with SIGINT if we're stopping normally
+        if not qrunner._stop:
+            loop.status = signal.SIGINT
         syslog('qrunner', '%s qrunner exiting.', loop.name())
     else:
         # Anything else we have to handle a bit more specially
@@ -299,6 +302,9 @@ def main():
                     syslog('qrunner', 'Now doing a %s qrunner iteration',
                            qrunner.__class__.__bases__[0].__name__)
                 qrunner.run()
+                # Only exit with SIGINT if we're stopping normally
+                if not qrunner._stop:
+                    loop.status = signal.SIGINT
             if args.once:
                 break
             if mm_cfg.QRUNNER_SLEEP_TIME > 0:
