@@ -331,20 +331,49 @@ Exiting."""), file=sys.stderr)
 
 
 def start_runner(qrname, slice, count):
+    """Start a qrunner process in the background.
+    
+    Args:
+        qrname: Name of the runner to start
+        slice: Slice number for this runner
+        count: Total number of slices
+        
+    Returns:
+        int: PID of the started process
+    """
     pid = os.fork()
     if pid:
         # parent
         return pid
     # child
-    #
-    # Craft the command line arguments for the exec() call.
-    rswitch = '--runner=%s:%d:%d' % (qrname, slice, count)
-    exe = os.path.join(mm_cfg.BIN_DIR, 'qrunner')
-    # mm_cfg.PYTHON, which is the absolute path to the Python interpreter,
-    # must be given as argv[0] due to Python's library search algorithm.
-    os.execl(mm_cfg.PYTHON, mm_cfg.PYTHON, exe, rswitch, '-s')
-    # Should never get here
-    raise RuntimeError('os.execl() failed')
+    try:
+        # Create a new session and become the session leader
+        os.setsid()
+        
+        # Be sure to close any open std{in,out,err}
+        devnull = os.open('/dev/null', 0)
+        os.dup2(devnull, 0)
+        os.dup2(devnull, 1)
+        os.dup2(devnull, 2)
+        
+        # Instead of cd'ing to root, cd to the Mailman installation home
+        os.chdir(mm_cfg.PREFIX)
+        
+        # Set our file mode creation umask
+        os.umask(0o07)
+        
+        # Craft the command line arguments for the exec() call
+        rswitch = '--runner=%s:%d:%d' % (qrname, slice, count)
+        exe = os.path.join(mm_cfg.BIN_DIR, 'qrunner')
+        # mm_cfg.PYTHON, which is the absolute path to the Python interpreter,
+        # must be given as argv[0] due to Python's library search algorithm.
+        os.execl(mm_cfg.PYTHON, mm_cfg.PYTHON, exe, rswitch, '-s')
+        # Should never get here
+        raise RuntimeError('os.execl() failed')
+    except Exception as e:
+        syslog('error', 'Failed to start %s runner (slice %d): %s', 
+               qrname, slice, str(e))
+        os._exit(1)
 
 
 def start_all_runners():
@@ -569,24 +598,100 @@ def main():
         except LockFile.TimeOutError:
             sys.exit(1)
 
-        # Start all runners
-        kids = start_all_runners()
-        if not kids:
-            print(C_('No runners started'), file=sys.stderr)
-            lock.unlock(unconditionally=1)
-            sys.exit(1)
+        # Fork to daemonize
+        pid = os.fork()
+        if pid:
+            # parent
+            if not args.quiet:
+                print(C_("Starting Mailman's master qrunner."))
+            # Give up the lock "ownership". This just means the foreground
+            # process won't close/unlock the lock when it finalizes this lock
+            # instance. We'll let the master watcher subproc own the lock.
+            lock._transfer_to(pid)
+            
+            # Wait briefly to ensure child process starts
+            time.sleep(1)
+            
+            # Verify the child process is running
+            try:
+                os.kill(pid, 0)  # Check if process exists
+                if not args.quiet:
+                    print(C_('Master qrunner started successfully (pid: %d)') % pid)
+                    syslog('qrunner', 'Master qrunner started successfully (pid: %d)', pid)
+            except OSError as e:
+                if e.errno == errno.ESRCH:
+                    print(C_('Error: Master process failed to start'), file=sys.stderr)
+                    return
+                raise
+            return
 
-        # Write our PID to the PID file
+        # child
         try:
-            with open(mm_cfg.PIDFILE, 'w') as fp:
-                fp.write(str(os.getpid()))
-        except IOError as e:
-            print(C_('Failed to write PID file: %(error)s'), file=sys.stderr)
-            lock.unlock(unconditionally=1)
-            sys.exit(1)
+            lock._take_possession()
+            
+            # Create a new session and become the session leader
+            os.setsid()
+            
+            # Be sure to close any open std{in,out,err}
+            devnull = os.open('/dev/null', 0)
+            os.dup2(devnull, 0)
+            os.dup2(devnull, 1)
+            os.dup2(devnull, 2)
+            
+            # Instead of cd'ing to root, cd to the Mailman installation home
+            os.chdir(mm_cfg.PREFIX)
+            
+            # Set our file mode creation umask
+            os.umask(0o07)
+            
+            # Write our PID to the PID file
+            try:
+                with open(mm_cfg.PIDFILE, 'w') as fp:
+                    fp.write(str(os.getpid()))
+            except IOError as e:
+                syslog('error', 'Failed to write PID file: %s', str(e))
+                os._exit(1)
 
-        # Now we're ready to simply do our wait/restart loop
-        try:
+            # Start all runners
+            kids = start_all_runners()
+            if not kids:
+                syslog('error', 'No runners started successfully')
+                os._exit(1)
+
+            # Set up a SIGALRM handler to refresh the lock once per day
+            def sigalrm_handler(signum, frame, lock=lock):
+                lock.refresh()
+                signal.alarm(mm_cfg.days(1))
+            signal.signal(signal.SIGALRM, sigalrm_handler)
+            signal.alarm(mm_cfg.days(1))
+
+            # Set up a SIGHUP handler
+            def sighup_handler(signum, frame, kids=kids):
+                syslog.close()
+                for pid in list(kids.keys()):
+                    os.kill(pid, signal.SIGHUP)
+                syslog('qrunner',
+                       'Master watcher caught SIGHUP.  Re-opening log files.')
+            signal.signal(signal.SIGHUP, sighup_handler)
+
+            # Set up a SIGTERM handler
+            def sigterm_handler(signum, frame, kids=kids):
+                for pid in list(kids.keys()):
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                    except OSError as e:
+                        if e.errno != errno.ESRCH: raise
+                syslog('qrunner', 'Master watcher caught SIGTERM.  Exiting.')
+            signal.signal(signal.SIGTERM, sigterm_handler)
+
+            # Set up a SIGINT handler
+            def sigint_handler(signum, frame, kids=kids):
+                for pid in list(kids.keys()):
+                    os.kill(pid, signal.SIGINT)
+                syslog('qrunner', 'Master watcher caught SIGINT.  Restarting.')
+            signal.signal(signal.SIGINT, sigint_handler)
+
+            # Now we're ready to simply do our wait/restart loop
             while True:
                 try:
                     pid, status = os.wait()
