@@ -619,46 +619,36 @@ class OutgoingRunner(Runner, BounceMixin):
     _doperiodic = BounceMixin._doperiodic
 
     def _oneloop(self):
-        """Process one batch of messages from the outgoing queue."""
-        mailman_log('debug', 'OutgoingRunner: Starting one loop iteration')
-        try:
-            # Get the list of files to process
-            files = self._switchboard.files()
-            if not files:
-                mailman_log('debug', 'OutgoingRunner: No files to process')
-                return
-
-            mailman_log('debug', 'OutgoingRunner: Processing %d files', len(files))
+        """Process one batch of messages from the queue."""
+        # Get all files in the queue
+        files = self._switchboard.files()
+        if not files:
+            return 0
             
-            # Process each file
-            for filebase in files:
-                try:
-                    # Try to get the file from the switchboard
-                    msg, msgdata = self._switchboard.dequeue(filebase)
-                except Exception as e:
-                    mailman_log('error', 'OutgoingRunner: Error dequeuing %s: %s', filebase, str(e))
-                    mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
-                    continue
+        # Process each file
+        for filebase in files:
+            try:
+                # Try to get the file from the switchboard
+                msg, msgdata = self._switchboard.dequeue(filebase)
+            except Exception as e:
+                mailman_log('error', 'OutgoingRunner: Error dequeuing %s: %s', filebase, str(e))
+                mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+                continue
 
-                if msg is None:
-                    mailman_log('debug', 'OutgoingRunner: No message data for %s', filebase)
-                    continue
+            if msg is None:
+                mailman_log('debug', 'OutgoingRunner: No message data for %s', filebase)
+                continue
 
-                try:
-                    # Process the message
-                    self._dispose(msg, msgdata)
-                    with self._total_messages_lock:
-                        self._total_messages_processed += 1
-                    mailman_log('debug', 'OutgoingRunner: Successfully processed message %s', filebase)
-                except Exception as e:
-                    mailman_log('error', 'OutgoingRunner: Error processing %s: %s', filebase, str(e))
-                    mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
-                    self._handle_error(e, msg, None)
-
-        except Exception as e:
-            mailman_log('error', 'OutgoingRunner: Error in _oneloop: %s', str(e))
-            mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
-            raise
+            try:
+                # Process the message
+                self._dispose(msg, msgdata)
+                with self._total_messages_lock:
+                    self._total_messages_processed += 1
+                mailman_log('debug', 'OutgoingRunner: Successfully processed message %s', filebase)
+            except Exception as e:
+                mailman_log('error', 'OutgoingRunner: Error processing %s: %s', filebase, str(e))
+                mailman_log('error', 'OutgoingRunner: Traceback:\n%s', traceback.format_exc())
+                self._handle_error(e, msg, None)
 
     def _handle_error(self, exc, msg=None, mlist=None, preserve=True):
         """Enhanced error handling with circuit breaker and detailed logging."""
