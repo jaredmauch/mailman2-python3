@@ -93,6 +93,11 @@ def mailman_log(ident, msg, *args):
         msg = str(msg)
     if args:
         msg = msg % args
+    # Remove u prefix if present (Python 2 compatibility)
+    if msg.startswith("u'") and msg.endswith("'"):
+        msg = msg[2:-1]
+    elif msg.startswith('u"') and msg.endswith('"'):
+        msg = msg[2:-1]
     _syslog.mailman_log(ident, msg)
 
 # For backward compatibility
