@@ -186,8 +186,6 @@ class Table(object):
         # Add ARIA attributes for accessibility
         if 'role' not in info:
             info['role'] = 'table'
-        if 'aria-label' not in info:
-            info['aria-label'] = 'Data table'
         for k, v in list(info.items()):
             output = output + ' %s="%s"' % (k, v)
         return output
@@ -363,8 +361,7 @@ class Document(Container):
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         line-height: 1.6;
         color: #333;
-        max-width: 800px;
-        margin: 0 auto;
+        margin: 0;
         padding: 20px;
     }
     h1, h2, h3 {
