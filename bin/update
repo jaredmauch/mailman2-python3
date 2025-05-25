@@ -1074,21 +1074,37 @@ downgrade."""))
             print("Listname after conversion: %s (type: %s)" % (listname, type(listname)))
             
             print("Creating MailList object...")
-            # Create the MailList object with lock=True to handle locking properly
-            mlist = MailList.MailList(listname, lock=True)
+            # Create the MailList object without lock first
+            mlist = MailList.MailList(listname, lock=0)
             print("MailList object created successfully")
             
-            print("Starting upgrade...")
-            # Do the upgrade
-            upgrade(mlist)
-            print("Upgrade completed, saving...")
-            mlist.Save()
-            print("Save completed")
+            print("Attempting to acquire lock...")
+            try:
+                mlist.Lock(0.5)
+                print("Lock acquired, starting upgrade...")
+                
+                # Do the upgrade
+                upgrade(mlist)
+                print("Upgrade completed, saving...")
+                mlist.Save()
+                print("Save completed")
+                
+            except TimeOutError:
+                print(C_('WARNING: could not acquire lock for list: %(listname)s') % {
+                    'listname': listname
+                }, file=sys.stderr)
+                continue
+            finally:
+                if mlist is not None:
+                    try:
+                        print("Unlocking list...")
+                        mlist.Unlock()
+                    except Exception as e:
+                        print(C_('WARNING: Error unlocking list %(listname)s: %(error)s') % {
+                            'listname': listname,
+                            'error': str(e)
+                        }, file=sys.stderr)
             
-        except TimeOutError:
-            print(C_('WARNING: could not acquire lock for list: %(listname)s') % {
-                'listname': listname
-            }, file=sys.stderr)
         except Exception as e:
             print("\nDetailed error information:")
             print("List name: %s" % listname)
@@ -1102,16 +1118,6 @@ downgrade."""))
                 'listname': listname,
                 'error': str(e)
             }, file=sys.stderr)
-        finally:
-            if mlist is not None:
-                try:
-                    print("Unlocking list...")
-                    mlist.Unlock()
-                except Exception as e:
-                    print(C_('WARNING: Error unlocking list %(listname)s: %(error)s') % {
-                        'listname': listname,
-                        'error': str(e)
-                    }, file=sys.stderr)
 
     # Save the new version
     try:
