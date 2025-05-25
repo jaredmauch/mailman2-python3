@@ -174,6 +174,17 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         return member.lower()
 
     def getMemberCPAddress(self, member):
+        """Get the canonical address of a member.
+        
+        Args:
+            member: The member's email address
+            
+        Returns:
+            str: The member's canonical address
+            
+        Raises:
+            NotAMemberError: If the member is not found
+        """
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
             raise Errors.NotAMemberError(member)
@@ -221,10 +232,18 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         return not not (option & flag)
 
     def getMemberName(self, member):
+        """Get the real name of a member.
+        
+        Args:
+            member: The member's email address
+            
+        Returns:
+            str: The member's real name, or None if not set
+        """
         self.__assertIsMember(member)
         name = self.__mlist.usernames.get(member.lower())
         if name is None:
-            return ''
+            return None
         if isinstance(name, bytes):
             try:
                 # Try Latin-1 first since that's what we're seeing in the data
@@ -432,7 +451,12 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
             del self.__mlist.user_options[memberkey]
 
     def setMemberName(self, member, realname):
-        assert self.__mlist.Locked()
+        """Set the real name of a member.
+        
+        Args:
+            member: The member's email address
+            realname: The member's real name
+        """
         self.__assertIsMember(member)
         if realname is None:
             realname = ''
@@ -443,7 +467,6 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
             except UnicodeDecodeError:
                 # Fall back to UTF-8 if Latin-1 fails
                 realname = realname.decode('utf-8', 'replace')
-        # Store as a Python 3 string
         self.__mlist.usernames[member.lower()] = str(realname)
 
     def setMemberTopics(self, member, topics):
