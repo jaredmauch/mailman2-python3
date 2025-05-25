@@ -47,6 +47,70 @@ from Mailman import Errors
 from Mailman import LockFile
 from Mailman.LockFile import NotLockedError, AlreadyLockedError, TimeOutError
 from Mailman.UserDesc import UserDesc
+from Mailman.Utils import (
+    save_pickle_file,
+    load_pickle_file,
+    get_pickle_protocol,
+    list_exists,
+    list_names,
+    wrap,
+    QuotePeriods,
+    ParseEmail,
+    LCDomain,
+    ValidateEmail,
+    GetPathPieces,
+    GetRequestMethod,
+    ScriptURL,
+    GetPossibleMatchingAddrs,
+    List2Dict,
+    UserFriendly_MakeRandomPassword,
+    Secure_MakeRandomPassword,
+    MakeRandomPassword,
+    GetRandomSeed,
+    set_global_password,
+    get_global_password,
+    check_global_password,
+    websafe,
+    nntpsplit,
+    ObscureEmail,
+    UnobscureEmail,
+    findtext,
+    maketext,
+    is_administrivia,
+    GetRequestURI,
+    reap,
+    GetLanguageDescr,
+    GetCharSet,
+    GetDirection,
+    IsLanguage,
+    get_domain,
+    get_site_email,
+    unique_message_id,
+    midnight,
+    to_dollar,
+    to_percent,
+    dollar_identifiers,
+    percent_identifiers,
+    canonstr,
+    uncanonstr,
+    uquote,
+    oneline,
+    strip_verbose_pattern,
+    suspiciousHTML,
+    get_suffixes,
+    get_org_dom,
+    IsDMARCProhibited,
+    IsVerboseMember,
+    check_eq_domains,
+    xml_to_unicode,
+    banned_ip,
+    banned_domain,
+    captcha_display,
+    captcha_verify,
+    validate_ip_address,
+    ValidateListName,
+    formataddr
+)
 
 # base classes
 from Mailman.Archiver import Archiver
@@ -665,7 +729,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         # On success return None.  On error, return the error object.
         try:
             # Save using the utility function with protocol 4
-            save_pickle_file(dbfile, dict)
+            save_pickle_file(dbfile, dict, protocol=4)
             # Update the timestamp
             self.__timestamp = os.path.getmtime(dbfile)
             return None
