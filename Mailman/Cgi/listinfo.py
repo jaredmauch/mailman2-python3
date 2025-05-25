@@ -27,6 +27,7 @@ import urllib.parse
 import time
 import sys
 import ipaddress
+from io import FileNotFoundError
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -83,7 +84,7 @@ def main():
 
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError as e:
+    except (Errors.MMListError, FileNotFoundError) as e:
         # Avoid cross-site scripting attacks and information disclosure
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
