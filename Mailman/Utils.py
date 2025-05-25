@@ -1789,8 +1789,19 @@ def get_pickle_protocol(filename):
     """
     try:
         with open(filename, 'rb') as fp:
-            # Try to load the pickle file to get its protocol version
-            data = pickle.load(fp, fix_imports=True, encoding='latin1')
-            return pickle.format_version
-    except (IOError, pickle.UnpicklingError):
+            # Read the first byte to determine protocol version
+            first_byte = fp.read(1)
+            if not first_byte:
+                return None
+            # The first byte of a pickle file indicates the protocol version
+            # For protocol 0, it's '0', for protocol 1 it's '1', etc.
+            # For protocol 2 and higher, it's a binary value
+            if first_byte[0] == ord('0'):
+                return 0
+            elif first_byte[0] == ord('1'):
+                return 1
+            else:
+                # For protocol 2 and higher, the first byte is the protocol number
+                return first_byte[0]
+    except (IOError, IndexError):
         return None
