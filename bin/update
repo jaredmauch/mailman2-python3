@@ -875,7 +875,7 @@ def init_digest_vars(mlist):
 def upgrade(mlist):
     """Upgrade the list to the current version."""
     try:
-        # Print pickle protocol version
+        # Print pickle protocol version when loading
         try:
             config_path = os.path.join(mlist._full_path, 'config.pck')
             if os.path.exists(config_path):
@@ -981,6 +981,9 @@ def upgrade(mlist):
 
         # Save the list configuration
         try:
+            print(C_('Saving list %(listname)s with pickle protocol 4') % {
+                'listname': mlist.internal_name()
+            })
             mlist.Save()
         except (IOError, OSError) as e:
             print(C_('Error saving list configuration: %(error)s') % {'error': str(e)})
@@ -1104,9 +1107,13 @@ downgrade."""))
                     print("Lock appears to be set, checking if it's stale...")
                     try:
                         # Try to force unlock if the lock is stale
-                        mlist.__lock.force_unlock()
-                        print("Stale lock removed, retrying lock acquisition...")
-                        mlist.Lock(0.5)
+                        if hasattr(mlist, '__lock') and hasattr(mlist.__lock, 'force_unlock'):
+                            mlist.__lock.force_unlock()
+                            print("Stale lock removed, retrying lock acquisition...")
+                            mlist.Lock(0.5)
+                        else:
+                            print("WARNING: Lock object does not have force_unlock capability")
+                            continue
                     except Exception as e:
                         print(C_('WARNING: Could not remove stale lock: %(error)s') % {
                             'error': str(e)
