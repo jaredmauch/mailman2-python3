@@ -753,6 +753,15 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
             def loadfunc(fp):
                 try:
+                    # Read the first byte to determine protocol version
+                    protocol = ord(fp.read(1))
+                    print(C_('List %(listname)s %(dbfile)s uses pickle protocol %(protocol)d') % {
+                        'listname': self.internal_name(),
+                        'dbfile': os.path.basename(dbfile),
+                        'protocol': protocol
+                    })
+                    # Reset file pointer to beginning
+                    fp.seek(0)
                     # Try UTF-8 first for newer files (protocol 4)
                     return pickle.load(fp, fix_imports=True, encoding='utf-8')
                 except (UnicodeDecodeError, pickle.UnpicklingError):
