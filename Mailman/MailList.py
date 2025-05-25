@@ -762,12 +762,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
                     })
                     # Reset file pointer to beginning
                     fp.seek(0)
-                    # Try UTF-8 first for newer files (protocol 4)
-                    return pickle.load(fp, fix_imports=True, encoding='utf-8')
-                except (UnicodeDecodeError, pickle.UnpicklingError):
-                    # Fall back to latin1 for older files
-                    fp.seek(0)
-                    return pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Try loading with different encodings and protocols
+                    try:
+                        # First try with UTF-8 and protocol 4
+                        return pickle.load(fp, fix_imports=True, encoding='utf-8')
+                    except (UnicodeDecodeError, pickle.UnpicklingError):
+                        # If that fails, try with latin1
+                        fp.seek(0)
+                        try:
+                            return pickle.load(fp, fix_imports=True, encoding='latin1')
+                        except (UnicodeDecodeError, pickle.UnpicklingError):
+                            # If that fails, try without specifying encoding
+                            fp.seek(0)
+                            return pickle.load(fp, fix_imports=True)
+                except Exception as e:
+                    syslog('error', 'Failed to load pickle file %s: %s', dbfile, str(e))
+                    raise
         else:
             raise ValueError('Bad database file name')
         try:
@@ -803,6 +813,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
             return dict, None
         except Exception as e:
             fp.close()
+            syslog('error', 'Failed to load database file %s: %s', dbfile, str(e))
             return None, e
 
     def Load(self, check_version=True):
