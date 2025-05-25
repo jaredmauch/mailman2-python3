@@ -95,7 +95,6 @@ def main():
     try:
         # Log page load
         mailman_log('info', 'admin: Page load started')
-        mailman_log('debug', 'Entered main()')
         
         # Initialize document early
         doc = Document()
@@ -103,7 +102,6 @@ def main():
         
         # Parse form data first since we need it for authentication
         try:
-            mailman_log('debug', 'Parsing form data')
             if os.environ.get('REQUEST_METHOD') == 'POST':
                 content_length = int(os.environ.get('CONTENT_LENGTH', 0))
                 if content_length > 0:
@@ -114,7 +112,6 @@ def main():
             else:
                 query_string = os.environ.get('QUERY_STRING', '')
                 cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-            mailman_log('debug', 'cgidata after parse: %s', str(cgidata))
         except Exception as e:
             mailman_log('error', 'admin: Invalid form data: %s\n%s', str(e), traceback.format_exc())
             doc.AddItem(Header(2, _("Error")))
@@ -125,7 +122,6 @@ def main():
 
         # Get the list name
         parts = Utils.GetPathPieces()
-        mailman_log('debug', 'Path parts: %s', str(parts))
         if not parts:
             doc = handle_no_list()
             print(doc.Format())
@@ -144,7 +140,6 @@ def main():
             return
 
         mailman_log('info', 'admin: Processing list "%s"', listname)
-        mailman_log('debug', 'List name: %s', listname)
 
         try:
             mlist = MailList.MailList(listname, lock=0)
@@ -175,7 +170,6 @@ def main():
         i18n.set_language(mlist.preferred_language)
         # If the user is not authenticated, we're done.
         try:
-            mailman_log('debug', 'Checking authentication')
             # CSRF check
             safe_params = ['VARHELP', 'adminpw', 'admlogin',
                           'letter', 'chunk', 'findmember',
@@ -189,24 +183,17 @@ def main():
             if cgidata.get('adminpw', [''])[0]:
                 os.environ['HTTP_COOKIE'] = ''
                 csrf_checked = True
-            mailman_log('debug', 'Authentication contexts: %s', str((mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)))
-            mailman_log('debug', 'Password provided: %s', 'Yes' if cgidata.get('adminpw', [''])[0] else 'No')
-            mailman_log('debug', 'Cookie present: %s', 'Yes' if os.environ.get('HTTP_COOKIE') else 'No')
             auth_result = mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                       mm_cfg.AuthSiteAdmin),
                                      cgidata.get('adminpw', [''])[0])
-            mailman_log('debug', 'WebAuthenticate result: %s', str(auth_result))
             if not auth_result:
-                mailman_log('debug', 'Authentication failed - checking auth contexts')
                 for context in (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin):
                     mailman_log('debug', 'Checking context %s: %s', 
                                context, str(mlist.AuthContextInfo(context)))
         except Exception as e:
             mailman_log('error', 'admin: Exception during WebAuthenticate: %s\n%s', str(e), traceback.format_exc())
-            mailman_log('debug', 'Exception during WebAuthenticate')
             raise
         if not auth_result:
-            mailman_log('debug', 'Not authenticated, calling loginpage')
             if 'adminpw' in cgidata:
                 msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
                 remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -219,9 +206,8 @@ def main():
             else:
                 msg = ''
             Auth.loginpage(mlist, 'admin', msg=msg)
-            mailman_log('debug', 'Called Auth.loginpage')
             return
-        mailman_log('debug', 'Authenticated, proceeding to admin page')
+
         # Which subcategory was requested?  Default is `general'
         if len(parts) == 1:
             category = 'general'
@@ -258,7 +244,6 @@ def main():
         doc = Document()
         doc.set_language(mlist.preferred_language)
         form = Form(mlist=mlist, contexts=AUTH_CONTEXTS)
-        mailman_log('debug', 'category=%s, subcat=%s', category, subcat)
 
         # From this point on, the MailList object must be locked
         mlist.Lock()
@@ -307,7 +292,6 @@ def main():
 
             # Show the results page
             show_results(mlist, doc, category, subcat, cgidata)
-            mailman_log('debug', 'About to print doc.Format()')
             print(doc.Format())
             mlist.Save()
         finally:
@@ -656,20 +640,14 @@ def show_results(mlist, doc, category, subcat, cgidata):
     doc.AddItem(mlist.GetMailmanFooter())
 
 def show_variables(mlist, category, subcat, cgidata, doc):
-    mailman_log('debug', 'show_variables called with category=%s, subcat=%s', category, subcat)
-    options = mlist.GetConfigInfo(category, subcat)
-    mailman_log('debug', 'Got config info: %s', str(options))
-
     # The table containing the results
     table = Table(cellspacing=3, cellpadding=4, width='100%')
 
     # Get and portray the text label for the category.
     categories = mlist.GetConfigCategories()
-    mailman_log('debug', 'Got config categories: %s', str(categories))
     label = _(categories[category][0])
     if isinstance(label, bytes):
         label = label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-    mailman_log('debug', 'Category label: %s', label)
 
     table.AddRow([Center(Header(2, label))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
@@ -680,14 +658,12 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     description = options[0]
     if isinstance(description, bytes):
         description = description.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-    mailman_log('debug', 'Description: %s', description)
     if isinstance(description, str):
         table.AddRow([description])
         table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         options = options[1:]
 
     if not options:
-        mailman_log('debug', 'No options to display')
         return table
 
     # Add the global column headers
@@ -699,7 +675,6 @@ def show_variables(mlist, category, subcat, cgidata, doc):
                       width='85%')
 
     for item in options:
-        mailman_log('debug', 'Processing item: %s', str(item))
         if isinstance(item, str):
             # The very first banner option (string in an options list) is
             # treated as a general description, while any others are
@@ -714,17 +689,12 @@ def show_variables(mlist, category, subcat, cgidata, doc):
             add_options_table_item(mlist, category, subcat, table, item)
     table.AddRow(['<br>'])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
-    mailman_log('debug', 'Returning table with %d rows', table.GetCurrentRowIndex() + 1)
     return table
 
 def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
-    mailman_log('debug', 'Adding options table item: %s', str(item))
     # Add a row to an options table with the item description and value.
     varname, kind, params, extra, descr, elaboration = \
              get_item_characteristics(item)
-    mailman_log('debug', 'Item characteristics: varname=%s, kind=%s', varname, kind)
-    if elaboration is None:
-        elaboration = descr
     descr = get_item_gui_description(mlist, category, subcat,
                                      varname, descr, elaboration, detailsp)
     val = get_item_gui_value(mlist, category, kind, varname, params, extra)
@@ -1546,15 +1516,6 @@ def change_options(mlist, category, subcat, cgidata, doc):
         # Get the configuration categories
         config_categories = mlist.GetConfigCategories()
         
-        # Log the configuration categories for debugging
-        mailman_log('debug', 'Configuration categories: %s', str(config_categories))
-        mailman_log('debug', 'Category type: %s', str(type(config_categories)))
-        if isinstance(config_categories, dict):
-            mailman_log('debug', 'Category keys: %s', str(list(config_categories.keys())))
-            for key, value in config_categories.items():
-                mailman_log('debug', 'Category %s type: %s, value: %s', 
-                       key, str(type(value)), str(value))
-        
         # Validate category exists
         if category not in config_categories:
             mailman_log('error', 'Invalid configuration category: %s', category)
@@ -1565,8 +1526,6 @@ def change_options(mlist, category, subcat, cgidata, doc):
             
         # Get the category object and validate it
         category_obj = config_categories[category]
-        mailman_log('debug', 'Category object for %s: type=%s, value=%s', 
-               category, str(type(category_obj)), str(category_obj))
         
         if not hasattr(category_obj, 'items'):
             mailman_log('error', 'Configuration category %s is invalid: %s', 
