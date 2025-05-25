@@ -36,6 +36,7 @@ import html.entities
 import html
 import email.header
 import email.iterators
+import pickle
 from email.errors import HeaderParseError
 from string import whitespace, digits
 from urllib.parse import urlparse
