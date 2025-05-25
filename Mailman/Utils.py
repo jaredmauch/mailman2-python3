@@ -1719,3 +1719,75 @@ def formataddr(pair):
             name = email.header.Header(name, 'utf-8').encode()
         return '%s <%s>' % (name, address)
     return address
+
+def save_pickle_file(filename, data, protocol=4):
+    """Save data to a pickle file using a consistent protocol.
+    
+    Args:
+        filename: Path to save the pickle file
+        data: Data to pickle
+        protocol: Pickle protocol to use (defaults to 4 for Python 2/3 compatibility)
+        
+    Raises:
+        IOError: If the file cannot be written
+    """
+    try:
+        with open(filename, 'wb') as fp:
+            pickle.dump(data, fp, protocol=protocol, fix_imports=True)
+    except IOError as e:
+        raise IOError(f'Could not write {filename}: {e}')
+
+def load_pickle_file(filename, encoding_order=None):
+    """Load a pickle file with consistent protocol and encoding handling.
+    
+    Args:
+        filename: Path to the pickle file
+        encoding_order: List of encodings to try in order. Defaults to ['utf-8', 'latin1']
+        
+    Returns:
+        The unpickled data
+        
+    Raises:
+        pickle.UnpicklingError: If the file cannot be unpickled
+        IOError: If the file cannot be read
+    """
+    if encoding_order is None:
+        encoding_order = ['utf-8', 'latin1']
+        
+    try:
+        with open(filename, 'rb') as fp:
+            # Read the first byte to determine protocol version
+            protocol = ord(fp.read(1))
+            # Reset file pointer to beginning
+            fp.seek(0)
+            
+            # Try each encoding in order
+            last_error = None
+            for encoding in encoding_order:
+                try:
+                    fp.seek(0)
+                    return pickle.load(fp, fix_imports=True, encoding=encoding)
+                except (UnicodeDecodeError, pickle.UnpicklingError) as e:
+                    last_error = e
+                    continue
+                    
+            # If we get here, all encodings failed
+            raise last_error or pickle.UnpicklingError('Failed to load pickle file')
+            
+    except IOError as e:
+        raise IOError(f'Could not read {filename}: {e}')
+
+def get_pickle_protocol(filename):
+    """Get the protocol version of a pickle file.
+    
+    Args:
+        filename: Path to the pickle file
+        
+    Returns:
+        The protocol version (int) or None if it cannot be determined
+    """
+    try:
+        with open(filename, 'rb') as fp:
+            return ord(fp.read(1))
+    except (IOError, IndexError):
+        return None
