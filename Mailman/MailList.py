@@ -75,6 +75,8 @@ from Mailman.Logging.Syslog import syslog
 _ = i18n._
 def D_(s):
     return s
+def C_(s):
+    return s
 
 EMPTYSTRING = ''
 OR = '|'
