@@ -602,37 +602,77 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         """Return whether digest delivery is the default for new members."""
         return self.__mlist.digest_is_default
 
+    @digest_is_default.setter
+    def digest_is_default(self, value):
+        """Set whether digest delivery is the default for new members."""
+        self.__mlist.digest_is_default = value
+
     @property
     def mime_is_default_digest(self):
         """Return whether MIME format is the default for digests."""
         return self.__mlist.mime_is_default_digest
+
+    @mime_is_default_digest.setter
+    def mime_is_default_digest(self, value):
+        """Set whether MIME format is the default for digests."""
+        self.__mlist.mime_is_default_digest = value
 
     @property
     def digest_size_threshhold(self):
         """Return the size threshold for digests in KB."""
         return self.__mlist.digest_size_threshhold
 
+    @digest_size_threshhold.setter
+    def digest_size_threshhold(self, value):
+        """Set the size threshold for digests in KB."""
+        self.__mlist.digest_size_threshhold = value
+
     @property
     def digest_send_periodic(self):
         """Return whether digests are sent periodically."""
         return self.__mlist.digest_send_periodic
+
+    @digest_send_periodic.setter
+    def digest_send_periodic(self, value):
+        """Set whether digests are sent periodically."""
+        self.__mlist.digest_send_periodic = value
 
     @property
     def digest_volume(self):
         """Return the current digest volume number."""
         return self.__mlist.volume
 
+    @digest_volume.setter
+    def digest_volume(self, value):
+        """Set the current digest volume number."""
+        self.__mlist.volume = value
+
     @property
     def digest_issue(self):
         """Return the current digest issue number."""
         return self.__mlist.next_digest_number
+
+    @digest_issue.setter
+    def digest_issue(self, value):
+        """Set the current digest issue number."""
+        self.__mlist.next_digest_number = value
 
     @property
     def digest_last_sent_at(self):
         """Return the timestamp of when the last digest was sent."""
         return self.__mlist.digest_last_sent_at
 
+    @digest_last_sent_at.setter
+    def digest_last_sent_at(self, value):
+        """Set the timestamp of when the last digest was sent."""
+        self.__mlist.digest_last_sent_at = value
+
     @property
     def digest_next_due_at(self):
         """Return the timestamp of when the next digest is due."""
         return self.__mlist.digest_next_due_at
+
+    @digest_next_due_at.setter
+    def digest_next_due_at(self, value):
+        """Set the timestamp of when the next digest is due."""
+        self.__mlist.digest_next_due_at = value
