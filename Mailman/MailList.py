@@ -762,19 +762,30 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
                     })
                     # Reset file pointer to beginning
                     fp.seek(0)
-                    # Try loading with different encodings and protocols
-                    try:
-                        # First try with UTF-8 and protocol 4
-                        return pickle.load(fp, fix_imports=True, encoding='utf-8')
-                    except (UnicodeDecodeError, pickle.UnpicklingError):
-                        # If that fails, try with latin1
-                        fp.seek(0)
+                    
+                    # For protocol 4 files, try loading with different encodings
+                    if protocol == 4:
                         try:
-                            return pickle.load(fp, fix_imports=True, encoding='latin1')
-                        except (UnicodeDecodeError, pickle.UnpicklingError):
-                            # If that fails, try without specifying encoding
+                            # First try with UTF-8
+                            return pickle.load(fp, fix_imports=True, encoding='utf-8')
+                        except (UnicodeDecodeError, pickle.UnpicklingError) as e:
+                            syslog('error', 'Failed to load with UTF-8: %s', str(e))
                             fp.seek(0)
+                            try:
+                                # Then try with latin1
+                                return pickle.load(fp, fix_imports=True, encoding='latin1')
+                            except (UnicodeDecodeError, pickle.UnpicklingError) as e:
+                                syslog('error', 'Failed to load with latin1: %s', str(e))
+                                fp.seek(0)
+                                # Finally try without encoding
+                                return pickle.load(fp, fix_imports=True)
+                    else:
+                        # For other protocols, try without encoding first
+                        try:
                             return pickle.load(fp, fix_imports=True)
+                        except (UnicodeDecodeError, pickle.UnpicklingError):
+                            fp.seek(0)
+                            return pickle.load(fp, fix_imports=True, encoding='latin1')
                 except Exception as e:
                     syslog('error', 'Failed to load pickle file %s: %s', dbfile, str(e))
                     raise
