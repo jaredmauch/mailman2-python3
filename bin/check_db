@@ -86,12 +86,12 @@ def testfile(dbfile, listname=None, verbose=0):
                             print('  Successfully loaded with latin1 encoding')
                     
                     if verbose:
-                        # Get pickle version info
-                        fp.seek(0)
-                        version = pickle.format_version
-                        protocol = pickle.HIGHEST_PROTOCOL
-                        print('  Pickle format version: %s' % version)
-                        print('  Pickle protocol: %d' % protocol)
+                        # Get pickle version info from the loaded data
+                        if hasattr(data, '_protocol'):
+                            protocol = data._protocol
+                            print('  Pickle protocol: %d' % protocol)
+                        else:
+                            print('  Pickle protocol: unknown (not stored in data)')
             except (EOFError, pickle.UnpicklingError) as e:
                 print('  Error loading file %s for list %s: %s' % 
                       (os.path.basename(dbfile), listname or 'unknown', str(e)))
