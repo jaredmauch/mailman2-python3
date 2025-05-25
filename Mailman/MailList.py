@@ -654,53 +654,22 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
     #
     # Database and filesystem I/O
     #
-    def __save(self, data_dict):
-        # Save the file as a binary pickle, and rotate the old version to a
-        # backup file.  We must guarantee that config.pck is always valid so
-        # we never rotate unless the we've successfully written the temp file.
-        # We use pickle now because marshal is not guaranteed to be compatible
-        # between Python versions.
+    def __save(self, dbfile, dict):
+        # Save the dictionary to the specified database file.  We always save
+        # using pickle, even if the file was originally a marshal file.  This
+        # is because pickle is guaranteed to be compatible across Python
+        # versions, while marshal is not.
         #
-        # We use protocol 4 for Python 2/3 compatibility because:
-        # 1. It supports large objects (>4GB)
-        # 2. It's compatible between Python 2.7 and Python 3.x
-        # 3. It handles Unicode strings properly
-        # 4. It's the highest protocol version supported by both Python 2.7 and 3.x
-        fname = os.path.join(self.fullpath(), 'config.pck')
-        fname_tmp = fname + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
-        fname_last = fname + '.last'
-        fp = None
+        # On success return None.  On error, return the error object.
         try:
-            fp = open(fname_tmp, 'wb')
-            # Use protocol 4 for Python 2/3 compatibility, with fix_imports for backward compatibility
-            pickle.dump(data_dict, fp, protocol=4, fix_imports=True)
-            fp.flush()
-            if mm_cfg.SYNC_AFTER_WRITE:
-                os.fsync(fp.fileno())
-            fp.close()
-        except IOError as e:
-            syslog('error',
-                   'Failed config.pck write, retaining old state.\n%s', e)
-            if fp is not None:
-                os.unlink(fname_tmp)
-            raise
-        # Now do config.pck.tmp.xxx -> config.pck -> config.pck.last rotation
-        # as safely as possible.
-        try:
-            # Remove existing backup file if it exists
-            try:
-                os.unlink(fname_last)
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
-            # Create new backup file
-            os.link(fname, fname_last)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-        os.rename(fname_tmp, fname)
-        # Reset the timestamp
-        self.__timestamp = os.path.getmtime(fname)
+            # Save using the utility function with protocol 4
+            save_pickle_file(dbfile, dict)
+            # Update the timestamp
+            self.__timestamp = os.path.getmtime(dbfile)
+            return None
+        except Exception as e:
+            syslog('error', 'Failed to save database file %s: %s', dbfile, str(e))
+            return e
 
     def Save(self):
         """Save the mailing list's configuration to disk.
@@ -731,7 +700,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         # list members' passwords (in clear text).
         omask = os.umask(0o007)
         try:
-            self.__save(dict)
+            self.__save(os.path.join(self.fullpath(), 'config.pck'), dict)
         finally:
             os.umask(omask)
             self.SaveRequestsDb()
@@ -753,55 +722,16 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
             def loadfunc(fp):
                 try:
-                    # Read the first byte to determine protocol version
-                    protocol = ord(fp.read(1))
-                    print(C_('List %(listname)s %(dbfile)s uses pickle protocol %(protocol)d') % {
-                        'listname': self.internal_name(),
-                        'dbfile': os.path.basename(dbfile),
-                        'protocol': protocol
-                    })
-                    # Reset file pointer to beginning
-                    fp.seek(0)
-                    
-                    # For protocol 2 files (Python 2.x), try loading with different encodings
-                    if protocol == 2:
-                        try:
-                            # First try with latin1 (most common for Python 2.x)
-                            return pickle.load(fp, fix_imports=True, encoding='latin1')
-                        except (UnicodeDecodeError, pickle.UnpicklingError) as e:
-                            syslog('error', 'Failed to load with latin1: %s', str(e))
-                            fp.seek(0)
-                            try:
-                                # Then try with UTF-8
-                                return pickle.load(fp, fix_imports=True, encoding='utf-8')
-                            except (UnicodeDecodeError, pickle.UnpicklingError) as e:
-                                syslog('error', 'Failed to load with UTF-8: %s', str(e))
-                                fp.seek(0)
-                                # Finally try without encoding
-                                return pickle.load(fp, fix_imports=True)
-                    # For protocol 4 files (Python 3.x), try loading with different encodings
-                    elif protocol == 4:
-                        try:
-                            # First try with UTF-8
-                            return pickle.load(fp, fix_imports=True, encoding='utf-8')
-                        except (UnicodeDecodeError, pickle.UnpicklingError) as e:
-                            syslog('error', 'Failed to load with UTF-8: %s', str(e))
-                            fp.seek(0)
-                            try:
-                                # Then try with latin1
-                                return pickle.load(fp, fix_imports=True, encoding='latin1')
-                            except (UnicodeDecodeError, pickle.UnpicklingError) as e:
-                                syslog('error', 'Failed to load with latin1: %s', str(e))
-                                fp.seek(0)
-                                # Finally try without encoding
-                                return pickle.load(fp, fix_imports=True)
-                    else:
-                        # For other protocols, try without encoding first
-                        try:
-                            return pickle.load(fp, fix_imports=True)
-                        except (UnicodeDecodeError, pickle.UnpicklingError):
-                            fp.seek(0)
-                            return pickle.load(fp, fix_imports=True, encoding='latin1')
+                    # Get the protocol version
+                    protocol = get_pickle_protocol(fp.name)
+                    if protocol is not None:
+                        print(C_('List %(listname)s %(dbfile)s uses pickle protocol %(protocol)d') % {
+                            'listname': self.internal_name(),
+                            'dbfile': os.path.basename(dbfile),
+                            'protocol': protocol
+                        })
+                    # Use the utility function to load the pickle
+                    return load_pickle_file(fp.name)
                 except Exception as e:
                     syslog('error', 'Failed to load pickle file %s: %s', dbfile, str(e))
                     raise
