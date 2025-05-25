@@ -1789,6 +1789,8 @@ def get_pickle_protocol(filename):
     """
     try:
         with open(filename, 'rb') as fp:
-            return ord(fp.read(1))
-    except (IOError, IndexError):
+            # Try to load the pickle file to get its protocol version
+            data = pickle.load(fp, fix_imports=True, encoding='latin1')
+            return pickle.format_version
+    except (IOError, pickle.UnpicklingError):
         return None
