@@ -94,7 +94,7 @@ def testfile(dbfile, listname=None, verbose=0):
                     
                     # Now load the actual data
                     fp.seek(0)
-                    data = pickle.load(fp)
+                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
                     if verbose:
                         # Get pickle version info
                         fp.seek(0)
