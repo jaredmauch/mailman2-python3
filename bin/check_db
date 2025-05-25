@@ -68,7 +68,7 @@ def load_pickle(fp):
     try:
         return pickle.load(fp, fix_imports=True, encoding='latin1')
     except Exception as e:
-        print('Error loading pickle file: %s' % e)
+        print('Error loading pickle file:', e)
         return None
 
 
