@@ -763,8 +763,24 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
                     # Reset file pointer to beginning
                     fp.seek(0)
                     
-                    # For protocol 4 files, try loading with different encodings
-                    if protocol == 4:
+                    # For protocol 2 files (Python 2.x), try loading with different encodings
+                    if protocol == 2:
+                        try:
+                            # First try with latin1 (most common for Python 2.x)
+                            return pickle.load(fp, fix_imports=True, encoding='latin1')
+                        except (UnicodeDecodeError, pickle.UnpicklingError) as e:
+                            syslog('error', 'Failed to load with latin1: %s', str(e))
+                            fp.seek(0)
+                            try:
+                                # Then try with UTF-8
+                                return pickle.load(fp, fix_imports=True, encoding='utf-8')
+                            except (UnicodeDecodeError, pickle.UnpicklingError) as e:
+                                syslog('error', 'Failed to load with UTF-8: %s', str(e))
+                                fp.seek(0)
+                                # Finally try without encoding
+                                return pickle.load(fp, fix_imports=True)
+                    # For protocol 4 files (Python 3.x), try loading with different encodings
+                    elif protocol == 4:
                         try:
                             # First try with UTF-8
                             return pickle.load(fp, fix_imports=True, encoding='utf-8')
