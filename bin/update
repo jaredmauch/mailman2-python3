@@ -79,6 +79,8 @@ def parse_args():
                        help='Force running the upgrade procedures')
     parser.add_argument('-l', '--lowercase', action='store_true',
                        help='Convert all member email addresses to lowercase')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Enable verbose output')
     return parser.parse_args()
 
 
@@ -983,8 +985,10 @@ def upgrade(mlist):
 def main():
     try:
         args = parse_args()
-    except SystemExit:
-        usage(1)
+    except SystemExit as e:
+        if e.code == 2:  # Invalid arguments
+            usage(1)
+        raise
 
     # Calculate the versions
     lastversion, thisversion = calcversions()
@@ -1114,18 +1118,10 @@ downgrade."""))
     print(C_('Upgrade complete.'))
 
 
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    # Ensure PROGRAM is a string, not bytes
-    if isinstance(PROGRAM, bytes):
-        PROGRAM = PROGRAM.decode('utf-8', 'replace')
-    print(C_(__doc__) % globals(), file=fd)
-    if msg:
-        print(msg, file=sys.stderr)
-    sys.exit(code)
+def usage(exitcode=0):
+    """Print usage information and exit with the given exit code."""
+    print(__doc__ % {'PROGRAM': PROGRAM})
+    sys.exit(exitcode)
 
 
 if __name__ == '__main__':
