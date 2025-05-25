@@ -799,7 +799,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
                     # Use the utility function to load the pickle
                     return load_pickle_file(fp.name)
                 except Exception as e:
-                    syslog('error', 'Failed to load pickle file %s: %s', dbfile, str(e))
+                    syslog('error', 'Failed to load pickle file %s: %r', dbfile, e)
                     raise
         else:
             raise ValueError('Bad database file name')
@@ -836,7 +836,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
             return dict, None
         except Exception as e:
             fp.close()
-            syslog('error', 'Failed to load database file %s: %s', dbfile, str(e))
+            syslog('error', 'Failed to load database file %s: %r', dbfile, e)
             return None, e
 
     def Load(self, check_version=True):
