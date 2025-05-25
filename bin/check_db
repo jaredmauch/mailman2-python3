@@ -82,19 +82,18 @@ def testfile(dbfile, listname=None, verbose=0):
             # Try to load the pickle file
             try:
                 with open(dbfile, 'rb') as fp:
-                    # First try to detect Python 2 pickle
+                    # Try loading with UTF-8 first, then fall back to latin1
                     try:
                         fp.seek(0)
-                        header = fp.read(2)
-                        is_py2_pickle = header.startswith(b'c') or header.startswith(b'C')
+                        data = pickle.load(fp, fix_imports=True, encoding='utf-8')
                         if verbose:
-                            print('  Python 2 pickle detected: %s' % ('Yes' if is_py2_pickle else 'No'))
-                    except:
-                        is_py2_pickle = False
+                            print('  Successfully loaded with UTF-8 encoding')
+                    except UnicodeDecodeError:
+                        fp.seek(0)
+                        data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        if verbose:
+                            print('  Successfully loaded with latin1 encoding')
                     
-                    # Now load the actual data
-                    fp.seek(0)
-                    data = pickle.load(fp, fix_imports=True, encoding='latin1')
                     if verbose:
                         # Get pickle version info
                         fp.seek(0)
@@ -102,9 +101,6 @@ def testfile(dbfile, listname=None, verbose=0):
                         protocol = pickle.HIGHEST_PROTOCOL
                         print('  Pickle format version: %s' % version)
                         print('  Pickle protocol: %d' % protocol)
-                        if is_py2_pickle:
-                            print('  WARNING: This file was likely written with Python 2')
-                            print('  String data may need special handling for Python 3 compatibility')
             except (EOFError, pickle.UnpicklingError) as e:
                 print('  Error loading file %s for list %s: %s' % 
                       (os.path.basename(dbfile), listname or 'unknown', str(e)))
