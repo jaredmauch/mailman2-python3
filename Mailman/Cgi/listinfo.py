@@ -139,16 +139,10 @@ def listinfo_overview(msg=''):
     legend = (hostname + "'s Mailing Lists")
     doc.SetTitle(legend)
 
-    table = Table(
-        role="table",
-        aria_label=_("Mailing Lists Overview"),
-        border=0,
-        width="100%"
-    )
+    table = Table(border=0, width="100%")
     table.AddRow([Center(Header(2, legend))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
-                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
-                      role="cell")
+                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
 
     # Skip any mailing lists that isn't advertised.
     advertised = []
@@ -205,7 +199,7 @@ def listinfo_overview(msg=''):
          '.<p>'))
 
     table.AddRow([Container(*welcome)])
-    table.AddCellInfo(max(table.GetCurrentRowIndex(), 0), 0, colspan=2, role="cell")
+    table.AddCellInfo(max(table.GetCurrentRowIndex(), 0), 0, colspan=2)
 
     if advertised:
         table.AddRow(['&nbsp;', '&nbsp;'])
@@ -219,8 +213,7 @@ def listinfo_overview(msg=''):
                       description or Italic(_('[no description available]'))])
             if highlight and mm_cfg.WEB_HIGHLIGHT_COLOR:
                 table.AddRowInfo(table.GetCurrentRowIndex(),
-                                 style=f'background-color: {mm_cfg.WEB_HIGHLIGHT_COLOR}',
-                                 role="row")
+                                 bgcolor=mm_cfg.WEB_HIGHLIGHT_COLOR)
             highlight = not highlight
 
     doc.AddItem(table)
