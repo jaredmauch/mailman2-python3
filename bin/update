@@ -875,6 +875,22 @@ def init_digest_vars(mlist):
 def upgrade(mlist):
     """Upgrade the list to the current version."""
     try:
+        # Print pickle protocol version
+        try:
+            config_path = os.path.join(mlist._full_path, 'config.pck')
+            if os.path.exists(config_path):
+                with open(config_path, 'rb') as fp:
+                    # Read the first byte which contains the protocol version
+                    protocol = ord(fp.read(1))
+                    print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
+                        'listname': mlist.internal_name(),
+                        'protocol': protocol
+                    })
+        except Exception as e:
+            print(C_('Warning: Could not determine pickle protocol version: %(error)s') % {
+                'error': str(e)
+            })
+
         # Initialize any missing digest variables
         init_digest_vars(mlist)
         
