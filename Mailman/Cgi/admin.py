@@ -640,6 +640,9 @@ def show_results(mlist, doc, category, subcat, cgidata):
     doc.AddItem(mlist.GetMailmanFooter())
 
 def show_variables(mlist, category, subcat, cgidata, doc):
+    # Get the configuration info
+    options = mlist.GetConfigInfo(category, subcat)
+    
     # The table containing the results
     table = Table(cellspacing=3, cellpadding=4, width='100%')
 
