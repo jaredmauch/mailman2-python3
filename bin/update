@@ -880,21 +880,33 @@ def upgrade(mlist):
             config_path = os.path.join(mlist._full_path, 'config.pck')
             if os.path.exists(config_path):
                 with open(config_path, 'rb') as fp:
-                    # Try to load the pickle file with multiple encodings
+                    # Try loading with UTF-8 first, then fall back to latin1
                     try:
-                        # Try UTF-8 first for newer files
+                        fp.seek(0)
                         data = pickle.load(fp, fix_imports=True, encoding='utf-8')
-                        protocol = pickle.format_version
-                    except (UnicodeDecodeError, pickle.UnpicklingError):
-                        # Fall back to latin1 for older files
+                        if hasattr(data, '_protocol'):
+                            protocol = data._protocol
+                            print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
+                                'listname': mlist.internal_name(),
+                                'protocol': protocol
+                            })
+                        else:
+                            print(C_('List %(listname)s config.pck protocol version not stored in data') % {
+                                'listname': mlist.internal_name()
+                            })
+                    except UnicodeDecodeError:
                         fp.seek(0)
                         data = pickle.load(fp, fix_imports=True, encoding='latin1')
-                        protocol = pickle.format_version
-                    
-                    print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
-                        'listname': mlist.internal_name(),
-                        'protocol': protocol
-                    })
+                        if hasattr(data, '_protocol'):
+                            protocol = data._protocol
+                            print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
+                                'listname': mlist.internal_name(),
+                                'protocol': protocol
+                            })
+                        else:
+                            print(C_('List %(listname)s config.pck protocol version not stored in data') % {
+                                'listname': mlist.internal_name()
+                            })
         except Exception as e:
             print(C_('Warning: Could not determine pickle protocol version: %(error)s') % {
                 'error': str(e)
