@@ -177,7 +177,14 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
             raise Errors.NotAMemberError(member)
-        return cpaddr
+        if isinstance(cpaddr, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                cpaddr = cpaddr.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                cpaddr = cpaddr.decode('utf-8', 'replace')
+        return str(cpaddr)
 
     def getMemberCPAddresses(self, members):
         return [self.__get_cp_member(member)[0] for member in members]
@@ -436,6 +443,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
             except UnicodeDecodeError:
                 # Fall back to UTF-8 if Latin-1 fails
                 realname = realname.decode('utf-8', 'replace')
+        # Store as a Python 3 string
         self.__mlist.usernames[member.lower()] = str(realname)
 
     def setMemberTopics(self, member, topics):
