@@ -57,7 +57,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
 from Mailman import Pending
-from Mailman.LockFile import TimeOutError
+from Mailman.LockFile import TimeOutError, AlreadyLockedError
 from Mailman.i18n import C_
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.OldStyleMemberships import OldStyleMemberships
@@ -1080,7 +1080,23 @@ downgrade."""))
             
             print("Attempting to acquire lock...")
             try:
-                mlist.Lock(0.5)
+                # First try to acquire the lock normally
+                try:
+                    mlist.Lock(0.5)
+                except AlreadyLockedError:
+                    # If we get AlreadyLockedError, try to force unlock if the lock is stale
+                    print("Lock appears to be set, checking if it's stale...")
+                    try:
+                        # Try to force unlock if the lock is stale
+                        mlist.__lock.force_unlock()
+                        print("Stale lock removed, retrying lock acquisition...")
+                        mlist.Lock(0.5)
+                    except Exception as e:
+                        print(C_('WARNING: Could not remove stale lock: %(error)s') % {
+                            'error': str(e)
+                        }, file=sys.stderr)
+                        continue
+                
                 print("Lock acquired, starting upgrade...")
                 
                 # Do the upgrade
