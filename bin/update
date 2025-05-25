@@ -880,8 +880,17 @@ def upgrade(mlist):
             config_path = os.path.join(mlist._full_path, 'config.pck')
             if os.path.exists(config_path):
                 with open(config_path, 'rb') as fp:
-                    # Read the first byte which contains the protocol version
-                    protocol = ord(fp.read(1))
+                    # Try to load the pickle file with multiple encodings
+                    try:
+                        # Try UTF-8 first for newer files
+                        data = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                        protocol = pickle.format_version
+                    except (UnicodeDecodeError, pickle.UnpicklingError):
+                        # Fall back to latin1 for older files
+                        fp.seek(0)
+                        data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        protocol = pickle.format_version
+                    
                     print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
                         'listname': mlist.internal_name(),
                         'protocol': protocol
