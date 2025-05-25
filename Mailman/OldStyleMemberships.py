@@ -596,3 +596,43 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         This is the inverse of nondigestable.
         """
         return not self.__mlist.nondigestable
+
+    @property
+    def digest_is_default(self):
+        """Return whether digest delivery is the default for new members."""
+        return self.__mlist.digest_is_default
+
+    @property
+    def mime_is_default_digest(self):
+        """Return whether MIME format is the default for digests."""
+        return self.__mlist.mime_is_default_digest
+
+    @property
+    def digest_size_threshhold(self):
+        """Return the size threshold for digests in KB."""
+        return self.__mlist.digest_size_threshhold
+
+    @property
+    def digest_send_periodic(self):
+        """Return whether digests are sent periodically."""
+        return self.__mlist.digest_send_periodic
+
+    @property
+    def digest_volume(self):
+        """Return the current digest volume number."""
+        return self.__mlist.volume
+
+    @property
+    def digest_issue(self):
+        """Return the current digest issue number."""
+        return self.__mlist.next_digest_number
+
+    @property
+    def digest_last_sent_at(self):
+        """Return the timestamp of when the last digest was sent."""
+        return self.__mlist.digest_last_sent_at
+
+    @property
+    def digest_next_due_at(self):
+        """Return the timestamp of when the next digest is due."""
+        return self.__mlist.digest_next_due_at
