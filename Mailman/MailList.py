@@ -660,6 +660,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         # we never rotate unless the we've successfully written the temp file.
         # We use pickle now because marshal is not guaranteed to be compatible
         # between Python versions.
+        #
+        # We use protocol 4 for Python 2/3 compatibility because:
+        # 1. It supports large objects (>4GB)
+        # 2. It's compatible between Python 2.7 and Python 3.x
+        # 3. It handles Unicode strings properly
+        # 4. It's the highest protocol version supported by both Python 2.7 and 3.x
         fname = os.path.join(self.fullpath(), 'config.pck')
         fname_tmp = fname + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
         fname_last = fname + '.last'
@@ -747,7 +753,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
             def loadfunc(fp):
                 try:
-                    # Try UTF-8 first for newer files
+                    # Try UTF-8 first for newer files (protocol 4)
                     return pickle.load(fp, fix_imports=True, encoding='utf-8')
                 except (UnicodeDecodeError, pickle.UnpicklingError):
                     # Fall back to latin1 for older files
@@ -829,6 +835,8 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         """Check the version of the list's config database.
 
         If the database version is not current, update the database format.
+        This includes ensuring that pickle files are saved with protocol 4
+        for Python 2/3 compatibility.
         """
         # Increment this variable when the database format changes.  This allows
         # for a bit more graceful recovery when upgrading.  BAW: This algorithm
@@ -837,6 +845,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin, Archiver, Digester, Security
         # MM3.0.
         data_version = getattr(self, 'data_version', 0)
         if data_version >= mm_cfg.DATA_FILE_VERSION:
+            # Even if the data version is current, ensure we're using protocol 4
+            # for pickle files by saving the current state
+            self.Save()
             return
 
         # Pre-2.1a3 versions did not have a data_version
