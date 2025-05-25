@@ -232,26 +232,26 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         return not not (option & flag)
 
     def getMemberName(self, member):
-        """Get the real name of a member.
-        
+        """Get the member's real name.
+
         Args:
             member: The member's email address
-            
+
         Returns:
-            str: The member's real name, or None if not set
+            The member's real name, or None if not found
         """
-        self.__assertIsMember(member)
-        name = self.__mlist.usernames.get(member.lower())
-        if name is None:
+        try:
+            fullname = self.__mlist.usernames[member]
+            if isinstance(fullname, bytes):
+                try:
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    fullname = fullname.decode('latin-1', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to UTF-8 if Latin-1 fails
+                    fullname = fullname.decode('utf-8', 'replace')
+            return fullname
+        except KeyError:
             return None
-        if isinstance(name, bytes):
-            try:
-                # Try Latin-1 first since that's what we're seeing in the data
-                name = name.decode('latin-1', 'replace')
-            except UnicodeDecodeError:
-                # Fall back to UTF-8 if Latin-1 fails
-                name = name.decode('utf-8', 'replace')
-        return str(name)
 
     def getMemberTopics(self, member):
         self.__assertIsMember(member)
@@ -588,3 +588,11 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autorespond
         Pending.remove(cookie)
         
         return action, data
+
+    @property
+    def digestable(self):
+        """Return whether the list supports digest mode.
+        
+        This is the inverse of nondigestable.
+        """
+        return not self.__mlist.nondigestable
