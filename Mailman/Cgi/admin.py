@@ -1177,7 +1177,15 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                         mlist.getMemberCPAddress(addr))
             fullname = mlist.getMemberName(addr)
             if isinstance(fullname, bytes):
-                fullname = fullname.decode('latin1', 'replace')
+                try:
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    fullname = fullname.decode('latin-1', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to UTF-8 if Latin-1 fails
+                    fullname = fullname.decode('utf-8', 'replace')
+            # Remove any b'...' prefix if it exists
+            if fullname.startswith("b'") and fullname.endswith("'"):
+                fullname = fullname[2:-1]
             fullname = Utils.uncanonstr(fullname, mlist.preferred_language)
             name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
             cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format()
