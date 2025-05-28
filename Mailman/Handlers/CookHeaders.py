@@ -409,12 +409,12 @@ def prefix_subject(mlist, msg, msgdata):
     # '%d' or '%05d' like pattern.
     prefix_pattern = re.escape(prefix)
     # unescape '%' :-<
-    prefix_pattern = '%'.join(prefix_pattern.split(r'\%'))
-    p = re.compile('%\d*d')
+    prefix_pattern = prefix_pattern.replace(r'\%', '%')
+    p = re.compile(r'%\d*d')
     if p.search(prefix, 1):
         # prefix have number, so we should search prefix w/number in subject.
         # Also, force new style.
-        prefix_pattern = p.sub(r'\s*\d+\s*', prefix_pattern)
+        prefix_pattern = p.sub(r'\\s*\\d+\\s*', prefix_pattern)
         old_style = False
     else:
         old_style = mm_cfg.OLD_STYLE_PREFIXING
