@@ -397,7 +397,10 @@ URL: %(url)s
             else:
                 # If it's already a str, no need to decode
                 sep = sep.encode(charset, 'replace')
-        except (UnicodeError, LookupError, ValueError, AssertionError):
+        except (UnicodeError, LookupError, ValueError, AssertionError) as e:
+            # If something failed and we are still a string, fall back to UTF-8
+            if isinstance(sep, str):
+                sep = sep.encode('utf-8', 'replace')
             pass
         replace_payload_by_text(msg, sep.join(text), charset)
         if format:
