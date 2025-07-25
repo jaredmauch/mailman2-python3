@@ -2392,27 +2392,25 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $needkocodecs" >&5
 $as_echo "$needkocodecs" >&6; }
 
-# Make sure distutils is available.  Some Linux Python packages split
-# distutils into the "-devel" package, so they need both.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking that Python has a working distutils" >&5
-$as_echo_n "checking that Python has a working distutils... " >&6; }
+# Make sure sysconfig is available.  This is the modern replacement for distutils.sysconfig
+# which has been deprecated and removed in Python 3.12+.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking that Python has a working sysconfig" >&5
+$as_echo_n "checking that Python has a working sysconfig... " >&6; }
 
 cat > conftest.py <<EOF
 try:
-    import distutils.errors
-    import distutils.sysconfig
+    import sysconfig
 except ImportError:
     res = "no"
 else:
     try:
-        distutils.sysconfig.get_config_vars()
-    except distutils.errors.DistutilsPlatformError:
+        sysconfig.get_config_vars()
+    except Exception:
         res = "no"
     else:
-        # some RedHat packages put distutils in python, but the C headers
-        # are in python-devel so check for headers too.
+        # Check for Python headers too.
         import os.path
-        pdothpath = distutils.sysconfig.get_python_inc()
+        pdothpath = sysconfig.get_path("include")
         if os.path.isfile(os.path.join(pdothpath, "Python.h")):
             res = "yes"
         else:
@@ -2423,20 +2421,19 @@ fp.close()
 EOF
 
 $PYTHON conftest.py
-havedistutils=`cat conftest.out`
+havesysconfig=`cat conftest.out`
 rm -f conftest.out conftest.py
-if test "$havedistutils" != "yes"
+if test "$havesysconfig" != "yes"
 then
     as_fn_error $? "
 
-***** Distutils is not available or is incomplete for $PYTHON
-***** If you installed Python from RPM (or other package manager)
-***** be sure to install the -devel package, or install Python
-***** from source.  See sec. 15.1 of the Installation Manual for
-***** details" "$LINENO" 5
+***** sysconfig is not available or is incomplete for $PYTHON
+***** Please ensure you have a complete Python installation with
+***** the standard library sysconfig module available.
+***** See sec. 15.1 of the Installation Manual for details" "$LINENO" 5
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $havedistutils" >&5
-$as_echo "$havedistutils" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $havesysconfig" >&5
+$as_echo "$havesysconfig" >&6; }
 
 # Checks for programs.
 ac_aux_dir=
