@@ -37,14 +37,11 @@ from . import HyperDatabase
 from . import pipermail
 import weakref
 import binascii
-from io import StringIO, BytesIO
-import pickle
 
 from email.header import decode_header, make_header
 from email.errors import HeaderParseError
 from email.charset import Charset
-from email import message_from_file
-from email.generator import Generator
+from functools import cmp_to_key
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -90,6 +87,7 @@ if sys.platform == 'darwin':
         resource.setrlimit(resource.RLIMIT_STACK, (newsoft, hard))
 
 
+
 def html_quote(s, lang=None):
     repls = ( ('&', '&amp;'),
               ("<", '&lt;'),
@@ -97,7 +95,7 @@ def html_quote(s, lang=None):
               ('"', '&quot;'))
     for thing, repl in repls:
         s = s.replace(thing, repl)
-    return Utils.uncanonstr(s, lang)
+    return s
 
 
 def url_quote(s):
@@ -139,7 +137,7 @@ def CGIescape(arg, lang=None):
         s = Utils.websafe(arg)
     else:
         s = Utils.websafe(str(arg))
-    return Utils.uncanonstr(s.replace('"', '&quot;'), lang)
+    return s.replace('"', '&quot;')
 
 # Parenthesized human name
 paren_name_pat = re.compile(r'([(].*[)])')
@@ -169,6 +167,7 @@ nohtmlpat = re.compile(r'^\s*</HTML>\s*$', re.IGNORECASE)
 quotedpat = re.compile(r'^([>|:]|&gt;)+')
 
 
+
 # Like Utils.maketext() but with caching to improve performance.
 #
 # _templatefilepathcache is used to associate a (templatefile, lang, listname)
@@ -225,9 +224,10 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
             syslog('error', 'broken template: %s\n%s', filepath, e)
     # Make sure the text is in the given character set, or html-ify any bogus
     # characters.
-    return Utils.uncanonstr(text, lang)
+    return text
 
 
+
 # Note: I'm overriding most, if not all of the pipermail Article class
 #       here -ddm
 # The Article class encapsulates a single posting.  The attributes are:
@@ -252,8 +252,8 @@ class Article(pipermail.Article):
 
     _last_article_time = time.time()
 
-    def __init__(self, message, sequence, keepHeaders=0,
-                 lang=mm_cfg.DEFAULT_SERVER_LANGUAGE, mlist=None):
+    def __init__(self, message=None, sequence=0, keepHeaders=[],
+                       lang=mm_cfg.DEFAULT_SERVER_LANGUAGE, mlist=None):
         self.__super_init(message, sequence, keepHeaders)
         self.prev = None
         self.next = None
@@ -282,14 +282,15 @@ class Article(pipermail.Article):
                 i18n.set_language(lang)
                 if self.author == self.email:
                     self.author = self.email = re.sub('@', _(' at '),
-                                                      self.email, flags=re.IGNORECASE)
+                                                      self.email)
                 else:
-                    self.email = re.sub('@', _(' at '), self.email, flags=re.IGNORECASE)
+                    self.email = re.sub('@', _(' at '), self.email)
             finally:
                 i18n.set_translation(otrans)
 
-        # Get content type and encoding
-        ctype = message.get_content_type()
+        # Snag the content-* headers.  RFC 1521 states that their values are
+        # case insensitive.
+        ctype = message.get('Content-Type', 'text/plain')
         cenc = message.get('Content-Transfer-Encoding', '')
         self.ctype = ctype.lower()
         self.cenc = cenc.lower()
@@ -299,7 +300,7 @@ class Article(pipermail.Article):
         if isinstance(cset_out, str):
             # email 3.0.1 (python 2.4) doesn't like unicode
             cset_out = cset_out.encode('us-ascii')
-        charset = message.get_content_charset()
+        charset = message.get_content_charset(cset_out)
         if charset:
             charset = charset.lower().strip()
             if charset[0]=='"' and charset[-1]=='"':
@@ -307,17 +308,19 @@ class Article(pipermail.Article):
             if charset[0]=="'" and charset[-1]=="'":
                 charset = charset[1:-1]
             try:
-                body = message.get_body().get_content()
-            except (binascii.Error, AttributeError):
+                body = message.get_payload(decode=True)
+            except binascii.Error:
                 body = None
             if body and charset != Utils.GetCharSet(self._lang):
+                if isinstance(charset, bytes):
+                    charset = charset.decode()
                 # decode body
                 try:
-                    body = str(body, charset)
+                    body = body.decode(charset)
                 except (UnicodeError, LookupError):
                     body = None
             if body:
-                self.body = [l + "\n" for l in body.splitlines()]
+                self.body = [l.decode() + "\n" if isinstance(l, bytes) else l + "\n" for l in body.splitlines()]
 
         self.decode_headers()
 
@@ -414,9 +417,9 @@ class Article(pipermail.Article):
                 otrans = i18n.get_translation()
                 try:
                     i18n.set_language(self._lang)
-                    atmark = str(_(' at '), Utils.GetCharSet(self._lang))
+                    atmark = _(' at ')
                     subject = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
-                              r'\g<1>' + atmark + r'\g<2>', subject, flags=re.IGNORECASE)
+                              '\g<1>' + atmark + '\g<2>', subject)
                 finally:
                     i18n.set_translation(otrans)
             self.decoded['subject'] = subject
@@ -429,31 +432,29 @@ class Article(pipermail.Article):
         if prefix:
             prefix_pat = re.escape(prefix)
             prefix_pat = '%'.join(prefix_pat.split(r'\%'))
-            prefix_pat = re.sub(r'%\d*d', r'\s*\d+\s*', prefix_pat, flags=re.IGNORECASE)
-            subject = re.sub(prefix_pat, '', subject, flags=re.IGNORECASE)
+            prefix_pat = re.sub(r'%\d*d', r'\\\\s*\\\\d+\\\\s*', prefix_pat)
+            subject = re.sub(prefix_pat, '', subject)
         subject = subject.lstrip()
         # MAS Should we strip FW and FWD too?
-        strip_pat = re.compile(r'^((RE|AW|SV|VS)(\[\d+\])?:\s*)+', re.I)
+        strip_pat = re.compile('^((RE|AW|SV|VS)(\[\d+\])?:\s*)+', re.I)
         stripped = strip_pat.sub('', subject)
         # Also remove whitespace to avoid folding/unfolding differences
-        stripped = re.sub(r'\s', '', stripped, flags=re.IGNORECASE)
+        stripped = re.sub('\s', '', stripped)
         return stripped
 
     def decode_charset(self, field):
         # TK: This function was rewritten for unifying to Unicode.
         # Convert 'field' into Unicode one line string.
         try:
-            if isinstance(field, str):
-                return field
             pairs = decode_header(field)
-            ustr = str(make_header(pairs))
+            ustr = make_header(pairs).__str__()
         except (LookupError, UnicodeError, ValueError, HeaderParseError):
             # assume list's language
             cset = Utils.GetCharSet(self._mlist.preferred_language)
             if cset == 'us-ascii':
                 cset = 'iso-8859-1' # assume this for English list
             ustr = str(field, cset, 'replace')
-        return ''.join(ustr.splitlines())
+        return u''.join(ustr.splitlines())
 
     def as_html(self):
         d = self.__dict__.copy()
@@ -474,7 +475,7 @@ class Article(pipermail.Article):
             d["in_reply_to_url"] = url_quote(self._message_id)
             if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
                 # Point the mailto url back to the list
-                author = re.sub('@', _(' at '), self.author, flags=re.IGNORECASE)
+                author = re.sub('@', _(' at '), self.author)
                 emailurl = self._mlist.GetListEmail()
             else:
                 author = self.author
@@ -521,8 +522,8 @@ class Article(pipermail.Article):
 
     def _get_next(self):
         """Return the href and subject for the previous message"""
-        if self.__next__:
-            subject = self._get_subject_enc(self.__next__)
+        if hasattr( self, 'next' ) and self.next is not None:
+            subject = self._get_subject_enc(self.next)
             next = ('<LINK REL="Next"  HREF="%s">'
                     % (url_quote(self.next.filename)))
             next_wsubj = ('<LI>' + _('Next message (by thread):') +
@@ -537,23 +538,13 @@ class Article(pipermail.Article):
     _rx_softline = re.compile('=[ \t]*$')
 
     def _get_body(self):
-        """Return the message body as HTML."""
-        if not self.body:
-            return ''
-        # Convert the body to HTML
-        body = []
-        for line in self.body:
-            # Handle HTML content
-            if self.ctype == 'text/html':
-                body.append(line)
-            else:
-                # Convert plain text to HTML
-                line = self.quote(line)
-                if self.SHOWBR:
-                    body.append(line + '<br>\n')
-                else:
-                    body.append(line + '\n')
-        return ''.join(body)
+        """Return the message body ready for HTML, decoded if necessary"""
+        try:
+            body = self.html_body
+        except AttributeError:
+            body = self.body
+
+        return null_to_space(EMPTYSTRING.join(body))
 
     def _add_decoded(self, d):
         """Add encoded-word keys to HTML output"""
@@ -565,30 +556,48 @@ class Article(pipermail.Article):
                 d[dst] = self.quote(self.decoded[src])
 
     def as_text(self):
-        """Return the message as plain text."""
-        if not self.body:
-            return ''
-        # Convert the body to plain text
-        body = []
-        for line in self.body:
-            # Handle HTML content
-            if self.ctype == 'text/html':
-                # Strip HTML tags
-                line = re.sub(r'<[^>]*>', '', line)
-            body.append(line)
-        return ''.join(body)
+        d = self.__dict__.copy()
+        # We need to guarantee a valid From_ line, even if there are
+        # bososities in the headers.
+        if not d.get('fromdate', '').strip():
+            d['fromdate'] = time.ctime(time.time())
+        if not d.get('email', '').strip():
+            d['email'] = 'bogus@does.not.exist.com'
+        if not d.get('datestr', '').strip():
+            d['datestr'] = time.ctime(time.time())
+        #
+        headers = ['From %(email)s  %(fromdate)s',
+                 'From: %(email)s (%(author)s)',
+                 'Date: %(datestr)s',
+                 'Subject: %(subject)s']
+        if d['_in_reply_to']:
+            headers.append('In-Reply-To: %(_in_reply_to)s')
+        if d['_references']:
+            headers.append('References: %(_references)s')
+        if d['_message_id']:
+            headers.append('Message-ID: %(_message_id)s')
+        body = EMPTYSTRING.join(self.body)
+        cset = Utils.GetCharSet(self._lang)
+        # Coerce the body to Unicode and replace any invalid characters.
+        if not isinstance(body, str):
+            body = str(body, cset, 'replace')
+        if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
+            otrans = i18n.get_translation()
+            try:
+                i18n.set_language(self._lang)
+                atmark = _(' at ')
+                if isinstance(atmark, bytes):
+                    atmark = str(atmark, cset)
+                body = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
+                              '\g<1>' + atmark + '\g<2>', body)
+            finally:
+                i18n.set_translation(otrans)
+
+        return NL.join(headers) % d + '\n\n' + body + '\n'
 
     def _set_date(self, message):
-        """Set the date from the message."""
-        try:
-            date = message.get('Date')
-            if date:
-                self.date = time.mktime(email.utils.parsedate_tz(date)[:9])
-            else:
-                self.date = time.time()
-        except (TypeError, ValueError):
-            self.date = time.time()
-        self.datestr = time.ctime(self.date)
+        self.__super_set_date(message)
+        self.fromdate = time.ctime(int(self.date))
 
     def loadbody_fromHTML(self,fileobj):
         self.body = []
@@ -612,7 +621,7 @@ class Article(pipermail.Article):
         except AttributeError:
             pass
 
-
+
 class HyperArchive(pipermail.T):
     __super_init = pipermail.T.__init__
     __super_update_archive = pipermail.T.update_archive
@@ -641,48 +650,13 @@ class HyperArchive(pipermail.T):
         # with mailman's LockFile module for HyperDatabase.HyperDatabase
         #
         dir = maillist.archive_dir()
-        self.basedir = dir  # Set basedir first
-        self.database = HyperDatabase.HyperDatabase(dir, maillist)
-        
-        # Initialize basic attributes first
-        self.archives = []        # Archives
-        self._dirty_archives = [] # Archives that will have to be updated
-        self.sequence = 0         # Sequence variable used for numbering articles
-        self.update_TOC = 0       # Does the TOC need updating?
+        db = HyperDatabase.HyperDatabase(dir, maillist)
+        self.__super_init(dir, reload=1, database=db)
+
         self.maillist = maillist
         self._lock_file = None
         self.lang = maillist.preferred_language
         self.charset = Utils.GetCharSet(maillist.preferred_language)
-
-        # Try to load previously pickled state
-        try:
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'rb')
-            self.message(C_('Reloading pickled archive state'))
-            try:
-                # Try UTF-8 first for newer files
-                d = pickle.load(f, fix_imports=True, encoding='utf-8')
-            except (UnicodeDecodeError, pickle.UnpicklingError):
-                # Fall back to latin1 for older files
-                f.seek(0)
-                d = pickle.load(f, fix_imports=True, encoding='latin1')
-            f.close()
-            
-            if isinstance(d, bytes):
-                # If we got bytes, try to unpickle it
-                d = pickle.loads(d, fix_imports=True, encoding='latin1')
-            
-            # Only update attributes that don't conflict with our initialization
-            safe_attrs = {
-                'type', 'archive', 'firstdate', 'lastdate', 'archivedate',
-                'size', 'version', 'subjectIndex', 'authorIndex', 'dateIndex',
-                'articleIndex', 'threadIndex'
-            }
-            for key, value in list(d.items()):
-                if key in safe_attrs:
-                    setattr(self, key, value)
-        except (IOError, EOFError, pickle.UnpicklingError, RecursionError) as e:
-            syslog('error', 'Error loading archive state: %s', e)
-            # Continue with default initialization
 
         if hasattr(self.maillist,'archive_volume_frequency'):
             if self.maillist.archive_volume_frequency == 0:
@@ -840,12 +814,12 @@ class HyperArchive(pipermail.T):
         if os.path.exists(gzfile):
             file = gzfile
             url = arch + '.txt.gz'
-            templ = '<td role="cell"><a href="%(url)s" role="link">[ ' + _('Gzip\'d Text%(sz)s') \
+            templ = '<td><A href="%(url)s">[ ' + _('Gzip\'d Text%(sz)s') \
                     + ']</a></td>'
         elif os.path.exists(txtfile):
             file = txtfile
             url = arch + '.txt'
-            templ = '<td role="cell"><a href="%(url)s" role="link">[ ' + _('Text%(sz)s') + ']</a></td>'
+            templ = '<td><A href="%(url)s">[ ' + _('Text%(sz)s') + ']</a></td>'
         else:
             # neither found?
             file = None
@@ -927,125 +901,431 @@ class HyperArchive(pipermail.T):
         os.unlink(wname)
         self.DropArchLock()
 
-    def processUnixMailbox(self, archfile):
-        """Process a Unix mailbox file."""
-        from email import message_from_file
-        from mailbox import mbox
-        
-        # If archfile is a file object, we need to read it directly
-        if hasattr(archfile, 'read'):
-            # Read the entire file content
-            content = archfile.read()
-            # Create a temporary file to store the content
-            import tempfile
-            with tempfile.NamedTemporaryFile(mode='w+', encoding='utf-8', delete=False) as tmp:
-                if isinstance(content, bytes):
-                    content = content.decode('utf-8', errors='replace')
-                tmp.write(content)
-                tmp_path = tmp.name
-            
-            try:
-                # Process the temporary file
-                mbox = mbox(tmp_path)
-                for key in mbox.keys():
-                    msg = message_from_file(mbox.get_file(key))
-                    self.add_article(msg)
-            finally:
-                # Clean up the temporary file
-                os.unlink(tmp_path)
-        else:
-            # If it's a path, use it directly
-            mbox = mbox(archfile)
-            for key in mbox.keys():
-                msg = message_from_file(mbox.get_file(key))
-                self.add_article(msg)
+    def get_filename(self, article):
+        return '%06i.html' % (article.sequence,)
 
-    def format_article(self, article):
-        """Format an article for HTML display."""
-        # Get the message body
-        body = article.get_body()
-        if body is None:
-            return article
+    def get_archives(self, article):
+        """Return a list of indexes where the article should be filed.
+        A string can be returned if the list only contains one entry,
+        and the empty list is legal."""
+        res = self.dateToVolName(float(article.date))
+        self.message(C_("figuring article archives\n"))
+        self.message(res + "\n")
+        return res
 
-        # Convert body to lines
-        if isinstance(body, str):
-            lines = body.splitlines()
-        else:
-            lines = [line.decode('utf-8', 'replace') for line in body.splitlines()]
-
-        # Handle HTML content
-        if article.ctype == 'text/html':
-            article.html_body = lines
-        else:
-            # Process plain text
-            processed_lines = []
-            for line in lines:
-                # Handle quoted text
-                if self.IQUOTES and quotedpat.match(line):
-                    line = '<i>' + CGIescape(line, self.lang) + '</i>'
+    def volNameToDesc(self, volname):
+        volname = volname.strip()
+        # Don't make these module global constants since we have to runtime
+        # translate them anyway.
+        monthdict = [
+            '',
+            _('January'),   _('February'), _('March'),    _('April'),
+            _('May'),       _('June'),     _('July'),     _('August'),
+            _('September'), _('October'),  _('November'), _('December')
+            ]
+        for each in list(self._volre.keys()):
+            match = re.match(self._volre[each], volname)
+            # Let ValueErrors percolate up
+            if match:
+                year = int(match.group('year'))
+                if each == 'quarter':
+                    d =["", _("First"), _("Second"), _("Third"), _("Fourth") ]
+                    ord = d[int(match.group('quarter'))]
+                    return _("%(ord)s quarter %(year)i")
+                elif each == 'month':
+                    monthstr = match.group('month').lower()
+                    for i in range(1, 13):
+                        monthname = time.strftime("%B", (1999,i,1,0,0,0,0,1,0))
+                        if monthstr.lower() == monthname.lower():
+                            month = monthdict[i]
+                            return _("%(month)s %(year)i")
+                    raise ValueError("%s is not a month!" % monthstr)
+                elif each == 'week':
+                    month = monthdict[int(match.group("month"))]
+                    day = int(match.group("day"))
+                    return _("The Week Of Monday %(day)i %(month)s %(year)i")
+                elif each == 'day':
+                    month = monthdict[int(match.group("month"))]
+                    day = int(match.group("day"))
+                    return _("%(day)i %(month)s %(year)i")
                 else:
-                    line = CGIescape(line, self.lang)
-                if self.SHOWBR:
-                    line += '<br>'
-                processed_lines.append(line)
+                    return match.group('year')
+        raise ValueError("%s is not a valid volname" % volname)
 
-            # Add HTML structure
-            if not self.SHOWHTML:
-                processed_lines.insert(0, '<pre>')
-                processed_lines.append('</pre>')
-            article.html_body = processed_lines
+# The following two methods should be inverses of each other. -ddm
 
-        return article
+    def dateToVolName(self,date):
+        datetuple=time.localtime(date)
+        if self.ARCHIVE_PERIOD=='year':
+            return time.strftime("%Y",datetuple)
+        elif self.ARCHIVE_PERIOD=='quarter':
+            if datetuple[1] in [1,2,3]:
+                return time.strftime("%Yq1",datetuple)
+            elif datetuple[1] in [4,5,6]:
+                return time.strftime("%Yq2",datetuple)
+            elif datetuple[1] in [7,8,9]:
+                return time.strftime("%Yq3",datetuple)
+            else:
+                return time.strftime("%Yq4",datetuple)
+        elif self.ARCHIVE_PERIOD == 'day':
+            return time.strftime("%Y%m%d", datetuple)
+        elif self.ARCHIVE_PERIOD == 'week':
+            # Reconstruct "seconds since epoch", and subtract weekday
+            # multiplied by the number of seconds in a day.
+            monday = time.mktime(datetuple) - datetuple[6] * 24 * 60 * 60
+            # Build a new datetuple from this "seconds since epoch" value
+            datetuple = time.localtime(monday)
+            return time.strftime("Week-of-Mon-%Y%m%d", datetuple)
+        # month. -ddm
+        else:
+            return time.strftime("%Y-%B",datetuple)
 
-    def close(self):
-        "Close an archive, save its state, and update any changed archives."
-        self.update_dirty_archives()
-        self.update_TOC = 0
-        self.write_TOC()
-        # Save the collective state
-        self.message(C_('Pickling archive state into ')
-                     + os.path.join(self.basedir, 'pipermail.pck'))
-        self.database.close()
-        del self.database
 
-        omask = os.umask(0o007)
+    def volNameToDate(self, volname):
+        volname = volname.strip()
+        for each in list(self._volre.keys()):
+            match = re.match(self._volre[each],volname)
+            if match:
+                year = int(match.group('year'))
+                month = 1
+                day = 1
+                if each == 'quarter':
+                    q = int(match.group('quarter'))
+                    month = (q * 3) - 2
+                elif each == 'month':
+                    monthstr = match.group('month').lower()
+                    m = []
+                    for i in range(1,13):
+                        m.append(
+                            time.strftime("%B",(1999,i,1,0,0,0,0,1,0)).lower())
+                    try:
+                        month = m.index(monthstr) + 1
+                    except ValueError:
+                        pass
+                elif each == 'week' or each == 'day':
+                    month = int(match.group("month"))
+                    day = int(match.group("day"))
+                try:
+                    return time.mktime((year,month,1,0,0,0,0,1,-1))
+                except OverflowError:
+                    return 0.0
+        return 0.0
+
+    def sortarchives(self):
+        def sf(a, b):
+            al = self.volNameToDate(a)
+            bl = self.volNameToDate(b)
+            if al > bl:
+                return 1
+            elif al < bl:
+                return -1
+            else:
+                return 0
+        if self.ARCHIVE_PERIOD in ('month','year','quarter'):
+            self.archives.sort(key = cmp_to_key(sf))
+        else:
+            self.archives.sort()
+        self.archives.reverse()
+
+    def message(self, msg):
+        if self.VERBOSE:
+            f = sys.stderr
+            f.write(msg)
+            if msg[-1:] != '\n':
+                f.write('\n')
+            f.flush()
+
+    def open_new_archive(self, archive, archivedir):
+        index_html = os.path.join(archivedir, 'index.html')
         try:
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'wb')
+            os.unlink(index_html)
+        except:
+            pass
+        os.symlink(self.DEFAULTINDEX+'.html',index_html)
+
+    def write_index_header(self):
+        self.depth=0
+        print(self.html_head())
+        if not self.THREADLAZY and self.type=='Thread':
+            self.message(C_("Computing threaded index\n"))
+            self.updateThreadedIndex()
+
+    def write_index_footer(self):
+        for i in range(self.depth):
+            print('</UL>')
+        print(self.html_foot())
+
+    def write_index_entry(self, article):
+        subject = self.get_header("subject", article)
+        author = self.get_header("author", article)
+        if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
+            try:
+                author = re.sub('@', _(' at '), author)
+            except UnicodeError:
+                # Non-ASCII author contains '@' ... no valid email anyway
+                pass
+        subject = CGIescape(subject, self.lang)
+        author = CGIescape(author, self.lang)
+
+        d = {
+            'filename': urllib.parse.quote(article.filename),
+            'subject':  subject,
+            'sequence': article.sequence,
+            'author':   author
+        }
+        print(quick_maketext(
+            'archidxentry.html', d,
+            mlist=self.maillist))
+
+    def get_header(self, field, article):
+        # if we have no decoded header, return the encoded one
+        result = article.decoded.get(field)
+        if result is None:
+            return getattr(article, field)
+        # otherwise, the decoded one will be Unicode
+        return result
+
+    def write_threadindex_entry(self, article, depth):
+        if depth < 0:
+            self.message('depth<0')
+            depth = 0
+        if depth > self.THREADLEVELS:
+            depth = self.THREADLEVELS
+        if depth < self.depth:
+            for i in range(self.depth-depth):
+                print('</UL>')
+        elif depth > self.depth:
+            for i in range(depth-self.depth):
+                print('<UL>')
+        print('<!--%i %s -->' % (depth, article.threadKey))
+        self.depth = depth
+        self.write_index_entry(article)
+
+    def write_TOC(self):
+        self.sortarchives()
+        omask = os.umask(0o002)
+        try:
+            toc = open(os.path.join(self.basedir, 'index.html'), 'w')
         finally:
             os.umask(omask)
-        
-        # Only save safe attributes
-        safe_state = {}
-        safe_attrs = {
-            'type', 'archive', 'firstdate', 'lastdate', 'archivedate',
-            'size', 'version', 'subjectIndex', 'authorIndex', 'dateIndex',
-            'articleIndex', 'threadIndex'
-        }
-        for key in safe_attrs:
-            if hasattr(self, key):
-                safe_state[key] = getattr(self, key)
-        
-        # Use protocol 4 for Python 2/3 compatibility
-        pickle.dump(safe_state, f, protocol=4, fix_imports=True)
+        toc.write(self.html_TOC())
+        toc.close()
+
+    def write_article(self, index, article, path):
+        # called by add_article
+        omask = os.umask(0o002)
+        try:
+            f = open(path, 'w')
+        finally:
+            os.umask(omask)
+        f.write(article.as_html())
         f.close()
 
-    def getstate(self):
-        """Get the current state of the archive."""
+        # Write the text article to the text archive.
+        path = os.path.join(self.basedir, "%s.txt" % index)
+        omask = os.umask(0o002)
         try:
-            # Use protocol 4 for Python 2/3 compatibility
-            protocol = 4
-            return pickle.dumps(self.__dict__, protocol, fix_imports=True)
-        except Exception as e:
-            syslog('error', 'Error getting archive state: %s', e)
-            return None
+            f = open(path, 'a+')
+        finally:
+            os.umask(omask)
+        f.write(article.as_text())
+        f.close()
 
-    def setstate(self, state):
-        """Set the state of the archive."""
+    def update_archive(self, archive):
+        self.__super_update_archive(archive)
+        # only do this if the gzip module was imported globally, and
+        # gzip'ing was enabled via mm_cfg.GZIP_ARCHIVE_TXT_FILES.  See
+        # above.
+        if gzip:
+            archz = None
+            archt = None
+            txtfile = os.path.join(self.basedir, '%s.txt' % archive)
+            gzipfile = os.path.join(self.basedir, '%s.txt.gz' % archive)
+            oldgzip = os.path.join(self.basedir, '%s.old.txt.gz' % archive)
+            try:
+                # open the plain text file
+                archt = open(txtfile)
+            except IOError:
+                return
+            try:
+                os.rename(gzipfile, oldgzip)
+                archz = gzip.open(oldgzip)
+            except (IOError, RuntimeError, os.error):
+                pass
+            try:
+                ou = os.umask(0o002)
+                newz = gzip.open(gzipfile, 'w')
+            finally:
+                # XXX why is this a finally?
+                os.umask(ou)
+            if archz:
+                newz.write(archz.read())
+                archz.close()
+                os.unlink(oldgzip)
+            # XXX do we really need all this in a try/except?
+            try:
+                newz.write(archt.read())
+                newz.close()
+                archt.close()
+            except IOError:
+                pass
+            os.unlink(txtfile)
+
+    _skip_attrs = ('maillist', '_lock_file', 'charset')
+
+    def getstate(self):
+        d={}
+        for each in list(self.__dict__.keys()):
+            if not (each in self._skip_attrs
+                    or each.upper() == each):
+                d[each] = self.__dict__[each]
+        return d
+
+    # Add <A HREF="..."> tags around URLs and e-mail addresses.
+
+    def __processbody_URLquote(self, lines):
+        # XXX a lot to do here:
+        # 1. use lines directly, rather than source and dest
+        # 2. make it clearer
+        # 3. make it faster
+        # TK: Prepare for unicode obscure.
+        atmark = _(' at ')
+        source = lines[:]
+        dest = lines
+        last_line_was_quoted = 0
+        for i in range(0, len(source)):
+            Lorig = L = source[i]
+            prefix = suffix = ""
+            if L is None:
+                continue
+            # Italicise quoted text
+            if self.IQUOTES:
+                quoted = quotedpat.match(L)
+                if quoted is None:
+                    last_line_was_quoted = 0
+                else:
+                    quoted = quoted.end(0)
+                    prefix = CGIescape(L[:quoted], self.lang) + '<i>'
+                    suffix = '</I>'
+                    if self.SHOWHTML:
+                        suffix += '<BR>'
+                        if not last_line_was_quoted:
+                            prefix = '<BR>' + prefix
+                    L = L[quoted:]
+                    last_line_was_quoted = 1
+            # Check for an e-mail address
+            L2 = ""
+            jr = emailpat.search(L)
+            kr = urlpat.search(L)
+            while jr is not None or kr is not None:
+                if jr == None:
+                    j = -1
+                else:
+                    j = jr.start(0)
+                if kr is None:
+                    k = -1
+                else:
+                    k = kr.start(0)
+                if j != -1 and (j < k or k == -1):
+                    text = jr.group(1)
+                    length = len(text)
+                    if mm_cfg.ARCHIVER_OBSCURES_EMAILADDRS:
+                        text = re.sub('@', atmark, text)
+                        URL = self.maillist.GetScriptURL(
+                            'listinfo', absolute=1)
+                    else:
+                        URL = 'mailto:' + text
+                    pos = j
+                elif k != -1 and (j > k or j == -1):
+                    text = URL = kr.group(1)
+                    length = len(text)
+                    pos = k
+                else: # j==k
+                    raise ValueError("j==k: This can't happen!")
+                #length = len(text)
+                #self.message("URL: %s %s %s \n"
+                #             % (CGIescape(L[:pos]), URL, CGIescape(text)))
+                L2 += '%s<A HREF="%s">%s</A>' % (
+                    CGIescape(L[:pos], self.lang),
+                    html_quote(URL), CGIescape(text, self.lang))
+                L = L[pos+length:]
+                jr = emailpat.search(L)
+                kr = urlpat.search(L)
+            if jr is None and kr is None:
+                L = CGIescape(L, self.lang)
+            if isinstance(L, bytes):
+                L = L.decode('utf-8')
+            L = prefix + L2 + L + suffix
+            source[i] = None
+            dest[i] = L
+
+    # Perform Hypermail-style processing of <HTML></HTML> directives
+    # in message bodies.  Lines between <HTML> and </HTML> will be written
+    # out precisely as they are; other lines will be passed to func2
+    # for further processing .
+
+    def __processbody_HTML(self, lines):
+        # XXX need to make this method modify in place
+        source = lines[:]
+        dest = lines
+        l = len(source)
+        i = 0
+        while i < l:
+            while i < l and htmlpat.match(source[i]) is None:
+                i = i + 1
+            if i < l:
+                source[i] = None
+                i = i + 1
+            while i < l and nohtmlpat.match(source[i]) is None:
+                dest[i], source[i] = source[i], None
+                i = i + 1
+            if i < l:
+                source[i] = None
+                i = i + 1
+
+    def format_article(self, article):
+        # called from add_article
+        # TBD: Why do the HTML formatting here and keep it in the
+        # pipermail database?  It makes more sense to do the html
+        # formatting as the article is being written as html and toss
+        # the data after it has been written to the archive file.
+        lines = [_f for _f in article.body if _f]
+        # Handle <HTML> </HTML> directives
+        if self.ALLOWHTML:
+            self.__processbody_HTML(lines)
+        self.__processbody_URLquote(lines)
+        if not self.SHOWHTML and lines:
+            lines.insert(0, '<PRE>')
+            lines.append('</PRE>')
+        else:
+            # Do fancy formatting here
+            if self.SHOWBR:
+                lines = [x + "<BR>" for x in lines]
+            else:
+                for i in range(0, len(lines)):
+                    s = lines[i]
+                    if s[0:1] in ' \t\n':
+                        lines[i] = '<P>' + s
+        article.html_body = lines
+        return article
+
+    def update_article(self, arcdir, article, prev, next):
+        seq = article.sequence
+        filename = os.path.join(arcdir, article.filename)
+        self.message(C_('Updating HTML for article %(seq)s'))
         try:
-            # Use protocol 4 for Python 2/3 compatibility
-            protocol = 4
-            self.__dict__ = pickle.loads(state, fix_imports=True, encoding='latin1')
-        except Exception as e:
-            syslog('error', 'Error setting archive state: %s', e)
-            return False
-        return True
+            f = open(filename)
+            article.loadbody_fromHTML(f)
+            f.close()
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
+            self.message(C_('article file %(filename)s is missing!'))
+        article.prev = prev
+        article.next = next
+        omask = os.umask(0o002)
+        try:
+            f = open(filename, 'w')
+        finally:
+            os.umask(omask)
+        f.write(article.as_html())
+        f.close()

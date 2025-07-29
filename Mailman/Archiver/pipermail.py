@@ -1,17 +1,15 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 
+import errno
 import mailbox
 import os
 import re
 import sys
 import time
-import string
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
-
-# Use string.ascii_lowercase instead of the old lowercase variable
-lowercase = string.ascii_lowercase
+from string import ascii_lowercase as lowercase
 
 __version__ = '0.09 (Mailman edition)'
 VERSION = __version__
@@ -19,6 +17,7 @@ CACHESIZE = 100    # Number of slots in the cache
 
 from Mailman import mm_cfg
 from Mailman import Errors
+from Mailman import Utils
 from Mailman.Mailbox import ArchiverMailbox
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _, C_
@@ -26,6 +25,7 @@ from Mailman.i18n import _, C_
 SPACE = ' '
 
 
+
 msgid_pat = re.compile(r'(<.*>)')
 def strip_separators(s):
     "Remove quotes or parenthesization from a Message-ID string"
@@ -114,7 +114,7 @@ class Database(DatabaseInterface):
         self.changed[archive, article.msgid] = None
 
         parentID = article.parentID
-        if parentID is not None and parentID in self.articleIndex:
+        if parentID is not None and self.articleIndex.has_key(parentID):
             parent = self.getArticle(archive, parentID)
             myThreadKey = (parent.threadKey + article.date + '.'
                            + str(article.sequence) + '-')
@@ -131,8 +131,7 @@ class Database(DatabaseInterface):
         temp2 = article.html_body
         article.body = []
         del article.html_body
-        # Use protocol 4 for Python 2/3 compatibility
-        self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
+        self.articleIndex[article.msgid] = pickle.dumps(article)
         article.body = temp
         article.html_body = temp2
 
@@ -220,8 +219,9 @@ class Article(object):
                 self.headers[i] = message[i]
 
         # Read the message body
-        s = StringIO(message.get_payload(decode=True)\
-                     or message.as_string().split('\n\n',1)[1])
+        msg = message.get_payload()\
+                     or message.as_string().split('\n\n',1)[1]
+        s = StringIO(msg)
         self.body = s.readlines()
 
     def _set_date(self, message):
@@ -272,26 +272,37 @@ class T(object):
     def __init__(self, basedir = None, reload = 1, database = None):
         # If basedir isn't provided, assume the current directory
         if basedir is None:
-            basedir = os.getcwd()
-        self.basedir = basedir
+            self.basedir = os.getcwd()
+        else:
+            basedir = os.path.expanduser(basedir)
+            self.basedir = basedir
+        self.database = database
+
+        # If the directory doesn't exist, create it.  This code shouldn't get
+        # run anymore, we create the directory in Archiver.py.  It should only
+        # get used by legacy lists created that are only receiving their first
+        # message in the HTML archive now -- Marc
+        try:
+            os.stat(self.basedir)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            else:
+                self.message(C_('Creating archive directory ') + self.basedir)
+                omask = os.umask(0)
+                try:
+                    os.mkdir(self.basedir, self.DIRMODE)
+                finally:
+                    os.umask(omask)
 
         # Try to load previously pickled state
         try:
             if not reload:
                 raise IOError
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'rb')
+            d = Utils.load_pickle(os.path.join(self.basedir, 'pipermail.pck'))
+            if not d:
+                raise IOError("Pickled data is empty or None")
             self.message(C_('Reloading pickled archive state'))
-            try:
-                # Try UTF-8 first for newer files
-                d = pickle.load(f, fix_imports=True, encoding='utf-8')
-            except (UnicodeDecodeError, pickle.UnpicklingError):
-                # Fall back to latin1 for older files
-                f.seek(0)
-                d = pickle.load(f, fix_imports=True, encoding='latin1')
-            f.close()
-            if isinstance(d, bytes):
-                # If we got bytes, try to unpickle it
-                d = pickle.loads(d, fix_imports=True, encoding='latin1')
             for key, value in list(d.items()):
                 setattr(self, key, value)
         except (IOError, EOFError):
@@ -326,30 +337,12 @@ class T(object):
             f = open(os.path.join(self.basedir, 'pipermail.pck'), 'wb')
         finally:
             os.umask(omask)
-        # Use protocol 4 for Python 2/3 compatibility
-        pickle.dump(self.getstate(), f, protocol=4, fix_imports=True)
+        pickle.dump(self.getstate(), f)
         f.close()
 
     def getstate(self):
-        """Get the current state of the archive."""
-        try:
-            # Use protocol 4 for Python 2/3 compatibility
-            protocol = 4
-            return pickle.dumps(self.__dict__, protocol, fix_imports=True)
-        except Exception as e:
-            mailman_log('error', 'Error getting archive state: %s', e)
-            return None
-
-    def setstate(self, state):
-        """Set the state of the archive."""
-        try:
-            # Use protocol 4 for Python 2/3 compatibility
-            protocol = 4
-            self.__dict__ = pickle.loads(state, fix_imports=True, encoding='latin1')
-        except Exception as e:
-            mailman_log('error', 'Error setting archive state: %s', e)
-            return False
-        return True
+        # can override this in subclass
+        return self.__dict__
 
     #
     # Private methods
@@ -558,7 +551,8 @@ class T(object):
         return Article(msg, sequence)
 
     def processUnixMailbox(self, input, start=None, end=None):
-        mbox = ArchiverMailbox(input, self.maillist)
+        mbox = ArchiverMailbox(input.name, self.maillist)
+        mbox_iterator = iter(mbox.values())
         if start is None:
             start = 0
         counter = 0
@@ -566,7 +560,7 @@ class T(object):
             mbox.skipping(True)
         while counter < start:
             try:
-                m = next(mbox)
+                m = next(mbox_iterator, None)
             except Errors.DiscardMessage:
                 continue
             if m is None:
@@ -577,7 +571,7 @@ class T(object):
         while 1:
             try:
                 pos = input.tell()
-                m = next(mbox)
+                m = next(mbox_iterator, None)
             except Errors.DiscardMessage:
                 continue
             except Exception:
@@ -605,29 +599,61 @@ class T(object):
         # If the archive directory doesn't exist, create it
         try:
             os.stat(archivedir)
-        except os.error as errdata:
-            errno, errmsg = errdata
-            if errno == 2:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            else:
                 omask = os.umask(0)
                 try:
                     os.mkdir(archivedir, self.DIRMODE)
                 finally:
                     os.umask(omask)
-            else:
-                raise os.error(errdata)
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
-        """Add an article to the archive."""
-        try:
-            # Use protocol 4 for Python 2/3 compatibility
-            protocol = 4
-            self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
-            self.articleIndex.sync()
-        except Exception as e:
-            mailman_log('error', 'Error adding article %s: %s', article.msgid, e)
-            return False
-        return True
+        archives = self.get_archives(article)
+        if not archives:
+            return
+        if type(archives) == type(''):
+            archives = [archives]
+
+        article.filename = filename = self.get_filename(article)
+        temp = self.format_article(article)
+        for arch in archives:
+            self.archive = arch # why do this???
+            archivedir = os.path.join(self.basedir, arch)
+            if arch not in self.archives:
+                self.new_archive(arch, archivedir)
+
+            # Write the HTML-ized article
+            self.write_article(arch, temp, os.path.join(archivedir,
+                                                        filename))
+
+            if 'author' in article.decoded:
+                author = fixAuthor(article.decoded['author'])
+            else:
+                author = fixAuthor(article.author)
+            if 'stripped' in article.decoded:
+                subject = article.decoded['stripped'].lower()
+            else:
+                subject = article.subject.lower()
+
+            article.parentID = parentID = self.get_parent_info(arch, article)
+            if parentID:
+                parent = self.database.getArticle(arch, parentID)
+                article.threadKey = (parent.threadKey + article.date + '.'
+                                     + str(article.sequence) + '-')
+            else:
+                article.threadKey = (article.date + '.'
+                                     + str(article.sequence) + '-')
+            key = article.threadKey, article.msgid
+
+            self.database.setThreadKey(arch, key, article.msgid)
+            self.database.addArticle(arch, temp, author=author,
+                                     subject=subject)
+
+            if arch not in self._dirty_archives:
+                self._dirty_archives.append(arch)
 
     def get_parent_info(self, archive, article):
         parentID = None
@@ -799,7 +825,7 @@ class BSDDBdatabase(Database):
         self.__closeIndices()
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return msgid in self.articleIndex
+        return self.articleIndex.has_key(msgid)
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
         self.threadIndex[key] = msgid

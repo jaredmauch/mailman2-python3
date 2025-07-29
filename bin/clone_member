@@ -66,7 +66,7 @@ Where:
 """
 
 import sys
-import argparse
+import getopt
 
 import paths
 from Mailman import MailList
@@ -75,6 +75,19 @@ from Mailman import Errors
 from Mailman.i18n import C_
 
 
+
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(C_(__doc__), file=fd)
+    if msg:
+        print(fd, msg, file=fd)
+    sys.exit(code)
+
+
+
 def dolist(mlist, options):
     SPACE = ' '
     if not options.quiet:
@@ -97,6 +110,7 @@ def dolist(mlist, options):
         if foundp:
             newowners[options.toaddr] = 1 
         newowners = newowners.keys()
+        newowners = list(newowners)
         newowners.sort()
         if options.modify:
             mlist.owner = newowners
@@ -138,57 +152,75 @@ def dolist(mlist, options):
         print(C_('    original address removed:'), options.fromaddr)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Clone a member address.')
-    parser.add_argument('-l', '--listname', action='append',
-                       help='Check and modify only the named mailing lists')
-    parser.add_argument('-r', '--remove', action='store_true',
-                       help='Remove the old address from the mailing list after it\'s been cloned')
-    parser.add_argument('-a', '--admin', action='store_true',
-                       help='Scan the list admin addresses for the old address, and clone or change them too')
-    parser.add_argument('-q', '--quiet', action='store_true',
-                       help='Do the modifications quietly')
-    parser.add_argument('-n', '--nomodify', action='store_true',
-                       help='Print what would be done, but don\'t actually do it')
-    parser.add_argument('fromaddr',
-                       help='The old address of the user')
-    parser.add_argument('toaddr',
-                       help='The new address of the user')
-    return parser.parse_args()
-
-
+
 def main():
-    args = parse_args()
+    # default options
+    class Options:
+        listnames = None
+        remove = 0
+        admintoo = 0
+        quiet = 0
+        modify = 1
 
+    # scan sysargs
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:], 'arl:qnh',
+            ['admin', 'remove', 'listname=', 'quiet', 'nomodify', 'help'])
+    except getopt.error as msg:
+        usage(1, msg)
+
+    options = Options()
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-q', '--quiet'):
+            options.quiet = 1
+        elif opt in ('-n', '--nomodify'):
+            options.modify = 0
+        elif opt in ('-a', '--admin'):
+            options.admintoo = 1
+        elif opt in ('-r', '--remove'):
+            options.remove = 1
+        elif opt in ('-l', '--listname'):
+            if options.listnames is None:
+                options.listnames = []
+            options.listnames.append(arg.lower())
+
+    # further options and argument processing
+    if not options.modify:
+        options.quiet = 0
+
+    if len(args) != 2:
+        usage(1)
+    fromaddr = args[0]
+    toaddr = args[1]
+        
     # validate and normalize the target address
     try:
-        Utils.ValidateEmail(args.toaddr)
+        Utils.ValidateEmail(toaddr)
     except Errors.EmailAddressError:
-        print(C_('Invalid email address:'), args.toaddr, file=sys.stderr)
-        sys.exit(1)
+        usage(1, C_('Not a valid email address: %(toaddr)s'))
+    lfromaddr = fromaddr.lower()
+    options.toaddr = toaddr
+    options.fromaddr = fromaddr
+    options.lfromaddr = lfromaddr
 
-    # normalize the addresses
-    args.lfromaddr = args.fromaddr.lower()
-    args.toaddr = args.toaddr.lower()
+    if options.listnames is None:
+        options.listnames = Utils.list_names()
 
-    # get the list of lists to process
-    if args.listname:
-        listnames = args.listname
-    else:
-        listnames = Utils.list_names()
-
-    # process each list
-    for listname in listnames:
+    for listname in options.listnames:
         try:
-            mlist = MailList(listname, lock=0)
-        except Errors.MMUnknownListError:
-            print(C_('Unknown list:'), listname, file=sys.stderr)
+            mlist = MailList.MailList(listname)
+        except Errors.MMListError as e:
+            print(C_('Error opening list "%(listname)s", skipping.\n%(e)s'))
             continue
         try:
-            dolist(mlist, args)
+            dolist(mlist, options)
         finally:
+            mlist.Save()
             mlist.Unlock()
 
-
+
 if __name__ == '__main__':
     main()

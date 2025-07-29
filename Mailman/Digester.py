@@ -25,14 +25,11 @@ import errno
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
+from Mailman.Handlers import ToDigest
 from Mailman.i18n import _
 
-# Lazy import to avoid circular dependency
-def get_to_digest():
-    import Mailman.Handlers.ToDigest as ToDigest
-    return ToDigest
 
-
+
 class Digester(object):
     def InitVars(self):
         # Configurable
@@ -45,8 +42,6 @@ class Digester(object):
         self.digest_header = mm_cfg.DEFAULT_DIGEST_HEADER
         self.digest_footer = mm_cfg.DEFAULT_DIGEST_FOOTER
         self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY
-        self._new_volume = 0  # Initialize _new_volume to False
-        self.volume = 1  # Initialize volume to 1
         # Non-configurable.
         self.one_last_digest = {}
         self.digest_members = {}
@@ -63,7 +58,7 @@ class Digester(object):
                 # See if there's a digest pending for this mailing list
                 if os.stat(digestmbox)[ST_SIZE] > 0:
                     mboxfp = open(digestmbox)
-                    get_to_digest().send_digests(self, mboxfp)
+                    ToDigest.send_digests(self, mboxfp)
                     os.unlink(digestmbox)
             finally:
                 if mboxfp:

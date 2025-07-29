@@ -1,59 +1,73 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
 <html>
 <head>
-<link href="mailman-install.css" rel="STYLESHEET" type="text/css"/>
-<link href="mailman-install.html" rel="first" title="GNU mailman - installation Manual"/>
-<link href="about.html" rel="last" title="About this document..."/>
-<link href="about.html" rel="help" title="About this document..."/>
-<link href="node47.html" rel="next"/>
-<link href="node45.html" rel="prev"/>
-<link href="front.html" rel="parent"/>
-<link href="node47.html" rel="next"/>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-<meta content="information" name="aesop"/>
+<link rel="STYLESHEET" href="mailman-install.css" type='text/css' />
+<link rel="first" href="mailman-install.html" title='GNU mailman - installation Manual' />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="next" href="node47.html" />
+<link rel="prev" href="node45.html" />
+<link rel="parent" href="front.html" />
+<link rel="next" href="node47.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
 <title>14 Troubleshooting</title>
 </head>
 <body>
 <div class="navigation">
-<div id="top-navigation-panel" xml:id="top-navigation-panel">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node45.html" rel="prev" title="13 create your first"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="front.html" rel="parent" title="Front Matter"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node47.html" rel="next" title="15 platform and operating"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="13 create your first"
+  href="node45.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="Front Matter"
+  href="front.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="15 platform and operating"
+  href="node47.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - Installation Manual</td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="node45.html" rel="prev">13 Create your first</a>
+<a class="sectref" rel="prev" href="node45.html">13 Create your first</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="front.html" rel="parent">Front Matter</a>
+<a class="sectref" rel="parent" href="front.html">Front Matter</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="node47.html" rel="next">15 Platform and operating</a>
+<a class="sectref" rel="next" href="node47.html">15 Platform and operating</a>
 </div>
-<hr/></div>
+<hr /></div>
 </div>
 <!--End of Navigation Panel-->
+
 <h1><a name="SECTION0011400000000000000000"></a><a name="troubleshooting"></a>
-<br/>
+<br>
 14 Troubleshooting
 </h1>
+
 <p>
 If you encounter problems with running Mailman, first check the question and
 answer section below.  If your problem is not covered there, check the
-<a class="ulink" href="http://www.list.org/help.html">online help</a>, including the
-<a class="ulink" href="http://www.list.org/faq.html">FAQ</a> and the
-<a class="ulink" href="http://wiki.list.org/x/AgA3">community FAQ wiki</a>.
+<a class="ulink" href="http://www.list.org/help.html"
+  >online help</a>, including the
+<a class="ulink" href="http://www.list.org/faq.html"
+  >FAQ</a> and the
+<a class="ulink" href="http://wiki.list.org/x/AgA3"
+  >community FAQ wiki</a>.
 
 <p>
 Also check for errors in your syslog files, your mail and web server log files
 and in Mailman's <span class="file"><var>$prefix</var>/logs/error</span> file.  If you're still
 having problems, you should send a message to the
-<span class="email">mailman-users@python.org</span> mailing list<a href="#foot651" name="tex2html7"><sup>7</sup></a>; see
+<span class="email">mailman-users@python.org</span> mailing list<a name="tex2html7"
+  href="#foot651"><sup>7</sup></a>; see
 <a class="url" href="http://mail.python.org/mailman/listinfo/mailman-users">http://mail.python.org/mailman/listinfo/mailman-users</a> for more
 information.
 
@@ -65,6 +79,7 @@ Python you're using, and which version of Mailman you're installing.
 Here is a list of some common questions and answers:
 
 <p>
+
 <ul>
 <li><strong>Problem:</strong> All Mailman web pages give a 404 File not found
       error.
@@ -74,21 +89,24 @@ Here is a list of some common questions and answers:
       handling Mailman's CGI programs.  Make sure you have:
 
 <p>
+
 <ol>
 <li>configured the web server to give permissions to
             <span class="file"><var>$prefix</var>/cgi-bin</span>
+
 <p>
-</p></li>
+</li>
 <li>restarted the web server properly.
       
 </li>
 </ol>
+
 <p>
 Consult your web server's documentation for instructions on how to do
       check these issues.
 
 <p>
-</p></p></p></p></li>
+</li>
 <li><strong>Problem:</strong> All Mailman web pages give an "Internal Server
       Error".
 
@@ -101,12 +119,13 @@ Consult your web server's documentation for instructions on how to do
 <div class="verbatim"><pre>
             Attempt to exec script with invalid gid 51, expected 99
 </pre></div>
+
 <p>
 you will need to reinstall Mailman, specifying the proper CGI group id,
       as described in the <a href="building.html#building">3</a> section.
 
 <p>
-</p></p></p></p></li>
+</li>
 <li><strong>Problem:</strong> I send mail to the list, and get back mail saying the
        list is not found!
 
@@ -118,7 +137,7 @@ you will need to reinstall Mailman, specifying the proper CGI group id,
       your server specific instructions in the <a href="mail-server.html#mail-server">6</a> section.
 
 <p>
-</p></p></li>
+</li>
 <li><strong>Problem:</strong> I send mail to the list, and get back mail saying,
       ``unknown mailer error''.
 
@@ -131,12 +150,13 @@ you will need to reinstall Mailman, specifying the proper CGI group id,
 <div class="verbatim"><pre>
             Attempt to exec script with invalid gid 51, expected 99
 </pre></div>
+
 <p>
 you will need to reinstall Mailman, specifying the proper mail group id
       as described in the <a href="building.html#building">3</a> section.
 
 <p>
-</p></p></p></p></li>
+</li>
 <li><strong>Problem:</strong> I use Postfix as my mail server and the mail wrapper
       programs are logging complaints about the wrong GID.
 
@@ -148,7 +168,7 @@ you will need to reinstall Mailman, specifying the proper mail group id
       user.
 
 <p>
-</p></p></li>
+</li>
 <li><strong>Problem:</strong> I use Sendmail as my mail server, and when I send mail
       to the list, I get back mail saying, ``sh: mailman not available for
       sendmail programs''.
@@ -171,25 +191,29 @@ Note that on Debian Linux, the system makes <span class="file">/usr/lib/sm.bin</
       to the secure link to the wrapper.
 
 <p>
-</p></p></p></p></li>
+</li>
 <li><strong>Problem:</strong>  I messed up when I called <b class="program">configure</b>.  How
       do I clean things up and re-install?
 
 <p>
 <strong>Solution:</strong>
+
 <p>
 <div class="verbatim"><pre>
         % make clean
         % ./configure --with-the-right-options
         % make install
 </pre></div>
+
 <p>
-</p></p></p></li>
+</li>
 </ul>
+
 <p>
-<br/><hr/><h4>Footnotes</h4>
+<br><hr><h4>Footnotes</h4>
 <dl>
-<dt><a name="foot651">... list</a><a href="troubleshooting.html#tex2html7"><sup>7</sup></a></dt>
+<dt><a name="foot651">... list</a><A
+ href="troubleshooting.html#tex2html7"><sup>7</sup></a></dt>
 <dd>You must subscribe to
 this mailing list in order to post to it, but the mailing list's archives are
 publicly visible.
@@ -197,30 +221,40 @@ publicly visible.
 </dd>
 </dl>
 <div class="navigation">
-<div class="online-navigation">
-<p></p><hr>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node45.html" rel="prev" title="13 create your first"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="front.html" rel="parent" title="Front Matter"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node47.html" rel="next" title="15 platform and operating"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="13 create your first"
+  href="node45.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="Front Matter"
+  href="front.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="15 platform and operating"
+  href="node47.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - Installation Manual</td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="node45.html" rel="prev">13 Create your first</a>
+<a class="sectref" rel="prev" href="node45.html">13 Create your first</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="front.html" rel="parent">Front Matter</a>
+<a class="sectref" rel="parent" href="front.html">Front Matter</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="node47.html" rel="next">15 Platform and operating</a>
+<a class="sectref" rel="next" href="node47.html">15 Platform and operating</a>
 </div>
-</hr></div>
-<hr/>
+</div>
+<hr />
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-</p></p></p></p></p></p></body>
+
+</body>
 </html>

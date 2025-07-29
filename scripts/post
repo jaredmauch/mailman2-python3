@@ -28,9 +28,6 @@ Stdin is the mail message, and argv[1] is the name of the target mailing list.
 from __future__ import print_function
 
 import sys
-import email
-import os
-from email import message_from_string
 
 import paths
 from Mailman import mm_cfg
@@ -38,12 +35,11 @@ from Mailman import Utils
 from Mailman.i18n import _
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Utils import LogStdErr
-from Mailman.Logging.Syslog import mailman_log
-from Mailman.Message import Message
 
 LogStdErr("error", "post")
 
 
+
 def main():
     # TBD: If you've configured your list or aliases so poorly as to get
     # either of these first two errors, there's little that can be done to
@@ -58,36 +54,17 @@ def main():
     if not Utils.list_exists(listname):
         print(_('post script, list not found: %(listname)s'), file=sys.stderr)
         sys.exit(1)
-    # Read the message from stdin
-    msgtext = sys.stdin.read()
-    # Parse the message to get headers for logging
-    emsg = message_from_string(msgtext)
-    if not isinstance(emsg, Message):
-        mmsg = Message()
-        for k, v in emsg.items():
-            mmsg[k] = v
-        mmsg.set_payload(emsg.get_payload())
-    else:
-        mmsg = emsg
-    # Log the inbound message
-    mailman_log('post', 'inbound message to %s from %s, subject: %s, message-id: %s',
-           listname, mmsg.get('from', 'unknown'),
-           mmsg.get('subject', '(no subject)'),
-           mmsg.get('message-id', 'n/a'))
     # Immediately queue the message for the incoming qrunner to process.  The
     # advantage to this approach is that messages should never get lost --
     # some MTAs have a hard limit to the time a filter prog can run.  Postfix
     # is a good example; if the limit is hit, the proc is SIGKILL'd giving us
     # no chance to save the message.
     inq = get_switchboard(mm_cfg.INQUEUE_DIR)
-    qfile = inq.enqueue(mmsg,
-                       msgdata={'listname': listname,
-                               'tolist': 1,
-                               '_plaintext': 1})
-    # Log the queue file information
-    mailman_log('post', 'message queued to %s, qfile: %s, full path: %s',
-           mm_cfg.INQUEUE_DIR, qfile, os.path.join(mm_cfg.INQUEUE_DIR, qfile))
+    inq.enqueue(sys.stdin.read(),
+                listname=listname,
+                tolist=1, _plaintext=1)
 
 
+
 if __name__ == '__main__':
     main()

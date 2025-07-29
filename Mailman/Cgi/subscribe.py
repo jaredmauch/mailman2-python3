@@ -20,22 +20,22 @@ from __future__ import print_function
 
 import sys
 import os
+import cgi
 import time
 import signal
-import urllib.parse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import json
-import ipaddress
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import i18n
-from Mailman.Message import Message
+from Mailman import Message
 from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import mailman_log
-from Mailman.Utils import validate_ip_address
+from Mailman.Logging.Syslog import syslog
 
 SLASH = '/'
 ERRORSEP = '\n\n<p>'
@@ -46,32 +46,7 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-def validate_listname(listname):
-    """Validate and sanitize a listname to prevent path traversal.
-    
-    Args:
-        listname: The listname to validate
-        
-    Returns:
-        tuple: (is_valid, sanitized_name, error_message)
-    """
-    if not listname:
-        return False, None, _('List name is required')
-        
-    # Convert to lowercase and strip whitespace
-    listname = listname.lower().strip()
-    
-    # Basic validation
-    if not Utils.ValidateListName(listname):
-        return False, None, _('Invalid list name')
-        
-    # Check for path traversal attempts
-    if '..' in listname or '/' in listname or '\\' in listname:
-        return False, None, _('Invalid list name')
-        
-    return True, listname, None
-
-
+
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -80,63 +55,28 @@ def main():
     if not parts:
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script')))
-        print('Status: 400 Bad Request')
         print(doc.Format())
         return
 
-    # Validate listname
-    is_valid, listname, error_msg = validate_listname(parts[0])
-    if not is_valid:
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(error_msg))
-        print('Status: 400 Bad Request')
-        print(doc.Format())
-        return
-
+    listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError as e:
-        # Avoid cross-site scripting attacks and information disclosure
+        # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
+        doc.AddItem(Bold(_(f'No such list <em>{safelistname}</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
-        mailman_log('error', 'subscribe: No such list "%s"', listname)
-        return
-    except Exception as e:
-        # Log the full error but don't expose it to the user
-        mailman_log('error', 'subscribe: Unexpected error for list "%s": %s', listname, str(e))
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('An error occurred processing your request')))
-        print('Status: 500 Internal Server Error')
-        print(doc.Format())
+        syslog('error', 'subscribe: No such list "%s": %s\n', listname, e)
         return
 
     # See if the form data has a preferred language set, in which case, use it
     # for the results.  If not, use the list's preferred language.
+    cgidata = cgi.FieldStorage()
     try:
-        if os.environ.get('REQUEST_METHOD') == 'POST':
-            # Get the content length
-            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            # Read the form data
-            form_data = sys.stdin.read(content_length)
-            cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-        else:
-            query_string = os.environ.get('QUERY_STRING', '')
-            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-    except Exception as e:
-        # Log the error but don't expose details
-        mailman_log('error', 'subscribe: Error parsing form data: %s', str(e))
-        doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('Invalid request')))
-        print('Status: 400 Bad Request')
-        print(doc.Format())
-        return
-
-    try:
-        language = cgidata.get('language', [''])[0]
+        language = cgidata.getfirst('language', '')
     except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
@@ -153,6 +93,11 @@ def main():
     # We need a signal handler to catch the SIGTERM that can come from Apache
     # when the user hits the browser's STOP button.  See the comment in
     # admin.py for details.
+    #
+    # BAW: Strictly speaking, the list should not need to be locked just to
+    # read the request database.  However the request database asserts that
+    # the list is locked in order to load it and it's not worth complicating
+    # that logic.
     def sigterm_handler(signum, frame, mlist=mlist):
         # Make sure the list gets unlocked...
         mlist.Unlock()
@@ -161,28 +106,29 @@ def main():
         # could be bad!
         sys.exit(0)
 
-    # Install the emergency shutdown signal handler
-    signal.signal(signal.SIGTERM, sigterm_handler)
+    mlist.Lock()
+    try:
+        # Install the emergency shutdown signal handler
+        signal.signal(signal.SIGTERM, sigterm_handler)
 
-    process_form(mlist, doc, cgidata, language)
+        process_form(mlist, doc, cgidata, language)
+        mlist.Save()
+    finally:
+        mlist.Unlock()
 
 
+
 def process_form(mlist, doc, cgidata, lang):
     listowner = mlist.GetOwnerEmail()
     realname = mlist.real_name
     results = []
 
     # The email address being subscribed, required
-    email = cgidata.get('email', [''])[0]
-    if isinstance(email, bytes):
-        email = email.decode('utf-8', 'replace')
-    email = email.strip().lower()
+    email = cgidata.getfirst('email', '').strip()
     if not email:
         results.append(_('You must supply a valid email address.'))
 
-    fullname = cgidata.get('fullname', [''])[0]
-    if isinstance(fullname, bytes):
-        fullname = fullname.decode('utf-8', 'replace')
+    fullname = cgidata.getfirst('fullname', '')
     # Canonicalize the full name
     fullname = Utils.canonstr(fullname, lang)
     # Who was doing the subscribing?
@@ -193,12 +139,9 @@ def process_form(mlist, doc, cgidata, lang):
 
     # Check reCAPTCHA submission, if enabled
     if mm_cfg.RECAPTCHA_SECRET_KEY:
-        recaptcha_response = cgidata.get('g-recaptcha-response', [''])[0]
-        if isinstance(recaptcha_response, bytes):
-            recaptcha_response = recaptcha_response.decode('utf-8', 'replace')
         request_data = urllib.parse.urlencode({
                 'secret': mm_cfg.RECAPTCHA_SECRET_KEY,
-                'response': recaptcha_response,
+                'response': cgidata.getvalue('g-recaptcha-response', ''),
                 'remoteip': remote})
         request_data = request_data.encode('utf-8')
         request = urllib.request.Request(
@@ -210,64 +153,58 @@ def process_form(mlist, doc, cgidata, lang):
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
-                results.append(_('reCAPTCHA validation failed: {}').format(e_codes))
+                results.append(_(f'reCAPTCHA validation failed: {e_codes}'))
         except urllib.error.URLError as e:
             e_reason = e.reason
-            results.append(_('reCAPTCHA could not be validated: {e_reason}'))
-
-    # Get and validate IP address
-    ip = os.environ.get('REMOTE_ADDR', '')
-    is_valid, normalized_ip = validate_ip_address(ip)
-    if not is_valid:
-        ip = ''
-    else:
-        ip = normalized_ip
+            results.append(_(f'reCAPTCHA could not be validated: {e_reason}'))
 
     # Are we checking the hidden data?
     if mm_cfg.SUBSCRIBE_FORM_SECRET:
         now = int(time.time())
         # Try to accept a range in case of load balancers, etc.  (LP: #1447445)
-        if ip.find('.') >= 0:
+        if remote.find('.') >= 0:
             # ipv4 - drop last octet
-            remote1 = ip.rsplit('.', 1)[0]
+            remote1 = remote.rsplit('.', 1)[0]
         else:
             # ipv6 - drop last 16 (could end with :: in which case we just
             #        drop one : resulting in an invalid format, but it's only
             #        for our hash so it doesn't matter.
-            remote1 = ip.rsplit(':', 1)[0]
+            remote1 = remote.rsplit(':', 1)[0]
         try:
-            sub_form_token = cgidata.get('sub_form_token', [''])[0]
-            if isinstance(sub_form_token, bytes):
-                sub_form_token = sub_form_token.decode('utf-8', 'replace')
-            ftime, fcaptcha_idx, fhash = sub_form_token.split(':')
+            ftime, fcaptcha_idx, fhash = cgidata.getfirst(
+                    'sub_form_token', '').split(':')
             then = int(ftime)
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
             then = 0
-        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx +
-                        ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
+        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx + ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
         token = Utils.sha_new(needs_hashing).hexdigest()
         if ftime and now - then > mm_cfg.FORM_LIFETIME:
             results.append(_('The form is too old.  Please GET it again.'))
         if ftime and now - then < mm_cfg.SUBSCRIBE_FORM_MIN_TIME:
-            results.append(_('The form was submitted too quickly.  Please wait a moment and try again.'))
+            results.append(
+    _('Please take a few seconds to fill out the form before submitting it.'))
         if ftime and token != fhash:
-            results.append(_('The form was tampered with.  Please GET it again.'))
-
+            results.append(
+                _("The hidden token didn't match.  Did your IP change?"))
+        if not ftime:
+            results.append(
+    _('There was no hidden token in your submission or it was corrupted.'))
+            results.append(_('You must GET the form before submitting it.'))
+        # Check captcha
+        if isinstance(mm_cfg.CAPTCHAS, dict):
+            captcha_answer = cgidata.getvalue('captcha_answer', '')
+            if not Utils.captcha_verify(
+                    fcaptcha_idx, captcha_answer, mm_cfg.CAPTCHAS):
+                results.append(_(
+                    'This was not the right answer to the CAPTCHA question.'))
     # Was an attempt made to subscribe the list to itself?
     if email == mlist.GetListEmail():
-        mailman_log('mischief', 'Attempt to self subscribe %s: %s', email, remote)
+        syslog('mischief', 'Attempt to self subscribe %s: %s', email, remote)
         results.append(_('You may not subscribe a list to itself!'))
     # If the user did not supply a password, generate one for him
-    password = cgidata.get('pw', [''])[0]
-    if isinstance(password, bytes):
-        password = password.decode('utf-8', 'replace')
-    password = password.strip()
-    
-    confirmed = cgidata.get('pw-conf', [''])[0]
-    if isinstance(confirmed, bytes):
-        confirmed = confirmed.decode('utf-8', 'replace')
-    confirmed = confirmed.strip()
+    password = cgidata.getfirst('pw', '').strip()
+    confirmed = cgidata.getfirst('pw-conf', '').strip()
 
     if not password and not confirmed:
         password = Utils.MakeRandomPassword()
@@ -277,9 +214,7 @@ def process_form(mlist, doc, cgidata, lang):
         results.append(_('Your passwords did not match.'))
 
     # Get the digest option for the subscription.
-    digestflag = cgidata.get('digest', [''])[0]
-    if isinstance(digestflag, bytes):
-        digestflag = digestflag.decode('utf-8', 'replace')
+    digestflag = cgidata.getfirst('digest')
     if digestflag:
         try:
             digest = int(digestflag)
@@ -317,13 +252,12 @@ may have to be first confirmed by you via email, or approved by the list
 moderator.  If confirmation is required, you will soon get a confirmation
 email which contains further instructions.""")
 
-    # Acquire the lock before attempting to add the member
-    mlist.Lock()
     try:
         userdesc = UserDesc(email, fullname, password, digest, lang)
         mlist.AddMember(userdesc, remote)
         results = ''
-        mlist.Save()
+    # Check for all the errors that mlist.AddMember can throw options on the
+    # web page for this cgi
     except Errors.MembershipIsBanned:
         results = _(f"""The email address you supplied is banned from this
         mailing list.  If you think this restriction is erroneous, please
@@ -375,7 +309,7 @@ moderator's decision when they get to your request.""")
             otrans = i18n.get_translation()
             i18n.set_language(mlang)
             try:
-                msg = Mailman.Message.UserNotification(
+                msg = Message.UserNotification(
                     mlist.getMemberCPAddress(email),
                     mlist.GetBouncesEmail(),
                     _('Mailman privacy alert'),
@@ -409,12 +343,11 @@ to the list administrator at {listowner}.
         else:
             results = _(f"""\
 You have been successfully subscribed to the {realname} mailing list.""")
-    finally:
-        mlist.Unlock()
     # Show the results
     print_results(mlist, results, doc, lang)
 
 
+
 def print_results(mlist, results, doc, lang):
     # The bulk of the document will come from the options.html template, which
     # includes its own html armor (head tags, etc.).  Suppress the head that

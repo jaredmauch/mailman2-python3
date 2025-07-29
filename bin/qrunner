@@ -73,13 +73,9 @@ operation.  It is only useful for debugging if it is run separately.
 """
 
 import sys
-import argparse
+import getopt
 import signal
 import time
-import os
-import threading
-import traceback
-from io import StringIO
 
 import paths
 from Mailman import mm_cfg
@@ -94,35 +90,19 @@ COMMASPACE = ', '
 AS_SUBPROC = 0
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Run one or more qrunners, once or repeatedly.')
-    parser.add_argument('-r', '--runner', action='append',
-                       help='Run the named qrunner. Format: runner[:slice:range]')
-    parser.add_argument('-o', '--once', action='store_true',
-                       help='Run each named qrunner exactly once through its main loop')
-    parser.add_argument('-l', '--list', action='store_true',
-                       help='Show available qrunner names and exit')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                       help='Spit out more debugging information to the logs/qrunner log file')
-    parser.add_argument('-s', '--subproc', action='store_true',
-                       help='Run as a subprocess of mailmanctl')
-    return parser.parse_args()
-
-
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    # Ensure PROGRAM is a string, not bytes
-    if isinstance(PROGRAM, bytes):
-        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
+
 def make_qrunner(name, slice, range, once=0):
     modulename = 'Mailman.Queue.' + name
     try:
@@ -147,6 +127,7 @@ def make_qrunner(name, slice, range, once=0):
     return qrunner
 
 
+
 def set_signals(loop):
     # Set up the SIGTERM handler for stopping the loop
     def sigterm_handler(signum, frame, loop=loop):
@@ -154,18 +135,7 @@ def set_signals(loop):
         loop.stop()
         loop.status = signal.SIGTERM
         syslog('qrunner', '%s qrunner caught SIGTERM.  Stopping.', loop.name())
-        # Log traceback
-        s = StringIO()
-        traceback.print_stack(file=s)
-        syslog('error', 'Traceback on SIGTERM:\n%s', s.getvalue())
-        # Force exit after 5 seconds
-        def force_exit():
-            time.sleep(5)
-            syslog('qrunner', '%s qrunner forcing exit after timeout.', loop.name())
-            os._exit(signal.SIGTERM)
-        threading.Thread(target=force_exit, daemon=True).start()
     signal.signal(signal.SIGTERM, sigterm_handler)
-    
     # Set up the SIGINT handler for stopping the loop.  For us, SIGINT is
     # the same as SIGTERM, but our parent treats the exit statuses
     # differently (it restarts a SIGINT but not a SIGTERM).
@@ -174,87 +144,91 @@ def set_signals(loop):
         loop.stop()
         loop.status = signal.SIGINT
         syslog('qrunner', '%s qrunner caught SIGINT.  Stopping.', loop.name())
-        # Log traceback
-        s = StringIO()
-        traceback.print_stack(file=s)
-        syslog('error', 'Traceback on SIGINT:\n%s', s.getvalue())
-        # Force exit after 5 seconds
-        def force_exit():
-            time.sleep(5)
-            syslog('qrunner', '%s qrunner forcing exit after timeout.', loop.name())
-            os._exit(signal.SIGINT)
-        threading.Thread(target=force_exit, daemon=True).start()
     signal.signal(signal.SIGINT, sigint_handler)
-    
     # SIGHUP just tells us to close our log files.  They'll be
     # automatically reopened at the next log print :)
     def sighup_handler(signum, frame, loop=loop):
-        try:
-            syslog.close()
-            # Reopen syslog connection
-            syslog.open()
-            syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
-                   loop.name())
-        except Exception as e:
-            # Log any errors but don't let them propagate
-            print('Error in SIGHUP handler:', str(e), file=sys.stderr)
+        syslog.close()
+        syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
+               loop.name())
     signal.signal(signal.SIGHUP, sighup_handler)
 
 
+
 def main():
     global AS_SUBPROC
     try:
-        args = parse_args()
-    except SystemExit:
-        usage(1)
+        opts, args = getopt.getopt(
+            sys.argv[1:], 'hlor:vs',
+            ['help', 'list', 'once', 'runner=', 'verbose', 'subproc'])
+    except getopt.error as msg:
+        usage(1, msg)
 
-    if args.list:
-        for runnername, slices in mm_cfg.QRUNNERS:
-            if runnername.endswith('Runner'):
-                name = runnername[:-len('Runner')]
-            else:
-                name = runnername
-            print(C_('%(name)s runs the %(runnername)s qrunner'))
-        print(C_('All runs all the above qrunners'))
-        sys.exit(0)
+    def silent_unraisable_hook(unraisable):
+        pass
 
-    if not args.runner:
-        usage(1, C_('No runner specified'))
+    if hasattr(sys, 'unraisablehook'):
+        sys.unraisablehook = silent_unraisable_hook
 
+    once = 0
     runners = []
-    for runnerspec in args.runner:
-        parts = runnerspec.split(':')
-        if len(parts) == 1:
-            runner = parts[0]
-            slice = 1
-            range = 1
-        elif len(parts) == 3:
-            runner = parts[0]
-            try:
-                slice = int(parts[1])
-                range = int(parts[2])
-            except ValueError:
-                usage(1, 'Bad runner specification: %(runnerspec)s')
-        else:
-            usage(1, 'Bad runner specification: %(runnerspec)s')
-        if runner == 'All':
+    verbose = 0
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-l', '--list'):
             for runnername, slices in mm_cfg.QRUNNERS:
                 if runnername.endswith('Runner'):
                     name = runnername[:-len('Runner')]
                 else:
                     name = runnername
-                runners.append((name, 1, 1))
-        else:
-            runners.append((runner, slice, range))
+                print(C_('%(name)s runs the %(runnername)s qrunner'))
+            print(C_('All runs all the above qrunners'))
+            sys.exit(0)
+        elif opt in ('-o', '--once'):
+            once = 1
+        elif opt in ('-r', '--runner'):
+            runnerspec = arg
+            parts = runnerspec.split(':')
+            if len(parts) == 1:
+                runner = parts[0]
+                slice = 1
+                range = 1
+            elif len(parts) == 3:
+                runner = parts[0]
+                try:
+                    slice = int(parts[1])
+                    range = int(parts[2])
+                except ValueError:
+                    usage(1, 'Bad runner specification: %(runnerspec)s')
+            else:
+                usage(1, 'Bad runner specification: %(runnerspec)s')
+            if runner == 'All':
+                for runnername, slices in mm_cfg.QRUNNERS:
+                    runners.append((runnername, slice, range))
+            else:
+                if runner.endswith('Runner'):
+                    runners.append((runner, slice, range))
+                else:
+                    runners.append((runner + 'Runner', slice, range))
+        elif opt in ('-s', '--subproc'):
+            AS_SUBPROC = 1
+        elif opt in ('-v', '--verbose'):
+            verbose = 1
 
-    AS_SUBPROC = args.subproc
-    if args.verbose:
-        LogStdErr('debug', 'qrunner', manual_reprime=0)
-    else:
-        LogStdErr('error', 'qrunner', manual_reprime=0)
+    if len(args) != 0:
+        usage(1)
+    if len(runners) == 0:
+        usage(1, C_('No runner name given.'))
+
+    # Before we startup qrunners, we redirect the stderr to mailman syslog.
+    # We assume !AS_SUBPROC is running for debugging purpose and don't
+    # log errors in mailman logs/error but keep printing to stderr.
+    if AS_SUBPROC:
+        LogStdErr('error', 'qrunner', manual_reprime=0, tee_to_real_stderr=0)
 
     # Fast track for one infinite runner
-    if len(runners) == 1 and not args.once:
+    if len(runners) == 1 and not once:
         qrunner = make_qrunner(*runners[0])
         class Loop:
             status = 0
@@ -269,15 +243,12 @@ def main():
         # Now start up the main loop
         syslog('qrunner', '%s qrunner started.', loop.name())
         qrunner.run()
-        # Only exit with SIGINT if we're stopping normally
-        if not qrunner._stop:
-            loop.status = signal.SIGINT
         syslog('qrunner', '%s qrunner exiting.', loop.name())
     else:
         # Anything else we have to handle a bit more specially
         qrunners = []
         for runner, slice, range in runners:
-            qrunner = make_qrunner(runner, slice, range, args.once)
+            qrunner = make_qrunner(runner, slice, range, 1)
             qrunners.append(qrunner)
         # This class is used to manage the main loop
         class Loop:
@@ -298,14 +269,11 @@ def main():
                 # In case the SIGTERM came in the middle of this iteration
                 if loop.isdone():
                     break
-                if args.verbose:
+                if verbose:
                     syslog('qrunner', 'Now doing a %s qrunner iteration',
                            qrunner.__class__.__bases__[0].__name__)
                 qrunner.run()
-                # Only exit with SIGINT if we're stopping normally
-                if not qrunner._stop:
-                    loop.status = signal.SIGINT
-            if args.once:
+            if once:
                 break
             if mm_cfg.QRUNNER_SLEEP_TIME > 0:
                 time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
@@ -314,5 +282,6 @@ def main():
     sys.exit(loop.status)
 
 
+
 if __name__ == '__main__':
     main()

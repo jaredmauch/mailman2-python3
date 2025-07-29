@@ -29,7 +29,7 @@ import os
 import errno
 import traceback
 import re
-from io import StringIO
+import tempfile
 
 from Mailman import mm_cfg
 from Mailman import Mailbox
@@ -88,17 +88,21 @@ class Archiver:
         # symbolic links.
         omask = os.umask(0)
         try:
-            # Create mbox directory with proper permissions
-            mbox_dir = self.archive_dir() + '.mbox'
-            os.makedirs(mbox_dir, mode=0o02775, exist_ok=True)
-            
-            # Create archive directory with proper permissions
-            archive_dir = self.archive_dir()
-            os.makedirs(archive_dir, mode=0o02775, exist_ok=True)
-            
+            try:
+                os.mkdir(self.archive_dir()+'.mbox', 0o02775)
+            except OSError as e:
+                if e.errno != errno.EEXIST: raise
+                # We also create an empty pipermail archive directory into
+                # which we'll drop an empty index.html file into.  This is so
+                # that lists that have not yet received a posting have
+                # /something/ as their index.html, and don't just get a 404.
+            try:
+                os.mkdir(self.archive_dir(), 0o02775)
+            except OSError as e:
+                if e.errno != errno.EEXIST: raise
             # See if there's an index.html file there already and if not,
             # write in the empty archive notice.
-            indexfile = os.path.join(archive_dir, 'index.html')
+            indexfile = os.path.join(self.archive_dir(), 'index.html')
             fp = None
             try:
                 fp = open(indexfile)
@@ -132,7 +136,8 @@ class Archiver:
         if self.archive_private:
             return url
         else:
-            hostname = re.match(r'[^:]*://([^/]*)/.*', url, re.IGNORECASE).group(1)
+            hostname = re.match('[^:]*://([^/]*)/.*', url).group(1)\
+                       or mm_cfg.DEFAULT_URL_HOST
             url = mm_cfg.PUBLIC_ARCHIVE_URL % {
                 'listname': self.internal_name(),
                 'hostname': hostname
@@ -159,7 +164,7 @@ class Archiver:
             afn = self.ArchiveFileName()
             mbox = self.__archive_file(afn)
             mbox.AppendMessage(post)
-            mbox.fp.close()
+            mbox.close()
         except IOError as msg:
             syslog('error', 'Archive file access failure:\n\t%s %s', afn, msg)
             raise
@@ -169,17 +174,12 @@ class Archiver:
                       'hostname': self.host_name,
                       })
         cmd = ar % d
-        try:
-            with os.popen(cmd, 'w') as extarch:
-                extarch.write(txt)
-        except OSError as e:
-            syslog('error', 'Failed to execute external archiver: %s\nError: %s',
-                   cmd, str(e))
-            return
+        extarch = os.popen(cmd, 'w')
+        extarch.write(txt)
         status = extarch.close()
         if status:
-            syslog('error', 'External archiver non-zero exit status: %d\nCommand: %s',
-                   (status & 0xff00) >> 8, cmd)
+            syslog('error', 'external archiver non-zero exit status: %d\n',
+                   (status & 0xff00) >> 8)
 
     #
     # archiving in real time  this is called from list.post(msg)
@@ -193,18 +193,16 @@ class Archiver:
         # We don't need an extra archiver lock here because we know the list
         # itself must be locked.
         if mm_cfg.ARCHIVE_TO_MBOX in (1, 2):
-            try:
-                mbox = self.__archive_file(self.ArchiveFileName())
-                mbox.AppendMessage(msg)
-                mbox.fp.close()
-            except IOError as msg:
-                syslog('error', 'Archive file access failure:\n\t%s %s', 
-                       self.ArchiveFileName(), msg)
-                raise
+            self.__archive_to_mbox(msg)
             if mm_cfg.ARCHIVE_TO_MBOX == 1:
                 # Archive to mbox only.
                 return
-        txt = str(msg)
+
+        txt = msg.as_string()
+        unixfrom = msg.get_unixfrom()
+        if not txt.startswith(unixfrom):
+            txt = unixfrom + '\n' + txt
+
         # should we use the internal or external archiver?
         private_p = self.archive_private
         if mm_cfg.PUBLIC_EXTERNAL_ARCHIVER and not private_p:
@@ -213,11 +211,16 @@ class Archiver:
             self.ExternalArchive(mm_cfg.PRIVATE_EXTERNAL_ARCHIVER, txt)
         else:
             # use the internal archiver
-            with StringIO(txt) as f:
-                from . import HyperArch
-                h = HyperArch.HyperArchive(self)
-                h.processUnixMailbox(f)
-                h.close()
+            f = tempfile.NamedTemporaryFile()
+            if isinstance(txt, str):
+                txt = txt.encode('utf-8')
+            f.write(txt)
+            f.flush()
+            from . import HyperArch
+            h = HyperArch.HyperArchive(self)
+            h.processUnixMailbox(f)
+            h.close()
+            f.close()
 
     #
     # called from MailList.MailList.Save()

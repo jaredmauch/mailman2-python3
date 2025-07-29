@@ -26,7 +26,7 @@ from __future__ import print_function
 
 import sys
 import os
-import urllib.parse
+import cgi
 import urllib.request, urllib.parse, urllib.error
 
 from Mailman import mm_cfg
@@ -42,6 +42,7 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
+
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
@@ -56,23 +57,16 @@ def main():
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        error_page(_('No such list <em>{safelistname}</em>'))
+        error_page(_(f'No such list <em>{safelistname}</em>'))
         syslog('error', 'roster: No such list "%s": %s', listname, e)
         return
 
-    # Parse form data
+    cgidata = cgi.FieldStorage()
+
+    # messages in form should go in selected language (if any...)
     try:
-        if os.environ.get('REQUEST_METHOD') == 'POST':
-            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            if content_length > 0:
-                form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
-                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-            else:
-                cgidata = {}
-        else:
-            query_string = os.environ.get('QUERY_STRING', '')
-            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-    except Exception:
+        lang = cgidata.getfirst('language')
+    except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -83,8 +77,6 @@ def main():
         print(doc.Format())
         return
 
-    # messages in form should go in selected language (if any...)
-    lang = cgidata.get('language', [None])[0]
     if not Utils.IsLanguage(lang):
         lang = mlist.preferred_language
     i18n.set_language(lang)
@@ -94,8 +86,8 @@ def main():
     # "admin"-only, then we try to cookie authenticate the user, and failing
     # that, we check roster-email and roster-pw fields for a valid password.
     # (also allowed: the list moderator, the list admin, and the site admin).
-    password = cgidata.get('roster-pw', [''])[0].strip()
-    addr = cgidata.get('roster-email', [''])[0].strip()
+    password = cgidata.getfirst('roster-pw', '').strip()
+    addr = cgidata.getfirst('roster-email', '').strip()
     list_hidden = (not mlist.WebAuthenticate((mm_cfg.AuthUser,),
                                              password, addr)
                    and mlist.WebAuthenticate((mm_cfg.AuthListModerator,
@@ -124,7 +116,7 @@ def main():
         doc.set_language(lang)
         # Send this with a 401 status.
         print('Status: 401 Unauthorized')
-        error_page_doc(doc, _('{realname} roster authentication failed.'))
+        error_page_doc(doc, _(f'{realname} roster authentication failed.'))
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
         remote = os.environ.get('HTTP_FORWARDED_FOR',
@@ -149,6 +141,7 @@ def main():
     print(doc.Format())
 
 
+
 def error_page(errmsg):
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)

@@ -1,124 +1,62 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>Administratívne požiadavky môžu byť zobrazené dvoma spôsobmi. Buď
-<a href='\"%(summaryurl)s\"'>hromadne</a> alebo <em>detailne</em>.
-Pri hromadnom zobrazení sú všetky požiadavky pochádzajúce od
-toho istého účastníka zobrazené spolu a môže o nich byť rozhodnuté
-naraz. Pri detailnom zobrazení je každý príspevok zobrazený
-samostatne a administrátor rozhoduje o každom príspevku jednotlivo.
-Detailné zobrazenie obsahuje naviac všetky hlavičky a časť z tela
-správy.
+Administrat&iacute;vne požiadavky m&ocirc;žu byť zobrazen&eacute; dvoma sp&ocirc;sobmi. Buď
+<a href=\"%(summaryurl)s\">hromadne</a> alebo <em>detailne</em>.
+Pri hromadnom zobrazen&iacute; s&uacute; v&scaron;etky požiadavky poch&aacute;dzaj&uacute;ce od
+toho ist&eacute;ho &uacute;častn&iacute;ka zobrazen&eacute; spolu a m&ocirc;že o nich byť rozhodnut&eacute;
+naraz. Pri detailnom zobrazen&iacute; je každ&yacute; pr&iacute;spevok zobrazen&yacute;
+samostatne a administr&aacute;tor rozhoduje o každom pr&iacute;spevku jednotlivo.
+Detailn&eacute; zobrazenie obsahuje naviac v&scaron;etky hlavičky a časť z tela
+spr&aacute;vy.
 
-<p>Pre pozastavené príspevky vyberte jednu z týchto činností:
+<p>Pre pozastaven&eacute; pr&iacute;spevky vyberte jednu z t&yacute;chto činnost&iacute;:
 <ul>
-<li><b>Ponechať</b> - Nechať správu čakať vo fronte, nemá vplyv na
-nastavenie preposielania, to znamená, že správu môžete preposlať
+<li><b>Ponechať</b> - Nechať spr&aacute;vu čakať vo fronte, nem&aacute; vplyv na
+nastavenie preposielania, to znamen&aacute;, že spr&aacute;vu m&ocirc;žete preposlať
 a pritom ponechať vo fronte
 
-<li><b>Akceptovať</b> - Rozoslať správu do konferencie. Ak nejde o správu,
-ale o žiadosť o prihlásenie účastníka, tak bude prihlásený.
+<li><b>Akceptovať</b> - Rozoslať spr&aacute;vu do konferencie. Ak nejde o spr&aacute;vu,
+ale o žiadosť o prihl&aacute;senie &uacute;častn&iacute;ka, tak bude prihl&aacute;sen&yacute;.
 
-<li><b>Zamietnuť</b> - Vrátiť správu odosielateľovi. Môžete uviesť i dôvod,
-ktorý bude uvedený v odpovedi na zamietnutie. Správa bude vymazaná z fronty.
-Ak ide o žiadosť o prihlásenie účastníka, tak bude zamietnutá.
+<li><b>Zamietnuť</b> - Vr&aacute;tiť spr&aacute;vu odosielateľovi. M&ocirc;žete uviesť i d&ocirc;vod,
+ktor&yacute; bude uveden&yacute; v odpovedi na zamietnutie. Spr&aacute;va bude vymazan&aacute; z fronty.
+Ak ide o žiadosť o prihl&aacute;senie &uacute;častn&iacute;ka, tak bude zamietnut&aacute;.
 
-<li><b>Zahodiť</b> - vhodné pre spam. Správa bude potichu odstránená, nikomu
-nebude nič poslané. Ak ide o žiadosť o prihlásenie účastníka, tak mu nebude
-odoslaná odpoveď.
-</li></li></li></li></ul>
-<p>Výberom voľby <b>Ponechať</b> môžete ponechať správu vo fronte pre
-pre neskoršie vybavenie správcom. To sa využíva predovšetkým pri správach,
-ktoré nie sú spamom a vyžadujú ďalšie odvetné akcie.
+<li><b>Zahodiť</b> - vhodn&eacute; pre spam. Spr&aacute;va bude potichu odstr&aacute;nen&aacute;, nikomu
+nebude nič poslan&eacute;. Ak ide o žiadosť o prihl&aacute;senie &uacute;častn&iacute;ka, tak mu nebude
+odoslan&aacute; odpoveď.
+</ul>
 
-S pomocou voľby <b>Preposlať</b> môžete odoslať kópiu správy na adresu,
-ktorú vyplníte do poľa vedľa tejto voľby. Ak potrebujete
-niektorý príspevok pre rozoslaním zmeniť, musíte si ho preposlať na svoju
-adresu a pôvodnú správu zahodiť. Potom, čo správu upravíte, musíte ju poslať
-späť do konferencie, prípadne s hlavičkou <tt>Approved:</tt>, do ktorej
-doplníte heslo pre danú konferenciu. Etika vyžaduje, aby ste v takom prípade
-do textu uviedli upozornenie, že ste správu pozmenili a vysvetlili, prečo
+<p>V&yacute;berom voľby <b>Ponechať</b> m&ocirc;žete ponechať spr&aacute;vu vo fronte pre
+pre neskor&scaron;ie vybavenie spr&aacute;vcom. To sa využ&iacute;va predov&scaron;etk&yacute;m pri spr&aacute;vach,
+ktor&eacute; nie s&uacute; spamom a vyžaduj&uacute; ďal&scaron;ie odvetn&eacute; akcie.
+
+S pomocou voľby <b>Preposlať</b> m&ocirc;žete odoslať k&oacute;piu spr&aacute;vy na adresu,
+ktor&uacute; vypln&iacute;te do poľa vedľa tejto voľby. Ak potrebujete
+niektor&yacute; pr&iacute;spevok pre rozoslan&iacute;m zmeniť, mus&iacute;te si ho preposlať na svoju
+adresu a p&ocirc;vodn&uacute; spr&aacute;vu zahodiť. Potom, čo spr&aacute;vu uprav&iacute;te, mus&iacute;te ju poslať
+sp&auml;ť do konferencie, pr&iacute;padne s hlavičkou <tt>Approved:</tt>, do ktorej
+dopln&iacute;te heslo pre dan&uacute; konferenciu. Etika vyžaduje, aby ste v takom pr&iacute;pade
+do textu uviedli upozornenie, že ste spr&aacute;vu pozmenili a vysvetlili, prečo
 ste tak konali.
 
-<p>Pri nových účastníkoch sa zvykne nastaviť moderácia, aby ich
-príspevky boli najprv preverené moderátorom. Zrušením nastavenia moderácie
-umožníte účastníkovi prispievať do konferencie bez kontroly jeho príspevkov.
+<p>Pri nov&yacute;ch &uacute;častn&iacute;koch sa zvykne nastaviť moder&aacute;cia, aby ich
+pr&iacute;spevky boli najprv preveren&eacute; moder&aacute;torom. Zru&scaron;en&iacute;m nastavenia moder&aacute;cie
+umožn&iacute;te &uacute;častn&iacute;kovi prispievať do konferencie bez kontroly jeho pr&iacute;spevkov.
 
-<p>Ak odosielateľ nie je účastníkom konferencie, môžete jeho e-mailovú
-adresu vložiť do <em>filtra odesielateľov</em>. Funkcia týchto filtrov
-je popísaná na <a href='\"%(filterurl)s\"'>stránke s konfiguráciou filtrovania
-</a>. Príspevky môžu byť na základe filtrov buď automaticky
-akceptované, automaticky podržané do rozhodnutia moderátora,
-automaticky vrátené alebo automaticky zahodené (spam). Ak je
-odosielateľ účastníkom alebo je už zahrnutý vo filtroch, táto voľba
-nebude k dispozícii.
+<p>Ak odosielateľ nie je &uacute;častn&iacute;kom konferencie, m&ocirc;žete jeho e-mailov&uacute;
+adresu vložiť do <em>filtra odesielateľov</em>. Funkcia t&yacute;chto filtrov
+je pop&iacute;san&aacute; na <a href=\"%(filterurl)s\">str&aacute;nke s konfigur&aacute;ciou filtrovania
+</a>. Pr&iacute;spevky m&ocirc;žu byť na z&aacute;klade filtrov buď automaticky
+akceptovan&eacute;, automaticky podržan&eacute; do rozhodnutia moder&aacute;tora,
+automaticky vr&aacute;ten&eacute; alebo automaticky zahoden&eacute; (spam). Ak je
+odosielateľ &uacute;častn&iacute;kom alebo je už zahrnut&yacute; vo filtroch, t&aacute;to voľba
+nebude k dispoz&iacute;cii.
 
-<p>Ak ste už prešli celou stránkou, kliknite na jej hornom alebo
-spodnom okraji na tlačidlo <em>Potvrdiť všetky zmeny</em>. Tým sa 
-prenesú prevedené zmeny do databázý a server prevedie podľa daných pokyov
-potrebné operácie. Ak u niektorej položky nevyberiete ani jednu voľbu,
-nebude nijak ovplyvnená a zostane uložena v databáze. Budete ju môcť
-kedykoľvek nabudúce zmeniť.
+<p>Ak ste už pre&scaron;li celou str&aacute;nkou, kliknite na jej hornom alebo
+spodnom okraji na tlačidlo <em>Potvrdiť v&scaron;etky zmeny</em>. T&yacute;m sa 
+prenes&uacute; preveden&eacute; zmeny do datab&aacute;z&yacute; a server prevedie podľa dan&yacute;ch pokyov
+potrebn&eacute; oper&aacute;cie. Ak u niektorej položky nevyberiete ani jednu voľbu,
+nebude nijak ovplyvnen&aacute; a zostane uložena v datab&aacute;ze. Budete ju m&ocirc;cť
+kedykoľvek nabud&uacute;ce zmeniť.
 
 
-<p><a href="%(summaryurl)s">Návrat na prehľad čakajúcích požiadaviek</a>
-</p></p></p></p></p></p>
+<p><a href="%(summaryurl)s">N&aacute;vrat na prehľad čakaj&uacute;c&iacute;ch požiadaviek</a>

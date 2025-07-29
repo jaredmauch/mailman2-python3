@@ -4,79 +4,6 @@ Copyright (C) 1998-2020 by the Free Software Foundation, Inc.
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
 Here is a history of user visible changes to Mailman.
-2.1.40 (28-Apr-2024)
-
-  Major Changes
-
-    - Added Python 3 support while maintaining Python 2 compatibility
-    - Modernized codebase to use Python 3 features and idioms
-    - Updated build system to support both Python 2 and 3 environments
-
-  Bug Fixes and other patches
-
-    - Early validation of list names in MailList.__init__ to prevent FileNotFoundError
-      when accessing non-existent configuration files. (LP: #1234567)
-
-    - Improved bytes-to-string conversion in list name handling to properly handle
-      Latin-1 encoded list names. (LP: #1234568)
-
-    - Fixed duplicate message-ID checking in IncomingRunner to occur earlier in the
-      process. (LP: #1234569)
-
-    - Added proper error handling for missing deliver method in MailList class.
-      (LP: #1234570)
-
-    - Fixed KeyError in SMTPDirect.py logging by ensuring proper dictionary access
-      for recipient information. (LP: #1234571)
-
-    - Added proper error handling for backup file creation in MailList.__save method.
-      (LP: #1234572)
-
-    - Improved Japanese template character encoding by adding proper meta tags and
-      fixing character display issues. (LP: #1234573)
-
-    - Enhanced test coverage for LockFile class with additional test cases for
-      concurrent locks, timeouts, and error handling. (LP: #1234574)
-
-    - Updated test suite to use modern Python features and improved error handling:
-      - Replaced deprecated cStringIO with io.StringIO
-      - Updated print statements to use print() function
-      - Improved exception handling syntax
-      - Added proper file cleanup in test cases
-      - Enhanced test assertions and error messages
-      - Updated dictionary key checking from has_key() to 'in' operator
-      - Fixed string comparison operators from <> to !=
-      (LP: #1234575)
-
-    - Build system improvements:
-      - Added build directory variable
-      - Added required C compiler flags and libraries
-      - Added dependency on system headers
-      - Improved makefile rules for better dependency tracking
-      (LP: #1234576)
-
-    - Code modernization:
-      - Updated deprecated Python 2.x constructs to Python 3.x compatible code
-      - Replaced getopt with argparse in test scripts
-      - Improved error handling and logging
-      - Enhanced type safety in C code
-      - Added __attribute__((unused)) to unused parameters in C code
-      - Fixed variable shadowing in strerror function
-      - Improved pointer handling in run_script function
-      - Removed unused variables
-      (LP: #1234577)
-
-    - C code improvements:
-      - Added proper attribute annotations for unused parameters
-      - Fixed variable naming to avoid shadowing
-      - Improved pointer arithmetic safety
-      - Enhanced error handling in wrapper code
-      (LP: #1234578)
-
-    - Thanks to David SiebÃ¶rger who adapted an existing patch by Andrea
-      Veri to use Google reCAPTCHA v2 there is now the ability to add
-      reCAPTCHA to the listinfo subscribe form.
-
 
 2.1.39 (13-Dec-2021)
 
@@ -313,7 +240,7 @@ Here is a history of user visible changes to Mailman.
 
     - The German translation has been updated by Ralf Hildebrandt.
 
-    - The Esperanto translation has been updated by Rubï¿½n Fernï¿½ndez Asensio.
+    - The Esperanto translation has been updated by Rubén Fernández Asensio.
 
   Bug fixes and other patches
 
@@ -376,7 +303,7 @@ Here is a history of user visible changes to Mailman.
     - The Russian translation has been updated by Danil Smirnov.
 
     - A partial Esperanto translation has been added.  Thanks to
-      Rubï¿½n Fernï¿½ndez Asensio.
+      Rubén Fernández Asensio.
 
     - Fixed a '# -*- coding:' line in the Russian message catalog that was
       mistakenly translated to Russian.  (LP: #1777342)
@@ -435,7 +362,7 @@ Here is a history of user visible changes to Mailman.
 
   New Features
 
-    - Thanks to David Siebï¿½rger who adapted an existing patch by Andrea
+    - Thanks to David Siebörger who adapted an existing patch by Andrea
       Veri to use Google reCAPTCHA v2 there is now the ability to add
       reCAPTCHA to the listinfo subscribe form.  There are two new mm_cfg.py
       settings for RECAPTCHA_SITE_KEY and RECAPTCHA_SECRET_KEY, the values
@@ -688,7 +615,7 @@ Here is a history of user visible changes to Mailman.
   i18n
 
     - The French translation of 'Dutch' is changed from 'Hollandais' to
-      'Nï¿½erlandais' per Francis Jorissen.
+      'Néerlandais' per Francis Jorissen.
 
     - Some German language templates that were incorrectly utf-8 encoded have
       been recoded as iso-8859-1.  (LP: #1602779)
@@ -1614,7 +1541,7 @@ Here is a history of user visible changes to Mailman.
     - Thanks go to the following for updating translations for the changes in
       this release.
         Thijs Kinkhorst
-        Stefan Fï¿½rster
+        Stefan Förster
         Fabian Wenk
 
   Bug Fixes and other patches
@@ -1819,7 +1746,7 @@ Here is a history of user visible changes to Mailman.
 
     - Updated Japanese Translation from Tokio Kikuchi.
 
-    - Updated Finnish translation from Joni Tï¿½yrylï¿½.
+    - Updated Finnish translation from Joni Töyrylä.
 
     - Made a few corrections to some Polish templates.  Bug #566731.
 
@@ -2245,7 +2172,7 @@ Internationalization
 
     - Added the Slovak translation from Martin Matuska.
 
-    - Added the Galician translation from Frco. Javier Rial Rodrï¿½guez.
+    - Added the Galician translation from Frco. Javier Rial Rodríguez.
 
   Bug fixes and other patches
 

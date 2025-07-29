@@ -1,102 +1,43 @@
 <!-- $Revision: 7344 $ -->
 <html>
 <head>
-<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
-<title><mm-presentable-user>: параметри підписки на список розсилки <mm-list-name>
-</mm-list-name></mm-presentable-user></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
-<font color="#000000" size="+1">
-        Параметри підписки <mm-presentable-user> на список розсилки
-	<mm-list-name>
-</mm-list-name></mm-presentable-user></font></b></td></tr>
-</table>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User>: параметри підписки на список розсилки <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        Параметри підписки <MM-Presentable-User> на список розсилки
+	<MM-List-Name> 
+         </FONT></B></TD></TR>
+    </TABLE>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
-<b>Стан підписки <mm-presentable-user></mm-presentable-user></b>,
-        пароль, та параметри підписки на список розсилки <mm-list-name>.
-        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
-</tr><tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<mm-case-preserved-user>
-<mm-disabled-notice>
-<p><mm-results>
-</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
-</tr>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b>Стан підписки <MM-Presentable-User></b>,
+        пароль, та параметри підписки на список розсилки <MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
 </table>
-<mm-form-start>
+
+<MM-Form-Start>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<font color="#000000">
-<b>Зміна вашої підписки на список розсилки <mm-list-name></mm-list-name></b>
-</font></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">Ви можете змінити адресу, куди має надходити підписка.
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Зміна вашої підписки на список розсилки <MM-List-Name></B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">Ви можете змінити адресу, куди має надходити підписка.
 	Вкажіть її у полі нижче. Зауважте, що на нову адресу буде відправлено
 	прохання підтвердити зміну адреси, без підтвердження зміни внесені не будуть.
 
@@ -108,177 +49,198 @@
         <p>Якщо ви бажаєте щоб зазначені зміни відбулись у всіх списках розсилки
 	на сервері <mm-host>, ввімкніть параметр <em>Змінити глобально</em>.
 
-        </mm-host></p></p></mm-pending-days></p></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Нова адреса:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
-</tr>
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ще раз:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
-</tr>
-</table></center></td></tr></table>
-<td><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ваше ім'я (необов'язково):</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
-</tr>
-</table></center>
-</td>
-<tr><td colspan="2"><center><mm-change-address-button>
-<p><mm-global-change-of-address>Змінити глобально</mm-global-change-of-address></p></mm-change-address-button></center></td>
-</tr>
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Нова адреса:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Ще раз:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Ваше ім'я (необов'язково):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Змінити глобально</center></td>
+    </tr>
+</table>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
-<b>Видалити підписку з <mm-list-name></mm-list-name></b></font></td>
-<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
-<b>Інші ваші підписки на сервері <mm-host></mm-host></b>
-</font></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Видалити підписку з <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Інші ваші підписки на сервері <MM-Host></B>
+        </FONT></TD></TR>
+
+    <tr><td>
 	Щоб відписатись від цього списку ввімкніть параметр 
 	підтвердження та натисніть на цю кнопку.  
 	<strong>Увага:</strong>
         Цю дію буде виконано негайно!
         <p>
-<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
-<td style="padding: 8px; border: 1px solid #ccc;">
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
 	Ви можете переглянути список всіх інших списків на 
         <mm-host>, користувачем яких ви є.  Використовуйте його, якщо
 	хочете виконати однакові зміни у параметрах підписки 
 	в усіх списках розсилки одночасно.
 
         <p>
-<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
-</p></mm-host></td></tr>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
 </table>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Пароль до списку розсилки <mm-list-name></mm-list-name></b>
-</font></td></tr>
-<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
-<a name="reminder">
-<center>
-<h3>Забули пароль?</h3>
-</center>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Пароль до списку розсилки <MM-List-Name></B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Забули пароль?</h3>
+        </center>
         Натисніть на цю кнопку, щоб відправити пароль на адресу вказану у
 	параметрах підписки.
-        <p><mm-umbrella-notice>
-<center>
-<mm-email-my-pw>
-</mm-email-my-pw></center>
-</mm-umbrella-notice></p></a></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
-<a name="changepw">
-<center>
-<h3>Змінити пароль підписки</h3>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Новий пароль:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ще раз:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
-</tr>
-</table>
-<mm-change-pass-button>
-<p><center><mm-global-pw-changes-button>Змінити глобально.
-        </mm-global-pw-changes-button></center>
-</p></mm-change-pass-button></center></a></td></tr></table>
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Змінити пароль підписки</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">Новий пароль:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Ще раз:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Змінити глобально.
+        </center>
+</TABLE>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Налаштування підписки на список <mm-list-name> </mm-list-name></b>
-</font></td></tr>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Налаштування підписки на список <MM-List-Name> </B>
+        </FONT></TD></TR>
 </table>
+
 <p>
 <i><strong>Поточні значення відмічено.</strong></i>
+
 <p>Зауважте, значення деяких параметрів мають поле <em>Змінити глобально</em>.
 Ввімкнення цього поля призведе до змінити значення параметру
 в усіх списках розсилки на <mm-host>.  Для перегляду переліку списків розсилок,
 на які ви підписані натисніть <em>Інші ваші підписки на сервері</em> вище..
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<a name="disable">
-<strong>Доставка пошти</strong></a><p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Доставка пошти</strong></a><p>
         Встановіть цей параметр у <em>Ввімкнено</em> щоб отримувати повідомлення
 	цього списку розсилки. Встановіть у <em>Вимкнено</em> 
 	якщо хочете залишитись підписаним, але не хочете отримувати 
 	повідомлення певний час (наприклад через відпустку).  
 	Якщо ви вимкнули доставку пошти, не забудьте ввімкнути її
 	коли повернетесь; автоматичного нагадування в цьому випадку не передбачено.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-delivery-enable-button>Ввімкнено<br/>
-<mm-delivery-disable-button>Вимкнено<p>
-<mm-global-deliver-button><i>Встановити глобально</i>
-</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Ввімкнено<br>
+        <mm-delivery-disable-button>Вимкнено<p>
+        <mm-global-deliver-button><i>Встановити глобально</i>
+        </td></tr>
+
 <!--Start-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Встановлення режиму збірок</strong><p>
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Встановлення режиму збірок</strong><p>
         Якщо ви ввімкнули режим збірок, ви отримуватимете 
 	згруповані повідомлення (зазвичай один раз на добу
 	але може частіше для великих списків), замість 
 	окремих.  Якщо ви перемикнули режим збірок з
 	Ввімкнено на Вимкнено, ви ще можете отримати 
 	один останню збірку.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-undigest-radio-button>Ввімкнено<br/>
-<mm-digest-radio-button>Вимкнено
-        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Отримувати збірки у MIME або звичайним текстом?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Ввімкнено<br>
+        <MM-Digest-Radio-Button>Вимкнено
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Отримувати збірки у MIME або звичайним текстом?</strong><p>
         Ваша поштова програма може не підтримувати MIME збірки.
 	В загалі MIME збірки більш зручні, але якщо у вас з ними 
 	виникають проблеми - оберіть звичайний текст.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-mime-digests-button>MIME<br/>
-<mm-plain-digests-button>Звичайний текст<p>
-<mm-global-mime-button><i>Встановити глобально</i>
-</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Звичайний текст<p>
+        <mm-global-mime-button><i>Встановити глобально</i>
+        </td></tr>
 <!--End-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Отримувати власні повідомлення надіслані у список?</strong><p>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Отримувати власні повідомлення надіслані у список?</strong><p>
 	Зазвичай, ви отримуватимете копію кожного надісланого до списку повідомлення.
 	Якщо ви не бажаєте їх отримувати встановіть цей параметр у <em>Ні</em>.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-receive-own-mail-button>Ні<br/>
-<mm-receive-own-mail-button>Так
-        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Отримувати підтвердження отримання пошти при надсиланні повідомлень до списку?</strong><p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-ack-posts-button>Ні<br/>
-<mm-ack-posts-button>Так</mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Отримувати нагадування паролю щомісяця?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>Ні<br>
+        <mm-receive-own-mail-button>Так
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Отримувати підтвердження отримання пошти при надсиланні повідомлень до списку?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>Ні<br>
+        <mm-ack-posts-button>Так</td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Отримувати нагадування паролю щомісяця?</strong><p>
         Раз на місяць, ви отримуватимете повідомлення, з нагадуванням паролю
 	до кожного списку цього сайту, на які Ви підписані. 
 	Ви можете це вимкнути окремо для кожного списку, якщо виберете 
 	<em>Ні</em>.  Якщо ви вимкнете нагадування паролів в усіх списках, на які
 	Ви підписані, нагадування вам не надсилатиметься.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-get-password-reminder-button>Ні<br/>
-<mm-get-password-reminder-button>Так<p>
-<mm-global-remind-button><i>Встановити глобально</i>
-</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Приховувати себе в переліку користувачів списку розсилки?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Ні<br>
+        <mm-get-password-reminder-button>Так<p>
+        <mm-global-remind-button><i>Встановити глобально</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Приховувати себе в переліку користувачів списку розсилки?</strong><p>
 	Коли будь-хто переглядає перелік користувачів списку розсилки, зазвичай
 	показується і ваша адреса (у прихованій формі, щоб перешкодити 
 	розповсюджувачам спаму). Якщо ви не бажаєте, щоб ваша адреса 
 	взагалі показувалась у цьому переліку, виберіть <em>Так</em>.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-public-subscription-button>Ні<br/>
-<mm-hide-subscription-button>Так
-        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Якою мовою бажаєте користуватись?</strong><p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-list-langs>
-</mm-list-langs></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>На які категорії тем ви хотіли б підписатись?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Ні<br>
+        <MM-Hide-Subscription-Button>Так
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Якою мовою бажаєте користуватись?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>На які категорії тем ви хотіли б підписатись?</strong><p>
 		Вибираючи одну чи більше тем, ви можете обмежувати
 		трафік списку розсилки, тобто отримувати лише
 		частину повідомлень. Якщо повідомлення відповідає
@@ -289,11 +251,12 @@
 		тоді його отримання залежить від одного з наступних 
 		параметрів. Якщо ви не обрали жодної теми - ви отримуватимете
 		всі повідомлення, що надходять до поштового списку.
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-topics>
-</mm-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Бажаєте отримувати повідомлення що не відповідають жодному фільтру теми?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Бажаєте отримувати повідомлення що не відповідають жодному фільтру теми?</strong><p>
 		
 		Цей параметр використовується лише якщо ви підписані хоча б на
 		одну тему (див. вище). Він визначає типову дію,
@@ -305,12 +268,13 @@
 
                 <p>Якщо вище не вибрано жодної тем інтересів - ви отримуватимете
 		всі повідомлення, що надходять до поштового списку.
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-suppress-nonmatching-topics>Ні<br/>
-<mm-receive-nonmatching-topics>Так
-        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Уникати дублікатів повідомлень?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>Ні<br>
+        <mm-receive-nonmatching-topics>Так
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Уникати дублікатів повідомлень?</strong><p>
 		
 		Якщо вас безпосередньо вказано у <tt>To:</tt> чи
                 <tt>Cc:</tt> заголовку повідомлення, ви можете 
@@ -322,17 +286,21 @@
 		та ви вибрали отримання копій, тоді до кожної копії
 		додається заголовок <tt>X-Mailman-Copy: yes</tt>.
 
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-receive-duplicates-button>Ні<br/>
-<mm-dont-receive-duplicates-button>Так<p>
-<mm-global-nodupes-button><i>Встановити глобально</i>
-</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-options-submit-button></mm-options-submit-button></center>
-</td></tr>
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>Ні<br>
+        <mm-dont-receive-duplicates-button>Так<p>
+        <mm-global-nodupes-button><i>Встановити глобально</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
 </table>
+</center>
 <p>
-<mm-form-end>
-<mm-mailman-footer>
-</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
 </html>

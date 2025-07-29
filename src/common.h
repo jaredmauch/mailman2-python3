@@ -35,17 +35,12 @@
 extern void fatal(const char*, int, char*, ...);
 extern void check_caller(const char*, const char*);
 extern int run_script(const char*, int, char**, char**);
-extern int check_command(char*);
 
 /* Global variable used as a flag. */
 extern int running_as_cgi;
 
 /* Extern to reference this global from one of the wrapper mains */
 extern const char* logident;
-
-/* Extern to reference command line arguments from check_caller */
-extern int main_argc;
-extern char **main_argv;
 
 /* Exit codes, so it's easier to distinguish what caused fatal errors when
  * looking at syslogs.
