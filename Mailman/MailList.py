@@ -1024,6 +1024,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             del msg['auto-submitted']
             msg['Auto-Submitted'] = autosub
             msg.send(self)
+
+            # formataddr() expects a str and does its own encoding
+            if isinstance(name, bytes):
+                name = name.decode(Utils.GetCharSet(lang))
+
             who = formataddr((name, email))
             syslog('subscribe', '%s: pending %s %s',
                    self.internal_name(), who, by)
@@ -1100,6 +1105,12 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             kind = ' (digest)'
         else:
             kind = ''
+
+        # The formataddr() function, used in two places below, takes a str and performs
+        # its own encoding, so we should not allow the name to be pre-encoded.
+        if isinstance(name, bytes):
+            name = name.decode(Utils.GetCharSet(lang))
+
         syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
                kind, formataddr((name, email)), whence)
         if ack:
@@ -1121,10 +1132,6 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
                 subject = _('%(realname)s subscription notification')
             finally:
                 i18n.set_translation(otrans)
-
-            # The formataddr() function takes a str and performs its own encoding, so we should not allow the name to be pre-encoded
-            if isinstance(name, bytes):
-                name = name.decode(Utils.GetCharSet(lang))
 
             text = Utils.maketext(
                 "adminsubscribeack.txt",
