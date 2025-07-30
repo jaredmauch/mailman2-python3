@@ -24,7 +24,7 @@ from builtins import object
 import re
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import signal
 import urllib.request, urllib.parse, urllib.error
 
@@ -102,7 +102,7 @@ def main():
         return
 
     # The total contents of the user's response
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
 
     # CSRF check
     safe_params = ['displang-button', 'language', 'email', 'password', 'login',

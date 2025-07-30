@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import os
 import sys
-import cgi
+from Mailman.Utils import FieldStorage
 import mimetypes
 
 from Mailman import mm_cfg
@@ -118,7 +118,7 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         username = cgidata.getfirst('username', '').strip()
     except TypeError:

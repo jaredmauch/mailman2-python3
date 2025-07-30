@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import sys
 import errno
 import shutil
@@ -41,7 +41,7 @@ def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('password', '')
     except TypeError:

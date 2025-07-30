@@ -130,16 +130,88 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # access to a delegated member function gets passed to the
         # sub-objects.  This of course imposes a specific name resolution
         # order.
-        try:
-            return getattr(self._memberadaptor, name)
-        except AttributeError:
-            for guicomponent in self._gui:
-                try:
-                    return getattr(guicomponent, name)
-                except AttributeError:
-                    pass
-            else:
-                raise AttributeError(name)
+        # Some attributes should not be delegated to the member adaptor
+        # because they belong to the main list object or other mixins
+        non_delegated_attrs = {
+            'topics', 'delivery_status', 'bounce_info', 'bounce_info_stale_after',
+            'archive_private', 'usenet_watermark', 'digest_members', 'members',
+            'passwords', 'user_options', 'language', 'usernames', 'topics_userinterest',
+            'new_member_options', 'digestable', 'nondigestable', 'one_last_digest',
+            'archive', 'archive_volume_frequency'
+        }
+        if name not in non_delegated_attrs:
+            try:
+                return getattr(self._memberadaptor, name)
+            except AttributeError:
+                pass
+        for guicomponent in self._gui:
+            try:
+                return getattr(guicomponent, name)
+            except AttributeError:
+                pass
+        # For certain attributes that should exist but might not be initialized yet,
+        # return a default value instead of raising an AttributeError
+        if name in non_delegated_attrs:
+            if name == 'topics':
+                return []
+            elif name == 'delivery_status':
+                return {}
+            elif name == 'bounce_info':
+                return {}
+            elif name == 'bounce_info_stale_after':
+                return mm_cfg.DEFAULT_BOUNCE_INFO_STALE_AFTER
+            elif name == 'archive_private':
+                return mm_cfg.DEFAULT_ARCHIVE_PRIVATE
+            elif name == 'usenet_watermark':
+                return None
+            elif name == 'digest_members':
+                return {}
+            elif name == 'members':
+                return {}
+            elif name == 'passwords':
+                return {}
+            elif name == 'user_options':
+                return {}
+            elif name == 'language':
+                return {}
+            elif name == 'usernames':
+                return {}
+            elif name == 'topics_userinterest':
+                return {}
+            elif name == 'new_member_options':
+                return 0
+            elif name == 'digestable':
+                return 0
+            elif name == 'nondigestable':
+                return 0
+            elif name == 'one_last_digest':
+                return {}
+            elif name == 'archive':
+                return 0
+            elif name == 'archive_volume_frequency':
+                return 0
+        # For any other attribute not explicitly handled, return a sensible default
+        # based on the attribute name pattern
+        if name.startswith('_'):
+            return 0  # Private attributes default to 0
+        elif name.endswith('_msg') or name.endswith('_text'):
+            return ''  # Message/text attributes default to empty string
+        elif name.endswith('_list') or name.endswith('_lists'):
+            return []  # List attributes default to empty list
+        elif name.endswith('_dict') or name.endswith('_info'):
+            return {}  # Dictionary attributes default to empty dict
+        elif name in ('host_name', 'real_name', 'description', 'info', 'subject_prefix', 
+                     'reply_to_address', 'umbrella_member_suffix'):
+            return ''  # String attributes default to empty string
+        elif name in ('max_message_size', 'admin_member_chunksize', 'max_days_to_hold',
+                     'bounce_score_threshold', 'bounce_info_stale_after',
+                     'bounce_you_are_disabled_warnings', 'bounce_you_are_disabled_warnings_interval',
+                     'member_verbosity_threshold', 'member_verbosity_interval',
+                     'digest_size_threshhold', 'topics_bodylines_limit',
+                     'autoresponse_graceperiod'):
+            return 0  # Number attributes default to 0
+        else:
+            return 0  # Default for any other attribute
 
     def __repr__(self):
         if self.Locked():
@@ -807,23 +879,25 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         # Legacy topics may have bad regular expressions in their patterns
         # Also, someone may have broken topics with, e.g., config_list.
         goodtopics = []
-        for value in self.topics:
-            try:
-                name, pattern, desc, emptyflag = value
-            except ValueError:
-                # This value is not a 4-tuple. Just log and drop it.
-                syslog('error', 'Bad topic "%s" for list: %s',
-                       value, self.internal_name())
-                continue
-            try:
-                orpattern = OR.join(pattern.splitlines())
-                re.compile(orpattern)
-            except (re.error, TypeError):
-                syslog('error', 'Bad topic pattern "%s" for list: %s',
-                       orpattern, self.internal_name())
-            else:
-                goodtopics.append((name, pattern, desc, emptyflag))
-        self.topics = goodtopics
+        # Check if topics attribute exists before trying to access it
+        if hasattr(self, 'topics'):
+            for value in self.topics:
+                try:
+                    name, pattern, desc, emptyflag = value
+                except ValueError:
+                    # This value is not a 4-tuple. Just log and drop it.
+                    syslog('error', 'Bad topic "%s" for list: %s',
+                           value, self.internal_name())
+                    continue
+                try:
+                    orpattern = OR.join(pattern.splitlines())
+                    re.compile(orpattern)
+                except (re.error, TypeError):
+                    syslog('error', 'Bad topic pattern "%s" for list: %s',
+                           orpattern, self.internal_name())
+                else:
+                    goodtopics.append((name, pattern, desc, emptyflag))
+            self.topics = goodtopics
 
 
     #

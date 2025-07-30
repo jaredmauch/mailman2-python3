@@ -27,7 +27,6 @@ the mailing lists, and whatever else doesn't belong elsewhere.
 import os
 import sys
 import re
-import cgi
 import time
 import errno
 import base64
@@ -40,7 +39,12 @@ import email.header
 import email.iterators
 from email.errors import HeaderParseError
 from string import whitespace, digits
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
+import tempfile
+import io
+from email.parser import BytesParser
+from email.policy import HTTP
+
 try:
     # Python 2.2
     from string import ascii_letters
@@ -48,6 +52,218 @@ except ImportError:
     # Older Pythons
     _lower = 'abcdefghijklmnopqrstuvwxyz'
     ascii_letters = _lower + _lower.upper()
+
+
+class FieldStorage:
+    """
+    A modern replacement for cgi.FieldStorage using urllib.parse and email libraries.
+    
+    This class provides the same interface as cgi.FieldStorage but uses
+    modern Python libraries instead of the deprecated cgi module.
+    """
+    
+    def __init__(self, fp=None, headers=None, environ=None, 
+                 keep_blank_values=False, strict_parsing=False,
+                 encoding='utf-8', errors='replace'):
+        self.keep_blank_values = keep_blank_values
+        self.strict_parsing = strict_parsing
+        self.encoding = encoding
+        self.errors = errors
+        self._data = {}
+        self._files = {}
+        
+        if environ is None:
+            environ = os.environ
+            
+        self.environ = environ
+        
+        # Get the request method
+        self.method = environ.get('REQUEST_METHOD', 'GET').upper()
+        
+        if self.method == 'GET':
+            self._parse_query_string()
+        elif self.method == 'POST':
+            self._parse_post_data()
+        else:
+            # For other methods, try to parse query string
+            self._parse_query_string()
+    
+    def _parse_query_string(self):
+        """Parse query string from GET requests or other methods."""
+        query_string = self.environ.get('QUERY_STRING', '')
+        if query_string:
+            parsed = parse_qs(query_string, 
+                            keep_blank_values=self.keep_blank_values,
+                            strict_parsing=self.strict_parsing,
+                            encoding=self.encoding,
+                            errors=self.errors)
+            self._data.update(parsed)
+    
+    def _parse_post_data(self):
+        """Parse POST data."""
+        content_type = self.environ.get('CONTENT_TYPE', '')
+        
+        if content_type.startswith('application/x-www-form-urlencoded'):
+            self._parse_urlencoded_post()
+        elif content_type.startswith('multipart/form-data'):
+            self._parse_multipart_post()
+        else:
+            # Fallback to query string parsing
+            self._parse_query_string()
+    
+    def _parse_urlencoded_post(self):
+        """Parse application/x-www-form-urlencoded POST data."""
+        content_length = int(self.environ.get('CONTENT_LENGTH', 0))
+        if content_length > 0:
+            post_data = sys.stdin.buffer.read(content_length)
+            try:
+                decoded = post_data.decode(self.encoding, self.errors)
+                parsed = parse_qs(decoded,
+                                keep_blank_values=self.keep_blank_values,
+                                strict_parsing=self.strict_parsing,
+                                encoding=self.encoding,
+                                errors=self.errors)
+                self._data.update(parsed)
+            except (UnicodeDecodeError, ValueError):
+                # If decoding fails, try with different encoding
+                try:
+                    decoded = post_data.decode('latin-1')
+                    parsed = parse_qs(decoded,
+                                    keep_blank_values=self.keep_blank_values,
+                                    strict_parsing=self.strict_parsing,
+                                    encoding=self.encoding,
+                                    errors=self.errors)
+                    self._data.update(parsed)
+                except (UnicodeDecodeError, ValueError):
+                    pass
+    
+    def _parse_multipart_post(self):
+        """Parse multipart/form-data POST data."""
+        content_length = int(self.environ.get('CONTENT_LENGTH', 0))
+        if content_length > 0:
+            post_data = sys.stdin.buffer.read(content_length)
+            
+            # Parse the multipart message
+            parser = BytesParser(policy=HTTP)
+            msg = parser.parsebytes(post_data)
+            
+            for part in msg.walk():
+                if part.get_content_maintype() == 'multipart':
+                    continue
+                    
+                # Get the field name from Content-Disposition
+                content_disp = part.get('Content-Disposition', '')
+                if not content_disp:
+                    continue
+                    
+                # Parse Content-Disposition header
+                disp_parts = content_disp.split(';')
+                field_name = None
+                filename = None
+                
+                for part_item in disp_parts:
+                    part_item = part_item.strip()
+                    if part_item.startswith('name='):
+                        field_name = part_item[5:].strip('"')
+                    elif part_item.startswith('filename='):
+                        filename = part_item[9:].strip('"')
+                
+                if not field_name:
+                    continue
+                
+                # Get the field value
+                field_value = part.get_payload(decode=True)
+                if field_value is None:
+                    field_value = b''
+                
+                if filename:
+                    # This is a file upload
+                    self._files[field_name] = {
+                        'filename': filename,
+                        'data': field_value,
+                        'content_type': part.get_content_type()
+                    }
+                else:
+                    # This is a regular field
+                    try:
+                        decoded_value = field_value.decode(self.encoding, self.errors)
+                    except UnicodeDecodeError:
+                        decoded_value = field_value.decode('latin-1')
+                    
+                    if field_name in self._data:
+                        if isinstance(self._data[field_name], list):
+                            self._data[field_name].append(decoded_value)
+                        else:
+                            self._data[field_name] = [self._data[field_name], decoded_value]
+                    else:
+                        self._data[field_name] = [decoded_value]
+    
+    def getfirst(self, key, default=None):
+        """Get the first value for the given key."""
+        if key in self._data:
+            values = self._data[key]
+            if isinstance(values, list):
+                return values[0] if values else default
+            else:
+                return values
+        return default
+    
+    def getvalue(self, key, default=None):
+        """Get the value for the given key."""
+        if key in self._data:
+            values = self._data[key]
+            if isinstance(values, list):
+                return values[0] if values else default
+            else:
+                return values
+        return default
+    
+    def getlist(self, key):
+        """Get all values for the given key as a list."""
+        if key in self._data:
+            values = self._data[key]
+            if isinstance(values, list):
+                return values
+            else:
+                return [values]
+        return []
+    
+    def keys(self):
+        """Get all field names."""
+        return list(self._data.keys())
+    
+    def has_key(self, key):
+        """Check if the key exists."""
+        return key in self._data
+    
+    def __contains__(self, key):
+        """Check if the key exists."""
+        return key in self._data
+    
+    def __getitem__(self, key):
+        """Get the value for the given key."""
+        return self.getvalue(key)
+    
+    def __iter__(self):
+        """Iterate over field names."""
+        return iter(self._data.keys())
+    
+    def file(self, key):
+        """Get file data for the given key."""
+        if key in self._files:
+            file_info = self._files[key]
+            # Create a file-like object
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.write(file_info['data'])
+            temp_file.flush()
+            return temp_file
+        return None
+    
+    def filename(self, key):
+        """Get the filename for the given key."""
+        if key in self._files:
+            return self._files[key]['filename']
+        return None
 
 from Mailman import mm_cfg
 from Mailman import Errors

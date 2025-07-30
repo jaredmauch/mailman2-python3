@@ -22,7 +22,7 @@ from builtins import zip
 from builtins import str
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import codecs
 import errno
 import signal
@@ -130,7 +130,7 @@ def main():
     i18n.set_language(mlist.preferred_language)
 
     # Make sure the user is authorized to see this page.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
         cgidata.getfirst('adminpw', '')
     except TypeError:

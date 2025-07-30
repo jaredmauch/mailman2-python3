@@ -24,7 +24,7 @@ def cmp(a, b):
 import sys
 import os
 import re
-import cgi
+from Mailman.Utils import FieldStorage
 import urllib.request, urllib.parse, urllib.error
 import signal
 
@@ -81,7 +81,7 @@ def main():
     # pages are shown in that list's preferred language.
     i18n.set_language(mlist.preferred_language)
     # If the user is not authenticated, we're done.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
         cgidata.getfirst('csrf_token', '')
     except TypeError:

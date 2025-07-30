@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import time
 import signal
 import urllib.request, urllib.parse, urllib.error
@@ -74,7 +74,7 @@ def main():
 
     # See if the form data has a preferred language set, in which case, use it
     # for the results.  If not, use the list's preferred language.
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         language = cgidata.getfirst('language', '')
     except TypeError:

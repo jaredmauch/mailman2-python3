@@ -22,7 +22,7 @@ from builtins import object
 import sys
 import os
 import signal
-import cgi
+from Mailman.Utils import FieldStorage
 
 from Mailman import mm_cfg
 from Mailman import MailList
@@ -43,7 +43,7 @@ def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('doit', '')
     except TypeError:

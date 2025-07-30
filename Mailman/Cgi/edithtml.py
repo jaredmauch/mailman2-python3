@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import errno
 import re
 
@@ -96,7 +96,7 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Must be authenticated to get any farther
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
     except TypeError:

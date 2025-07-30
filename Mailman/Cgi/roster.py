@@ -26,7 +26,7 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import urllib.request, urllib.parse, urllib.error
 
 from Mailman import mm_cfg
@@ -61,7 +61,7 @@ def main():
         syslog('error', 'roster: No such list "%s": %s', listname, e)
         return
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
 
     # messages in form should go in selected language (if any...)
     try:

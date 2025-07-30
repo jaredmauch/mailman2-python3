@@ -23,7 +23,7 @@ from __future__ import print_function
 
 from builtins import str
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import time
 
 from Mailman import mm_cfg
@@ -59,7 +59,7 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         language = cgidata.getfirst('language')
     except TypeError:
