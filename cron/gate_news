@@ -33,7 +33,11 @@ import os
 import time
 import getopt
 import socket
-import nntplib
+try:
+    import nntplib
+    NNTPLIB_AVAILABLE = True
+except ImportError:
+    NNTPLIB_AVAILABLE = False
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
@@ -81,6 +85,13 @@ def usage(code, msg=''):
 _hostcache = {}
 
 def open_newsgroup(mlist):
+    # Check if nntplib is available
+    if not NNTPLIB_AVAILABLE:
+        syslog('fromusenet',
+               'nntplib not available, cannot open newsgroup for list "%s"',
+               mlist.internal_name())
+        raise ImportError("nntplib not available")
+    
     # Split host:port if given
     nntp_host, nntp_port = Utils.nntpsplit(mlist.nntp_host)
     # Open up a "mode reader" connection to nntp server.  This will be shared

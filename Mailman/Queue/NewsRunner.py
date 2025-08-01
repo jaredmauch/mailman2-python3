@@ -20,7 +20,11 @@
 from builtins import str
 import re
 import socket
-import nntplib
+try:
+    import nntplib
+    NNTPLIB_AVAILABLE = True
+except ImportError:
+    NNTPLIB_AVAILABLE = False
 from io import StringIO
 
 import email
@@ -57,6 +61,14 @@ class NewsRunner(Runner):
         mlist.Load()
         if not msgdata.get('prepped'):
             prepare_message(mlist, msg, msgdata)
+        
+        # Check if nntplib is available
+        if not NNTPLIB_AVAILABLE:
+            syslog('error',
+                   '(NewsRunner) nntplib not available, cannot post to newsgroup for list "%s"',
+                   mlist.internal_name())
+            return False  # Don't requeue, just drop the message
+        
         try:
             # Flatten the message object, sticking it in a StringIO object
             fp = StringIO(msg.as_string())
