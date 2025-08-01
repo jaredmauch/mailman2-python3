@@ -81,14 +81,17 @@ class Switchboard:
         # Fast track for no slices
         self.__lower = None
         self.__upper = None
+        # Always set slice and numslices for compatibility
+        self.__slice = slice
+        self.__numslices = numslices
         # BAW: test performance and end-cases of this algorithm
         if numslices != 1:
             if distribution == 'hash':
                 self.__lower = (((shamax+1) * slice) / numslices)
                 self.__upper = ((((shamax+1) * (slice+1)) / numslices)) - 1
             elif distribution == 'round_robin':
-                self.__slice = slice
-                self.__numslices = numslices
+                # __slice and __numslices already set above
+                pass
             # Add more distribution methods here as needed
         if recover:
             self.recover_backup_files()

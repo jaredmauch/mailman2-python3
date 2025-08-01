@@ -35,6 +35,14 @@ class ArchRunner(Runner):
         # original message.
         clobber = 0
         originaldate = msg.get('date')
+        
+        # Handle potential bytes/string issues with header values
+        if isinstance(originaldate, bytes):
+            try:
+                originaldate = originaldate.decode('utf-8', 'replace')
+            except (UnicodeDecodeError, AttributeError):
+                originaldate = None
+        
         receivedtime = formatdate(msgdata['received_time'])
         if not originaldate:
             clobber = 1
@@ -42,23 +50,26 @@ class ArchRunner(Runner):
             clobber = 1
         elif mm_cfg.ARCHIVER_CLOBBER_DATE_POLICY == 2:
             # what's the timestamp on the original message?
-            tup = parsedate_tz(originaldate)
-            now = time.time()
             try:
+                tup = parsedate_tz(originaldate)
+                now = time.time()
                 if not tup:
                     clobber = 1
                 elif abs(now - mktime_tz(tup)) > \
                          mm_cfg.ARCHIVER_ALLOWABLE_SANE_DATE_SKEW:
                     clobber = 1
-            except (ValueError, OverflowError):
+            except (ValueError, OverflowError, TypeError):
                 # The likely cause of this is that the year in the Date: field
                 # is horribly incorrect, e.g. (from SF bug # 571634):
                 # Date: Tue, 18 Jun 0102 05:12:09 +0500
                 # Obviously clobber such dates.
                 clobber = 1
         if clobber:
-            del msg['date']
-            del msg['x-original-date']
+            # Use proper header manipulation methods
+            if 'date' in msg:
+                del msg['date']
+            if 'x-original-date' in msg:
+                del msg['x-original-date']
             msg['Date'] = receivedtime
             if originaldate:
                 msg['X-Original-Date'] = originaldate
