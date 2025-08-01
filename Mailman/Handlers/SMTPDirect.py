@@ -63,9 +63,15 @@ class Connection(object):
         if not smtp_host or smtp_host.startswith('.') or smtp_host == '@URLHOST@':
             smtp_host = 'localhost'
         
+        # Log the hostname being used for debugging
+        syslog('smtp-failure', 'SMTP connection hostname: %s (original: %s)', 
+               smtp_host, mm_cfg.SMTPHOST)
+        
         self.__conn.connect(smtp_host, mm_cfg.SMTPPORT)
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
+                # Log the hostname being used for TLS
+                syslog('smtp-failure', 'TLS connection hostname: %s', self.__conn._host)
                 try:
                     self.__conn.starttls()
                 except SMTPException as e:
