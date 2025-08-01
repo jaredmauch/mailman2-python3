@@ -101,7 +101,7 @@ PATTERNS = [
     # another kundenserver.de
     (_c('A message that you( have)? sent could not be delivered'),
      _c('^---'),
-     _c('^(?P<addr>[^\s@]+@[^\s@:]+):')),
+     _c(r'^(?P<addr>[^\s@]+@[^\s@:]+):')),
     # thehartford.com and amenworld.com
     (_c('Del(i|e)very to the following recipient(s)? (failed|was aborted)'),
      # this one may or may not have the original message, but there's nothing
@@ -147,20 +147,20 @@ PATTERNS = [
      _c('<(?P<addr>[^>]*)>:')),
     # socgen.com
     (_c('Your message could not be delivered to'),
-     _c('^\s*$'),
-     _c('(?P<addr>[^\s@]+@[^\s@]+)')),
+     _c(r'^\s*$'),
+     _c(r'(?P<addr>[^\s@]+@[^\s@]+)')),
     # dadoservice.it
     (_c('Your message has encountered delivery problems'),
      _c('Your message reads'),
      _c(r'addressed to\s*(?P<addr>[^\s@]+@[^\s@)]+)')),
     # gomaps.com
     (_c('Did not reach the following recipient'),
-     _c('^\s*$'),
+     _c(r'^\s*$'),
      _c(r'\s(?P<addr>[^\s@]+@[^\s@]+)')),
     # EYOU MTA SYSTEM
     (_c('This is the deliver program at'),
      _c('^-'),
-     _c('^(?P<addr>[^\s@]+@[^\s@<>]+)')),
+     _c(r'^(?P<addr>[^\s@]+@[^\s@<>]+)')),
     # A non-standard qmail at ieo.it
     (_c('this is the email server at'),
      _c('^-'),
@@ -175,7 +175,7 @@ PATTERNS = [
      _c(r'^(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # lttf.com
     (_c('Could not deliver message to'),
-     _c('^\s*--'),
+     _c(r'^\s*--'),
      _c(r'^Failed Recipient:\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # uci.edu
     (_c('--------Message not delivered'),
