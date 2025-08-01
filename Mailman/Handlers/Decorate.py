@@ -210,7 +210,7 @@ def decorate(mlist, template, what, extradict=None):
     # `what' is just a descriptive phrase used in the log message
     
     # If template is only whitespace, ignore it.
-    if len(re.sub('\s', '', template)) == 0:
+    if len(re.sub(r'\s', '', template)) == 0:
         return ''
 
     # BAW: We've found too many situations where Python can be fooled into

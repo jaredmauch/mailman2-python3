@@ -31,6 +31,7 @@ import copy
 import time
 import socket
 import smtplib
+from smtplib import SMTPException
 from base64 import b64encode
 
 from Mailman import mm_cfg
@@ -66,7 +67,11 @@ class Connection(object):
                     self.quit()
                     raise
                 try:
-                    self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
+                    # Use a valid hostname for EHLO, fallback to localhost if SMTP_HELO_HOST is empty or invalid
+                    helo_host = mm_cfg.SMTP_HELO_HOST
+                    if not helo_host or helo_host.startswith('.') or helo_host == '@URLHOST@':
+                        helo_host = 'localhost'
+                    self.__conn.ehlo(helo_host)
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP EHLO error: %s', e)
                     self.quit()

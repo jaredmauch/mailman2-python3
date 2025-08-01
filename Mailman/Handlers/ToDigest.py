@@ -208,7 +208,7 @@ def send_i18n_digests(mlist, mboxfp):
     print(mastheadtxt, file=plainmsg)
     print(file=plainmsg)
     # Now add the optional digest header but only if more than whitespace.
-    if re.sub('\s', '', mlist.digest_header):
+    if re.sub(r'\s', '', mlist.digest_header):
         lc_digest_header_msg = _('digest header')
         if isinstance(lc_digest_header_msg, bytes):
             lc_digest_header_msg = str(lc_digest_header_msg)
@@ -371,7 +371,7 @@ def send_i18n_digests(mlist, mboxfp):
             print(file=plainmsg)
 
     # Now add the footer but only if more than whitespace.
-    if re.sub('\s', '', mlist.digest_footer):
+    if re.sub(r'\s', '', mlist.digest_footer):
         lc_digest_footer_msg = _('digest footer')
         if isinstance(lc_digest_footer_msg, bytes):
             lc_digest_footer_msg = str(lc_digest_footer_msg)

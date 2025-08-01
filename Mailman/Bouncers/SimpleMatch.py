@@ -49,11 +49,11 @@ PATTERNS = [
     # robanal.demon.co.uk
     (_c('this message was created automatically by mail delivery software'),
      _c('original message follows'),
-     _c('rcpt to:\s*<(?P<addr>[^>]*)>')),
+     _c(r'rcpt to:\s*<(?P<addr>[^>]*)>')),
     # s1.com (InterScan E-Mail VirusWall NT ???)
     (_c('message from interscan e-mail viruswall nt'),
      _c('end of message'),
-     _c('rcpt to:\s*<(?P<addr>[^>]*)>')),
+     _c(r'rcpt to:\s*<(?P<addr>[^>]*)>')),
     # Smail
     (_c('failed addresses follow:'),
      _c('message text follows:'),
@@ -65,15 +65,15 @@ PATTERNS = [
     # turbosport.com runs something called `MDaemon 3.5.2' ???
     (_c('The following addresses did NOT receive a copy of your message:'),
      _c('--- Session Transcript ---'),
-     _c('[>]\s*(?P<addr>.*)$')),
+     _c(r'[>]\s*(?P<addr>.*)$')),
     # usa.net
-    (_c('Intended recipient:\s*(?P<addr>.*)$'),
+    (_c(r'Intended recipient:\s*(?P<addr>.*)$'),
      _c('--------RETURNED MAIL FOLLOWS--------'),
-     _c('Intended recipient:\s*(?P<addr>.*)$')),
+     _c(r'Intended recipient:\s*(?P<addr>.*)$')),
     # hotpop.com
-    (_c('Undeliverable Address:\s*(?P<addr>.*)$'),
+    (_c(r'Undeliverable Address:\s*(?P<addr>.*)$'),
      _c('Original message attached'),
-     _c('Undeliverable Address:\s*(?P<addr>.*)$')),
+     _c(r'Undeliverable Address:\s*(?P<addr>.*)$')),
     # Another demon.co.uk format
     (_c('This message was created automatically by mail delivery'),
      _c('^---- START OF RETURNED MESSAGE ----'),
@@ -81,19 +81,19 @@ PATTERNS = [
     # Prodigy.net full mailbox
     (_c("User's mailbox is full:"),
      _c('Unable to deliver mail.'),
-     _c("User's mailbox is full:\s*<(?P<addr>[^>]*)>")),
+     _c(r"User's mailbox is full:\s*<(?P<addr>[^>]*)>")),
     # Microsoft SMTPSVC
     (_c('The email below could not be delivered to the following user:'),
      _c('Old message:'),
      _c('<(?P<addr>[^>]*)>')),
     # Yahoo on behalf of other domains like sbcglobal.net
-    (_c('Unable to deliver message to the following address\(es\)\.'),
-     _c('--- Original message follows\.'),
+    (_c(r'Unable to deliver message to the following address\(es\)\.'),
+     _c(r'--- Original message follows\.'),
      _c('<(?P<addr>[^>]*)>:')),
     # googlemail.com
     (_c('Delivery to the following recipient(s)? failed'),
      _c('----- Original message -----'),
-     _c('^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # kundenserver.de, mxlogic.net
     (_c('A message that you( have)? sent could not be delivered'),
      _c('^---'),
@@ -108,11 +108,11 @@ PATTERNS = [
      # unique to stop on, so stop on the first line of at least 3 characters
      # that doesn't start with 'D' (to not stop immediately) and has no '@'.
      _c('^[^D][^@]{2,}$'),
-     _c('^\s*(. )?(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^\s*(. )?(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # and another thehartfod.com/hartfordlife.com
-    (_c('^Your message\s*$'),
+    (_c(r'^Your message\s*$'),
      _c('^because:'),
-     _c('^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # kviv.be (InterScan NT)
     (_c('^Unable to deliver message to'),
      _c(r'\*+\s+End of message\s+\*+'),
@@ -120,15 +120,15 @@ PATTERNS = [
     # earthlink.net supported domains
     (_c('^Sorry, unable to deliver your message to'),
      _c('^A copy of the original message'),
-     _c('\s*(?P<addr>[^\s@]+@[^\s@]+)\s+')),
+     _c(r'\s*(?P<addr>[^\s@]+@[^\s@]+)\s+')),
     # ademe.fr
     (_c('^A message could not be delivered to:'),
      _c('^Subject:'),
-     _c('^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # andrew.ac.jp
     (_c('^Invalid final delivery userid:'),
      _c('^Original message follows.'),
-     _c('\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # E500_SMTP_Mail_Service@lerctr.org and similar
     (_c('---- Failed Recipients ----'),
      _c(' Mail ----'),
@@ -136,11 +136,11 @@ PATTERNS = [
     # cynergycom.net
     (_c('A message that you sent could not be delivered'),
      _c('^---'),
-     _c('(?P<addr>[^\s@]+@[^\s@)]+)')),
+     _c(r'(?P<addr>[^\s@]+@[^\s@)]+)')),
     # LSMTP for Windows
-    (_c('^--> Error description:\s*$'),
+    (_c(r'^--> Error description:\s*$'),
      _c('^Error-End:'),
-     _c('^Error-for:\s+(?P<addr>[^\s@]+@[^\s@]+)')),
+     _c(r'^Error-for:\s+(?P<addr>[^\s@]+@[^\s@]+)')),
     # Qmail with a tri-language intro beginning in spanish
     (_c('Your message could not be delivered'),
      _c('^-'),
@@ -152,11 +152,11 @@ PATTERNS = [
     # dadoservice.it
     (_c('Your message has encountered delivery problems'),
      _c('Your message reads'),
-     _c('addressed to\s*(?P<addr>[^\s@]+@[^\s@)]+)')),
+     _c(r'addressed to\s*(?P<addr>[^\s@]+@[^\s@)]+)')),
     # gomaps.com
     (_c('Did not reach the following recipient'),
      _c('^\s*$'),
-     _c('\s(?P<addr>[^\s@]+@[^\s@]+)')),
+     _c(r'\s(?P<addr>[^\s@]+@[^\s@]+)')),
     # EYOU MTA SYSTEM
     (_c('This is the deliver program at'),
      _c('^-'),
@@ -164,37 +164,37 @@ PATTERNS = [
     # A non-standard qmail at ieo.it
     (_c('this is the email server at'),
      _c('^-'),
-     _c('\s(?P<addr>[^\s@]+@[^\s@]+)[\s,]')),
+     _c(r'\s(?P<addr>[^\s@]+@[^\s@]+)[\s,]')),
     # pla.net.py (MDaemon.PRO ?)
     (_c('- no such user here'),
      _c('There is no user'),
-     _c('^(?P<addr>[^\s@]+@[^\s@]+)\s')),
+     _c(r'^(?P<addr>[^\s@]+@[^\s@]+)\s')),
     # fastdnsservers.com
     (_c('The following recipient.*could not be reached'),
      _c('bogus stop pattern'),
-     _c('^(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # lttf.com
     (_c('Could not deliver message to'),
      _c('^\s*--'),
-     _c('^Failed Recipient:\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^Failed Recipient:\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # uci.edu
     (_c('--------Message not delivered'),
      _c('--------Error Detail'),
-     _c('^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
+     _c(r'^\s*(?P<addr>[^\s@]+@[^\s@]+)\s*$')),
     # Dovecot LDA Over quota MDN (bogus - should be DSN).
     (_c('^Your message'),
      _c('^Reporting'),
      _c(
-        'Your message to (?P<addr>[^\s@]+@[^\s@]+) was automatically rejected'
+        r'Your message to (?P<addr>[^\s@]+@[^\s@]+) was automatically rejected'
        )),
     # mail.ru
     (_c('A message that you sent was rejected'),
      _c('This is a copy of your message'),
-     _c('\s(?P<addr>[^\s@]+@[^\s@]+)')),
+     _c(r'\s(?P<addr>[^\s@]+@[^\s@]+)')),
     # MailEnable
     (_c('Message could not be delivered to some recipients.'),
      _c('Message headers follow'),
-     _c('Recipient: \[SMTP:(?P<addr>[^\s@]+@[^\s@]+)\]')),
+     _c(r'Recipient: \[SMTP:(?P<addr>[^\s@]+@[^\s@]+)\]')),
     # This one is from Yahoo but dosen't fit the yahoo recognizer format
     (_c(r'wasn\'t able to deliver the following message'),
      _c(r'---Below this line is a copy of the message.'),

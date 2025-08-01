@@ -74,7 +74,7 @@ def getDecodedHeaders(msg, cset='utf-8'):
         uvalue = u''
         try:
             if isinstance(v, str):
-                v = decode_header(re.sub('\n\s', ' ', v))
+                v = decode_header(re.sub(r'\n\s', ' ', v))
             else:
                 continue
         except HeaderParseError:
