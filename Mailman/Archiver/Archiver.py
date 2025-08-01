@@ -150,7 +150,7 @@ class Archiver:
         """Open (creating, if necessary) the named archive file."""
         omask = os.umask(0o002)
         try:
-            return Mailbox.Mailbox(open(afn, 'a+'))
+            return Mailbox.Mailbox(open(afn, 'a+b'))
         finally:
             os.umask(omask)
 

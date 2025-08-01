@@ -299,7 +299,7 @@ class Article(pipermail.Article):
         cset_out = Charset(cset).output_charset or cset
         if isinstance(cset_out, str):
             # email 3.0.1 (python 2.4) doesn't like unicode
-            cset_out = cset_out.encode('us-ascii')
+            cset_out = cset_out.encode('us-ascii', 'replace')
         charset = message.get_content_charset(cset_out)
         if charset:
             charset = charset.lower().strip()
@@ -313,14 +313,17 @@ class Article(pipermail.Article):
                 body = None
             if body and charset != Utils.GetCharSet(self._lang):
                 if isinstance(charset, bytes):
-                    charset = charset.decode()
+                    charset = charset.decode('utf-8', 'replace')
                 # decode body
                 try:
                     body = body.decode(charset)
                 except (UnicodeError, LookupError):
                     body = None
             if body:
-                self.body = [l.decode() + "\n" if isinstance(l, bytes) else l + "\n" for l in body.splitlines()]
+                # Handle both bytes and strings properly
+                if isinstance(body, bytes):
+                    body = body.decode('utf-8', 'replace')
+                self.body = [l + "\n" for l in body.splitlines()]
 
         self.decode_headers()
 
@@ -875,7 +878,7 @@ class HyperArchive(pipermail.T):
         #if the working file is still here, the archiver may have
         # crashed during archiving. Save it, log an error, and move on.
         try:
-            wf = open(wname)
+            wf = open(wname, 'r')
             syslog('error',
                    'Archive working file %s present.  '
                    'Check %s for possibly unarchived msgs',
@@ -895,7 +898,7 @@ class HyperArchive(pipermail.T):
         except IOError:
             pass
         os.rename(name,wname)
-        archfile = open(wname)
+        archfile = open(wname, 'r')
         self.processUnixMailbox(archfile)
         archfile.close()
         os.unlink(wname)
@@ -1039,7 +1042,7 @@ class HyperArchive(pipermail.T):
         index_html = os.path.join(archivedir, 'index.html')
         try:
             os.unlink(index_html)
-        except:
+        except (OSError, IOError):
             pass
         os.symlink(self.DEFAULTINDEX+'.html',index_html)
 
@@ -1144,7 +1147,7 @@ class HyperArchive(pipermail.T):
             oldgzip = os.path.join(self.basedir, '%s.old.txt.gz' % archive)
             try:
                 # open the plain text file
-                archt = open(txtfile)
+                archt = open(txtfile, 'r')
             except IOError:
                 return
             try:
