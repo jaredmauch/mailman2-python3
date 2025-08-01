@@ -139,9 +139,21 @@ class IncomingRunner(Runner):
     def _get_pipeline(self, mlist, msg, msgdata):
         # We must return a copy of the list, otherwise, the first message that
         # flows through the pipeline will empty it out!
-        return msgdata.get('pipeline',
-                           getattr(mlist, 'pipeline',
-                                   mm_cfg.GLOBAL_PIPELINE))[:]
+        pipeline = msgdata.get('pipeline')
+        if pipeline is None:
+            pipeline = getattr(mlist, 'pipeline', None)
+        if pipeline is None:
+            pipeline = mm_cfg.GLOBAL_PIPELINE
+        
+        # Ensure pipeline is a list that can be sliced
+        if not isinstance(pipeline, list):
+            syslog('error', 'GLOBAL_PIPELINE is not a list: %s (type: %s)', 
+                   pipeline, type(pipeline).__name__)
+            # Fallback to a basic pipeline
+            pipeline = ['SpamDetect', 'Approve', 'Moderate', 'Hold', 
+                       'CalcRecips', 'CookHeaders', 'ToOutgoing']
+        
+        return pipeline[:]
 
     def _dopipeline(self, mlist, msg, msgdata, pipeline):
         while pipeline:

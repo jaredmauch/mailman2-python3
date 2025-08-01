@@ -57,7 +57,13 @@ class Connection(object):
     def __connect(self):
         self.__conn = smtplib.SMTP()
         self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
-        self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        
+        # Ensure we have a valid hostname for the connection
+        smtp_host = mm_cfg.SMTPHOST
+        if not smtp_host or smtp_host.startswith('.') or smtp_host == '@URLHOST@':
+            smtp_host = 'localhost'
+        
+        self.__conn.connect(smtp_host, mm_cfg.SMTPPORT)
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
                 try:
