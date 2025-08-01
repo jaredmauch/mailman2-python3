@@ -73,6 +73,10 @@ class Connection(object):
                 # Log the hostname being used for TLS
                 syslog('smtp-failure', 'TLS connection hostname: %s', self.__conn._host)
                 try:
+                    # Ensure the hostname is set for TLS
+                    if not self.__conn._host:
+                        self.__conn._host = smtp_host
+                        syslog('smtp-failure', 'Set TLS hostname to: %s', smtp_host)
                     self.__conn.starttls()
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP TLS error: %s', e)
