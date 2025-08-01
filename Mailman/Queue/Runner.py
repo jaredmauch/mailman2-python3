@@ -43,7 +43,8 @@ class Runner:
         self._kids = {}
         # Create our own switchboard.  Don't use the switchboard cache because
         # we want to provide slice and numslice arguments.
-        self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
+        distribution = getattr(mm_cfg, 'QUEUE_DISTRIBUTION_METHOD', 'hash')
+        self._switchboard = Switchboard(self.QDIR, slice, numslices, True, distribution)
         # Create the shunt switchboard
         self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
         self._stop = False

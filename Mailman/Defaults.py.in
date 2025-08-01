@@ -933,6 +933,11 @@ DEFAULT_RESPOND_TO_POST_REQUESTS = Yes
 # BAW: Eventually we may support weighted hash spaces.
 # BAW: Although not enforced, the # of slices must be a power of 2
 
+# Distribution method for queue runners: 'hash' (default) or 'round_robin'
+# Hash-based distribution ensures same message always goes to same runner
+# Round-robin distribution provides more even load distribution
+QUEUE_DISTRIBUTION_METHOD = 'hash'
+
 QRUNNERS = [
     ('ArchRunner',     1), # messages for the archiver
     ('BounceRunner',   2), # for processing the qfile/bounces directory

@@ -65,8 +65,9 @@ MAX_BAK_COUNT = 3
 
 
 class Switchboard:
-    def __init__(self, whichq, slice=None, numslices=1, recover=False):
+    def __init__(self, whichq, slice=None, numslices=1, recover=False, distribution='hash'):
         self.__whichq = whichq
+        self.__distribution = distribution
         # Create the directory if it doesn't yet exist.
         # FIXME
         omask = os.umask(0)                       # rwxrws---
@@ -82,8 +83,13 @@ class Switchboard:
         self.__upper = None
         # BAW: test performance and end-cases of this algorithm
         if numslices != 1:
-            self.__lower = (((shamax+1) * slice) / numslices)
-            self.__upper = ((((shamax+1) * (slice+1)) / numslices)) - 1
+            if distribution == 'hash':
+                self.__lower = (((shamax+1) * slice) / numslices)
+                self.__upper = ((((shamax+1) * (slice+1)) / numslices)) - 1
+            elif distribution == 'round_robin':
+                self.__slice = slice
+                self.__numslices = numslices
+            # Add more distribution methods here as needed
         if recover:
             self.recover_backup_files()
 
@@ -105,7 +111,23 @@ class Switchboard:
         else:
             protocol = 0
             msgsave = pickle.dumps(str(_msg), protocol, fix_imports=True)
-        hashfood = msgsave + listname.encode() + repr(now).encode()
+        
+        # Choose distribution method
+        if self.__distribution == 'round_robin':
+            # Use a simple counter for round-robin distribution
+            import threading
+            if not hasattr(self, '_counter'):
+                self._counter = 0
+                self._counter_lock = threading.Lock()
+            
+            with self._counter_lock:
+                self._counter = (self._counter + 1) % self.__numslices
+                current_slice = self._counter
+            hashfood = msgsave + listname.encode() + repr(now).encode() + str(current_slice).encode()
+        else:
+            # Default hash-based distribution
+            hashfood = msgsave + listname.encode() + repr(now).encode()
+        
         # Encode the current time into the file name for FIFO sorting in
         # files().  The file name consists of two parts separated by a `+':
         # the received time for this message (i.e. when it first showed up on
@@ -192,14 +214,26 @@ class Switchboard:
             if ext != extension:
                 continue
             when, digest = filebase.split('+')
-            # Throw out any files which don't match our bitrange.  BAW: test
-            # performance and end-cases of this algorithm.  MAS: both
-            # comparisons need to be <= to get complete range.
-            if lower is None or (lower <= int(digest, 16) <= upper):
-                key = float(when)
-                while key in times:
-                    key += DELTA
-                times[key] = filebase
+            
+            # Choose distribution method for file filtering
+            if self.__distribution == 'round_robin':
+                # For round-robin, use modulo of digest to determine slice
+                slice_num = int(digest, 16) % self.__numslices
+                if slice_num == self.__slice:
+                    key = float(when)
+                    while key in times:
+                        key += DELTA
+                    times[key] = filebase
+            else:
+                # Default hash-based distribution
+                # Throw out any files which don't match our bitrange.  BAW: test
+                # performance and end-cases of this algorithm.  MAS: both
+                # comparisons need to be <= to get complete range.
+                if lower is None or (lower <= int(digest, 16) <= upper):
+                    key = float(when)
+                    while key in times:
+                        key += DELTA
+                    times[key] = filebase
         # FIFO sort
         keys = list(times.keys())
         keys.sort()
