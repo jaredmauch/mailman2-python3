@@ -210,7 +210,8 @@ class Archiver:
 
         txt = msg.as_string()
         unixfrom = msg.get_unixfrom()
-        if not txt.startswith(unixfrom):
+        # Handle case where unixfrom is None (Python 3 compatibility)
+        if unixfrom and not txt.startswith(unixfrom):
             txt = unixfrom + '\n' + txt
 
         # should we use the internal or external archiver?
