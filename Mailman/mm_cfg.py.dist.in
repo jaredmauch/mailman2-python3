@@ -46,7 +46,7 @@ affect lists created after the change.  For existing lists, see the FAQ at
 ###############################################
 # Here's where we get the distributed defaults.
 
-from Defaults import *
+from Mailman.Defaults import *
 
 ##################################################
 # Put YOUR site-specific settings below this line.
