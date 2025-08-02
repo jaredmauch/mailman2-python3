@@ -94,6 +94,7 @@ class Logger(object):
         f = self.__get_f()
         try:
             f.write(msg)
+            f.flush()
         except IOError as msg:
             _logexc(self, msg)
 
