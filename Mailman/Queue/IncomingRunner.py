@@ -147,12 +147,22 @@ class IncomingRunner(Runner):
             syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s (type: %s)', mm_cfg.GLOBAL_PIPELINE, type(mm_cfg.GLOBAL_PIPELINE).__name__)
             syslog('debug', 'sys.path at pipeline load: %s', sys.path)
             syslog('debug', 'mm_cfg module loaded at: %s', mm_cfg.__cached__ if hasattr(mm_cfg, '__cached__') else 'No cache')
+            syslog('debug', 'mm_cfg module name: %s', mm_cfg.__name__)
+            syslog('debug', 'mm_cfg module spec: %s', mm_cfg.__spec__)
             # Check if there's a site-specific override
             if hasattr(mm_cfg, '__file__'):
                 mm_cfg_dir = os.path.dirname(mm_cfg.__file__)
                 site_config = os.path.join(mm_cfg_dir, 'mm_cfg.py')
                 if os.path.exists(site_config):
                     syslog('debug', 'Site config exists: %s', site_config)
+            
+            # Force reload mm_cfg if GLOBAL_PIPELINE is not available
+            if not hasattr(mm_cfg, 'GLOBAL_PIPELINE'):
+                syslog('debug', 'GLOBAL_PIPELINE not found, forcing reload of mm_cfg')
+                import importlib
+                importlib.reload(mm_cfg)
+                syslog('debug', 'After reload - GLOBAL_PIPELINE: %s', getattr(mm_cfg, 'GLOBAL_PIPELINE', 'NOT FOUND'))
+            
             pipeline = mm_cfg.GLOBAL_PIPELINE
         
         # Ensure pipeline is a list that can be sliced
@@ -163,6 +173,9 @@ class IncomingRunner(Runner):
             syslog('error', 'mm_cfg module file: %s', mm_cfg.__file__)
             syslog('error', 'sys.path: %s', sys.path)
             syslog('error', 'mm_cfg.__dict__ keys: %s', list(mm_cfg.__dict__.keys())[:10])
+            syslog('error', 'mm_cfg module loaded at: %s', mm_cfg.__cached__ if hasattr(mm_cfg, '__cached__') else 'No cache')
+            syslog('error', 'mm_cfg module name: %s', mm_cfg.__name__)
+            syslog('error', 'mm_cfg module spec: %s', mm_cfg.__spec__)
             syslog('error', 'Traceback: %s', ''.join(traceback.format_stack()))
             # Fallback to a basic pipeline
             pipeline = ['SpamDetect', 'Approve', 'Moderate', 'Hold', 
