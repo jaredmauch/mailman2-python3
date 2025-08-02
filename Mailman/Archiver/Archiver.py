@@ -162,9 +162,11 @@ class Archiver:
         """Retain a text copy of the message in an mbox file."""
         try:
             afn = self.ArchiveFileName()
+            syslog('debug', 'Archiver: Writing to mbox file: %s', afn)
             mbox = self.__archive_file(afn)
             mbox.AppendMessage(post)
             mbox.close()
+            syslog('debug', 'Archiver: Successfully wrote message to mbox file: %s', afn)
         except IOError as msg:
             syslog('error', 'Archive file access failure:\n\t%s %s', afn, msg)
             raise
@@ -186,16 +188,24 @@ class Archiver:
     #
     def ArchiveMail(self, msg):
         """Store postings in mbox and/or pipermail archive, depending."""
+        from Mailman import syslog
+        syslog('debug', 'Archiver: Starting ArchiveMail for list %s', self.internal_name())
+        
         # Fork so archival errors won't disrupt normal list delivery
         if mm_cfg.ARCHIVE_TO_MBOX == -1:
+            syslog('debug', 'Archiver: ARCHIVE_TO_MBOX is -1, archiving disabled')
             return
+        
+        syslog('debug', 'Archiver: ARCHIVE_TO_MBOX = %s', mm_cfg.ARCHIVE_TO_MBOX)
         #
         # We don't need an extra archiver lock here because we know the list
         # itself must be locked.
         if mm_cfg.ARCHIVE_TO_MBOX in (1, 2):
+            syslog('debug', 'Archiver: Writing to mbox archive')
             self.__archive_to_mbox(msg)
             if mm_cfg.ARCHIVE_TO_MBOX == 1:
                 # Archive to mbox only.
+                syslog('debug', 'Archiver: ARCHIVE_TO_MBOX = 1, mbox only, returning')
                 return
 
         txt = msg.as_string()
@@ -205,12 +215,17 @@ class Archiver:
 
         # should we use the internal or external archiver?
         private_p = self.archive_private
+        syslog('debug', 'Archiver: archive_private = %s', private_p)
+        
         if mm_cfg.PUBLIC_EXTERNAL_ARCHIVER and not private_p:
+            syslog('debug', 'Archiver: Using public external archiver')
             self.ExternalArchive(mm_cfg.PUBLIC_EXTERNAL_ARCHIVER, txt)
         elif mm_cfg.PRIVATE_EXTERNAL_ARCHIVER and private_p:
+            syslog('debug', 'Archiver: Using private external archiver')
             self.ExternalArchive(mm_cfg.PRIVATE_EXTERNAL_ARCHIVER, txt)
         else:
             # use the internal archiver
+            syslog('debug', 'Archiver: Using internal HyperArch archiver')
             f = tempfile.NamedTemporaryFile()
             if isinstance(txt, str):
                 txt = txt.encode('utf-8')
@@ -221,6 +236,7 @@ class Archiver:
             h.processUnixMailbox(f)
             h.close()
             f.close()
+            syslog('debug', 'Archiver: Completed internal archiving')
 
     #
     # called from MailList.MailList.Save()

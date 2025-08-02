@@ -100,12 +100,18 @@ class Switchboard:
         return self.__whichq
 
     def enqueue(self, _msg, _metadata={}, **_kws):
+        from Mailman import syslog
         # Calculate the SHA hexdigest of the message to get a unique base
         # filename.  We're also going to use the digest as a hash into the set
         # of parallel qrunner processes.
         data = _metadata.copy()
         data.update(_kws)
         listname = data.get('listname', '--nolist--')
+        
+        # DEBUG: Log archive queue enqueue
+        if self.__whichq == mm_cfg.ARCHQUEUE_DIR:
+            syslog('debug', 'Switchboard: Enqueuing message to archive queue for list %s', listname)
+        
         # Get some data for the input to the sha hash
         now = time.time()
         if SAVE_MSGS_AS_PICKLES and not data.get('_plaintext'):
@@ -163,6 +169,11 @@ class Switchboard:
         finally:
             os.umask(omask)
         os.rename(tmpfile, filename)
+        
+        # DEBUG: Log successful enqueue
+        if self.__whichq == mm_cfg.ARCHQUEUE_DIR:
+            syslog('debug', 'Switchboard: Successfully enqueued message to archive queue: %s', filebase)
+        
         return filebase
 
     def dequeue(self, filebase):
