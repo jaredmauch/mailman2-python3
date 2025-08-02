@@ -143,12 +143,16 @@ class IncomingRunner(Runner):
         if pipeline is None:
             pipeline = getattr(mlist, 'pipeline', None)
         if pipeline is None:
+            syslog('debug', 'mm_cfg module file: %s', mm_cfg.__file__)
+            syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s', mm_cfg.GLOBAL_PIPELINE)
             pipeline = mm_cfg.GLOBAL_PIPELINE
         
         # Ensure pipeline is a list that can be sliced
         if not isinstance(pipeline, list):
+            import traceback
             syslog('error', 'GLOBAL_PIPELINE is not a list: %s (type: %s)', 
                    pipeline, type(pipeline).__name__)
+            syslog('error', 'Traceback: %s', ''.join(traceback.format_stack()))
             # Fallback to a basic pipeline
             pipeline = ['SpamDetect', 'Approve', 'Moderate', 'Hold', 
                        'CalcRecips', 'CookHeaders', 'ToOutgoing']
