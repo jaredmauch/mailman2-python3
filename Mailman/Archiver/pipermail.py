@@ -114,7 +114,7 @@ class Database(DatabaseInterface):
         self.changed[archive, article.msgid] = None
 
         parentID = article.parentID
-        if parentID is not None and self.articleIndex.has_key(parentID):
+        if parentID is not None and parentID in self.articleIndex:
             parent = self.getArticle(archive, parentID)
             myThreadKey = (parent.threadKey + article.date + '.'
                            + str(article.sequence) + '-')
@@ -376,7 +376,7 @@ class T(object):
                 parentID = article.in_reply_to
             elif article.references:
                 # Remove article IDs that aren't in the archive
-                refs = list(filter(self.articleIndex.has_key, article.references))
+                refs = list(filter(lambda x: x in self.articleIndex, article.references))
                 if not refs:
                     return None
                 maxdate = self.database.getArticle(self.archive,
@@ -525,7 +525,7 @@ class T(object):
         path = os.path.join(arcdir, index_name + self.INDEX_EXT)
         omask = os.umask(0o002)
         try:
-            self.__f = open(path, 'w')
+            self.__f = open(path, 'w', encoding='utf-8')
         finally:
             os.umask(omask)
         self.__stdout = sys.stdout
@@ -687,7 +687,7 @@ class T(object):
     def write_article(self, index, article, path):
         omask = os.umask(0o002)
         try:
-            f = open(path, 'w')
+            f = open(path, 'w', encoding='utf-8')
         finally:
             os.umask(omask)
         temp_stdout, sys.stdout = sys.stdout, f
@@ -825,7 +825,7 @@ class BSDDBdatabase(Database):
         self.__closeIndices()
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return self.articleIndex.has_key(msgid)
+        return msgid in self.articleIndex
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
         self.threadIndex[key] = msgid
