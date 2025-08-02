@@ -143,39 +143,46 @@ class IncomingRunner(Runner):
         if pipeline is None:
             pipeline = getattr(mlist, 'pipeline', None)
         if pipeline is None:
-            syslog('debug', 'mm_cfg module file: %s', mm_cfg.__file__)
-            syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s (type: %s)', mm_cfg.GLOBAL_PIPELINE, type(mm_cfg.GLOBAL_PIPELINE).__name__)
+            # Store the original mm_cfg reference to avoid circular imports
+            original_mm_cfg = mm_cfg
+            
+            syslog('debug', 'mm_cfg module file: %s', original_mm_cfg.__file__)
+            syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s (type: %s)', original_mm_cfg.GLOBAL_PIPELINE, type(original_mm_cfg.GLOBAL_PIPELINE).__name__)
             syslog('debug', 'sys.path at pipeline load: %s', sys.path)
-            syslog('debug', 'mm_cfg module loaded at: %s', mm_cfg.__cached__ if hasattr(mm_cfg, '__cached__') else 'No cache')
-            syslog('debug', 'mm_cfg module name: %s', mm_cfg.__name__)
-            syslog('debug', 'mm_cfg module spec: %s', mm_cfg.__spec__)
+            syslog('debug', 'mm_cfg module loaded at: %s', original_mm_cfg.__cached__ if hasattr(original_mm_cfg, '__cached__') else 'No cache')
+            syslog('debug', 'mm_cfg module name: %s', original_mm_cfg.__name__)
+            syslog('debug', 'mm_cfg module spec: %s', original_mm_cfg.__spec__)
+            syslog('debug', 'mm_cfg module id: %s', id(original_mm_cfg))
+            syslog('debug', 'mm_cfg module dict: %s', list(original_mm_cfg.__dict__.keys())[:10])
             # Check if there's a site-specific override
-            if hasattr(mm_cfg, '__file__'):
-                mm_cfg_dir = os.path.dirname(mm_cfg.__file__)
+            if hasattr(original_mm_cfg, '__file__'):
+                mm_cfg_dir = os.path.dirname(original_mm_cfg.__file__)
                 site_config = os.path.join(mm_cfg_dir, 'mm_cfg.py')
                 if os.path.exists(site_config):
                     syslog('debug', 'Site config exists: %s', site_config)
             
             # Force reload mm_cfg if GLOBAL_PIPELINE is not available
-            if not hasattr(mm_cfg, 'GLOBAL_PIPELINE'):
+            if not hasattr(original_mm_cfg, 'GLOBAL_PIPELINE'):
                 syslog('debug', 'GLOBAL_PIPELINE not found, forcing reload of mm_cfg')
                 import importlib
-                importlib.reload(mm_cfg)
-                syslog('debug', 'After reload - GLOBAL_PIPELINE: %s', getattr(mm_cfg, 'GLOBAL_PIPELINE', 'NOT FOUND'))
+                importlib.reload(original_mm_cfg)
+                syslog('debug', 'After reload - GLOBAL_PIPELINE: %s', getattr(original_mm_cfg, 'GLOBAL_PIPELINE', 'NOT FOUND'))
             
-            pipeline = mm_cfg.GLOBAL_PIPELINE
+            pipeline = original_mm_cfg.GLOBAL_PIPELINE
         
         # Ensure pipeline is a list that can be sliced
         if not isinstance(pipeline, list):
             import traceback
+            # Use the original mm_cfg reference to avoid circular imports
+            original_mm_cfg = mm_cfg
             syslog('error', 'GLOBAL_PIPELINE is not a list: %s (type: %s)', 
                    pipeline, type(pipeline).__name__)
-            syslog('error', 'mm_cfg module file: %s', mm_cfg.__file__)
+            syslog('error', 'mm_cfg module file: %s', original_mm_cfg.__file__)
             syslog('error', 'sys.path: %s', sys.path)
-            syslog('error', 'mm_cfg.__dict__ keys: %s', list(mm_cfg.__dict__.keys())[:10])
-            syslog('error', 'mm_cfg module loaded at: %s', mm_cfg.__cached__ if hasattr(mm_cfg, '__cached__') else 'No cache')
-            syslog('error', 'mm_cfg module name: %s', mm_cfg.__name__)
-            syslog('error', 'mm_cfg module spec: %s', mm_cfg.__spec__)
+            syslog('error', 'mm_cfg.__dict__ keys: %s', list(original_mm_cfg.__dict__.keys())[:10])
+            syslog('error', 'mm_cfg module loaded at: %s', original_mm_cfg.__cached__ if hasattr(original_mm_cfg, '__cached__') else 'No cache')
+            syslog('error', 'mm_cfg module name: %s', original_mm_cfg.__name__)
+            syslog('error', 'mm_cfg module spec: %s', original_mm_cfg.__spec__)
             syslog('error', 'Traceback: %s', ''.join(traceback.format_stack()))
             # Fallback to a basic pipeline
             pipeline = ['SpamDetect', 'Approve', 'Moderate', 'Hold', 
