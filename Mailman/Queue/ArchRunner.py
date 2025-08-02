@@ -30,7 +30,7 @@ class ArchRunner(Runner):
     QDIR = mm_cfg.ARCHQUEUE_DIR
 
     def _dispose(self, mlist, msg, msgdata):
-        from Mailman import syslog
+        from Mailman.Logging.Syslog import syslog
         syslog('debug', 'ArchRunner: Starting archive processing for list %s', mlist.internal_name())
         
         # Support clobber_date, i.e. setting the date in the archive to the

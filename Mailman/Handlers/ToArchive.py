@@ -27,7 +27,7 @@ from Mailman.Queue.sbcache import get_switchboard
 
 def process(mlist, msg, msgdata):
     # DEBUG: Log archiver processing start
-    from Mailman import syslog
+    from Mailman.Logging.Syslog import syslog
     syslog('debug', 'ToArchive: Starting archive processing for list %s', mlist.internal_name())
     
     # short circuits

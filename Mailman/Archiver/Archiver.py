@@ -188,7 +188,7 @@ class Archiver:
     #
     def ArchiveMail(self, msg):
         """Store postings in mbox and/or pipermail archive, depending."""
-        from Mailman import syslog
+        from Mailman.Logging.Syslog import syslog
         syslog('debug', 'Archiver: Starting ArchiveMail for list %s', self.internal_name())
         
         # Fork so archival errors won't disrupt normal list delivery
