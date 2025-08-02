@@ -1786,7 +1786,7 @@ SITE_PW_FILE = os.path.join(DATA_DIR, 'adm.pw')
 LISTCREATOR_PW_FILE = os.path.join(DATA_DIR, 'creator.pw')
 
 # Import a bunch of version numbers
-from Version import *
+from Mailman.Version import *
 
 # Vgg: Language descriptions and charsets dictionary, any new supported
 # language must have a corresponding entry here. Key is the name of the
