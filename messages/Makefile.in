@@ -114,7 +114,7 @@ doinstall: mofiles
  	    $(INSTALL) -m $(FILEMODE) $$mo $$dir; \
 	done
 
-convertpofiles:
+convertpofiles: $(wildcard */LC_MESSAGES/*.po)
 	../scripts/convert_to_utf8 -d .
 
 mofiles: $(MOFILES)

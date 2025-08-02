@@ -57,10 +57,12 @@ INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 
 # Rules
 
-all:
+all: converttemplates
 
-install:
+converttemplates: $(wildcard */LC_MESSAGES/*.po) $(wildcard */*.html) $(wildcard */*.txt)
 	../scripts/convert_to_utf8 -d .
+
+install: all
 	for d in $(LANGUAGES); \
 	do \
 	    $(srcdir)/../mkinstalldirs $(DESTDIR)$(TEMPLATEDIR)/$$d; \
