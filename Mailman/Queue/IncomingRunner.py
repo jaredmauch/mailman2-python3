@@ -144,7 +144,14 @@ class IncomingRunner(Runner):
             pipeline = getattr(mlist, 'pipeline', None)
         if pipeline is None:
             syslog('debug', 'mm_cfg module file: %s', mm_cfg.__file__)
-            syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s', mm_cfg.GLOBAL_PIPELINE)
+            syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s (type: %s)', mm_cfg.GLOBAL_PIPELINE, type(mm_cfg.GLOBAL_PIPELINE).__name__)
+            syslog('debug', 'sys.path at pipeline load: %s', sys.path)
+            # Check if there's a site-specific override
+            if hasattr(mm_cfg, '__file__'):
+                mm_cfg_dir = os.path.dirname(mm_cfg.__file__)
+                site_config = os.path.join(mm_cfg_dir, 'mm_cfg.py')
+                if os.path.exists(site_config):
+                    syslog('debug', 'Site config exists: %s', site_config)
             pipeline = mm_cfg.GLOBAL_PIPELINE
         
         # Ensure pipeline is a list that can be sliced
@@ -152,6 +159,9 @@ class IncomingRunner(Runner):
             import traceback
             syslog('error', 'GLOBAL_PIPELINE is not a list: %s (type: %s)', 
                    pipeline, type(pipeline).__name__)
+            syslog('error', 'mm_cfg module file: %s', mm_cfg.__file__)
+            syslog('error', 'sys.path: %s', sys.path)
+            syslog('error', 'mm_cfg.__dict__ keys: %s', list(mm_cfg.__dict__.keys())[:10])
             syslog('error', 'Traceback: %s', ''.join(traceback.format_stack()))
             # Fallback to a basic pipeline
             pipeline = ['SpamDetect', 'Approve', 'Moderate', 'Hold', 
