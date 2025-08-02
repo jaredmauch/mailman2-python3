@@ -650,7 +650,8 @@ class DefinitionList(Container):
 # These are the URLs which the image logos link to.  The Mailman home page now
 # points at the gnu.org site instead of the www.list.org mirror.
 #
-from mm_cfg import MAILMAN_URL
+MAILMAN_URL = Mailman.mm_cfg.MAILMAN_URL
+# from Mailman.mm_cfg import MAILMAN_URL
 PYTHON_URL  = 'http://www.python.org/'
 GNU_URL     = 'http://www.gnu.org/'
 

@@ -142,17 +142,16 @@ class IncomingRunner(Runner):
         pipeline = msgdata.get('pipeline')
         if pipeline is None:
             pipeline = getattr(mlist, 'pipeline', None)
-        if pipeline is None:
+        else:
             # Use the already-imported mm_cfg directly
             pipeline = mm_cfg.GLOBAL_PIPELINE
         
         # Ensure pipeline is a list that can be sliced
         if not isinstance(pipeline, list):
-            syslog('error', 'GLOBAL_PIPELINE is not a list: %s (type: %s)', 
+            syslog('error', 'pipeline is not a list: %s (type: %s)', 
                    pipeline, type(pipeline).__name__)
             # Fallback to a basic pipeline
-            pipeline = ['SpamDetect', 'Approve', 'Moderate', 'Hold', 
-                       'CalcRecips', 'CookHeaders', 'ToOutgoing']
+            pipeline = mm_cfg.GLOBAL_PIPELINE
         
         return pipeline[:]
 
