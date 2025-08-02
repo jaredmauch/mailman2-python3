@@ -146,6 +146,7 @@ class IncomingRunner(Runner):
             syslog('debug', 'mm_cfg module file: %s', mm_cfg.__file__)
             syslog('debug', 'Loading GLOBAL_PIPELINE from mm_cfg: %s (type: %s)', mm_cfg.GLOBAL_PIPELINE, type(mm_cfg.GLOBAL_PIPELINE).__name__)
             syslog('debug', 'sys.path at pipeline load: %s', sys.path)
+            syslog('debug', 'mm_cfg module loaded at: %s', mm_cfg.__cached__ if hasattr(mm_cfg, '__cached__') else 'No cache')
             # Check if there's a site-specific override
             if hasattr(mm_cfg, '__file__'):
                 mm_cfg_dir = os.path.dirname(mm_cfg.__file__)

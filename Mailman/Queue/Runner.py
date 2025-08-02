@@ -24,6 +24,10 @@ import traceback
 from io import StringIO
 
 from Mailman import mm_cfg
+# Debug: Log when mm_cfg is imported
+from Mailman.Logging.Syslog import syslog
+syslog('debug', 'Runner.py: mm_cfg imported from %s', mm_cfg.__file__)
+syslog('debug', 'Runner.py: mm_cfg.GLOBAL_PIPELINE type: %s', type(mm_cfg.GLOBAL_PIPELINE).__name__ if hasattr(mm_cfg, 'GLOBAL_PIPELINE') else 'NOT FOUND')
 from Mailman import Utils
 from Mailman import Errors
 from Mailman import MailList
