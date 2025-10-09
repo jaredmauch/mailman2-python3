@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import os
 import sys
-import cgi
+from Mailman.Utils import FieldStorage
 import mimetypes
 
 from Mailman import mm_cfg
@@ -106,8 +106,8 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        msg = _('No such list <em>{safelistname}</em>')
-        doc.SetTitle(_("Private Archive Error - {msg}"))
+        msg = _(f'No such list <em>{safelistname}</em>')
+        doc.SetTitle(_(f"Private Archive Error - {msg}"))
         doc.AddItem(Header(2, msg))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
@@ -118,7 +118,7 @@ def main():
     i18n.set_language(mlist.preferred_language)
     doc.set_language(mlist.preferred_language)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         username = cgidata.getfirst('username', '').strip()
     except TypeError:
@@ -214,7 +214,7 @@ def main():
             import gzip
             f = gzip.open(true_filename, 'r')
         else:
-            f = open(true_filename, 'r')
+            f = open(true_filename, 'rb')
     except IOError:
         msg = _('Private archive file not found')
         doc.SetTitle(msg)
@@ -223,6 +223,16 @@ def main():
         print(doc.Format())
         syslog('error', 'Private archive file not found: %s', true_filename)
     else:
-        print('Content-type: %s\n' % ctype)
-        sys.stdout.write(f.read())
+        content = f.read()
         f.close()
+        buffered = sys.stdout.getvalue()
+        sys.stdout.truncate(0)
+        sys.stdout.seek(0)
+        orig_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
+        sys.stdout.write(buffered)
+        print('Content-type: %s\n' % ctype)
+        sys.stdout.flush()
+        sys.stdout.buffer.write(content)
+        sys.stdout.flush()
+        sys.stdout = orig_stdout

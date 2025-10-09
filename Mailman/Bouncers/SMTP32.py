@@ -30,6 +30,7 @@ Escape character is '^]'.
 
 import re
 import email
+import email.iterators
 
 ecre = re.compile('original message follows', re.IGNORECASE)
 acre = re.compile(r'''
@@ -51,7 +52,7 @@ def process(msg):
     if not mailer.startswith('<SMTP32 v'):
         return
     addrs = {}
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         if ecre.search(line):
             break
         mo = acre.search(line)

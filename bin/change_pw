@@ -147,12 +147,12 @@ def main():
     if password is not None:
         if not password:
             usage(1, C_('Empty list passwords are not allowed'))
-        shapassword = Utils.sha_new(password).hexdigest()
+        shapassword = Utils.sha_new(password.encode()).hexdigest()
 
     if domains:
         for name in Utils.list_names():
             mlist = openlist(name)
-            if domains.has_key(mlist.host_name):
+            if mlist.host_name in domains:
                 listnames[name] = 1
 
     if not listnames:
@@ -167,7 +167,7 @@ def main():
             if password is None:
                 randompw = Utils.MakeRandomPassword(
                     mm_cfg.ADMIN_PASSWORD_LENGTH)
-                shapassword = Utils.sha_new(randompw).hexdigest()
+                shapassword = Utils.sha_new(randompw.encode('utf-8')).hexdigest()
                 notifypassword = randompw
             else:
                 notifypassword = password

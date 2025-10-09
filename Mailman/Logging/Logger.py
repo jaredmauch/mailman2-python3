@@ -69,8 +69,7 @@ class Logger(object):
                 try:
                     try:
                         f = codecs.open(
-                            self.__filename, 'a+', self.__encoding, 'replace',
-                            1)
+                            self.__filename, 'a+', self.__encoding, 'replace')
                     except LookupError:
                         f = open(self.__filename, 'a+', 1)
                     self.__fp = f
@@ -95,6 +94,7 @@ class Logger(object):
         f = self.__get_f()
         try:
             f.write(msg)
+            f.flush()
         except IOError as msg:
             _logexc(self, msg)
 

@@ -71,7 +71,7 @@ your membership administrative address, %(addr)s.'''))
         realname = self.real_name
         msg = Message.UserNotification(
             self.GetMemberAdminEmail(name), self.GetRequestEmail(),
-            _('Welcome to the "%(realname)s" mailing list%(digmode)s'),
+            _(f'Welcome to the "{realname}" mailing list{digmode}'),
             text, pluser)
         msg['X-No-Archive'] = 'yes'
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
@@ -81,7 +81,7 @@ your membership administrative address, %(addr)s.'''))
         i18n.set_language(lang)
         msg = Message.UserNotification(
             self.GetMemberAdminEmail(addr), self.GetBouncesEmail(),
-            _('You have been unsubscribed from the %(realname)s mailing list'),
+            _(f'You have been unsubscribed from the {realname} mailing list'),
             Utils.wrap(self.goodbye_msg), lang)
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
 
@@ -108,7 +108,7 @@ your membership administrative address, %(addr)s.'''))
         # Now send the user his password
         cpuser = self.getMemberCPAddress(user)
         recipient = self.GetMemberAdminEmail(cpuser)
-        subject = _('%(listfullname)s mailing list reminder')
+        subject = _(f'{listfullname} mailing list reminder')
         # Get user's language and charset
         lang = self.getMemberLanguage(user)
         cset = Utils.GetCharSet(lang)
@@ -116,7 +116,7 @@ your membership administrative address, %(addr)s.'''))
         # TK: Make unprintables to ?
         # The list owner should allow users to set language options if they
         # want to use non-us-ascii characters in password and send it back.
-        password = str(password, cset, 'replace').encode(cset, 'replace')
+        #password = str(password, cset, 'replace').encode(cset, 'replace')
         # get the text from the template
         text = Utils.maketext(
             'userpass.txt',
@@ -161,7 +161,7 @@ your membership administrative address, %(addr)s.'''))
         msg = Message.OwnerNotification(
             self,
             _('Hostile subscription attempt detected'),
-            Utils.wrap(_("""%(address)s was invited to a different mailing
+            Utils.wrap(_(f"""{address} was invited to a different mailing
 list, but in a deliberate malicious attempt they tried to confirm the
 invitation to your list.  We just thought you'd like to know.  No further
 action by you is required.""")))
@@ -180,7 +180,7 @@ action by you is required.""")))
             msg = Message.OwnerNotification(
                 mlist,
                 _('Hostile subscription attempt detected'),
-                Utils.wrap(_("""You invited %(address)s to your list, but in a
+                Utils.wrap(_(f"""You invited {address} to your list, but in a
 deliberate malicious attempt, they tried to confirm the invitation to a
 different list.  We just thought you'd like to know.  No further action by you
 is required.""")))
@@ -213,7 +213,7 @@ is required.""")))
         otrans = i18n.get_translation()
         i18n.set_language(ulang)
         try:
-            subject = _('%(listname)s mailing list probe message')
+            subject = _(f'{listname} mailing list probe message')
         finally:
             i18n.set_translation(otrans)
         outer = Message.UserNotification(member, probeaddr, subject,

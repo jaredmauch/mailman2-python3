@@ -117,7 +117,7 @@ class SetCommands:
             res.results.append(_(DETAILS))
             return STOP
         subcmd = args.pop(0)
-        methname = 'set_' + subcmd
+        methname = 'set_' + subcmd.decode('utf-8') if isinstance(subcmd, bytes) else 'set_' + subcmd
         method = getattr(self, methname, None)
         if method is None:
             res.results.append(_('Bad set command: %(subcmd)s'))

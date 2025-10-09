@@ -567,7 +567,7 @@ mlist.info.
                 else:
                     mlist.info = val
         elif property == 'admin_member_chunksize' and (val < 1
-                                          or not isinstance(val, IntType)):
+                                          or not isinstance(val, int)):
             doc.addError(_("""<b>admin_member_chunksize</b> attribute not
             changed!  It must be an integer > 0."""))
         elif property == 'host_name':
@@ -595,4 +595,4 @@ mlist.info.
         if varname != 'subject_prefix':
             return None
         # The subject_prefix may be Unicode
-        return Utils.uncanonstr(mlist.subject_prefix, mlist.preferred_language)
+        return Utils.uncanonstr(mlist.subject_prefix, mlist.preferred_language).decode() # Does this break encodings?

@@ -115,10 +115,11 @@ def usage(code, msg=''):
 def safe(s):
     if not s:
         return ''
-    if isinstance(s, UnicodeType):
-        return s.encode(ENC, 'replace')
-    return str(s, ENC, 'replace').encode(ENC, 'replace')
-
+    if isinstance(s, str):
+        return s
+    elif isinstance(s, bytes):
+        return s.decode(ENC, 'replace')
+    return str(s)
 
 def isinvalid(addr):
     try:
@@ -128,7 +129,7 @@ def isinvalid(addr):
         return True
 
 def isunicode(addr):
-    return isinstance(addr, UnicodeType)
+    return isinstance(addr, str)
 
 
 

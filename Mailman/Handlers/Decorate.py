@@ -18,6 +18,7 @@
 """Decorate a message by sticking the header and footer around it."""
 
 from builtins import str
+import codecs
 import re
 
 from email.mime.text import MIMEText
@@ -102,7 +103,11 @@ def process(mlist, msg, msgdata):
         else:
             ufooter = str(footer, lcset, 'ignore')
         try:
-            oldpayload = str(msg.get_payload(decode=True), mcset)
+            oldpayload = msg.get_payload(decode=True)
+            if isinstance(oldpayload, bytes):
+                oldpayload = oldpayload.decode(encoding=mcset)
+            if Utils.needs_unicode_escape_decode(oldpayload):
+                oldpayload = codecs.decode(oldpayload, 'unicode_escape')
             frontsep = endsep = u''
             if header and not header.endswith('\n'):
                 frontsep = u'\n'

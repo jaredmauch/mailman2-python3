@@ -24,7 +24,7 @@ from builtins import object
 import re
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import signal
 import urllib.request, urllib.parse, urllib.error
 
@@ -62,7 +62,7 @@ def main():
         title = _('CGI script error')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.addError(_('Invalid request method: {method}'))
+        doc.addError(_(f'Invalid request method: {method}'))
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
         print('Status: 405 Method Not Allowed')
@@ -92,7 +92,7 @@ def main():
         title = _('CGI script error')
         doc.SetTitle(title)
         doc.AddItem(Header(2, title))
-        doc.addError(_('No such list <em>{safelistname}</em>'))
+        doc.addError(_(f'No such list <em>{safelistname}</em>'))
         doc.AddItem('<hr>')
         doc.AddItem(MailmanLogo())
         # Send this with a 404 status.
@@ -102,7 +102,7 @@ def main():
         return
 
     # The total contents of the user's response
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
 
     # CSRF check
     safe_params = ['displang-button', 'language', 'email', 'password', 'login',
@@ -165,10 +165,10 @@ def main():
     # using public rosters, otherwise, we'll leak membership information.
     if not mlist.isMember(user):
         if mlist.private_roster == 0:
-            doc.addError(_('No such member: {safeuser}.'))
+            doc.addError(_(f'No such member: {safeuser}.'))
             loginpage(mlist, doc, None, language)
             print(doc.Format())
-        return
+            return
 
     # Avoid cross-site scripting attacks
     if set(params) - set(safe_params):
@@ -233,7 +233,7 @@ def main():
             # Not a member
             if mlist.private_roster == 0:
                 # Public rosters
-                doc.addError(_('No such member: {safeuser}.'))
+                doc.addError(_(f'No such member: {safeuser}.'))
             else:
                 syslog('mischief',
                        'Unsub attempt of non-member w/ private rosters: %s',
@@ -257,7 +257,7 @@ def main():
             # Not a member
             if mlist.private_roster == 0:
                 # Public rosters
-                doc.addError(_('No such member: {safeuser}.'))
+                doc.addError(_(f'No such member: {safeuser}.'))
             else:
                 syslog('mischief',
                        'Reminder attempt of non-member w/ private rosters: %s',
@@ -339,7 +339,7 @@ def main():
     elif os.environ.get('QUERY_STRING'):
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
-        qs = cgi.parse_qs(os.environ['QUERY_STRING']).get('VARHELP')
+        qs = urllib.parse.parse_qs(os.environ['QUERY_STRING']).get('VARHELP')
         if qs and type(qs) == list:
             varhelp = qs[0]
     if varhelp:
@@ -463,7 +463,7 @@ address.  Upon confirmation, any other mailing list containing the address
                 else:
                     options_page(
                         mlist, doc, user, cpuser, userlang,
-                        _('The new address is already a member: {newaddr}'))
+                        _(f'The new address is already a member: {newaddr}'))
                     print(doc.Format())
                     return
             set_address = 1
@@ -483,7 +483,7 @@ address.  Upon confirmation, any other mailing list containing the address
             if cpuser is None:
                 cpuser = user
             # Register the pending change after the list is locked
-            msg += _('A confirmation message has been sent to {newaddr}. ')
+            msg += _(f'A confirmation message has been sent to {newaddr}. ')
             mlist.Lock()
             try:
                 try:
@@ -496,7 +496,7 @@ address.  Upon confirmation, any other mailing list containing the address
             except Errors.MMHostileAddress:
                 msg = _('Illegal email address provided')
             except Errors.MMAlreadyAMember:
-                msg = _('{newaddr} is already a member of the list.')
+                msg = _(f'{newaddr} is already a member of the list.')
             except Errors.MembershipIsBanned:
                 owneraddr = mlist.GetOwnerEmail()
                 msg = _(f"""{newaddr} is banned from this list.  If you
@@ -896,7 +896,7 @@ def options_page(mlist, doc, user, cpuser, userlang, message=''):
         units = _('days')
     else:
         units = _('day')
-    replacements['<mm-pending-days>'] = _('%(days)d {units}')
+    replacements['<mm-pending-days>'] = _(f'%(days)d {units}')
 
     replacements['<mm-new-address-box>'] = mlist.FormatBox('new-address')
     replacements['<mm-confirm-address-box>'] = mlist.FormatBox(
@@ -952,11 +952,11 @@ def loginpage(mlist, doc, user, lang):
     realname = mlist.real_name
     actionurl = mlist.GetScriptURL('options')
     if user is None:
-        title = _('{realname} list: member options login page')
+        title = _(f'{realname} list: member options login page')
         extra = _('email address and ')
     else:
         safeuser = Utils.websafe(user)
-        title = _('{realname} list: member options for user {safeuser}')
+        title = _(f'{realname} list: member options for user {safeuser}')
         obuser = Utils.ObscureEmail(user)
         extra = ''
     # Set up the title
@@ -1136,7 +1136,7 @@ def topic_details(mlist, doc, user, cpuser, userlang, varhelp):
 
     if not name:
         options_page(mlist, doc, user, cpuser, userlang,
-                     _('Requested topic is not valid: {topicname}'))
+                     _(f'Requested topic is not valid: {topicname}'))
         print(doc.Format())
         return
 

@@ -56,11 +56,11 @@ class HTMLFormatter(object):
                    innertext,
                     '<br>',
                     Link(self.GetScriptURL('admin'),
-                         _(f'{realname} administrative interface')),
+                        _(f'{realname} administrative interface')),
                     _(' (requires authorization)'),
                     '<br>',
                     Link(Utils.ScriptURL('listinfo'),
-                         _(f'Overview of all {hostname} mailing lists')),
+                        _(f'Overview of all {hostname} mailing lists')),
                     '<p>', MailmanLogo()))).Format()
 
     def FormatUsers(self, digest, lang=None, list_hidden=False):
@@ -145,32 +145,32 @@ class HTMLFormatter(object):
         elif status == MemberAdaptor.BYBOUNCE:
             date = time.strftime('%d-%b-%Y',
                                  time.localtime(Utils.midnight(info.date)))
-            reason = _(f'''; it was disabled due to excessive bounces.  The
-            last bounce was received on {date}''')
+            reason = _('''; it was disabled due to excessive bounces.  The
+            last bounce was received on %(date)s''')
         elif status == MemberAdaptor.UNKNOWN:
             reason = _('; it was disabled for unknown reasons')
         if reason:
             note = FontSize('+1', _(
-                f'Note: your list delivery is currently disabled{reason}.'
+                'Note: your list delivery is currently disabled%(reason)s.'
                 )).Format()
             link = Link('#disable', _('Mail delivery')).Format()
             mailto = Link('mailto:' + self.GetOwnerEmail(),
                           _('the list administrator')).Format()
-            return _(f'''<p>{note}
+            return _('''<p>%(note)s
 
             <p>You may have disabled list delivery intentionally,
             or it may have been triggered by bounces from your email
             address.  In either case, to re-enable delivery, change the
-            {link} option below.  Contact {mailto} if you have any
+            %(link)s option below.  Contact %(mailto)s if you have any
             questions or need assistance.''')
         elif info and info.score > 0:
             # Provide information about their current bounce score.  We know
             # their membership is currently enabled.
             score = info.score
             total = self.bounce_score_threshold
-            return _(f'''<p>We have received some recent bounces from your
-            address.  Your current <em>bounce score</em> is {score} out of a
-            maximum of {total}.  Please double check that your subscribed
+            return _('''<p>We have received some recent bounces from your
+            address.  Your current <em>bounce score</em> is %(score)s out of a
+            maximum of %(total)s.  Please double check that your subscribed
             address is correct and that there are no problems with delivery to
             this address.  Your bounce score will be automatically reset if
             the problems are corrected soon.''')
@@ -180,9 +180,9 @@ class HTMLFormatter(object):
     def FormatUmbrellaNotice(self, user, type):
         addr = self.GetMemberAdminEmail(user)
         if self.umbrella_list:
-            return _(f"(Note - you are subscribing to a list of mailing lists, "
-                     "so the {type} notice will be sent to the admin address"
-                     " for your membership, {addr}.)<p>")
+            return _("(Note - you are subscribing to a list of mailing lists, "
+                     "so the %(type)s notice will be sent to the admin address"
+                     " for your membership, %(addr)s.)<p>")
         else:
             return ""
 
@@ -190,15 +190,15 @@ class HTMLFormatter(object):
         msg = ''
         also = ''
         if self.subscribe_policy == 1:
-            msg += _(f'''You will be sent email requesting confirmation, to
+            msg += _('''You will be sent email requesting confirmation, to
             prevent others from gratuitously subscribing you.''')
         elif self.subscribe_policy == 2:
-            msg += _(f"""This is a closed list, which means your subscription
+            msg += _("""This is a closed list, which means your subscription
             will be held for approval.  You will be notified of the list
             moderator's decision by email.""")
             also = _('also ')
         elif self.subscribe_policy == 3:
-            msg += _(f"""You will be sent email requesting confirmation, to
+            msg += _("""You will be sent email requesting confirmation, to
             prevent others from gratuitously subscribing you.  Once
             confirmation is received, your request will be held for approval
             by the list moderator.  You will be notified of the moderator's
@@ -216,7 +216,7 @@ class HTMLFormatter(object):
             msg += _(f'''This is {also}a public list, which means that the
             list of members list is available to everyone.''')
             if self.obscure_addresses:
-                msg += _(f''' (but we obscure the addresses so they are not
+                msg += _(''' (but we obscure the addresses so they are not
                 easily recognizable by spammers).''')
 
         if self.umbrella_list:
@@ -255,28 +255,20 @@ class HTMLFormatter(object):
             either = ''
         realname = self.real_name
 
-        text = _(f'''To unsubscribe from {realname}, get a password reminder,
+        text = (_(f'''To unsubscribe from {realname}, get a password reminder,
         or change your subscription options {either}enter your subscription
         email address:
-        <p><center><input name="email" type="TEXT" value="" size="30">''')
-#        text += TextBox('email', size=30).Format()
-        text += ('  ')
-        text += SubmitButton('UserOptions', _(f'Unsubscribe or edit options')).Format()
-        text += Hidden('language', lang).Format()
-        text += ('</center><p>')
-#`        text = (_(f'''To unsubscribe from {realname}, get a password reminder,
-#`        or change your subscription options {either}enter your subscription
-#`        email address:
-#`        <p><center>''')
-#`                + TextBox('email', size=30).Format()
-#`                + f'  '
-#`                + SubmitButton('UserOptions', _(f'Unsubscribe or edit options')).Format()
-#`                + Hidden('language', lang).Format()
-#`                + f'</center>')
+        <p><center> ''')
+                + TextBox('email', size=30).Format()
+                + '  '
+                + SubmitButton('UserOptions',
+                               _('Unsubscribe or edit options')).Format()
+                + Hidden('language', lang).Format()
+                + '</center>')
         if self.private_roster == 0:
-            text += _(f'''<p>... <b><i>or</i></b> select your entry from
+            text += _('''<p>... <b><i>or</i></b> select your entry from
                       the subscribers list (see above).''')
-        text += _(f''' If you leave the field blank, you will be prompted for
+        text += _(''' If you leave the field blank, you will be prompted for
         your email address''')
         return text
 
@@ -321,7 +313,7 @@ class HTMLFormatter(object):
                               + whom
                               + " ")
             container.AddItem(self.FormatBox('roster-email'))
-            container.AddItem(_(" Password: ")
+            container.AddItem(_("Password: ")
                               + self.FormatSecureBox('roster-pw')
                               + "&nbsp;&nbsp;")
             container.AddItem(SubmitButton('SubscriberRoster',
@@ -337,7 +329,7 @@ class HTMLFormatter(object):
         else:
             full_url = base_url
         if mlist:
-            return (f"""<form method="POST" action="%s">
+            return ("""<form method="POST" action="%s">
 <input type="hidden" name="csrf_token" value="%s">""" 
                 % (full_url, csrf_token(mlist, contexts, user)))
         return ('<FORM Method=POST ACTION="%s">' % full_url)
@@ -349,10 +341,9 @@ class HTMLFormatter(object):
         return '</FORM>'
 
     def FormatBox(self, name, size=20, value=''):
-        if isinstance(value, str):
-            safevalue = Utils.websafe(value)
-        else:
-            safevalue = value
+        if isinstance(value, bytes):
+            value = value.decode('utf-8')
+        safevalue = Utils.websafe(value)
         return '<INPUT type="Text" name="%s" size="%d" value="%s">' % (
             name, size, safevalue)
 

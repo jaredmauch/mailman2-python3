@@ -23,7 +23,7 @@ from __future__ import print_function
 
 from builtins import str
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import time
 
 from Mailman import mm_cfg
@@ -59,7 +59,7 @@ def main():
         return
 
     # See if the user want to see this page in other language
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         language = cgidata.getfirst('language')
     except TypeError:
@@ -232,19 +232,13 @@ def list_listinfo(mlist, lang):
         else:
             # just to have something to include in the hash below
             captcha_idx = ''
+        secret = mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + now + ":" + captcha_idx + ":" + mlist.internal_name() + ":" + remote
+        hash_secret = Utils.sha_new(secret.encode('utf-8')).hexdigest()
         # fill form
         replacements['<mm-subscribe-form-start>'] += (
                 '<input type="hidden" name="sub_form_token"'
                 ' value="%s:%s:%s">\n'
-                % (now, captcha_idx,
-                          Utils.sha_new(mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
-                          now + ":" +
-                          captcha_idx + ":" +
-                          mlist.internal_name() + ":" +
-                          remote
-                          ).encode('utf-8').hexdigest()
-                    )
-                )
+                % (now, captcha_idx, hash_secret ))
     # Roster form substitutions
     replacements['<mm-roster-form-start>'] = mlist.FormatFormStart('roster')
     replacements['<mm-roster-option>'] = mlist.FormatRosterOptionForUser(lang)

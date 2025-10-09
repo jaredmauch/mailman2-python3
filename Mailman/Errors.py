@@ -52,21 +52,21 @@ class MMCookieError(MMAuthenticationError): pass
 class MMExpiredCookieError(MMCookieError): pass
 class MMInvalidCookieError(MMCookieError): pass
 
-class MMMustDigestError(object): pass
-class MMCantDigestError(object): pass
-class MMNeedApproval(object):
+class MMMustDigestError(Exception): pass
+class MMCantDigestError(Exception): pass
+class MMNeedApproval(Exception):
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMSubscribeNeedsConfirmation(object): pass
-class MMBadConfirmation(object):
+class MMSubscribeNeedsConfirmation(Exception): pass
+class MMBadConfirmation(Exception):
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMAlreadyDigested(object): pass
-class MMAlreadyUndigested(object): pass
+class MMAlreadyDigested(Exception): pass
+class MMAlreadyUndigested(Exception): pass
 
 MODERATED_LIST_MSG    = "Moderated list"
 IMPLICIT_DEST_MSG     = "Implicit destination"

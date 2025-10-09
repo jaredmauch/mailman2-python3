@@ -26,7 +26,7 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import urllib.request, urllib.parse, urllib.error
 
 from Mailman import mm_cfg
@@ -57,11 +57,11 @@ def main():
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
-        error_page(_('No such list <em>{safelistname}</em>'))
+        error_page(_(f'No such list <em>{safelistname}</em>'))
         syslog('error', 'roster: No such list "%s": %s', listname, e)
         return
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
 
     # messages in form should go in selected language (if any...)
     try:
@@ -116,7 +116,7 @@ def main():
         doc.set_language(lang)
         # Send this with a 401 status.
         print('Status: 401 Unauthorized')
-        error_page_doc(doc, _('{realname} roster authentication failed.'))
+        error_page_doc(doc, _(f'{realname} roster authentication failed.'))
         doc.AddItem(mlist.GetMailmanFooter())
         print(doc.Format())
         remote = os.environ.get('HTTP_FORWARDED_FOR',

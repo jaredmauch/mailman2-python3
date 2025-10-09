@@ -61,9 +61,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__)
+    print(_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -144,7 +144,7 @@ def pending_requests(mlist):
             first = 0
         when, addr, fullname, passwd, digest, lang = mlist.GetRecord(id)
         if fullname:
-            if isinstance(fullname, UnicodeType):
+            if isinstance(fullname, str):
                 fullname = fullname.encode(lcset, 'replace')
             fullname = ' (%s)' % fullname
         pending.append('    %s%s %s' % (addr, fullname, time.ctime(when)))
@@ -174,23 +174,21 @@ Cause: %(reason)s"""))
     upending = []
     charset = Utils.GetCharSet(mlist.preferred_language)
     for s in pending:
-        if isinstance(s, UnicodeType):
+        if isinstance(s, str):
             upending.append(s)
         else:
-            upending.append(unicode(s, charset, 'replace'))
-    # Make sure that the text we return from here can be encoded to a byte
+            upending.append(str(s, charset, 'replace'))
+    # Make sure that the text we return from here can be encoded to a unicode
     # string in the charset of the list's language.  This could fail if for
     # example, the request was pended while the list's language was French,
     # but then it was changed to English before checkdbs ran.
     text = u'\n'.join(upending)
+    if isinstance(text, str):
+        return text
     charset = Charset(Utils.GetCharSet(mlist.preferred_language))
     incodec = charset.input_codec or 'ascii'
-    outcodec = charset.output_codec or 'ascii'
-    if isinstance(text, UnicodeType):
-        return text.encode(outcodec, 'replace')
-    # Be sure this is a byte string encodeable in the list's charset
-    utext = unicode(text, incodec, 'replace')
-    return utext.encode(outcodec, 'replace')
+    # Be sure this is a unicode string
+    return str(text, incodec, 'replace')
 
 def auto_discard(mlist):
     # Discard old held messages

@@ -63,9 +63,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__)
+    print(_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -88,21 +88,19 @@ def main():
         return
     now = time.time()
     old = now - float(mm_cfg.BAD_SHUNT_STALE_AFTER)
-    os.stat_float_times(True)
     adir = mm_cfg.BAD_SHUNT_ARCHIVE_DIRECTORY
     if (adir and os.access(adir, os.W_OK | os.X_OK)
              and stat.S_ISDIR(os.stat(adir).st_mode)):
         pass
     else:
         if adir:
-            print >>sys.stderr, '%s: archive directory %s not usable.' % (
-                    PROGRAM, adir)
+            print('%s: archive directory %s not usable.', PROGRAM, adir, file=sys.stderr)
         adir = None
     for qdir in (mm_cfg.BADQUEUE_DIR, mm_cfg.SHUNTQUEUE_DIR):
         try:
             names = os.listdir(qdir)
-        except OSError, e:
-            if e.errno <> errno.ENOENT:
+        except OSError as e:
+            if e.errno != errno.ENOENT:
                 # OK if qdir doesn't exist, else
                 raise
             continue

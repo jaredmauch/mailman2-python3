@@ -27,7 +27,6 @@ the mailing lists, and whatever else doesn't belong elsewhere.
 import os
 import sys
 import re
-import cgi
 import time
 import errno
 import base64
@@ -40,7 +39,12 @@ import email.header
 import email.iterators
 from email.errors import HeaderParseError
 from string import whitespace, digits
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
+import tempfile
+import io
+from email.parser import BytesParser
+from email.policy import HTTP
+
 try:
     # Python 2.2
     from string import ascii_letters
@@ -48,6 +52,218 @@ except ImportError:
     # Older Pythons
     _lower = 'abcdefghijklmnopqrstuvwxyz'
     ascii_letters = _lower + _lower.upper()
+
+
+class FieldStorage:
+    """
+    A modern replacement for cgi.FieldStorage using urllib.parse and email libraries.
+    
+    This class provides the same interface as cgi.FieldStorage but uses
+    modern Python libraries instead of the deprecated cgi module.
+    """
+    
+    def __init__(self, fp=None, headers=None, environ=None, 
+                 keep_blank_values=False, strict_parsing=False,
+                 encoding='utf-8', errors='replace'):
+        self.keep_blank_values = keep_blank_values
+        self.strict_parsing = strict_parsing
+        self.encoding = encoding
+        self.errors = errors
+        self._data = {}
+        self._files = {}
+        
+        if environ is None:
+            environ = os.environ
+            
+        self.environ = environ
+        
+        # Get the request method
+        self.method = environ.get('REQUEST_METHOD', 'GET').upper()
+        
+        if self.method == 'GET':
+            self._parse_query_string()
+        elif self.method == 'POST':
+            self._parse_post_data()
+        else:
+            # For other methods, try to parse query string
+            self._parse_query_string()
+    
+    def _parse_query_string(self):
+        """Parse query string from GET requests or other methods."""
+        query_string = self.environ.get('QUERY_STRING', '')
+        if query_string:
+            parsed = parse_qs(query_string, 
+                            keep_blank_values=self.keep_blank_values,
+                            strict_parsing=self.strict_parsing,
+                            encoding=self.encoding,
+                            errors=self.errors)
+            self._data.update(parsed)
+    
+    def _parse_post_data(self):
+        """Parse POST data."""
+        content_type = self.environ.get('CONTENT_TYPE', '')
+        
+        if content_type.startswith('application/x-www-form-urlencoded'):
+            self._parse_urlencoded_post()
+        elif content_type.startswith('multipart/form-data'):
+            self._parse_multipart_post()
+        else:
+            # Fallback to query string parsing
+            self._parse_query_string()
+    
+    def _parse_urlencoded_post(self):
+        """Parse application/x-www-form-urlencoded POST data."""
+        content_length = int(self.environ.get('CONTENT_LENGTH', 0))
+        if content_length > 0:
+            post_data = sys.stdin.buffer.read(content_length)
+            try:
+                decoded = post_data.decode(self.encoding, self.errors)
+                parsed = parse_qs(decoded,
+                                keep_blank_values=self.keep_blank_values,
+                                strict_parsing=self.strict_parsing,
+                                encoding=self.encoding,
+                                errors=self.errors)
+                self._data.update(parsed)
+            except (UnicodeDecodeError, ValueError):
+                # If decoding fails, try with different encoding
+                try:
+                    decoded = post_data.decode('latin-1')
+                    parsed = parse_qs(decoded,
+                                    keep_blank_values=self.keep_blank_values,
+                                    strict_parsing=self.strict_parsing,
+                                    encoding=self.encoding,
+                                    errors=self.errors)
+                    self._data.update(parsed)
+                except (UnicodeDecodeError, ValueError):
+                    pass
+    
+    def _parse_multipart_post(self):
+        """Parse multipart/form-data POST data."""
+        content_length = int(self.environ.get('CONTENT_LENGTH', 0))
+        if content_length > 0:
+            post_data = sys.stdin.buffer.read(content_length)
+            
+            # Parse the multipart message
+            parser = BytesParser(policy=HTTP)
+            msg = parser.parsebytes(post_data)
+            
+            for part in msg.walk():
+                if part.get_content_maintype() == 'multipart':
+                    continue
+                    
+                # Get the field name from Content-Disposition
+                content_disp = part.get('Content-Disposition', '')
+                if not content_disp:
+                    continue
+                    
+                # Parse Content-Disposition header
+                disp_parts = content_disp.split(';')
+                field_name = None
+                filename = None
+                
+                for part_item in disp_parts:
+                    part_item = part_item.strip()
+                    if part_item.startswith('name='):
+                        field_name = part_item[5:].strip('"')
+                    elif part_item.startswith('filename='):
+                        filename = part_item[9:].strip('"')
+                
+                if not field_name:
+                    continue
+                
+                # Get the field value
+                field_value = part.get_payload(decode=True)
+                if field_value is None:
+                    field_value = b''
+                
+                if filename:
+                    # This is a file upload
+                    self._files[field_name] = {
+                        'filename': filename,
+                        'data': field_value,
+                        'content_type': part.get_content_type()
+                    }
+                else:
+                    # This is a regular field
+                    try:
+                        decoded_value = field_value.decode(self.encoding, self.errors)
+                    except UnicodeDecodeError:
+                        decoded_value = field_value.decode('latin-1')
+                    
+                    if field_name in self._data:
+                        if isinstance(self._data[field_name], list):
+                            self._data[field_name].append(decoded_value)
+                        else:
+                            self._data[field_name] = [self._data[field_name], decoded_value]
+                    else:
+                        self._data[field_name] = [decoded_value]
+    
+    def getfirst(self, key, default=None):
+        """Get the first value for the given key."""
+        if key in self._data:
+            values = self._data[key]
+            if isinstance(values, list):
+                return values[0] if values else default
+            else:
+                return values
+        return default
+    
+    def getvalue(self, key, default=None):
+        """Get the value for the given key."""
+        if key in self._data:
+            values = self._data[key]
+            if isinstance(values, list):
+                return values[0] if values else default
+            else:
+                return values
+        return default
+    
+    def getlist(self, key):
+        """Get all values for the given key as a list."""
+        if key in self._data:
+            values = self._data[key]
+            if isinstance(values, list):
+                return values
+            else:
+                return [values]
+        return []
+    
+    def keys(self):
+        """Get all field names."""
+        return list(self._data.keys())
+    
+    def has_key(self, key):
+        """Check if the key exists."""
+        return key in self._data
+    
+    def __contains__(self, key):
+        """Check if the key exists."""
+        return key in self._data
+    
+    def __getitem__(self, key):
+        """Get the value for the given key."""
+        return self.getvalue(key)
+    
+    def __iter__(self):
+        """Iterate over field names."""
+        return iter(self._data.keys())
+    
+    def file(self, key):
+        """Get file data for the given key."""
+        if key in self._files:
+            file_info = self._files[key]
+            # Create a file-like object
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.write(file_info['data'])
+            temp_file.flush()
+            return temp_file
+        return None
+    
+    def filename(self, key):
+        """Get the filename for the given key."""
+        if key in self._files:
+            return self._files[key]['filename']
+        return None
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -123,6 +339,12 @@ def list_names():
     """Return the names of all lists in default list directory."""
     # We don't currently support separate listings of virtual domains
     return Site.get_listnames()
+
+
+def needs_unicode_escape_decode(s):
+    # Check for Unicode escape patterns (\uXXXX or \UXXXXXXXX)
+    unicode_escape_pattern = re.compile(r'\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}')
+    return bool(unicode_escape_pattern.search(s))
 
 
 
@@ -249,20 +471,20 @@ def ValidateEmail(s):
             s = s[-1]
     # Pretty minimal, cheesy check.  We could do better...
     if not s or s.count(' ') > 0:
-        raise Exception(Errors.MMBadEmailError)
+        raise Errors.MMBadEmailError
     if _badchars.search(s):
-        raise Exception(Errors.MMHostileAddress, s)
+        raise Errors.MMHostileAddress(s)
     user, domain_parts = ParseEmail(s)
     # This means local, unqualified addresses, are not allowed
     if not domain_parts:
-        raise Exception(Errors.MMBadEmailError, s)
+        raise Errors.MMBadEmailError(s)
     if len(domain_parts) < 2:
-        raise Exception(Errors.MMBadEmailError, s)
+        raise Errors.MMBadEmailError(s)
     # domain parts may only contain ascii letters, digits and hyphen
     # and must not begin with hyphen.
     for p in domain_parts:
         if len(p) == 0 or p[0] == '-' or len(_valid_domain.sub('', p)) > 0:
-            raise Exception(Errors.MMHostileAddress, s)
+            raise Errors.MMHostileAddress(s)
 
 
 
@@ -451,7 +673,10 @@ def set_global_password(pw, siteadmin=True):
     omask = os.umask(0o026)
     try:
         fp = open(filename, 'w')
-        fp.write(sha_new(pw).hexdigest() + '\n')
+        if isinstance(pw, bytes):
+            fp.write(sha_new(pw).hexdigest() + '\n')
+        else:
+            fp.write(sha_new(pw.encode()).hexdigest() + '\n')
         fp.close()
     finally:
         os.umask(omask)
@@ -477,7 +702,10 @@ def check_global_password(response, siteadmin=True):
     challenge = get_global_password(siteadmin)
     if challenge is None:
         return None
-    return challenge == sha_new(response).hexdigest()
+    if isinstance(response, bytes):
+        return challenge == sha_new(response).hexdigest()
+    else:
+        return challenge == sha_new(response.encode()).hexdigest()
 
 
 
@@ -632,9 +860,32 @@ def findtext(templatefile, dict=None, raw=False, lang=None, mlist=None):
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             # We never found the template.  BAD!
-            raise Exception(IOError(errno.ENOENT, 'No template file found', templatefile))
-    template = fp.read()
-    fp.close()
+            raise IOError(errno.ENOENT, 'No template file found', templatefile)
+    try:
+        template = fp.read()
+    except UnicodeDecodeError as e:
+        # failed to read the template as utf-8, so lets determine the current encoding
+        # then save the file back to disk as utf-8.
+        filename = fp.name
+        fp.close()
+
+        current_encoding = get_current_encoding(filename)
+
+        with open(filename, 'rb') as f:
+            raw = f.read()
+
+        decoded_template = raw.decode(current_encoding)
+
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(decoded_template)
+
+        template = decoded_template
+    except Exception as e:
+        # catch any other non-unicode exceptions...
+        syslog('error', 'Failed to read template %s: %s', fp.name, e)
+    finally:
+        fp.close()
+
     text = template
     if dict is not None:
         try:
@@ -841,6 +1092,8 @@ def midnight(date=None):
 
 def to_dollar(s):
     """Convert from %-strings to $-strings."""
+    if isinstance(s, bytes):
+        s = s.decode()
     s = s.replace('$', '$$').replace('%%', '%')
     parts = cre.split(s)
     for i in range(1, len(parts), 2):
@@ -876,6 +1129,8 @@ def dollar_identifiers(s):
 def percent_identifiers(s):
     """Return the set (dictionary) of identifiers found in a %-string."""
     d = {}
+    if isinstance(s, bytes):
+        s = s.decode()
     for name in cre.findall(s):
         d[name] = True
     return d
@@ -968,9 +1223,8 @@ def oneline(s, cset):
     # Decode header string in one line and convert into specified charset
     try:
         h = email.header.make_header(email.header.decode_header(s))
-        ustr = h.__unicode__()
-        line = UEMPTYSTRING.join(ustr.splitlines())
-        return line.encode(cset, 'replace')
+        ustr = h.__str__()
+        return UEMPTYSTRING.join(ustr.splitlines())
     except (LookupError, UnicodeError, ValueError, HeaderParseError):
         # possibly charset problem. return with undecoded string in one line.
         return EMPTYSTRING.join(s.splitlines())
@@ -1231,6 +1485,10 @@ def get_suffixes(url):
                url, e)
         return
     for line in d.readlines():
+        if not line:
+            continue
+        if isinstance(line, bytes):
+            line = line.decode()
         if not line.strip() or line.startswith(' ') or line.startswith('//'):
             continue
         line = re.sub(' .*', '', line.strip())
@@ -1341,6 +1599,10 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
         cnames = {}
         want_names = set([dmarc_domain + '.'])
         for txt_rec in txt_recs.response.answer:
+            if not isinstance(txt_rec.items, list):
+                continue
+            if not txt_rec.items[0]:
+                continue
             # Don't be fooled by an answer with uppercase in the name.
             name = txt_rec.name.to_text().lower()
             if txt_rec.rdtype == dns.rdatatype.CNAME:
@@ -1349,7 +1611,7 @@ def _DMARCProhibited(mlist, email, dmarc_domain, org=False):
             if txt_rec.rdtype != dns.rdatatype.TXT:
                 continue
             results_by_name.setdefault(name, []).append(
-                "".join(txt_rec.items[0].strings))
+                "".join( [ record.decode() if isinstance(record, bytes) else record for record in txt_rec.items[0].strings ] ))
         expands = list(want_names)
         seen = set(expands)
         while expands:
@@ -1517,7 +1779,7 @@ def xml_to_unicode(s, cset):
     similar to canonstr above except for replacing invalid refs with the
     unicode replace character and recognizing \\u escapes.
     """
-    if isinstance(s, str):
+    if isinstance(s, bytes):
         us = s.decode(cset, 'replace')
         us = re.sub(u'&(#[0-9]+);', _invert_xml, us)
         us = re.sub(u'(?i)\\\\(u[a-f0-9]{4})', _invert_xml, us)
@@ -1606,3 +1868,72 @@ def captcha_verify(idx, given_answer, captchas):
     # We append a `$` to emulate `re.fullmatch`.
     correct_answer_pattern = captchas[idx][1] + "$"
     return re.match(correct_answer_pattern, given_answer)
+
+def get_current_encoding(filename):
+    encodings = [ 'utf-8', 'iso-8859-1', 'iso-8859-2', 'iso-8859-15', 'iso-8859-7', 'iso-8859-13', 'euc-jp', 'euc-kr', 'iso-8859-9', 'us-ascii' ]
+    for encoding in encodings:
+        try:
+            with open(filename, 'r', encoding=encoding) as f:
+                f.read()
+            return encoding
+        except UnicodeDecodeError as e:
+            continue
+    # if everything fails, send utf-8 and hope for the best...
+    return 'utf-8'
+
+def set_cte_if_missing(msg):
+    if not hasattr(msg, 'policy'):
+        msg.policy = email._policybase.compat32
+    if 'content-transfer-encoding' not in msg:
+        msg['Content-Transfer-Encoding'] = '7bit'
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            if not hasattr(part, 'policy'):
+                part.policy = email._policybase.compat32
+            set_cte_if_missing(part)
+
+# Attempt to load a pickle file as utf-8 first, falling back to others. If they all fail, there was probably no hope. Note that get_current_encoding above is useless in testing pickles.
+def load_pickle(path):
+    import pickle
+
+    encodings = [ 'utf-8', 'iso-8859-1', 'iso-8859-2', 'iso-8859-15', 'iso-8859-7', 'iso-8859-13', 'euc-jp', 'euc-kr', 'iso-8859-9', 'us-ascii', 'latin1' ]
+
+    if isinstance(path, str):
+        for encoding in encodings:
+            try:
+                try:
+                    fp = open(path, 'rb')
+                except IOError as e:
+                    if e.errno != errno.ENOENT: raise
+
+                msg = pickle.load(fp, fix_imports=True, encoding=encoding)
+                fp.close()
+                return msg
+            except UnicodeDecodeError as e:
+                continue
+            except Exception as e:
+                return None
+    elif isinstance(path, bytes):
+        for encoding in encodings:
+            try:
+                msg = pickle.loads(path, fix_imports=True, encoding=encoding)
+                return msg
+            except UnicodeDecodeError:
+                continue
+            except Exception as e:
+                return None
+    # Check if it's a file-like object, such as using BufferedReader
+    elif hasattr(path, 'read') and callable(getattr(path, 'read')):
+        for encoding in encodings:
+            try:
+                msg = pickle.load(path, fix_imports=True, encoding=encoding)
+                return msg
+            except UnicodeDecodeError:
+                continue
+            except EOFError as e:
+                return None
+            except Exception as e:
+                return None
+
+    else:
+        return None

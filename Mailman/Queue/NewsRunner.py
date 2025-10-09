@@ -20,10 +20,15 @@
 from builtins import str
 import re
 import socket
-import nntplib
+try:
+    import nntplib
+    NNTPLIB_AVAILABLE = True
+except ImportError:
+    NNTPLIB_AVAILABLE = False
 from io import StringIO
 
 import email
+import email.iterators
 from email.utils import getaddresses
 
 COMMASPACE = ', '
@@ -56,6 +61,14 @@ class NewsRunner(Runner):
         mlist.Load()
         if not msgdata.get('prepped'):
             prepare_message(mlist, msg, msgdata)
+        
+        # Check if nntplib is available
+        if not NNTPLIB_AVAILABLE:
+            syslog('error',
+                   '(NewsRunner) nntplib not available, cannot post to newsgroup for list "%s"',
+                   mlist.internal_name())
+            return False  # Don't requeue, just drop the message
+        
         try:
             # Flatten the message object, sticking it in a StringIO object
             fp = StringIO(msg.as_string())
@@ -154,7 +167,7 @@ def prepare_message(mlist, msg, msgdata):
     # Lines: is useful
     if msg['Lines'] is None:
         # BAW: is there a better way?
-        count = len(list(email.Iterators.body_line_iterator(msg)))
+        count = len(list(email.iterators.body_line_iterator(msg)))
         msg['Lines'] = str(count)
     # Massage the message headers by remove some and rewriting others.  This
     # woon't completely sanitize the message, but it will eliminate the bulk

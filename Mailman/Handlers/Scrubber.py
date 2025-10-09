@@ -111,7 +111,12 @@ def calculate_attachments_dir(mlist, msg, msgdata):
             datedir = safe_strftime(fmt, datestr)
     if not datedir:
         # What next?  Unixfrom, I guess.
-        parts = msg.get_unixfrom().split()
+        unixfrom = msg.get_unixfrom()
+        if unixfrom:
+            parts = unixfrom.split()
+        else:
+            # Fallback if no unixfrom
+            parts = []
         try:
             month = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6,
                      'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12,
@@ -132,6 +137,8 @@ def calculate_attachments_dir(mlist, msg, msgdata):
     msgid = msg['message-id']
     if msgid is None:
         msgid = msg['Message-ID'] = Utils.unique_message_id(mlist)
+
+    msgid = msgid.encode()
     # We assume that the message id actually /is/ unique!
     digest = sha_new(msgid).hexdigest()
     return os.path.join('attachments', datedir, digest[:4] + digest[-4:])
@@ -206,7 +213,7 @@ An embedded and charset-unspecified text was scrubbed...
 Name: %(filename)s
 URL: %(url)s
 """), lcset)
-        elif ctype == 'text/html' and isinstance(sanitize, IntType):
+        elif ctype == 'text/html' and isinstance(sanitize, int):
             if sanitize == 0:
                 if outer:
                     raise DiscardMessage
@@ -379,16 +386,26 @@ URL: %(url)s
             if isinstance(t, str):
                 if not t.endswith('\n'):
                     t += '\n'
-                text.append(t)
+            elif isinstance(t, bytes):
+                if not t.endswith(b'\n'):
+                    t += b'\n'
+            text.append(t)
         # Now join the text and set the payload
         sep = _('-------------- next part --------------\n')
         # The i18n separator is in the list's charset. Coerce it to the
         # message charset.
         try:
-            s = str(sep, lcset, 'replace')
-            sep = s.encode(charset, 'replace')
-        except (UnicodeError, LookupError, ValueError,
-                AssertionError):
+            if isinstance(sep, bytes):
+                # Only decode if it's a bytes object
+                s = sep.decode(lcset, 'replace')
+                sep = s.encode(charset, 'replace')
+            else:
+                # If it's already a str, no need to decode
+                sep = sep.encode(charset, 'replace')
+        except (UnicodeError, LookupError, ValueError, AssertionError) as e:
+            # If something failed and we are still a string, fall back to UTF-8
+            if isinstance(sep, str):
+                sep = sep.encode('utf-8', 'replace')
             pass
         replace_payload_by_text(msg, sep.join(text), charset)
         if format:
@@ -397,7 +414,6 @@ URL: %(url)s
             msg.set_param('DelSp', delsp)
     return msg
 
-
 
 def makedirs(dir):
     # Create all the directories to store this attachment in
@@ -405,12 +421,17 @@ def makedirs(dir):
         os.makedirs(dir, 0o02775)
         # Unfortunately, FreeBSD seems to be broken in that it doesn't honor
         # the mode arg of mkdir().
-        def twiddle(arg, dirname, names):
-            os.chmod(dirname, 0o02775)
-        os.path.walk(dir, twiddle, None)
-    except OSError as e:
-        if e.errno != errno.EEXIST: raise
+        def twiddle(arg, dirpath, dirnames):
+            for dirname in dirnames:
+                # Construct the full path for each directory
+                full_path = os.path.join(dirpath, dirname)
+                os.chmod(full_path, 0o02775)
 
+        for dirpath, dirnames, filenames in os.walk(dir):
+            twiddle(None, dirpath, dirnames)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
 
 def save_attachment(mlist, msg, dir, filter_html=True):
@@ -518,9 +539,25 @@ def save_attachment(mlist, msg, dir, filter_html=True):
     # Is it a message/rfc822 attachment?
     elif ctype == 'message/rfc822':
         submsg = msg.get_payload()
+
+        # submsg is usually a list containing a single Message object.
+        # We need to extract that Message object. (taken from Utils.websafe())
+        if isinstance(submsg, list) or isinstance(submsg, tuple):
+            if len(submsg) == 0:
+                submsg = ''
+            else:
+                submsg = submsg[-1]
+
         # BAW: I'm sure we can eventually do better than this. :(
         decodedpayload = Utils.websafe(str(submsg))
-    fp = open(path, 'w')
+
+        # encode the message back into the charset of the original message.
+        mcset = submsg.get_content_charset('')
+        if mcset == None or mcset == "":
+            mcset = 'utf-8'
+        decodedpayload = decodedpayload.encode(mcset)
+
+    fp = open(path, 'wb')
     fp.write(decodedpayload)
     fp.close()
     # Now calculate the url

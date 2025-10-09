@@ -97,3 +97,8 @@ def process(mlist, msg, msgdata):
     del msg['x-confirm-reading-to']
     # Pegasus mail uses this one... sigh
     del msg['x-pmrqc']
+
+    # Remove any header whose value is not a string.
+    for h, v in list(msg.items()):
+        if not isinstance(v, str):
+            del msg[h]

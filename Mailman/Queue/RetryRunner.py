@@ -38,5 +38,8 @@ class RetryRunner(Runner):
         return False
 
     def _snooze(self, filecnt):
-        # We always want to snooze
-        time.sleep(self.SLEEPTIME)
+        # We always want to snooze. Sleep in 1 second iterations to ensure that the sigterm handler can respond promptly and set _stop.
+        for sec in range(1, self.SLEEPTIME):
+            if self._stop:
+                break
+            time.sleep(1)

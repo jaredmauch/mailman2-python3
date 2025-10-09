@@ -33,7 +33,11 @@ import os
 import time
 import getopt
 import socket
-import nntplib
+try:
+    import nntplib
+    NNTPLIB_AVAILABLE = True
+except ImportError:
+    NNTPLIB_AVAILABLE = False
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
@@ -67,7 +71,6 @@ class _ContinueLoop(Exception):
     pass
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -79,10 +82,16 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 _hostcache = {}
 
 def open_newsgroup(mlist):
+    # Check if nntplib is available
+    if not NNTPLIB_AVAILABLE:
+        syslog('fromusenet',
+               'nntplib not available, cannot open newsgroup for list "%s"',
+               mlist.internal_name())
+        raise ImportError("nntplib not available")
+    
     # Split host:port if given
     nntp_host, nntp_port = Utils.nntpsplit(mlist.nntp_host)
     # Open up a "mode reader" connection to nntp server.  This will be shared
@@ -115,32 +124,79 @@ def clearcache():
     _hostcache.clear()
 
 
-
+
+
 # This function requires the list to be locked.
 def poll_newsgroup(mlist, conn, first, last, glock):
     listname = mlist.internal_name()
-    # NEWNEWS is not portable and has synchronization issues.
+    syslog('fromusenet', 'poll_newsgroup for %d -> %d', first, last)
+    
     for num in range(first, last):
         glock.refresh()
         try:
-            headers = conn.head(repr(num))[3]
+            # Get the article headers
+            try:
+                result = conn.head(repr(num))
+                syslog('fromusenet', 'head() returned type: %s', type(result).__name__)
+                
+                # Extract headers based on the return format
+                headers = None
+                
+                if isinstance(result, tuple):
+                    if len(result) > 3:
+                        # Standard format: (response, number, id, headers)
+                        headers = result[3]
+                    elif len(result) == 2 and hasattr(result[1], 'lines'):
+                        # Format with ArticleInfo object
+                        headers = result[1].lines
+                    elif len(result) == 2 and isinstance(result[1], list):
+                        # Another possible format
+                        headers = result[1]
+                
+                # If we still don't have headers, try to find them in any element
+                if headers is None:
+                    for item in result:
+                        if isinstance(item, (list, tuple)) and item:
+                            headers = item
+                            break
+                
+                if headers is None:
+                    syslog('fromusenet', 'Could not extract headers from: %s', repr(result))
+                    raise _ContinueLoop
+                
+            except IndexError:
+                syslog('fromusenet', 'IndexError with result: %s', repr(result))
+                raise _ContinueLoop
+            except Exception as e:
+                syslog('fromusenet', 'Error getting headers for %d: %s', num, str(e))
+                raise _ContinueLoop
+            
             # I don't know how this happens, but skip an empty message.
             if not headers:
+                syslog('fromusenet', 'Empty headers for message %d', num)
                 raise _ContinueLoop
+            
             found_to = 0
             beenthere = 0
             for header in headers:
+                # Make sure the header is a string
+                if not isinstance(header, str) and hasattr(header, 'decode'):
+                    header = header.decode('utf-8', errors='replace')
+                
                 i = header.find(':')
+                if i <= 0:
+                    continue
+                
                 value = header[:i].lower()
-                if i > 0 and value == 'to':
+                if value == 'to':
                     found_to = 1
                 if value != 'x-beenthere':
                     continue
                 if header[i:] == ': %s' % mlist.GetListEmail():
                     beenthere = 1
                     break
+            
             if not beenthere:
-                body = conn.body(repr(num))[3]
                 # Usenet originated messages will not have a Unix envelope
                 # (i.e. "From " header).  This breaks Pipermail archiving, so
                 # we will synthesize one.  Be sure to use the format searched
@@ -148,12 +204,62 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                 # the -bounces address here in case any downstream clients use
                 # the envelope sender for bounces; I'm not sure about this,
                 # but it's the closest to the old semantics.
+
+                # Get the body of the article
+                try:
+                    body_result = conn.body(repr(num))
+                    
+                    # Extract body based on the return format
+                    body = None
+                    
+                    if isinstance(body_result, tuple):
+                        if len(body_result) > 3:
+                            body = body_result[3]
+                        elif len(body_result) == 2 and hasattr(body_result[1], 'lines'):
+                            body = body_result[1].lines
+                        elif len(body_result) == 2 and isinstance(body_result[1], list):
+                            body = body_result[1]
+                    
+                    # If we still don't have the body, try to find it in any element
+                    if body is None:
+                        for item in body_result:
+                            if isinstance(item, (list, tuple)) and item:
+                                body = item
+                                break
+                    
+                    if body is None:
+                        syslog('fromusenet', 'Could not extract body from: %s', repr(body_result))
+                        raise _ContinueLoop
+                        
+                except Exception as e:
+                    syslog('fromusenet', 'Error getting body for %d: %s', num, str(e))
+                    raise _ContinueLoop
+                
+                # Convert all headers and body items to strings if they're bytes
+                str_headers = []
+                for header in headers:
+                    if not isinstance(header, str) and hasattr(header, 'decode'):
+                        str_headers.append(header.decode('utf-8', errors='replace'))
+                    else:
+                        str_headers.append(str(header))
+                
+                str_body = []
+                for line in body:
+                    if not isinstance(line, str) and hasattr(line, 'decode'):
+                        str_body.append(line.decode('utf-8', errors='replace'))
+                    else:
+                        str_body.append(str(line))
+                
+                # Create the full message
                 lines = ['From %s  %s' % (mlist.GetBouncesEmail(),
-                                          time.ctime(time.time()))]
-                lines.extend(headers)
+                                        time.ctime(time.time()))]
+                lines.extend(str_headers)
                 lines.append('')
-                lines.extend(body)
+                lines.extend(str_body)
                 lines.append('')
+                lines.append('')
+                
+                # Parse the message
                 p = Parser(Message.Message)
                 try:
                     msg = p.parsestr(NL.join(lines))
@@ -162,11 +268,14 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                            'email package exception for %s:%d\n%s',
                            mlist.linked_newsgroup, num, e)
                     raise _ContinueLoop
+                
+                # Handle To: header
                 if found_to:
                     del msg['X-Originally-To']
                     msg['X-Originally-To'] = msg['To']
                     del msg['To']
                 msg['To'] = mlist.GetListEmail()
+                
                 # Post the message to the locked list
                 inq = get_switchboard(mm_cfg.INQUEUE_DIR)
                 inq.enqueue(msg,
@@ -174,12 +283,18 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                             fromusenet = 1)
                 syslog('fromusenet',
                        'posted to list %s: %7d' % (listname, num))
+                
         except nntplib.NNTPError as e:
             syslog('fromusenet',
                    'NNTP error for list %s: %7d' % (listname, num))
             syslog('fromusenet', str(e))
         except _ContinueLoop:
             continue
+        except Exception as e:
+            syslog('fromusenet', 
+                   'Unexpected error processing article %7d: %s', num, str(e))
+            continue
+    
     # Even if we don't post the message because it was seen on the
     # list already, or if we skipped it as unparseable or empty,
     # update the watermark. Note this used to be in the 'for' block
@@ -188,7 +303,8 @@ def poll_newsgroup(mlist, conn, first, last, glock):
     mlist.usenet_watermark = num
 
 
-
+
+
 def process_lists(glock):
     for listname in Utils.list_names():
         glock.refresh()
@@ -252,7 +368,8 @@ def process_lists(glock):
                (listname, mlist.usenet_watermark))
 
 
-
+
+
 def main():
     lock = LockFile.LockFile(GATENEWS_LOCK_FILE,
                              # it's okay to hijack this
@@ -269,7 +386,8 @@ def main():
         lock.unlock(unconditionally=1)
 
 
-
+
+
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])

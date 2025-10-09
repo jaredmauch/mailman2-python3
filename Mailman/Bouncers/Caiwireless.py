@@ -18,6 +18,7 @@
 
 import re
 import email
+import email.iterators
 from io import StringIO
 
 tcre = re.compile(r'the following recipients did not receive this message:',
@@ -34,7 +35,7 @@ def process(msg):
     #     1 == tag line seen
     state = 0
     # This format thinks it's a MIME, but it really isn't
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         line = line.strip()
         if state == 0 and tcre.match(line):
             state = 1

@@ -109,7 +109,7 @@ def run_main():
                 sys.stdout = tempstdout
                 # Check for a valid request method.
                 request_method = os.environ.get('REQUEST_METHOD')
-                if not request_method.lower() in ['get', 'post', 'head']:
+                if not request_method or not request_method.lower() in ['get', 'post', 'head']:
                     print('Status: 405 Method not allowed')
                     print('Content-type: text/plain')
                     print()

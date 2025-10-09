@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import errno
 import re
 
@@ -84,7 +84,7 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        doc.AddItem(Header(2, _('No such list <em>{safelistname}</em>')))
+        doc.AddItem(Header(2, _(f'No such list <em>{safelistname}</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
@@ -96,7 +96,7 @@ def main():
     doc.set_language(mlist.preferred_language)
 
     # Must be authenticated to get any farther
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('adminpw', '')
     except TypeError:
@@ -154,19 +154,19 @@ def main():
             if template == template_name:
                 template_info = _(info)
                 doc.SetTitle(_(
-                    '{realname} -- Edit html for {template_info}'))
+                    f'{realname} -- Edit html for {template_info}'))
                 break
         else:
             # Avoid cross-site scripting attacks
             safetemplatename = Utils.websafe(template_name)
             doc.SetTitle(_('Edit HTML : Error'))
-            doc.AddItem(Header(2, _("{safetemplatename}: Invalid template")))
+            doc.AddItem(Header(2, _(f"{safetemplatename}: Invalid template")))
             doc.AddItem(mlist.GetMailmanFooter())
             print(doc.Format())
             return
     else:
-        doc.SetTitle(_('{realname} -- HTML Page Editing'))
-        doc.AddItem(Header(1, _('{realname} -- HTML Page Editing')))
+        doc.SetTitle(_(f'{realname} -- HTML Page Editing'))
+        doc.AddItem(Header(1, _(f'{realname} -- HTML Page Editing')))
         doc.AddItem(Header(2, _('Select page to edit:')))
         template_list = UnorderedList()
         for (template, info) in template_data:

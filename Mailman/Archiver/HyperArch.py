@@ -41,6 +41,7 @@ import binascii
 from email.header import decode_header, make_header
 from email.errors import HeaderParseError
 from email.charset import Charset
+from functools import cmp_to_key
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -94,7 +95,7 @@ def html_quote(s, lang=None):
               ('"', '&quot;'))
     for thing, repl in repls:
         s = s.replace(thing, repl)
-    return Utils.uncanonstr(s, lang)
+    return s
 
 
 def url_quote(s):
@@ -136,7 +137,7 @@ def CGIescape(arg, lang=None):
         s = Utils.websafe(arg)
     else:
         s = Utils.websafe(str(arg))
-    return Utils.uncanonstr(s.replace('"', '&quot;'), lang)
+    return s.replace('"', '&quot;')
 
 # Parenthesized human name
 paren_name_pat = re.compile(r'([(].*[)])')
@@ -223,7 +224,7 @@ def quick_maketext(templatefile, dict=None, lang=None, mlist=None):
             syslog('error', 'broken template: %s\n%s', filepath, e)
     # Make sure the text is in the given character set, or html-ify any bogus
     # characters.
-    return Utils.uncanonstr(text, lang)
+    return text
 
 
 
@@ -298,7 +299,7 @@ class Article(pipermail.Article):
         cset_out = Charset(cset).output_charset or cset
         if isinstance(cset_out, str):
             # email 3.0.1 (python 2.4) doesn't like unicode
-            cset_out = cset_out.encode('us-ascii')
+            cset_out = cset_out.encode('us-ascii', 'replace')
         charset = message.get_content_charset(cset_out)
         if charset:
             charset = charset.lower().strip()
@@ -311,12 +312,17 @@ class Article(pipermail.Article):
             except binascii.Error:
                 body = None
             if body and charset != Utils.GetCharSet(self._lang):
+                if isinstance(charset, bytes):
+                    charset = charset.decode('utf-8', 'replace')
                 # decode body
                 try:
-                    body = str(body, charset)
+                    body = body.decode(charset)
                 except (UnicodeError, LookupError):
                     body = None
             if body:
+                # Handle both bytes and strings properly
+                if isinstance(body, bytes):
+                    body = body.decode('utf-8', 'replace')
                 self.body = [l + "\n" for l in body.splitlines()]
 
         self.decode_headers()
@@ -414,7 +420,7 @@ class Article(pipermail.Article):
                 otrans = i18n.get_translation()
                 try:
                     i18n.set_language(self._lang)
-                    atmark = str(_(' at '), Utils.GetCharSet(self._lang))
+                    atmark = _(' at ')
                     subject = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
                               r'\g<1>' + atmark + r'\g<2>', subject)
                 finally:
@@ -429,7 +435,7 @@ class Article(pipermail.Article):
         if prefix:
             prefix_pat = re.escape(prefix)
             prefix_pat = '%'.join(prefix_pat.split(r'\%'))
-            prefix_pat = re.sub(r'%\d*d', r'\s*\d+\s*', prefix_pat)
+            prefix_pat = re.sub(r'%\d*d', r'\\\\s*\\\\d+\\\\s*', prefix_pat)
             subject = re.sub(prefix_pat, '', subject)
         subject = subject.lstrip()
         # MAS Should we strip FW and FWD too?
@@ -444,7 +450,7 @@ class Article(pipermail.Article):
         # Convert 'field' into Unicode one line string.
         try:
             pairs = decode_header(field)
-            ustr = make_header(pairs).__unicode__()
+            ustr = make_header(pairs).__str__()
         except (LookupError, UnicodeError, ValueError, HeaderParseError):
             # assume list's language
             cset = Utils.GetCharSet(self._mlist.preferred_language)
@@ -519,8 +525,8 @@ class Article(pipermail.Article):
 
     def _get_next(self):
         """Return the href and subject for the previous message"""
-        if self.__next__:
-            subject = self._get_subject_enc(self.__next__)
+        if hasattr( self, 'next' ) and self.next is not None:
+            subject = self._get_subject_enc(self.next)
             next = ('<LINK REL="Next"  HREF="%s">'
                     % (url_quote(self.next.filename)))
             next_wsubj = ('<LI>' + _('Next message (by thread):') +
@@ -540,6 +546,7 @@ class Article(pipermail.Article):
             body = self.html_body
         except AttributeError:
             body = self.body
+
         return null_to_space(EMPTYSTRING.join(body))
 
     def _add_decoded(self, d):
@@ -581,13 +588,14 @@ class Article(pipermail.Article):
             otrans = i18n.get_translation()
             try:
                 i18n.set_language(self._lang)
-                atmark = str(_(' at '), cset)
+                atmark = _(' at ')
+                if isinstance(atmark, bytes):
+                    atmark = str(atmark, cset)
                 body = re.sub(r'([-+,.\w]+)@([-+.\w]+)',
                               r'\g<1>' + atmark + r'\g<2>', body)
             finally:
                 i18n.set_translation(otrans)
-        # Return body to character set of article.
-        body = body.encode(cset, 'replace')
+
         return NL.join(headers) % d + '\n\n' + body + '\n'
 
     def _set_date(self, message):
@@ -870,7 +878,7 @@ class HyperArchive(pipermail.T):
         #if the working file is still here, the archiver may have
         # crashed during archiving. Save it, log an error, and move on.
         try:
-            wf = open(wname)
+            wf = open(wname, 'r')
             syslog('error',
                    'Archive working file %s present.  '
                    'Check %s for possibly unarchived msgs',
@@ -890,7 +898,7 @@ class HyperArchive(pipermail.T):
         except IOError:
             pass
         os.rename(name,wname)
-        archfile = open(wname)
+        archfile = open(wname, 'r')
         self.processUnixMailbox(archfile)
         archfile.close()
         os.unlink(wname)
@@ -1017,7 +1025,7 @@ class HyperArchive(pipermail.T):
             else:
                 return 0
         if self.ARCHIVE_PERIOD in ('month','year','quarter'):
-            self.archives.sort(sf)
+            self.archives.sort(key = cmp_to_key(sf))
         else:
             self.archives.sort()
         self.archives.reverse()
@@ -1034,7 +1042,7 @@ class HyperArchive(pipermail.T):
         index_html = os.path.join(archivedir, 'index.html')
         try:
             os.unlink(index_html)
-        except:
+        except (OSError, IOError):
             pass
         os.symlink(self.DEFAULTINDEX+'.html',index_html)
 
@@ -1139,7 +1147,7 @@ class HyperArchive(pipermail.T):
             oldgzip = os.path.join(self.basedir, '%s.old.txt.gz' % archive)
             try:
                 # open the plain text file
-                archt = open(txtfile)
+                archt = open(txtfile, 'r')
             except IOError:
                 return
             try:
@@ -1185,8 +1193,6 @@ class HyperArchive(pipermail.T):
         # 3. make it faster
         # TK: Prepare for unicode obscure.
         atmark = _(' at ')
-        if lines and isinstance(lines[0], str):
-            atmark = str(atmark, Utils.GetCharSet(self.lang), 'replace')
         source = lines[:]
         dest = lines
         last_line_was_quoted = 0
@@ -1250,6 +1256,8 @@ class HyperArchive(pipermail.T):
                 kr = urlpat.search(L)
             if jr is None and kr is None:
                 L = CGIescape(L, self.lang)
+            if isinstance(L, bytes):
+                L = L.decode('utf-8')
             L = prefix + L2 + L + suffix
             source[i] = None
             dest[i] = L

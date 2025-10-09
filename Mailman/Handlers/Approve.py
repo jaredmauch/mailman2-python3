@@ -84,7 +84,8 @@ def process(mlist, msg, msgdata):
             for lineno, line in zip(list(range(len(lines))), lines):
                 if line.strip():
                     break
-            i = line.find(':')
+
+            i = line.find(b':')
             if i >= 0:
                 name = line[:i]
                 value = line[i+1:]

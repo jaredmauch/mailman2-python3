@@ -31,6 +31,7 @@ import copy
 import time
 import socket
 import smtplib
+from smtplib import SMTPException
 from base64 import b64encode
 
 from Mailman import mm_cfg
@@ -56,17 +57,37 @@ class Connection(object):
     def __connect(self):
         self.__conn = smtplib.SMTP()
         self.__conn.set_debuglevel(mm_cfg.SMTPLIB_DEBUG_LEVEL)
-        self.__conn.connect(mm_cfg.SMTPHOST, mm_cfg.SMTPPORT)
+        
+        # Ensure we have a valid hostname for the connection
+        smtp_host = mm_cfg.SMTPHOST
+        if not smtp_host or smtp_host.startswith('.') or smtp_host == '@URLHOST@':
+            smtp_host = 'localhost'
+        
+        # Log the hostname being used for debugging
+        syslog('smtp-failure', 'SMTP connection hostname: %s (original: %s)', 
+               smtp_host, mm_cfg.SMTPHOST)
+        
+        self.__conn.connect(smtp_host, mm_cfg.SMTPPORT)
         if mm_cfg.SMTP_AUTH:
             if mm_cfg.SMTP_USE_TLS:
+                # Log the hostname being used for TLS
+                syslog('smtp-failure', 'TLS connection hostname: %s', self.__conn._host)
                 try:
+                    # Ensure the hostname is set for TLS
+                    if not self.__conn._host:
+                        self.__conn._host = smtp_host
+                        syslog('smtp-failure', 'Set TLS hostname to: %s', smtp_host)
                     self.__conn.starttls()
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP TLS error: %s', e)
                     self.quit()
                     raise
                 try:
-                    self.__conn.ehlo(mm_cfg.SMTP_HELO_HOST)
+                    # Use a valid hostname for EHLO, fallback to localhost if SMTP_HELO_HOST is empty or invalid
+                    helo_host = mm_cfg.SMTP_HELO_HOST
+                    if not helo_host or helo_host.startswith('.') or helo_host == '@URLHOST@':
+                        helo_host = 'localhost'
+                    self.__conn.ehlo(helo_host)
                 except SMTPException as e:
                     syslog('smtp-failure', 'SMTP EHLO error: %s', e)
                     self.quit()
@@ -93,6 +114,8 @@ class Connection(object):
         if self.__conn is None:
             self.__connect()
         try:
+            if isinstance( msgtext, str ):
+                msgtext = msgtext.encode('utf-8', errors='ignore')
             results = self.__conn.sendmail(envsender, recips, msgtext)
         except smtplib.SMTPException:
             # For safety, close this connection.  The next send attempt will
@@ -359,7 +382,7 @@ def verpdeliver(mlist, msg, msgdata, envsender, failures, conn):
                     charset = 'iso-8859-1'
                 charset = Charset(charset)
                 codec = charset.input_codec or 'ascii'
-                if not isinstance(name, UnicodeType):
+                if not isinstance(name, str):
                     name = str(name, codec, 'replace')
                 name = Header(name, charset).encode()
                 msgcopy['To'] = formataddr((name, recip))

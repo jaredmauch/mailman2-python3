@@ -29,6 +29,7 @@ message handling should stop.
 """
 
 import email
+from email.parser import Parser
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 import email.utils
@@ -173,7 +174,7 @@ def process(mlist, msg, msgdata):
     # Is the message too big?
     if mlist.max_message_size > 0:
         bodylen = 0
-        for line in email.Iterators.body_line_iterator(msg):
+        for line in email.iterators.body_line_iterator(msg):
             bodylen += len(line)
         for part in msg.walk():
             if part.preamble:
@@ -197,11 +198,7 @@ def hold_for_approval(mlist, msg, msgdata, exc):
     # that the message can be approved or denied via email as well as the
     # web.
     #
-    # XXX We use the weird type(type) construct below because in Python 2.1,
-    # type is a function not a type and so can't be used as the second
-    # argument in isinstance().  However, in Python 2.5, exceptions are
-    # new-style classes and so are not of ClassType.
-    if isinstance(exc, ClassType) or isinstance(exc, type(type)):
+    if isinstance(exc, type):
         # Go ahead and instantiate it now.
         exc = exc()
     listname = mlist.real_name

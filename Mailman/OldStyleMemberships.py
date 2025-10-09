@@ -84,13 +84,13 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberKey(self, member):
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return member.lower()
 
     def getMemberCPAddress(self, member):
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return cpaddr
 
     def getMemberCPAddresses(self, members):
@@ -99,18 +99,20 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberPassword(self, member):
         secret = self.__mlist.passwords.get(member.lower())
         if secret is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return secret
 
     def authenticateMember(self, member, response):
         secret = self.getMemberPassword(member)
+        if isinstance(response, bytes):
+            response = response.decode('utf-8')
         if secret == response:
             return secret
         return 0
 
     def __assertIsMember(self, member):
         if not self.isMember(member):
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
 
     def getMemberLanguage(self, member):
         lang = self.__mlist.language.get(
@@ -172,7 +174,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         assert self.__mlist.Locked()
         # Make sure this address isn't already a member
         if self.isMember(member):
-            raise Exception(Errors.MMAlreadyAMember, member)
+            raise Errors.MMAlreadyAMember(member)
         # Parse the keywords
         digest = 0
         password = Utils.MakeRandomPassword()

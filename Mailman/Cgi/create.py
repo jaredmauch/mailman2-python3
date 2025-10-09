@@ -22,7 +22,7 @@ from builtins import object
 import sys
 import os
 import signal
-import cgi
+from Mailman.Utils import FieldStorage
 
 from Mailman import mm_cfg
 from Mailman import MailList
@@ -43,7 +43,7 @@ def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('doit', '')
     except TypeError:
@@ -113,14 +113,14 @@ def process_request(doc, cgidata):
     safelistname = Utils.websafe(listname)
     if '@' in listname:
         request_creation(doc, cgidata,
-                         _('List name must not include "@": {safelistname}'))
+                         _(f'List name must not include "@": {safelistname}'))
         return
     if Utils.list_exists(listname):
         # BAW: should we tell them the list already exists?  This could be
         # used to mine/guess the existance of non-advertised lists.  Then
         # again, that can be done in other ways already, so oh well.
         request_creation(doc, cgidata,
-                         _('List already exists: {safelistname}'))
+                         _(f'List already exists: {safelistname}'))
         return
     if not listname:
         request_creation(doc, cgidata,
@@ -180,7 +180,7 @@ def process_request(doc, cgidata):
            hostname not in mm_cfg.VIRTUAL_HOSTS:
         safehostname = Utils.websafe(hostname)
         request_creation(doc, cgidata,
-                         _('Unknown virtual host: {safehostname}'))
+                         _(f'Unknown virtual host: {safehostname}'))
         return
     emailhost = mm_cfg.VIRTUAL_HOSTS.get(hostname, mm_cfg.DEFAULT_EMAIL_HOST)
     # We've got all the data we need, so go ahead and try to create the list
@@ -216,12 +216,12 @@ def process_request(doc, cgidata):
             else:
                 s = Utils.websafe(owner)
             request_creation(doc, cgidata,
-                             _('Bad owner email address: {s}'))
+                             _(f'Bad owner email address: {s}'))
             return
         except Errors.MMListAlreadyExistsError:
             # MAS: List already exists so we don't need to websafe it.
             request_creation(doc, cgidata,
-                             _('List already exists: {listname}'))
+                             _(f'List already exists: {listname}'))
             return
         except Errors.BadListNameError as e:
             if e.args:
@@ -229,7 +229,7 @@ def process_request(doc, cgidata):
             else:
                 s = Utils.websafe(listname)
             request_creation(doc, cgidata,
-                             _('Illegal list name: {s}'))
+                             _(f'Illegal list name: {s}'))
             return
         except Errors.MMListError:
             request_creation(
@@ -271,7 +271,7 @@ def process_request(doc, cgidata):
              }, mlist=mlist)
         msg = Message.UserNotification(
             owner, siteowner,
-            _('Your new mailing list: {listname}'),
+            _(f'Your new mailing list: {listname}'),
             text, mlist.preferred_language)
         msg.send(mlist)
 
@@ -310,7 +310,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
     # Set up the document
-    title = _(f"Create a {hostname} Mailing List")
+    title = _(f'Create a {hostname} Mailing List')
     doc.SetTitle(title)
     table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
@@ -431,7 +431,7 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     checked[langi] = 1
     deflang = _(Utils.GetLanguageDescr(mm_cfg.DEFAULT_SERVER_LANGUAGE))
     ftable.AddRow([Label(_(
-        '''Initial list of supported languages.  <p>Note that if you do not
+        f'''Initial list of supported languages.  <p>Note that if you do not
         select at least one initial language, the list will use the server
         default language of {deflang}''')),
                    CheckBoxArray('langs',

@@ -79,6 +79,10 @@ import time
 
 import paths
 from Mailman import mm_cfg
+# Debug: Log when mm_cfg is imported in qrunner
+from Mailman.Logging.Syslog import syslog
+syslog('debug', 'qrunner: mm_cfg imported from %s', mm_cfg.__file__)
+syslog('debug', 'qrunner: mm_cfg.GLOBAL_PIPELINE type: %s', type(mm_cfg.GLOBAL_PIPELINE).__name__ if hasattr(mm_cfg, 'GLOBAL_PIPELINE') else 'NOT FOUND')
 from Mailman.i18n import C_
 from Mailman.Logging.Syslog import syslog
 from Mailman.Logging.Utils import LogStdErr
@@ -163,6 +167,12 @@ def main():
             ['help', 'list', 'once', 'runner=', 'verbose', 'subproc'])
     except getopt.error as msg:
         usage(1, msg)
+
+    def silent_unraisable_hook(unraisable):
+        pass
+
+    if hasattr(sys, 'unraisablehook'):
+        sys.unraisablehook = silent_unraisable_hook
 
     once = 0
     runners = []

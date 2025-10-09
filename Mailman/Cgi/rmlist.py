@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import sys
 import errno
 import shutil
@@ -41,7 +41,7 @@ def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         cgidata.getfirst('password', '')
     except TypeError:
@@ -73,8 +73,8 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        title = _('No such list <em>{safelistname}</em>')
-        doc.SetTitle(_('No such list {safelistname}'))
+        title = _(f'No such list <em>{safelistname}</em>')
+        doc.SetTitle(_(f'No such list {safelistname}'))
         doc.AddItem(
             Header(3,
                    Bold(FontAttr(title, color='#ff0000', size='+2'))))
@@ -206,8 +206,8 @@ def process_request(doc, cgidata, mlist):
 
 def request_deletion(doc, mlist, errmsg=None):
     realname = mlist.real_name
-    title = _('Permanently remove mailing list <em>{realname}</em>')
-    doc.SetTitle(_('Permanently remove mailing list {realname}'))
+    title = _(f'Permanently remove mailing list <em>{realname}</em>')
+    doc.SetTitle(_(f'Permanently remove mailing list {realname}'))
 
     table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])

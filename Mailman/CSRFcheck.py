@@ -41,7 +41,7 @@ def csrf_token(mlist, contexts, user=None):
 
     if user:
         # Unmunge a munged email address.
-        user = UnobscureEmail(urllib.unquote(user))
+        user = UnobscureEmail(urllib.parse.unquote(user))
         
     for context in contexts:
         key, secret = mlist.AuthContextInfo(context, user)
@@ -53,7 +53,8 @@ def csrf_token(mlist, contexts, user=None):
     needs_hash = (secret + repr(issued)).encode('utf-8')
     mac = sha_new(needs_hash).hexdigest()
     keymac = '%s:%s' % (key, mac)
-    token = binascii.hexlify(marshal.dumps((issued, keymac)))
+    token = marshal.dumps((issued, keymac)).hex()
+
     return token
 
 def csrf_check(mlist, token, cgi_user=None):
@@ -85,7 +86,7 @@ def csrf_check(mlist, token, cgi_user=None):
             # This is for CVE-2021-42097.  The token is a user token because
             # of the fix for CVE-2021-42096 but it must match the user for
             # whom the options page is requested.
-            raw_user = UnobscureEmail(urllib.unquote(user))
+            raw_user = UnobscureEmail(urllib.parse.unquote(user))
             if cgi_user and cgi_user.lower() != raw_user.lower():
                 syslog('mischief',
                        'Form for user %s submitted with CSRF token '
@@ -95,7 +96,8 @@ def csrf_check(mlist, token, cgi_user=None):
         context = keydict.get(key)
         key, secret = mlist.AuthContextInfo(context, user)
         assert key
-        mac = sha_new(secret + repr(issued)).hexdigest()
+        secret = secret + repr(issued)
+        mac = sha_new(secret.encode()).hexdigest()
         if (mac == received_mac 
             and 0 < time.time() - issued < mm_cfg.FORM_LIFETIME):
             return True

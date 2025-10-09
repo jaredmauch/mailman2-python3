@@ -444,8 +444,7 @@ class Form(Container):
             spaces, self.action, self.method, encoding)
         if self.mlist:
             output = output + \
-                '<input type="hidden" name="csrf_token" value="%s">\n' \
-                % csrf_token(self.mlist, self.contexts, self.user)
+                '<input type="hidden" name="csrf_token" value="{}">\n'.format( csrf_token(self.mlist, self.contexts, self.user))
         output = output + Container.Format(self, indent+2)
         output = '%s\n%s</FORM>\n' % (output, spaces)
         return output
@@ -461,8 +460,7 @@ class InputObj(object):
 
     def Format(self, indent=0):
         charset = get_translation().charset() or 'us-ascii'
-        output = ['<INPUT name="%s" type="%s" value="%s"' %
-                  (self.name, self.type, self.value)]
+        output = [ '<INPUT name="{}" type="{}" value="{}"'.format(self.name, self.type, self.value) ]
         for item in list(self.kws.items()):
             output.append('%s="%s"' % item)
         if self.checked:
@@ -471,6 +469,7 @@ class InputObj(object):
         ret = SPACE.join(output)
         if self.type == 'TEXT' and isinstance(ret, str):
             ret = ret.encode(charset, 'xmlcharrefreplace')
+            ret = ret.decode() # Does this break the charset?
         return ret
 
 
@@ -486,6 +485,8 @@ class TextBox(InputObj):
     def __init__(self, name, value='', size=mm_cfg.TEXTFIELDWIDTH):
         if isinstance(value, str):
             safevalue = Utils.websafe(value)
+        elif isinstance(value, bytes):
+            safevalue = value.decode()
         else:
             safevalue = value
         InputObj.__init__(self, name, "TEXT", safevalue, checked=0, size=size)
@@ -524,6 +525,7 @@ class TextArea(object):
         output += '>%s</TEXTAREA>' % self.text
         if isinstance(output, str):
             output = output.encode(charset, 'xmlcharrefreplace')
+            output = output.decode() # Does this break the charset?
         return output
 
 class FileUpload(InputObj):
@@ -648,7 +650,8 @@ class DefinitionList(Container):
 # These are the URLs which the image logos link to.  The Mailman home page now
 # points at the gnu.org site instead of the www.list.org mirror.
 #
-from mm_cfg import MAILMAN_URL
+MAILMAN_URL = mm_cfg.MAILMAN_URL
+# from Mailman.mm_cfg import MAILMAN_URL
 PYTHON_URL  = 'http://www.python.org/'
 GNU_URL     = 'http://www.gnu.org/'
 

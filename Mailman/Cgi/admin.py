@@ -24,7 +24,7 @@ def cmp(a, b):
 import sys
 import os
 import re
-import cgi
+from Mailman.Utils import FieldStorage
 import urllib.request, urllib.parse, urllib.error
 import signal
 
@@ -81,7 +81,7 @@ def main():
     # pages are shown in that list's preferred language.
     i18n.set_language(mlist.preferred_language)
     # If the user is not authenticated, we're done.
-    cgidata = cgi.FieldStorage(keep_blank_values=1)
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
         cgidata.getfirst('csrf_token', '')
     except TypeError:
@@ -157,7 +157,7 @@ def main():
     qsenviron = os.environ.get('QUERY_STRING')
     parsedqs = None
     if qsenviron:
-        parsedqs = cgi.parse_qs(qsenviron)
+        parsedqs = urllib.parse.parse_qs(qsenviron)
     if 'VARHELP' in cgidata:
         varhelp = cgidata.getfirst('VARHELP')
     elif parsedqs:
@@ -260,7 +260,7 @@ def admin_overview(msg=''):
     # This page should be displayed in the server's default language, which
     # should have already been set.
     hostname = Utils.get_domain()
-    legend = _(f"{hostname} mailing lists - Admin Links")
+    legend = _(f'{hostname} mailing lists - Admin Links')
     # The html `document'
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -440,7 +440,7 @@ def show_results(mlist, doc, category, subcat, cgidata):
     realname = mlist.real_name
     doc.SetTitle(_(f'{realname} Administration ({label})'))
     doc.AddItem(Center(Header(2, _(
-        '{realname} mailing list administration<br>{label} Section'))))
+        f'{realname} mailing list administration<br>{label} Section'))))
     doc.AddItem('<hr>')
     # Now we need to craft the form that will be submitted, which will contain
     # all the variable settings, etc.  This is a bit of a kludge because we
@@ -934,11 +934,12 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     chunksz = mlist.admin_member_chunksize
     # The email addresses had /better/ be ASCII, but might be encoded in the
     # database as Unicodes.
-    all = [_m.encode() for _m in mlist.getMembers()]
-    all.sort(lambda x, y: cmp(x.lower(), y.lower()))
+    all = mlist.getMembers()
+    all.sort()
     # See if the query has a regular expression
     regexp = cgidata.getfirst('findmember', '').strip()
     try:
+        regexp = regexp.encode()
         regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
     except UnicodeDecodeError:
         # This is probably a non-ascii character and an English language
@@ -976,7 +977,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         # put into FieldStorage's keys :-(
         qsenviron = os.environ.get('QUERY_STRING')
         if qsenviron:
-            qs = cgi.parse_qs(qsenviron)
+            qs = urllib.parse.parse_qs(qsenviron)
             bucket = qs.get('letter', '0')[0].lower()
         keys = list(buckets.keys())
         keys.sort()
@@ -1006,7 +1007,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     if bucket:
         membercnt = len(members)
         usertable.AddRow([Center(Italic(_(
-            '{allcnt} members total, {membercnt} shown')))])
+            f'{allcnt} members total, {membercnt} shown')))])
     else:
         usertable.AddRow([Center(Italic(_(f'{allcnt} members total')))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
@@ -1021,9 +1022,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             if regexp:
                 findfrag = '&findmember=' + urllib.parse.quote(regexp)
             url = adminurl + '/members?letter=' + letter + findfrag
-            if type(url) is str:
-                url = url.encode(Utils.GetCharSet(mlist.preferred_language),
-                                 errors='ignore')
             if letter == bucket:
                 show = Bold('[%s]' % letter.upper()).Format()
             else:
@@ -1179,7 +1177,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     parsedqs = 0
     qsenviron = os.environ.get('QUERY_STRING')
     if qsenviron:
-        qs = cgi.parse_qs(qsenviron).get('legend')
+        qs = urllib.parse.parse_qs(qsenviron).get('legend')
         if qs and type(qs) is list:
             qs = qs[0]
         if qs == 'yes':
@@ -1209,10 +1207,6 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             start = chunkmembers[i*chunksz]
             end = chunkmembers[min((i+1)*chunksz, last)-1]
             thisurl = url + 'chunk=%d' % i + findfrag
-            if type(thisurl) is str:
-                thisurl = thisurl.encode(
-                                 Utils.GetCharSet(mlist.preferred_language),
-                                 errors='ignore')
             link = Link(thisurl, _(f'from {start} to {end}'))
             buttons.append(link)
         buttons = UnorderedList(*buttons)
@@ -1430,7 +1424,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     confirm = cgidata.getfirst('confirmmodpw', '').strip()
     if new or confirm:
         if new == confirm:
-            mlist.mod_password = sha_new(new).hexdigest()
+            mlist.mod_password = sha_new(new.encode()).hexdigest()
             # No re-authentication necessary because the moderator's
             # password doesn't get you into these pages.
         else:
@@ -1441,7 +1435,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     confirm = cgidata.getfirst('confirmpostpw', '').strip()
     if new or confirm:
         if new == confirm:
-            mlist.post_password = sha_new(new).hexdigest()
+            mlist.post_password = sha_new(new.encode()).hexdigest()
             # No re-authentication necessary because the poster's
             # password doesn't get you into these pages.
         else:
@@ -1451,7 +1445,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     confirm = cgidata.getfirst('confirmpw', '').strip()
     if new or confirm:
         if new == confirm:
-            mlist.password = sha_new(new).hexdigest()
+            mlist.password = sha_new(new.encode()).hexdigest()
             # Set new cookie
             print(mlist.MakeCookie(mm_cfg.AuthListAdmin))
         else:
@@ -1464,8 +1458,11 @@ def change_options(mlist, category, subcat, cgidata, doc):
         gui.handleForm(mlist, category, subcat, cgidata, doc)
     # mass subscription, removal processing for members category
     subscribers = ''
-    subscribers += cgidata.getfirst('subscribees', '')
-    subscribers += cgidata.getfirst('subscribees_upload', '')
+    subscribers += str(cgidata.getfirst('subscribees', ''))
+    sub_uploads = cgidata.getfirst('subscribees_upload', '')
+    if isinstance(sub_uploads, bytes):
+        sub_uploads = sub_uploads.decode()
+    subscribers += sub_uploads
     if subscribers:
         entries = [_f for _f in [n.strip() for n in subscribers.splitlines()] if _f]
         send_welcome_msg = safeint('send_welcome_msg_to_this_batch',
@@ -1546,7 +1543,10 @@ def change_options(mlist, category, subcat, cgidata, doc):
         removals += cgidata['unsubscribees'].value
     if 'unsubscribees_upload' in cgidata and \
            cgidata['unsubscribees_upload'].value:
-        removals += cgidata['unsubscribees_upload'].value
+        unsub_upload = cgidata['unsubscribees_upload'].value
+        if isinstance(unsub_upload, bytes):
+            unsub_upload = unsub_upload.decode()
+        removals += unsub_upload
     if removals:
         names = [_f for _f in [n.strip() for n in removals.splitlines()] if _f]
         send_unsub_notifications = safeint(
@@ -1651,7 +1651,10 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # sync operation
     memberlist = ''
     memberlist += cgidata.getvalue('memberlist', '')
-    memberlist += cgidata.getvalue('memberlist_upload', '')
+    upload = cgidata.getvalue('memberlist_upload', '')
+    if isinstance(upload, bytes):
+        upload = upload.decode()
+    memberlist += upload
     if memberlist:
         # Browsers will convert special characters in the text box to HTML
         # entities. We need to fix those.

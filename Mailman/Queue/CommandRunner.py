@@ -70,7 +70,7 @@ class Results:
         # Python 2.1's unicode() builtin doesn't call obj.__unicode__().
         subj = msg.get('subject', '')
         try:
-            subj = make_header(decode_header(subj)).__unicode__()
+            subj = make_header(decode_header(subj)).__str__()
             # TK: Currently we don't allow 8bit or multibyte in mail command.
             # MAS: However, an l10n 'Re:' may contain non-ascii so ignore it.
             subj = subj.encode('us-ascii', 'ignore')
@@ -124,6 +124,8 @@ class Results:
         if args is None:
             args = ()
         # Try to import a command handler module for this command
+        if isinstance(cmd, bytes):
+            cmd = cmd.decode()
         modname = 'Mailman.Commands.cmd_' + cmd
         try:
             __import__(modname)
@@ -131,7 +133,7 @@ class Results:
         # ValueError can be raised if cmd has dots in it.
         # and KeyError if cmd is otherwise good but ends with a dot.
         # and TypeError if cmd has a null byte.
-        except (ImportError, ValueError, KeyError, TypeError):
+        except (ImportError, ValueError, KeyError, TypeError) as e:
             # If we're on line zero, it was the Subject: header that didn't
             # contain a command.  It's possible there's a Re: prefix (or
             # localized version thereof) on the Subject: line that's messing
@@ -166,7 +168,8 @@ class Results:
     def send_response(self):
         # Helper
         def indent(lines):
-            return ['    ' + line for line in lines]
+            normalized = [line.decode() if isinstance(line, bytes) else line for line in lines]
+            return ['    ' + line for line in normalized]
         # Quick exit for some commands which don't need a response
         if not self.respond:
             return
@@ -198,8 +201,8 @@ To obtain instructions, send a message containing just the word "help".
         charset = Utils.GetCharSet(self.msgdata['lang'])
         encoded_resp = []
         for item in resp:
-            if isinstance(item, UnicodeType):
-                item = item.encode(charset, 'replace')
+            if isinstance(item, bytes):
+                item = item.decode()
             encoded_resp.append(item)
         results = MIMEText(NL.join(encoded_resp), _charset=charset)
         # Safety valve for mail loops with misconfigured email 'bots.  We

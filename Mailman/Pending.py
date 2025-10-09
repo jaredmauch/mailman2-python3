@@ -27,7 +27,7 @@ import pickle
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
-from Mailman.Utils import sha_new
+from Mailman.Utils import sha_new, load_pickle
 
 # Types of pending records
 SUBSCRIPTION = 'S'
@@ -68,7 +68,7 @@ class Pending(object):
         # are discarded because they're the most predictable bits.
         while True:
             now = time.time()
-            x = random.random() + now % 1.0
+            x = random.random() + now % 1.0 + time.time() % 1.0
             cookie = sha_new(repr(x).encode()).hexdigest()
             # We'll never get a duplicate, but we'll be anal about checking
             # anyway.
@@ -84,14 +84,13 @@ class Pending(object):
 
     def __load(self):
         try:
-            fp = open(self.__pendfile)
-        except IOError as e:
-            if e.errno != errno.ENOENT: raise
+            obj = load_pickle(self.__pendfile)
+            if obj == None:
+                return {'evictions': {}}
+            else:
+                return obj
+        except Exception as e:
             return {'evictions': {}}
-        try:
-            return pickle.load(fp, fix_imports=True, encoding='latin1')
-        finally:
-            fp.close()
 
     def __save(self, db):
         evictions = db['evictions']

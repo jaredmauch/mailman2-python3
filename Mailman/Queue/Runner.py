@@ -24,6 +24,10 @@ import traceback
 from io import StringIO
 
 from Mailman import mm_cfg
+# Debug: Log when mm_cfg is imported
+from Mailman.Logging.Syslog import syslog
+syslog('debug', 'Runner.py: mm_cfg imported from %s', mm_cfg.__file__)
+syslog('debug', 'Runner.py: mm_cfg.GLOBAL_PIPELINE type: %s', type(mm_cfg.GLOBAL_PIPELINE).__name__ if hasattr(mm_cfg, 'GLOBAL_PIPELINE') else 'NOT FOUND')
 from Mailman import Utils
 from Mailman import Errors
 from Mailman import MailList
@@ -43,7 +47,8 @@ class Runner:
         self._kids = {}
         # Create our own switchboard.  Don't use the switchboard cache because
         # we want to provide slice and numslice arguments.
-        self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
+        distribution = getattr(mm_cfg, 'QUEUE_DISTRIBUTION_METHOD', 'hash')
+        self._switchboard = Switchboard(self.QDIR, slice, numslices, True, distribution)
         # Create the shunt switchboard
         self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
         self._stop = False

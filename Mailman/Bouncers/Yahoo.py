@@ -19,6 +19,7 @@
 
 import re
 import email
+import email.iterators
 from email.utils import parseaddr
 
 tcre = (re.compile(r'message\s+from\s+yahoo\.\S+', re.IGNORECASE),
@@ -45,7 +46,7 @@ def process(msg):
     #     1 == tag line seen
     #     2 == end line seen
     state = 0
-    for line in email.Iterators.body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         line = line.strip()
         if state == 0:
             for cre in tcre:

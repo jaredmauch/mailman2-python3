@@ -38,7 +38,7 @@ COMMASPACE = ', '
 if hasattr(email, '__version__'):
     mo = re.match(r'([\d.]+)', email.__version__)
 else:
-    mo = re.match(r'([\d.]+)', '2.1.39') # XXX should use @@MM_VERSION@@ perhaps?
+    mo = re.match(r'([\d.]+)', '2.2.0') # XXX should use @@MM_VERSION@@ perhaps?
 VERSION = tuple([int(s) for s in mo.group().split('.')])
 
 
@@ -69,6 +69,8 @@ class Message(email.message.Message):
 
     # BAW: For debugging w/ bin/dumpdb.  Apparently pprint uses repr.
     def __repr__(self):
+        if not hasattr(self, 'policy'):
+            self.policy = email._policybase.compat32
         return self.__str__()
 
     def __setstate__(self, d):
@@ -241,9 +243,9 @@ class Message(email.message.Message):
         """
         fp = StringIO()
         g = Generator(fp, mangle_from_=mangle_from_)
+        Utils.set_cte_if_missing(self)
         g.flatten(self, unixfrom=unixfrom)
         return fp.getvalue()
-
 
 
 class UserNotification(Message):

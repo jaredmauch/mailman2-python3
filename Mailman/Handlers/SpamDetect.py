@@ -73,14 +73,20 @@ def getDecodedHeaders(msg, cset='utf-8'):
     for h, v in list(msg.items()):
         uvalue = u''
         try:
-            v = decode_header(re.sub(r'\n\s', ' ', v))
+            if isinstance(v, str):
+                v = decode_header(re.sub(r'\n\s', ' ', v))
+            else:
+                continue
         except HeaderParseError:
             v = [(v, 'us-ascii')]
         for frag, cs in v:
             if not cs:
                 cs = 'us-ascii'
             try:
-                uvalue += str(frag, cs, 'replace')
+                if isinstance(frag, bytes):
+                    uvalue += str(frag, cs, 'replace')
+                else:
+                    uvalue += frag
             except LookupError:
                 # The encoding charset is unknown.  At this point, frag
                 # has been QP or base64 decoded into a byte string whose
@@ -88,7 +94,6 @@ def getDecodedHeaders(msg, cset='utf-8'):
                 # unicode it as iso-8859-1 which may result in a garbled
                 # mess, but we have to do something.
                 uvalue += str(frag, 'iso-8859-1', 'replace')
-        uhdr = h.decode('us-ascii', 'replace')
         headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
     return headers
 

@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import sys
 import os
-import cgi
+from Mailman.Utils import FieldStorage
 import time
 import signal
 import urllib.request, urllib.parse, urllib.error
@@ -65,7 +65,7 @@ def main():
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('No such list <em>{safelistname}</em>')))
+        doc.AddItem(Bold(_(f'No such list <em>{safelistname}</em>')))
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         print(doc.Format())
@@ -74,7 +74,7 @@ def main():
 
     # See if the form data has a preferred language set, in which case, use it
     # for the results.  If not, use the list's preferred language.
-    cgidata = cgi.FieldStorage()
+    cgidata = FieldStorage()
     try:
         language = cgidata.getfirst('language', '')
     except TypeError:
@@ -153,10 +153,10 @@ def process_form(mlist, doc, cgidata, lang):
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
-                results.append(_('reCAPTCHA validation failed: {e_codes}'))
+                results.append(_(f'reCAPTCHA validation failed: {e_codes}'))
         except urllib.error.URLError as e:
             e_reason = e.reason
-            results.append(_('reCAPTCHA could not be validated: {e_reason}'))
+            results.append(_(f'reCAPTCHA could not be validated: {e_reason}'))
 
     # Are we checking the hidden data?
     if mm_cfg.SUBSCRIBE_FORM_SECRET:

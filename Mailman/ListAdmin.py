@@ -34,8 +34,12 @@ from io import StringIO
 
 import email
 from email.mime.message import MIMEMessage
+from email.generator import BytesGenerator
 from email.generator import Generator
 from email.utils import getaddresses
+from email.message import EmailMessage
+from email.parser import Parser
+from email import policy
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -80,7 +84,9 @@ class ListAdmin(object):
             try:
                 fp = open(self.__filename, 'rb')
                 try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    self.__db = Utils.load_pickle(fp)
+                    if not self.__db:
+                        raise IOError("Pickled data is empty or None")
                 finally:
                     fp.close()
             except IOError as e:
@@ -133,7 +139,7 @@ class ListAdmin(object):
     def __getmsgids(self, rtype):
         self.__opendb()
         ids = [k for k, (op, data) in list(self.__db.items()) if op == rtype]
-        ids.sort()
+        ids.sort(key=int)
         return ids
 
     def GetHeldMessageIds(self):
@@ -241,25 +247,37 @@ class ListAdmin(object):
                 return LOST
             try:
                 if path.endswith('.pck'):
-                    msg = pickle.load(fp, fix_imports=True, encoding='latin1')
+                    msg = Utils.load_pickle(path)
                 else:
                     assert path.endswith('.txt'), '%s not .pck or .txt' % path
                     msg = fp.read()
             finally:
                 fp.close()
+
+            # If msg is still a Message from Python 2 pickle, convert it
+            if isinstance(msg, email.message.Message):
+                if not hasattr(msg, 'policy'):
+                    msg.policy = email._policybase.compat32
+                if not hasattr(msg, 'mangle_from_'):
+                    msg.mangle_from_ = True
+                if not hasattr(msg, 'linesep'):
+                    msg.linesep = email.policy.default.linesep
+
             # Save the plain text to a .msg file, not a .pck file
             outpath = os.path.join(mm_cfg.SPAM_DIR, spamfile)
             head, ext = os.path.splitext(outpath)
             outpath = head + '.msg'
-            outfp = open(outpath, 'wb')
-            try:
-                if path.endswith('.pck'):
-                    g = Generator(outfp)
-                    g.flatten(msg, 1)
-                else:
-                    outfp.write(msg)
-            finally:
-                outfp.close()
+
+            with open(outpath, 'w', encoding='utf-8') as outfp:
+                try:
+                    if path.endswith('.pck'):
+                        g = Generator(outfp, policy=msg.policy)
+                        g.flatten(msg, 1)
+                    else:
+                        outfp.write(msg.get_payload(decode=True).decode() if isinstance(msg.get_payload(decode=True), bytes) else msg.get_payload())
+                except Exception as e:
+                    raise Errors.LostHeldMessage(path)
+
         # Now handle updates to the database
         rejection = None
         fp = None
@@ -301,7 +319,7 @@ class ListAdmin(object):
             rejection = 'Refused'
             lang = self.getMemberLanguage(sender)
             subject = Utils.oneline(subject, Utils.GetCharSet(lang))
-            self.__refuse(_('Posting of your message titled "%(subject)s"'),
+            self.__refuse(_(f'Posting of your message titled "{subject}"'),
                           sender, comment or _('[No reason given]'),
                           lang=lang)
         else:
@@ -349,14 +367,11 @@ class ListAdmin(object):
             fmsg.send(self)
         # Log the rejection
         if rejection:
-            note = '''%(listname)s: %(rejection)s posting:
-\tFrom: %(sender)s
-\tSubject: %(subject)s''' % {
-                'listname' : self.internal_name(),
-                'rejection': rejection,
-                'sender'   : str(sender).replace('%', '%%'),
-                'subject'  : str(subject).replace('%', '%%'),
-                }
+            if isinstance(subject, bytes):
+                subject = subject.decode()
+            note = '''{}: {} posting:
+\tFrom: {}
+\tSubject: {}'''.format(self.real_name, rejection, sender.replace('%', '%%'), subject.replace('%', '%%'))
             if comment:
                 note += '\n\tReason: ' + comment.replace('%', '%%')
             syslog('vette', note)
@@ -551,15 +566,10 @@ class ListAdmin(object):
         except IOError as e:
             if e.errno != errno.ENOENT: raise
             filename = os.path.join(self.fullpath(), 'request.pck')
-            try:
-                fp = open(filename, 'rb')
-                try:
-                    self.__db = pickle.load(fp, fix_imports=True, encoding='latin1')
-                finally:
-                    fp.close()
-            except IOError as e:
-                if e.errno != errno.ENOENT: raise
+            self.__db = Utils.load_pickle(filename)
+            if self.__db is None:
                 self.__db = {}
+
         for id, x in list(self.__db.items()):
             # A bug in versions 2.1.1 through 2.1.11 could have resulted in
             # just info being stored instead of (op, info)
@@ -610,13 +620,17 @@ def readMessage(path):
     # For backwards compatibility, we must be able to read either a flat text
     # file or a pickle.
     ext = os.path.splitext(path)[1]
-    fp = open(path, 'rb')
     try:
         if ext == '.txt':
+            fp = open(path, 'rb')
             msg = email.message_from_file(fp, Message.Message)
+            fp.close()
         else:
             assert ext == '.pck'
-            msg = pickle.load(fp, fix_imports=True, encoding='latin1')
-    finally:
-        fp.close()
-    return msg
+            msg = Utils.load_pickle(path)
+            if not hasattr(msg, 'policy'):
+                msg.policy = email._policybase.compat32
+
+        return msg
+    except Exception as e:
+        return None
