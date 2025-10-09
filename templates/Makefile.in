@@ -59,8 +59,8 @@ INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 
 all: converttemplates
 
-converttemplates: $(wildcard */LC_MESSAGES/*.po) $(wildcard */*.html) $(wildcard */*.txt)
-	../scripts/convert_to_utf8 -d .
+converttemplates:
+	@PYTHON@ ../build/scripts/convert_to_utf8 -d .
 
 install: all
 	for d in $(LANGUAGES); \

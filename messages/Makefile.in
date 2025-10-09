@@ -65,7 +65,7 @@ DIRMODE=	775
 EXEMODE=	755
 FILEMODE=	644
 INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
-PROG=		@PYTHON@ build/bin/pygettext.py
+PROG=		@PYTHON@ ../build/bin/pygettext.py
 
 .SUFFIXES:	.po .mo
 .po.mo:
@@ -114,8 +114,8 @@ doinstall: mofiles
  	    $(INSTALL) -m $(FILEMODE) $$mo $$dir; \
 	done
 
-convertpofiles: $(wildcard */LC_MESSAGES/*.po)
-	../scripts/convert_to_utf8 -d .
+convertpofiles:
+	@PYTHON@ ../build/scripts/convert_to_utf8 -d .
 
 mofiles: $(MOFILES)
 
