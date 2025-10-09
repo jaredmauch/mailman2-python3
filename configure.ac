@@ -756,6 +756,7 @@ cron/gate_news \
 cron/mailpasswds \
 cron/nightly_gzip \
 cron/senddigests \
+scripts/convert_to_utf8 \
 ])
 
 dnl Please make sure to leave a space at the end of the last entry.
