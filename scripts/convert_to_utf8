@@ -79,7 +79,7 @@ def convert_files(directory):
             try:
                 _print(f"******* Converting {filename} from {old_encoding_map[locale_name]} to UTF-8.")
                 subprocess.check_output(
-                    ["iconv", "-f", old_encoding_map[locale_name], "-t", 'UTF-8', file_path, "-o", temp_file],
+                    ["iconv", "-f", old_encoding_map[locale_name], "-t", 'UTF-8', "-o", temp_file, file_path],
                     stderr=subprocess.STDOUT,
                 )
                 os.replace(temp_file, file_path)
