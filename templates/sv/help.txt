@@ -1,33 +1,33 @@
-Hjälp för e-postlistan %(listname)s:
+HjÃ¤lp fÃ¶r e-postlistan %(listname)s:
 
-Här är kommandohjälp för version %(version)s av e-postlistesystemet
-"Mailman". Kommandona som beskrivs nedan hjälper dig att anmäla till/
-avanmäla från e-postlistor och att göra andra ändringar.
+HÃ¤r Ã¤r kommandohjÃ¤lp fÃ¶r version %(version)s av e-postlistesystemet
+"Mailman". Kommandona som beskrivs nedan hjÃ¤lper dig att anmÃ¤la till/
+avanmÃ¤la frÃ¥n e-postlistor och att gÃ¶ra andra Ã¤ndringar.
 
-Ett kommando skrivs i ämnesfältet eller i innehållet i ett e-postbrev,
+Ett kommando skrivs i Ã¤mnesfÃ¤ltet eller i innehÃ¥llet i ett e-postbrev,
 och skickas till %(requestaddr)s
 
-Kom ihåg att merparten av vad dessa kommandon utför, också kan göras via
+Kom ihÃ¥g att merparten av vad dessa kommandon utfÃ¶r, ocksÃ¥ kan gÃ¶ras via
 listans webbsida:
 
     %(listinfo_url)s
 
-Till exempel kan du från webbsidan be att få ditt lösenord skickat till dig.
+Till exempel kan du frÃ¥n webbsidan be att fÃ¥ ditt lÃ¶senord skickat till dig.
 
-Kommandon som är specifika för en lista (till exempel subscribe, who,
-osv.), måste skickas till listans *-request adress, (exempel: för en lista
-som heter 'mailman', används adressen 'mailman-request@...'.)
+Kommandon som Ã¤r specifika fÃ¶r en lista (till exempel subscribe, who,
+osv.), mÃ¥ste skickas till listans *-request adress, (exempel: fÃ¶r en lista
+som heter 'mailman', anvÃ¤nds adressen 'mailman-request@...'.)
 
-Förklaring till beskrivningen
-Ord med <> runt berättar att en parameter krävs,
-ord med [] runt berättar att en parameter är valfri.
-Ta INTE med själva tecknen <> och [] när du skickar kommandon.
+FÃ¶rklaring till beskrivningen
+Ord med <> runt berÃ¤ttar att en parameter krÃ¤vs,
+ord med [] runt berÃ¤ttar att en parameter Ã¤r valfri.
+Ta INTE med sjÃ¤lva tecknen <> och [] nÃ¤r du skickar kommandon.
 
-Följande kommandon är giltiga:
+FÃ¶ljande kommandon Ã¤r giltiga:
 
     %(commands)s
 
-Frågor och andra funderingar som du eventuellt har om systemet,
+FrÃ¥gor och andra funderingar som du eventuellt har om systemet,
 kan du skicka till:
 
     %(adminaddr)s

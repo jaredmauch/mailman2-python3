@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>%(listname)s %(who)s ǧ��</title>
+  <title>%(listname)s %(who)s 認証</title>
 <script>function sf(){document.f.adminpw.focus();}</script>
 </head>
 <body bgcolor="#ffffff" onLoad="sf()">
@@ -10,30 +10,30 @@
     <TR>
       <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
 	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
-	    ǧ��</FONT></B>
+	    認証</FONT></B>
       </TD>
     </TR>
     <tr>
-      <TD><div ALIGN="Right">�ꥹ�� %(who)s �ѥ����:</div></TD>
+      <TD><div ALIGN="Right">リスト %(who)s パスワード:</div></TD>
       <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
     </tr>
     <tr>
       <td colspan=2 align=middle><INPUT type="SUBMIT"
                                         name="admlogin"
-					value="��������...">
+					value="ログイン...">
       </td>
     </tr>
   </TABLE>
-      <p><strong><em>����:</em></strong> 
-      ����������ϥ֥饦���Υ��å�����ͭ���ˤ��Ƥ���������
-      ���å�����̵�����ȴ���������ѹ��Ǥ��ޤ���
+      <p><strong><em>重要:</em></strong> 
+      ここから先はブラウザのクッキーを有効にしてください。
+      クッキーが無効だと管理設定を変更できません。
 
-      <p>�������󥿡��ե������Ǥδ������򤹤뤿�Ӥ�ǧ�ڤ��׵�
-      ����ʤ��褦�ˡ����å���󥯥å�����ȯ�Ԥ��ޤ���
-      ���Υ��å����ϥ֥饦���ν�λ����������Ū��<em>����������</em>
-      �������˼�ưŪ�˼������ޤ���
-      (ǧ�ڤ���λ����ȡ�<em>¾�δ�������</em>�β���
-      ���������ȤΥ�󥯤�ɽ������ޤ�)��
+      <p>管理インターフェースでの管理操作をするたびに認証が要求
+      されないように、セッションクッキーを発行します。
+      このクッキーはブラウザの終了時か、明示的に<em>ログアウト</em>
+      した時に自動的に失効します。
+      (認証が完了すると、<em>他の管理項目</em>の下に
+      ログアウトのリンクが表示されます)。
 
 </FORM>
 </body>

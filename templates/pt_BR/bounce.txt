@@ -1,13 +1,13 @@
-Esta È a notificaÁ„o de aÁ„o de retorno do Mailman:
+Esta √© a notifica√ß√£o de a√ß√£o de retorno do Mailman:
 
     Lista:    %(listname)s
     Membro:   %(addr)s
-    AÁ„o:     InscriÁ„o %(negative)s%(did)s.
-    Raz„o:    Retornos excessivos ou fatais.
+    A√ß√£o:     Inscri√ß√£o %(negative)s%(did)s.
+    Raz√£o:    Retornos excessivos ou fatais.
     %(but)s
 
 %(reenable)s
-A notificaÁ„o da devoluÁ„o est· em anexo abaixo.
+A notifica√ß√£o da devolu√ß√£o est√° em anexo abaixo.
 
-Questıes?
+Quest√µes?
 Contacte o administrador Mailman do site em %(owneraddr)s.

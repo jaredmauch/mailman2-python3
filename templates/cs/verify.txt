@@ -1,26 +1,26 @@
-Konference %(listname)s -- potvrzení pøihlá¹ení
+Konference %(listname)s -- potvrzenÃ­ pÅ™ihlÃ¡Å¡enÃ­
 
-Obdr¾eli jsme po¾adavek z %(remote)s na pøihlá¹ení adresy
-"%(email)s", do konference %(listaddr)s. Pro potvrzení, ¾e tento po¾adavek
-pochází od Vás za¹lete, prosíme, zprávu na adresu %(requestaddr)s
-a buï: 
+ObdrÅ¾eli jsme poÅ¾adavek z %(remote)s na pÅ™ihlÃ¡Å¡enÃ­ adresy
+"%(email)s", do konference %(listaddr)s. Pro potvrzenÃ­, Å¾e tento poÅ¾adavek
+pochÃ¡zÃ­ od VÃ¡s zaÅ¡lete, prosÃ­me, zprÃ¡vu na adresu %(requestaddr)s
+a buÄ: 
 
-- ponechte øádek vìc: (Subject:) beze zmìny (pøípadné "Re:" doplnìné
-  automaticky po¹tovním klientem nevadí),
+- ponechte Å™Ã¡dek vÄ›c: (Subject:) beze zmÄ›ny (pÅ™Ã­padnÃ© "Re:" doplnÄ›nÃ©
+  automaticky poÅ¡tovnÃ­m klientem nevadÃ­),
 
-- nebo vlo¾te do tìla dopisu následující øádek. Kromì nìj odstraòte
-  jakıkoliv dal¹í text, øádek musí bıt na první øádce a zaèínat hned
-  na zaèátku øádky.
+- nebo vloÅ¾te do tÄ›la dopisu nÃ¡sledujÃ­cÃ­ Å™Ã¡dek. KromÄ› nÄ›j odstraÅˆte
+  jakÃ½koliv dalÅ¡Ã­ text, Å™Ã¡dek musÃ­ bÃ½t na prvnÃ­ Å™Ã¡dce a zaÄÃ­nat hned
+  na zaÄÃ¡tku Å™Ã¡dky.
 
 confirm %(cookie)s
 
-(Ve vìt¹inì po¹tovních klientù prostì za¹lete odpovìï na tento dopis.
-Obvykle je toti¾ øádek vìc: ponechán beze zmìny.)
+(Ve vÄ›tÅ¡inÄ› poÅ¡tovnÃ­ch klientÅ¯ prostÄ› zaÅ¡lete odpovÄ›Ä na tento dopis.
+Obvykle je totiÅ¾ Å™Ã¡dek vÄ›c: ponechÃ¡n beze zmÄ›ny.)
 
-Nebo mù¾ete místo zaslání mailu nav¹tívit následující URL:
+Nebo mÅ¯Å¾ete mÃ­sto zaslÃ¡nÃ­ mailu navÅ¡tÃ­vit nÃ¡sledujÃ­cÃ­ URL:
 
     %(confirmurl)s
 
-Pokud se do konference pøihlásit nechcete, nebo dokonce nevíte, proè jste
-tento dopis dostali, prostì jej zahoïte. Pokud máte nìjakı dotaz nebo
-problém, prosím, kontaktujte správce na adrese: %(listadmin)s.
+Pokud se do konference pÅ™ihlÃ¡sit nechcete, nebo dokonce nevÃ­te, proÄ jste
+tento dopis dostali, prostÄ› jej zahoÄte. Pokud mÃ¡te nÄ›jakÃ½ dotaz nebo
+problÃ©m, prosÃ­m, kontaktujte sprÃ¡vce na adrese: %(listadmin)s.

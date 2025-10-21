@@ -1,32 +1,32 @@
-Bem Vindo a lista de discussão %(real_name)s@%(host_name)s!
+Bem Vindo a lista de discussÃ£o %(real_name)s@%(host_name)s!
 %(welcome)s
-Para postar nesta lista, envie uma mensagem para o endereço:
+Para postar nesta lista, envie uma mensagem para o endereÃ§o:
 
   %(emailaddr)s
 
-Informações gerais sobre a lista de discussão podem ser encontradas em:
+InformaÃ§Ãµes gerais sobre a lista de discussÃ£o podem ser encontradas em:
 
   %(listinfo_url)s
 
-Se deseja se desinscrever ou modificar suas opções (eg, mudar de/para o 
-modo digest, modificar a senha, etc.), visite sua página de inscrição 
+Se deseja se desinscrever ou modificar suas opÃ§Ãµes (eg, mudar de/para o 
+modo digest, modificar a senha, etc.), visite sua pÃ¡gina de inscriÃ§Ã£o 
 em:
 
   %(optionsurl)s
 %(umbrella)s
-Você também pode fazer tais ajustes via e-mail enviando uma mensagem para:
+VocÃª tambÃ©m pode fazer tais ajustes via e-mail enviando uma mensagem para:
 
   %(real_name)s-request@%(host_name)s
 
-com a palavra 'help' no assunto ou corpo da mensagem (não inclua
-as aspas), e você receberá uma mensagem com instruções.
-Você deve saber sua senha para modificar as suas opções (incluindo
-a própria senha) ou para se desinscrever. Ela é:
+com a palavra 'help' no assunto ou corpo da mensagem (nÃ£o inclua
+as aspas), e vocÃª receberÃ¡ uma mensagem com instruÃ§Ãµes.
+VocÃª deve saber sua senha para modificar as suas opÃ§Ãµes (incluindo
+a prÃ³pria senha) ou para se desinscrever. Ela Ã©:
 
   %(password)s
 
-Normalmente, o Mailman lhe lembrará de suas senhas em %(host_name)s 
-uma vez por mês, mas pode desativar este recurso se preferir. Este 
-lembrete também inclui instruções de como se desinscrever ou modificar 
-suas opções de conta. Também existe um botão em sua página de opções 
-que poderá lhe enviar a senha.
+Normalmente, o Mailman lhe lembrarÃ¡ de suas senhas em %(host_name)s 
+uma vez por mÃªs, mas pode desativar este recurso se preferir. Este 
+lembrete tambÃ©m inclui instruÃ§Ãµes de como se desinscrever ou modificar 
+suas opÃ§Ãµes de conta. TambÃ©m existe um botÃ£o em sua pÃ¡gina de opÃ§Ãµes 
+que poderÃ¡ lhe enviar a senha.

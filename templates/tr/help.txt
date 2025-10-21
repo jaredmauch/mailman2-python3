@@ -1,35 +1,35 @@
-%(listname)s mesaj listesi yardımı:
+%(listname)s mesaj listesi yardÄ±mÄ±:
 
-Bu, "Mailman" liste yönetim programının %(version)s sürümü için
-e-posta komut yardımıdır. Aşağıda, bu sitedeki Mailman listeleri ile
-ilgili bilgi almak ve liste üyeliklerinizi kontrol etmek için
-gerekli komutlar açıklanmıştır. Bir komut, mesajın konu satırında
-veya mesaj gövdesinde bulunabilir.
+Bu, "Mailman" liste yÃ¶netim programÄ±nÄ±n %(version)s sÃ¼rÃ¼mÃ¼ iÃ§in
+e-posta komut yardÄ±mÄ±dÄ±r. AÅŸaÄŸÄ±da, bu sitedeki Mailman listeleri ile
+ilgili bilgi almak ve liste Ã¼yeliklerinizi kontrol etmek iÃ§in
+gerekli komutlar aÃ§Ä±klanmÄ±ÅŸtÄ±r. Bir komut, mesajÄ±n konu satÄ±rÄ±nda
+veya mesaj gÃ¶vdesinde bulunabilir.
 
-Aşağıda anlatılanların çoğu web aracılığıyla şu sayfadan da
-yapılabilir:
+AÅŸaÄŸÄ±da anlatÄ±lanlarÄ±n Ã§oÄŸu web aracÄ±lÄ±ÄŸÄ±yla ÅŸu sayfadan da
+yapÄ±labilir:
 
     %(listinfo_url)s
 
-Özellikle, şifrenizin e-posta adresinize gönderilmesi için web
-sayfasını kullanabilirsiniz.
+Ã–zellikle, ÅŸifrenizin e-posta adresinize gÃ¶nderilmesi iÃ§in web
+sayfasÄ±nÄ± kullanabilirsiniz.
 
-Bir listeye özel komutlar (subscribe, who vb), o listenin *-request
-adresine gönderilmelidir, örneğin 'mailman' listesi için
-'mailman-request@...' adresine gönderin.
+Bir listeye Ã¶zel komutlar (subscribe, who vb), o listenin *-request
+adresine gÃ¶nderilmelidir, Ã¶rneÄŸin 'mailman' listesi iÃ§in
+'mailman-request@...' adresine gÃ¶nderin.
 
-Açıklamalarla ilgili - "<>" arasında bulunan sözcükler GEREKLİ
-maddeleri, "[]" arasında bulunan sözcükler İSTEĞE BAĞLI maddeleri
-gösterir. Komutları kullanırken "<>" ve "[]" karakterlerini
+AÃ§Ä±klamalarla ilgili - "<>" arasÄ±nda bulunan sÃ¶zcÃ¼kler GEREKLÄ°
+maddeleri, "[]" arasÄ±nda bulunan sÃ¶zcÃ¼kler Ä°STEÄE BAÄLI maddeleri
+gÃ¶sterir. KomutlarÄ± kullanÄ±rken "<>" ve "[]" karakterlerini
 eklemeyin.
 
-Aşağıdaki komutlar geçerlidir:
+AÅŸaÄŸÄ±daki komutlar geÃ§erlidir:
 
     %(commands)s
 
-Komutlar %(requestaddr)s adresine gönderilmelidir.
+Komutlar %(requestaddr)s adresine gÃ¶nderilmelidir.
 
-Herhangi bir soru veya bilgi isteği şu adrese gönderilmelidir:
+Herhangi bir soru veya bilgi isteÄŸi ÅŸu adrese gÃ¶nderilmelidir:
 
     %(adminaddr)s
 

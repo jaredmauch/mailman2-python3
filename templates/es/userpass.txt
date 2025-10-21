@@ -1,28 +1,28 @@
 Usted, o alguien que se hace pasar por usted, ha pedido que se le
-recuerde la clave con la que está subscrito a la lista de distribución 
-%(fqdn_lname)s. Necesitará esta clave para poder cambiar cualquier
-opción de subscripción a la lista (por ejemplo, si quiere entrega
-regular o diferida en digest) así como para anular su subcripción (no
+recuerde la clave con la que estÃ¡ subscrito a la lista de distribuciÃ³n 
+%(fqdn_lname)s. NecesitarÃ¡ esta clave para poder cambiar cualquier
+opciÃ³n de subscripciÃ³n a la lista (por ejemplo, si quiere entrega
+regular o diferida en digest) asÃ­ como para anular su subcripciÃ³n (no
 necesita depender de nadie para darse de baja).
 
-La dirección con la que está subscrito a la lista es:
+La direcciÃ³n con la que estÃ¡ subscrito a la lista es:
 %(user)s
 
 La clave para %(listname)s es: %(password)s
 
-Para efectuar cambios en su subscripción, visite su página web de
+Para efectuar cambios en su subscripciÃ³n, visite su pÃ¡gina web de
 opciones:
 
     %(options_url)s
 
-Tambien puede realizar estos cambios por correo electrónico, enviando
+Tambien puede realizar estos cambios por correo electrÃ³nico, enviando
 un mensaje a:
 
     %(requestaddr)s
 
 con el texto "help" en el asunto (subject) o en el cuerpo del mensaje.
-El mensaje automático que se le enviará tiene información más detallada.
+El mensaje automÃ¡tico que se le enviarÃ¡ tiene informaciÃ³n mÃ¡s detallada.
 
-Si tiene alguna pregunta o algun comentario, por favor, envíelo al
-administrador de la lista de distribución %(listname)s a la
-dirección %(owneraddr)s
+Si tiene alguna pregunta o algun comentario, por favor, envÃ­elo al
+administrador de la lista de distribuciÃ³n %(listname)s a la
+direcciÃ³n %(owneraddr)s

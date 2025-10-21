@@ -9,8 +9,8 @@ Ha sido retenido por:
 
     %(reason)s
 
-O se mandará el mensaje a la lista o se le enviará una notificación
-con la decisión del moderador. Si desea cancelar este envío, puede
-hacerlo a través de la siguiente URL:
+O se mandarÃ¡ el mensaje a la lista o se le enviarÃ¡ una notificaciÃ³n
+con la decisiÃ³n del moderador. Si desea cancelar este envÃ­o, puede
+hacerlo a travÃ©s de la siguiente URL:
 
     %(confirmurl)s

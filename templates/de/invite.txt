@@ -1,10 +1,10 @@
 Sie wurden vom Betreiber der Liste %(listname)s eingeladen, sich unter der
 Adresse "%(email)s" in der %(listname)s-Liste auf  %(hostname)s einzutragen.
 
-Sie können die Einladung annehmen, indem Sie einfach auf diese Nachricht
-antworten, wobei Sie die Betreffzeile nicht verändern dürfen.
+Sie kÃ¶nnen die Einladung annehmen, indem Sie einfach auf diese Nachricht
+antworten, wobei Sie die Betreffzeile nicht verÃ¤ndern dÃ¼rfen.
 
-Alternativ können Sie auch die folgende Webseite besuchen:
+Alternativ kÃ¶nnen Sie auch die folgende Webseite besuchen:
 
     %(confirmurl)s
 
@@ -16,6 +16,6 @@ einer neuen Nachricht an %(requestaddr)s:
 Bei den meisten E-Mail-Programmen sollte es aber reichen, wenn Sie einfach
 auf "Antworten" klicken.
 
-Wenn Sie die Einladung nicht annehmen möchten, dann beachten Sie diese
+Wenn Sie die Einladung nicht annehmen mÃ¶chten, dann beachten Sie diese
 Nachricht einfach nicht weiter. Bei Fragen wenden Sie sich bitte an
 %(listowner)s.

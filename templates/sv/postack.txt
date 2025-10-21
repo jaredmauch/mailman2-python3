@@ -1,7 +1,7 @@
-Ditt e-postbrev med ämne:
+Ditt e-postbrev med Ã¤mne:
 
     %(subject)s
 
-blev utan problem distribuerat till alla på listan %(listname)s.
+blev utan problem distribuerat till alla pÃ¥ listan %(listname)s.
 
 Listans informationssida: %(listinfo_url)s

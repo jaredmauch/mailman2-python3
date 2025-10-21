@@ -1,15 +1,15 @@
 Skicka meddelanden som ska distribueras till %(real_name)s till:
 	%(got_list_email)s
 
-För att anmäla dig till eller avanmäla dig från listan via Internet, gå in på:
+FÃ¶r att anmÃ¤la dig till eller avanmÃ¤la dig frÃ¥n listan via Internet, gÃ¥ in pÃ¥:
 	%(got_listinfo_url)s
 eller skicka ett e-postbrev till
 	%(got_request_email)s
-med ordet 'help' i ämnesfältet eller som innehåll.
+med ordet 'help' i Ã¤mnesfÃ¤ltet eller som innehÃ¥ll.
 
-Du kan nå ansvarig(a) person(er) för listan på
+Du kan nÃ¥ ansvarig(a) person(er) fÃ¶r listan pÃ¥
 	%(got_owner_email)s
 
-När du svarar på e-postbrev till listan, var vänlig och ändra ämnesfältet så 
-att det är lite mer beskrivande än bara
-"Re: Innehåll av %(real_name)s sammandrag..."
+NÃ¤r du svarar pÃ¥ e-postbrev till listan, var vÃ¤nlig och Ã¤ndra Ã¤mnesfÃ¤ltet sÃ¥ 
+att det Ã¤r lite mer beskrivande Ã¤n bara
+"Re: InnehÃ¥ll av %(real_name)s sammandrag..."

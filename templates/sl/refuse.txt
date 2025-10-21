@@ -1,4 +1,4 @@
-Va¹o zahtevo na po¹tnem seznamu %(listname)s:
+VaÅ¡o zahtevo na poÅ¡tnem seznamu %(listname)s:
 
     %(request)s
 
@@ -6,6 +6,6 @@ je moderator zavrnil in za zavrnitev navedel naslednji razlog:
 
 "%(reason)s"
 
-Vsa vpra¹anja in komentarje po¹ljite skrbniku seznama na naslov:
+Vsa vpraÅ¡anja in komentarje poÅ¡ljite skrbniku seznama na naslov:
 
     %(adminaddr)s

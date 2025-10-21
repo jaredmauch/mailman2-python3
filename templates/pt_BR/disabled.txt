@@ -1,27 +1,27 @@
-O membro de sua lista de discussão %(listname)s foi desativado 
-por %(reason)s. Você não receberá mais 
-mensagens desta lista até que re-ative seu membro. 
-Você receberá mais %(noticesleft)s lembretes antes que o membro da lista
+O membro de sua lista de discussÃ£o %(listname)s foi desativado 
+por %(reason)s. VocÃª nÃ£o receberÃ¡ mais 
+mensagens desta lista atÃ© que re-ative seu membro. 
+VocÃª receberÃ¡ mais %(noticesleft)s lembretes antes que o membro da lista
 seja removido.
 
-Para reativar seu membro, você poderá simplesmente responder a esta 
-mensagem (deixando a linha Subject intacta) ou visitando a página
-de confirmação em:
+Para reativar seu membro, vocÃª poderÃ¡ simplesmente responder a esta 
+mensagem (deixando a linha Subject intacta) ou visitando a pÃ¡gina
+de confirmaÃ§Ã£o em:
 
     %(confirmurl)s
 
-Você também poderá visitar sua página de gerenciamento de membros 
+VocÃª tambÃ©m poderÃ¡ visitar sua pÃ¡gina de gerenciamento de membros 
 em:
 
     %(optionsurl)s
 
-Na sua página de membros, você poderá modificar várias opções de 
-entrega tal como seu endereço de e-mail e o que precisa ser feito
-por digest ou não. Como lembrete, sua senha de membro é:
+Na sua pÃ¡gina de membros, vocÃª poderÃ¡ modificar vÃ¡rias opÃ§Ãµes de 
+entrega tal como seu endereÃ§o de e-mail e o que precisa ser feito
+por digest ou nÃ£o. Como lembrete, sua senha de membro Ã©:
 
     %(password)s
 
-Se tiver qualquer questão ou problema, você poderá contactar o 
+Se tiver qualquer questÃ£o ou problema, vocÃª poderÃ¡ contactar o 
 dono da lista em:
 
     %(owneraddr)s

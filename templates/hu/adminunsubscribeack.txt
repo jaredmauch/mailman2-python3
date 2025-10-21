@@ -1,2 +1,2 @@
-%(member)s törölve a(z) %(listname)s listáról.
+%(member)s tÃ¶rÃ¶lve a(z) %(listname)s listÃ¡rÃ³l.
 %(whence)s

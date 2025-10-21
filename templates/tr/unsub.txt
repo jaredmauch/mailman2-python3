@@ -1,23 +1,23 @@
-%(listname)s mesaj listesi için listeden çıkma onay bildirimi
+%(listname)s mesaj listesi iÃ§in listeden Ã§Ä±kma onay bildirimi
 
-%(remote)s, "%(email)s" olan e-posta adresinizin çıkarılması için bir
-istek aldık. Bu listeden çıkmak istediğinizi onaylamak için bu
-mesajı, Konu: başlığını değiştirmeden yanıtlayın. Veya bu web
-sayfasına gidin:
+%(remote)s, "%(email)s" olan e-posta adresinizin Ã§Ä±karÄ±lmasÄ± iÃ§in bir
+istek aldÄ±k. Bu listeden Ã§Ä±kmak istediÄŸinizi onaylamak iÃ§in bu
+mesajÄ±, Konu: baÅŸlÄ±ÄŸÄ±nÄ± deÄŸiÅŸtirmeden yanÄ±tlayÄ±n. Veya bu web
+sayfasÄ±na gidin:
 
     %(confirmurl)s
 
-Veya bir mesaja aşağıdaki satırı -- sadece aşağıdaki satırı --
-yazarak %(requestaddr)s adresine gönderin:
+Veya bir mesaja aÅŸaÄŸÄ±daki satÄ±rÄ± -- sadece aÅŸaÄŸÄ±daki satÄ±rÄ± --
+yazarak %(requestaddr)s adresine gÃ¶nderin:
 
     confirm %(cookie)s
 
-Basitçe bu mesajı `yanıtlamak', çoğu e-posta okuma programında
-çalışır, çünkü bu durumda Konu: satırı doğru biçimde kalır
-(Konu: içinde fazladan "Re:" veya "Ynt:" olması sorun değildir).
+BasitÃ§e bu mesajÄ± `yanÄ±tlamak', Ã§oÄŸu e-posta okuma programÄ±nda
+Ã§alÄ±ÅŸÄ±r, Ã§Ã¼nkÃ¼ bu durumda Konu: satÄ±rÄ± doÄŸru biÃ§imde kalÄ±r
+(Konu: iÃ§inde fazladan "Re:" veya "Ynt:" olmasÄ± sorun deÄŸildir).
 
-Eğer bu listeden çıkmak istemiyorsanız, bu mesajı gözardı edin.
-Eğer bu listeden kötü niyetle çıkarılmak istediğinizi
-düşünüyorsanız veya başka sorularınız varsa, bunları %(listadmin)s
-adresine gönderin.
+EÄŸer bu listeden Ã§Ä±kmak istemiyorsanÄ±z, bu mesajÄ± gÃ¶zardÄ± edin.
+EÄŸer bu listeden kÃ¶tÃ¼ niyetle Ã§Ä±karÄ±lmak istediÄŸinizi
+dÃ¼ÅŸÃ¼nÃ¼yorsanÄ±z veya baÅŸka sorularÄ±nÄ±z varsa, bunlarÄ± %(listadmin)s
+adresine gÃ¶nderin.
 

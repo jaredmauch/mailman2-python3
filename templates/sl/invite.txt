@@ -1,18 +1,18 @@
-Va¹ naslov je skrbnik seznama %(listname)s povabil, da se prijavi
-na po¹tni seznam %(listname)s na %(hostname)s. Vabilo sprejmete tako,
-da po¹ljete odgovor na to sporoèilo, vrstico z Zadevo pa pustite
+VaÅ¡ naslov je skrbnik seznama %(listname)s povabil, da se prijavi
+na poÅ¡tni seznam %(listname)s na %(hostname)s. Vabilo sprejmete tako,
+da poÅ¡ljete odgovor na to sporoÄilo, vrstico z Zadevo pa pustite
 nespremenjeno.
 
-Obi¹èete lahko tudi stran
+ObiÅ¡Äete lahko tudi stran
 
     %(confirmurl)s
 
-ali pa vkljuèite naslednjo vrstico -- samo naslednjo vrstico --
-v sporoèilo, ki ga po¹ljete na naslov %(requestaddr)s:
+ali pa vkljuÄite naslednjo vrstico -- samo naslednjo vrstico --
+v sporoÄilo, ki ga poÅ¡ljete na naslov %(requestaddr)s:
 
     confirm %(cookie)s
 
-Za veèino uporabnikov deluje ¾e 'odgovor' na to sporoèilo.
+Za veÄino uporabnikov deluje Å¾e 'odgovor' na to sporoÄilo.
 
-Èe vas povabilo ne zanima, preprosto prezrite to sporoèilo.
-Vpra¹anja lahko po¹ljete %(listowner)s.
+ÄŒe vas povabilo ne zanima, preprosto prezrite to sporoÄilo.
+VpraÅ¡anja lahko poÅ¡ljete %(listowner)s.

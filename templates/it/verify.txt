@@ -16,7 +16,7 @@ indirizzato a %(requestaddr)s:
 
 Nota che il semplice invio di un `reply' a questo messaggio dovrebbe
 essere sufficiente per la maggior parte dei programmi di lettura della
-posta, poiché questi lasciano normalmente inalterato l'oggetto
+posta, poichÃ© questi lasciano normalmente inalterato l'oggetto
 (l'aggiunta di "Re:" non da problemi).
 
 Se non vuoi essere iscritto alla lista, ignora questo messaggio.

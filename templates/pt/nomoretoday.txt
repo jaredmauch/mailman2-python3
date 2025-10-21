@@ -1,8 +1,8 @@
-Recebemos uma mensagem do seu endereÁo `%(sender)s' pedindo uma
-resposta autom·tica atravÈs da lista %(listname)s. J· recebemos %(num)s 
+Recebemos uma mensagem do seu endere√ßo `%(sender)s' pedindo uma
+resposta autom√°tica atrav√©s da lista %(listname)s. J√° recebemos %(num)s 
 mensagens dessas, da sua parte, hoje. Para evitar problemas tais como ciclos
-fechados entre respondedores autom·ticos, n„o lhe enviaremos mais respostas 
-hoje. Por favor tente de novo amanh„.
+fechados entre respondedores autom√°ticos, n√£o lhe enviaremos mais respostas 
+hoje. Por favor tente de novo amanh√£.
 
-Se pensa que esta mensagem est· enganada, ou se tem questıes a colocar,
+Se pensa que esta mensagem est√° enganada, ou se tem quest√µes a colocar,
 por favor contacte o dono da lista em %(owneremail)s.

@@ -1,27 +1,27 @@
-Tú, o daquién que se fai pasar por tí, pidió que se-y remembre
-la clave cola que tas soscritu a la llista de distribución 
-%(fqdn_lname)s. Necesitará esta clave pa poder camudar cualesquier
-opción de soscripción a la llista (por exemplu, si quies entrega
-regular o diferida en digest) asina como p'anular la soscripción (nun
+TÃº, o daquiÃ©n que se fai pasar por tÃ­, pidiÃ³ que se-y remembre
+la clave cola que tas soscritu a la llista de distribuciÃ³n 
+%(fqdn_lname)s. NecesitarÃ¡ esta clave pa poder camudar cualesquier
+opciÃ³n de soscripciÃ³n a la llista (por exemplu, si quies entrega
+regular o diferida en digest) asina como p'anular la soscripciÃ³n (nun
 necesites depender de naide pa dase de baxa).
 
-La direición cola que tas soscritu a la llista ye: %(user)s
+La direiciÃ³n cola que tas soscritu a la llista ye: %(user)s
 
 La clave pa %(listname)s ye: %(password)s
 
-Pa facer cambeos na to soscripción, visita la páxina web
+Pa facer cambeos na to soscripciÃ³n, visita la pÃ¡xina web
 d'opciones:
 
     %(options_url)s
 
-Tamién puedes facer estos cambeos por corréu-e, unviando
+TamiÃ©n puedes facer estos cambeos por corrÃ©u-e, unviando
 un mensax a:
 
     %(requestaddr)s
 
 col testu "help" nel asuntu (subject) o nel cuerpu del mensax.
-El mensax automáticu que se t'unviará tien información más detallao.
+El mensax automÃ¡ticu que se t'unviarÃ¡ tien informaciÃ³n mÃ¡s detallao.
 
-Si tienes dalguna entruga o dalgún comentariu, por favor, únvialu al
-alministrador de la llista de distribución %(listname)s a la
-direición %(owneraddr)s
+Si tienes dalguna entruga o dalgÃºn comentariu, por favor, Ãºnvialu al
+alministrador de la llista de distribuciÃ³n %(listname)s a la
+direiciÃ³n %(owneraddr)s

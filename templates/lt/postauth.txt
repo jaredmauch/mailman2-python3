@@ -1,10 +1,10 @@
-Jûsø (forumo administratoriaus) patvirtinimas bûtinas ğiam laiğkui:
+JÅ«sÅ³ (forumo administratoriaus) patvirtinimas bÅ«tinas Å¡iam laiÅ¡kui:
     
     Forumas: %(listname)s@%(hostname)s
     Nuo:     %(sender)s
     Tema:    %(subject)s
-    Kodël:   %(reason)s
+    KodÄ—l:   %(reason)s
 
-Padarykite tai apsilankydami ğiuo adresu:
+Padarykite tai apsilankydami Å¡iuo adresu:
 
     %(admindb_url)s

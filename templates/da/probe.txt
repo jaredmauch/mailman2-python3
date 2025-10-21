@@ -1,26 +1,26 @@
-Dette er en prøve meddelelse. Du kan ignorere denne meddelelse.
+Dette er en prÃ¸ve meddelelse. Du kan ignorere denne meddelelse.
 
 Maillisten %(listname)s har modtaget et antal returmeddelelser fra dig,
 hvilket indikerer et problem med afleveringen af mail til %(address)s.
-Et eksempel på en returmeddelelse er vedhæftet nedenfor. Kig venligst på den
-og sørg for at der ikke er nogen problemer med din e-mail adresse. Du
-kan evt. kontakte din mail administrator for yderligere hjælp.
+Et eksempel pÃ¥ en returmeddelelse er vedhÃ¦ftet nedenfor. Kig venligst pÃ¥ den
+og sÃ¸rg for at der ikke er nogen problemer med din e-mail adresse. Du
+kan evt. kontakte din mail administrator for yderligere hjÃ¦lp.
 
-Hvis du læser dette, så behøver du ikke gøre noget for fortsat og få tilsendt
-mail fra maillisten. Hvis denne meddelelse var blevet sendt retur så ville
-du ikke kunne læse den nu og dit medlemskab ville have været deaktiveret.
-Normalt når dit medlemskab bliver deaktiveret, vil du periodisk få tilsendt
+Hvis du lÃ¦ser dette, sÃ¥ behÃ¸ver du ikke gÃ¸re noget for fortsat og fÃ¥ tilsendt
+mail fra maillisten. Hvis denne meddelelse var blevet sendt retur sÃ¥ ville
+du ikke kunne lÃ¦se den nu og dit medlemskab ville have vÃ¦ret deaktiveret.
+Normalt nÃ¥r dit medlemskab bliver deaktiveret, vil du periodisk fÃ¥ tilsendt
 en meddelelse hvor du bliver bedt om at genaktivere dit medlemskab.
 
-Du kan også besøge din medlemsside på adressen
+Du kan ogsÃ¥ besÃ¸ge din medlemsside pÃ¥ adressen
 
     %(optionsurl)s
 
-På din medlemsside kan du ændre forskellige indstillinger vedrørende dit
+PÃ¥ din medlemsside kan du Ã¦ndre forskellige indstillinger vedrÃ¸rende dit
 medlemskab, f.eks. din email-adresse eller om du vil modtage meddelelser i 
 sammendrag-modus eller ej. 
 
-Hvis du har spørgsmål eller problemer i forbindelse med ovenstående, så
-kan du kontakte listens ejer på adressen
+Hvis du har spÃ¸rgsmÃ¥l eller problemer i forbindelse med ovenstÃ¥ende, sÃ¥
+kan du kontakte listens ejer pÃ¥ adressen
 
     %(owneraddr)s

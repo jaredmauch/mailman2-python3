@@ -7,6 +7,6 @@ Eine Mailadresse war mehrfach unzustellbar:
     %(but)s
 
 %(reenable)s
-Die letzte betroffene Nachricht ist an diese E-Mail angeh‰ngt.
+Die letzte betroffene Nachricht ist an diese E-Mail angeh√§ngt.
 
 Fragen? Kontaktieren Sie den Mailman-Systemverwalter unter %(owneraddr)s.

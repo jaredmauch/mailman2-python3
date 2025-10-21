@@ -1,2 +1,2 @@
-%(member)s är nu anmälda till listan %(listname)s.
+%(member)s Ã¤r nu anmÃ¤lda till listan %(listname)s.
 %(whence)s

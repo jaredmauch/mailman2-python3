@@ -1,17 +1,17 @@
-Mensax de confirmación pa la soscripción a la llista de distribución %(listname)s
+Mensax de confirmaciÃ³n pa la soscripciÃ³n a la llista de distribuciÃ³n %(listname)s
 
-Recibióse una solicitú dende request%(remote)s de soscripción de la direición "%(email)s", a la llista %(listaddr)s. Pa confirmar que quies date d'alta nesta llista de distribución, namái tienes de retrucar a esti mensax calteniendo l'asuntu intautu o visitar la siguiente páxina web:
+RecibiÃ³se una solicitÃº dende request%(remote)s de soscripciÃ³n de la direiciÃ³n "%(email)s", a la llista %(listaddr)s. Pa confirmar que quies date d'alta nesta llista de distribuciÃ³n, namÃ¡i tienes de retrucar a esti mensax calteniendo l'asuntu intautu o visitar la siguiente pÃ¡xina web:
 
     %(confirmurl)s
 
-Tamién puedes confirmar esta petición a traviés de corréu-e, unvia
-un mensax de corréu-e incluyendo la llinia siguiente (y NAMÁI la llinia siguiente) a la direición %(requestaddr)s:
+TamiÃ©n puedes confirmar esta peticiÃ³n a traviÃ©s de corrÃ©u-e, unvia
+un mensax de corrÃ©u-e incluyendo la llinia siguiente (y NAMÃI la llinia siguiente) a la direiciÃ³n %(requestaddr)s:
 
     confirm %(cookie)s
 
-Retrucar a esti mensax, tendría de funcionar cola mayoria de los programes de corréu-e, darréu que davezu dexen l'asuntu del mou afayadizu (el testu adicional "Re:" que davezu ponen nel asuntu funcionará correcho).
+Retrucar a esti mensax, tendrÃ­a de funcionar cola mayoria de los programes de corrÃ©u-e, darrÃ©u que davezu dexen l'asuntu del mou afayadizu (el testu adicional "Re:" que davezu ponen nel asuntu funcionarÃ¡ correcho).
 
-Si nun quies soscribite a esta llista, por favor, inora'l mensaxe. Si camientes que daquién de mou malintencionáu ta tentando soscribite a la llista, o si tienes dalguna otra entruga, ponte en contautu cola siguiente dirección: 
+Si nun quies soscribite a esta llista, por favor, inora'l mensaxe. Si camientes que daquiÃ©n de mou malintencionÃ¡u ta tentando soscribite a la llista, o si tienes dalguna otra entruga, ponte en contautu cola siguiente direcciÃ³n: 
 
 %(listadmin)s
 

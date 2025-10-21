@@ -1,12 +1,12 @@
-Primename, kad Jûs dalyvaujate diskusijø forume %(hostname)s.
+Primename, kad JÅ«s dalyvaujate diskusijÅ³ forume %(hostname)s.
 Savo dalyvio nustatymus keisti bei atsijungti nuo forumo
-galite tinklapyje bei komandomis el. pağtu.
+galite tinklapyje bei komandomis el. paÅ¡tu.
 
-Jei norite savo nuostatas keisti el. pağtu - nusiøskite laiğkà '-request' 
+Jei norite savo nuostatas keisti el. paÅ¡tu - nusiÅ³skite laiÅ¡kÄ… '-request' 
 forumo adresu ir gausite daugiau informacijos apie komandas 
-(pavyzdşiui, %(exreq)s) turinti tik şodá 'help' laiğko turinyje
-ir jums bus iğsiøstas laiğkas su instrukcijomis.
+(pavyzdÅ¾iui, %(exreq)s) turinti tik Å¾odÄ¯ 'help' laiÅ¡ko turinyje
+ir jums bus iÅ¡siÅ³stas laiÅ¡kas su instrukcijomis.
 
-Jei turite klausimø ar patarimø, rağykite %(owner)s.
+Jei turite klausimÅ³ ar patarimÅ³, raÅ¡ykite %(owner)s.
 
-Vartotojo %(useraddr)s slaptaşodşiai:
+Vartotojo %(useraddr)s slaptaÅ¾odÅ¾iai:

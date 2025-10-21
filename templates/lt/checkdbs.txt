@@ -1,9 +1,9 @@
-Diskusijø forume %(real_name)s@%(host_name)s jûsø 
-patvirtinimo laukianèiø laiğkø skaièius: %(count)d.
+DiskusijÅ³ forume %(real_name)s@%(host_name)s jÅ«sÅ³ 
+patvirtinimo laukianÄiÅ³ laiÅ¡kÅ³ skaiÄius: %(count)d.
 
-Prağome kuo greièiau juos patvirtinti tinklapyje
+PraÅ¡ome kuo greiÄiau juos patvirtinti tinklapyje
 
 	%(adminDB)s
 
-Tokie praneğimai apie laukianèius laiğkus (jei tokiø
-yra) siunèiami kiekvienà dienà.
+Tokie praneÅ¡imai apie laukianÄius laiÅ¡kus (jei tokiÅ³
+yra) siunÄiami kiekvienÄ… dienÄ….

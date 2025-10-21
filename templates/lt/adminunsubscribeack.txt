@@ -1,2 +1,2 @@
-%(member)s pağalintas iğ %(listname)s.
+%(member)s paÅ¡alintas iÅ¡ %(listname)s.
 %(whence)s

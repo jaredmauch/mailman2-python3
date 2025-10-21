@@ -1,25 +1,25 @@
-Vahvistuspyyntˆ postituslistalta %(listname)s poistamiseksi
+Vahvistuspyynt√∂ postituslistalta %(listname)s poistamiseksi
 
-Olemme saaneet pyynnˆn%(remote)s poistaa s‰hkˆpostiosoitteenne, 
+Olemme saaneet pyynn√∂n%(remote)s poistaa s√§hk√∂postiosoitteenne, 
 "%(email)s" %(listaddr)s postituslistalta. Vahvistaaksenne, 
-ett‰ haluatte erota t‰lt‰ postituslistalta, vastatkaa 
-t‰h‰n viestiin muuttamatta otsikkoa. Tai k‰v‰isk‰‰ www-sivulla:
+ett√§ haluatte erota t√§lt√§ postituslistalta, vastatkaa 
+t√§h√§n viestiin muuttamatta otsikkoa. Tai k√§v√§isk√§√§ www-sivulla:
 
    %(confirmurl)s
 
-Tai sis‰llytt‰k‰‰n seuraava rivi -- ja vain seuraava rivi -- viestiin
+Tai sis√§llytt√§k√§√§n seuraava rivi -- ja vain seuraava rivi -- viestiin
 %(requestaddr)s:
 
     vahvista %(cookie)s
 
-Huomioi, ett‰ asian pit‰isi hoitua, useimmilla s‰hkˆpostiohjelmilla 
-pelk‰st‰‰n vastaamalla t‰h‰n viestiin, koska se tavallisesti 
-j‰tt‰‰ Otsikko-rivin oikeaan muotoon 
-(lis‰ksi "Re: "teksti otsikossa on ok). 
+Huomioi, ett√§ asian pit√§isi hoitua, useimmilla s√§hk√∂postiohjelmilla 
+pelk√§st√§√§n vastaamalla t√§h√§n viestiin, koska se tavallisesti 
+j√§tt√§√§ Otsikko-rivin oikeaan muotoon 
+(lis√§ksi "Re: "teksti otsikossa on ok). 
 
-Ellet halua itse‰si poistettavaksi t‰lt‰ listalta, 
-h‰vit‰ t‰m‰ viesti. Jos ep‰ilet, ett‰ sinua yritet‰‰n 
+Ellet halua itse√§si poistettavaksi t√§lt√§ listalta, 
+h√§vit√§ t√§m√§ viesti. Jos ep√§ilet, ett√§ sinua yritet√§√§n 
 pahansuovasti irtisanoa listalta tai sinulla
-on muita kysymyksi‰, l‰het‰ ne osoitteeseen
+on muita kysymyksi√§, l√§het√§ ne osoitteeseen
 %(listadmin)s.
 

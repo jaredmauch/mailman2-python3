@@ -1,15 +1,15 @@
-Twoja pro¶ba wys³ana na adres %(requestaddr)s:
+Twoja proÅ›ba wysÅ‚ana na adres %(requestaddr)s:
 
     %(cmd)s
 
-zosta³a przekazana osobie opiekuj±cej siê list±.
+zostaÅ‚a przekazana osobie opiekujÄ…cej siÄ™ listÄ….
 
-Sta³o siê tak najprawdopodobniej dlatego, ¿e próbujesz zapisaæ siê
-na "zamkniêt±" listê.
+StaÅ‚o siÄ™ tak najprawdopodobniej dlatego, Å¼e prÃ³bujesz zapisaÄ‡ siÄ™
+na "zamkniÄ™tÄ…" listÄ™.
 
-Wkrótce otrzymasz wiadomo¶æ informuj±c± o decyzji administratora 
-odno¶nie Twojej pro¶by.
+WkrÃ³tce otrzymasz wiadomoÅ›Ä‡ informujÄ…cÄ… o decyzji administratora 
+odnoÅ›nie Twojej proÅ›by.
 
-Pytania proszê kierowaæ na adres:
+Pytania proszÄ™ kierowaÄ‡ na adres:
 
     %(adminaddr)s

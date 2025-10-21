@@ -1,34 +1,34 @@
-Bienaport·u a la llista de distribuciÛn %(real_name)s@%(host_name)s
+Bienaport√°u a la llista de distribuci√≥n %(real_name)s@%(host_name)s
 %(welcome)s
 
-Pa mandar un mensax a esta llista, unvÌelu a:
+Pa mandar un mensax a esta llista, unv√≠elu a:
 
    %(emailaddr)s
 
-Puedes obtener informaciÛn xeneral sobro la llista en:
+Puedes obtener informaci√≥n xeneral sobro la llista en:
 
    %(listinfo_url)s
 
-Si dalguna vegada quies anular  la  soscripciÛn o camudar les  opciones
-de la mesma (p.ex.: camudar a mou resumÌu o non, camudar la clave,
-etc.), consulta la p·xina de la to soscripciÛn en:
+Si dalguna vegada quies anular  la  soscripci√≥n o camudar les  opciones
+de la mesma (p.ex.: camudar a mou resum√≠u o non, camudar la clave,
+etc.), consulta la p√°xina de la to soscripci√≥n en:
 
   %(optionsurl)s
 %(umbrella)s
-TamiÈn puedes facer estos cambeos per aciu de corrÈu-e,
+Tami√©n puedes facer estos cambeos per aciu de corr√©u-e,
 unviando un mensax a:
 
   %(real_name)s-request@%(host_name)s
 
 indicando la pallabra "help" nel asuntu (nun pongas les comines) o nel
-cuerpu del mensax. Devolver·sete un mensax con instrucciones.
+cuerpu del mensax. Devolver√°sete un mensax con instrucciones.
 
-Tienes que saber la to clave pa poder camudar les tos opciones (incluyÌu'l cambÈu de la propia clave) o p'anular la soscripciÛn. La clave ye:
+Tienes que saber la to clave pa poder camudar les tos opciones (incluy√≠u'l camb√©u de la propia clave) o p'anular la soscripci√≥n. La clave ye:
 
   %(password)s
 
-Davezu, Mailman remembrar· mensualmente les claves  que tenga nes
-llistes de distribuciÛn de %(host_name)s, magar que si lo prefieres, puede inhabilitar esti comportamientu.  El recordatoriu tamiÈn incluyir·
-instrucciones sobro cÛmo anular la soscripciÛn o cÛmo camudar los
-par·metros de soscripciÛn. Na p·xina d'opciones hai un botÛn que-y
-unviar· un mensax de corrÈu-e cola so clave.
+Davezu, Mailman remembrar√° mensualmente les claves  que tenga nes
+llistes de distribuci√≥n de %(host_name)s, magar que si lo prefieres, puede inhabilitar esti comportamientu.  El recordatoriu tami√©n incluyir√°
+instrucciones sobro c√≥mo anular la soscripci√≥n o c√≥mo camudar los
+par√°metros de soscripci√≥n. Na p√°xina d'opciones hai un bot√≥n que-y
+unviar√° un mensax de corr√©u-e cola so clave.

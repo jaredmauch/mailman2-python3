@@ -1,24 +1,24 @@
-Értesítés a(z) %(listname)s levelezõ listáról való törlésed megerõsítésérõl
+Ã‰rtesÃ­tÃ©s a(z) %(listname)s levelezÅ‘ listÃ¡rÃ³l valÃ³ tÃ¶rlÃ©sed megerÅ‘sÃ­tÃ©sÃ©rÅ‘l
 
-A(z)%(remote)s címrõl "%(email)s" címed törlését kérvényezték a(z)
-%(listaddr)s levelezõlistáról. Listatagságod törléséhez erre a
-levélre kell válaszolni úgy, hogy a Subject: (Tárgy:) mezõt 
-változatlanul hagyod. Leiratkozási szándékodat a következõ webcímen
-is megerõsítheted:
+A(z)%(remote)s cÃ­mrÅ‘l "%(email)s" cÃ­med tÃ¶rlÃ©sÃ©t kÃ©rvÃ©nyeztÃ©k a(z)
+%(listaddr)s levelezÅ‘listÃ¡rÃ³l. ListatagsÃ¡god tÃ¶rlÃ©sÃ©hez erre a
+levÃ©lre kell vÃ¡laszolni Ãºgy, hogy a Subject: (TÃ¡rgy:) mezÅ‘t 
+vÃ¡ltozatlanul hagyod. LeiratkozÃ¡si szÃ¡ndÃ©kodat a kÃ¶vetkezÅ‘ webcÃ­men
+is megerÅ‘sÃ­theted:
 
     %(confirmurl)s
 
-Vagy helyezd el a következõ sort -- és semmi mást -- egy levélben,
-s küld el a(z) %(requestaddr)s címre:
+Vagy helyezd el a kÃ¶vetkezÅ‘ sort -- Ã©s semmi mÃ¡st -- egy levÃ©lben,
+s kÃ¼ld el a(z) %(requestaddr)s cÃ­mre:
 
     confirm %(cookie)s
 
-A jóváhagyáshoz legtöbbször elég, ha egyszerûen csak válaszolsz
-(`reply') erre a levélre, mivel a levelezõprogramok többsége nem
-módosítja a levél tárgyát (az ide beszúrt "Re:" vagy "VÁ:" nem 
+A jÃ³vÃ¡hagyÃ¡shoz legtÃ¶bbszÃ¶r elÃ©g, ha egyszerÅ±en csak vÃ¡laszolsz
+(`reply') erre a levÃ©lre, mivel a levelezÅ‘programok tÃ¶bbsÃ©ge nem
+mÃ³dosÃ­tja a levÃ©l tÃ¡rgyÃ¡t (az ide beszÃºrt "Re:" vagy "VÃ:" nem 
 okoz gondot).
 
-Ha nem szeretnél leiratkozni a listáról, akkor egyszerûen hagyd 
-figyelmen kívül ezt a levelet. Ha úgy gondolod, hogy jogtalanul
-töröltek a listáról, vagy más észrevételed van, akkor fordulj
-a lista adminisztrátorához; %(listadmin)s.
+Ha nem szeretnÃ©l leiratkozni a listÃ¡rÃ³l, akkor egyszerÅ±en hagyd 
+figyelmen kÃ­vÃ¼l ezt a levelet. Ha Ãºgy gondolod, hogy jogtalanul
+tÃ¶rÃ¶ltek a listÃ¡rÃ³l, vagy mÃ¡s Ã©szrevÃ©teled van, akkor fordulj
+a lista adminisztrÃ¡torÃ¡hoz; %(listadmin)s.

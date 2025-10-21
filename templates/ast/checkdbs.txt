@@ -1,9 +1,9 @@
-La llista de distribución %(real_name)s@%(host_name)s tien
+La llista de distribuciÃ³n %(real_name)s@%(host_name)s tien
 %(count)d peticion(es) pendientes pa que les revises na
-siguiente páxina:
+siguiente pÃ¡xina:
 
 	%(adminDB)s
 	
-Por favor, atiéndeles tan aína como seya dable. Esta 
-comunicación indicando qu'esisten mensaxes por revisar,
-unviarásete tolos díes, siempre y cuandu esista dalgún.
+Por favor, atiÃ©ndeles tan aÃ­na como seya dable. Esta 
+comunicaciÃ³n indicando qu'esisten mensaxes por revisar,
+unviarÃ¡sete tolos dÃ­es, siempre y cuandu esista dalgÃºn.

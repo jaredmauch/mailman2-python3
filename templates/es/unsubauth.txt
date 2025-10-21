@@ -1,5 +1,5 @@
-Hace falta su autorización para que un subscriptor pueda darse de baja
-de una lista de distribución.
+Hace falta su autorizaciÃ³n para que un subscriptor pueda darse de baja
+de una lista de distribuciÃ³n.
 
     De:   %(username)s
     A: %(listname)s@%(hostname)s

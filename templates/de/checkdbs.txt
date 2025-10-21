@@ -4,6 +4,6 @@ der Adresse
 
     %(adminDB)s
 
-baldmöglichst an.
+baldmÃ¶glichst an.
 
-Diese Benachrichtigung wird bei Bedarf täglich verschickt.
+Diese Benachrichtigung wird bei Bedarf tÃ¤glich verschickt.

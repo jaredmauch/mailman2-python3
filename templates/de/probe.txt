@@ -1,20 +1,20 @@
-Dies ist eine Erprobungsnachricht. Sie kann übergangen werden.
+Dies ist eine Erprobungsnachricht. Sie kann Ã¼bergangen werden.
 
-Die Liste %(listname)s hat eine Reihe von Rückläufern erhalten, so dass
+Die Liste %(listname)s hat eine Reihe von RÃ¼cklÃ¤ufern erhalten, so dass
 es anscheinend Probleme beim Zustellen von Nachrichten an %(address)s gibt.
-Ein Muster ist beigefügt. Bitte überprüfen Sie die Nachricht hinsichtlich
+Ein Muster ist beigefÃ¼gt. Bitte Ã¼berprÃ¼fen Sie die Nachricht hinsichtlich
 der E-Mail-Adresse.
 
 Wenn diese Nachricht angekommen ist, ist nichts zu veranlassen. Kommt sie
-zurück, wird die Adresse aus der Liste ausgetragen.
+zurÃ¼ck, wird die Adresse aus der Liste ausgetragen.
 
 Die Mitgliedsseite befindet sich unter
 
     %(optionsurl)s
 
-Auf dieser Seite können Zustellungsdaten geändert werden.
+Auf dieser Seite kÃ¶nnen Zustellungsdaten geÃ¤ndert werden.
 
 Wenn Fragen zur Liste bestehen, freut sich der Eigner der Liste auf
-über eine Nachricht an
+Ã¼ber eine Nachricht an
 
     %(owneraddr)s

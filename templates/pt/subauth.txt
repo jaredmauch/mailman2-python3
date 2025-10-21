@@ -1,10 +1,10 @@
-A sua autorização é necessária para aprovar o pedido de inscrição na
-lista de discussão:
+A sua autorizaÃ§Ã£o Ã© necessÃ¡ria para aprovar o pedido de inscriÃ§Ã£o na
+lista de discussÃ£o:
 
     Para:  %(username)s
     Lista: %(listname)s@%(hostname)s
 
-Para sua conveniência, visite:
+Para sua conveniÃªncia, visite:
 
     %(admindb_url)s
 

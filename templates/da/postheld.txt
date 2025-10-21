@@ -2,15 +2,15 @@ Du har sendt en e-mail til '%(listname)s' med emnet
 
     %(subject)s
 
-Den holdes foreløbigt tilbage, indtil moderator har læst og
+Den holdes forelÃ¸bigt tilbage, indtil moderator har lÃ¦st og
 godkendt eller afvist din mail.
 
 Begrundelsen for at tilbageholde din e-mail er:
 
     %(reason)s
 
-Enten vil din e-mail blive videresendt til listen, eller du får den retur
-med en begrundelse for afvisningen. Hvis du ønsker at
-trække din e-mail tilbage, kan dette gøres på følgende URL:
+Enten vil din e-mail blive videresendt til listen, eller du fÃ¥r den retur
+med en begrundelse for afvisningen. Hvis du Ã¸nsker at
+trÃ¦kke din e-mail tilbage, kan dette gÃ¸res pÃ¥ fÃ¸lgende URL:
 
     %(confirmurl)s

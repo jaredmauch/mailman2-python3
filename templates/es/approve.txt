@@ -1,4 +1,4 @@
-Su petición dirigida a %(requestaddr)s:
+Su peticiÃ³n dirigida a %(requestaddr)s:
 
     %(cmd)s
 
@@ -7,10 +7,10 @@ se ha enviado al administrador de la lista.
 Esto probablemente se debe a que ha intentado subscribirse a una lista
 'cerrada'.
 
-Se le enviará una notificación por correo electrónico con la decisión
-del administrador de la lista acerca de su solicitud de subscripción.
+Se le enviarÃ¡ una notificaciÃ³n por correo electrÃ³nico con la decisiÃ³n
+del administrador de la lista acerca de su solicitud de subscripciÃ³n.
 
-Cualquier pregunta sobre la política de subscripciones de la lista 
+Cualquier pregunta sobre la polÃ­tica de subscripciones de la lista 
 se debe enviar al administrador:
 
     %(adminaddr)s

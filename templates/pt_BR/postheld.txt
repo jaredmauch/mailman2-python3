@@ -2,14 +2,14 @@ Seu email para '%(listname)s' com o assunto
 
     %(subject)s
 
-Esta em espera até que o moderador da lista revise-a para aprovação.
+Esta em espera atÃ© que o moderador da lista revise-a para aprovaÃ§Ã£o.
 
-A razão de estar em espera é:
+A razÃ£o de estar em espera Ã©:
 
     %(reason)s
 
-Ou a mensagem será postada a lista, ou receberá uma notificação da 
-decisão do moderador. Se desejar cancelar esta postagem, visite 
-o seguinte endereço:
+Ou a mensagem serÃ¡ postada a lista, ou receberÃ¡ uma notificaÃ§Ã£o da 
+decisÃ£o do moderador. Se desejar cancelar esta postagem, visite 
+o seguinte endereÃ§o:
 
     %(confirmurl)s

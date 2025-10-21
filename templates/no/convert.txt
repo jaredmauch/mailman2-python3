@@ -1,33 +1,33 @@
-Listen '%(listname)s' har nettopp gjennomgått en stor endring.
-Den styres nå av et nytt listesystem, som heter "Mailman". Dette nye
-systemet vil forhåpentligvis løse problemer som denne listen har hatt.
+Listen '%(listname)s' har nettopp gjennomgÃ¥tt en stor endring.
+Den styres nÃ¥ av et nytt listesystem, som heter "Mailman". Dette nye
+systemet vil forhÃ¥pentligvis lÃ¸se problemer som denne listen har hatt.
 
-Hvilken påvirkning får dette for deg?
+Hvilken pÃ¥virkning fÃ¥r dette for deg?
 
-1) Epost som skal gå til alle på listen må sendes til: %(listaddr)s
+1) Epost som skal gÃ¥ til alle pÃ¥ listen mÃ¥ sendes til: %(listaddr)s
 
-2) Du har fått tildelt et passord som skal forhindre andre fra å melde
+2) Du har fÃ¥tt tildelt et passord som skal forhindre andre fra Ã¥ melde
    deg ut av listen uten at du vet det. Du vil motta dette passordet i
-   en egen epost, som du kanskje allerede har fått. Fortvil ikke om du
-   glemmer passordet, det kan være du vil motta en påminnelse om
-   passordet en gang i måneden. Hvis ikke kan du be om å få det
+   en egen epost, som du kanskje allerede har fÃ¥tt. Fortvil ikke om du
+   glemmer passordet, det kan vÃ¦re du vil motta en pÃ¥minnelse om
+   passordet en gang i mÃ¥neden. Hvis ikke kan du be om Ã¥ fÃ¥ det
    tilsendt fra websiden til epostlisten.
 
-3) Har du tilgang til WWW, kan du gå inn på epostlistens webside
-   når som helst for å melde deg av, motta sammendrag av trafikk på
+3) Har du tilgang til WWW, kan du gÃ¥ inn pÃ¥ epostlistens webside
+   nÃ¥r som helst for Ã¥ melde deg av, motta sammendrag av trafikk pÃ¥
    listen, og endre andre innstillinger, samt bla i tidligere meldinger
-   som er sendt til listen. Denne websiden finner du på:
+   som er sendt til listen. Denne websiden finner du pÃ¥:
 
     %(listinfo_url)s
 
-4) Har du ikke tilgang til WWW, kan du gjøre dette via epost.
+4) Har du ikke tilgang til WWW, kan du gjÃ¸re dette via epost.
    Send en epost til %(requestaddr)s med ordet "help" i emnefeltet
    eller som innhold i eposten. Du vil da motta et automatisk svar med
    hjelp og videre forklaring.
 
-Eventuelle spørsmål eller problemer med det nye system rettes til:
+Eventuelle spÃ¸rsmÃ¥l eller problemer med det nye system rettes til:
 %(adminaddr)s
 
 Denne meldingen ble auto-generert av Mailman %(version)s. For mer
-informasjon om programvaren Mailman, besøk Mailmans hjemmeside på
+informasjon om programvaren Mailman, besÃ¸k Mailmans hjemmeside pÃ¥
 http://www.list.org/

@@ -1,32 +1,32 @@
-Lista "%(listname)s" zosta³a utworzona. Oto podstawowe informacje 
-o li¶cie.
+Lista "%(listname)s" zostaÅ‚a utworzona. Oto podstawowe informacje 
+o liÅ›cie.
 
-Has³o zabezpieczaj±ce dostêp do ustawieñ administracyjnych:
+HasÅ‚o zabezpieczajÄ…ce dostÄ™p do ustawieÅ„ administracyjnych:
 
     %(password)s
 
-Has³o potrzebne jest do skonfigurowania listy oraz zarz±dzania zadaniami
-administracyjnymi (np. zatwierdzaniem subskrypcji b±d¼ moderowaniem listy).
+HasÅ‚o potrzebne jest do skonfigurowania listy oraz zarzÄ…dzania zadaniami
+administracyjnymi (np. zatwierdzaniem subskrypcji bÄ…dÅº moderowaniem listy).
 
-Listê mo¿esz skonfigurowaæ pod adresem:
+ListÄ™ moÅ¼esz skonfigurowaÄ‡ pod adresem:
 
     %(admin_url)s
 
-Strona dla prenumeratorów listy: 
+Strona dla prenumeratorÃ³w listy: 
 
     %(listinfo_url)s
 
-Tê stronê mo¿na dostosowaæ z poziomu interfejsu administracyjnego.
-Jednak¿e, w tym celu potrzebna bêdzie znajomo¶æ sk³adni HTML.
+TÄ™ stronÄ™ moÅ¼na dostosowaÄ‡ z poziomu interfejsu administracyjnego.
+JednakÅ¼e, w tym celu potrzebna bÄ™dzie znajomoÅ›Ä‡ skÅ‚adni HTML.
 
-U¿ytkownicy mog± zarz±dzaæ swoj± prenumerat± za pomoc± poleceñ wysy³anych
-emailem. Napisz na poni¿szy adres umieszczaj±c s³owo "help" w temacie 
-lub tre¶ci wiadomo¶ci.
+UÅ¼ytkownicy mogÄ… zarzÄ…dzaÄ‡ swojÄ… prenumeratÄ… za pomocÄ… poleceÅ„ wysyÅ‚anych
+emailem. Napisz na poniÅ¼szy adres umieszczajÄ…c sÅ‚owo "help" w temacie 
+lub treÅ›ci wiadomoÅ›ci.
 
     %(requestaddr)s
 
-Wypisanie u¿ytkownika: przejd¼ na stronê informacyjn± listy,
-wpisz adres email u¿ytkownika i podaj swoje has³o administracyjne. 
-W podobny sposób mo¿esz równie¿ zmieniæ opcje danego prenumeratora.
+Wypisanie uÅ¼ytkownika: przejdÅº na stronÄ™ informacyjnÄ… listy,
+wpisz adres email uÅ¼ytkownika i podaj swoje hasÅ‚o administracyjne. 
+W podobny sposÃ³b moÅ¼esz rÃ³wnieÅ¼ zmieniÄ‡ opcje danego prenumeratora.
 
-W razie pytañ lub w±tpliwo¶ci, pisz na adres %(siteowner)s.
+W razie pytaÅ„ lub wÄ…tpliwoÅ›ci, pisz na adres %(siteowner)s.

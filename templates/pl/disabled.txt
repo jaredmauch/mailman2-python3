@@ -1,24 +1,24 @@
-Prenumerata %(listname)s zosta³a wy³±czona %(reason)s.  
-Nie bêdziesz otrzymywa³ kolejnych wiadomo¶ci z tej listy do chwili
-ponownej aktywacji prenumeraty. Je¶li nie uaktywnisz prenumeraty,
-Twój adres zostanie usuniêty z listy (po wys³aniu %(noticesleft)s 
-ostrze¿eñ).
+Prenumerata %(listname)s zostaÅ‚a wyÅ‚Ä…czona %(reason)s.  
+Nie bÄ™dziesz otrzymywaÅ‚ kolejnych wiadomoÅ›ci z tej listy do chwili
+ponownej aktywacji prenumeraty. JeÅ›li nie uaktywnisz prenumeraty,
+TwÃ³j adres zostanie usuniÄ™ty z listy (po wysÅ‚aniu %(noticesleft)s 
+ostrzeÅ¼eÅ„).
 
-Aby ponownie uaktywniæ prenumeratê, odpowiedz na tê wiadomo¶æ
-(nie zmieniaj±c jej tematu) lub kliknij poni¿szy odno¶nik:
+Aby ponownie uaktywniÄ‡ prenumeratÄ™, odpowiedz na tÄ™ wiadomoÅ›Ä‡
+(nie zmieniajÄ…c jej tematu) lub kliknij poniÅ¼szy odnoÅ›nik:
 
     %(confirmurl)s
 
-Mo¿esz równie¿ zalogowaæ siê na stronie ustawieñ prenumeraty:
+MoÅ¼esz rÃ³wnieÅ¼ zalogowaÄ‡ siÄ™ na stronie ustawieÅ„ prenumeraty:
 
     %(optionsurl)s
 
-Strona z ustawieniami prenumeraty pozwala dostosowaæ jej opcje. 
-Aby siê zalogowaæ do ustawieñ, musisz podaæ has³o:
+Strona z ustawieniami prenumeraty pozwala dostosowaÄ‡ jej opcje. 
+Aby siÄ™ zalogowaÄ‡ do ustawieÅ„, musisz podaÄ‡ hasÅ‚o:
 
     %(password)s
 
-W przypadku pytañ b±¼ problemów skontaktuj siê z administratorem
+W przypadku pytaÅ„ bÄ…Åº problemÃ³w skontaktuj siÄ™ z administratorem
 pod adresem:
 
     %(owneraddr)s

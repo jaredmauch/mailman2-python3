@@ -2,15 +2,15 @@ Du sendte en epost til '%(listname)s' med emnet
 
     %(subject)s
 
-Den holdes foreløpig igjen inntil moderatoren kan lese den for å
-godkjenne eller avslå den.
+Den holdes forelÃ¸pig igjen inntil moderatoren kan lese den for Ã¥
+godkjenne eller avslÃ¥ den.
 
 Grunnen til at den holdes tilbake er:
 
     %(reason)s
 
-Enten vil eposten din sendes ut på listen, eller du får den i retur
-med begrunnelse for hvorfor den ikke ble sendt ut. Ønsker du å trekke
-den tilbake, gå inn på følgende URL:
+Enten vil eposten din sendes ut pÃ¥ listen, eller du fÃ¥r den i retur
+med begrunnelse for hvorfor den ikke ble sendt ut. Ã˜nsker du Ã¥ trekke
+den tilbake, gÃ¥ inn pÃ¥ fÃ¸lgende URL:
 
     %(confirmurl)s

@@ -1,10 +1,10 @@
-Wymagane jest potwierdzenie pro¶by o wypisanie siê z listy:
+Wymagane jest potwierdzenie proÅ›by o wypisanie siÄ™ z listy:
 
     Od:     %(username)s
     Lista:  %(listname)s@%(hostname)s
 
-Wejd¼ na stronê:
+WejdÅº na stronÄ™:
 
     %(admindb_url)s
 
-¿eby zareagowaæ na t± pro¶bê.
+Å¼eby zareagowaÄ‡ na tÄ… proÅ›bÄ™.

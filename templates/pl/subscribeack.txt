@@ -1,35 +1,35 @@
-Witamy na li¶cie %(real_name)s@%(host_name)s!
+Witamy na liÅ›cie %(real_name)s@%(host_name)s!
 %(welcome)s
-Wiadomo¶ci skierowane na listê wysy³aj na adres:
+WiadomoÅ›ci skierowane na listÄ™ wysyÅ‚aj na adres:
 
   %(emailaddr)s
 
-Ogóln± stronê informacyjn± listy znajdziesz pod adresem:
+OgÃ³lnÄ… stronÄ™ informacyjnÄ… listy znajdziesz pod adresem:
 
   %(listinfo_url)s
 
-Wypisaæ siê z listy lub zmieniæ opcje swojej subskrypcji
-(np. tryb lub has³o) mo¿na na stronie:
+WypisaÄ‡ siÄ™ z listy lub zmieniÄ‡ opcje swojej subskrypcji
+(np. tryb lub hasÅ‚o) moÅ¼na na stronie:
 
   %(optionsurl)s
 %(umbrella)s
-Zarz±dzenie prenumerat± lub wypisanie siê jest mo¿liwe, równie¿ je¶li
-nie masz dostêpu do sieci WWW. W takim przypadku wy¶lij wiadomo¶æ
-za s³owem "help" w temacie lub tre¶ci na adres:
+ZarzÄ…dzenie prenumeratÄ… lub wypisanie siÄ™ jest moÅ¼liwe, rÃ³wnieÅ¼ jeÅ›li
+nie masz dostÄ™pu do sieci WWW. W takim przypadku wyÅ›lij wiadomoÅ›Ä‡
+za sÅ‚owem "help" w temacie lub treÅ›ci na adres:
 
   %(real_name)s-request@%(host_name)s
 
-W odpowiedzi dostaniesz dalsze wskazówki.
+W odpowiedzi dostaniesz dalsze wskazÃ³wki.
 
-Pamiêtaj, ¿e do wszystkich zmian (w tym równie¿ wypisania siê) potrzebne
-bêdzie Twoje has³o. Brzmi ono:
+PamiÄ™taj, Å¼e do wszystkich zmian (w tym rÃ³wnieÅ¼ wypisania siÄ™) potrzebne
+bÄ™dzie Twoje hasÅ‚o. Brzmi ono:
 
   %(password)s
 
-Mailman bêdzie co miesi±c przysy³a³ Ci wiadomo¶æ przypominaj±c± o tym,
-na jakie listy na serwerze %(host_name)s jeste¶ zapisany i
-jakie jest Twoje has³o. Mo¿na zrezygnowaæ z przypomnieñ zmieniaj±c
-opcje subskrypcji. Przypomnienie zawieraæ bêdzie równie¿ instrukcje, w
-jaki sposób wypisaæ siê z listy i korzystaæ z Mailmana. Wchodz±c na
-stronê swojej subskrypcji mo¿esz w ka¿dej chwili poprosiæ o
-przes³anie has³a emailem.
+Mailman bÄ™dzie co miesiÄ…c przysyÅ‚aÅ‚ Ci wiadomoÅ›Ä‡ przypominajÄ…cÄ… o tym,
+na jakie listy na serwerze %(host_name)s jesteÅ› zapisany i
+jakie jest Twoje hasÅ‚o. MoÅ¼na zrezygnowaÄ‡ z przypomnieÅ„ zmieniajÄ…c
+opcje subskrypcji. Przypomnienie zawieraÄ‡ bÄ™dzie rÃ³wnieÅ¼ instrukcje, w
+jaki sposÃ³b wypisaÄ‡ siÄ™ z listy i korzystaÄ‡ z Mailmana. WchodzÄ…c na
+stronÄ™ swojej subskrypcji moÅ¼esz w kaÅ¼dej chwili poprosiÄ‡ o
+przesÅ‚anie hasÅ‚a emailem.

@@ -1,16 +1,16 @@
-Va¹e zpráva pro konferenci '%(listname)s' ve vìci
+VaÅ¡e zprÃ¡va pro konferenci '%(listname)s' ve vÄ›ci
 
     %(subject)s
 
-Nebyla rozeslána. Pro její distribuci je nutnı souhlas moderátora.
+Nebyla rozeslÃ¡na. Pro jejÃ­ distribuci je nutnÃ½ souhlas moderÃ¡tora.
 
-Dùvod pozdr¾ení distribuce zprávy je:
+DÅ¯vod pozdrÅ¾enÃ­ distribuce zprÃ¡vy je:
 
     %(reason)s
 
-Va¹e zpráva buï bude rozeslána nebo dostanete zprávu o rozhodnutí
-moderátora.
+VaÅ¡e zprÃ¡va buÄ bude rozeslÃ¡na nebo dostanete zprÃ¡vu o rozhodnutÃ­
+moderÃ¡tora.
 
-Pokud si zprávu nepøejete rozeslat, mù¾ete si stornovat na této adrese:
+Pokud si zprÃ¡vu nepÅ™ejete rozeslat, mÅ¯Å¾ete si stornovat na tÃ©to adrese:
 
     %(confirmurl)s

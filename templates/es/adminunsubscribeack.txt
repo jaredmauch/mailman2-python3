@@ -1,4 +1,4 @@
-%(member)s ha anulado su subscripción de %(listname)s.
+%(member)s ha anulado su subscripciÃ³n de %(listname)s.
 %(whence)s
 
 

@@ -4,9 +4,9 @@ kirja listi saatmise
     List:    %(listname)s@%(hostname)s
     Kellelt:    %(sender)s
     Teema: %(subject)s
-    Põhjus:  %(reason)s
+    PÃµhjus:  %(reason)s
 
-Kirja saab autoriseerida või kustutada aadressil
+Kirja saab autoriseerida vÃµi kustutada aadressil
 
     %(admindb_url)s
 

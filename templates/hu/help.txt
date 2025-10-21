@@ -1,34 +1,34 @@
-Súgó %(listname)s levelezési lista használatához:
+SÃºgÃ³ %(listname)s levelezÃ©si lista hasznÃ¡latÃ¡hoz:
 
-Ez az e-mail a %(version)s verziószámú "Mailman" listakezelõ
-program parancsait ismerteti. A következõkben ismertetett parancsokkal
-a Mailman által üzemeltetett listákról és azok beállításáról
-lehet olvasni. A parancsokat mind a levél törzsében, vagy tárgyában
+Ez az e-mail a %(version)s verziÃ³szÃ¡mÃº "Mailman" listakezelÅ‘
+program parancsait ismerteti. A kÃ¶vetkezÅ‘kben ismertetett parancsokkal
+a Mailman Ã¡ltal Ã¼zemeltetett listÃ¡krÃ³l Ã©s azok beÃ¡llÃ­tÃ¡sÃ¡rÃ³l
+lehet olvasni. A parancsokat mind a levÃ©l tÃ¶rzsÃ©ben, vagy tÃ¡rgyÃ¡ban
 meg lehet adni.
 
-Érdemes tudni, hogy az itt említett módosításokat weben keresztül is
-végre lehet hajtani a következõ címen:
+Ã‰rdemes tudni, hogy az itt emlÃ­tett mÃ³dosÃ­tÃ¡sokat weben keresztÃ¼l is
+vÃ©gre lehet hajtani a kÃ¶vetkezÅ‘ cÃ­men:
 
     %(listinfo_url)s
 
-Például az említett oldal segítségével kikérheted a saját címedre a
+PÃ©ldÃ¡ul az emlÃ­tett oldal segÃ­tsÃ©gÃ©vel kikÃ©rheted a sajÃ¡t cÃ­medre a
 jelszavadat.
 
-A lista beállító parancsokat (pl. subscribe, who, stb.) a listához
-tartozó *-request címre kell küldeni, pl. a 'mailman' lista esetén
-a 'mailman-request@...' címet kell használni.
+A lista beÃ¡llÃ­tÃ³ parancsokat (pl. subscribe, who, stb.) a listÃ¡hoz
+tartozÃ³ *-request cÃ­mre kell kÃ¼ldeni, pl. a 'mailman' lista esetÃ©n
+a 'mailman-request@...' cÃ­met kell hasznÃ¡lni.
 
-A leírásokkal kapcsolatban - a "<>" jelek közötti szavak mindig a
-KÖTELEZÕEN megadandó adatokat, míg a "[]" jelek közötti szavak csak az
-OPCIONÁLIS megadandókat jelölik. Azonban a parancsokban sohase használjuk
-a "<>" és "[]" jeleket.
+A leÃ­rÃ¡sokkal kapcsolatban - a "<>" jelek kÃ¶zÃ¶tti szavak mindig a
+KÃ–TELEZÅEN megadandÃ³ adatokat, mÃ­g a "[]" jelek kÃ¶zÃ¶tti szavak csak az
+OPCIONÃLIS megadandÃ³kat jelÃ¶lik. Azonban a parancsokban sohase hasznÃ¡ljuk
+a "<>" Ã©s "[]" jeleket.
 
-A következõ parancsok állnak rendelkezésre:
+A kÃ¶vetkezÅ‘ parancsok Ã¡llnak rendelkezÃ©sre:
 
     %(commands)s
 
-A parancsokat az alábbi címre kell küldeni %(requestaddr)s
+A parancsokat az alÃ¡bbi cÃ­mre kell kÃ¼ldeni %(requestaddr)s
 
-Kérdéseidet, észrevételeidet a következõ címre küldjed
+KÃ©rdÃ©seidet, Ã©szrevÃ©teleidet a kÃ¶vetkezÅ‘ cÃ­mre kÃ¼ldjed
 
     %(adminaddr)s

@@ -1,21 +1,21 @@
-Diskusijø forumo %(listname)s, esanèio %(hostname)s,
-administratorius kvieèia Jus, <%(email)s> dalyvauti forume %(listname)s.
+DiskusijÅ³ forumo %(listname)s, esanÄio %(hostname)s,
+administratorius kvieÄia Jus, <%(email)s> dalyvauti forume %(listname)s.
 
-Jei norite dalyvauti ğiose diskusijose, atsakykite á ğá laiğkà 
-nepakeisdami jo temos (subject), arba aplankykite mûsø tinklapá:
+Jei norite dalyvauti Å¡iose diskusijose, atsakykite Ä¯ Å¡Ä¯ laiÅ¡kÄ… 
+nepakeisdami jo temos (subject), arba aplankykite mÅ«sÅ³ tinklapÄ¯:
 
     %(confirmurl)s
 
-Dar galite adresu %(requestaddr)s iğsiøsti laiğkà,
-árağæ á jà tik ğià eilutæ:
+Dar galite adresu %(requestaddr)s iÅ¡siÅ³sti laiÅ¡kÄ…,
+Ä¯raÅ¡Ä™ Ä¯ jÄ… tik Å¡iÄ… eilutÄ™:
 
     confirm %(cookie)s
 
-Dauguma pağto programø galite pasinaudoti komanda 'Atsakyti'
-arba 'Reply', nes ği komanda iğsaugo temos (subject) laukà.
-(Patvirtinimui netrukdo daşniausiai áterpiamas 'Ats:' arba 'Re:'.)
+Dauguma paÅ¡to programÅ³ galite pasinaudoti komanda 'Atsakyti'
+arba 'Reply', nes Å¡i komanda iÅ¡saugo temos (subject) laukÄ….
+(Patvirtinimui netrukdo daÅ¾niausiai Ä¯terpiamas 'Ats:' arba 'Re:'.)
 
 
-Ignoruokite ğá laiğkà, jeigu nenorite prisijungti prie ğio diskusijø forumo.
+Ignoruokite Å¡Ä¯ laiÅ¡kÄ…, jeigu nenorite prisijungti prie Å¡io diskusijÅ³ forumo.
 
-Visais klausimais prağome kreiptis á administratoriø - %(listowner)s.
+Visais klausimais praÅ¡ome kreiptis Ä¯ administratoriÅ³ - %(listowner)s.

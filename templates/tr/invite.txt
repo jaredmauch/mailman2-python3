@@ -1,22 +1,22 @@
-"%(email)s" e-posta adresiniz, %(hostname)s üzerinde bulunan
-%(listname)s listesine üye olması için %(listname)s liste yöneticisi
-tarafından davet edildi. Daveti, Konu: başlığını değiştirmeden
-bu mesajı yanıtlayarak kabul edebilirsiniz. 
+"%(email)s" e-posta adresiniz, %(hostname)s Ã¼zerinde bulunan
+%(listname)s listesine Ã¼ye olmasÄ± iÃ§in %(listname)s liste yÃ¶neticisi
+tarafÄ±ndan davet edildi. Daveti, Konu: baÅŸlÄ±ÄŸÄ±nÄ± deÄŸiÅŸtirmeden
+bu mesajÄ± yanÄ±tlayarak kabul edebilirsiniz. 
 
-Ayrıca bu sayfayı da ziyaret edebilirsiniz:
+AyrÄ±ca bu sayfayÄ± da ziyaret edebilirsiniz:
 
     %(confirmurl)s
 
 
-Veya bir mesaja aşağıdaki satırı -- sadece aşağıdaki satırı --
-yazarak %(requestaddr)s adresine gönderin:
+Veya bir mesaja aÅŸaÄŸÄ±daki satÄ±rÄ± -- sadece aÅŸaÄŸÄ±daki satÄ±rÄ± --
+yazarak %(requestaddr)s adresine gÃ¶nderin:
 
     confirm %(cookie)s
 
-Basitçe bu mesajı `yanıtlamak', çoğu e-posta okuma programında
-çalışır.
+BasitÃ§e bu mesajÄ± `yanÄ±tlamak', Ã§oÄŸu e-posta okuma programÄ±nda
+Ã§alÄ±ÅŸÄ±r.
 
-Bu daveti reddetmek istiyorsanız, lütfen bu mesajı gözardı edin.
-Eğer herhangi bir sorunuz varsa, lütfen %(listowner)s ile
-bağlantı kurun.
+Bu daveti reddetmek istiyorsanÄ±z, lÃ¼tfen bu mesajÄ± gÃ¶zardÄ± edin.
+EÄŸer herhangi bir sorunuz varsa, lÃ¼tfen %(listowner)s ile
+baÄŸlantÄ± kurun.
 

@@ -1,11 +1,11 @@
-La petición a la llista de distribución %(listname)s:
+La peticiÃ³n a la llista de distribuciÃ³n %(listname)s:
 
     %(request)s
 
-refugóse pol moderador dando la siguiente razón:
+refugÃ³se pol moderador dando la siguiente razÃ³n:
 
 "%(reason)s"
 
-Cualesquier entruga o suxerencia tendrá de dirixise al alministrador de la llista na siguiente direición de corréu:
+Cualesquier entruga o suxerencia tendrÃ¡ de dirixise al alministrador de la llista na siguiente direiciÃ³n de corrÃ©u:
 
     %(adminaddr)s

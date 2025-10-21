@@ -1,7 +1,7 @@
-La lista `%(listname)s' Ë stata creata per te!  
+La lista `%(listname)s' √® stata creata per te!  
 Di seguito trovi alcune informazioni di base in proposito.
 
-La tua password per la lista Ë:
+La tua password per la lista √®:
 
     %(password)s
 
@@ -14,7 +14,7 @@ Puoi configurare la tua lista a questa pagina web:
 
     %(admin_url)s
 
-La pagina per gli utenti della tua lista Ë:
+La pagina per gli utenti della tua lista √®:
 
     %(listinfo_url)s
 
@@ -34,6 +34,6 @@ la tua lista dall'elenco poi inserisci l'email dell'utente
 come se tu fossi lui.  Dove l'utente metterebbe la sua password 
 per cancellarsi, tu metti la tua password di amministratore.
 Puoi anche usare questa password per cambiare le opzioni degli
-utenti, incluso la modalit‡ digest, la disabilitazione, etc.
+utenti, incluso la modalit√† digest, la disabilitazione, etc.
 
 Per favore, invia ogni domanda a %(siteowner)s.

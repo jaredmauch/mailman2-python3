@@ -1,17 +1,17 @@
-Pyyntösi osoitteeseen %(requestaddr)s:
+PyyntÃ¶si osoitteeseen %(requestaddr)s:
 
     %(cmd)s
 
-on edelleenohjattu listan ylläpitohenkilöille.
+on edelleenohjattu listan yllÃ¤pitohenkilÃ¶ille.
 
-Tämä johtuu todennäköisesti siitä, että olet 
-yrittänyt liittyä ylläpitäjän hyväksyntää
+TÃ¤mÃ¤ johtuu todennÃ¤kÃ¶isesti siitÃ¤, ettÃ¤ olet 
+yrittÃ¤nyt liittyÃ¤ yllÃ¤pitÃ¤jÃ¤n hyvÃ¤ksyntÃ¤Ã¤
 vaativalle listalle.
 
-Tulet saamaan sähköpostitse listan ylläpitäjän päätöksen 
-listalle liittymisestäsi.
+Tulet saamaan sÃ¤hkÃ¶postitse listan yllÃ¤pitÃ¤jÃ¤n pÃ¤Ã¤tÃ¶ksen 
+listalle liittymisestÃ¤si.
 
-Lisäkysymykset asiasta voit osoittaa listan ylläpitäjälle
+LisÃ¤kysymykset asiasta voit osoittaa listan yllÃ¤pitÃ¤jÃ¤lle
 osoitteeseen:
 
     %(adminaddr)s

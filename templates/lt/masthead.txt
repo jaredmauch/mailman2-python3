@@ -1,16 +1,16 @@
-Laiğkus diskusijø forumui %(real_name)s siøskite adresu
+LaiÅ¡kus diskusijÅ³ forumui %(real_name)s siÅ³skite adresu
 	%(got_list_email)s
 
-Prisijungti arba atsijungti nuo diskusijø forumo galime su
-narğykle - apsilankykite adresu:
+Prisijungti arba atsijungti nuo diskusijÅ³ forumo galime su
+narÅ¡ykle - apsilankykite adresu:
 	%(got_listinfo_url)s
 
-Taip pat tai galima atlikti el. pağtu - apie nustatymø keitimà
-komandomis el. pağtu galite suşinoti adresu %(got_request_email)s 
-nusiuntæ laiğkà, kurio tema (subject) 'help'.
+Taip pat tai galima atlikti el. paÅ¡tu - apie nustatymÅ³ keitimÄ…
+komandomis el. paÅ¡tu galite suÅ¾inoti adresu %(got_request_email)s 
+nusiuntÄ™ laiÅ¡kÄ…, kurio tema (subject) 'help'.
 
-Asmeniui, prişiûrinèiam diskusijø forumà, galite parağyti adresu
+Asmeniui, priÅ¾iÅ«rinÄiam diskusijÅ³ forumÄ…, galite paraÅ¡yti adresu
 	%(got_owner_email)s
 
-Jei rağote atsakymà á ğá laiğkà, prağome rağyti temà, tiksliai
-apibûdinanèià Jûsø laiğko esmæ.
+Jei raÅ¡ote atsakymÄ… Ä¯ Å¡Ä¯ laiÅ¡kÄ…, praÅ¡ome raÅ¡yti temÄ…, tiksliai
+apibÅ«dinanÄiÄ… JÅ«sÅ³ laiÅ¡ko esmÄ™.

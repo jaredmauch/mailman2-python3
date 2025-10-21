@@ -1,12 +1,12 @@
-Bir mesaj listesi üyesinin listeden çıkması için onayınız
+Bir mesaj listesi Ã¼yesinin listeden Ã§Ä±kmasÄ± iÃ§in onayÄ±nÄ±z
 gerekiyor:
 
-    Çıkmak isteyen:   %(username)s
+    Ã‡Ä±kmak isteyen:   %(username)s
     Liste: %(listname)s@%(hostname)s
 
 Size uygun bir zamanda
 
     %(admindb_url)s
 
-adresine giderek isteği inceleyebilirsiniz.
+adresine giderek isteÄŸi inceleyebilirsiniz.
 

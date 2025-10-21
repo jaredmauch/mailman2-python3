@@ -1,37 +1,37 @@
-La lista de distribuci髇 `%(listname)s' se acaba de crear para usted.
-A continuaci髇 se incluye informaci髇 b醩ica sobre su lista.
+La lista de distribuci贸n `%(listname)s' se acaba de crear para usted.
+A continuaci贸n se incluye informaci贸n b谩sica sobre su lista.
 
 La clave para administrar la lista es:
 
     %(password)s
 
-Necesita esta clave para configurar la lista. Tambi閚 es necesaria para
+Necesita esta clave para configurar la lista. Tambi茅n es necesaria para
 realizar tareas administrativas tales como aprobar los mensajes si decide
 que la lista sea moderada. 
 
-Puede configurar su lista en la siguiente p醙ina WEB:
+Puede configurar su lista en la siguiente p谩gina WEB:
 
     %(admin_url)s
 
-La p醙ina para los usuarios de su lista es:
+La p谩gina para los usuarios de su lista es:
 
     %(listinfo_url)s
 
-Puede incluso personalizar esas p醙inas a traves de la pagina de
-configuraci髇 de la lista. Es necesario que tenga usted conocimientos
+Puede incluso personalizar esas p谩ginas a traves de la pagina de
+configuraci贸n de la lista. Es necesario que tenga usted conocimientos
 de HTML para poder hacerlo. 
 
-Tambi閚 existe un mecanismo de gesti髇 por correo electr髇ico para los
+Tambi茅n existe un mecanismo de gesti贸n por correo electr贸nico para los
 usuarios de la lista (no para los administradores). Para obtener 
-informaci髇 sobre su uso, se debe enviar un mensaje con la palabra
+informaci贸n sobre su uso, se debe enviar un mensaje con la palabra
 'help' como asunto (subject) o en el cuerpo del mismo, a: 
 
     %(requestaddr)s
 
-Para anular la subscripci髇 de un usuario: consulte la p醙ina 
-'listinfo' y siga el enlace de la direcci髇 del usuario o
-introduzca la misma, como si usted fuera 閘. Utilice la clave de
-adminstraci髇 en lugar de la clave del usuario. Tambien puede usar la
-clave de administraci髇 para cambiar las opciones de los usuarios.
+Para anular la subscripci贸n de un usuario: consulte la p谩gina 
+'listinfo' y siga el enlace de la direcci贸n del usuario o
+introduzca la misma, como si usted fuera 茅l. Utilice la clave de
+adminstraci贸n en lugar de la clave del usuario. Tambien puede usar la
+clave de administraci贸n para cambiar las opciones de los usuarios.
 
 Por favor, remita sus dudas a %(siteowner)s.

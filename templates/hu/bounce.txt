@@ -1,13 +1,13 @@
-Mailman levelezõlista visszapattanási (bounce) értesítés:
+Mailman levelezÅ‘lista visszapattanÃ¡si (bounce) Ã©rtesÃ­tÃ©s:
 
     Lista:      %(listname)s
     Tag:        %(addr)s
-    Teendõ:     Feliratkozás %(negative)s%(did)s.
-    Indok:      Problémás vagy hibás e-mail cím.
+    TeendÅ‘:     FeliratkozÃ¡s %(negative)s%(did)s.
+    Indok:      ProblÃ©mÃ¡s vagy hibÃ¡s e-mail cÃ­m.
     %(but)s
 
 %(reenable)s
-Az értesítés a levél alján látható.
+Az Ã©rtesÃ­tÃ©s a levÃ©l aljÃ¡n lÃ¡thatÃ³.
 
-Kérdés?
-Fordulj a Mailman rendszer üzemeltetõjéhez: %(owneraddr)s.
+KÃ©rdÃ©s?
+Fordulj a Mailman rendszer Ã¼zemeltetÅ‘jÃ©hez: %(owneraddr)s.

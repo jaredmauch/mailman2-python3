@@ -1,2 +1,2 @@
-%(member)s è stato rimosso da %(listname)s.  
+%(member)s Ã¨ stato rimosso da %(listname)s.  
 %(whence)s

@@ -1,14 +1,14 @@
-Va¹a zahteva za %(requestaddr)s:
+VaÅ¡a zahteva za %(requestaddr)s:
 
     %(cmd)s
 
 je bila posredovana skrbniku dopisnega seznama.
 
-Razlog je ta, da se posku¹ate prijaviti na 'zaprti' seznam.
+Razlog je ta, da se poskuÅ¡ate prijaviti na 'zaprti' seznam.
 
-Odloèitev skrbnika seznama glede va¹e pro¹nje za prijavo na
-seznam boste dobili v obliki e-po¹tnega sporoèila.
+OdloÄitev skrbnika seznama glede vaÅ¡e proÅ¡nje za prijavo na
+seznam boste dobili v obliki e-poÅ¡tnega sporoÄila.
 
-Vsa vpra¹anja o pogojih prijave naslovite na:
+Vsa vpraÅ¡anja o pogojih prijave naslovite na:
 
     %(adminaddr)s

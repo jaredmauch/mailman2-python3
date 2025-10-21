@@ -1,12 +1,12 @@
-A sua autorização é necessária para a aprovação de desinscrição 
-na lista de discussão:
+A sua autorizaÃ§Ã£o Ã© necessÃ¡ria para a aprovaÃ§Ã£o de desinscriÃ§Ã£o 
+na lista de discussÃ£o:
 
     Por:   %(username)s
     De: %(listname)s@%(hostname)s
 
-Para sua conveniência, visite:
+Para sua conveniÃªncia, visite:
 
     %(admindb_url)s
 
-para processar a requisição.
+para processar a requisiÃ§Ã£o.
 

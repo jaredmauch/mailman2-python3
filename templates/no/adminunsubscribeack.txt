@@ -1,3 +1,3 @@
-%(member)s er nå tatt ut av listen %(listname)s.
+%(member)s er nÃ¥ tatt ut av listen %(listname)s.
 %(whence)s
 

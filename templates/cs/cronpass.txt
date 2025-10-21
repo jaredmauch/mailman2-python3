@@ -1,19 +1,19 @@
-Tato zpráva je zasílána jednou mìsíènì, aby Vás upozornila na stav
-Va¹eho èlenství v konferencích na serveru %(hostname)s
-Zároveò obsahuje pro pøipomenutí hesla pro správu Va¹eho èlenského
-konta a informace o správì konference.
+Tato zprÃ¡va je zasÃ­lÃ¡na jednou mÄ›sÃ­ÄnÄ›, aby VÃ¡s upozornila na stav
+VaÅ¡eho ÄlenstvÃ­ v konferencÃ­ch na serveru %(hostname)s
+ZÃ¡roveÅˆ obsahuje pro pÅ™ipomenutÃ­ hesla pro sprÃ¡vu VaÅ¡eho ÄlenskÃ©ho
+konta a informace o sprÃ¡vÄ› konference.
 
-Pokud nav¹tívíte ní¾e uvedenı odkaz, mù¾ete si zmìnit parametry
-svého èlenského konta, vèetnì pøihlá¹ení a odhlá¹ení. 
+Pokud navÅ¡tÃ­vÃ­te nÃ­Å¾e uvedenÃ½ odkaz, mÅ¯Å¾ete si zmÄ›nit parametry
+svÃ©ho ÄlenskÃ©ho konta, vÄetnÄ› pÅ™ihlÃ¡Å¡enÃ­ a odhlÃ¡Å¡enÃ­. 
 
-Kromì http pøístupu mù¾ete parametry svého èlenského konta
-mìnit zasláním po¾adavkù na '-request'adresu konference.
-Dopis zaslanı (napø. na, %(exreq)s) obsahující slovo 'help'
-v tìle dopisu vrátí zpìt kompletní popis ovládání konference 
-elektronickou po¹tou.
+KromÄ› http pÅ™Ã­stupu mÅ¯Å¾ete parametry svÃ©ho ÄlenskÃ©ho konta
+mÄ›nit zaslÃ¡nÃ­m poÅ¾adavkÅ¯ na '-request'adresu konference.
+Dopis zaslanÃ½ (napÅ™. na, %(exreq)s) obsahujÃ­cÃ­ slovo 'help'
+v tÄ›le dopisu vrÃ¡tÃ­ zpÄ›t kompletnÃ­ popis ovlÃ¡dÃ¡nÃ­ konference 
+elektronickou poÅ¡tou.
 
-Pokud máte nìjaké dotazy, problémy, pøipomínky a tak podobnì,
-za¹lete je, prosím, na adresu %(owner)s.  Dìkuji!
+Pokud mÃ¡te nÄ›jakÃ© dotazy, problÃ©my, pÅ™ipomÃ­nky a tak podobnÄ›,
+zaÅ¡lete je, prosÃ­m, na adresu %(owner)s.  DÄ›kuji!
 
 Hesla pro %(useraddr)s:
 

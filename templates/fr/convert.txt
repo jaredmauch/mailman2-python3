@@ -1,37 +1,37 @@
-La liste de diffusion %(listname)s vient de connaître un grand
-changement.  Elle est maintenant gérée par un nouveau logiciel de
+La liste de diffusion %(listname)s vient de connaÃ®tre un grand
+changement.  Elle est maintenant gÃ©rÃ©e par un nouveau logiciel de
 listes qui s'appelle "Mailman".  Avec un peu de chance, cela
-corrigera beaucoup de problèmes qui ont été rencontrés lors de
+corrigera beaucoup de problÃ¨mes qui ont Ã©tÃ© rencontrÃ©s lors de
 l'administration de cette liste.
 
 En quoi cela vous concerne-t-il? 
 
-1) Le courrier destiné à la liste doit être envoyé à: %(listaddr)s. 
+1) Le courrier destinÃ© Ã  la liste doit Ãªtre envoyÃ© Ã : %(listaddr)s. 
 
-2) Il vous a été attribué un mot de passe généré automatiquement,
-pour empêcher quiconque de vous désabonner à votre insu.  Il vous
-sera envoyé dans un autre courriel séparé, que vous avez peut-être
-déjà reçu.  Ne vous inquiétez pas si vous oubliez ce mot de passe,
-un rappel mensuel vous sera envoyé par courriel.
+2) Il vous a Ã©tÃ© attribuÃ© un mot de passe gÃ©nÃ©rÃ© automatiquement,
+pour empÃªcher quiconque de vous dÃ©sabonner Ã  votre insu.  Il vous
+sera envoyÃ© dans un autre courriel sÃ©parÃ©, que vous avez peut-Ãªtre
+dÃ©jÃ  reÃ§u.  Ne vous inquiÃ©tez pas si vous oubliez ce mot de passe,
+un rappel mensuel vous sera envoyÃ© par courriel.
 
-3) Si vous avez accès au web, vous pouvez vous en servir à tout moment
-pour vous désabonner, choisir de recevoir les messages en mode groupé
+3) Si vous avez accÃ¨s au web, vous pouvez vous en servir Ã  tout moment
+pour vous dÃ©sabonner, choisir de recevoir les messages en mode groupÃ©
 ou non, consulter les archives de la liste (qui seront disponibles
-après qu'il y ait eu des messages dans un jour ou deux),
+aprÃ¨s qu'il y ait eu des messages dans un jour ou deux),
 etc. L'adresse web pour cette interface est:
 
      %(listinfo_url)s 
 
-4) Si vous n'avez pas accès au web, vous pourrez effectuer les mêmes
-opérations par courriel.  Envoyez un message à %(requestaddr)s avec le
+4) Si vous n'avez pas accÃ¨s au web, vous pourrez effectuer les mÃªmes
+opÃ©rations par courriel.  Envoyez un message Ã  %(requestaddr)s avec le
 mot "help" (sans les guillemets) dans le sujet ou le corps du
-message. Vous recevrez alors une réponse automatique vous expliquant
-la marche à suivre.
+message. Vous recevrez alors une rÃ©ponse automatique vous expliquant
+la marche Ã  suivre.
 
-Pour toute question ou problème concernant cette nouvelle
-configuration, envoyez un courriel à l'adresse:
+Pour toute question ou problÃ¨me concernant cette nouvelle
+configuration, envoyez un courriel Ã  l'adresse:
 %(adminaddr)s. 
 
-Ce message a été auto-généré par Mailman %(version)s. Pour plus
+Ce message a Ã©tÃ© auto-gÃ©nÃ©rÃ© par Mailman %(version)s. Pour plus
 d'informations sur le logiciel Mailman, consultez le site Internet
-de Mailman à l'adresse http://www.list.org/
+de Mailman Ã  l'adresse http://www.list.org/

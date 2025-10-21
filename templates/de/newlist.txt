@@ -1,34 +1,34 @@
-Die Mailingliste "%(listname)s" wurde soeben für Sie angelegt. Hier nun
-ein paar grundlegende Informationen über Ihre neue Liste.
+Die Mailingliste "%(listname)s" wurde soeben fÃ¼r Sie angelegt. Hier nun
+ein paar grundlegende Informationen Ã¼ber Ihre neue Liste.
 
 Ihr Mailinglisten-Passwort lautet:
 
     %(password)s
 
-Sie benötigen dieses Passwort um die Liste zu konfigurieren. Darüberhinaus
+Sie benÃ¶tigen dieses Passwort um die Liste zu konfigurieren. DarÃ¼berhinaus
 wird es zur Bearbeitung von administrativen Anfragen (z.B. Genehmigung von
-E-Mails an die Liste) benötigt.
+E-Mails an die Liste) benÃ¶tigt.
 
-Sie können Ihre Mailingliste unter der folgenden Adresse administrieren:
+Sie kÃ¶nnen Ihre Mailingliste unter der folgenden Adresse administrieren:
 
     %(admin_url)s
 
-Die Webseite für Benutzer Ihrer Mailingliste ist:
+Die Webseite fÃ¼r Benutzer Ihrer Mailingliste ist:
 
     %(listinfo_url)s
 
-Sie können sogar diese Webseiten individuell gestalten. Allerdings müssen
-sie über entsprechende HTML-Kenntnisse verfügen.
+Sie kÃ¶nnen sogar diese Webseiten individuell gestalten. Allerdings mÃ¼ssen
+sie Ã¼ber entsprechende HTML-Kenntnisse verfÃ¼gen.
 
 Es gibt eine e-mail-basierte Schnittstelle zu Mailman; Informationen
-darüber erhalten Sie, indem Sie einem E-Mail mit dem Wort "help" in der
+darÃ¼ber erhalten Sie, indem Sie einem E-Mail mit dem Wort "help" in der
 Betreffzeile oder im Text an die folgende Adresse senden:
 
     %(requestaddr)s
 
-Um einem Abonnenten zu kündigen, klicken Sie auf der Informationswebseite der
+Um einem Abonnenten zu kÃ¼ndigen, klicken Sie auf der Informationswebseite der
 Liste (siehe oben) auf die E-Mail-Adresse des Abonnenten (oder geben Sie die
-Adresse ein) als ob Sie dieser Abonnent wären.
+Adresse ein) als ob Sie dieser Abonnent wÃ¤ren.
 
 Anstelle des Passworts des Abonnenten geben Sie allerdings Ihr Admin-Passwort ein.
 

@@ -2,14 +2,14 @@ Teie kiri listi '%(listname)s' teemal
 
     %(subject)s
 
-edastati listi moderaatorile läbivaatuseks.
+edastati listi moderaatorile lÃ¤bivaatuseks.
 
-Põhjus:
+PÃµhjus:
 
     %(reason)s
 
-Olenevalt moderaatori otsusest kiri kas postitakse listi või
-teavitatakse teid moderaatori otsusest. Postitust saab tühistada
+Olenevalt moderaatori otsusest kiri kas postitakse listi vÃµi
+teavitatakse teid moderaatori otsusest. Postitust saab tÃ¼histada
 aadressil
 
     %(confirmurl)s

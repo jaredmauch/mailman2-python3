@@ -1,12 +1,12 @@
-W panelu administracyjnym pojawi³y siê nowe zadania:
+W panelu administracyjnym pojawiÅ‚y siÄ™ nowe zadania:
 
     Lista:   %(listname)s@%(hostname)s
     Od:      %(sender)s
-    Tytu³:   %(subject)s
-    Powód:   %(reason)s
+    TytuÅ‚:   %(subject)s
+    PowÃ³d:   %(reason)s
 
-Wejd¼ na stronê:
+WejdÅº na stronÄ™:
 
     %(admindb_url)s
         
-¿eby potwierdziæ lub odrzuciæ tê wiadomo¶æ.
+Å¼eby potwierdziÄ‡ lub odrzuciÄ‡ tÄ™ wiadomoÅ›Ä‡.

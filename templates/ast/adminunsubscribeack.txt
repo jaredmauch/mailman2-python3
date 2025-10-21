@@ -1,4 +1,4 @@
-%(member)s encaboxó la to soscripción de %(listname)s.
+%(member)s encaboxÃ³ la to soscripciÃ³n de %(listname)s.
 %(whence)s
 
 

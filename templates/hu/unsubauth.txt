@@ -1,11 +1,11 @@
-A következõ leiratkozási kérelem megerõsítéséhez szükséges az
-engedélyed:
+A kÃ¶vetkezÅ‘ leiratkozÃ¡si kÃ©relem megerÅ‘sÃ­tÃ©sÃ©hez szÃ¼ksÃ©ges az
+engedÃ©lyed:
 
     Tag:      %(username)s
-    Listáról: %(listname)s@%(hostname)s
+    ListÃ¡rÃ³l: %(listname)s@%(hostname)s
 
-A kérelemrõl a
+A kÃ©relemrÅ‘l a
 
     %(admindb_url)s
 
-címen tudsz állást foglalni.
+cÃ­men tudsz Ã¡llÃ¡st foglalni.

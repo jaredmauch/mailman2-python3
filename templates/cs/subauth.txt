@@ -1,10 +1,10 @@
-Je nutné, aby jste rozhodl o pøihlá¹ení úèastníka do konference.
+Je nutnÃ©, aby jste rozhodl o pÅ™ihlÃ¡Å¡enÃ­ ÃºÄastnÃ­ka do konference.
 
-    Úèastník:	%(username)s
+    ÃšÄastnÃ­k:	%(username)s
     Konference:	%(listname)s@%(hostname)s
 
-Nav¹tivte, prosím, adresu:
+NavÅ¡tivte, prosÃ­m, adresu:
 
 	%(admindb_url)s
 	
-pro vyøízení po¾adavku.
+pro vyÅ™Ã­zenÃ­ poÅ¾adavku.

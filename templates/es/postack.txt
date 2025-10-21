@@ -4,4 +4,4 @@ Su mensaje que trata sobre:
 
 se ha distribuido satisfactoriamente a la lista %(listname)s.
 
-Página de información de la lista: %(listinfo_url)s
+PÃ¡gina de informaciÃ³n de la lista: %(listinfo_url)s

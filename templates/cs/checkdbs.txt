@@ -1,7 +1,7 @@
-Konference %(real_name)s@%(host_name)s má %(count)d po¾adavkù, které
-èekají na Va¹e rozhodnutí na:
+Konference %(real_name)s@%(host_name)s mÃ¡ %(count)d poÅ¾adavkÅ¯, kterÃ©
+ÄekajÃ­ na VaÅ¡e rozhodnutÃ­ na:
 
 	%(adminDB)s
 	
-Prosím, rozhodnìte co nejdøíve o osudu èekajících po¾adavkù. Tato zpráva
-je zasílána jednou dennì, pokud nìjaké po¾adavky èekají na vyøízení.
+ProsÃ­m, rozhodnÄ›te co nejdÅ™Ã­ve o osudu ÄekajÃ­cÃ­ch poÅ¾adavkÅ¯. Tato zprÃ¡va
+je zasÃ­lÃ¡na jednou dennÄ›, pokud nÄ›jakÃ© poÅ¾adavky ÄekajÃ­ na vyÅ™Ã­zenÃ­.

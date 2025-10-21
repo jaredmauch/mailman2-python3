@@ -1,10 +1,10 @@
-Confirmação da remoção da lista de discussão %(listname)s
+ConfirmaÃ§Ã£o da remoÃ§Ã£o da lista de discussÃ£o %(listname)s
 
-Nós recebemos uma requisição%(remote)s para remoção do seu endereço
-de email, "%(email)s" da lista de discussão %(listaddr)s. Para 
-confirmar que você deseja ser removido desta lista, simplesmente
-responda a esta mensagem, mantendo a linha de cabeçalho Assunto 
-intacta ou visite esta página web:
+NÃ³s recebemos uma requisiÃ§Ã£o%(remote)s para remoÃ§Ã£o do seu endereÃ§o
+de email, "%(email)s" da lista de discussÃ£o %(listaddr)s. Para 
+confirmar que vocÃª deseja ser removido desta lista, simplesmente
+responda a esta mensagem, mantendo a linha de cabeÃ§alho Assunto 
+intacta ou visite esta pÃ¡gina web:
 
     %(confirmurl)s
 
@@ -13,11 +13,11 @@ mensagem para %(requestaddr)s:
 
     confirm %(cookie)s
 
-Note que a simples resposta a esta mensagem deverá funcionar para 
+Note que a simples resposta a esta mensagem deverÃ¡ funcionar para 
 a maioria dos leitores de email, pois eles normalmente deixam 
 a linha de assunto intacta (a palavra "Re:" adicionada no assunto
-não causa problemas). 
+nÃ£o causa problemas). 
 
-Se não deseja ser removido da lista, por favor ignore esta mensagem. 
+Se nÃ£o deseja ser removido da lista, por favor ignore esta mensagem. 
 Se achar que esta tentando ser maliciosamente removido da lista, ou 
-tem qualquer outra questão, envie-as para %(listadmin)s.
+tem qualquer outra questÃ£o, envie-as para %(listadmin)s.

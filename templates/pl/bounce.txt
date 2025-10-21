@@ -1,14 +1,14 @@
-Tu system zarz±dzania zwrotami programu Mailman:
+Tu system zarzÄ…dzania zwrotami programu Mailman:
 
     Lista:      %(listname)s
     Prenumerator:    %(addr)s
-    Dzia³anie:  Subskrypcja %(negative)s%(did)s.
-    Przyczyna:  Zbyt wiele zwrotów z adresu
+    DziaÅ‚anie:  Subskrypcja %(negative)s%(did)s.
+    Przyczyna:  Zbyt wiele zwrotÃ³w z adresu
     %(but)s
 
 %(reenable)s
 
-Oryginalna wiadomo¶æ jest za³±czona poni¿ej.
+Oryginalna wiadomoÅ›Ä‡ jest zaÅ‚Ä…czona poniÅ¼ej.
 
 Pytania?
-Proszê kontaktowaæ siê z administratem %(owneraddr)s.
+ProszÄ™ kontaktowaÄ‡ siÄ™ z administratem %(owneraddr)s.

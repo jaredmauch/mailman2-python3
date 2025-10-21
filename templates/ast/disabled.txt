@@ -1,16 +1,16 @@
-La to soscrici髇 a la llista de distribuci髇 %(listname)s inhabilit髎e
-%(reason)s.  Nun tendr醩e deng鷑 mensax m醩 d'esta llista fasta que rehabilites la soscripci髇.  Recibir醩 %(noticesleft)s recordatorios como esti enantes de que s'esborre la to soscripci髇 a la llista.
+La to soscrici贸n a la llista de distribuci贸n %(listname)s inhabilit贸se
+%(reason)s.  Nun tendr谩se deng煤n mensax m谩s d'esta llista fasta que rehabilites la soscripci贸n.  Recibir谩s %(noticesleft)s recordatorios como esti enantes de que s'esborre la to soscripci贸n a la llista.
 
-Pa volver a activar la soscripci髇, nam醝 tienes que retrucar a esti mensax (dexando la llinia correspondiente al asuntu intauta), o visita la p醲ina de confirmaci髇 allugada en
+Pa volver a activar la soscripci贸n, nam谩i tienes que retrucar a esti mensax (dexando la llinia correspondiente al asuntu intauta), o visita la p谩xina de confirmaci贸n allugada en
 
     %(confirmurl)s
 
-Tami閚 puedes visitar la p醲ina que tien les tos opciones en
+Tami茅n puedes visitar la p谩xina que tien les tos opciones en
 
     %(optionsurl)s
 
-Na p醲ina que tien les tos opciones, puedes variar distintos aspeutos
-concernientes a la receici髇 de mensaxes d'esta llista, talo como camudar la direici髇 de corr閡-e y si quies recibir los mensaxes de la llista en recopilaciones o non. Como recordatoriu apunt醡oste que la clave asociada a la to soscripci髇 ye
+Na p谩xina que tien les tos opciones, puedes variar distintos aspeutos
+concernientes a la receici贸n de mensaxes d'esta llista, talo como camudar la direici贸n de corr茅u-e y si quies recibir los mensaxes de la llista en recopilaciones o non. Como recordatoriu apunt谩moste que la clave asociada a la to soscripci贸n ye
 
     %(password)s
 

@@ -1,6 +1,6 @@
 La lista %(listname)s ha appena subito un grande cambiamento.
 Sta infatti operando con un nuovo pachetto chiamato "Mailman". 
-Questo si spera risolver‡ molti dei problemi che si presentano 
+Questo si spera risolver√† molti dei problemi che si presentano 
 amministrando una lista.
 
 Cosa cambia?
@@ -9,30 +9,30 @@ Cosa cambia?
    a: %(listaddr)s.
 
 2) Hai ricevuto una password casuale per impedire ad altri di
-   cancellarti senza il tuo consenso. Ti Ë stata inviata in un
-   messaggio separato, che dovresti aver gi‡ ricevuto. 
+   cancellarti senza il tuo consenso. Ti √® stata inviata in un
+   messaggio separato, che dovresti aver gi√† ricevuto. 
    Non preoccuparti nel caso perdessi la password; un promemoria 
-   ti verr‡ spedito ogni mese.
+   ti verr√† spedito ogni mese.
 
 3) Se hai un accesso al World Wide Web, puoi usarlo in ogni 
 momento per cancellarti da questa lista, per passare da e verso 
-la modalit‡ digest, per controllare precedenti argomenti della 
+la modalit√† digest, per controllare precedenti argomenti della 
 lista (che saranno disponibili dopo che la lista ha ricevuto 
-messaggi per un giorno o pi˘), ecc. 
-L'indirizzo Web di queste risorse Ë:
+messaggi per un giorno o pi√π), ecc. 
+L'indirizzo Web di queste risorse √®:
 
     %(listinfo_url)s
 
 4) Se non hai un accesso WWW, puoi fare le stesse cose via email. 
 Invia un messaggio a %(requestaddr)s con l'oggetto o il testo
 contenente solamente la parola "help" (senza le virgolette). 
-Riceverai una risposta automatica che ti dar‡ ulteriori informazioni.
+Riceverai una risposta automatica che ti dar√† ulteriori informazioni.
 
 Per piacere invia qualsiasi domanda o problema relativo a questa 
 nuova configurazione a:
 
     %(adminaddr)s
 
-Questo messaggio Ë stato auto-generato da Mailman %(version)s. 
+Questo messaggio √® stato auto-generato da Mailman %(version)s. 
 Per altre informazioni sul software Mailman, visita la homepage 
 di Mailman all'indirizzo http://www.list.org/

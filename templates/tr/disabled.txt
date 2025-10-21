@@ -1,26 +1,26 @@
-%(listname)s mesaj listesindeki üyeliğiniz %(reason)s devre dışı
-bırakılmış. Üyeliğinizi yeniden etkinleştirmediğiniz sürece bu
-listeden bir mesaj almayacaksınız. Üyeliğiniz silinmeden önce
-buna benzer %(noticesleft)s hatırlatıcı daha alacaksınız. Bundan
-sonra üyeliğiniz silinecektir.
+%(listname)s mesaj listesindeki Ã¼yeliÄŸiniz %(reason)s devre dÄ±ÅŸÄ±
+bÄ±rakÄ±lmÄ±ÅŸ. ÃœyeliÄŸinizi yeniden etkinleÅŸtirmediÄŸiniz sÃ¼rece bu
+listeden bir mesaj almayacaksÄ±nÄ±z. ÃœyeliÄŸiniz silinmeden Ã¶nce
+buna benzer %(noticesleft)s hatÄ±rlatÄ±cÄ± daha alacaksÄ±nÄ±z. Bundan
+sonra Ã¼yeliÄŸiniz silinecektir.
 
-Üyeliğinizi yeniden etkinleştirmek için, (Konu: satırını değiştirmeden)
-bu mesajı yanıtlayın veya buradan onay sayfasını ziyaret edin:
+ÃœyeliÄŸinizi yeniden etkinleÅŸtirmek iÃ§in, (Konu: satÄ±rÄ±nÄ± deÄŸiÅŸtirmeden)
+bu mesajÄ± yanÄ±tlayÄ±n veya buradan onay sayfasÄ±nÄ± ziyaret edin:
 
     %(confirmurl)s
 
-Ayrıca üyelik sayfanızı da ziyaret edebilirsiniz:
+AyrÄ±ca Ã¼yelik sayfanÄ±zÄ± da ziyaret edebilirsiniz:
 
     %(optionsurl)s
 
-Üyelik sayfanızda çeşitli gönderim seçeneklerinizi değiştirebilirsiniz,
-örneğin e-posta adresiniz veya mesajları toplu olarak almak isteyip
-istemediğiniz gibi. Bir hatırlatma olarak, üyelik şifreniz:
+Ãœyelik sayfanÄ±zda Ã§eÅŸitli gÃ¶nderim seÃ§eneklerinizi deÄŸiÅŸtirebilirsiniz,
+Ã¶rneÄŸin e-posta adresiniz veya mesajlarÄ± toplu olarak almak isteyip
+istemediÄŸiniz gibi. Bir hatÄ±rlatma olarak, Ã¼yelik ÅŸifreniz:
 
     %(password)s
 
-Herhangi bir soru veya sorununuz varsa, liste sahibi ile şu adresten
-bağlantıya geçebilirsiniz:
+Herhangi bir soru veya sorununuz varsa, liste sahibi ile ÅŸu adresten
+baÄŸlantÄ±ya geÃ§ebilirsiniz:
 
     %(owneraddr)s
 

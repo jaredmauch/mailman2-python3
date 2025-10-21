@@ -1,23 +1,23 @@
-Te, vagy valaki a nevedben, a %(fqdn_lname)s levelezõlistához tartozó
-jelszavadat kérte ki e-mailben. A jelszóval a listatagsági beállításaidat
-(mint pl. a levelek küldésének módját) tudod beállítani. A jelszó
-ismeretében a listáról le is tudsz iratkozni.
+Te, vagy valaki a nevedben, a %(fqdn_lname)s levelezÅ‘listÃ¡hoz tartozÃ³
+jelszavadat kÃ©rte ki e-mailben. A jelszÃ³val a listatagsÃ¡gi beÃ¡llÃ­tÃ¡saidat
+(mint pl. a levelek kÃ¼ldÃ©sÃ©nek mÃ³djÃ¡t) tudod beÃ¡llÃ­tani. A jelszÃ³
+ismeretÃ©ben a listÃ¡rÃ³l le is tudsz iratkozni.
 
-A következõ címmel vagy feliratkozva: %(user)s
+A kÃ¶vetkezÅ‘ cÃ­mmel vagy feliratkozva: %(user)s
 
-A %(listname)s jelszavad a következõ: %(password)s
+A %(listname)s jelszavad a kÃ¶vetkezÅ‘: %(password)s
 
-A beállításaid megváltoztatásához jelszavad ismeretében lépj be a
-következõ weboldalra:
+A beÃ¡llÃ­tÃ¡said megvÃ¡ltoztatÃ¡sÃ¡hoz jelszavad ismeretÃ©ben lÃ©pj be a
+kÃ¶vetkezÅ‘ weboldalra:
 
     %(options_url)s
 
-Ugyanezeket e-mailen keresztül is el tudod végezni ezen a címen:
+Ugyanezeket e-mailen keresztÃ¼l is el tudod vÃ©gezni ezen a cÃ­men:
 
     %(requestaddr)s
 
-A fenti címre egy "help" tartalmú levél elküldésével bõvebb információt
-lehet megtudni a beállításokról.
+A fenti cÃ­mre egy "help" tartalmÃº levÃ©l elkÃ¼ldÃ©sÃ©vel bÅ‘vebb informÃ¡ciÃ³t
+lehet megtudni a beÃ¡llÃ­tÃ¡sokrÃ³l.
 
-Kérdések, észrevételek? Küldj egy levelet a(z) %(listname)s levelezõlista
-adminisztrátorának, a(z) %(owneraddr)s címre.
+KÃ©rdÃ©sek, Ã©szrevÃ©telek? KÃ¼ldj egy levelet a(z) %(listname)s levelezÅ‘lista
+adminisztrÃ¡torÃ¡nak, a(z) %(owneraddr)s cÃ­mre.

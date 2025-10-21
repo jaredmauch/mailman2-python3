@@ -5,4 +5,4 @@ vermeiden, werden wir heute keine weiteren Antworten versenden. Bitte
 versuchen Sie es morgen wieder.
 
 Wenn diese Nachricht fehlerhaft ist oder Fragen zur Liste bestehen,
-freut sich der Eigner der Liste über eine Nachricht an %(owneremail)s.
+freut sich der Eigner der Liste Ã¼ber eine Nachricht an %(owneremail)s.

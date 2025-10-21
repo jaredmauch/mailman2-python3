@@ -1,23 +1,23 @@
-Su subscripción a la lista de distribución %(listname)s se ha inhabilitado
-%(reason)s.  No obtendrá ningún mensaje más de esta lista hasta que rehabilite su
-subscripción.  Recibirá %(noticesleft)s recordatorios como este antes de que se
-borre su subscripción a la lista.
+Su subscripciÃ³n a la lista de distribuciÃ³n %(listname)s se ha inhabilitado
+%(reason)s.  No obtendrÃ¡ ningÃºn mensaje mÃ¡s de esta lista hasta que rehabilite su
+subscripciÃ³n.  RecibirÃ¡ %(noticesleft)s recordatorios como este antes de que se
+borre su subscripciÃ³n a la lista.
 
-Para volver a activar su subscripción, solo tiene que responder a este mensaje
-(dejando la línea correspondiente al asunto intacta), o visite la página de
-confirmación sita en
+Para volver a activar su subscripciÃ³n, solo tiene que responder a este mensaje
+(dejando la lÃ­nea correspondiente al asunto intacta), o visite la pÃ¡gina de
+confirmaciÃ³n sita en
 
     %(confirmurl)s
 
-También puede visitar la página que tiene sus opciones en
+TambiÃ©n puede visitar la pÃ¡gina que tiene sus opciones en
 
     %(optionsurl)s
 
-En la página que tiene sus opciones, puede variar distintos aspectos
-concernientes a la recepción de mensajes de esta lista, tal como cambiar la
-dirección de correo electrónico y si quiere recibir los mensajes de la lista en
-recopilaciones o no. Como recordatorio le diré que la clave asociada a su
-subscripción es
+En la pÃ¡gina que tiene sus opciones, puede variar distintos aspectos
+concernientes a la recepciÃ³n de mensajes de esta lista, tal como cambiar la
+direcciÃ³n de correo electrÃ³nico y si quiere recibir los mensajes de la lista en
+recopilaciones o no. Como recordatorio le dirÃ© que la clave asociada a su
+subscripciÃ³n es
 
     %(password)s
 

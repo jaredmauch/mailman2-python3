@@ -165,7 +165,11 @@ class GUIBase:
             elif isinstance(cgidata[property], list):
                 val = [x.value for x in cgidata[property]]
             else:
-                val = cgidata[property].value
+                field = cgidata[property]
+                if hasattr(field, "value"):
+                    val = field.value
+                else:
+                    val = field
             # Coerce the value to the expected type, raising exceptions if the
             # value is invalid.
             try:

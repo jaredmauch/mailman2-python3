@@ -1,8 +1,8 @@
-Votre message intitulé
+Votre message intitulÃ©
 
     %(subject)s
 
-est bien parvenu à la liste de diffusion %(listname)s.
+est bien parvenu Ã  la liste de diffusion %(listname)s.
 
 Page Info de la liste : %(listinfo_url)s
 Vos options personnelles: %(optionsurl)s

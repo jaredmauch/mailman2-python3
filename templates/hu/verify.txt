@@ -1,25 +1,25 @@
-Értesítés a(z) %(listname)s levelezõlistára történõ feliratkozási 
-kérelmed megerõsítésérõl.
+Ã‰rtesÃ­tÃ©s a(z) %(listname)s levelezÅ‘listÃ¡ra tÃ¶rtÃ©nÅ‘ feliratkozÃ¡si 
+kÃ©relmed megerÅ‘sÃ­tÃ©sÃ©rÅ‘l.
 
-A(z)%(remote)s címrõl, "%(email)s" e-mail címmel,
-a(z) %(listaddr)s levelezési listára egy feliratkozási kérelmet
-regisztráltunk. A levelezõlistára való feliratkozás megerõsítéséhez
-erre a levélre kell válaszolni úgy, hogy a Subject: (Tárgy:) mezõt
-nem változtatod meg. Feliratkozási szándékodat a következõ weblapon
-is megerõsítheted:
+A(z)%(remote)s cÃ­mrÅ‘l, "%(email)s" e-mail cÃ­mmel,
+a(z) %(listaddr)s levelezÃ©si listÃ¡ra egy feliratkozÃ¡si kÃ©relmet
+regisztrÃ¡ltunk. A levelezÅ‘listÃ¡ra valÃ³ feliratkozÃ¡s megerÅ‘sÃ­tÃ©sÃ©hez
+erre a levÃ©lre kell vÃ¡laszolni Ãºgy, hogy a Subject: (TÃ¡rgy:) mezÅ‘t
+nem vÃ¡ltoztatod meg. FeliratkozÃ¡si szÃ¡ndÃ©kodat a kÃ¶vetkezÅ‘ weblapon
+is megerÅ‘sÃ­theted:
 
     %(confirmurl)s
     
-Vagy a következõ sort - és csak azt - helyezd el egy e-mail törzsébe,
-amelyet a(z) %(requestaddr)s címre kell elküldened.
+Vagy a kÃ¶vetkezÅ‘ sort - Ã©s csak azt - helyezd el egy e-mail tÃ¶rzsÃ©be,
+amelyet a(z) %(requestaddr)s cÃ­mre kell elkÃ¼ldened.
 
     confirm %(cookie)s
 
-A legtöbb e-mail klienssel történõ válaszadás (`reply') alkalmas a 
-kérelem megerõsítésére, mivel a levél tárgyát nem módosítják (az ide 
-beszúrt "Re:" vagy "VÁ:" nem okoz gondot).
+A legtÃ¶bb e-mail klienssel tÃ¶rtÃ©nÅ‘ vÃ¡laszadÃ¡s (`reply') alkalmas a 
+kÃ©relem megerÅ‘sÃ­tÃ©sÃ©re, mivel a levÃ©l tÃ¡rgyÃ¡t nem mÃ³dosÃ­tjÃ¡k (az ide 
+beszÃºrt "Re:" vagy "VÃ:" nem okoz gondot).
 
-Ha nem szeretnél feliratkozni a listára, akkor egyszerûen hagyd 
-figyelmen kívül ezt a levelet. Ha úgy gondolod, hogy jogtalanul
-írtak fel egy listára, vagy más észrevételed van, akkor fordulj
-a lista adminisztrátorához: %(listadmin)s.
+Ha nem szeretnÃ©l feliratkozni a listÃ¡ra, akkor egyszerÅ±en hagyd 
+figyelmen kÃ­vÃ¼l ezt a levelet. Ha Ãºgy gondolod, hogy jogtalanul
+Ã­rtak fel egy listÃ¡ra, vagy mÃ¡s Ã©szrevÃ©teled van, akkor fordulj
+a lista adminisztrÃ¡torÃ¡hoz: %(listadmin)s.

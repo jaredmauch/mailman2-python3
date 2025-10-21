@@ -1,35 +1,35 @@
-Välkommen till e-postlistan %(real_name)s@%(host_name)s !
+VÃ¤lkommen till e-postlistan %(real_name)s@%(host_name)s !
 %(welcome)s
-För att skicka ett e-postbrev till listan, skicka det till:
+FÃ¶r att skicka ett e-postbrev till listan, skicka det till:
 
   %(emailaddr)s
 
-Allmän information om listan hittar du på:
+AllmÃ¤n information om listan hittar du pÃ¥:
 
   %(listinfo_url)s
 
-Om du önskar att avanmäla dig från listan eller ändra på dina inställningar
-för listan (till exempel ändra lösenord, få ett sammandrag sänt till dig med jämna mellanrum istället etc), gå in på din personliga medlemssida:
+Om du Ã¶nskar att avanmÃ¤la dig frÃ¥n listan eller Ã¤ndra pÃ¥ dina instÃ¤llningar
+fÃ¶r listan (till exempel Ã¤ndra lÃ¶senord, fÃ¥ ett sammandrag sÃ¤nt till dig med jÃ¤mna mellanrum istÃ¤llet etc), gÃ¥ in pÃ¥ din personliga medlemssida:
 
   %(optionsurl)s
 %(umbrella)s
-Du kan också ändra sådana inställningar genom att skicka ett e-postbrev till:
+Du kan ocksÃ¥ Ã¤ndra sÃ¥dana instÃ¤llningar genom att skicka ett e-postbrev till:
 
   %(real_name)s-request@%(host_name)s
 
-med ordet "help" i ämnesfältet eller i innehållet. Du kommer då att få ett e-postbrev
-med närmare instruktioner.
+med ordet "help" i Ã¤mnesfÃ¤ltet eller i innehÃ¥llet. Du kommer dÃ¥ att fÃ¥ ett e-postbrev
+med nÃ¤rmare instruktioner.
 
-Du måste använda ett lösenord för att ändra på dina inställningar för listan, (även
-för att ändra lösenordet) eller för att avanmäla dig från listan.
-Ditt lösenord är:
+Du mÃ¥ste anvÃ¤nda ett lÃ¶senord fÃ¶r att Ã¤ndra pÃ¥ dina instÃ¤llningar fÃ¶r listan, (Ã¤ven
+fÃ¶r att Ã¤ndra lÃ¶senordet) eller fÃ¶r att avanmÃ¤la dig frÃ¥n listan.
+Ditt lÃ¶senord Ã¤r:
 
   %(password)s
 
-Normalt kommer Mailman att skicka ett e-postbrev till dig en gång i månaden med påminnelse om de lösenord som du har fått för de e-postlistor som du är medlem av
-på %(host_name)s, men detta kan du avaktivera om du så önskar.
-Påminnelsen kommer också att innehålla information om hur du kan avanmäla dig
-från listan eller ändra dina personliga inställningar för listan.
+Normalt kommer Mailman att skicka ett e-postbrev till dig en gÃ¥ng i mÃ¥naden med pÃ¥minnelse om de lÃ¶senord som du har fÃ¥tt fÃ¶r de e-postlistor som du Ã¤r medlem av
+pÃ¥ %(host_name)s, men detta kan du avaktivera om du sÃ¥ Ã¶nskar.
+PÃ¥minnelsen kommer ocksÃ¥ att innehÃ¥lla information om hur du kan avanmÃ¤la dig
+frÃ¥n listan eller Ã¤ndra dina personliga instÃ¤llningar fÃ¶r listan.
 
-På din personliga medlemssida finns det också en knapp som du kan klicka på,
-om du vill få ditt lösenord skickat till dig i ett e-postbrev. 
+PÃ¥ din personliga medlemssida finns det ocksÃ¥ en knapp som du kan klicka pÃ¥,
+om du vill fÃ¥ ditt lÃ¶senord skickat till dig i ett e-postbrev. 

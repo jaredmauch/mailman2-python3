@@ -1,12 +1,12 @@
-ğiandien mes gavome %(num)s laiğkø, pasirağytø Jûsø adresu
+Å¡iandien mes gavome %(num)s laiÅ¡kÅ³, pasiraÅ¡ytÅ³ JÅ«sÅ³ adresu
 	%(sender)s
-kuriuose prağome automatinio atsakymo iğ %(listname)s forumo.
+kuriuose praÅ¡ome automatinio atsakymo iÅ¡ %(listname)s forumo.
 
-Siekdami iğvengti nereikalingo laiğkø siuntinëjimo ğiandien 
-á Jûsø laiğkus daugiau neatsakinësime.
+Siekdami iÅ¡vengti nereikalingo laiÅ¡kÅ³ siuntinÄ—jimo Å¡iandien 
+Ä¯ JÅ«sÅ³ laiÅ¡kus daugiau neatsakinÄ—sime.
 
-Atsakymà vël gausite jei siøsite laiğkà rytoj.
+AtsakymÄ… vÄ—l gausite jei siÅ³site laiÅ¡kÄ… rytoj.
 
-Jei manote, kad ğá laiğkà gavote per klaidà taip pat 
-ir kitais klausimais kreipkitës á forumo administratoriø:
+Jei manote, kad Å¡Ä¯ laiÅ¡kÄ… gavote per klaidÄ… taip pat 
+ir kitais klausimais kreipkitÄ—s Ä¯ forumo administratoriÅ³:
 %(owneremail)s

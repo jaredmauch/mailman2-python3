@@ -2,9 +2,9 @@ Konusu
 
     %(subject)s
 
-olan mesajınız %(listname)s mesaj listesi tarafından başarıyla
-alındı. 
+olan mesajÄ±nÄ±z %(listname)s mesaj listesi tarafÄ±ndan baÅŸarÄ±yla
+alÄ±ndÄ±. 
 
-Liste bilgi sayfası: %(listinfo_url)s
+Liste bilgi sayfasÄ±: %(listinfo_url)s
 Sizin tercihleriniz: %(optionsurl)s
 

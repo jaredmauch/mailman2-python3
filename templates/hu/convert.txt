@@ -1,31 +1,31 @@
-Tájékoztató a(z) %(listname)s levelezési listán bekövetkezõ változásokról. 
-A levelezési listát a "Mailman" nevû listakezelõ program mûködteti. 
-Reméljük ezzel számos eddig jelentkezõ probléma megszûnik.
+TÃ¡jÃ©koztatÃ³ a(z) %(listname)s levelezÃ©si listÃ¡n bekÃ¶vetkezÅ‘ vÃ¡ltozÃ¡sokrÃ³l. 
+A levelezÃ©si listÃ¡t a "Mailman" nevÅ± listakezelÅ‘ program mÅ±kÃ¶dteti. 
+RemÃ©ljÃ¼k ezzel szÃ¡mos eddig jelentkezÅ‘ problÃ©ma megszÅ±nik.
 
 Mire kell figyelned?
 
-1) A lista tagjainak szánt üzeneteidet a(z) %(listaddr)s címre küldd el.
+1) A lista tagjainak szÃ¡nt Ã¼zeneteidet a(z) %(listaddr)s cÃ­mre kÃ¼ldd el.
 
-2) Egyéni jelszóval lehet leiratkozni a listáról, ezzel elkerülhetõ,
-hogy más a tudtod nélkül töröl téged a listáról. A jelszót egy különálló
-e-mailben kapod meg, vagy már meg is kaptad. Ne ess pánikba, ha
-elfelejtetted a jelszavadat, mivel minden hónapban emlékeztetõül e-mailben 
-elküldésre fog kerülni.
+2) EgyÃ©ni jelszÃ³val lehet leiratkozni a listÃ¡rÃ³l, ezzel elkerÃ¼lhetÅ‘,
+hogy mÃ¡s a tudtod nÃ©lkÃ¼l tÃ¶rÃ¶l tÃ©ged a listÃ¡rÃ³l. A jelszÃ³t egy kÃ¼lÃ¶nÃ¡llÃ³
+e-mailben kapod meg, vagy mÃ¡r meg is kaptad. Ne ess pÃ¡nikba, ha
+elfelejtetted a jelszavadat, mivel minden hÃ³napban emlÃ©keztetÅ‘Ã¼l e-mailben 
+elkÃ¼ldÃ©sre fog kerÃ¼lni.
 
-3) Web elérés esetén bármikor leiratkozhatsz a listáról, beállíthatod
-a levelek fogadását, megtekintheted a lista archívumát, és más egyebet 
-tehetsz meg. Mindezeket a következõ webcímen lehet végrehajtani:
+3) Web elÃ©rÃ©s esetÃ©n bÃ¡rmikor leiratkozhatsz a listÃ¡rÃ³l, beÃ¡llÃ­thatod
+a levelek fogadÃ¡sÃ¡t, megtekintheted a lista archÃ­vumÃ¡t, Ã©s mÃ¡s egyebet 
+tehetsz meg. Mindezeket a kÃ¶vetkezÅ‘ webcÃ­men lehet vÃ©grehajtani:
 
   %(listinfo_url)s
 
-4) Web elérés hiányában mindezeket e-mailen keresztül is meg lehet 
-tenni. Küldj egy e-mailt a(z) %(requestaddr)s címre a levél törzsében
-vagy tárgyában megadott "help"-el. Ekkor egy automatikus válaszlevélben
-bõvebb leírást fogsz kapni a lehetséges beállításokról.
+4) Web elÃ©rÃ©s hiÃ¡nyÃ¡ban mindezeket e-mailen keresztÃ¼l is meg lehet 
+tenni. KÃ¼ldj egy e-mailt a(z) %(requestaddr)s cÃ­mre a levÃ©l tÃ¶rzsÃ©ben
+vagy tÃ¡rgyÃ¡ban megadott "help"-el. Ekkor egy automatikus vÃ¡laszlevÃ©lben
+bÅ‘vebb leÃ­rÃ¡st fogsz kapni a lehetsÃ©ges beÃ¡llÃ­tÃ¡sokrÃ³l.
 
-Bármilyen kérdéseddel, észrevételeddel a következõ címre írj:
+BÃ¡rmilyen kÃ©rdÃ©seddel, Ã©szrevÃ©teleddel a kÃ¶vetkezÅ‘ cÃ­mre Ã­rj:
 %(adminaddr)s.
 
-Ezt a levelet a Mailman %(version)s automatikusan készítette. A Mailman 
-programról további információkat a Mailman honlapján lehet olvasni a 
-http://www.list.org/ címen.
+Ezt a levelet a Mailman %(version)s automatikusan kÃ©szÃ­tette. A Mailman 
+programrÃ³l tovÃ¡bbi informÃ¡ciÃ³kat a Mailman honlapjÃ¡n lehet olvasni a 
+http://www.list.org/ cÃ­men.

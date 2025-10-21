@@ -1,18 +1,18 @@
-T‰m‰ on sinulle kuukausittain l‰hetett‰v‰ muistutus %(hostname)s
--postituslistojen j‰senyydest‰. Se sis‰lt‰‰ sis‰‰nkirjautumistietosi 
-sek‰ ohjeet siit‰,  miten voit muuttaa niit‰ tai irtisanoutua listalta.
+T√§m√§ on sinulle kuukausittain l√§hetett√§v√§ muistutus %(hostname)s
+-postituslistojen j√§senyydest√§. Se sis√§lt√§√§ sis√§√§nkirjautumistietosi 
+sek√§ ohjeet siit√§,  miten voit muuttaa niit√§ tai irtisanoutua listalta.
 
-Voit k‰yd‰ URL-osoitteessa muuttamassa j‰senyysasetuksiasi. Esim. voit 
-irtisanoutua listalta, muuttaa koostel‰hetyksen asetusta 
-tai kielt‰‰ kaikkien postien vastaanoton (esim. loman ajaksi) jne. 
+Voit k√§yd√§ URL-osoitteessa muuttamassa j√§senyysasetuksiasi. Esim. voit 
+irtisanoutua listalta, muuttaa koostel√§hetyksen asetusta 
+tai kielt√§√§ kaikkien postien vastaanoton (esim. loman ajaksi) jne. 
 
-URL-osoitteessa sijaitsevien toimintojen sijasta voit k‰ytt‰‰ myˆs
-s‰hkˆpostiasi yll‰lueteltujen toimintojen suorittamiseen. Lis‰tietoja 
-saadaksesi, l‰het‰ viesti listan "-pyyntˆ" -osoitteeseen (esim. %(exreq)s)
-siten, ett‰ laitat viestikentt‰‰n ainoastaan sanan 'help'. Sinulle l‰hetet‰‰n 
+URL-osoitteessa sijaitsevien toimintojen sijasta voit k√§ytt√§√§ my√∂s
+s√§hk√∂postiasi yll√§lueteltujen toimintojen suorittamiseen. Lis√§tietoja 
+saadaksesi, l√§het√§ viesti listan "-pyynt√∂" -osoitteeseen (esim. %(exreq)s)
+siten, ett√§ laitat viestikentt√§√§n ainoastaan sanan 'help'. Sinulle l√§hetet√§√§n 
 viesti tarkemmista ohjeista.
 
-Jos sinulla on kysymyksi‰, ongelmia, kommentteja jne. l‰het‰ ne
+Jos sinulla on kysymyksi√§, ongelmia, kommentteja jne. l√§het√§ ne
 %(owner)s. Kiitos!
 
 Salasana %(useraddr)s:

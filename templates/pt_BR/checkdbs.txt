@@ -1,7 +1,7 @@
-A lista de discuss„o %(real_name)s@%(host_name)s tem %(count)d requisiÁıes
-aguardando por sua consideraÁ„o em:
+A lista de discuss√£o %(real_name)s@%(host_name)s tem %(count)d requisi√ß√µes
+aguardando por sua considera√ß√£o em:
 
 	%(adminDB)s
 
-Por favor atenda isto no hor·rio que te for mais conveniente. Esta notificaÁ„o
-lhe ser· enviada diariamente.
+Por favor atenda isto no hor√°rio que te for mais conveniente. Esta notifica√ß√£o
+lhe ser√° enviada diariamente.

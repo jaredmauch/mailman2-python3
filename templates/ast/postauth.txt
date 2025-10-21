@@ -1,12 +1,12 @@
-Como alministrador de llistes, requierse la to autorización pa unviar un mensax a la siguiente llista de distribución:
+Como alministrador de llistes, requierse la to autorizaciÃ³n pa unviar un mensax a la siguiente llista de distribuciÃ³n:
 
     Llista:                %(listname)s@%(hostname)s
     Remitente:             %(sender)s
     Asuntu:                %(subject)s
-    Razón pa retenelu:     %(reason)s
+    RazÃ³n pa retenelu:     %(reason)s
 
-Cuando puedas, accede a la páxina:
+Cuando puedas, accede a la pÃ¡xina:
 
     %(admindb_url)s
         
-p'aprobar o refugar l'unvíu
+p'aprobar o refugar l'unvÃ­u

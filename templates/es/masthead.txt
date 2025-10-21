@@ -1,18 +1,18 @@
-EnvÌe los mensajes para la lista %(real_name)s a
+Env√≠e los mensajes para la lista %(real_name)s a
 	%(got_list_email)s
 
-Para subscribirse o anular su subscripciÛn a travÈs de la WEB
+Para subscribirse o anular su subscripci√≥n a trav√©s de la WEB
 	%(got_listinfo_url)s
 
-O por correo electrÛnico, enviando un mensaje con el texto
+O por correo electr√≥nico, enviando un mensaje con el texto
 "help" en el asunto (subject) o en el cuerpo a:
 	%(got_request_email)s
 
 Puede contactar con el responsable de la lista escribiendo a:
 	%(got_owner_email)s
 
-Si responde a alg˙n contenido de este mensaje, por favor, edite
+Si responde a alg√∫n contenido de este mensaje, por favor, edite
 la linea del asunto (subject) para que el texto sea mas especifico
-que: "Re: Contents of %(real_name)s digest...". Adem·s, por favor,
-incluya en la respuesta sÛlo aquellas partes del mensaje a las que 
-est· respondiendo.
+que: "Re: Contents of %(real_name)s digest...". Adem√°s, por favor,
+incluya en la respuesta s√≥lo aquellas partes del mensaje a las que 
+est√° respondiendo.

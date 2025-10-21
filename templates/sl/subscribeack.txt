@@ -1,34 +1,34 @@
-Dobrodo¹li na po¹tnem seznamu %(real_name)s@%(host_name)s!
+DobrodoÅ¡li na poÅ¡tnem seznamu %(real_name)s@%(host_name)s!
 %(welcome)s
-Za objavljanje sporoèil na seznamu, le-te po¹ljite na naslov:
+Za objavljanje sporoÄil na seznamu, le-te poÅ¡ljite na naslov:
 
   %(emailaddr)s
 
-Splo¹ne informacije o seznamu najdete na naslovu
+SploÅ¡ne informacije o seznamu najdete na naslovu
 
   %(listinfo_url)s
 
-Èe se ¾elite odjaviti ali spremeniti nastavitve (npr. preklopiti
-na prejemanje izvleèkov, spremeniti geslo...), si oglejte stran
-z va¹o naroènino na:
+ÄŒe se Å¾elite odjaviti ali spremeniti nastavitve (npr. preklopiti
+na prejemanje izvleÄkov, spremeniti geslo...), si oglejte stran
+z vaÅ¡o naroÄnino na:
 
   %(optionsurl)s
 %(umbrella)s
-Te nastavitve lahko doloèate tudi prek e-po¹te, tako da po¹ljete
-sporoèilo na naslov:
+Te nastavitve lahko doloÄate tudi prek e-poÅ¡te, tako da poÅ¡ljete
+sporoÄilo na naslov:
 
   %(real_name)s-request@%(host_name)s
 
-z besedo 'help' v zadevi ali besedilu sporoèila (brez narekovajev)
-in dobili boste sporoèilo z navodili.
+z besedo 'help' v zadevi ali besedilu sporoÄila (brez narekovajev)
+in dobili boste sporoÄilo z navodili.
 
-Za spreminjanje mo¾nosti morate poznati geslo (tudi za spreminjanje
-le-tega). Va¹e geslo je:
+Za spreminjanje moÅ¾nosti morate poznati geslo (tudi za spreminjanje
+le-tega). VaÅ¡e geslo je:
 
   %(password)s
 
 Mailman vam bo vsak mesec poslal opomnik, v katerem bo zapisano tudi
-va¹e geslo, to nastavitev pa si lahko onemogoèite. Sporoèilo bo
+vaÅ¡e geslo, to nastavitev pa si lahko onemogoÄite. SporoÄilo bo
 vsebovalo tudi navodila za odjavo ali za spreminjanje nastavitev
-naroènine. Na strani z nastavitvami je tudi gumb, s pomoèjo katerega
-si lahko kadarkoli po¹ljete sporoèilo s trenutnim geslom.
+naroÄnine. Na strani z nastavitvami je tudi gumb, s pomoÄjo katerega
+si lahko kadarkoli poÅ¡ljete sporoÄilo s trenutnim geslom.

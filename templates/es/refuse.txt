@@ -1,12 +1,12 @@
-Su petición a la lista de distribución %(listname)s:
+Su peticiÃ³n a la lista de distribuciÃ³n %(listname)s:
 
     %(request)s
 
-ha sido rechazada por el moderador dando la siguiente razón:
+ha sido rechazada por el moderador dando la siguiente razÃ³n:
 
 "%(reason)s"
 
-Cualquier pregunta o sugerencia se deberá dirigir al administrador de la
-lista en la siguiente dirección de correo:
+Cualquier pregunta o sugerencia se deberÃ¡ dirigir al administrador de la
+lista en la siguiente direcciÃ³n de correo:
 
     %(adminaddr)s

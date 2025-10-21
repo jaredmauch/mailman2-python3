@@ -1,35 +1,35 @@
-Aida de la llista de distribuci髇 %(listname)s:
+Aida de la llista de distribuci贸n %(listname)s:
 
-Esta ye l'aida coles 髍denes que pueden unviase per corr閡-e
-na versi髇 %(version)s del xestor de llistes 'Mailman'.
-Descr韇ense darr閡, les 髍denes que pueden unviase pa 
-obtener informaci髇 y remanar la to soscripci髇 nes llistes 
-xestionaes por 'Mailman'. Les 髍denes pueden unviase nel asuntu
+Esta ye l'aida coles 贸rdenes que pueden unviase per corr茅u-e
+na versi贸n %(version)s del xestor de llistes 'Mailman'.
+Descr铆bense darr茅u, les 贸rdenes que pueden unviase pa 
+obtener informaci贸n y remanar la to soscripci贸n nes llistes 
+xestionaes por 'Mailman'. Les 贸rdenes pueden unviase nel asuntu
 (subject) o nel cuerpu del mensax.
 
-Dec醫ate que munches de les siguientes coses pueden facese tami閚
-a travi閟 de la WEB en:
+Dec谩tate que munches de les siguientes coses pueden facese tami茅n
+a travi茅s de la WEB en:
 
     %(listinfo_url)s
 
-En particular, puedes usar esti sitiu WEB pa facer que se t'unv韊
-la to clave a la to direici髇 de corr閡-e.
+En particular, puedes usar esti sitiu WEB pa facer que se t'unv铆e
+la to clave a la to direici贸n de corr茅u-e.
 
-Les 髍denes espec韋iques a les llistes (subscribe, who, etc) tienen 
-d'unviase a la direici髇 *-request pa la llista concreta. Por exemplu,
-pa la llista 'mailman' usar韆se mailman-request@...
+Les 贸rdenes espec铆fiques a les llistes (subscribe, who, etc) tienen 
+d'unviase a la direici贸n *-request pa la llista concreta. Por exemplu,
+pa la llista 'mailman' usar铆ase mailman-request@...
 
-Na descripci髇 de les 髍denes 鷖ense les siguientes pautes:
-Les pallabres conse馻es ente 醤gulos '<>' son elementos IMPRESCINDIBLES,
-mentantu que les pallabres conse馻es ente corchetes '[]' son elementos
-OPCIONALES. Nun incluyas los 醤gulos o los corchetes cuando uses les 
-髍denes.
+Na descripci贸n de les 贸rdenes 煤sense les siguientes pautes:
+Les pallabres conse帽aes ente 谩ngulos '<>' son elementos IMPRESCINDIBLES,
+mentantu que les pallabres conse帽aes ente corchetes '[]' son elementos
+OPCIONALES. Nun incluyas los 谩ngulos o los corchetes cuando uses les 
+贸rdenes.
 
-觬denes v醠ides:
+脫rdenes v谩lides:
 
     %(commands)s
 
-Les 髍denes tienen d'unviase a %(requestaddr)s
+Les 贸rdenes tienen d'unviase a %(requestaddr)s
 
 Les entrugues y comentarios pal responsable de la llista tienen 
 d'unviase a 

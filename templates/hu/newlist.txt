@@ -1,35 +1,35 @@
-A(z) `%(listname)s' levelezési lista mûkõdik. A következõkben a 
-levelezési lista alapvetõ információiról lehet olvasni.
+A(z) `%(listname)s' levelezÃ©si lista mÅ±kÅ‘dik. A kÃ¶vetkezÅ‘kben a 
+levelezÃ©si lista alapvetÅ‘ informÃ¡ciÃ³irÃ³l lehet olvasni.
 
-A levelezési lista jelszava a következõ:
+A levelezÃ©si lista jelszava a kÃ¶vetkezÅ‘:
 
     %(password)s
 
-A megadott jelszóval lehet a lista beállításait megváltoztatni. Ezen-
-felül ezzel a jelszóval lehet néhány adminisztrátori tevékenységet is
-elvégezni, mint például moderált listán a levelek szûrését végrehajtani.
+A megadott jelszÃ³val lehet a lista beÃ¡llÃ­tÃ¡sait megvÃ¡ltoztatni. Ezen-
+felÃ¼l ezzel a jelszÃ³val lehet nÃ©hÃ¡ny adminisztrÃ¡tori tevÃ©kenysÃ©get is
+elvÃ©gezni, mint pÃ©ldÃ¡ul moderÃ¡lt listÃ¡n a levelek szÅ±rÃ©sÃ©t vÃ©grehajtani.
 
-A levelezési listát a következõ honlapon lehet beállítani:
+A levelezÃ©si listÃ¡t a kÃ¶vetkezÅ‘ honlapon lehet beÃ¡llÃ­tani:
 
     %(admin_url)s
 
-A levelezési lista tagjai a következõ honlapot használhatják:
+A levelezÃ©si lista tagjai a kÃ¶vetkezÅ‘ honlapot hasznÃ¡lhatjÃ¡k:
 
     %(listinfo_url)s
 
-A honlap formáját is meg lehet változtatni, azonban ehhez ismerni kell a 
-HTML-szerkesztés alapjait.
+A honlap formÃ¡jÃ¡t is meg lehet vÃ¡ltoztatni, azonban ehhez ismerni kell a 
+HTML-szerkesztÃ©s alapjait.
 
-E-mailen keresztül a tagok (de nem az adminisztrátor) is elvégezhetik 
-beállításaik megváltoztatását; errõl bõvebb információt kaphatsz, ha egy
-'help' tartalmú levelet küldesz a következõ címre: 
+E-mailen keresztÃ¼l a tagok (de nem az adminisztrÃ¡tor) is elvÃ©gezhetik 
+beÃ¡llÃ­tÃ¡saik megvÃ¡ltoztatÃ¡sÃ¡t; errÅ‘l bÅ‘vebb informÃ¡ciÃ³t kaphatsz, ha egy
+'help' tartalmÃº levelet kÃ¼ldesz a kÃ¶vetkezÅ‘ cÃ­mre: 
 
     %(requestaddr)s
 
-Listatag eltávolításához a levelezési lista 'információs' lapján a 
-listatag nevére kell kattintanod. Törlését pedig a listatagok eltávolítási
-oldalán lehet végrehajtani az adminisztrátori jelszóval. A listatag 
-beállításait (például digest vagy nem-digest formájú levelek fogadása, 
-vagy szüneteltetése, stb.) az adminisztrátori jelszóval is módosíthatod.
+Listatag eltÃ¡volÃ­tÃ¡sÃ¡hoz a levelezÃ©si lista 'informÃ¡ciÃ³s' lapjÃ¡n a 
+listatag nevÃ©re kell kattintanod. TÃ¶rlÃ©sÃ©t pedig a listatagok eltÃ¡volÃ­tÃ¡si
+oldalÃ¡n lehet vÃ©grehajtani az adminisztrÃ¡tori jelszÃ³val. A listatag 
+beÃ¡llÃ­tÃ¡sait (pÃ©ldÃ¡ul digest vagy nem-digest formÃ¡jÃº levelek fogadÃ¡sa, 
+vagy szÃ¼neteltetÃ©se, stb.) az adminisztrÃ¡tori jelszÃ³val is mÃ³dosÃ­thatod.
 
-További kérdéseiddel fordulj ide: %(siteowner)s
+TovÃ¡bbi kÃ©rdÃ©seiddel fordulj ide: %(siteowner)s

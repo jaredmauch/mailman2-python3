@@ -1,19 +1,19 @@
-Bekräftelse på avanmälan från listan %(listname)s
+BekrÃ¤ftelse pÃ¥ avanmÃ¤lan frÃ¥n listan %(listname)s
 
-Vi har tagit emot en förfrågan%(remote)s om att ta bort din e-postadress
-"%(email)s" från listan %(listaddr)s. Om det stämmer att detta är din önskan, 
-skicka ett svar på detta e-postbrev, med samme ämne som e-postbrevet
-har. Eller gå in på webbsidan:
+Vi har tagit emot en fÃ¶rfrÃ¥gan%(remote)s om att ta bort din e-postadress
+"%(email)s" frÃ¥n listan %(listaddr)s. Om det stÃ¤mmer att detta Ã¤r din Ã¶nskan, 
+skicka ett svar pÃ¥ detta e-postbrev, med samme Ã¤mne som e-postbrevet
+har. Eller gÃ¥ in pÃ¥ webbsidan:
 
     %(confirmurl)s
 
-Du kan också skicka ett e-postbrev till %(requestaddr)s, med följande (och BARA
-följande) innehåll:
+Du kan ocksÃ¥ skicka ett e-postbrev till %(requestaddr)s, med fÃ¶ljande (och BARA
+fÃ¶ljande) innehÃ¥ll:
 
     confirm %(cookie)s
 
-Observera att skickandet av ett svar på detta e-postbrev, borde fungera via de flesta e-postläsare, eftersom det vanligtvis leder till att ämnesfältet behålls
-(tillägg av 'Re:' eller 'SV:' framför ämnet spelar ingen roll).
+Observera att skickandet av ett svar pÃ¥ detta e-postbrev, borde fungera via de flesta e-postlÃ¤sare, eftersom det vanligtvis leder till att Ã¤mnesfÃ¤ltet behÃ¥lls
+(tillÃ¤gg av 'Re:' eller 'SV:' framfÃ¶r Ã¤mnet spelar ingen roll).
 
-Om du inte önskar att avanmäla dig från listan, kan du bara radera detta e-postbrev.
-Om du tror att någon annan försökte avanmäla dig eller om du har andra frågor, kan du skicka ett e-postbrev till %(listadmin)s.
+Om du inte Ã¶nskar att avanmÃ¤la dig frÃ¥n listan, kan du bara radera detta e-postbrev.
+Om du tror att nÃ¥gon annan fÃ¶rsÃ¶kte avanmÃ¤la dig eller om du har andra frÃ¥gor, kan du skicka ett e-postbrev till %(listadmin)s.

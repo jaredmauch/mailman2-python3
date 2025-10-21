@@ -1,8 +1,8 @@
-Twoja wiadomo¶æ o tytule
+Twoja wiadomoÅ›Ä‡ o tytule
 
     %(subject)s
 
-zosta³a przes³ana na listê %(listname)s.
+zostaÅ‚a przesÅ‚ana na listÄ™ %(listname)s.
 
 Strona informacyjna listy: %(listinfo_url)s
 Opcje subskrypcji: %(optionsurl)s

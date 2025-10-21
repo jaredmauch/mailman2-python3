@@ -1,23 +1,23 @@
-Obvestilo o odobritvi naroènine na po¹tni seznam %(listname)s
+Obvestilo o odobritvi naroÄnine na poÅ¡tni seznam %(listname)s
 
-Prejeli smo zahtevo %(remote)s za naroènino z va¹ega e-po¹tnega
-naslova, "%(email)s", na po¹tni seznam %(listaddr)s. Zahtevo, da
-bi bili dodani na ta po¹tni seznam potrdite tako, da odgovorite
-na to sporoèilo, pri tem pa obdr¾ite vrstico Zadeva nespremenjeno.
-Lahko tudi obi¹èete spletno stran:
+Prejeli smo zahtevo %(remote)s za naroÄnino z vaÅ¡ega e-poÅ¡tnega
+naslova, "%(email)s", na poÅ¡tni seznam %(listaddr)s. Zahtevo, da
+bi bili dodani na ta poÅ¡tni seznam potrdite tako, da odgovorite
+na to sporoÄilo, pri tem pa obdrÅ¾ite vrstico Zadeva nespremenjeno.
+Lahko tudi obiÅ¡Äete spletno stran:
 
     %(confirmurl)s
 
-Lahko pa vkljuèite naslednjo vrstico -- samo naslednjo vrstico --
-v sporoèilo, ki ga po¹ljete na naslov %(requestaddr)s:
+Lahko pa vkljuÄite naslednjo vrstico -- samo naslednjo vrstico --
+v sporoÄilo, ki ga poÅ¡ljete na naslov %(requestaddr)s:
 
     confirm %(cookie)s
 
-Za veèino uporabnikov bi moral delovati 'odgovor' na to sporoèilo,
+Za veÄino uporabnikov bi moral delovati 'odgovor' na to sporoÄilo,
 saj pri odgovarjanju ostane vrstica za zadevo nespremenjena.
 (Dodatni Re: v Zadevi je v redu)
 
-Èe se ne ¾elite prijaviti na seznam, prezrite to sporoèilo. Èe
-mislite, da vas ¾eli nekdo drug prijaviti na seznam ali imate
-kak¹na druga vpra¹anja, jih po¹ljite %(listadmin)s.
+ÄŒe se ne Å¾elite prijaviti na seznam, prezrite to sporoÄilo. ÄŒe
+mislite, da vas Å¾eli nekdo drug prijaviti na seznam ali imate
+kakÅ¡na druga vpraÅ¡anja, jih poÅ¡ljite %(listadmin)s.
 

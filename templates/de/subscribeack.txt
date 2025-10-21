@@ -6,33 +6,33 @@ Nachrichten an diese Liste schicken Sie bitte an die folgende E-Mail-Adresse:
 
     %(emailaddr)s
 
-Allgemeine Informationen über die Mailingliste finden Sie unter:
+Allgemeine Informationen Ã¼ber die Mailingliste finden Sie unter:
 
     %(listinfo_url)s
 
-Falls Sie Ihr Abonnement ändern wollen, besuchen Sie bitte Ihre
-persönliche Einstellungsseite:
+Falls Sie Ihr Abonnement Ã¤ndern wollen, besuchen Sie bitte Ihre
+persÃ¶nliche Einstellungsseite:
 
     %(optionsurl)s
 %(umbrella)s
 
-Um Mißbrauch vorzubeugen, benötigen Sie ein Passwort um den Bezug der
-Mailingliste zu kündigen oder andere Änderungen vorzunehmen. Es lautet:
+Um MiÃŸbrauch vorzubeugen, benÃ¶tigen Sie ein Passwort um den Bezug der
+Mailingliste zu kÃ¼ndigen oder andere Ã„nderungen vorzunehmen. Es lautet:
 
     %(password)s
 
-Auf der persönlichen Einstellungsseite können Sie sich über eine Schaltfläche
+Auf der persÃ¶nlichen Einstellungsseite kÃ¶nnen Sie sich Ã¼ber eine SchaltflÃ¤che
 Ihr Passwort erneut schicken lassen.
 
 Normalerweise erhalten Sie von Mailman jeden Monat eine E-Mail, die Ihre
-Abonnements auf %(host_name)s und die Passwörter auflistet.
-Diese Erinnerungsmail enthält auch Informationen darüber, wie Sie Ihr
-Abonnement kündigen oder Ihre Abonnements-Einstellungen ändern können.
+Abonnements auf %(host_name)s und die PasswÃ¶rter auflistet.
+Diese Erinnerungsmail enthÃ¤lt auch Informationen darÃ¼ber, wie Sie Ihr
+Abonnement kÃ¼ndigen oder Ihre Abonnements-Einstellungen Ã¤ndern kÃ¶nnen.
 
-Für E-Mail-Profis: Sie können Änderungen auch via E-Mail vornehmen,
+FÃ¼r E-Mail-Profis: Sie kÃ¶nnen Ã„nderungen auch via E-Mail vornehmen,
 indem Sie eine E-Mail an die folgende Adresse schicken, die das Wort "help"
-(ohne Anführungszeichen) in der Betreffzeile oder im Text der E-Mail enthält:
+(ohne AnfÃ¼hrungszeichen) in der Betreffzeile oder im Text der E-Mail enthÃ¤lt:
 
     %(real_name)s-request@%(host_name)s
 
-Sie erhalten dann eine Nachricht mit Instruktionen zurück.
+Sie erhalten dann eine Nachricht mit Instruktionen zurÃ¼ck.

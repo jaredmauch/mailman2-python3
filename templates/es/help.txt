@@ -1,35 +1,35 @@
-Ayuda de la lista de distribuci髇 %(listname)s:
+Ayuda de la lista de distribuci贸n %(listname)s:
 
 Esta es la ayuda con las ordenes que se pueden enviar por correo
-electr髇ico en la versi髇 %(version)s del gestor de listas 'Mailman'.
+electr贸nico en la versi贸n %(version)s del gestor de listas 'Mailman'.
 Seguidamente se describen las ordenes que se pueden enviar para 
-obtener informaci髇 y controlar su subscripci髇 en las listas 
+obtener informaci贸n y controlar su subscripci贸n en las listas 
 gestiondas por 'Mailman'. Las ordenes pueden enviarse en el asunto
 (subject) o en el cuerpo del mensaje.
 
-Observe que muchas de las cosas siguientes se pueden realizar tambi閚
-a trav閟 de la WEB en:
+Observe que muchas de las cosas siguientes se pueden realizar tambi茅n
+a trav茅s de la WEB en:
 
     %(listinfo_url)s
 
-En particular, puede usar este sitio WEB para hacer que se le env韊
-su clave a su direcci髇 de correo electr髇ico.
+En particular, puede usar este sitio WEB para hacer que se le env铆e
+su clave a su direcci贸n de correo electr贸nico.
 
-Las ordenes espec韋icas a las listas (subscribe, who, etc) se deben 
-enviar a la direcci髇 *-request para la lista concreta. Por ejemplo,
-para la lista 'mailman' se usar韆 mailman-request@...
+Las ordenes espec铆ficas a las listas (subscribe, who, etc) se deben 
+enviar a la direcci贸n *-request para la lista concreta. Por ejemplo,
+para la lista 'mailman' se usar铆a mailman-request@...
 
-En la descripci髇 de las ordenes se utilizan las siguientes convenciones:
-Las palabras indicadas entre 醤gulos '<>' son elementos IMPRESCINDIBLES,
+En la descripci贸n de las ordenes se utilizan las siguientes convenciones:
+Las palabras indicadas entre 谩ngulos '<>' son elementos IMPRESCINDIBLES,
 mientras que las palabras indicadas entre corchetes '[]' son elementos
-OPCIONALES. No incluya los 醤gulos o los corchetes cuando utilice las 
-髍denes.
+OPCIONALES. No incluya los 谩ngulos o los corchetes cuando utilice las 
+贸rdenes.
 
-觬denes v醠idas:
+脫rdenes v谩lidas:
 
     %(commands)s
 
-Las 髍denes se deben enviar a %(requestaddr)s
+Las 贸rdenes se deben enviar a %(requestaddr)s
 
 Las preguntas y comentarios para el responsable de la lista se deben 
 enviar a 

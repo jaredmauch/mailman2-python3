@@ -1,13 +1,13 @@
-Eftersom du är en listadministratör, får du denna förfrågan om
-att godkänna eller avslå följande e-postbrev till listan:
+Eftersom du Ã¤r en listadministratÃ¶r, fÃ¥r du denna fÃ¶rfrÃ¥gan om
+att godkÃ¤nna eller avslÃ¥ fÃ¶ljande e-postbrev till listan:
 
     Lista:   %(listname)s@%(hostname)s
-    Från:    %(sender)s
-    Ämne:    %(subject)s
+    FrÃ¥n:    %(sender)s
+    Ã„mne:    %(subject)s
     Orsak:   %(reason)s
 
-För att godkänna eller avslå förfrågan, gå till
+FÃ¶r att godkÃ¤nna eller avslÃ¥ fÃ¶rfrÃ¥gan, gÃ¥ till
 
     %(admindb_url)s
         
-när du får tid.
+nÃ¤r du fÃ¥r tid.

@@ -1,8 +1,8 @@
-A(z) %(listname)s levelezõlista automatikus válaszokat küldõ címére
-a(z) `%(sender)s' címrõl ma már %(num)s üzenetet kaptunk.
-Ezek az üzenetek, lehet hogy egymásra hivatkozó levelek
-(mail loops), ezért a mai napon több automatikus válaszlevelet nem
-küldünk el neked. Kérünk holnap próbálkozz újra. 
+A(z) %(listname)s levelezÅ‘lista automatikus vÃ¡laszokat kÃ¼ldÅ‘ cÃ­mÃ©re
+a(z) `%(sender)s' cÃ­mrÅ‘l ma mÃ¡r %(num)s Ã¼zenetet kaptunk.
+Ezek az Ã¼zenetek, lehet hogy egymÃ¡sra hivatkozÃ³ levelek
+(mail loops), ezÃ©rt a mai napon tÃ¶bb automatikus vÃ¡laszlevelet nem
+kÃ¼ldÃ¼nk el neked. KÃ©rÃ¼nk holnap prÃ³bÃ¡lkozz Ãºjra. 
 
-Ha úgy gondolod, hogy mi tévedtünk, vagy egyéb észrevételed van,
-akkor írj a lista tulajdonosának a(z) %(owneremail)s címre. 
+Ha Ãºgy gondolod, hogy mi tÃ©vedtÃ¼nk, vagy egyÃ©b Ã©szrevÃ©teled van,
+akkor Ã­rj a lista tulajdonosÃ¡nak a(z) %(owneremail)s cÃ­mre. 

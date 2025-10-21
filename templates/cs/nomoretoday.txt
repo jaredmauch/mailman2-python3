@@ -1,11 +1,11 @@
-Z va¹í adresy `%(sender)s' jsme dostali zprávu po¾adující
-zaslání automatické odpovìdi z konference %(listname)s.
-Takovıch zpráv jsme ale dnes obdr¾eli ji¾ %(num)s a tak se
-domníváme, ¾e mohlo dojít k zacyklení.
-Abychom zabránili válkám robotù, zasílajícím si vzájemnì
-automaticky zprávy, omezujeme poèet automatickıch odpovìdí
-zaslanıch v jednom dni na jednu adresu. Pokud chcete odpovìï,
-musíte pøíkaz zaslat zítra znovu.
-Pokud se domníváte, ¾e se jedná o omyl, kontaktujte
-správce konference na adrese:
+Z vaÅ¡Ã­ adresy `%(sender)s' jsme dostali zprÃ¡vu poÅ¾adujÃ­cÃ­
+zaslÃ¡nÃ­ automatickÃ© odpovÄ›di z konference %(listname)s.
+TakovÃ½ch zprÃ¡v jsme ale dnes obdrÅ¾eli jiÅ¾ %(num)s a tak se
+domnÃ­vÃ¡me, Å¾e mohlo dojÃ­t k zacyklenÃ­.
+Abychom zabrÃ¡nili vÃ¡lkÃ¡m robotÅ¯, zasÃ­lajÃ­cÃ­m si vzÃ¡jemnÄ›
+automaticky zprÃ¡vy, omezujeme poÄet automatickÃ½ch odpovÄ›dÃ­
+zaslanÃ½ch v jednom dni na jednu adresu. Pokud chcete odpovÄ›Ä,
+musÃ­te pÅ™Ã­kaz zaslat zÃ­tra znovu.
+Pokud se domnÃ­vÃ¡te, Å¾e se jednÃ¡ o omyl, kontaktujte
+sprÃ¡vce konference na adrese:
 %(owneremail)s.

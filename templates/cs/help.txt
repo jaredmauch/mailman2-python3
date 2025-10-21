@@ -1,41 +1,41 @@
-Nápovìda pro konferenci %(listname)s:
+NÃ¡povÄ›da pro konferenci %(listname)s:
 
-Tato konference je zaji¹»ována programem "Mailman" verze %(version)s.
-Pro její ovládání mù¾ete pou¾ít dále popsané pøíkazy. Pøíkaz mù¾e bıt
-zadán v tìle dopisu nebo v øádce subject: (v èeskıch programech
-pøekládáme jako vìc:). Je lep¹í, kdy¾ dopis nebude kromì pøíkazù
-obsahovat nic jiného (tøeba podpis) a  pøíkazy musíte zasílat z
-adresy, ze které jste se pøihlásili. Pokud je omezeno pøispívání do
-konference pouze pro její úèastníky, musíte se pøihlásit z adresy,
-kterou budete pou¾ívat pro pøispívání. Také se mù¾ete pøihlásit
-nìkolikrát, ze v¹ech adres, které budete pou¾ívat a u nìkterıch
-nastavit, ¾e si nepøejete zasílat pøíspìvky.
+Tato konference je zajiÅ¡Å¥ovÃ¡na programem "Mailman" verze %(version)s.
+Pro jejÃ­ ovlÃ¡dÃ¡nÃ­ mÅ¯Å¾ete pouÅ¾Ã­t dÃ¡le popsanÃ© pÅ™Ã­kazy. PÅ™Ã­kaz mÅ¯Å¾e bÃ½t
+zadÃ¡n v tÄ›le dopisu nebo v Å™Ã¡dce subject: (v ÄeskÃ½ch programech
+pÅ™eklÃ¡dÃ¡me jako vÄ›c:). Je lepÅ¡Ã­, kdyÅ¾ dopis nebude kromÄ› pÅ™Ã­kazÅ¯
+obsahovat nic jinÃ©ho (tÅ™eba podpis) a  pÅ™Ã­kazy musÃ­te zasÃ­lat z
+adresy, ze kterÃ© jste se pÅ™ihlÃ¡sili. Pokud je omezeno pÅ™ispÃ­vÃ¡nÃ­ do
+konference pouze pro jejÃ­ ÃºÄastnÃ­ky, musÃ­te se pÅ™ihlÃ¡sit z adresy,
+kterou budete pouÅ¾Ã­vat pro pÅ™ispÃ­vÃ¡nÃ­. TakÃ© se mÅ¯Å¾ete pÅ™ihlÃ¡sit
+nÄ›kolikrÃ¡t, ze vÅ¡ech adres, kterÃ© budete pouÅ¾Ã­vat a u nÄ›kterÃ½ch
+nastavit, Å¾e si nepÅ™ejete zasÃ­lat pÅ™Ã­spÄ›vky.
 
-Vìt¹inu zde popsanıch akcí mù¾ete mnohem pohodlnìji provést pomocí www
-prohlí¾eèe na adrese:
+VÄ›tÅ¡inu zde popsanÃ½ch akcÃ­ mÅ¯Å¾ete mnohem pohodlnÄ›ji provÃ©st pomocÃ­ www
+prohlÃ­Å¾eÄe na adrese:
 
     %(listinfo_url)s
 
-Pokud zapomenete heslo, mù¾ete si jej nechat na vı¹e uvedené adrese
+Pokud zapomenete heslo, mÅ¯Å¾ete si jej nechat na vÃ½Å¡e uvedenÃ© adrese
 zaslat na svou e-mailovou adresu.
 
-Pøíkazy vztahující se na urèitou konferenci (subscribe, who atd.)
-zasílejte na tzv. request adresu, která má tvar 
-jméno_konference-request@..., tedy napøíklad pro konferenci, které se
+PÅ™Ã­kazy vztahujÃ­cÃ­ se na urÄitou konferenci (subscribe, who atd.)
+zasÃ­lejte na tzv. request adresu, kterÃ¡ mÃ¡ tvar 
+jmÃ©no_konference-request@..., tedy napÅ™Ã­klad pro konferenci, kterÃ© se
 jmenuje mailman na adresu mailman-request@....
 
-Konvence zápisu: slova uvedená mezi ostrımi závorkami "<>" oznaèují
-povinné parametry, které musí bıt u pøíkazu uvedeny, slova v hranatıch
-závorkách "[]" jsou nepovinné parametry, které uvedete jen tehdy, kdy¾
-po¾adujete nìjakou zvlá¹tní konfiguraci. Závorky "<>" a "[]" nejsou
-souèástí pøíkazù a neuvádìjí se.
+Konvence zÃ¡pisu: slova uvedenÃ¡ mezi ostrÃ½mi zÃ¡vorkami "<>" oznaÄujÃ­
+povinnÃ© parametry, kterÃ© musÃ­ bÃ½t u pÅ™Ã­kazu uvedeny, slova v hranatÃ½ch
+zÃ¡vorkÃ¡ch "[]" jsou nepovinnÃ© parametry, kterÃ© uvedete jen tehdy, kdyÅ¾
+poÅ¾adujete nÄ›jakou zvlÃ¡Å¡tnÃ­ konfiguraci. ZÃ¡vorky "<>" a "[]" nejsou
+souÄÃ¡stÃ­ pÅ™Ã­kazÅ¯ a neuvÃ¡dÄ›jÃ­ se.
 
-Systém rozumí následujícím pøíkazùm:
+SystÃ©m rozumÃ­ nÃ¡sledujÃ­cÃ­m pÅ™Ã­kazÅ¯m:
 
     %(commands)s
 
-Pøíkazy zasílejte na adresu %(requestaddr)s
+PÅ™Ã­kazy zasÃ­lejte na adresu %(requestaddr)s
 
-Pøípadnì dotazy nebo námìty zasílejte na adresu
+PÅ™Ã­padnÄ› dotazy nebo nÃ¡mÄ›ty zasÃ­lejte na adresu
 
     %(adminaddr)s

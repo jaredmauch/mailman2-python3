@@ -1,9 +1,9 @@
-La lista de distribuciÛn %(real_name)s@%(host_name)s tiene
+La lista de distribuci√≥n %(real_name)s@%(host_name)s tiene
 %(count)d peticion(es) pendientes para que usted las revise en la
-siguiente p·gina:
+siguiente p√°gina:
 
 	%(adminDB)s
 	
-Por favor, atiÈndalas tan pronto como le sea posible. Esta comunicaciÛn
-indicando que existen mensajes por revisar, se le enviar· todos los dÌas,
+Por favor, ati√©ndalas tan pronto como le sea posible. Esta comunicaci√≥n
+indicando que existen mensajes por revisar, se le enviar√° todos los d√≠as,
 siempre y cuando exista alguno.

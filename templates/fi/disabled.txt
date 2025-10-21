@@ -1,24 +1,24 @@
-J‰senyytesi postituslistalla %(listname)s on suljettu %(reason)s.  
-Et saa en‰‰ viestej‰ t‰lt‰ listalta ennen kuin uudistat j‰senyytesi.  
-Tulet saamaan %(noticesleft)s t‰m‰n kaltaisia huomautusviestej‰ siihen
-saakka kun j‰senyytesi listalta poistetaan.
+J√§senyytesi postituslistalla %(listname)s on suljettu %(reason)s.  
+Et saa en√§√§ viestej√§ t√§lt√§ listalta ennen kuin uudistat j√§senyytesi.  
+Tulet saamaan %(noticesleft)s t√§m√§n kaltaisia huomautusviestej√§ siihen
+saakka kun j√§senyytesi listalta poistetaan.
 
-Voit uusia j‰senyytesi yksinkertaisesti vastaamalla t‰h‰n
-viestiin (j‰t‰ Subject-kentt‰: tyhj‰ksi) tai pist‰ytym‰ll‰ varmistussivulla
+Voit uusia j√§senyytesi yksinkertaisesti vastaamalla t√§h√§n
+viestiin (j√§t√§ Subject-kentt√§: tyhj√§ksi) tai pist√§ytym√§ll√§ varmistussivulla
 
     %(confirmurl)s
 
-Voit pist‰yty‰ myˆs j‰senyyssivullasi
+Voit pist√§yty√§ my√∂s j√§senyyssivullasi
 
     %(optionsurl)s
 
-Voit j‰senyyssivullasi vaihtaa useita l‰hetysasetuksia kuten 
-s‰hkˆpostiosoitettasi ja sit‰ saatko koostel‰hetyksi‰ vai et.
+Voit j√§senyyssivullasi vaihtaa useita l√§hetysasetuksia kuten 
+s√§hk√∂postiosoitettasi ja sit√§ saatko koostel√§hetyksi√§ vai et.
 Muistutukseksi salasanasi on:
 
     %(password)s
 
-Mahdollisissa kysymyksiss‰ ja ongelmissa voit ottaa yhteytt‰
+Mahdollisissa kysymyksiss√§ ja ongelmissa voit ottaa yhteytt√§
 listan omistajaan
 
     %(owneraddr)s

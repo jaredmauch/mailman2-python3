@@ -1,7 +1,7 @@
-Listan %(real_name)s@%(host_name)s har %(count)d en förfrågan/förfrågningar
-som väntar på din behandling på:
+Listan %(real_name)s@%(host_name)s har %(count)d en fÃ¶rfrÃ¥gan/fÃ¶rfrÃ¥gningar
+som vÃ¤ntar pÃ¥ din behandling pÃ¥:
 
 	%(adminDB)s
 
-Var vänlig behandla dessa så snart du får tid.
-Denna påminnelse kommer att skickas till dig dagligen.
+Var vÃ¤nlig behandla dessa sÃ¥ snart du fÃ¥r tid.
+Denna pÃ¥minnelse kommer att skickas till dig dagligen.

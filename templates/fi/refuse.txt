@@ -1,13 +1,13 @@
-Postituslistan %(listname)s ylläpitäjä on hylännyt 
-pyyntösi
+Postituslistan %(listname)s yllÃ¤pitÃ¤jÃ¤ on hylÃ¤nnyt 
+pyyntÃ¶si
 
     %(request)s
 
-Ylläpitäjän syy pyyntösi hylkäämiseen oli:
+YllÃ¤pitÃ¤jÃ¤n syy pyyntÃ¶si hylkÃ¤Ã¤miseen oli:
 
 "%(reason)s"
 
-Lisäkysymykset tai kommentit voit lähettää listan ylläpitäjälle 
+LisÃ¤kysymykset tai kommentit voit lÃ¤hettÃ¤Ã¤ listan yllÃ¤pitÃ¤jÃ¤lle 
 osoitteeseen:
 
     %(adminaddr)s

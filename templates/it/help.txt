@@ -1,12 +1,12 @@
 Aiuto per la lista %(listname)s:
 
-Questo è il messaggio di aiuto per la versione %(version)s del
+Questo Ã¨ il messaggio di aiuto per la versione %(version)s del
 list-manager "Mailman".  Il testo seguente descrive i comandi che puoi
 mandare per ricevere informazioni e per controllare la tua iscrizione
 alle liste di Mailman di questo sito. 
-Un comando può essere inviato nell'oggetto o nel corpo del messaggio.
+Un comando puÃ² essere inviato nell'oggetto o nel corpo del messaggio.
 
-Nota che molto di quello che segue può essere compiuto via World Wide
+Nota che molto di quello che segue puÃ² essere compiuto via World Wide
 Web, all'indirizzo:
 
     %(listinfo_url)s

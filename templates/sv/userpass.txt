@@ -1,26 +1,26 @@
-Du, eller någon som utgav sig för att vara dig, har bett om att få
-lösenordet för e-postlistan %(fqdn_lname)s skickat till sig. Du behöver
-detta lösenord för att ändra på dina inställningar för listan
-(till exempel ändra lösenordord, få sammandrag skickat till dig med 
-jämna mellanrum istället etc). Lösenorden gör det också enklare för dig 
-att avanmäla dig från listan om detta skulle bli aktuellt.
+Du, eller nÃ¥gon som utgav sig fÃ¶r att vara dig, har bett om att fÃ¥
+lÃ¶senordet fÃ¶r e-postlistan %(fqdn_lname)s skickat till sig. Du behÃ¶ver
+detta lÃ¶senord fÃ¶r att Ã¤ndra pÃ¥ dina instÃ¤llningar fÃ¶r listan
+(till exempel Ã¤ndra lÃ¶senordord, fÃ¥ sammandrag skickat till dig med 
+jÃ¤mna mellanrum istÃ¤llet etc). LÃ¶senorden gÃ¶r det ocksÃ¥ enklare fÃ¶r dig 
+att avanmÃ¤la dig frÃ¥n listan om detta skulle bli aktuellt.
 
-Du är medlem med e-postadressen: %(user)s
+Du Ã¤r medlem med e-postadressen: %(user)s
 
-Ditt lösenord på e-postlistan %(listname)s är: %(password)s
+Ditt lÃ¶senord pÃ¥ e-postlistan %(listname)s Ã¤r: %(password)s
 
-För att ändra dina inställningar för denna lista, logga in på din
-personliga webbsida för listan:
+FÃ¶r att Ã¤ndra dina instÃ¤llningar fÃ¶r denna lista, logga in pÃ¥ din
+personliga webbsida fÃ¶r listan:
 
     %(options_url)s
 
-Du har också möjlighet att göra dessa ändringar via e-post genom att
+Du har ocksÃ¥ mÃ¶jlighet att gÃ¶ra dessa Ã¤ndringar via e-post genom att
 skicka ett e-postbrev till:
 
     %(requestaddr)s
 
-med ordet "help" som innehåll eller i ämnesfältet. Du kommer då att få ta 
-emot ett automatiskt svar från systemet med närmare instruktioner.
+med ordet "help" som innehÃ¥ll eller i Ã¤mnesfÃ¤ltet. Du kommer dÃ¥ att fÃ¥ ta 
+emot ett automatiskt svar frÃ¥n systemet med nÃ¤rmare instruktioner.
 
-Har du frågor eller kommentarer? Kontakta listadministratören för
-%(listname)s på %(owneraddr)s.
+Har du frÃ¥gor eller kommentarer? Kontakta listadministratÃ¶ren fÃ¶r
+%(listname)s pÃ¥ %(owneraddr)s.

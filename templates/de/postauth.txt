@@ -1,4 +1,4 @@
-Eine E-Mail an eine Mailingliste wurde nicht verteilt und benötigt
+Eine E-Mail an eine Mailingliste wurde nicht verteilt und benÃ¶tigt
 eine Freigabe durch Sie als Listenmoderator:
 
     Liste:   %(listname)s@%(hostname)s

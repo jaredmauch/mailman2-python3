@@ -12,7 +12,7 @@ Text an
 
     %(got_request_email)s
 
-Sie können den Verwalter dieser Liste unter der Adresse
+Sie kÃ¶nnen den Verwalter dieser Liste unter der Adresse
 
     %(got_owner_email)s
 

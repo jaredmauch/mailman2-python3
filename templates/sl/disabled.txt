@@ -1,23 +1,23 @@
-Va¹a naroènina na po¹tni seznam %(listname)s je bila onemogoèena
-zaradi %(reason)s. S tega seznama ne boste prejeli veè sporoèil,
-dokler si ponovno ne vkljuèite èlanstva. Preden bo va¹e èlanstvo
-na seznamu izbrisano, boste prejeli ¹e %(noticesleft)s takih opomnikov.
+VaÅ¡a naroÄnina na poÅ¡tni seznam %(listname)s je bila onemogoÄena
+zaradi %(reason)s. S tega seznama ne boste prejeli veÄ sporoÄil,
+dokler si ponovno ne vkljuÄite Älanstva. Preden bo vaÅ¡e Älanstvo
+na seznamu izbrisano, boste prejeli Å¡e %(noticesleft)s takih opomnikov.
 
-Za ponovni vklop èlanstva odgovorite na to sporoèilo (in pustite
-Zadevo nespremenjeno) ali obi¹èite stran
+Za ponovni vklop Älanstva odgovorite na to sporoÄilo (in pustite
+Zadevo nespremenjeno) ali obiÅ¡Äite stran
 
     %(confirmurl)s
 
-Obi¹èete lahko tudi stran za èlanstva na naslovu
+ObiÅ¡Äete lahko tudi stran za Älanstva na naslovu
 
     %(optionsurl)s
 
 Na tej strani lahko spreminjate razne nastavitve prejemanja
-sporoèil, npr. e-po¹tni naslov in prejemanje dnevnega izvleèka.
-Va¹e geslo je
+sporoÄil, npr. e-poÅ¡tni naslov in prejemanje dnevnega izvleÄka.
+VaÅ¡e geslo je
 
     %(password)s
 
-Za vpra¹anja ali te¾ave se obrnite na skrbnika seznama na naslovu
+Za vpraÅ¡anja ali teÅ¾ave se obrnite na skrbnika seznama na naslovu
 
     %(owneraddr)s
