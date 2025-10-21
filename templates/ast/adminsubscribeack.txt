@@ -1,4 +1,4 @@
-%(member)s soscribióse satisfactoriamente a %(listname)s.
+%(member)s soscribiÃ³se satisfactoriamente a %(listname)s.
 %(whence)s
 
 

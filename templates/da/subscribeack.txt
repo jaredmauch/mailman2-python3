@@ -4,39 +4,39 @@ For at sende mail til listen, skal du bruge denne e-mailadresse:
 
   %(emailaddr)s
 
-Generelle informationer om listen finder du på:
+Generelle informationer om listen finder du pÃ¥:
 
   %(listinfo_url)s
 
-Hvis du ønsker at afmelde dig listen eller at ændre på dine
-indstillinger for listen (f. eks. ændre adgangskode, få tilsendt sammendrag
-med jævne mellemrum osv.), kan du ændre dette fra din personlige
+Hvis du Ã¸nsker at afmelde dig listen eller at Ã¦ndre pÃ¥ dine
+indstillinger for listen (f. eks. Ã¦ndre adgangskode, fÃ¥ tilsendt sammendrag
+med jÃ¦vne mellemrum osv.), kan du Ã¦ndre dette fra din personlige
 medlemsside:
 
   %(optionsurl)s
 %(umbrella)s
-Du kan også ændre de samme indstillinger ved at sende en e-mail til:
+Du kan ogsÃ¥ Ã¦ndre de samme indstillinger ved at sende en e-mail til:
 
   %(real_name)s-request@%(host_name)s
 
-med ordet 'help' i Emne feltet eller i mailen. Så vil du modtage
-en e-mail med nærmere instruktioner.
+med ordet 'help' i Emne feltet eller i mailen. SÃ¥ vil du modtage
+en e-mail med nÃ¦rmere instruktioner.
 
-Du skal bruge en adgangskode for at ændre på disse indstillinger for listen
-(også for at ændre din adgangskode) eller for at afmelde dig listen uden efterfølgende
-og skulle bekræfte det.
+Du skal bruge en adgangskode for at Ã¦ndre pÃ¥ disse indstillinger for listen
+(ogsÃ¥ for at Ã¦ndre din adgangskode) eller for at afmelde dig listen uden efterfÃ¸lgende
+og skulle bekrÃ¦fte det.
 Din adgangskode er:
 
   %(password)s
 
-Normalt vil Mailman en gang hver måned sende en e-mail til dig, med en
-påmindelse om den adgangskode du har til den mailliste som du er medlem af,
-på %(host_name)s,
-men det kan du vælge fra, hvis du ønsker det.
-Påmindelsen vil også indeholde information om hvordan du kan afmelde
-dig listen, eller hvordan du kan ændre i dine personlige indstillinger
+Normalt vil Mailman en gang hver mÃ¥ned sende en e-mail til dig, med en
+pÃ¥mindelse om den adgangskode du har til den mailliste som du er medlem af,
+pÃ¥ %(host_name)s,
+men det kan du vÃ¦lge fra, hvis du Ã¸nsker det.
+PÃ¥mindelsen vil ogsÃ¥ indeholde information om hvordan du kan afmelde
+dig listen, eller hvordan du kan Ã¦ndre i dine personlige indstillinger
 for listen.
 
-På din personlige medlemsside findes der også en knap, hvor du kan klikke
-hvis du ønsker at få din adgangskode tilsendt i en e-mail.
+PÃ¥ din personlige medlemsside findes der ogsÃ¥ en knap, hvor du kan klikke
+hvis du Ã¸nsker at fÃ¥ din adgangskode tilsendt i en e-mail.
 

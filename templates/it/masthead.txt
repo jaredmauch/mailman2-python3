@@ -12,5 +12,5 @@ Puoi contattare la persona che gestisce la lista all'indirizzo
 	%(got_owner_email)s
 
 Se rispondi a questo messaggio, per favore edita la linea 
-dell'oggetto in modo che sia più utile di un semplice
+dell'oggetto in modo che sia piÃ¹ utile di un semplice
 "Re: Contenuti del digest della lista %(real_name)s..."

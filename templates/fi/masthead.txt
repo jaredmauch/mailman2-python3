@@ -1,18 +1,18 @@
-L‰het‰ %(real_name)s postituslistalle l‰hetetyt viestit 
-hyv‰ksytt‰v‰ksi
+L√§het√§ %(real_name)s postituslistalle l√§hetetyt viestit 
+hyv√§ksytt√§v√§ksi
 	%(got_list_email)s
 
-Liitty‰ksesi tai irtisanoutuaksesi listalta www-yhteyden 
+Liitty√§ksesi tai irtisanoutuaksesi listalta www-yhteyden 
 kautta, vieraile
 	%(got_listinfo_url)s
-tai jos k‰yt‰t s‰hkˆpostia niin kirjoita otsikko- tai 
-viestikentt‰‰n sana
-'help' ja l‰het‰ se
+tai jos k√§yt√§t s√§hk√∂postia niin kirjoita otsikko- tai 
+viestikentt√§√§n sana
+'help' ja l√§het√§ se
 	%(got_request_email)s
 
-Saat yhteyden listan yll‰pit‰j‰‰n
+Saat yhteyden listan yll√§pit√§j√§√§n
 	%(got_owner_email)s
 
-Kun vastaat listalle, muokkaa Otsikko-kentt‰‰ siten, 
-ett‰ sopii paremmin kuin
-"Re: Kokoelman %(real_name)s sis‰ltˆ..."
+Kun vastaat listalle, muokkaa Otsikko-kentt√§√§ siten, 
+ett√§ sopii paremmin kuin
+"Re: Kokoelman %(real_name)s sis√§lt√∂..."

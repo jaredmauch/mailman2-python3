@@ -3,15 +3,15 @@ Il tuo messaggio alla lista '%(listname)s' con oggetto
 
     %(subject)s
 
-Ë stato trattenuto in attesa che il moderatore della lista 
+√® stato trattenuto in attesa che il moderatore della lista 
 possa esaminarlo per l'approvazione.
 
-La ragione per la quale Ë stato trattenuto:
+La ragione per la quale √® stato trattenuto:
 
     %(reason)s
 
-A seconda della decisione del moderatore, il messaggio verr‡ 
-inviato alla lista oppure ti sar‡ inviata una notifica con la
+A seconda della decisione del moderatore, il messaggio verr√† 
+inviato alla lista oppure ti sar√† inviata una notifica con la
 motivazione del rifiuto.  Se vuoi cancellare questo messaggio,
 visita questo indirizzo:
 

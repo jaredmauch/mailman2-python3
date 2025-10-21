@@ -1,2 +1,2 @@
-%(member)s feliratkozott a(z) %(listname)s listára.
+%(member)s feliratkozott a(z) %(listname)s listÃ¡ra.
 %(whence)s

@@ -1,18 +1,18 @@
-Este lembrete é-lhe enviado, uma vez por mês, para o lembrar da sua
-participação nas listas de discussão em %(hostname)s. Inclui informação
-sobre a sua participação e sobre a forma de a alterar ou anular.
+Este lembrete Ã©-lhe enviado, uma vez por mÃªs, para o lembrar da sua
+participaÃ§Ã£o nas listas de discussÃ£o em %(hostname)s. Inclui informaÃ§Ã£o
+sobre a sua participaÃ§Ã£o e sobre a forma de a alterar ou anular.
 
-Pode visitar as URLs para mudar o seu estatuto ou configuração, incluindo
-a anulação da inscrição, alterar o modo de recepção de mensagens ou 
-simplemente suspendeno a entrega (p.ex. quado fôr de férias).
+Pode visitar as URLs para mudar o seu estatuto ou configuraÃ§Ã£o, incluindo
+a anulaÃ§Ã£o da inscriÃ§Ã£o, alterar o modo de recepÃ§Ã£o de mensagens ou 
+simplemente suspendeno a entrega (p.ex. quado fÃ´r de fÃ©rias).
 
-Além da interface www, pode também usar o email make efectuar essas 
-alterações. Para receber mais informações envie uma mensagem ao endereço
+AlÃ©m da interface www, pode tambÃ©m usar o email make efectuar essas 
+alteraÃ§Ãµes. Para receber mais informaÃ§Ãµes envie uma mensagem ao endereÃ§o
 '-request' da lista (por exemplo %(exreq)s) contendo unicamente a palavra
-help/ajuda????? no corpo da mensagem e uma mensagem ser-lhe-á enviada
+help/ajuda????? no corpo da mensagem e uma mensagem ser-lhe-Ã¡ enviada
 com mais detalhes.
 
-Se tiver qeustões, problemas, comentários, etc, envie-os para
+Se tiver qeustÃµes, problemas, comentÃ¡rios, etc, envie-os para
 %(owner)s.  Obrigado!
 
 Passwords para %(useraddr)s:

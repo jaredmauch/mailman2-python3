@@ -1,13 +1,13 @@
-La petición dirixida a %(requestaddr)s:
+La peticiÃ³n dirixida a %(requestaddr)s:
 
     %(cmd)s
 
-unvióse al alministrador de la llista.
+unviÃ³se al alministrador de la llista.
 
-Esto débese de xuru a qu'intentasti soscribite a una llista 'zarrada'.
+Esto dÃ©bese de xuru a qu'intentasti soscribite a una llista 'zarrada'.
 
-Unviarásete una notificación por corréu electrónicu cola decisión del alministrador de la llista tocante a la solicitú de soscripción.
+UnviarÃ¡sete una notificaciÃ³n por corrÃ©u electrÃ³nicu cola decisiÃ³n del alministrador de la llista tocante a la solicitÃº de soscripciÃ³n.
 
-Cualesquier entruga sobro la política de soscriciones de la llista tien d'unviase al alministrador:
+Cualesquier entruga sobro la polÃ­tica de soscriciones de la llista tien d'unviase al alministrador:
 
     %(adminaddr)s

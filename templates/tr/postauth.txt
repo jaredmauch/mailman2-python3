@@ -1,12 +1,12 @@
-Liste yöneticisi olarak, aşağıdaki mesajın listeye gönderimi için
+Liste yÃ¶neticisi olarak, aÅŸaÄŸÄ±daki mesajÄ±n listeye gÃ¶nderimi iÃ§in
 sizin izniniz gerekiyor:
 
     Liste:    %(listname)s@%(hostname)s
-    Gönderen:    %(sender)s
+    GÃ¶nderen:    %(sender)s
     Konu: %(subject)s
     Neden:  %(reason)s
 
-Size uygun bir zamanda mesajı onaylamak veya reddetmek için
+Size uygun bir zamanda mesajÄ± onaylamak veya reddetmek iÃ§in
 
     %(admindb_url)s
         

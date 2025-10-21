@@ -1,13 +1,13 @@
-Detta är ett returmeddelande från listsystemet Mailman:
+Detta Ã¤r ett returmeddelande frÃ¥n listsystemet Mailman:
 
     Lista:        %(listname)s
     Medlem:       %(addr)s
-    Händelse:     Medlemskapet %(negative)s%(did)s.
-    På grund av:  Permanent retur eller för mycket i retur
+    HÃ¤ndelse:     Medlemskapet %(negative)s%(did)s.
+    PÃ¥ grund av:  Permanent retur eller fÃ¶r mycket i retur
     %(but)s
 
 %(reenable)s
-Meddelandet om retur återges nedan.
+Meddelandet om retur Ã¥terges nedan.
 
-Frågor?
-Kontakta systemadministratören för Mailman på %(owneraddr)s.
+FrÃ¥gor?
+Kontakta systemadministratÃ¶ren fÃ¶r Mailman pÃ¥ %(owneraddr)s.

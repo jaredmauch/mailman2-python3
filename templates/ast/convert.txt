@@ -1,33 +1,33 @@
-La llista de distribución %(listname)s acaba de sofrir un cambéu
-importante. Agora xestiónala un nuevu paquete de llistes de
-distribución denomáu "Mailman". Esperamos qu'esto meyore'l
-serviciu y l'alministración de la llista.
+La llista de distribuciÃ³n %(listname)s acaba de sofrir un cambÃ©u
+importante. Agora xestiÃ³nala un nuevu paquete de llistes de
+distribuciÃ³n denomÃ¡u "Mailman". Esperamos qu'esto meyore'l
+serviciu y l'alministraciÃ³n de la llista.
 
-¿Cómo t'afeuta esto?
+Â¿CÃ³mo t'afeuta esto?
 
-1) Los mensaxes de corréu empobinaos a la llista tienen d'unviase a: %(listaddr)s
+1) Los mensaxes de corrÃ©u empobinaos a la llista tienen d'unviase a: %(listaddr)s
 
-2) Asignósete una clave al debalu pa impedir qu'otros
-anulen la to soscripción ensin que lo sepas. La clave unviarásete
-n'otru mensax de corréu-e, que puede que yá tengas recibío
-Nun t'esmolezas si se t'escaez esta clave; recibirás tolos meses
-un recordatoriu per corréu-e.
+2) AsignÃ³sete una clave al debalu pa impedir qu'otros
+anulen la to soscripciÃ³n ensin que lo sepas. La clave unviarÃ¡sete
+n'otru mensax de corrÃ©u-e, que puede que yÃ¡ tengas recibÃ­o
+Nun t'esmolezas si se t'escaez esta clave; recibirÃ¡s tolos meses
+un recordatoriu per corrÃ©u-e.
 
 3) Si dispones d'accesu web, puedes usalu p'anular la to 
-soscripción d'esta llista, pa camudar la forma de receición
-de los mensaxes, etc. La direición ye: 
+soscripciÃ³n d'esta llista, pa camudar la forma de receiciÃ³n
+de los mensaxes, etc. La direiciÃ³n ye: 
 
     %(listinfo_url)s
 
 4) Si nun tienes accesu web, puedes facer estes mesmes
-operaciones per corréu-e.  Unvia un mensax a
+operaciones per corrÃ©u-e.  Unvia un mensax a
 %(requestaddr)s cola pallabra 'help' nel asuntu (subject) o
-nel cuerpu del mensax y recibirás una rempuesta automática con
+nel cuerpu del mensax y recibirÃ¡s una rempuesta automÃ¡tica con
 instrucciones.
 
-Por favor, empobina a la siguiente dirección si tienes dalguna
-entruga o problema con esta nueva configuración: %(adminaddr)s.
+Por favor, empobina a la siguiente direcciÃ³n si tienes dalguna
+entruga o problema con esta nueva configuraciÃ³n: %(adminaddr)s.
 
-Esti mensax xeneróse automáticamente por Mailman %(version)s.
-Pa obtener mas información sobro Mailman, visita la páxina principal
+Esti mensax xenerÃ³se automÃ¡ticamente por Mailman %(version)s.
+Pa obtener mas informaciÃ³n sobro Mailman, visita la pÃ¡xina principal
 agospiada en http://www.list.org/

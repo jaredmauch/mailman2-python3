@@ -1,24 +1,24 @@
-Pro¶ba o potwierdzenie wypisania siê z listy %(listname)s.
+ProÅ›ba o potwierdzenie wypisania siÄ™ z listy %(listname)s.
 
-Otrzymano pro¶bê%(remote)s o wypisanie %(email)s z listy %(listaddr)s.
-¯eby potwierdziæ wypisanie siê, proszê odpowiedzieæ na tê wiadomo¶æ
-nie zmieniaj±c jej Tematu.
+Otrzymano proÅ›bÄ™%(remote)s o wypisanie %(email)s z listy %(listaddr)s.
+Å»eby potwierdziÄ‡ wypisanie siÄ™, proszÄ™ odpowiedzieÄ‡ na tÄ™ wiadomoÅ›Ä‡
+nie zmieniajÄ…c jej Tematu.
 
-Wypisaæ mo¿esz siê równie¿ klikaj±c poni¿szy odno¶nik:
+WypisaÄ‡ moÅ¼esz siÄ™ rÃ³wnieÅ¼ klikajÄ…c poniÅ¼szy odnoÅ›nik:
 
     %(confirmurl)s
 
-albo wysy³aj±c na adres %(requestaddr)s now± wiadomo¶æ, która bêdzie
-zawiera³a jedn± liniê:
+albo wysyÅ‚ajÄ…c na adres %(requestaddr)s nowÄ… wiadomoÅ›Ä‡, ktÃ³ra bÄ™dzie
+zawieraÅ‚a jednÄ… liniÄ™:
 
     confirm %(cookie)s
 
-Wys³anie zwyk³ej odpowiedzi powinno zadzia³aæ w wiêkszo¶ci programów
-pocztowych, pod warunkiem, ¿e nie zmieniaj± one pola "Subject:"
+WysÅ‚anie zwykÅ‚ej odpowiedzi powinno zadziaÅ‚aÄ‡ w wiÄ™kszoÅ›ci programÃ³w
+pocztowych, pod warunkiem, Å¼e nie zmieniajÄ… one pola "Subject:"
 (dodanie "Re:" jest akceptowalne).
 
-Je¶li nie chcia³e¶ wypisaæ siê z listy, po prostu zignoruj tê wiadomo¶æ.
+JeÅ›li nie chciaÅ‚eÅ› wypisaÄ‡ siÄ™ z listy, po prostu zignoruj tÄ™ wiadomoÅ›Ä‡.
 
-W przypadku jakichkolwiek pytañ lub w±tpliwo¶ci, skontaktuj siê z
+W przypadku jakichkolwiek pytaÅ„ lub wÄ…tpliwoÅ›ci, skontaktuj siÄ™ z
 administratorem listy %(listadmin)s.
 

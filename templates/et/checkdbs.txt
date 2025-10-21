@@ -3,7 +3,7 @@ Taotlustega saab tutvuda aadressil:
 
 	%(adminDB)s
 
-Palun tegele nendega esimesel sobival vıimalusel
+Palun tegele nendega esimesel sobival v√µimalusel
 
 Seda teadet ootelolevate taotluste kohta - kui neid on - 
-korrataks iga p‰ev.
+korrataks iga p√§ev.

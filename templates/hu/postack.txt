@@ -1,8 +1,8 @@
-Üzeneted a következõ tárggyal
+Ãœzeneted a kÃ¶vetkezÅ‘ tÃ¡rggyal
 
     %(subject)s
 
-%(listname)s levelezési listára sikeresen megérkezett.
+%(listname)s levelezÃ©si listÃ¡ra sikeresen megÃ©rkezett.
 
 Lista honlapja: %(listinfo_url)s
-Saját beállításaid: %(optionsurl)s
+SajÃ¡t beÃ¡llÃ­tÃ¡said: %(optionsurl)s

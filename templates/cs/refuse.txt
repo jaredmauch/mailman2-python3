@@ -1,12 +1,12 @@
-Vá¹ po¾adavek pro konferenci  %(listname)s
+VÃ¡Å¡ poÅ¾adavek pro konferenci  %(listname)s
 
     %(request)s
 
-byl zamítnut správcem konference. Správce uvedl následující dùvod zamítnutí
-po¾adavku:
+byl zamÃ­tnut sprÃ¡vcem konference. SprÃ¡vce uvedl nÃ¡sledujÃ­cÃ­ dÅ¯vod zamÃ­tnutÃ­
+poÅ¾adavku:
 
 "%(reason)s"
 
-Jakékoliv dotazy nebo pøipomínky zasílejte laskavì na adresu:
+JakÃ©koliv dotazy nebo pÅ™ipomÃ­nky zasÃ­lejte laskavÄ› na adresu:
 
     %(adminaddr)s

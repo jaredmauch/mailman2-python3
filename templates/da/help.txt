@@ -1,19 +1,19 @@
-Hjælp for maillisten %(listname)s:
+HjÃ¦lp for maillisten %(listname)s:
 
 Her er kommando 'help' for version %(version)s af maillistesystemet
-"Mailman". Kommandoerne der beskrives nedenfor vil kunne hjælpe dig
+"Mailman". Kommandoerne der beskrives nedenfor vil kunne hjÃ¦lpe dig
 til at tilmelde og afmelde dig maillisten samt at foretage andre
-ændringer.
+Ã¦ndringer.
 
 En kommando skrives i Emne feltet eller som indhold i en e-mail
 og sendes til %(requestaddr)s
 
-Husk at størsteparten af det disse kommandoer gør også kan gøres fra
+Husk at stÃ¸rsteparten af det disse kommandoer gÃ¸r ogsÃ¥ kan gÃ¸res fra
 listens webside:
 
     %(listinfo_url)s
 
-For eksempel kan du fra websiden bede om at få tilsendt din adgangskode.
+For eksempel kan du fra websiden bede om at fÃ¥ tilsendt din adgangskode.
 
 Kommandoer som er specifikke for en liste (f. eks. subscribe, who,
 osv.), skal sendes til listens *-request adresse.
@@ -21,15 +21,15 @@ For en liste der f. eks. hedder 'mailman', skal bruges
 adressen 'mailman-request@...'.
 
 Forklaring til beskrivelsen:
-Ord med <> omkring fortæller at en parameter skal skrives,
-Ord med [] omkring fortæller at en parameter er valgfri.
-Du skal IKKE skrive disse tegn <> og [] når du sender kommandoer!
+Ord med <> omkring fortÃ¦ller at en parameter skal skrives,
+Ord med [] omkring fortÃ¦ller at en parameter er valgfri.
+Du skal IKKE skrive disse tegn <> og [] nÃ¥r du sender kommandoer!
 
-Følgende kommandoer er gyldige:
+FÃ¸lgende kommandoer er gyldige:
 
     %(commands)s
 
-Spørgsmål og andre henvendelser du eventuelt måtte have om systemet,
+SpÃ¸rgsmÃ¥l og andre henvendelser du eventuelt mÃ¥tte have om systemet,
 kan du sende til:
 
     %(adminaddr)s

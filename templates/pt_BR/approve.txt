@@ -1,16 +1,16 @@
-Sua requisição para o endereço %(requestaddr)s:
+Sua requisiÃ§Ã£o para o endereÃ§o %(requestaddr)s:
 
     %(cmd)s
 
 foi direcionada para a pessoa que toma conta da lista.
 
-Uma provável causa é a tentativa de inscrição em uma
+Uma provÃ¡vel causa Ã© a tentativa de inscriÃ§Ã£o em uma
 lista "fechada".
 
-Você receberá uma notificação da decisão do dono da lista sobre 
-sua solicitação de inscrição. 
+VocÃª receberÃ¡ uma notificaÃ§Ã£o da decisÃ£o do dono da lista sobre 
+sua solicitaÃ§Ã£o de inscriÃ§Ã£o. 
 
-Qualquer questões sobre a política do dono da lista deverá ser 
+Qualquer questÃµes sobre a polÃ­tica do dono da lista deverÃ¡ ser 
 enviada para:
 
     %(adminaddr)s

@@ -2,7 +2,7 @@ El to mensax tocante a:
 
     %(subject)s
 
-distribuyóse de mou correutu a la llista %(listname)s.
+distribuyÃ³se de mou correutu a la llista %(listname)s.
 
-Páxina d'información de la llista: %(listinfo_url)s
+PÃ¡xina d'informaciÃ³n de la llista: %(listinfo_url)s
 Les tos preferencies: %(optionsurl)s

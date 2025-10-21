@@ -1,16 +1,16 @@
-Votre demande à %(requestaddr)s : 
+Votre demande Ã  %(requestaddr)s : 
 
       %(cmd)s 
 
-a été envoyée à la personne qui gère la liste. 
+a Ã©tÃ© envoyÃ©e Ã  la personne qui gÃ¨re la liste. 
 
 C'est probablement parce que vous essayez de vous abonner
-à une liste 'fermée'. 
+Ã  une liste 'fermÃ©e'. 
 
-Vous recevrez par courrier électronique la décision de
+Vous recevrez par courrier Ã©lectronique la dÃ©cision de
 l'administrateur concernant votre demande d'abonnement. 
 
 Toute question au sujet des principes de gestion de la
-liste doit être adressée à : 
+liste doit Ãªtre adressÃ©e Ã  : 
 
       %(adminaddr)s

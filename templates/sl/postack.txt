@@ -1,8 +1,8 @@
-Va¹e sporoèilo z zadevo
+VaÅ¡e sporoÄilo z zadevo
 
     %(subject)s
 
-je bilo uspe¹no poslano na po¹tni seznam %(listname)s.
+je bilo uspeÅ¡no poslano na poÅ¡tni seznam %(listname)s.
 
 Stran s podatki o seznamu: 	%(listinfo_url)s
-Va¹e nastavitve:		%(optionsurl)s
+VaÅ¡e nastavitve:		%(optionsurl)s

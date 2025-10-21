@@ -1,33 +1,33 @@
-Po¹tni seznam %(listname)s je pravkar do¾ivel spremembo. Sedaj deluje
-na novem po¹tnem paketu, ki se imenuje "Mailman". Na ta naèin bi radi
-re¹ili te¾ave s skrbni¹tvom tega seznama.
+PoÅ¡tni seznam %(listname)s je pravkar doÅ¾ivel spremembo. Sedaj deluje
+na novem poÅ¡tnem paketu, ki se imenuje "Mailman". Na ta naÄin bi radi
+reÅ¡ili teÅ¾ave s skrbniÅ¡tvom tega seznama.
 
 Kako bo to vplivalo na vas?
 
-1. Po¹to, ki je namenjena celotnemu po¹tnemu seznamu, v prihodnje
-po¹ljite na naslov %(listaddr)s.
+1. PoÅ¡to, ki je namenjena celotnemu poÅ¡tnemu seznamu, v prihodnje
+poÅ¡ljite na naslov %(listaddr)s.
 
-2. Dobili boste geslo, ki bo prepreèilo zlorabo va¹ega e-naslova,
-èe bi vas kdo ¾elel brez va¹ega dovoljenja odjaviti s seznama. To
-geslo boste dobili v loèenem sporoèilu, ki ste ga morda ¾e prejeli.
-Èe pozabite geslo, ne skrbite; vsak mesec boste po e-po¹ti prejeli
+2. Dobili boste geslo, ki bo prepreÄilo zlorabo vaÅ¡ega e-naslova,
+Äe bi vas kdo Å¾elel brez vaÅ¡ega dovoljenja odjaviti s seznama. To
+geslo boste dobili v loÄenem sporoÄilu, ki ste ga morda Å¾e prejeli.
+ÄŒe pozabite geslo, ne skrbite; vsak mesec boste po e-poÅ¡ti prejeli
 opomnik, v katerem bo le-to jasno zapisano.
 
-3. Èe imate dostop do interneta, se lahko preko spletne strani
-kadarkoli odjavite, preklopite med naèini prejemanja sporoèil,
-pregledate arhive sporoèil (ki bodo na voljo ¾e dan ali dva po
-zaèetku delovanja seznama), idr. Spletni naslov z nastavitvami:
+3. ÄŒe imate dostop do interneta, se lahko preko spletne strani
+kadarkoli odjavite, preklopite med naÄini prejemanja sporoÄil,
+pregledate arhive sporoÄil (ki bodo na voljo Å¾e dan ali dva po
+zaÄetku delovanja seznama), idr. Spletni naslov z nastavitvami:
 
     %(listinfo_url)s
 
-4. Enako pa lahko naredite tudi prek e-po¹te. Na naslov
-%(requestaddr)s po¹ljite sporoèilo, ki v Zadevi ali v besedilu
-sporoèila vsebuje le besedo "help" (brez narekovajev). Prejeli
+4. Enako pa lahko naredite tudi prek e-poÅ¡te. Na naslov
+%(requestaddr)s poÅ¡ljite sporoÄilo, ki v Zadevi ali v besedilu
+sporoÄila vsebuje le besedo "help" (brez narekovajev). Prejeli
 boste samodejno oblikovan odgovor z nadaljnjimi navodili.
 
-Vsa vpra¹anja ali te¾ave z novimi nastavitvami lahko naslovite na:
+Vsa vpraÅ¡anja ali teÅ¾ave z novimi nastavitvami lahko naslovite na:
 %(adminaddr)s.
 
-To sporoèilo je bilo samodejno oblikovano s programom Mailman %(version)s.
-Èe vas zanimajo dodatne informacije o programu Mailman, si oglejte njegovo
-domaèo stran na naslovu http://www.list.org/
+To sporoÄilo je bilo samodejno oblikovano s programom Mailman %(version)s.
+ÄŒe vas zanimajo dodatne informacije o programu Mailman, si oglejte njegovo
+domaÄo stran na naslovu http://www.list.org/

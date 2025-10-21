@@ -1,13 +1,13 @@
-Como administrador de listas, se  requiere su autorización para enviar un mensaje
-a la siguiente lista de distribución:
+Como administrador de listas, se  requiere su autorizaciÃ³n para enviar un mensaje
+a la siguiente lista de distribuciÃ³n:
 
     Lista:                 %(listname)s@%(hostname)s
     Remitente:             %(sender)s
     Asunto:                %(subject)s
-    Razón para retenerlo:  %(reason)s
+    RazÃ³n para retenerlo:  %(reason)s
 
-Cuando pueda, acceda a la página:
+Cuando pueda, acceda a la pÃ¡gina:
 
     %(admindb_url)s
         
-para aprobar o denegar el envío
+para aprobar o denegar el envÃ­o

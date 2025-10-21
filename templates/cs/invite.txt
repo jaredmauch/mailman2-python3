@@ -1,22 +1,22 @@
-Va¹e emailová adresa  "%(email)s" byla pozvána do konference
-%(listname)s, která je provozována na serveru
-%(hostname)s. Správce konference %(listname)s
-doufá, ¾e pozvání pøijmete.
-Pøijmout pozvání je jednoduché, staèí odpovìdìt na tuto
-zprávu a nechat pole pøedmìt: (Subject:) beze zmìny
-(pøípadné "Re:" doplnìné  automaticky po¹tovním klientem nevadí),
-a nebo mù¾ete nav¹tívit www stránku
+VaÅ¡e emailovÃ¡ adresa  "%(email)s" byla pozvÃ¡na do konference
+%(listname)s, kterÃ¡ je provozovÃ¡na na serveru
+%(hostname)s. SprÃ¡vce konference %(listname)s
+doufÃ¡, Å¾e pozvÃ¡nÃ­ pÅ™ijmete.
+PÅ™ijmout pozvÃ¡nÃ­ je jednoduchÃ©, staÄÃ­ odpovÄ›dÄ›t na tuto
+zprÃ¡vu a nechat pole pÅ™edmÄ›t: (Subject:) beze zmÄ›ny
+(pÅ™Ã­padnÃ© "Re:" doplnÄ›nÃ©  automaticky poÅ¡tovnÃ­m klientem nevadÃ­),
+a nebo mÅ¯Å¾ete navÅ¡tÃ­vit www strÃ¡nku
 
     %(confirmurl)s
 
-Tøetí mo¾ností je odpovìdìt na adresu %(requestaddr)s
-a ponechat v tìle zprávy tento øádek: 
+TÅ™etÃ­ moÅ¾nostÃ­ je odpovÄ›dÄ›t na adresu %(requestaddr)s
+a ponechat v tÄ›le zprÃ¡vy tento Å™Ã¡dek: 
     confirm %(cookie)s
 
-kromì nìj by zpráva nemìla obsahovat jinı text.
-(Ve vìt¹inì po¹tovních klientù prostì za¹lete odpovìï na tento dopis.
-Obvykle je toti¾ øádek pøedmìt: ponechán beze zmìny.)
+kromÄ› nÄ›j by zprÃ¡va nemÄ›la obsahovat jinÃ½ text.
+(Ve vÄ›tÅ¡inÄ› poÅ¡tovnÃ­ch klientÅ¯ prostÄ› zaÅ¡lete odpovÄ›Ä na tento dopis.
+Obvykle je totiÅ¾ Å™Ã¡dek pÅ™edmÄ›t: ponechÃ¡n beze zmÄ›ny.)
 
-Pokud se do konference pøihlásit nechcete, nebo dokonce nevíte, proè jste
-tento dopis dostali, prostì jej zahoïte. Pokud máte nìjakı dotaz nebo
-problém, prosím, kontaktujte správce na adrese: %(listowner)s.
+Pokud se do konference pÅ™ihlÃ¡sit nechcete, nebo dokonce nevÃ­te, proÄ jste
+tento dopis dostali, prostÄ› jej zahoÄte. Pokud mÃ¡te nÄ›jakÃ½ dotaz nebo
+problÃ©m, prosÃ­m, kontaktujte sprÃ¡vce na adrese: %(listowner)s.

@@ -1,13 +1,13 @@
-To je obvestilo o zavrnitvi na Mailman po¹tnem seznamu:
+To je obvestilo o zavrnitvi na Mailman poÅ¡tnem seznamu:
 
     Seznam:       %(listname)s
-    Èlan:         %(addr)s
-    Dejanje:      Naroènina %(negative)s%(did)s.
-    Razlog:       Preveè oz. nevarne zavrnitve.
+    ÄŒlan:         %(addr)s
+    Dejanje:      NaroÄnina %(negative)s%(did)s.
+    Razlog:       PreveÄ oz. nevarne zavrnitve.
     %(but)s
 
 %(reenable)s
-Pripeto je obvestilo o e-po¹tnem naslovu, ki zavraèa sporoèila.
+Pripeto je obvestilo o e-poÅ¡tnem naslovu, ki zavraÄa sporoÄila.
 
-Za vsa vpra¹anja se obrnite na skrbnika Mailman seznama na
+Za vsa vpraÅ¡anja se obrnite na skrbnika Mailman seznama na
 naslov %(owneraddr)s.

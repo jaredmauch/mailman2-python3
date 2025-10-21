@@ -1,4 +1,4 @@
-Hyväksyntääsi tarvitaan postituslistalta eroamispyyntöön:
+HyvÃ¤ksyntÃ¤Ã¤si tarvitaan postituslistalta eroamispyyntÃ¶Ã¶n:
 
     By:   %(username)s
     From: %(listname)s@%(hostname)s

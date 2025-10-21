@@ -1,20 +1,20 @@
-Seu endereço de email "%(email)s" foi convidado para participar da 
-lista de discussão %(listname)s em %(hostname)s pelo dono da lista %(listname)s.
-Você poderá aceitar o convite simplesmente respondendo a esta 
+Seu endereÃ§o de email "%(email)s" foi convidado para participar da 
+lista de discussÃ£o %(listname)s em %(hostname)s pelo dono da lista %(listname)s.
+VocÃª poderÃ¡ aceitar o convite simplesmente respondendo a esta 
 mensagem, mantendo a linha de Assunto intacta.
 
-Você também poderá visitar esta página:
+VocÃª tambÃ©m poderÃ¡ visitar esta pÃ¡gina:
 
     %(confirmurl)s
 
-Ou deverá incluir a seguinte linhas -- somente esta
+Ou deverÃ¡ incluir a seguinte linhas -- somente esta
 linha -- em uma mensagem para %(requestaddr)s:
 
     confirm %(cookie)s
 
-A simples resposta a esta mensagem deverá funcionar para a 
+A simples resposta a esta mensagem deverÃ¡ funcionar para a 
 maioria dos programas de e-mail.
 
 Se desejar recusar este convite, ignore esta mensagem. Se tiver 
-qualquer questão, envie-as para 
+qualquer questÃ£o, envie-as para 
 %(listowner)s.

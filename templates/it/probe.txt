@@ -1,8 +1,8 @@
-Questo è un messaggio di verifica.  Puoi ignorarlo.
+Questo Ã¨ un messaggio di verifica.  Puoi ignorarlo.
 
 La lista %(listname)s ha rilevato un certo numero di errori di invio verso
 di, indicando che potrebbe esserci un problema con il tuo indirizzo
-%(address)s.  Allegato più in basso trovi un esempio di rimbalzo ricevuto.
+%(address)s.  Allegato piÃ¹ in basso trovi un esempio di rimbalzo ricevuto.
 Per favore esamina questo messaggio per assicurarti che non ci siano problemi
 con il tuo indirizzo di posta elettronica.  Potresti voler contattare 
 l'amministratore della tua casella di posta per avere aiuto.
@@ -18,7 +18,7 @@ Puoi anche visitare la tua pagina di iscrizione all'indirizzo
     %(optionsurl)s
 
 Nella tua pagina di iscrizione, puoi cambiare diverse opzioni di invio,
-come il tuo indirizzo email e se vuoi ricevere in modalità digest o no.
+come il tuo indirizzo email e se vuoi ricevere in modalitÃ  digest o no.
 
 Se hai domande o problemi, puoi contattare il gestore della lista
 all'indirizzo

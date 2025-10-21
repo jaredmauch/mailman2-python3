@@ -1,41 +1,41 @@
-`%(listname)s' mesaj listesi demin sizin için yaratıldı. Aşağıda
-mesaj listeniz ile ilgili basit bazı bilgiler bulacaksınız.
+`%(listname)s' mesaj listesi demin sizin iÃ§in yaratÄ±ldÄ±. AÅŸaÄŸÄ±da
+mesaj listeniz ile ilgili basit bazÄ± bilgiler bulacaksÄ±nÄ±z.
 
-Mesaj listesi şifreniz:
+Mesaj listesi ÅŸifreniz:
 
     %(password)s
 
-Bu şifreye mesaj listenizi yapılandırırken gerek duyacaksınız. Ayrıca
-yönetimsel istekleri incelerken de bu şifreye gerek duyacaksınız.
-Örneğin moderatör onaylı bir liste yönetmeyi seçerseniz gelen
-mesajları onaylarken.
+Bu ÅŸifreye mesaj listenizi yapÄ±landÄ±rÄ±rken gerek duyacaksÄ±nÄ±z. AyrÄ±ca
+yÃ¶netimsel istekleri incelerken de bu ÅŸifreye gerek duyacaksÄ±nÄ±z.
+Ã–rneÄŸin moderatÃ¶r onaylÄ± bir liste yÃ¶netmeyi seÃ§erseniz gelen
+mesajlarÄ± onaylarken.
 
-Mesaj listenizi aşağıdaki web sayfasında yapılandırabilirsiniz:
+Mesaj listenizi aÅŸaÄŸÄ±daki web sayfasÄ±nda yapÄ±landÄ±rabilirsiniz:
 
     %(admin_url)s
 
-Mesaj listenizin kullanıcıları şu sayfayı kullanacak: 
+Mesaj listenizin kullanÄ±cÄ±larÄ± ÅŸu sayfayÄ± kullanacak: 
 
     %(listinfo_url)s
 
-Bu sayfaları bile, liste yapılandırma sayfalarında özelleştirebilirsiniz.
-Ancak bunu yapabilmek için HTML dilini bilmeniz gerekir.
+Bu sayfalarÄ± bile, liste yapÄ±landÄ±rma sayfalarÄ±nda Ã¶zelleÅŸtirebilirsiniz.
+Ancak bunu yapabilmek iÃ§in HTML dilini bilmeniz gerekir.
 
-Ayrıca listenizin kullanıcıları (yöneticileri değil) için e-posta
-tabanlı bir arayüz de bulunmaktadır; bunun nasıl kullanılacağı ile
-ilgili bilgi için konu başlığında veya gövdesinde sadece `help'
-sözcüğü bulunan bir mesajı, şu adrese gönderebilirsiniz:
+AyrÄ±ca listenizin kullanÄ±cÄ±larÄ± (yÃ¶neticileri deÄŸil) iÃ§in e-posta
+tabanlÄ± bir arayÃ¼z de bulunmaktadÄ±r; bunun nasÄ±l kullanÄ±lacaÄŸÄ± ile
+ilgili bilgi iÃ§in konu baÅŸlÄ±ÄŸÄ±nda veya gÃ¶vdesinde sadece `help'
+sÃ¶zcÃ¼ÄŸÃ¼ bulunan bir mesajÄ±, ÅŸu adrese gÃ¶nderebilirsiniz:
 
     %(requestaddr)s
 
-Bir kullanıcıyı listeden çıkarmak: Mesaj listesinin 'listinfo' web
-sayfasında, o kullanıcıymışsınız gibi, kullanıcının e-posta adresinin
-üzerine tıklayın veya e-posta adresini girin. O kullanıcının listeden
-çıkmak için şifresini gireceği alana yönetici şifrenizi girin.
-Ayrıca o üyenin seçeneklerini değiştirmek için de yönetici şifrenizi
-kullanabilirsiniz, bu seçeneklere toplu mesaj alımı, mesaj alımının
-devre dışı bırakılması vb. seçenekler de dahildir.
+Bir kullanÄ±cÄ±yÄ± listeden Ã§Ä±karmak: Mesaj listesinin 'listinfo' web
+sayfasÄ±nda, o kullanÄ±cÄ±ymÄ±ÅŸsÄ±nÄ±z gibi, kullanÄ±cÄ±nÄ±n e-posta adresinin
+Ã¼zerine tÄ±klayÄ±n veya e-posta adresini girin. O kullanÄ±cÄ±nÄ±n listeden
+Ã§Ä±kmak iÃ§in ÅŸifresini gireceÄŸi alana yÃ¶netici ÅŸifrenizi girin.
+AyrÄ±ca o Ã¼yenin seÃ§eneklerini deÄŸiÅŸtirmek iÃ§in de yÃ¶netici ÅŸifrenizi
+kullanabilirsiniz, bu seÃ§eneklere toplu mesaj alÄ±mÄ±, mesaj alÄ±mÄ±nÄ±n
+devre dÄ±ÅŸÄ± bÄ±rakÄ±lmasÄ± vb. seÃ§enekler de dahildir.
 
-Tüm sorularınızı site yönetimine %(siteowner)s adresinden
+TÃ¼m sorularÄ±nÄ±zÄ± site yÃ¶netimine %(siteowner)s adresinden
 iletebilirsiniz.
 

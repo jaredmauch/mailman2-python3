@@ -1,13 +1,13 @@
-A lista adminisztrátorként a következõ levél megjelenéséhez szükség
-van az engedélyedre:
+A lista adminisztrÃ¡torkÃ©nt a kÃ¶vetkezÅ‘ levÃ©l megjelenÃ©sÃ©hez szÃ¼ksÃ©g
+van az engedÃ©lyedre:
 
     Lista:  %(listname)s@%(hostname)s
-    Feladó: %(sender)s
-    Tárgy:  %(subject)s
+    FeladÃ³: %(sender)s
+    TÃ¡rgy:  %(subject)s
     Indok:  %(reason)s
 
-A következõ címen:
+A kÃ¶vetkezÅ‘ cÃ­men:
 
     %(admindb_url)s
         
-engedélyezheted, vagy elutasíthatod a levél megjelenését.
+engedÃ©lyezheted, vagy elutasÃ­thatod a levÃ©l megjelenÃ©sÃ©t.

@@ -1,13 +1,13 @@
-Jûsø uşklausa, gauta adresu %(requestaddr)s:
+JÅ«sÅ³ uÅ¾klausa, gauta adresu %(requestaddr)s:
 
     %(cmd)s
 
-nukreipta asmeniui, prişiûrinèiam diskusijø forumà.
+nukreipta asmeniui, priÅ¾iÅ«rinÄiam diskusijÅ³ forumÄ….
 
-Viena iğ prieşasèiø, kodël tai ávyko, galëjo bûti
-Jûsø bandymas prisijungti prie 'uşdaro' diskusijø forumo.
+Viena iÅ¡ prieÅ¾asÄiÅ³, kodÄ—l tai Ä¯vyko, galÄ—jo bÅ«ti
+JÅ«sÅ³ bandymas prisijungti prie 'uÅ¾daro' diskusijÅ³ forumo.
 
-Apie minëto asmens sprendimà Jums bus praneğta el. pağtu.
+Apie minÄ—to asmens sprendimÄ… Jums bus praneÅ¡ta el. paÅ¡tu.
 
 
-Visais klausimais prağome kreiptis á administratoriø %(adminaddr)s.
+Visais klausimais praÅ¡ome kreiptis Ä¯ administratoriÅ³ %(adminaddr)s.

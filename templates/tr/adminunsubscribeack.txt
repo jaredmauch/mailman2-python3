@@ -1,4 +1,4 @@
-%(member)s, %(listname)s listesinden çıkarıldı.
+%(member)s, %(listname)s listesinden Ã§Ä±karÄ±ldÄ±.
 %(whence)s
 
 

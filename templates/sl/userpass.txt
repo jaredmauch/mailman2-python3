@@ -1,23 +1,23 @@
 Vi ali nekdo, ki se izdaja za vas, je zahteval opomnik z geslom
-za va¹o naroènino na po¹tnem seznamu %(fqdn_lname)s. To geslo boste
-potrebovali za spreminjanje nastavitev naroènine (npr. prejemanje
-vseh sporoèil ali samo izvleèkov) ali za odjavo s seznama.
+za vaÅ¡o naroÄnino na poÅ¡tnem seznamu %(fqdn_lname)s. To geslo boste
+potrebovali za spreminjanje nastavitev naroÄnine (npr. prejemanje
+vseh sporoÄil ali samo izvleÄkov) ali za odjavo s seznama.
 
 Prijavljeni ste z naslovom: %(user)s
 
-Va¹e %(listname)s geslo je: %(password)s
+VaÅ¡e %(listname)s geslo je: %(password)s
 
-Za spreminjanje nastavitev se prijavite in obi¹èite svojo stran z
-mo¾nostmi na naslovu:
+Za spreminjanje nastavitev se prijavite in obiÅ¡Äite svojo stran z
+moÅ¾nostmi na naslovu:
 
     %(options_url)s
 
-Te spremembe lahko doloèate tudi prek e-po¹te, tako da na naslov
+Te spremembe lahko doloÄate tudi prek e-poÅ¡te, tako da na naslov
 
     %(requestaddr)s
 
-po¹ljete sporoèilo z besedo 'help' v zadevi ali besedilu sporoèila.
+poÅ¡ljete sporoÄilo z besedo 'help' v zadevi ali besedilu sporoÄila.
 Samodejni odgovor bo vseboval bolj podrobne informacije.
 
-Èe imate vpra¹anja ali pripombe, se obrnite na administratorja seznama
+ÄŒe imate vpraÅ¡anja ali pripombe, se obrnite na administratorja seznama
 %(listname)s na naslovu %(owneraddr)s.

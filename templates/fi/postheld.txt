@@ -1,16 +1,16 @@
-S‰hkˆpostiviestisi postituslistalle '%(listname)s' otsikolla:
+S√§hk√∂postiviestisi postituslistalle '%(listname)s' otsikolla:
 
     %(subject)s
 
-odottaa listan yll‰pit‰j‰n tarkastusta ja hyv‰ksynt‰‰.
+odottaa listan yll√§pit√§j√§n tarkastusta ja hyv√§ksynt√§√§.
 
 Viestin tarkastuksen syy on:
 
     %(reason)s
 
-Visti joko postitetaan listalle tai saat ilmoituksen yll‰pit‰j‰n
-p‰‰tˆksest‰ olla postittamatta viesti‰ listalle.
-Jos haluat peruuttaa viestin l‰hetyksen listalle, 
-voit tehd‰ sen www-sivulla:
+Visti joko postitetaan listalle tai saat ilmoituksen yll√§pit√§j√§n
+p√§√§t√∂ksest√§ olla postittamatta viesti√§ listalle.
+Jos haluat peruuttaa viestin l√§hetyksen listalle, 
+voit tehd√§ sen www-sivulla:
 
     %(confirmurl)s

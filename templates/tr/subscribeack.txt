@@ -1,6 +1,6 @@
-%(real_name)s@%(host_name)s mesaj listesine hoşgeldiniz!
+%(real_name)s@%(host_name)s mesaj listesine hoÅŸgeldiniz!
 %(welcome)s
-Bu listeye mesaj atmak için şu adrese e-posta atın:
+Bu listeye mesaj atmak iÃ§in ÅŸu adrese e-posta atÄ±n:
 
   %(emailaddr)s
 
@@ -8,28 +8,28 @@ Bu mesaj listesiyle ilgili genel bilgiyi burada bulabilirsiniz:
 
   %(listinfo_url)s
 
-Eğer listeden çıkmak veya seçeneklerinizi değiştirmek isterseniz (örneğin
-toplu veya ayrı ayrı mesajlar almak, şifrenizi değiştirmek, vb.) burada
-üyelik sayfanızı ziyaret edebilirsiniz:
+EÄŸer listeden Ã§Ä±kmak veya seÃ§eneklerinizi deÄŸiÅŸtirmek isterseniz (Ã¶rneÄŸin
+toplu veya ayrÄ± ayrÄ± mesajlar almak, ÅŸifrenizi deÄŸiÅŸtirmek, vb.) burada
+Ã¼yelik sayfanÄ±zÄ± ziyaret edebilirsiniz:
 
   %(optionsurl)s
 %(umbrella)s
-Bu tür ayarları e-postayla şu adrese mesaj göndererek de yapabilirsiniz:
+Bu tÃ¼r ayarlarÄ± e-postayla ÅŸu adrese mesaj gÃ¶ndererek de yapabilirsiniz:
 
   %(real_name)s-request@%(host_name)s
 
-Konu başlığına veya mesaj gövdesine `help' sözcüğünü (tırnaklar olmadan)
-yazarsanız açıklamaları içeren bir mesaj alacaksınız.
+Konu baÅŸlÄ±ÄŸÄ±na veya mesaj gÃ¶vdesine `help' sÃ¶zcÃ¼ÄŸÃ¼nÃ¼ (tÄ±rnaklar olmadan)
+yazarsanÄ±z aÃ§Ä±klamalarÄ± iÃ§eren bir mesaj alacaksÄ±nÄ±z.
 
-Seçeneklerinizi değiştirmek için (şifrenizin değişmesi dahil) veya
-üyelikten çıkmak için şifrenizi bilmeniz gereklidir. Şifreniz:
+SeÃ§eneklerinizi deÄŸiÅŸtirmek iÃ§in (ÅŸifrenizin deÄŸiÅŸmesi dahil) veya
+Ã¼yelikten Ã§Ä±kmak iÃ§in ÅŸifrenizi bilmeniz gereklidir. Åifreniz:
 
   %(password)s
 
-Normalde, Mailman size %(host_name)s mesaj listesi şifrelerinizi
-ayda bir hatırlatır, ama isterseniz bunu devre dışı bırakabilirsiniz.
-Bu hatırlatıcı, ayrıca listeden nasıl çıkacağınız veya hesap
-seçeneklerinizi nasıl değiştireceğiniz ile iligili açıklamalar da
-içerir. Ayrıca seçenekler sayfanızda şu andaki şifrenizi size
-e-posta yoluyla gönderecek bir düğme de bulunmaktadır.
+Normalde, Mailman size %(host_name)s mesaj listesi ÅŸifrelerinizi
+ayda bir hatÄ±rlatÄ±r, ama isterseniz bunu devre dÄ±ÅŸÄ± bÄ±rakabilirsiniz.
+Bu hatÄ±rlatÄ±cÄ±, ayrÄ±ca listeden nasÄ±l Ã§Ä±kacaÄŸÄ±nÄ±z veya hesap
+seÃ§eneklerinizi nasÄ±l deÄŸiÅŸtireceÄŸiniz ile iligili aÃ§Ä±klamalar da
+iÃ§erir. AyrÄ±ca seÃ§enekler sayfanÄ±zda ÅŸu andaki ÅŸifrenizi size
+e-posta yoluyla gÃ¶nderecek bir dÃ¼ÄŸme de bulunmaktadÄ±r.
 

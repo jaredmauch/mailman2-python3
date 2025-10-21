@@ -1,12 +1,12 @@
-Listi %(listname)s moderaator lükkas tagasi teie taotluse
+Listi %(listname)s moderaator lÃ¼kkas tagasi teie taotluse
 
     %(request)s
 
-põhjendades seda järgnevalt:
+pÃµhjendades seda jÃ¤rgnevalt:
 
 "%(reason)s"
 
-Küsimuste ja kommentaaridega pöörduge palun listi halduri poole
+KÃ¼simuste ja kommentaaridega pÃ¶Ã¶rduge palun listi halduri poole
 aadressil:
 
     %(adminaddr)s

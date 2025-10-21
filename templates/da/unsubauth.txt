@@ -1,11 +1,11 @@
-Følgende har anmodet om at blive afmeldt listen og du skal
+FÃ¸lgende har anmodet om at blive afmeldt listen og du skal
 nu godkende:
 
     Fra:   %(username)s
     Liste: %(listname)s@%(hostname)s
 
-Du bør snarest besøge:
+Du bÃ¸r snarest besÃ¸ge:
 
     %(admindb_url)s
 
-for at godkende eller afvise ønsket om afmelding.
+for at godkende eller afvise Ã¸nsket om afmelding.

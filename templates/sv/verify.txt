@@ -1,20 +1,20 @@
-Bekräftelse av anmälan till listan %(listname)s
+BekrÃ¤ftelse av anmÃ¤lan till listan %(listname)s
 
-Vi har tagit emot en förfrågan%(remote)s om att anmäla din e-postadress
-"%(email)s" till listan %(listaddr)s. Om det är stämmer att detta är din önskan, 
-skicka ett svar på detta e-postbrev, med samma ämne som e-postbrevet
-har. Eller gå in på webbsidan:
+Vi har tagit emot en fÃ¶rfrÃ¥gan%(remote)s om att anmÃ¤la din e-postadress
+"%(email)s" till listan %(listaddr)s. Om det Ã¤r stÃ¤mmer att detta Ã¤r din Ã¶nskan, 
+skicka ett svar pÃ¥ detta e-postbrev, med samma Ã¤mne som e-postbrevet
+har. Eller gÃ¥ in pÃ¥ webbsidan:
 
     %(confirmurl)s
 
-Du kan också skicka ett e-postbrev till %(requestaddr)s, med följande (och BARA
-följande) innehåll:
+Du kan ocksÃ¥ skicka ett e-postbrev till %(requestaddr)s, med fÃ¶ljande (och BARA
+fÃ¶ljande) innehÃ¥ll:
 
     confirm %(cookie)s
 
-Observera att skickandet av ett svar på detta e-postbrev, borde fungera via de flesta e-postläsare, eftersom det vanligtvis leder till att ämnesfältet behålls
-(tillägg av 'Re:' eller 'SV:' framför ämnet spelar ingen roll).
+Observera att skickandet av ett svar pÃ¥ detta e-postbrev, borde fungera via de flesta e-postlÃ¤sare, eftersom det vanligtvis leder till att Ã¤mnesfÃ¤ltet behÃ¥lls
+(tillÃ¤gg av 'Re:' eller 'SV:' framfÃ¶r Ã¤mnet spelar ingen roll).
 
-Om du inte önskar att anmäla dig till listan, kan du bara radera detta e-postbrev.
-Tror du någon annan försökte att anmäla dig eller har andra frågor, skicka gärna ett
+Om du inte Ã¶nskar att anmÃ¤la dig till listan, kan du bara radera detta e-postbrev.
+Tror du nÃ¥gon annan fÃ¶rsÃ¶kte att anmÃ¤la dig eller har andra frÃ¥gor, skicka gÃ¤rna ett
 e-postbrev till %(listadmin)s.

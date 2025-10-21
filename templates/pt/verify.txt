@@ -1,23 +1,23 @@
-Pedido de confirmação da inscrição para a lista de discussão %(listname)s
+Pedido de confirmaÃ§Ã£o da inscriÃ§Ã£o para a lista de discussÃ£o %(listname)s
 
-Recebemos um pedido%(remote)s para a inscrição do seu endereço de
-email, "%(email)s", na lista de discussão %(listaddr)s. Para confirmar
-que deseja ser adicionado a esta lista de discussão, basta responder a
-esta mensagem, mantendo o cabeçalho Assunto: (ou Subject:) intacto. Em
-alternativa pode visitar esta página web:
+Recebemos um pedido%(remote)s para a inscriÃ§Ã£o do seu endereÃ§o de
+email, "%(email)s", na lista de discussÃ£o %(listaddr)s. Para confirmar
+que deseja ser adicionado a esta lista de discussÃ£o, basta responder a
+esta mensagem, mantendo o cabeÃ§alho Assunto: (ou Subject:) intacto. Em
+alternativa pode visitar esta pÃ¡gina web:
 
     %(confirmurl)s
 
-Pode também enviar a seguinte linha -- e somente a seguinte linha --
+Pode tambÃ©m enviar a seguinte linha -- e somente a seguinte linha --
 numa mensagem para %(requestaddr)s:
 
     confirm %(cookie)s
 
-Note que a simples resposta a esta mensagem deverá funcionar com a
+Note que a simples resposta a esta mensagem deverÃ¡ funcionar com a
 maioria dos programas de email, pois eles deixam a linha de assunto na
-forma correcta (o texto "Re:" não causará problemas).
+forma correcta (o texto "Re:" nÃ£o causarÃ¡ problemas).
 
-Se não deseja inscrever-se nesta lista, ignore esta mensagem. Se achar
+Se nÃ£o deseja inscrever-se nesta lista, ignore esta mensagem. Se achar
 que foi maliciosamente inscrito na lista, ou tem quaisquer
-outras questões, envie-as para %(listadmin)s.
+outras questÃµes, envie-as para %(listadmin)s.
 

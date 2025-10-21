@@ -1,10 +1,10 @@
 Your authorization is required for a mailing list unsubscription
 request approval:
-¸ŞÀÏ¸µ ¸®½ºÆ® Å»Åğ ¿äÃ»¿¡ ´ç½ÅÀÇ ÀÎÁõÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ íƒˆí‡´ ìš”ì²­ì— ë‹¹ì‹ ì˜ ì¸ì¦ì´ í•„ìš”í•©ë‹ˆë‹¤.
 
-    º¸³½ÀÌ:   %(username)s
-    º¸³½°÷: %(listname)s@%(hostname)s
+    ë³´ë‚¸ì´:   %(username)s
+    ë³´ë‚¸ê³³: %(listname)s@%(hostname)s
 
-À¥À» ÅëÇØ ÇÏ½Ã¸é Ã³¸®¸¦ Æí¸®ÇÏ°Ô ÇÏ½Ç ¼ö ÀÖ½À´Ï´Ù.
+ì›¹ì„ í†µí•´ í•˜ì‹œë©´ ì²˜ë¦¬ë¥¼ í¸ë¦¬í•˜ê²Œ í•˜ì‹¤ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 
     %(admindb_url)s

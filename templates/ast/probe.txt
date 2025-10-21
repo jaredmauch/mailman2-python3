@@ -1,20 +1,20 @@
 Esti ye un mensax de preba.  Puedes inorar esti mensax.
 
-Mensaxes unviaos a tÌ dende la llista %(listname)s refug·ronse en delles
+Mensaxes unviaos a t√≠ dende la llista %(listname)s refug√°ronse en delles
 ocasionnes, indicando que puede haber problemes con %(address)s.
-Axunt·moste una amuesa d'estos casos de refugu.  Por favor desamina esti mensax
-p'asegurate que nun hai problemes cola to direiciÛn de corrÈu-e
-(email). Puedes contautar col alministrador de email si necesites m·s aida.
+Axunt√°moste una amuesa d'estos casos de refugu.  Por favor desamina esti mensax
+p'asegurate que nun hai problemes cola to direici√≥n de corr√©u-e
+(email). Puedes contautar col alministrador de email si necesites m√°s aida.
 
-Si tas lleendo esti mensax, nun necesites facer res pa permanecer na llista. Si este mensaxe s'hubiere devuelto, nun tarÌes lleÈndolu y habrÌen desactivaote como miembru de la llista. Davezu, cuando si se desactiva a daquiÈn, tentamos d'unvi·-y dalgunos mensaxes y reactivar la so soscripciÛn.
+Si tas lleendo esti mensax, nun necesites facer res pa permanecer na llista. Si este mensaxe s'hubiere devuelto, nun tar√≠es lle√©ndolu y habr√≠en desactivaote como miembru de la llista. Davezu, cuando si se desactiva a daqui√©n, tentamos d'unvi√°-y dalgunos mensaxes y reactivar la so soscripci√≥n.
 
-Puedes tamiÈn visitar la to p·xina de soscriptor en 
+Puedes tami√©n visitar la to p√°xina de soscriptor en 
 
     %(optionsurl)s
 
-Nesta p·xina puedes camudar delles opciones rellacionaes cola entrega
-tales como la direiciÛn de email, y si quies recibir sumarios o non.
+Nesta p√°xina puedes camudar delles opciones rellacionaes cola entrega
+tales como la direici√≥n de email, y si quies recibir sumarios o non.
 
-Si tienes dalguna entruga o problema qu'informar, puedes contautar al dueÒu de la llista en
+Si tienes dalguna entruga o problema qu'informar, puedes contautar al due√±u de la llista en
 
     %(owneraddr)s

@@ -1,19 +1,19 @@
-Detta är en påminnelse som skickas ut en gång i månaden, till följd
-av ditt medlemskap på listor på %(hostname)s. Här följer lite information
-om ditt medlemskap, hur du kan ändra det och hur du kan avanmäla dig
-från en lista.
+Detta Ã¤r en pÃ¥minnelse som skickas ut en gÃ¥ng i mÃ¥naden, till fÃ¶ljd
+av ditt medlemskap pÃ¥ listor pÃ¥ %(hostname)s. HÃ¤r fÃ¶ljer lite information
+om ditt medlemskap, hur du kan Ã¤ndra det och hur du kan avanmÃ¤la dig
+frÃ¥n en lista.
 
-Du kan besöka webbsidorna för att justera inställningar för ditt medlemskap,
-bland annat avanmäla dig, få en sammandragsversion, stoppa brev från listan
+Du kan besÃ¶ka webbsidorna fÃ¶r att justera instÃ¤llningar fÃ¶r ditt medlemskap,
+bland annat avanmÃ¤la dig, fÃ¥ en sammandragsversion, stoppa brev frÃ¥n listan
 under en period osv.
 
-Allt detta kan du också göra via e-post. För mer information, skicka ett 
+Allt detta kan du ocksÃ¥ gÃ¶ra via e-post. FÃ¶r mer information, skicka ett 
 e-postbrev till '-request' adressen till en lista (till exempel %(exreq)s), 
-som innehåller enbart ordet 'help'. Du kommer då att få ett e-postbrev med 
-närmare instruktioner.
+som innehÃ¥ller enbart ordet 'help'. Du kommer dÃ¥ att fÃ¥ ett e-postbrev med 
+nÃ¤rmare instruktioner.
 
-Har du frågor, problem, kommentarer, etc, skicka dem till
+Har du frÃ¥gor, problem, kommentarer, etc, skicka dem till
 %(owner)s.
 
-Lösenord för %(useraddr)s:
+LÃ¶senord fÃ¶r %(useraddr)s:
 

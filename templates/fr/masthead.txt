@@ -1,16 +1,16 @@
-Envoyez vos messages pour la liste %(real_name)s à
+Envoyez vos messages pour la liste %(real_name)s Ã 
 	%(got_list_email)s
 
-Pour vous (dés)abonner par le web, consultez
+Pour vous (dÃ©s)abonner par le web, consultez
 	%(got_listinfo_url)s
 
 ou, par email, envoyez un message avec 'help' dans le corps
-ou dans le sujet à
+ou dans le sujet Ã 
 	%(got_request_email)s
 
-Vous pouvez contacter l'administrateur de la liste à l'adresse
+Vous pouvez contacter l'administrateur de la liste Ã  l'adresse
 	%(got_owner_email)s
 
-Si vous répondez, n'oubliez pas de changer l'objet du message afin
-qu'il soit plus spécifique que "Re: Contenu du digest
+Si vous rÃ©pondez, n'oubliez pas de changer l'objet du message afin
+qu'il soit plus spÃ©cifique que "Re: Contenu du digest
 de %(real_name)s..."

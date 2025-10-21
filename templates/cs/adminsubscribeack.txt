@@ -1,4 +1,4 @@
-%(member)s byl úspì¹nì pøihlá¹en do konference %(listname)s.
+%(member)s byl ÃºspÄ›Å¡nÄ› pÅ™ihlÃ¡Å¡en do konference %(listname)s.
 %(whence)s
 
 

@@ -2,7 +2,7 @@ Sua mensagem com o assunto
 
     %(subject)s
 
-Foi recebida com sucesso pela lista de discussão %(listname)s.
+Foi recebida com sucesso pela lista de discussÃ£o %(listname)s.
 
-Página de informações da lista: %(listinfo_url)s
-Suas preferências: %(optionsurl)s
+PÃ¡gina de informaÃ§Ãµes da lista: %(listinfo_url)s
+Suas preferÃªncias: %(optionsurl)s

@@ -1,26 +1,26 @@
-Sin‰ tai joku sinuksi tekeytyv‰, on pyyt‰nyt j‰sentunnuksesi 
-salasanan muistutusviesti‰ postituslistalta %(fqdn_lname)s. 
-Tarvitset t‰t‰ salasanaa muuttaaksesi j‰senasetuksiasi 
-(esim. haluatko s‰‰nnˆllisen postin vastaanoton
-vai koontil‰hetyksen). Lis‰ksi t‰m‰ salasana helpottaa 
+Sin√§ tai joku sinuksi tekeytyv√§, on pyyt√§nyt j√§sentunnuksesi 
+salasanan muistutusviesti√§ postituslistalta %(fqdn_lname)s. 
+Tarvitset t√§t√§ salasanaa muuttaaksesi j√§senasetuksiasi 
+(esim. haluatko s√§√§nn√∂llisen postin vastaanoton
+vai koontil√§hetyksen). Lis√§ksi t√§m√§ salasana helpottaa 
 listalta eroamista.
 
-Olet j‰senen‰ osoitteella: %(user)s
+Olet j√§senen√§ osoitteella: %(user)s
 
 Salasanasi listalle %(listname)s on: %(password)s
 
-Tehd‰ksesi muutoksia j‰senyytesi asetuksiin, kirjaudu sis‰‰n 
-ja k‰v‰ise listan j‰sensivulla, osoitteessa:
+Tehd√§ksesi muutoksia j√§senyytesi asetuksiin, kirjaudu sis√§√§n 
+ja k√§v√§ise listan j√§sensivulla, osoitteessa:
 
     %(options_url)s
 
-Voit tehd‰ samat muutokset myˆs s‰hkˆpostitse l‰hett‰m‰ll‰ 
+Voit tehd√§ samat muutokset my√∂s s√§hk√∂postitse l√§hett√§m√§ll√§ 
 viestin osoitteeseen:
 
    %(requestaddr)s 
 
-ja laittamalla tekstin "help" otsikko- tai viestikentt‰‰n. 
-Automaattinen vastaus viestiisi sis‰lt‰‰ lis‰tietoja.
+ja laittamalla tekstin "help" otsikko- tai viestikentt√§√§n. 
+Automaattinen vastaus viestiisi sis√§lt√§√§ lis√§tietoja.
 
-Kysymyksi‰ tai kommentteja? L‰het‰ ne postituslistan 
-%(listname)s yll‰pit‰j‰lle %(owneraddr)s.
+Kysymyksi√§ tai kommentteja? L√§het√§ ne postituslistan 
+%(listname)s yll√§pit√§j√§lle %(owneraddr)s.

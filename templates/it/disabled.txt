@@ -1,4 +1,4 @@
-La tua iscrizione alla lista %(listname)s Ë stata disabilitata 
+La tua iscrizione alla lista %(listname)s √® stata disabilitata 
 %(reason)s. Non riceverai ulteriori messaggi
 da questa lista fino a che non riattiverai la tua iscrizione. 
 Riceverai altre %(noticesleft)s come questa prima che la tua iscrizione
@@ -14,8 +14,8 @@ Puoi inoltre visitare la tua pagina di iscrizione a
    %(optionsurl)s
 
 Nella tua pagina, puoi cambiare varie opzioni di consegna quali il tuo 
-indirizzo email e se usare o meno la modalit‡ digest. 
-Come promemoria, la tua password Ë
+indirizzo email e se usare o meno la modalit√† digest. 
+Come promemoria, la tua password √®
 
   %(password)s
 

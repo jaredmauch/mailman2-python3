@@ -1,10 +1,10 @@
-Jûsø laiğkas diskusijø forumui tema: %(subject)s
-Laukia forumo %(listname)s prişiûrëtojo patvirtinimo.
+JÅ«sÅ³ laiÅ¡kas diskusijÅ³ forumui tema: %(subject)s
+Laukia forumo %(listname)s priÅ¾iÅ«rÄ—tojo patvirtinimo.
 
-To prieşastis yra:
+To prieÅ¾astis yra:
 
     %(reason)s
 
-Laiğkas pateks á forumà arba Jums bus praneğta apie prişiûrëtojo sprendimà.
+LaiÅ¡kas pateks Ä¯ forumÄ… arba Jums bus praneÅ¡ta apie priÅ¾iÅ«rÄ—tojo sprendimÄ….
 
-Iğtrinti laiğkà galite adresu: %(confirmurl)s
+IÅ¡trinti laiÅ¡kÄ… galite adresu: %(confirmurl)s

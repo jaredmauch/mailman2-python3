@@ -1,26 +1,26 @@
-Toto je zku¹ební zpráva, mù¾ete ji klidnì ignorovat.
+Toto je zkuÅ¡ebnÃ­ zprÃ¡va, mÅ¯Å¾ete ji klidnÄ› ignorovat.
 
-Konference %(listname)s má problémy s doruèováním pøíspìvkù na va¹i,
-adresu, co¾ ukazuje, ¾e doruèování na adresu %(address)s nefunguje
-správnì.
-Pøikládáme ukázku vrácené zprávy, ze které poznáte, proè se zprávy vracejí.
-Je mo¾né, ¾e tato zpráva pro vás není srozumitelná a budete muset o spolupráci
-po¾ádat správce svého po¹tovního systému. Ten by mìl bıt schopen poznat,
-k jakému problému dochází.
+Konference %(listname)s mÃ¡ problÃ©my s doruÄovÃ¡nÃ­m pÅ™Ã­spÄ›vkÅ¯ na vaÅ¡i,
+adresu, coÅ¾ ukazuje, Å¾e doruÄovÃ¡nÃ­ na adresu %(address)s nefunguje
+sprÃ¡vnÄ›.
+PÅ™iklÃ¡dÃ¡me ukÃ¡zku vrÃ¡cenÃ© zprÃ¡vy, ze kterÃ© poznÃ¡te, proÄ se zprÃ¡vy vracejÃ­.
+Je moÅ¾nÃ©, Å¾e tato zprÃ¡va pro vÃ¡s nenÃ­ srozumitelnÃ¡ a budete muset o spoluprÃ¡ci
+poÅ¾Ã¡dat sprÃ¡vce svÃ©ho poÅ¡tovnÃ­ho systÃ©mu. Ten by mÄ›l bÃ½t schopen poznat,
+k jakÃ©mu problÃ©mu dochÃ¡zÃ­.
 
-Pokud jste tuto zprávu obdr¾eli, zøejmì není problém s doruèováním trvalı
-a tak zùstáváte aktivním èlenem konference. Pokud by se nám nepodaøilo
-doruèit ani tuto zprávu, va¹e èlenství by bylo pozastaveno a nadále bychom
-vám nezasílali pøíspìvky. Èas od èasu bychom pouze zkusili zastat zprávu
-informující o pozastavení èlenství s pokyny pro jeho obnovení.
+Pokud jste tuto zprÃ¡vu obdrÅ¾eli, zÅ™ejmÄ› nenÃ­ problÃ©m s doruÄovÃ¡nÃ­m trvalÃ½
+a tak zÅ¯stÃ¡vÃ¡te aktivnÃ­m Älenem konference. Pokud by se nÃ¡m nepodaÅ™ilo
+doruÄit ani tuto zprÃ¡vu, vaÅ¡e ÄlenstvÃ­ by bylo pozastaveno a nadÃ¡le bychom
+vÃ¡m nezasÃ­lali pÅ™Ã­spÄ›vky. ÄŒas od Äasu bychom pouze zkusili zastat zprÃ¡vu
+informujÃ­cÃ­ o pozastavenÃ­ ÄlenstvÃ­ s pokyny pro jeho obnovenÃ­.
 
-Na konfiguraci svého úètu se mù¾ete podívat na adrese
+Na konfiguraci svÃ©ho ÃºÄtu se mÅ¯Å¾ete podÃ­vat na adrese
 
     %(optionsurl)s
 
-Na této stránce si mù¾ete nastavit jinou emailovou adresu a nebo 
-zmìnit parametry doruèování.
-Pokud máte k tomuto emailu dotaz, nebo si myslíte, ¾e nebyl zaslán
-správnì, kontaktujte, prosím, správce konference na adrese:
+Na tÃ©to strÃ¡nce si mÅ¯Å¾ete nastavit jinou emailovou adresu a nebo 
+zmÄ›nit parametry doruÄovÃ¡nÃ­.
+Pokud mÃ¡te k tomuto emailu dotaz, nebo si myslÃ­te, Å¾e nebyl zaslÃ¡n
+sprÃ¡vnÄ›, kontaktujte, prosÃ­m, sprÃ¡vce konference na adrese:
 
     %(owneraddr)s

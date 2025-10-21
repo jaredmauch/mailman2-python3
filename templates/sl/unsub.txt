@@ -1,22 +1,22 @@
-Obvestilo o odobreni odjavi s po¹tnega naslova %(listname)s
+Obvestilo o odobreni odjavi s poÅ¡tnega naslova %(listname)s
 
-Prejeli smo zahtevo request%(remote)s za odstranitev va¹ega
-e-po¹tnega naslova, "%(email)s", s seznama %(listaddr)s.
-To zahtevo potrdite tako, da po¹ljete odgovor na to sporoèilo,
-vrstico z Zadevo pa pustite nespremenjeno. Obi¹èete lahko tudi
+Prejeli smo zahtevo request%(remote)s za odstranitev vaÅ¡ega
+e-poÅ¡tnega naslova, "%(email)s", s seznama %(listaddr)s.
+To zahtevo potrdite tako, da poÅ¡ljete odgovor na to sporoÄilo,
+vrstico z Zadevo pa pustite nespremenjeno. ObiÅ¡Äete lahko tudi
 spletno stran
 
     %(confirmurl)s
 
-ali vkljuèite naslednjo vrstico -- samo naslednjo vrstico --
-v sporoèilo, ki ga po¹ljete na naslov %(requestaddr)s:
+ali vkljuÄite naslednjo vrstico -- samo naslednjo vrstico --
+v sporoÄilo, ki ga poÅ¡ljete na naslov %(requestaddr)s:
 
     confirm %(cookie)s
 
-Za veèino uporabnikov bi moral zadostovati 'odgovor' na to
-sporoèilo, saj pri odgovarjanju vrstica Zadeva ostane
+Za veÄino uporabnikov bi moral zadostovati 'odgovor' na to
+sporoÄilo, saj pri odgovarjanju vrstica Zadeva ostane
 nespremenjena (dodatni Re: v Zadevi je v redu).
 
-Èe ne ¾elite biti odjavljeni s tega seznama, prezrite to sporoèilo.
-Èe menite, da je nekdo zlorabil va¹ naslov, ali imate kak¹na druga
-vpra¹anja, se obrnite na %(listadmin)s.
+ÄŒe ne Å¾elite biti odjavljeni s tega seznama, prezrite to sporoÄilo.
+ÄŒe menite, da je nekdo zlorabil vaÅ¡ naslov, ali imate kakÅ¡na druga
+vpraÅ¡anja, se obrnite na %(listadmin)s.

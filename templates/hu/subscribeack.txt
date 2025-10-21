@@ -1,34 +1,34 @@
-Üdvözlünk a(z) %(real_name)s@%(host_name)s levelezési listán!
+ÃœdvÃ¶zlÃ¼nk a(z) %(real_name)s@%(host_name)s levelezÃ©si listÃ¡n!
 %(welcome)s
-A listára az alábbi címre küldhetsz levelet:
+A listÃ¡ra az alÃ¡bbi cÃ­mre kÃ¼ldhetsz levelet:
 
   %(emailaddr)s
 
-A levelezési listáról információt itt találsz:
+A levelezÃ©si listÃ¡rÃ³l informÃ¡ciÃ³t itt talÃ¡lsz:
 
   %(listinfo_url)s
 
-Ha le szeretnél iratkozni, vagy a beállításaidat megváltoztatni (pl.
-digest mód, jelszó változtatása, stb.), látogass el az alábbi címre:
+Ha le szeretnÃ©l iratkozni, vagy a beÃ¡llÃ­tÃ¡saidat megvÃ¡ltoztatni (pl.
+digest mÃ³d, jelszÃ³ vÃ¡ltoztatÃ¡sa, stb.), lÃ¡togass el az alÃ¡bbi cÃ­mre:
 
   %(optionsurl)s
 %(umbrella)s
-Ugyanezeket a dolgokat e-mailen keresztül is elvégezheted ezen a címen:
+Ugyanezeket a dolgokat e-mailen keresztÃ¼l is elvÃ©gezheted ezen a cÃ­men:
 
   %(real_name)s-request@%(host_name)s
 
-Részletes ismertetõt kaphatsz a beállításokról, ha egy 'help' tartalmú
-levelet (a tárgyban vagy a törzsben feltüntetve, aposztrófok nélkül) küldesz
-a fenti címre.
+RÃ©szletes ismertetÅ‘t kaphatsz a beÃ¡llÃ­tÃ¡sokrÃ³l, ha egy 'help' tartalmÃº
+levelet (a tÃ¡rgyban vagy a tÃ¶rzsben feltÃ¼ntetve, aposztrÃ³fok nÃ©lkÃ¼l) kÃ¼ldesz
+a fenti cÃ­mre.
 
-Csak a jelszavad ismeretében tudod megváltoztatni a beállításaidat,
-vagy a leiratkozást elvégezni. A jelszavad:
+Csak a jelszavad ismeretÃ©ben tudod megvÃ¡ltoztatni a beÃ¡llÃ­tÃ¡saidat,
+vagy a leiratkozÃ¡st elvÃ©gezni. A jelszavad:
 
   %(password)s
 
-A Mailman alapesetben minden hónapban elküldi a(z) %(host_name)s gépen
-található levelezõlistához tartozó jelszavadat, ha ezt az emlékeztetõt
-nem kéred, akkor a beállítások oldalon kikapcsolhatod a havi küldést.
-Az üzenet a leiratkozásról és beállításaid megváltoztatásának módjára
-emlékeztet. A listatagok oldalán található gomb megnyomásával e-mailben
-is kikérheted a jelszavadat.
+A Mailman alapesetben minden hÃ³napban elkÃ¼ldi a(z) %(host_name)s gÃ©pen
+talÃ¡lhatÃ³ levelezÅ‘listÃ¡hoz tartozÃ³ jelszavadat, ha ezt az emlÃ©keztetÅ‘t
+nem kÃ©red, akkor a beÃ¡llÃ­tÃ¡sok oldalon kikapcsolhatod a havi kÃ¼ldÃ©st.
+Az Ã¼zenet a leiratkozÃ¡srÃ³l Ã©s beÃ¡llÃ­tÃ¡said megvÃ¡ltoztatÃ¡sÃ¡nak mÃ³djÃ¡ra
+emlÃ©keztet. A listatagok oldalÃ¡n talÃ¡lhatÃ³ gomb megnyomÃ¡sÃ¡val e-mailben
+is kikÃ©rheted a jelszavadat.

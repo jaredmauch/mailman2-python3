@@ -1,42 +1,42 @@
-Konference %(listname)s právì prodìlal velkou zmìnu. Od nynìj¹ka je 
-provozována novım programem, kterı se jmenuje "Mailman". Doufám,
-¾e to vyøe¹í v¹echny problémy, které se mo¾ná døíve pøi bìhu
+Konference %(listname)s prÃ¡vÄ› prodÄ›lal velkou zmÄ›nu. Od nynÄ›jÅ¡ka je 
+provozovÃ¡na novÃ½m programem, kterÃ½ se jmenuje "Mailman". DoufÃ¡m,
+Å¾e to vyÅ™eÅ¡Ã­ vÅ¡echny problÃ©my, kterÃ© se moÅ¾nÃ¡ dÅ™Ã­ve pÅ™i bÄ›hu
 konference vyskytly.
 
-A jak se to tıká Vás?
+A jak se to tÃ½kÃ¡ VÃ¡s?
 
-1) Pøíspìvky do konference budou nyní zasílány na adresu:
+1) PÅ™Ã­spÄ›vky do konference budou nynÃ­ zasÃ­lÃ¡ny na adresu:
    %(listaddr)s.
-   Je docela dobøe mo¾né, ¾e tato adresa se shoduje s adresou
-   pùvodní, zále¾í to na lokální situaci.
+   Je docela dobÅ™e moÅ¾nÃ©, Å¾e tato adresa se shoduje s adresou
+   pÅ¯vodnÃ­, zÃ¡leÅ¾Ã­ to na lokÃ¡lnÃ­ situaci.
 
-2) Bude Vám pøidìleno unikátní heslo, které znemo¾ní, aby nìkdo
-   jinı modifikoval nastavení Va¹eho u¾ivatelského konta, pøípadnì
-   aby Vás bez Va¹eho vìdomí pøihlásil nebo odhlásil. Pokud heslo
-   zapomenete, ¾ádnı problém. Heslo je znovu zasíláno ka¾dı mìsíc
-   a kromì toho si jej mù¾ete nechat zaslat z www stránky konference.
-   Pøípadnì se jej tam mù¾ete i zmìnit.  
+2) Bude VÃ¡m pÅ™idÄ›leno unikÃ¡tnÃ­ heslo, kterÃ© znemoÅ¾nÃ­, aby nÄ›kdo
+   jinÃ½ modifikoval nastavenÃ­ VaÅ¡eho uÅ¾ivatelskÃ©ho konta, pÅ™Ã­padnÄ›
+   aby VÃ¡s bez VaÅ¡eho vÄ›domÃ­ pÅ™ihlÃ¡sil nebo odhlÃ¡sil. Pokud heslo
+   zapomenete, Å¾Ã¡dnÃ½ problÃ©m. Heslo je znovu zasÃ­lÃ¡no kaÅ¾dÃ½ mÄ›sÃ­c
+   a kromÄ› toho si jej mÅ¯Å¾ete nechat zaslat z www strÃ¡nky konference.
+   PÅ™Ã­padnÄ› se jej tam mÅ¯Å¾ete i zmÄ›nit.  
 
-3) Pokud máte pøístup WWW, mù¾ete kdykoliv mìnit nastavení
-   svého u¾ivatelského úètu na adrese:
+3) Pokud mÃ¡te pÅ™Ã­stup WWW, mÅ¯Å¾ete kdykoliv mÄ›nit nastavenÃ­
+   svÃ©ho uÅ¾ivatelskÃ©ho ÃºÄtu na adrese:
 
     %(listinfo_url)s
 
-   Zde se mù¾ete jednak pøihlásit a odhlásit a jednak mìnit nastavení
-   jako tøeba doèasnı zákaz zasílání pøíspìvkù, zapnutí a vypnutí
-   digest re¾imu. (Pokud je digest aktivní, jsou Vám pøíspìvky zasílány
-   jen jednou za nastavenı èas. Napø. dostanete veèer jeden dopis
-   obsahující pøíspìvky z celého dne.)
+   Zde se mÅ¯Å¾ete jednak pÅ™ihlÃ¡sit a odhlÃ¡sit a jednak mÄ›nit nastavenÃ­
+   jako tÅ™eba doÄasnÃ½ zÃ¡kaz zasÃ­lÃ¡nÃ­ pÅ™Ã­spÄ›vkÅ¯, zapnutÃ­ a vypnutÃ­
+   digest reÅ¾imu. (Pokud je digest aktivnÃ­, jsou VÃ¡m pÅ™Ã­spÄ›vky zasÃ­lÃ¡ny
+   jen jednou za nastavenÃ½ Äas. NapÅ™. dostanete veÄer jeden dopis
+   obsahujÃ­cÃ­ pÅ™Ã­spÄ›vky z celÃ©ho dne.)
 
-4) Pokud nemáte pøístup k WWW, nevadí. Svùj úèet mù¾ete spravovat
-   i pomocí elektronické po¹ty. Za¹lete na adresu %(requestaddr)s
-   dopis obsahující slùvko help v tìle dopisu a obratem obdr¾íte
-   podrobnı návod.
+4) Pokud nemÃ¡te pÅ™Ã­stup k WWW, nevadÃ­. SvÅ¯j ÃºÄet mÅ¯Å¾ete spravovat
+   i pomocÃ­ elektronickÃ© poÅ¡ty. ZaÅ¡lete na adresu %(requestaddr)s
+   dopis obsahujÃ­cÃ­ slÅ¯vko help v tÄ›le dopisu a obratem obdrÅ¾Ã­te
+   podrobnÃ½ nÃ¡vod.
 
-Pokud máte jakékoliv dotazy nebo problémy, mù¾ete kontaktovat správce
+Pokud mÃ¡te jakÃ©koliv dotazy nebo problÃ©my, mÅ¯Å¾ete kontaktovat sprÃ¡vce
 konference na adrese:
 %(adminaddr)s.
 
-Tato zprávy byla generována automaticky programem Mailman verze %(version)s.
-Jakékoliv dal¹í informace o tomto programu naleznete na adrese:
+Tato zprÃ¡vy byla generovÃ¡na automaticky programem Mailman verze %(version)s.
+JakÃ©koliv dalÅ¡Ã­ informace o tomto programu naleznete na adrese:
 http://www.list.org/

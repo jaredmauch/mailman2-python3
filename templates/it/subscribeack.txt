@@ -20,15 +20,15 @@ Puoi anche effettuare variazioni via email inviando un messaggio a:
   %(real_name)s-request@%(host_name)s
 
 con la parola `help' nell'oggetto o nel testo (non includere le 
-virgolette), e ti torner‡ indietro un messaggio con le istruzioni.
+virgolette), e ti torner√† indietro un messaggio con le istruzioni.
 
 Devi conoscere la tua password per cambiare le tue opzioni (inclusi
-i cambi della stessa password) o per cancellarti.  La password Ë:
+i cambi della stessa password) o per cancellarti.  La password √®:
 
   %(password)s
 
 Se dimentichi la password, non preoccuparti, riceverai mensilmente un 
-promemoria che ti elencher‡ tutte le tue password nelle nostre liste 
-su %(host_name)s e ti spiegher‡ come cancellarti o cambiare le tue 
-opzioni.  C'Ë anche un pulsante, nella tua pagina delle opzioni, che
-ti spedir‡ la password ogni volta che lo premerai.
+promemoria che ti elencher√† tutte le tue password nelle nostre liste 
+su %(host_name)s e ti spiegher√† come cancellarti o cambiare le tue 
+opzioni.  C'√® anche un pulsante, nella tua pagina delle opzioni, che
+ti spedir√† la password ogni volta che lo premerai.

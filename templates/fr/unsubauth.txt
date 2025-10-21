@@ -1,11 +1,11 @@
-Votre accord est nécessaire pour l'approbation d'une requête 
-de résiliation d'abonnement :
+Votre accord est nÃ©cessaire pour l'approbation d'une requÃªte 
+de rÃ©siliation d'abonnement :
 
 	Par:   %(username)s
 	De:	   %(listname)s@%(hostname)s
 
-Dès que possible, consultez la page web :
+DÃ¨s que possible, consultez la page web :
 
 	%(admindb_url)s
 
-pour traiter la requête.
+pour traiter la requÃªte.

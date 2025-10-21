@@ -1,13 +1,13 @@
-Siden du er en listeadministrator, får du følgende forespørsel om
-å godkjenne eller avslå følgende epost til listen:
+Siden du er en listeadministrator, fÃ¥r du fÃ¸lgende forespÃ¸rsel om
+Ã¥ godkjenne eller avslÃ¥ fÃ¸lgende epost til listen:
 
     Liste:   %(listname)s@%(hostname)s
     Fra:     %(sender)s
     Emne:    %(subject)s
     Grunn:   %(reason)s
 
-For å godkjenne eller avslå forespørselen, gå til
+For Ã¥ godkjenne eller avslÃ¥ forespÃ¸rselen, gÃ¥ til
 
     %(admindb_url)s
         
-når du får tid.
+nÃ¥r du fÃ¥r tid.

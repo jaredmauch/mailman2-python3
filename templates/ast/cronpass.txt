@@ -1,21 +1,21 @@
 Esto ye un recordatoriu que s'unvia mensualmente sobro les
-soscriciones a llistes de distribuci髇 que tienes en
-%(hostname)s. Incl鷌 informaci髇 que puede usase pa 
-camudar les tos opciones de soscripci髇 asina como pa dase
+soscriciones a llistes de distribuci贸n que tienes en
+%(hostname)s. Incl煤i informaci贸n que puede usase pa 
+camudar les tos opciones de soscripci贸n asina como pa dase
 de baxa o esborrase d'una llista.
 
-Puedes visitar les URLs pa camudar la configuraci髇 de les
-soscriciones, date de baxa o desactivar la receici髇 de
+Puedes visitar les URLs pa camudar la configuraci贸n de les
+soscriciones, date de baxa o desactivar la receici贸n de
 los mensaxes (por exemplu durante les vacaciones).
 
-Arriendes de les URLs, puedes usar el corr閡 electr髇icu pa
-facer talos cambeos. Si necesites m醩 informaci髇 unvia un
-mensax a la direici髇 de solicit鷈s ('-request') de la llista
+Arriendes de les URLs, puedes usar el corr茅u electr贸nicu pa
+facer talos cambeos. Si necesites m谩s informaci贸n unvia un
+mensax a la direici贸n de solicit煤es ('-request') de la llista
 (por exemplu, %(exreq)s) cola pallabra
 'help' nel asuntu (subject) o nel cuerpu del mensax y 
-recibir醩 un mensax con instrucciones.
+recibir谩s un mensax con instrucciones.
 
-Si tienes dalguna entruga, problema, comentariu, etc, 鷑vialu,
-por favor, a la direici髇 %(owner)s. Gracies.
+Si tienes dalguna entruga, problema, comentariu, etc, 煤nvialu,
+por favor, a la direici贸n %(owner)s. Gracies.
 
-Contrase&ntilde;es correspondientes a la direici髇 %(useraddr)s:
+Contrase&ntilde;es correspondientes a la direici贸n %(useraddr)s:

@@ -1,25 +1,25 @@
-Alguém, ou alguém se fazendo passar por você, solicitou o lembrete de 
-senha para seu membro na lista de discussão %(fqdn_lname)s. Você 
-precisará desta senha para modificar suas opções de membro (e.g. você 
+AlguÃ©m, ou alguÃ©m se fazendo passar por vocÃª, solicitou o lembrete de 
+senha para seu membro na lista de discussÃ£o %(fqdn_lname)s. VocÃª 
+precisarÃ¡ desta senha para modificar suas opÃ§Ãµes de membro (e.g. vocÃª 
 prefere receber entregas regulares ou modo digest) e tendo esta senha 
-torna simples a desinscrição da lista de discussão.
+torna simples a desinscriÃ§Ã£o da lista de discussÃ£o.
 
-Você está inscrito com o endereço: %(user)s
+VocÃª estÃ¡ inscrito com o endereÃ§o: %(user)s
 
-Sua senha na lista %(listname)s é: %(password)s
+Sua senha na lista %(listname)s Ã©: %(password)s
 
-Para fazer modificações em suas opções de membro, entre e visite
-sua página web de opções:
+Para fazer modificaÃ§Ãµes em suas opÃ§Ãµes de membro, entre e visite
+sua pÃ¡gina web de opÃ§Ãµes:
 
     %(options_url)s
 
-Você também poderá realizar tais modificações por email enviando
+VocÃª tambÃ©m poderÃ¡ realizar tais modificaÃ§Ãµes por email enviando
 uma mensagem para:
 
     %(requestaddr)s
 
 com o texto "help" no assunto ou corpo da mensagem. A resposta 
-automática trará instruções mais detalhadas.
+automÃ¡tica trarÃ¡ instruÃ§Ãµes mais detalhadas.
 
-Questões ou comentários? Por favor envie-as para o administrador 
-da lista de discussão %(listname)s no endereço %(owneraddr)s.
+QuestÃµes ou comentÃ¡rios? Por favor envie-as para o administrador 
+da lista de discussÃ£o %(listname)s no endereÃ§o %(owneraddr)s.

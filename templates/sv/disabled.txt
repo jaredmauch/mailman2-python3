@@ -1,25 +1,25 @@
-Ditt medlemskap på e-postlistan %(listname)s är för närvarande avaktiverat 
+Ditt medlemskap pÃ¥ e-postlistan %(listname)s Ã¤r fÃ¶r nÃ¤rvarande avaktiverat 
 %(reason)s. Du kommer
-inte att få ta emot fler meddelanden från denna lista förrän du aktiverar 
-ditt medlemskap igen. Du kommer att få %(noticesleft)s påminnelser som denna 
-innan du blir permanent avanmäld från listan.
+inte att fÃ¥ ta emot fler meddelanden frÃ¥n denna lista fÃ¶rrÃ¤n du aktiverar 
+ditt medlemskap igen. Du kommer att fÃ¥ %(noticesleft)s pÃ¥minnelser som denna 
+innan du blir permanent avanmÃ¤ld frÃ¥n listan.
 
-För att aktivera mottagningen av meddelanden igen, kan du svara på detta e-postbrev
-(med Subject: fältet som det är), eller gå in på denna webbsida:
+FÃ¶r att aktivera mottagningen av meddelanden igen, kan du svara pÃ¥ detta e-postbrev
+(med Subject: fÃ¤ltet som det Ã¤r), eller gÃ¥ in pÃ¥ denna webbsida:
 
     %(confirmurl)s
 
-Du kan också gå in på din personliga medlemswebbsida:
+Du kan ocksÃ¥ gÃ¥ in pÃ¥ din personliga medlemswebbsida:
 
     %(optionsurl)s
 
-På den sidan kan du också anpassa distributionen av e-postbrev från listan, till
-exempel ändra e-postadress eller om du vill använda sammandragsversion eller inte.
-Ditt lösenord är:
+PÃ¥ den sidan kan du ocksÃ¥ anpassa distributionen av e-postbrev frÃ¥n listan, till
+exempel Ã¤ndra e-postadress eller om du vill anvÃ¤nda sammandragsversion eller inte.
+Ditt lÃ¶senord Ã¤r:
 
     %(password)s
 
-Har du frågor eller problem, kan du kontakta listans ägare på
-följande e-postadress:
+Har du frÃ¥gor eller problem, kan du kontakta listans Ã¤gare pÃ¥
+fÃ¶ljande e-postadress:
 
     %(owneraddr)s

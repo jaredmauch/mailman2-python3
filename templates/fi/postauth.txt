@@ -1,5 +1,5 @@
-Yll‰pit‰j‰n toimia tarvitaan seuraavassa 
-postituslistalle osoitetussa viestiss‰:
+Yll√§pit√§j√§n toimia tarvitaan seuraavassa 
+postituslistalle osoitetussa viestiss√§:
 
 
     List:    %(listname)s@%(hostname)s

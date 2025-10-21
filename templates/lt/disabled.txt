@@ -1,28 +1,28 @@
-Jûsø dalyvavimas diskusijø forume %(listname)s sustabdytas, dël 
+JÅ«sÅ³ dalyvavimas diskusijÅ³ forume %(listname)s sustabdytas, dÄ—l 
 %(reason)s. 
 
-Jûs negausite daugiau forumo laiğkø kol neatnaujinsite savo narystës.
+JÅ«s negausite daugiau forumo laiÅ¡kÅ³ kol neatnaujinsite savo narystÄ—s.
 
-Jums bus siunèiama dar %(noticesleft)s tokie praneğimai iki galutinio Jûsø iğtrynimo.
+Jums bus siunÄiama dar %(noticesleft)s tokie praneÅ¡imai iki galutinio JÅ«sÅ³ iÅ¡trynimo.
 
-Atstatyti narystæ forume galite vienu iğ ğiø bûdø:
+Atstatyti narystÄ™ forume galite vienu iÅ¡ Å¡iÅ³ bÅ«dÅ³:
 
-Atsakykite á ğá laiğkà nepakeisdami jo temos (subject).
-Daugumoje pağto programø galite pasinaudoti komanda 'Atsakyti'
-arba 'Reply', nes ği komanda iğsaugo temà (subject).
-(Patvirtinimui netrukdo daşniausiai áterpiamas 'Ats:' arba 'Re:'.)
+Atsakykite Ä¯ Å¡Ä¯ laiÅ¡kÄ… nepakeisdami jo temos (subject).
+Daugumoje paÅ¡to programÅ³ galite pasinaudoti komanda 'Atsakyti'
+arba 'Reply', nes Å¡i komanda iÅ¡saugo temÄ… (subject).
+(Patvirtinimui netrukdo daÅ¾niausiai Ä¯terpiamas 'Ats:' arba 'Re:'.)
 
-Arba aplankykite mûsø tinklapá:
+Arba aplankykite mÅ«sÅ³ tinklapÄ¯:
 
     %(confirmurl)s
 
-Taip pat galite aplankyti forumo dalyvio tinklapá:
+Taip pat galite aplankyti forumo dalyvio tinklapÄ¯:
 
     %(optionsurl)s
 
-Èia galite keisti savo nustatymus, tokius, kaip el. pağto
-adresas, nuolatiniø praneğimø siuntimas ir pan.
+ÄŒia galite keisti savo nustatymus, tokius, kaip el. paÅ¡to
+adresas, nuolatiniÅ³ praneÅ¡imÅ³ siuntimas ir pan.
 
-Primename Jûsø slaptaşodá:  %(password)s
+Primename JÅ«sÅ³ slaptaÅ¾odÄ¯:  %(password)s
 
-Visais klausimais prağome kreiptis á administratoriø: %(owneraddr)s.
+Visais klausimais praÅ¡ome kreiptis Ä¯ administratoriÅ³: %(owneraddr)s.

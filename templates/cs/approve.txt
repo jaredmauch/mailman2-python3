@@ -1,15 +1,15 @@
-Vá¹ po¾adavek zaslanı na adresu %(requestaddr)s:
+VÃ¡Å¡ poÅ¾adavek zaslanÃ½ na adresu %(requestaddr)s:
 
     %(cmd)s
 
-byl pøedán správci konference.
+byl pÅ™edÃ¡n sprÃ¡vci konference.
 
-Pravdìpodobnì se pøihla¹ujete do uzavøené konference, která
-vy¾aduje pro pøihlá¹ení schválení správce. Pøípadnì automatickı
-systém správy konference po¾adavku neporozumìl.
+PravdÄ›podobnÄ› se pÅ™ihlaÅ¡ujete do uzavÅ™enÃ© konference, kterÃ¡
+vyÅ¾aduje pro pÅ™ihlÃ¡Å¡enÃ­ schvÃ¡lenÃ­ sprÃ¡vce. PÅ™Ã­padnÄ› automatickÃ½
+systÃ©m sprÃ¡vy konference poÅ¾adavku neporozumÄ›l.
 
-O rozhodnutí správce budete informováni elektronickou po¹tou.
+O rozhodnutÃ­ sprÃ¡vce budete informovÃ¡ni elektronickou poÅ¡tou.
 
-Jakékoliv dal¹í dotazy smìøujte, prosím, na správce konference:
+JakÃ©koliv dalÅ¡Ã­ dotazy smÄ›Å™ujte, prosÃ­m, na sprÃ¡vce konference:
 
     %(adminaddr)s

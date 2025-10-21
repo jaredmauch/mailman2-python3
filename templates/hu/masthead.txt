@@ -1,14 +1,14 @@
-%(real_name)s listára a leveleidet a következõ címre küld
+%(real_name)s listÃ¡ra a leveleidet a kÃ¶vetkezÅ‘ cÃ­mre kÃ¼ld
 	%(got_list_email)s
 
-Web-en keresztüli fel- vagy leiratkozáshoz látogass el ide
+Web-en keresztÃ¼li fel- vagy leiratkozÃ¡shoz lÃ¡togass el ide
 	%(got_listinfo_url)s
-vagy, küldjél egy 'help' tartalmú levelet az alábbi címre
+vagy, kÃ¼ldjÃ©l egy 'help' tartalmÃº levelet az alÃ¡bbi cÃ­mre
 	%(got_request_email)s
 
-A lista adminisztrátorát itt éred el
+A lista adminisztrÃ¡torÃ¡t itt Ã©red el
 	%(got_owner_email)s
 
-Levél tárgyának a tartalmára utaló szöveget adj meg, válasz esetén is,
-mert sokat nem lehet megtudni, ha a levél tárgya valami ilyen
+LevÃ©l tÃ¡rgyÃ¡nak a tartalmÃ¡ra utalÃ³ szÃ¶veget adj meg, vÃ¡lasz esetÃ©n is,
+mert sokat nem lehet megtudni, ha a levÃ©l tÃ¡rgya valami ilyen
 "Re: %(real_name)s digest tartalma..."

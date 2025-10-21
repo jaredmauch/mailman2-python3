@@ -1,14 +1,14 @@
-Din forespørsel til %(requestaddr)s:
+Din forespÃ¸rsel til %(requestaddr)s:
 
     %(cmd)s
 
 er videresendt til personen ansvarlig for listen.
 
-Det er nok fordi du prøver å melde deg på en 'lukket' liste.
+Det er nok fordi du prÃ¸ver Ã¥ melde deg pÃ¥ en 'lukket' liste.
 
-Du fil få en epost med avgjørelsen så snart forespørselen din er
+Du fil fÃ¥ en epost med avgjÃ¸relsen sÃ¥ snart forespÃ¸rselen din er
 behandlet.
 
-Spørsmål om krav og grunnlag for å få bli med på listen kan rettes til:
+SpÃ¸rsmÃ¥l om krav og grunnlag for Ã¥ fÃ¥ bli med pÃ¥ listen kan rettes til:
 
     %(adminaddr)s

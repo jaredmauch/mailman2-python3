@@ -1,20 +1,20 @@
-A sua participação na lista %(listname)s foi desactivada %(reason)s.
-Não receberá mais mensagens desta lista até reactivar a sua inscrição.
-Receberá mais %(noticesleft)s mensagens como este antes de a sua 
-inscrição na lista ser apagada.
+A sua participaÃ§Ã£o na lista %(listname)s foi desactivada %(reason)s.
+NÃ£o receberÃ¡ mais mensagens desta lista atÃ© reactivar a sua inscriÃ§Ã£o.
+ReceberÃ¡ mais %(noticesleft)s mensagens como este antes de a sua 
+inscriÃ§Ã£o na lista ser apagada.
 
-Para reactivar a sua participação pode simplesmente responder a esta
-mensagem (deixando a linha Assunto: intacta), ou visitar a página de
-confirmação em
+Para reactivar a sua participaÃ§Ã£o pode simplesmente responder a esta
+mensagem (deixando a linha Assunto: intacta), ou visitar a pÃ¡gina de
+confirmaÃ§Ã£o em
 
     %(confirmurl)s
 
-Pode também visitar a sua página de membro em
+Pode tambÃ©m visitar a sua pÃ¡gina de membro em
 
     %(optionsurl)s
 
-Aí pode mudar várias opções, tais como o seu endereço e o modo de entrega
-das mensagens. Lembra-se que a sua password de membro é
+AÃ­ pode mudar vÃ¡rias opÃ§Ãµes, tais como o seu endereÃ§o e o modo de entrega
+das mensagens. Lembra-se que a sua password de membro Ã©
 
     %(password)s
 

@@ -1,24 +1,24 @@
-A(z) %(listname)s levelezõlista tagságod szüneteltetve lett 
-%(reason)s. A listáról addig nem kapsz
-újabb leveleket, amíg a listatagságodat vissza nem állítod. Még %(noticesleft)s
-ilyen emlékeztetõ üzenetet kapsz, utána a listáról törölni fogunk.
+A(z) %(listname)s levelezÅ‘lista tagsÃ¡god szÃ¼neteltetve lett 
+%(reason)s. A listÃ¡rÃ³l addig nem kapsz
+Ãºjabb leveleket, amÃ­g a listatagsÃ¡godat vissza nem Ã¡llÃ­tod. MÃ©g %(noticesleft)s
+ilyen emlÃ©keztetÅ‘ Ã¼zenetet kapsz, utÃ¡na a listÃ¡rÃ³l tÃ¶rÃ¶lni fogunk.
 
-Listatagságod visszaállításához elég erre a levélre válaszolnod
-(a Subject: sort ne változtasd), vagy a következõ címre ellátogatnod
+ListatagsÃ¡god visszaÃ¡llÃ­tÃ¡sÃ¡hoz elÃ©g erre a levÃ©lre vÃ¡laszolnod
+(a Subject: sort ne vÃ¡ltoztasd), vagy a kÃ¶vetkezÅ‘ cÃ­mre ellÃ¡togatnod
 
     %(confirmurl)s
 
-A listatagsági oldaladon is módosíthatod a beállításaidat
+A listatagsÃ¡gi oldaladon is mÃ³dosÃ­thatod a beÃ¡llÃ­tÃ¡saidat
 
     %(optionsurl)s
 
-Ezen az oldalon olyan különbözõ beállításokat módosíthatsz, mint 
-például a feliratkozási címed vagy a digest fogadása. Emlékeztetõül
-a listatagsági jelszavad
+Ezen az oldalon olyan kÃ¼lÃ¶nbÃ¶zÅ‘ beÃ¡llÃ­tÃ¡sokat mÃ³dosÃ­thatsz, mint 
+pÃ©ldÃ¡ul a feliratkozÃ¡si cÃ­med vagy a digest fogadÃ¡sa. EmlÃ©keztetÅ‘Ã¼l
+a listatagsÃ¡gi jelszavad
 
     %(password)s
 
-Kérdéseiddel és problémáiddal fordulj a lista tulajdonoshoz a 
-következõ címen:
+KÃ©rdÃ©seiddel Ã©s problÃ©mÃ¡iddal fordulj a lista tulajdonoshoz a 
+kÃ¶vetkezÅ‘ cÃ­men:
 
     %(owneraddr)s

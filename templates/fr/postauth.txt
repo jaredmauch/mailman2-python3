@@ -1,4 +1,4 @@
-En tant qu'administrateur de liste, votre autorisation est nécessaire
+En tant qu'administrateur de liste, votre autorisation est nÃ©cessaire
 pour l'envoi du message suivant vers la liste:
 
     Liste:  %(listname)s@%(hostname)s

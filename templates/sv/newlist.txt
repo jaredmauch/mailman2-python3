@@ -1,39 +1,39 @@
-E-postlistan `%(listname)s' är nu upprättad. Här följer lite
-grundläggande information om listan.
+E-postlistan `%(listname)s' Ã¤r nu upprÃ¤ttad. HÃ¤r fÃ¶ljer lite
+grundlÃ¤ggande information om listan.
 
-Administrationslösenordet är:
+AdministrationslÃ¶senordet Ã¤r:
 
     %(password)s
 
-Detta lösenord är nödvändigt för att konfigurera e-postlistan. Du måste
-också ha det för att behandla förfrågningar till listan, till exempel
-godkänna e-postbrev, om du väljer att att begränsa listan till att vara 
+Detta lÃ¶senord Ã¤r nÃ¶dvÃ¤ndigt fÃ¶r att konfigurera e-postlistan. Du mÃ¥ste
+ocksÃ¥ ha det fÃ¶r att behandla fÃ¶rfrÃ¥gningar till listan, till exempel
+godkÃ¤nna e-postbrev, om du vÃ¤ljer att att begrÃ¤nsa listan till att vara 
 en modererad lista.
 
 
-Du kan konfigurera listan på följande webbsida:
+Du kan konfigurera listan pÃ¥ fÃ¶ljande webbsida:
 
     %(admin_url)s
 
-Webbsidan för medlemmar på listan är:
+Webbsidan fÃ¶r medlemmar pÃ¥ listan Ã¤r:
 
     %(listinfo_url)s
 
-Du kan till och med göra din personliga anpassning för dessa sidor från
-listans konfigurationssida, men då måste du kunna skriva HTML-kod.
+Du kan till och med gÃ¶ra din personliga anpassning fÃ¶r dessa sidor frÃ¥n
+listans konfigurationssida, men dÃ¥ mÃ¥ste du kunna skriva HTML-kod.
 
-Det finns också ett e-postbaserat gränssnitt för medlemmar (inte
-administratörer) av listan. Du kan få mer information om detta genom 
+Det finns ocksÃ¥ ett e-postbaserat grÃ¤nssnitt fÃ¶r medlemmar (inte
+administratÃ¶rer) av listan. Du kan fÃ¥ mer information om detta genom 
 att skicka ett e-postbrev till:
 
     %(requestaddr)s
 
-med enbart ordet 'help' som innehåll eller i ämnesfältet.
+med enbart ordet 'help' som innehÃ¥ll eller i Ã¤mnesfÃ¤ltet.
 
-För att ta bort någon från listan, gå in på listans webbsida och klicka på
-eller skriv in medlemmens e-postadress. Där medlemmen skulle ha
-skrivit in sitt lösenord, skriver du ditt administrationslösenord.
-Du kan också till exempel stoppa distribution till en medlem, ändra till
-sammandragsversion och så vidare, på denna sätt.
+FÃ¶r att ta bort nÃ¥gon frÃ¥n listan, gÃ¥ in pÃ¥ listans webbsida och klicka pÃ¥
+eller skriv in medlemmens e-postadress. DÃ¤r medlemmen skulle ha
+skrivit in sitt lÃ¶senord, skriver du ditt administrationslÃ¶senord.
+Du kan ocksÃ¥ till exempel stoppa distribution till en medlem, Ã¤ndra till
+sammandragsversion och sÃ¥ vidare, pÃ¥ denna sÃ¤tt.
 
-Du kan nå systemadminstratör på %(siteowner)s.
+Du kan nÃ¥ systemadminstratÃ¶r pÃ¥ %(siteowner)s.

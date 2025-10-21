@@ -1,28 +1,28 @@
-Votre abonnement à la liste %(listname)s a été désactivé suite à
+Votre abonnement Ã  la liste %(listname)s a Ã©tÃ© dÃ©sactivÃ© suite Ã 
 %(reason)s. Vous ne recevrez plus de messages en provenance de
-cette liste tant que vous n'aurez pas ré-activé votre
+cette liste tant que vous n'aurez pas rÃ©-activÃ© votre
 abonnement. Vous recevrez encore %(noticesleft)s rappels comme celui-ci 
-avant que votre abonnement ne soit supprimé.
+avant que votre abonnement ne soit supprimÃ©.
 
-Pour ré-activer votre abonnement, vous pouvez répondre simplement à ce
+Pour rÃ©-activer votre abonnement, vous pouvez rÃ©pondre simplement Ã  ce
 message (en laissant la ligne Subject: --Objet-- du message intact) ou
-vous rendre à la page de confirmation à l'adresse :
+vous rendre Ã  la page de confirmation Ã  l'adresse :
 
 	 %(confirmurl)s
 
-Vous pouvez également consulter votre page personnelle d'abonné à
+Vous pouvez Ã©galement consulter votre page personnelle d'abonnÃ© Ã 
 l'adresse 
 
 	%(optionsurl)s
 
-Sur votre page personnelle d'abonné, vous pourrez modifier certaines
+Sur votre page personnelle d'abonnÃ©, vous pourrez modifier certaines
 options de remise, tels votre adresse courriel ou le type de remise
-selon que vous souhaitez recevoir les messages groupés ou
-individuellement. Pour mémoire, votre mot de passe d'abonné est
+selon que vous souhaitez recevoir les messages groupÃ©s ou
+individuellement. Pour mÃ©moire, votre mot de passe d'abonnÃ© est
 
 	%(password)s
 
-Si vous avez des questions ou des problèmes, contacter le
-propriétaire de la liste  à l'adresse
+Si vous avez des questions ou des problÃ¨mes, contacter le
+propriÃ©taire de la liste  Ã  l'adresse
 
 	%(owneraddr)s

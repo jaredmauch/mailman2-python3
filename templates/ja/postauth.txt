@@ -1,10 +1,10 @@
-�ʲ��Υ᡼��󥰥ꥹ�Ȥؤ���Ƥϡ��ꥹ�ȴ����Ԥξ�ǧ��ɬ�פǤ���
+以下のメーリングリストへの投稿は、リスト管理者の承認が必要です。
 
-    �ꥹ��:  %(listname)s@%(hostname)s
-    ȯ����:  %(sender)s
-    ��̾:    %(subject)s
-    ��ͳ:    %(reason)s
+    リスト:  %(listname)s@%(hostname)s
+    発信者:  %(sender)s
+    件名:    %(subject)s
+    理由:    %(reason)s
 
-Ŭ���ʻ��˰ʲ��� URL �Ǿ�ǧ��Ȥ򤷤Ƥ���������
+適当な時に以下の URL で承認作業をしてください。
 
     %(admindb_url)s

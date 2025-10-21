@@ -1,36 +1,36 @@
-Pagalba diskusijø forumo %(listname)s dalyviams
+Pagalba diskusijÅ³ forumo %(listname)s dalyviams
 
 
-Èia yra diskusijø forumo "Mailman" %(version)s komandø,
-siunèiamø el. pağtu, sàrağas.
+ÄŒia yra diskusijÅ³ forumo "Mailman" %(version)s komandÅ³,
+siunÄiamÅ³ el. paÅ¡tu, sÄ…raÅ¡as.
 
-Ğios komandos gali bûti rağomos temos (subject) eilutëje,
-arba paèiame laiğke.
+Å ios komandos gali bÅ«ti raÅ¡omos temos (subject) eilutÄ—je,
+arba paÄiame laiÅ¡ke.
 
-Daugelis ğiø veiksmø gali bûti vykdoma ir narğykle, prisijungus adresu:
+Daugelis Å¡iÅ³ veiksmÅ³ gali bÅ«ti vykdoma ir narÅ¡ykle, prisijungus adresu:
 
     %(listinfo_url)s
 
-Tame tarpe, galite duoti komandà iğsiøsti Jums pamirğtà slaptaşodá.
+Tame tarpe, galite duoti komandÄ… iÅ¡siÅ³sti Jums pamirÅ¡tÄ… slaptaÅ¾odÄ¯.
 
-Komandos, susijusios su konkreèiu diskusijø forumu, turi bûti
-siunèiamos to forumo aptarnaujanèiai programai (robotui) adresu *-request@...
-pakeièiant '*' forumo pavadinimu. 
+Komandos, susijusios su konkreÄiu diskusijÅ³ forumu, turi bÅ«ti
+siunÄiamos to forumo aptarnaujanÄiai programai (robotui) adresu *-request@...
+pakeiÄiant '*' forumo pavadinimu. 
 (Pvz. forumui 'mailman' adresas 'mailman-request@...')
 
-Apie komandø aprağymà:
-Şodşiai tarp şenklø "<>" aprağo BÛTINUS elementus
-Şodşiai tarp şenklø "[]" aprağo NEBÛTINUS elementus
-Şodşiai, neapskliausti nei "<>", nei "[]" yra komandos dalis.
+Apie komandÅ³ apraÅ¡ymÄ…:
+Å½odÅ¾iai tarp Å¾enklÅ³ "<>" apraÅ¡o BÅªTINUS elementus
+Å½odÅ¾iai tarp Å¾enklÅ³ "[]" apraÅ¡o NEBÅªTINUS elementus
+Å½odÅ¾iai, neapskliausti nei "<>", nei "[]" yra komandos dalis.
 
-Galioja ğios komandos:
+Galioja Å¡ios komandos:
 
     %(commands)s
 
-Komandos turi bûti siunèiamos ğiuo adresu:
+Komandos turi bÅ«ti siunÄiamos Å¡iuo adresu:
 
     %(requestaddr)s
 
-Klausimus ir pasiølymus darbuotojui prağome siøsti adresu:
+Klausimus ir pasiÅ³lymus darbuotojui praÅ¡ome siÅ³sti adresu:
 
     %(adminaddr)s

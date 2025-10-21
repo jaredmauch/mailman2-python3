@@ -1,6 +1,6 @@
 %(username)s soovib tellida listi %(listname)s@%(hostname)s.
-Selleks on vaja sinu - listi halduri - nõusolekut.
+Selleks on vaja sinu - listi halduri - nÃµusolekut.
 
-Tellimuse kinnitamiseks külasta esimesel sobival hetkel veebilehte
+Tellimuse kinnitamiseks kÃ¼lasta esimesel sobival hetkel veebilehte
 
     %(admindb_url)s

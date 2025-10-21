@@ -1,4 +1,4 @@
-%(member)s a été abonné à %(listname)s avec succès.
+%(member)s a Ã©tÃ© abonnÃ© Ã  %(listname)s avec succÃ¨s.
 %(whence)s
 
 

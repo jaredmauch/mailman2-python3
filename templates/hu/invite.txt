@@ -1,21 +1,21 @@
-A(z) %(listname)s levelezõlista tulajdonosa felkért, hogy
-csatlakozz a(z) %(hostname)s rendszeren mûködõ %(listname)s
-levelezõlistához "%(email)s" címeddel. Ha szeretnéd jóváhagyni
-a csatlakozást, akkor egyszerûen válaszolj erre a levélre úgy,
-hogy a Subject: fejlécet nem változtatod meg.
+A(z) %(listname)s levelezÅ‘lista tulajdonosa felkÃ©rt, hogy
+csatlakozz a(z) %(hostname)s rendszeren mÅ±kÃ¶dÅ‘ %(listname)s
+levelezÅ‘listÃ¡hoz "%(email)s" cÃ­meddel. Ha szeretnÃ©d jÃ³vÃ¡hagyni
+a csatlakozÃ¡st, akkor egyszerÅ±en vÃ¡laszolj erre a levÃ©lre Ãºgy,
+hogy a Subject: fejlÃ©cet nem vÃ¡ltoztatod meg.
 
-A jóváhagyást ezen a web címen is megteheted:
+A jÃ³vÃ¡hagyÃ¡st ezen a web cÃ­men is megteheted:
 
     %(confirmurl)s
 
-Vagy helyezd el a következõ sort -- és semmi mást -- egy levélben,
-s küld el a(z) %(requestaddr)s címre:
+Vagy helyezd el a kÃ¶vetkezÅ‘ sort -- Ã©s semmi mÃ¡st -- egy levÃ©lben,
+s kÃ¼ld el a(z) %(requestaddr)s cÃ­mre:
 
     confirm %(cookie)s
 
-A jóváhagyáshoz legtöbbször elég, ha egyszerûen csak válaszolsz
-(`reply') erre a levélre.
+A jÃ³vÃ¡hagyÃ¡shoz legtÃ¶bbszÃ¶r elÃ©g, ha egyszerÅ±en csak vÃ¡laszolsz
+(`reply') erre a levÃ©lre.
 
-Ha nem szeretnél a felkérésnek eleget tenni, akkor nyugodtan hagyd
-figyelmen kívül ezt a levelet. Ha bármilyen kérdésed van, akkor
-kérlek küld el azt a(z) %(listowner)s címre.
+Ha nem szeretnÃ©l a felkÃ©rÃ©snek eleget tenni, akkor nyugodtan hagyd
+figyelmen kÃ­vÃ¼l ezt a levelet. Ha bÃ¡rmilyen kÃ©rdÃ©sed van, akkor
+kÃ©rlek kÃ¼ld el azt a(z) %(listowner)s cÃ­mre.

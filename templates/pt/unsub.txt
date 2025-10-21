@@ -1,10 +1,10 @@
-ConfirmaÁ„o da remoÁ„o da inscriÁ„o na lista de discuss„o %(listname)s
+Confirma√ß√£o da remo√ß√£o da inscri√ß√£o na lista de discuss√£o %(listname)s
 
-Recebemos um pedido%(remote)s para remover o seu endereÁo de email,
-"%(email)s" da lista de discuss„o %(listaddr)s. Para confirmar que
+Recebemos um pedido%(remote)s para remover o seu endere√ßo de email,
+"%(email)s" da lista de discuss√£o %(listaddr)s. Para confirmar que
 deseja ser removido desta listas basta responder a esta mensagem,
-mantendo a linha de cabeÁalho Assunto: (ou Subject:) intacta. Pode em
-alternativa visitar esta p·gina web:
+mantendo a linha de cabe√ßalho Assunto: (ou Subject:) intacta. Pode em
+alternativa visitar esta p√°gina web:
 
     %(confirmurl)s
 
@@ -13,11 +13,11 @@ numa mensagem para %(requestaddr)s:
 
     confirm %(cookie)s
 
-Note que a simples resposta a esta mensagem dever· funcionar com a
+Note que a simples resposta a esta mensagem dever√° funcionar com a
 maioria dos programas de email, pois eles deixam a linha de assunto na
-forma correcta (o texto "Re:" n„o causar· problemas).
+forma correcta (o texto "Re:" n√£o causar√° problemas).
 
-Se n„o deseja anular a sua incriÁ„o nesta lista, ignore esta
+Se n√£o deseja anular a sua incri√ß√£o nesta lista, ignore esta
 mensagem. Se achar que houve uma tentativa de o remover
-maliciosamente, ou tem quaisquer outras questıes, envie-as para
+maliciosamente, ou tem quaisquer outras quest√µes, envie-as para
 %(listadmin)s.

@@ -1,8 +1,8 @@
-Potrebna je va¹a odobritev zahteve za naroènino na po¹tni seznam:
+Potrebna je vaÅ¡a odobritev zahteve za naroÄnino na poÅ¡tni seznam:
 
     Za:  	%(username)s
     Seznam: 	%(listname)s@%(hostname)s
 
-Za obdelavo zahteve obi¹èite stran
+Za obdelavo zahteve obiÅ¡Äite stran
 
     %(admindb_url)s

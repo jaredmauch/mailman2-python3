@@ -1,40 +1,40 @@
-A lista de discussão `%(listname)s' acabou de ser criada para
-si. Juntam-se algumas informações básicas sobre a sua lista de
-discussão.
+A lista de discussÃ£o `%(listname)s' acabou de ser criada para
+si. Juntam-se algumas informaÃ§Ãµes bÃ¡sicas sobre a sua lista de
+discussÃ£o.
 
-A password da sua lista de discussão é:
+A password da sua lista de discussÃ£o Ã©:
 
     %(password)s
 
-Precisa desta password para configurar a sua lista. Ela também será
-necessária para tratar de pedidos administrativos, tais como moderar
-mensagens se se tratar de uma lista de discussão moderada.
+Precisa desta password para configurar a sua lista. Ela tambÃ©m serÃ¡
+necessÃ¡ria para tratar de pedidos administrativos, tais como moderar
+mensagens se se tratar de uma lista de discussÃ£o moderada.
 
-Pode configurar a sua lista de discussão na seguinte 
-página web:
+Pode configurar a sua lista de discussÃ£o na seguinte 
+pÃ¡gina web:
 
     %(admin_url)s
 
-A página web para os utilizadores da sua lista de discussão é:
+A pÃ¡gina web para os utilizadores da sua lista de discussÃ£o Ã©:
 
     %(listinfo_url)s
 
-Pode também personalizar estas páginas através da página de
-configuração da lista. No entanto, para ser capaz de fazer isto, é
-necessário que conheça a linguagem HTML.
+Pode tambÃ©m personalizar estas pÃ¡ginas atravÃ©s da pÃ¡gina de
+configuraÃ§Ã£o da lista. No entanto, para ser capaz de fazer isto, Ã©
+necessÃ¡rio que conheÃ§a a linguagem HTML.
 
-Também existe uma interface baseada em email para utilizadores (não
+TambÃ©m existe uma interface baseada em email para utilizadores (nÃ£o
 administradores) da sua lista; pode obter detalhes sobre a sua
-utilização enviando um e-mail com a palavra "help" no corpo da
-mensagem ou no assunto para o endereço:
+utilizaÃ§Ã£o enviando um e-mail com a palavra "help" no corpo da
+mensagem ou no assunto para o endereÃ§o:
 
     %(requestaddr)s
 
-Para anular uma inscrição: através da página web 'listinfo', clique ou
-entre com o endereço de email do utilizador como se fosse ele. No
-espaço onde o usuário deve colocar a sua password coloque a sua
-password administrativa.  Pode também usar a sua password para
-modificar as opções dos membros, incluindo agrupamento de mensagens
-(digest), desactivação de entrega, etc.
+Para anular uma inscriÃ§Ã£o: atravÃ©s da pÃ¡gina web 'listinfo', clique ou
+entre com o endereÃ§o de email do utilizador como se fosse ele. No
+espaÃ§o onde o usuÃ¡rio deve colocar a sua password coloque a sua
+password administrativa.  Pode tambÃ©m usar a sua password para
+modificar as opÃ§Ãµes dos membros, incluindo agrupamento de mensagens
+(digest), desactivaÃ§Ã£o de entrega, etc.
 
-Por favor, envie qualquer questão para %(siteowner)s.
+Por favor, envie qualquer questÃ£o para %(siteowner)s.

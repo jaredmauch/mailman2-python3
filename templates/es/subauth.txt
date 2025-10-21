@@ -1,5 +1,5 @@
-Se requiere su autorizaci髇 para una petici髇 de subscripci髇 de la
-lista de distribuci髇:
+Se requiere su autorizaci贸n para una petici贸n de subscripci贸n de la
+lista de distribuci贸n:
 
     De:		%(username)s
     Lista:	%(listname)s@%(hostname)s
@@ -8,4 +8,4 @@ Cuando le sea posible, por favor, consulte:
 
     %(admindb_url)s
 	
-para procesar la petici髇
+para procesar la petici贸n

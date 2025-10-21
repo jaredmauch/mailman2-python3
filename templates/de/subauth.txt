@@ -1,6 +1,6 @@
-Ihre Genehmigung ist für den folgenden Abonnementswunsch erforderlich:
+Ihre Genehmigung ist fÃ¼r den folgenden Abonnementswunsch erforderlich:
 
-    Für:    %(username)s
+    FÃ¼r:    %(username)s
     Liste:  %(listname)s@%(hostname)s
 
 Bitte besuchen Sie bei Gelegenheit

@@ -1,17 +1,17 @@
-%(real_name)s listesi mesajlarını şu adrese gönderin:
+%(real_name)s listesi mesajlarÄ±nÄ± ÅŸu adrese gÃ¶nderin:
 	%(got_list_email)s
 
-World Wide Web ile üye olmak veya üyelikten çıkmak için şu sayfayı
+World Wide Web ile Ã¼ye olmak veya Ã¼yelikten Ã§Ä±kmak iÃ§in ÅŸu sayfayÄ±
 ziyaret edin:
 	%(got_listinfo_url)s
-veya e-posta yoluyla konusunda veya gövdesinde 'help' yazan bir
-mesajı şu adrese gönderin:
+veya e-posta yoluyla konusunda veya gÃ¶vdesinde 'help' yazan bir
+mesajÄ± ÅŸu adrese gÃ¶nderin:
 	%(got_request_email)s
 
-Bu listeyi yöneten kişiye şu adresten ulaşabilirsiniz:
+Bu listeyi yÃ¶neten kiÅŸiye ÅŸu adresten ulaÅŸabilirsiniz:
 	%(got_owner_email)s
 
-Yanıt yazarken, lütfen Konu satırını düzenleyerek şu tür bir şekilden daha
-belirli olmasını sağlayın:
-"Ynt: %(real_name)s toplu mesajının içeriği..."
+YanÄ±t yazarken, lÃ¼tfen Konu satÄ±rÄ±nÄ± dÃ¼zenleyerek ÅŸu tÃ¼r bir ÅŸekilden daha
+belirli olmasÄ±nÄ± saÄŸlayÄ±n:
+"Ynt: %(real_name)s toplu mesajÄ±nÄ±n iÃ§eriÄŸi..."
 

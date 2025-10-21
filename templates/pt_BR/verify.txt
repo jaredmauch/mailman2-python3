@@ -1,10 +1,10 @@
-Notificação de inscrição para a lista de discussão %(listname)s
+NotificaÃ§Ã£o de inscriÃ§Ã£o para a lista de discussÃ£o %(listname)s
 
-Nós recebemos uma requisição%(remote)s para inscrição de seu endereço
-de email, "%(email)s", para a lista de discussão %(listaddr)s. Para 
-confirmar que deseja ser adicionado a esta lista de discussão, 
-simplesmente responda a esta mensagem, mantendo o cabeçalho 
-Assunto intacto. Ou visite esta página web:
+NÃ³s recebemos uma requisiÃ§Ã£o%(remote)s para inscriÃ§Ã£o de seu endereÃ§o
+de email, "%(email)s", para a lista de discussÃ£o %(listaddr)s. Para 
+confirmar que deseja ser adicionado a esta lista de discussÃ£o, 
+simplesmente responda a esta mensagem, mantendo o cabeÃ§alho 
+Assunto intacto. Ou visite esta pÃ¡gina web:
 
     %(confirmurl)s
 
@@ -13,11 +13,11 @@ corpo da mensagem para %(requestaddr)s:
 
     confirm %(cookie)s
 
-Note que a simples resposta a esta mensagem deverá funcionar com 
+Note que a simples resposta a esta mensagem deverÃ¡ funcionar com 
 a maioria dos leitores de email, pois eles deixam a linha de 
-assunto da forma tradicional (a palavra "Re:" não causa problemas).
+assunto da forma tradicional (a palavra "Re:" nÃ£o causa problemas).
 
-Se não deseja se inscrever nesta lista, desconsidere esta 
-mensagem. Se achar que está sendo maliciosamente inscrito 
-na lista, ou tem quaisquer outras questões, envie-as para 
+Se nÃ£o deseja se inscrever nesta lista, desconsidere esta 
+mensagem. Se achar que estÃ¡ sendo maliciosamente inscrito 
+na lista, ou tem quaisquer outras questÃµes, envie-as para 
 %(listadmin)s.

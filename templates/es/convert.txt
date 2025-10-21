@@ -1,37 +1,37 @@
-La lista de distribución %(listname)s acaba de sufrir un cambio
+La lista de distribuciÃ³n %(listname)s acaba de sufrir un cambio
 importante. Ahora la gestiona un nuevo paquete de listas de
-distribución llamado "Mailman". Esperamos que esto mejore el
-servicio y la administración de la lista.
+distribuciÃ³n llamado "Mailman". Esperamos que esto mejore el
+servicio y la administraciÃ³n de la lista.
 
-¿Cómo le afecta esto?
+Â¿CÃ³mo le afecta esto?
 
 1) Los mensajes de correo dirigidos a la lista deben enviarse a:
 
      %(listaddr)s
 
 2) Se le ha asignado una clave aleatoria para impedir que otros
-anulen su subscripción sin que usted lo sepa. La clave se le enviará
-en otro mensaje de correo electrónico, que puede que ya haya
+anulen su subscripciÃ³n sin que usted lo sepa. La clave se le enviarÃ¡
+en otro mensaje de correo electrÃ³nico, que puede que ya haya
 recibido. No se preocupe si se le olvida esta clave, todos los
-meses recibirá un recordatorio por correo electronico.
+meses recibirÃ¡ un recordatorio por correo electronico.
 
 3) Si dispone de acceso web, lo puede utilizar para anular su 
-subscripción de esta lista, para cambiar la forma de recepción
-de los mensajes, etc. La dirección es: 
+subscripciÃ³n de esta lista, para cambiar la forma de recepciÃ³n
+de los mensajes, etc. La direcciÃ³n es: 
 
     %(listinfo_url)s
 
 4) Si no dispone de acceso web, puede realizar estas mismas
-operaciones por correo electrónico.  Envíe un mensaje a
+operaciones por correo electrÃ³nico.  EnvÃ­e un mensaje a
 %(requestaddr)s con la palabra 'help' en el asunto (subject) o
-en el cuerpo del mensaje y recibirá un respuesta automática con
+en el cuerpo del mensaje y recibirÃ¡ un respuesta automÃ¡tica con
 instrucciones.
 
-Por favor, diríjase a la siguiente dirección si tiene alguna
-pregunta o problema con esta nueva configuración: 
+Por favor, dirÃ­jase a la siguiente direcciÃ³n si tiene alguna
+pregunta o problema con esta nueva configuraciÃ³n: 
 
     %(adminaddr)s.
 
-Este mensaje ha sido generado automáticamente por Mailman %(version)s.
-Para obtener mas información sobre Mailman, visite la pagina principal
+Este mensaje ha sido generado automÃ¡ticamente por Mailman %(version)s.
+Para obtener mas informaciÃ³n sobre Mailman, visite la pagina principal
 en http://www.list.org/

@@ -1,18 +1,18 @@
-To je opomnik, ki ga prejmete enkrat meseèno in vsebuje podatke o
-va¹em èlanstvu na po¹tnem seznamu %(hostname)s. Sporoèilo vkljuèuje
-podatke o naroènini in navodila, kako spremenite nastavitve ali se
+To je opomnik, ki ga prejmete enkrat meseÄno in vsebuje podatke o
+vaÅ¡em Älanstvu na poÅ¡tnem seznamu %(hostname)s. SporoÄilo vkljuÄuje
+podatke o naroÄnini in navodila, kako spremenite nastavitve ali se
 odjavite s seznama.
 
-Obi¹èite spletno stran, èe ¾elite spremeniti stanje naroènine ali
-nastavitev, èe se ¾elite odjaviti, spremeniti naèin prejemanja
-sporoèil ali prejemanje sporoèil popolnoma ustaviti (npr. na dopustu)...
+ObiÅ¡Äite spletno stran, Äe Å¾elite spremeniti stanje naroÄnine ali
+nastavitev, Äe se Å¾elite odjaviti, spremeniti naÄin prejemanja
+sporoÄil ali prejemanje sporoÄil popolnoma ustaviti (npr. na dopustu)...
 
 Poleg internetnega vmesnika lahko za te spremembe uporabite tudi
-e-po¹to. Za dodatne informacije po¹ljite na '-request' naslov
-po¹tnega seznama (npr. %(exreq)s) sporoèilo, ki v besedilu vsebuje
-le besedo 'help', in prejeli boste e-po¹tno sporoèilo z navodili.
+e-poÅ¡to. Za dodatne informacije poÅ¡ljite na '-request' naslov
+poÅ¡tnega seznama (npr. %(exreq)s) sporoÄilo, ki v besedilu vsebuje
+le besedo 'help', in prejeli boste e-poÅ¡tno sporoÄilo z navodili.
 
-Za vpra¹anja, te¾ave, komentarje, idr. se obrnite na %(owner)s.
+Za vpraÅ¡anja, teÅ¾ave, komentarje, idr. se obrnite na %(owner)s.
 Hvala.
 
 Gesla za %(useraddr)s:

@@ -3,8 +3,8 @@ che attendono la tua attenzione a:
 
          %(adminDB)s
 
-Per piacere occupatene appena ti Ë possibile. 
+Per piacere occupatene appena ti √® possibile. 
 Questa notifica di richieste in attesa, in ogni caso, 
-verr‡ spedita giornalmente.
+verr√† spedita giornalmente.
 
                                                       

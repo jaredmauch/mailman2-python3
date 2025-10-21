@@ -1,36 +1,36 @@
-Pravkar je bil ustvarjen po¹tni seznam `%(listname)s'. Sledijo
+Pravkar je bil ustvarjen poÅ¡tni seznam `%(listname)s'. Sledijo
 osnovne informacije o tem seznamu.
 
-Va¹e geslo za po¹tni seznam je:
+VaÅ¡e geslo za poÅ¡tni seznam je:
 
     %(password)s
 
-S pomoèjo tega gesla lahko nastavite po¹tni seznam. Potrebujete
-ga tudi za urejanje skrbni¹kih zahtev, npr. odobritev po¹te, èe
+S pomoÄjo tega gesla lahko nastavite poÅ¡tni seznam. Potrebujete
+ga tudi za urejanje skrbniÅ¡kih zahtev, npr. odobritev poÅ¡te, Äe
 boste moderator dopisnega seznama.
 
-Svoje nastavitve seznama lahko doloèite na strani
+Svoje nastavitve seznama lahko doloÄite na strani
 
     %(admin_url)s
 
-Spletna stran za uporabnike va¹ega seznama je
+Spletna stran za uporabnike vaÅ¡ega seznama je
 
     %(listinfo_url)s
 
 Te spletne strani lahko prilagodite na strani za konfiguracijo
 seznama. Za to je potrebno poznavanje HTML kode.
 
-Uporabnikom (ne skrbnikom) je na voljo tudi e-po¹tni vmesnik;
-prek njega dobite informacije o uporabi seznama, tako da po¹ljete
-sporoèilo z besedo 'help' v Zadevi ali v besedilu sporoèila na naslov
+Uporabnikom (ne skrbnikom) je na voljo tudi e-poÅ¡tni vmesnik;
+prek njega dobite informacije o uporabi seznama, tako da poÅ¡ljete
+sporoÄilo z besedo 'help' v Zadevi ali v besedilu sporoÄila na naslov
 
     %(requestaddr)s
 
-Èe ¾elite odjaviti uporabnika: na 'listinfo' spletni strani seznama
-kliknite na uporabnika ali vnesite uporabnikov e-po¹tni naslov, kot
+ÄŒe Å¾elite odjaviti uporabnika: na 'listinfo' spletni strani seznama
+kliknite na uporabnika ali vnesite uporabnikov e-poÅ¡tni naslov, kot
 da ste ta uporabnik. V polje, kamor bi uporabnik vnesel svoje geslo,
-vnesite svoje skrbni¹ko geslo. S tem geslom lahko tudi spremenite
-uporabni¹ke nastavitve, kot so naèin prejemanja sporoèil, zaèasni
-izklop prejemanja sporoèil, idr.
+vnesite svoje skrbniÅ¡ko geslo. S tem geslom lahko tudi spremenite
+uporabniÅ¡ke nastavitve, kot so naÄin prejemanja sporoÄil, zaÄasni
+izklop prejemanja sporoÄil, idr.
 
-Vsa vpra¹anja naslovite na %(siteowner)s.
+Vsa vpraÅ¡anja naslovite na %(siteowner)s.

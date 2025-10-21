@@ -1,30 +1,30 @@
-Ez egy próba üzenet, nyugodtan figyelmen kívül lehet hagyni.
+Ez egy prÃ³ba Ã¼zenet, nyugodtan figyelmen kÃ­vÃ¼l lehet hagyni.
 
-A(z) %(listname)s levelezõlistán nyilvántartott %(address)s
-e-mail címedrõl több visszapattanást észleltünk, amely a címed nem
-megfelelõ mûködése miatt lehetséges. Mellékelten küldünk egy
-mintát a visszapattanásból. Kérjük, tanulmányozd át, vagy
-mutasd meg egy a levelezõrendszered mûködtetéséért felelõs 
-adminisztrátornak a hiba kiderítéséhez.
+A(z) %(listname)s levelezÅ‘listÃ¡n nyilvÃ¡ntartott %(address)s
+e-mail cÃ­medrÅ‘l tÃ¶bb visszapattanÃ¡st Ã©szleltÃ¼nk, amely a cÃ­med nem
+megfelelÅ‘ mÅ±kÃ¶dÃ©se miatt lehetsÃ©ges. MellÃ©kelten kÃ¼ldÃ¼nk egy
+mintÃ¡t a visszapattanÃ¡sbÃ³l. KÃ©rjÃ¼k, tanulmÃ¡nyozd Ã¡t, vagy
+mutasd meg egy a levelezÅ‘rendszered mÅ±kÃ¶dtetÃ©sÃ©Ã©rt felelÅ‘s 
+adminisztrÃ¡tornak a hiba kiderÃ­tÃ©sÃ©hez.
 
-Ha el tudod olvasni ezt az üzenetet, akkor nem kell semmit sem csinálnod,
-hogy újra a lista aktív tagja legyél. Ha ez az üzenet visszapattana,
-akkor ezt a levelet most nem tudnád elolvasni és ezért a program a 
-listatagságodat átmenetileg felfüggesztené. Általában ilyen esetekben a 
-program idõnként értesítéseket próbál küldeni, hogy el ne felejtsd 
-listatagságodat újra aktiválni.
+Ha el tudod olvasni ezt az Ã¼zenetet, akkor nem kell semmit sem csinÃ¡lnod,
+hogy Ãºjra a lista aktÃ­v tagja legyÃ©l. Ha ez az Ã¼zenet visszapattana,
+akkor ezt a levelet most nem tudnÃ¡d elolvasni Ã©s ezÃ©rt a program a 
+listatagsÃ¡godat Ã¡tmenetileg felfÃ¼ggesztenÃ©. ÃltalÃ¡ban ilyen esetekben a 
+program idÅ‘nkÃ©nt Ã©rtesÃ­tÃ©seket prÃ³bÃ¡l kÃ¼ldeni, hogy el ne felejtsd 
+listatagsÃ¡godat Ãºjra aktivÃ¡lni.
 
-A listán érvényes beállításaidat az alábbi internet címen érheted el
+A listÃ¡n Ã©rvÃ©nyes beÃ¡llÃ­tÃ¡saidat az alÃ¡bbi internet cÃ­men Ã©rheted el
 
     %(optionsurl)s
 
-A fent megadott oldalon keresztül a listán nyilvántartott e-mail címedet,
-a levélküldési módokat és egyéb beállításokat lehet módosítani.
-Emlékeztetõül a listán nyilvántartott jelszavad 
+A fent megadott oldalon keresztÃ¼l a listÃ¡n nyilvÃ¡ntartott e-mail cÃ­medet,
+a levÃ©lkÃ¼ldÃ©si mÃ³dokat Ã©s egyÃ©b beÃ¡llÃ­tÃ¡sokat lehet mÃ³dosÃ­tani.
+EmlÃ©keztetÅ‘Ã¼l a listÃ¡n nyilvÃ¡ntartott jelszavad 
 
     %(password)s
 
-Kérdéseiddel, észrevételeiddel nyugodtan fordulj a lista tulajdonosához
-a következõ címen:
+KÃ©rdÃ©seiddel, Ã©szrevÃ©teleiddel nyugodtan fordulj a lista tulajdonosÃ¡hoz
+a kÃ¶vetkezÅ‘ cÃ­men:
 
     %(owneraddr)s

@@ -1,4 +1,4 @@
-La tua autorizzazione è richiesta per approvare una richiesta di
+La tua autorizzazione Ã¨ richiesta per approvare una richiesta di
 cancellazione da una lista:
 
     Da:    %(username)s

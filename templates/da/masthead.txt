@@ -1,7 +1,7 @@
 Send meddelelser der skal distribueres til %(real_name)s til:
 	%(got_list_email)s
 
-Gå ind på:
+GÃ¥ ind pÃ¥:
 	%(got_listinfo_url)s
 for at til- eller framelde dig listen via World Wide Web
 
@@ -9,9 +9,9 @@ Alternativt kan du sende en e-mail til
 	%(got_request_email)s
 med ordet 'help' i emnefeltet eller som indhold.
 
-Du kan kontakte den (de) ansvarlige person(er) for listen på
+Du kan kontakte den (de) ansvarlige person(er) for listen pÃ¥
 	%(got_owner_email)s
 
-Når du svarer på e-mail til listen, bedes du venligst ændre emnefeltet
-sådan at det er lidt mere beskrivende end bare
+NÃ¥r du svarer pÃ¥ e-mail til listen, bedes du venligst Ã¦ndre emnefeltet
+sÃ¥dan at det er lidt mere beskrivende end bare
 "Re: Indhold af %(real_name)s sammendrag..."

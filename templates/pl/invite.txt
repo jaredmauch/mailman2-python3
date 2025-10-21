@@ -1,23 +1,23 @@
-Otrzyma³e¶ zaproszenie do prenumeraty listy 
+OtrzymaÅ‚eÅ› zaproszenie do prenumeraty listy 
 %(listname)s serwerze %(hostname)s. 
-Zaproszenie zosta³o wys³ane na adres %(email)s.
+Zaproszenie zostaÅ‚o wysÅ‚ane na adres %(email)s.
 
-Je¶li chcesz zaprenumerowaæ listê %(listname)s, odpowiedz na 
-tê wiadomo¶æ nie zmieniaj±c jej Tematu.
+JeÅ›li chcesz zaprenumerowaÄ‡ listÄ™ %(listname)s, odpowiedz na 
+tÄ™ wiadomoÅ›Ä‡ nie zmieniajÄ…c jej Tematu.
 
-To samo mo¿esz zrobiæ wchodz±c na stronê:
+To samo moÅ¼esz zrobiÄ‡ wchodzÄ…c na stronÄ™:
 
     %(confirmurl)s
 
-albo wysy³aj±c ¶æ na adres %(requestaddr)s now± wiadomo¶æ, która bêdzie
-zawiera³a tylko jedn± liniê:
+albo wysyÅ‚ajÄ…c Å›Ä‡ na adres %(requestaddr)s nowÄ… wiadomoÅ›Ä‡, ktÃ³ra bÄ™dzie
+zawieraÅ‚a tylko jednÄ… liniÄ™:
 
     confirm %(cookie)s
 
-Wys³anie zwyk³ej odpowiedzi powinno zadzia³aæ w wiêkszo¶ci programów
+WysÅ‚anie zwykÅ‚ej odpowiedzi powinno zadziaÅ‚aÄ‡ w wiÄ™kszoÅ›ci programÃ³w
 pocztowych.
 
-Je¶li nie chcesz przyj±æ zaproszenia, po prostu zignoruj tê wiadomo¶æ.
+JeÅ›li nie chcesz przyjÄ…Ä‡ zaproszenia, po prostu zignoruj tÄ™ wiadomoÅ›Ä‡.
 
-W przypadku jakichkolwiek pytañ lub w±tpliwo¶ci, skontaktuj siê z
+W przypadku jakichkolwiek pytaÅ„ lub wÄ…tpliwoÅ›ci, skontaktuj siÄ™ z
 opiekunem listy %(listowner)s.

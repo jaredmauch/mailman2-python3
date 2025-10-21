@@ -1,21 +1,21 @@
-Tu direcci髇 de correo electr髇ico "%(email)s" ha sido invitada a unirse a la
-lista de distribuci髇 %(listname)s de %(hostname)s por su administrador.
-Puede aceptar la invitaci髇 con solo responder a este mensjae manteniendo el
+Tu direcci贸n de correo electr贸nico "%(email)s" ha sido invitada a unirse a la
+lista de distribuci贸n %(listname)s de %(hostname)s por su administrador.
+Puede aceptar la invitaci贸n con solo responder a este mensjae manteniendo el
 asunto intacto.
 
-Tambi閚 puede visitar la p醙ina web:
+Tambi茅n puede visitar la p谩gina web:
 
     %(confirmurl)s
 
-O puede incluir la l韓ea siguiente -- y s髄o la l韓ea siguiente -- en un
+O puede incluir la l铆nea siguiente -- y s贸lo la l铆nea siguiente -- en un
 mensaje dirigido a %(requestaddr)s:
 
     confirm %(cookie)s
 
-Observe que la opci髇 de responder deber韆 de funcionar en la
-mayor韆 de los programas de correo.
+Observe que la opci贸n de responder deber铆a de funcionar en la
+mayor铆a de los programas de correo.
 
-Si quiere declinar la invitaci髇, basta con ignorar este mensaje.  Si
-tiene alguna pregunta que formular, por favor, env韊la a
+Si quiere declinar la invitaci贸n, basta con ignorar este mensaje.  Si
+tiene alguna pregunta que formular, por favor, env铆ela a
 
 %(listowner)s.

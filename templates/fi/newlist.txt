@@ -1,42 +1,42 @@
-Pyyt‰m‰si postituslista `%(listname)s' on luotu.
+Pyyt√§m√§si postituslista `%(listname)s' on luotu.
 Seuraavassa perustietoa postituslistastasi.
 
-Postituslistasi yll‰pitosalasana on:
+Postituslistasi yll√§pitosalasana on:
 
     %(password)s
 
-Tarvitset t‰t‰ salasanaa postituslistan konfigurointiin.
-Sin‰ tarvitset t‰t‰ salasanaa myˆs yll‰pitokomentoihin,
+Tarvitset t√§t√§ salasanaa postituslistan konfigurointiin.
+Sin√§ tarvitset t√§t√§ salasanaa my√∂s yll√§pitokomentoihin,
 kuten esimerkiksi postituslistalle tulevien viestien
-hyv‰ksymiseen, jos k‰ytˆss‰ on toimitettu postituslista.
+hyv√§ksymiseen, jos k√§yt√∂ss√§ on toimitettu postituslista.
 
 Voit konfiguroida postituslistaasi www-sivulla:
 
     %(admin_url)s
 
-Postituslistasi www-sivu k‰ytt‰jille on: 
+Postituslistasi www-sivu k√§ytt√§jille on: 
 
     %(listinfo_url)s
 
-Sin‰ voit tarvittaessa muuttaa n‰it‰ sivuja postituslistan
-konfigurointisivulta. Sivujen muuttaminen edellytt‰‰ sinulta
+Sin√§ voit tarvittaessa muuttaa n√§it√§ sivuja postituslistan
+konfigurointisivulta. Sivujen muuttaminen edellytt√§√§ sinulta
 HTML taitoja.
 
-Listan k‰ytt‰jien on myˆs mahdollista ohjata listaa s‰hkˆpostikomennoilla. 
-Listan yll‰pitotoimia ei voi tehd‰ s‰hkˆpostikomennoilla.
+Listan k√§ytt√§jien on my√∂s mahdollista ohjata listaa s√§hk√∂postikomennoilla. 
+Listan yll√§pitotoimia ei voi tehd√§ s√§hk√∂postikomennoilla.
 
-Lis‰tietoja komennoista saat l‰hett‰m‰ll‰ s‰hkˆpostiviestin 
-`help' joko viestin otsikoksi tai viestikentt‰‰n. L‰het‰
-help-pyyntˆ s‰hkˆpostiosoitteeseen:
+Lis√§tietoja komennoista saat l√§hett√§m√§ll√§ s√§hk√∂postiviestin 
+`help' joko viestin otsikoksi tai viestikentt√§√§n. L√§het√§
+help-pyynt√∂ s√§hk√∂postiosoitteeseen:
 
     %(requestaddr)s
 
-Poistaaksesi k‰ytt‰j‰ postituslista, mene listan 'listinfo' 
-www-sivulle. Anna poistettavan k‰ytt‰j‰n s‰hkˆpostiosoite
-aivan kuten olisit ko. k‰ytt‰j‰.
-Kirjoita salasanakentt‰‰ salasanan tilalle listan yll‰pidon salasana.
+Poistaaksesi k√§ytt√§j√§ postituslista, mene listan 'listinfo' 
+www-sivulle. Anna poistettavan k√§ytt√§j√§n s√§hk√∂postiosoite
+aivan kuten olisit ko. k√§ytt√§j√§.
+Kirjoita salasanakentt√§√§ salasanan tilalle listan yll√§pidon salasana.
 
-Vastaavalla tavalla voit muuttaa myˆs muita k‰ytt‰j‰n asetuksia.
+Vastaavalla tavalla voit muuttaa my√∂s muita k√§ytt√§j√§n asetuksia.
 
-Lis‰tietoja ja opastusta voit kysy‰ postituslistapalvelimen 
-yll‰pidolta %(siteowner)s.
+Lis√§tietoja ja opastusta voit kysy√§ postituslistapalvelimen 
+yll√§pidolta %(siteowner)s.

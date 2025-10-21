@@ -2,7 +2,7 @@ Ihre Anfrage an die Mailingliste %(listname)s
 
     %(request)s
 
-wurde vom Listenmoderator mit folgender Begründung abgewiesen:
+wurde vom Listenmoderator mit folgender BegrÃ¼ndung abgewiesen:
 
 "%(reason)s"
 

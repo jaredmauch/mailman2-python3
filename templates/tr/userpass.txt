@@ -1,25 +1,25 @@
-Siz veya sizmiş gibi davranan birisi, %(fqdn_lname)s listesinde
-üyelik şifreniz için bir şifre hatırlatıcı istedi. Bu şifreyi
-üyelik seçeneklerinizi değiştirmek için (örneğin ayrı ayrı mı yoksa
-toplu mu mesaj almak istediğiniz) kullanacaksınız ve bu şifreyi
-bilmek, bu mesaj listesinden daha kolay şekilde çıkmanızı sağlar.
+Siz veya sizmiÅŸ gibi davranan birisi, %(fqdn_lname)s listesinde
+Ã¼yelik ÅŸifreniz iÃ§in bir ÅŸifre hatÄ±rlatÄ±cÄ± istedi. Bu ÅŸifreyi
+Ã¼yelik seÃ§eneklerinizi deÄŸiÅŸtirmek iÃ§in (Ã¶rneÄŸin ayrÄ± ayrÄ± mÄ± yoksa
+toplu mu mesaj almak istediÄŸiniz) kullanacaksÄ±nÄ±z ve bu ÅŸifreyi
+bilmek, bu mesaj listesinden daha kolay ÅŸekilde Ã§Ä±kmanÄ±zÄ± saÄŸlar.
 
-Üye olduğunuz adres: %(user)s
+Ãœye olduÄŸunuz adres: %(user)s
 
-%(listname)s şifreniz: %(password)s
+%(listname)s ÅŸifreniz: %(password)s
 
-Üyelik seçeneklerinizi değiştirmek için buradan seçenekler web
-sayfanıza girebilirsiniz:
+Ãœyelik seÃ§eneklerinizi deÄŸiÅŸtirmek iÃ§in buradan seÃ§enekler web
+sayfanÄ±za girebilirsiniz:
 
     %(options_url)s
 
-Bu tür değişiklikleri e-postayla şu adrese mesaj göndererek de yapabilirsiniz:
+Bu tÃ¼r deÄŸiÅŸiklikleri e-postayla ÅŸu adrese mesaj gÃ¶ndererek de yapabilirsiniz:
 
     %(requestaddr)s
 
-Konu başlığına veya mesaj gövdesine "help" sözcüğünü yazın. Otomatik yanıt
-daha ayrıntılı açıklamalar içerecektir.
+Konu baÅŸlÄ±ÄŸÄ±na veya mesaj gÃ¶vdesine "help" sÃ¶zcÃ¼ÄŸÃ¼nÃ¼ yazÄ±n. Otomatik yanÄ±t
+daha ayrÄ±ntÄ±lÄ± aÃ§Ä±klamalar iÃ§erecektir.
 
-Soru veya yorumunuz mu var? Lütfen bunları %(listname)s mesaj listesi
-yöneticisine şu adrese %(owneraddr)s mesaj atarak iletin.
+Soru veya yorumunuz mu var? LÃ¼tfen bunlarÄ± %(listname)s mesaj listesi
+yÃ¶neticisine ÅŸu adrese %(owneraddr)s mesaj atarak iletin.
 

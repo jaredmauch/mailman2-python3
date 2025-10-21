@@ -1,7 +1,7 @@
-%(real_name)s@%(host_name)s levelezési listáról %(count)d 
-kérelem vár a megerõsítésedre a következõ címen:
+%(real_name)s@%(host_name)s levelezÃ©si listÃ¡rÃ³l %(count)d 
+kÃ©relem vÃ¡r a megerÅ‘sÃ­tÃ©sedre a kÃ¶vetkezÅ‘ cÃ­men:
 
 	%(adminDB)s
 
-Minél hamarabb látogasd meg a címet. A megerõsítendõ kérelmekrõl,
-ha vannak egyáltalán, minden nap értesítést küldünk.
+MinÃ©l hamarabb lÃ¡togasd meg a cÃ­met. A megerÅ‘sÃ­tendÅ‘ kÃ©relmekrÅ‘l,
+ha vannak egyÃ¡ltalÃ¡n, minden nap Ã©rtesÃ­tÃ©st kÃ¼ldÃ¼nk.

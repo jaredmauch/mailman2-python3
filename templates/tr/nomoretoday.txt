@@ -1,10 +1,10 @@
-`%(sender)s' e-posta adresinizden %(listname)s mesaj listesi için
-otomatik yanıt isteyen bir mesaj aldık. Bugün sizden buna benzer
-%(num)s mesaj daha almıştık. E-posta robotları arasında e-posta
-döngüleri gibi sorunları önlemek için, bugün size başka e-posta
-yanıtı göndermeyeceğiz. Lütfen yarın tekrar deneyin.
+`%(sender)s' e-posta adresinizden %(listname)s mesaj listesi iÃ§in
+otomatik yanÄ±t isteyen bir mesaj aldÄ±k. BugÃ¼n sizden buna benzer
+%(num)s mesaj daha almÄ±ÅŸtÄ±k. E-posta robotlarÄ± arasÄ±nda e-posta
+dÃ¶ngÃ¼leri gibi sorunlarÄ± Ã¶nlemek iÃ§in, bugÃ¼n size baÅŸka e-posta
+yanÄ±tÄ± gÃ¶ndermeyeceÄŸiz. LÃ¼tfen yarÄ±n tekrar deneyin.
 
-Eğer bu mesajın bir hata olduğuna inanıyorsanız veya herhangi bir
-sorunuz varsa, lütfen %(owneremail)s adresinden liste sahibi ile
-bağlantı kurun.
+EÄŸer bu mesajÄ±n bir hata olduÄŸuna inanÄ±yorsanÄ±z veya herhangi bir
+sorunuz varsa, lÃ¼tfen %(owneremail)s adresinden liste sahibi ile
+baÄŸlantÄ± kurun.
 

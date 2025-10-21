@@ -4,5 +4,5 @@ Viestisi otsikolla
 
 on saapunut postituslistalle %(listname)s.
 
-Lis‰tietoja listasta: %(listinfo_url)s
+Lis√§tietoja listasta: %(listinfo_url)s
 Omat tiedot: %(optionsurl)s

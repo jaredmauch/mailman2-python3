@@ -2,16 +2,16 @@
 
     %(subject)s
 
-konusuyla gönderdiğiniz mesaj, liste moderatörünün incelemesi ve
-onaylaması için bekletiliyor.
+konusuyla gÃ¶nderdiÄŸiniz mesaj, liste moderatÃ¶rÃ¼nÃ¼n incelemesi ve
+onaylamasÄ± iÃ§in bekletiliyor.
 
 Bekletilmesinin sebebi:
 
     %(reason)s
 
-Ya mesaj listeye gönderilecek ya da moderatörün kararıyla ilgili bir
-bildirim alacaksınız. Eğer bu mesajın gönderilmesinden vazgeçmek
-isterseniz, lütfen şu URL'yi ziyaret edin:
+Ya mesaj listeye gÃ¶nderilecek ya da moderatÃ¶rÃ¼n kararÄ±yla ilgili bir
+bildirim alacaksÄ±nÄ±z. EÄŸer bu mesajÄ±n gÃ¶nderilmesinden vazgeÃ§mek
+isterseniz, lÃ¼tfen ÅŸu URL'yi ziyaret edin:
 
     %(confirmurl)s
 

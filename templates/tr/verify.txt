@@ -1,22 +1,22 @@
-%(listname)s mesaj listesi için üyelik onay bildirimi
+%(listname)s mesaj listesi iÃ§in Ã¼yelik onay bildirimi
 
 %(remote)s, "%(email)s" olan e-posta adresinizin %(listaddr)s
-mesaj listesine üye yapılması için bir istek aldık. Bu listeye
-üye olmak istediğinizi onaylamak için bu mesajı, Konu: başlığını
-değiştirmeden yanıtlayın. Veya bu web sayfasına gidin:
+mesaj listesine Ã¼ye yapÄ±lmasÄ± iÃ§in bir istek aldÄ±k. Bu listeye
+Ã¼ye olmak istediÄŸinizi onaylamak iÃ§in bu mesajÄ±, Konu: baÅŸlÄ±ÄŸÄ±nÄ±
+deÄŸiÅŸtirmeden yanÄ±tlayÄ±n. Veya bu web sayfasÄ±na gidin:
 
     %(confirmurl)s
 
-Veya bir mesaja aşağıdaki satırı -- sadece aşağıdaki satırı --
-yazarak %(requestaddr)s adresine gönderin:
+Veya bir mesaja aÅŸaÄŸÄ±daki satÄ±rÄ± -- sadece aÅŸaÄŸÄ±daki satÄ±rÄ± --
+yazarak %(requestaddr)s adresine gÃ¶nderin:
 
     confirm %(cookie)s
 
-Basitçe bu mesajı `yanıtlamak', çoğu e-posta okuma programında
-çalışır, çünkü bu durumda Konu: satırı doğru biçimde kalır
-(Konu: içinde fazladan "Re:" veya "Ynt:" olması sorun değildir).
+BasitÃ§e bu mesajÄ± `yanÄ±tlamak', Ã§oÄŸu e-posta okuma programÄ±nda
+Ã§alÄ±ÅŸÄ±r, Ã§Ã¼nkÃ¼ bu durumda Konu: satÄ±rÄ± doÄŸru biÃ§imde kalÄ±r
+(Konu: iÃ§inde fazladan "Re:" veya "Ynt:" olmasÄ± sorun deÄŸildir).
 
-Eğer bu listeye üye olmak istemiyorsanız, bu mesajı gözardı edin.
-Eğer bu listeye kötü niyetle üye yapılmak istediğinizi
-düşünüyorsanız veya başka sorularınız varsa, bunları %(listadmin)s
-adresine gönderin.
+EÄŸer bu listeye Ã¼ye olmak istemiyorsanÄ±z, bu mesajÄ± gÃ¶zardÄ± edin.
+EÄŸer bu listeye kÃ¶tÃ¼ niyetle Ã¼ye yapÄ±lmak istediÄŸinizi
+dÃ¼ÅŸÃ¼nÃ¼yorsanÄ±z veya baÅŸka sorularÄ±nÄ±z varsa, bunlarÄ± %(listadmin)s
+adresine gÃ¶nderin.

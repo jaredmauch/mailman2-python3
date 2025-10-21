@@ -1,4 +1,4 @@
-Seuraava listalleliittymispyyntö vaatii hyväksyntäsi:
+Seuraava listalleliittymispyyntÃ¶ vaatii hyvÃ¤ksyntÃ¤si:
 
     For:  %(username)s
     List: %(listname)s@%(hostname)s

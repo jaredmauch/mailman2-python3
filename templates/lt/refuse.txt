@@ -1,12 +1,12 @@
-Jûsø uşklausà diskusijø forumui %(listname)s
+JÅ«sÅ³ uÅ¾klausÄ… diskusijÅ³ forumui %(listname)s
 
     %(request)s
 
-atmetë forumo prişiûrëtojas nurodydamas ğià prieşastá:
+atmetÄ— forumo priÅ¾iÅ«rÄ—tojas nurodydamas Å¡iÄ… prieÅ¾astÄ¯:
 
 "%(reason)s"
 
-Visais klausimais prağome kreiptis á diskusijø forumo
- administratoriø:
+Visais klausimais praÅ¡ome kreiptis Ä¯ diskusijÅ³ forumo
+ administratoriÅ³:
  
   %(adminaddr)s.

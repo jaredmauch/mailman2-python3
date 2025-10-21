@@ -1,27 +1,27 @@
-Bekræftelse på afmelding fra listen %(listname)s
+BekrÃ¦ftelse pÃ¥ afmelding fra listen %(listname)s
 
 Vi har modtaget en anmodning%(remote)s om at fjerne din e-mailadresse
-"%(email)s" fra listen %(listaddr)s. Hvis det er korrekt at du ønsker
+"%(email)s" fra listen %(listaddr)s. Hvis det er korrekt at du Ã¸nsker
 at blive fjernet fra maillisten, skal du svare med en mail, der indeholder
 samme tekst i Emnefeltet som denne mail.
 
-Alternativt kan du besøge denne web-side:
+Alternativt kan du besÃ¸ge denne web-side:
 
     %(confirmurl)s
 
-Du kan også sende en e-mail til %(requestaddr)s, med følgende (og KUN
-følgende) indhold:
+Du kan ogsÃ¥ sende en e-mail til %(requestaddr)s, med fÃ¸lgende (og KUN
+fÃ¸lgende) indhold:
 
     confirm %(cookie)s
 
-Bemærk: For at svare på denne mail, burde i de fleste mailprogrammer
-kunne benyttes 'Svar' eller 'Reply'. Dette medfører
-normalt at indholdet i Emnefeltet (med tilføjelse af 'Re:' eller 'Sv')
+BemÃ¦rk: For at svare pÃ¥ denne mail, burde i de fleste mailprogrammer
+kunne benyttes 'Svar' eller 'Reply'. Dette medfÃ¸rer
+normalt at indholdet i Emnefeltet (med tilfÃ¸jelse af 'Re:' eller 'Sv')
 bevares.
 
-Hvis du ikke ønsker at afmelde dig denne mailliste, skal du blot
+Hvis du ikke Ã¸nsker at afmelde dig denne mailliste, skal du blot
 slette denne mail.
 
 Send en mail til %(listadmin)s, hvis du mener at
-andre har forsøgt at afmelde dig - eller hvis du har andre spørgsmål.
+andre har forsÃ¸gt at afmelde dig - eller hvis du har andre spÃ¸rgsmÃ¥l.
 

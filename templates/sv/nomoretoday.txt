@@ -1,7 +1,7 @@
-Vi har fått en förfrågan från din adress '%(sender)s', som kräver ett
-automatiskt svar från e-postlistan %(listname)s. Vi har redan fått %(num)s
-frågor från dig idag. För att undvika problem som till exempel oändliga e-postloopar
-mellan e-postrobotar, kommer vi inte att skicka fler svar till dig idag. Var snäll och försök igen i morgon.
+Vi har fÃ¥tt en fÃ¶rfrÃ¥gan frÃ¥n din adress '%(sender)s', som krÃ¤ver ett
+automatiskt svar frÃ¥n e-postlistan %(listname)s. Vi har redan fÃ¥tt %(num)s
+frÃ¥gor frÃ¥n dig idag. FÃ¶r att undvika problem som till exempel oÃ¤ndliga e-postloopar
+mellan e-postrobotar, kommer vi inte att skicka fler svar till dig idag. Var snÃ¤ll och fÃ¶rsÃ¶k igen i morgon.
 
-Om du anser att detta inte kan stämma, eller du om har frågor,
-kontakta ägaren till e-postlistan på %(owneremail)s.
+Om du anser att detta inte kan stÃ¤mma, eller du om har frÃ¥gor,
+kontakta Ã¤garen till e-postlistan pÃ¥ %(owneremail)s.

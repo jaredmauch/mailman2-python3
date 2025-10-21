@@ -1,16 +1,16 @@
-%(requestaddr)s adresine isteğiniz:
+%(requestaddr)s adresine isteÄŸiniz:
 
     %(cmd)s
 
-listeyi yöneten kişiye iletildi.
+listeyi yÃ¶neten kiÅŸiye iletildi.
 
-Bunun nedeni büyük olasılıkla 'kapalı' bir listeye üye olmaya çalışıyor
-olmanızdır.
+Bunun nedeni bÃ¼yÃ¼k olasÄ±lÄ±kla 'kapalÄ±' bir listeye Ã¼ye olmaya Ã§alÄ±ÅŸÄ±yor
+olmanÄ±zdÄ±r.
 
-Liste sahibinin, üyelik isteğinizle ilgili kararını içeren bir e-posta
-bildirimi alacaksınız.
+Liste sahibinin, Ã¼yelik isteÄŸinizle ilgili kararÄ±nÄ± iÃ§eren bir e-posta
+bildirimi alacaksÄ±nÄ±z.
 
-Liste sahibinin ilkeleriyle ilgili her soru şu adrese yöneltilmelidir:
+Liste sahibinin ilkeleriyle ilgili her soru ÅŸu adrese yÃ¶neltilmelidir:
 
     %(adminaddr)s
 

@@ -1,19 +1,19 @@
 See on kord kuus saadetav automaatne meeldetuletus teile tellitud
 listide kohta listserveris aadressiga %(hostname)s. Allpool leiate
-info oma tellimuste kohta ning juhendi nende seadistamiseks või
+info oma tellimuste kohta ning juhendi nende seadistamiseks vÃµi
 listi(de)st lahkumiseks.
 
 Linkidele klikkides saab muuta tellimuse seadistusi,
-näiteks on võimalik lasta endale kirju saata kokkuvõtetena üksikirjade
-asemel või peatada kirjade saatmise ajutiselt (näiteks puhkuse ajaks),
-jne. Ka on võimalik tellimus lõpetada.
+nÃ¤iteks on vÃµimalik lasta endale kirju saata kokkuvÃµtetena Ã¼ksikirjade
+asemel vÃµi peatada kirjade saatmise ajutiselt (nÃ¤iteks puhkuse ajaks),
+jne. Ka on vÃµimalik tellimus lÃµpetada.
 
-Kõiki neid toiminguid saab teha ka meili teel, lähema info saamiseks
-selle kohta saatke kiri, mis sisaldab ainult sõna 'help' listi -request
-aadressile (näiteks %(exreq)s), ning peagi saate vastuseks kirja,
-mis sisaldab täpsemat juhendit.
+KÃµiki neid toiminguid saab teha ka meili teel, lÃ¤hema info saamiseks
+selle kohta saatke kiri, mis sisaldab ainult sÃµna 'help' listi -request
+aadressile (nÃ¤iteks %(exreq)s), ning peagi saate vastuseks kirja,
+mis sisaldab tÃ¤psemat juhendit.
 
-Küsimuste, probleemide, kommentaaridega pöörduge aadressile
-%(owner)s. Aitäh!
+KÃ¼simuste, probleemide, kommentaaridega pÃ¶Ã¶rduge aadressile
+%(owner)s. AitÃ¤h!
 
 %(useraddr)s paroolid:

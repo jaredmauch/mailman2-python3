@@ -1,10 +1,10 @@
-Följande ansökan om att bli avanmäld från en lista måste utvärderas av dig:
+FÃ¶ljande ansÃ¶kan om att bli avanmÃ¤ld frÃ¥n en lista mÃ¥ste utvÃ¤rderas av dig:
 
-    Från:   %(username)s
+    FrÃ¥n:   %(username)s
     Lista: %(listname)s@%(hostname)s
 
-När du får tid, gå in på:
+NÃ¤r du fÃ¥r tid, gÃ¥ in pÃ¥:
 
     %(admindb_url)s
 
-för att godkänna eller avslå ansökan.
+fÃ¶r att godkÃ¤nna eller avslÃ¥ ansÃ¶kan.

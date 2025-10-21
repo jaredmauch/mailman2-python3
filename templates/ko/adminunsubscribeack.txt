@@ -1,3 +1,3 @@
-%(member)s ΈνΐΜ %(listname)s Ώ΅Ό­ Α¦°ΕµΗΎϊ½ΐ΄Ο΄Ω.
+%(member)s λª…μ΄ %(listname)s μ—μ„ μ κ±°λμ—μµλ‹λ‹¤.
 %(whence)s
 

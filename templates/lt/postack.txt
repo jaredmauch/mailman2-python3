@@ -1,5 +1,5 @@
-Diskusijø forumas %(listname)s gavo Jûsø şinutæ tema (subject) 
+DiskusijÅ³ forumas %(listname)s gavo JÅ«sÅ³ Å¾inutÄ™ tema (subject) 
 %(subject)s.
 
 Forumo informacija: %(listinfo_url)s
-Jûsø nustatymai: %(optionsurl)s
+JÅ«sÅ³ nustatymai: %(optionsurl)s

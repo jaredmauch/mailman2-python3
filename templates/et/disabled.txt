@@ -3,24 +3,24 @@ Teie %(listname)s listi tellimus on peatatud sest:
 
 Te ei saa listist rohkem kirju enne, kui olete oma tellimust
 uuendanud. Te saate veel %(noticesleft)s sellist meeldetuletust, enne
-kui teie tellimus lõplikult peatatakse.
+kui teie tellimus lÃµplikult peatatakse.
 
-Tellimuse uuendamiseks lihtsalt vastake sellele kirjale (jättes
-teema samaks), või külastage aadressi:
+Tellimuse uuendamiseks lihtsalt vastake sellele kirjale (jÃ¤ttes
+teema samaks), vÃµi kÃ¼lastage aadressi:
 
     %(confirmurl)s
 
-Alternatiivina võib külastada ka oma tellimisinfo lehte aadressil
+Alternatiivina vÃµib kÃ¼lastada ka oma tellimisinfo lehte aadressil
 
     %(optionsurl)s
 
-Tellimisinfo lehel on teil võimalik muuta kirjade kättetoimetamise
-seadistusi või muuta meiliaadressi, millele kirju saadetakse.
+Tellimisinfo lehel on teil vÃµimalik muuta kirjade kÃ¤ttetoimetamise
+seadistusi vÃµi muuta meiliaadressi, millele kirju saadetakse.
 
 Meeldetuletuseks, teie parool on
     
     %(password)s
 
-Probleemide ja küsimustega pöörduge listi halduri poole aadressil
+Probleemide ja kÃ¼simustega pÃ¶Ã¶rduge listi halduri poole aadressil
 
     %(owneraddr)s

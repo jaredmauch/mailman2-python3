@@ -1,8 +1,8 @@
-Turite patvirtinti prisijungimà prie diskusijø forumo.
+Turite patvirtinti prisijungimÄ… prie diskusijÅ³ forumo.
 
     Dalyvis: %(username)s
     Forumas: %(listname)s@%(hostname)s
 
-Padarykite tai apsilankydami ğiuo adresu:
+Padarykite tai apsilankydami Å¡iuo adresu:
 
     %(admindb_url)s

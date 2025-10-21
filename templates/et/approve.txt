@@ -4,7 +4,7 @@ Sinu soov %(requestaddr)s:
 
 edastati listi haldurile.
 
-Tõenäoliselt tehti seda sellepärast, et soovisid liituda 'suletud'
+TÃµenÃ¤oliselt tehti seda sellepÃ¤rast, et soovisid liituda 'suletud'
 listiga.
 
 Niipea, kui listi haldur on otsuse teinud, saad sellest teada meili

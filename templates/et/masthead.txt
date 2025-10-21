@@ -1,9 +1,9 @@
 Listi %(real_name)s kirjutamiseks on aadress
 	%(got_list_email)s
 
-Listi saab tellida vıi tellimust lıpetada veebis, aadressil
+Listi saab tellida v√µi tellimust l√µpetada veebis, aadressil
 	%(got_listinfo_url)s
-vıi saates meili, mille sisuks ainult sına 'help' aadressile
+v√µi saates meili, mille sisuks ainult s√µna 'help' aadressile
 	%(got_request_email)s
 
 Listi omaniku meiliaadress on
@@ -11,4 +11,4 @@ Listi omaniku meiliaadress on
 
 Kirjale vastamisel redigeeri kindlasti kirja teemat nii et see
 oleks sisukam kui 
-"Re: %(real_name)s kokkuvıte"
+"Re: %(real_name)s kokkuv√µte"

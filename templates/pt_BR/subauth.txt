@@ -1,5 +1,5 @@
-A sua autorização é requerida para a aprovação da inscrição
-na lista de discussão:
+A sua autorizaÃ§Ã£o Ã© requerida para a aprovaÃ§Ã£o da inscriÃ§Ã£o
+na lista de discussÃ£o:
 
     Para:  %(username)s
     Lista: %(listname)s@%(hostname)s
@@ -8,4 +8,4 @@ Quando lhe for conveniente, visite:
 
     %(admindb_url)s
 
-para processar a requisição.
+para processar a requisiÃ§Ã£o.

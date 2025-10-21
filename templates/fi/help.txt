@@ -1,35 +1,35 @@
-K‰yttˆohje postituslistalle %(listname)s:
+K√§ytt√∂ohje postituslistalle %(listname)s:
 
-T‰m‰ on s‰hkˆpostipohjainen opastus version %(version)s "Mailman"
-postituslistapalvelimen yll‰pit‰j‰lle. Seuraavassa kuvataan
-komennot jotka voit l‰hett‰‰ s‰hkˆpostilla. Komento voi sijaita 
-viestin otsikkokent‰ss‰ tai leip‰tekstiss‰.
+T√§m√§ on s√§hk√∂postipohjainen opastus version %(version)s "Mailman"
+postituslistapalvelimen yll√§pit√§j√§lle. Seuraavassa kuvataan
+komennot jotka voit l√§hett√§√§ s√§hk√∂postilla. Komento voi sijaita 
+viestin otsikkokent√§ss√§ tai leip√§tekstiss√§.
 
-Komennot voivat olla joko viestin otsikossa tai tekstikent‰ss‰.
+Komennot voivat olla joko viestin otsikossa tai tekstikent√§ss√§.
 
-Huomioi, ett‰ voit tehd‰ saman myˆs www-sivun kautta:
+Huomioi, ett√§ voit tehd√§ saman my√∂s www-sivun kautta:
 
     %(listinfo_url)s
 
-Etenkin kun haluat saada unohtamasi listan salasanan voit k‰ytt‰‰
-www-sivua salasanan l‰hett‰miseen s‰hkˆpostiisi.
+Etenkin kun haluat saada unohtamasi listan salasanan voit k√§ytt√§√§
+www-sivua salasanan l√§hett√§miseen s√§hk√∂postiisi.
 
-Postituslistakohtaiset komennot (subscribe, who, jne) pit‰isi l‰hett‰‰
+Postituslistakohtaiset komennot (subscribe, who, jne) pit√§isi l√§hett√§√§
 listan *-request -alkuiseen osoitteeseen. Esim. jos listan nimi on
-'mailman' niin k‰yt‰ osoitetta 'mailman-request@...'.
+'mailman' niin k√§yt√§ osoitetta 'mailman-request@...'.
 
-Allaolevassa kuvauksessa - sanat jotka ovat "<>" -merkkien sis‰ll‰
-ovat PAKOLLISIA ja sanat "[]" -merkkien sis‰ll‰ ovat VALINNAISIA.
-ƒl‰ laita sanojen ymp‰rille ohjeissa olevia "<>" tai "[]" -merkkej‰
-kun k‰yt‰t komentoja.
+Allaolevassa kuvauksessa - sanat jotka ovat "<>" -merkkien sis√§ll√§
+ovat PAKOLLISIA ja sanat "[]" -merkkien sis√§ll√§ ovat VALINNAISIA.
+√Ñl√§ laita sanojen ymp√§rille ohjeissa olevia "<>" tai "[]" -merkkej√§
+kun k√§yt√§t komentoja.
 
-Seuraavassa k‰ytett‰v‰t komennot:
+Seuraavassa k√§ytett√§v√§t komennot:
 
     %(commands)s
 
-Komennot tulee l‰hett‰‰ osoitteeseen %(requestaddr)s 
+Komennot tulee l√§hett√§√§ osoitteeseen %(requestaddr)s 
 
-Henkilˆkohtaiset yhteydenotot listan yll‰pit‰jiin s‰hkˆpostitse
+Henkil√∂kohtaiset yhteydenotot listan yll√§pit√§jiin s√§hk√∂postitse
 osoitteeseen:
 
     %(adminaddr)s

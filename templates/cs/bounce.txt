@@ -1,14 +1,14 @@
-Toto je zpráva od automatického systému pro detekci
-neplatnıch elektronickıch adres systému Mailman.
+Toto je zprÃ¡va od automatickÃ©ho systÃ©mu pro detekci
+neplatnÃ½ch elektronickÃ½ch adres systÃ©mu Mailman.
 
 
     Konference: %(listname)s
-    Úèastník:   %(addr)s
-    Akce:       Èlenství %(negative)s%(did)s.
-    Dùvod:      Pøekroèení poètu nedoruèitelnıch pøíspìvkù.
+    ÃšÄastnÃ­k:   %(addr)s
+    Akce:       ÄŒlenstvÃ­ %(negative)s%(did)s.
+    DÅ¯vod:      PÅ™ekroÄenÃ­ poÄtu nedoruÄitelnÃ½ch pÅ™Ã­spÄ›vkÅ¯.
     %(but)s
 
 %(reenable)s
-Zpráva, kterou se nedaøí doruèit je pøilo¾ena ní¾e.
+ZprÃ¡va, kterou se nedaÅ™Ã­ doruÄit je pÅ™iloÅ¾ena nÃ­Å¾e.
 
-Dotazy?  Kontaktuje správce Mailmana na %(owneraddr)s.
+Dotazy?  Kontaktuje sprÃ¡vce Mailmana na %(owneraddr)s.

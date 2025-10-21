@@ -1,4 +1,4 @@
-%(member)s, başarıyla %(listname)s listesine üye oldu.
+%(member)s, baÅŸarÄ±yla %(listname)s listesine Ã¼ye oldu.
 %(whence)s
 
 

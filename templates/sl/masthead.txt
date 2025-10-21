@@ -1,13 +1,13 @@
-Sporoèila za po¹tni seznam od osebe %(real_name)s po¹ljite na
+SporoÄila za poÅ¡tni seznam od osebe %(real_name)s poÅ¡ljite na
 	%(got_list_email)s
 
-Za prijavo ali odjavo s seznama prek interneta obi¹èite
+Za prijavo ali odjavo s seznama prek interneta obiÅ¡Äite
 	%(got_listinfo_url)s
-prek e-po¹te pa po¹ljite sporoèilo z zadevo ali besedilom 'help' na
+prek e-poÅ¡te pa poÅ¡ljite sporoÄilo z zadevo ali besedilom 'help' na
 	%(got_request_email)s
 
-Skrbnika po¹tnega seznama najdete na naslovu
+Skrbnika poÅ¡tnega seznama najdete na naslovu
 	%(got_owner_email)s
 
 Pri odgovarjanju oblikujete vrstico z Zadevo, tako da bo bolj opisna od
-"Re: Vsebina izvleèka za %(real_name)s..."
+"Re: Vsebina izvleÄka za %(real_name)s..."

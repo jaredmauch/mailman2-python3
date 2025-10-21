@@ -1,18 +1,18 @@
-Tento dopis dostáváte pro pøipomenutí hesla pro konferenci na %(fqdn_lname)s,
-do které jste pøihlá¹eni z adresy "%(user)s".
+Tento dopis dostÃ¡vÃ¡te pro pÅ™ipomenutÃ­ hesla pro konferenci na %(fqdn_lname)s,
+do kterÃ© jste pÅ™ihlÃ¡Å¡eni z adresy "%(user)s".
 
-Va¹e heslo pro konferenci %(listname)s je: %(password)s
+VaÅ¡e heslo pro konferenci %(listname)s je: %(password)s
 
-Abyste mohli mìnit nastavení svého úèastnického konta, nav¹tivte WWW
-stránku:
+Abyste mohli mÄ›nit nastavenÃ­ svÃ©ho ÃºÄastnickÃ©ho konta, navÅ¡tivte WWW
+strÃ¡nku:
 
     %(options_url)s
 
-Nebo za¹lete dopis obsahující slovo help na adresu:
+Nebo zaÅ¡lete dopis obsahujÃ­cÃ­ slovo help na adresu:
 
     %(requestaddr)s
 
-Budou Vám zaslány podrobnìj¹í instrukce.
+Budou VÃ¡m zaslÃ¡ny podrobnÄ›jÅ¡Ã­ instrukce.
 
-Máte nìjakı dotaz nebo pøipomínku? Pi¹te správci konference
+MÃ¡te nÄ›jakÃ½ dotaz nebo pÅ™ipomÃ­nku? PiÅ¡te sprÃ¡vci konference
 %(listname)s na adresu %(owneraddr)s.

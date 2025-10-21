@@ -1,4 +1,4 @@
-La tua autorizzazione è richiesta per approvare un'iscrizione 
+La tua autorizzazione Ã¨ richiesta per approvare un'iscrizione 
 ad una lista:
 
     Per:   %(username)s

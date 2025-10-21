@@ -1,26 +1,26 @@
-Jûs arba kas nors uş Jus paprağë priminti Jûsë slaptaşodá,
-kuriuo Jûs jungiatës prie diskusijø forumo %(fqdn_lname)s.
+JÅ«s arba kas nors uÅ¾ Jus papraÅ¡Ä— priminti JÅ«sÄ— slaptaÅ¾odÄ¯,
+kuriuo JÅ«s jungiatÄ—s prie diskusijÅ³ forumo %(fqdn_lname)s.
 
-Jums prireiks ğio slaptaşodşio jei norësite pakeisti forumo dalyvio 
-nustatymus, pavz., uşsisakyti ar atsisakyti nuolatinio naujienø
-siuntimo jums arba lengviau atsijungti nuo diskusijø forumo.
+Jums prireiks Å¡io slaptaÅ¾odÅ¾io jei norÄ—site pakeisti forumo dalyvio 
+nustatymus, pavz., uÅ¾sisakyti ar atsisakyti nuolatinio naujienÅ³
+siuntimo jums arba lengviau atsijungti nuo diskusijÅ³ forumo.
 
-Jûs jungiatës nurodydami adresà: %(user)s
+JÅ«s jungiatÄ—s nurodydami adresÄ…: %(user)s
 
-Jûsø forumo %(listname)s slaptaşodis yra: %(password)s
+JÅ«sÅ³ forumo %(listname)s slaptaÅ¾odis yra: %(password)s
 
-Jei norite pakeisti Jûsø prisijungimo nustatymus,
-prisijunkite ir aplankykite jûsø nustatymø tinklapá:
+Jei norite pakeisti JÅ«sÅ³ prisijungimo nustatymus,
+prisijunkite ir aplankykite jÅ«sÅ³ nustatymÅ³ tinklapÄ¯:
 
     %(options_url)s
 
-Taip pat galite ávesti pakeitimus siøsdami komandà adresu:
+Taip pat galite Ä¯vesti pakeitimus siÅ³sdami komandÄ… adresu:
 
     %(requestaddr)s
 
-Jei şinutës tema (subject) bus "help" automatiğkai 
-gausite tikslià nustatymø el. pağtu instrukcijà.
+Jei Å¾inutÄ—s tema (subject) bus "help" automatiÅ¡kai 
+gausite tiksliÄ… nustatymÅ³ el. paÅ¡tu instrukcijÄ….
 
 
-Visais klausimais prağome kreiptis á diskusijø forumo
-%(listname)s administratoriø %(owneraddr)s.
+Visais klausimais praÅ¡ome kreiptis Ä¯ diskusijÅ³ forumo
+%(listname)s administratoriÅ³ %(owneraddr)s.

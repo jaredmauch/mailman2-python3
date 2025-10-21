@@ -4,12 +4,12 @@ O seu pedido a %(requestaddr)s:
 
 foi encaminhado para a pessoa que gere a lista.
 
-Isto aconteceu, provavelmente, porque est· a tentar subscrever uma lista
+Isto aconteceu, provavelmente, porque est√° a tentar subscrever uma lista
 'fechada'.
 
-Ser· notificado por email da decis„o que o dono da lista tomar em relaÁ„o 
-ao seu pedido de inscriÁ„o.
+Ser√° notificado por email da decis√£o que o dono da lista tomar em rela√ß√£o 
+ao seu pedido de inscri√ß√£o.
 
-Quaisquer questıes sobre a polÌtica de gest„o da lista devem ser dirigidas a:
+Quaisquer quest√µes sobre a pol√≠tica de gest√£o da lista devem ser dirigidas a:
 
     %(adminaddr)s

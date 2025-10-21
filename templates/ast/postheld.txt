@@ -9,7 +9,7 @@ Foi reten&iacute;u por:
 
     %(reason)s
 
-O se mandar·'l mensax a la lista o se te mandar&aacute; una notificaciÛn
-cola decisiÛn del moderador. Si quies encaboxar esti unv&iacute;u, puedes facelo a traviÈs de la siguiente URL:
+O se mandar√°'l mensax a la lista o se te mandar&aacute; una notificaci√≥n
+cola decisi√≥n del moderador. Si quies encaboxar esti unv&iacute;u, puedes facelo a travi√©s de la siguiente URL:
 
     %(confirmurl)s

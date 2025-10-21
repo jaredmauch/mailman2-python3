@@ -1,26 +1,26 @@
-Diskusijø forumo %(listname)s atsijungimo patvirtinimo praneğimas
+DiskusijÅ³ forumo %(listname)s atsijungimo patvirtinimo praneÅ¡imas
 
 
-Mes gavome prağymà %(remote)s atjungti Jûsø el. pağto
-adresà "%(email)s" nuo diskusijø forumo %(listaddr)s.
+Mes gavome praÅ¡ymÄ… %(remote)s atjungti JÅ«sÅ³ el. paÅ¡to
+adresÄ… "%(email)s" nuo diskusijÅ³ forumo %(listaddr)s.
 
-Jei tikrai norite atsijungti nuo ğio diskusijø forumo,
-atsakykite á ğá laiğkà nepakeisdami jo temos (subject)
+Jei tikrai norite atsijungti nuo Å¡io diskusijÅ³ forumo,
+atsakykite Ä¯ Å¡Ä¯ laiÅ¡kÄ… nepakeisdami jo temos (subject)
 
-Arba aplankykite mûsø tinklapá:
+Arba aplankykite mÅ«sÅ³ tinklapÄ¯:
 
     %(confirmurl)s
 
-Arba adresu %(requestaddr)s iğsiøskite laiğkà,
-árağæ á já tik ğià eilutæ:
+Arba adresu %(requestaddr)s iÅ¡siÅ³skite laiÅ¡kÄ…,
+Ä¯raÅ¡Ä™ Ä¯ jÄ¯ tik Å¡iÄ… eilutÄ™:
 
     confirm %(cookie)s
 
-Daugumoje pağto programø galite pasinaudoti komanda 'Atsakyti' 
-arba 'Reply', nes ği komanda iğsaugo temos (subject) laukà.
-(Patvirtinimui netrugdo daşniausia áterpiamas 'Ats:' arba 'Re:'.)
+Daugumoje paÅ¡to programÅ³ galite pasinaudoti komanda 'Atsakyti' 
+arba 'Reply', nes Å¡i komanda iÅ¡saugo temos (subject) laukÄ….
+(Patvirtinimui netrugdo daÅ¾niausia Ä¯terpiamas 'Ats:' arba 'Re:'.)
 
 
-Ignoruokite ğá laiğkà, jeigu nenorite atsijungti nuo ğio diskusijø forumo.
+Ignoruokite Å¡Ä¯ laiÅ¡kÄ…, jeigu nenorite atsijungti nuo Å¡io diskusijÅ³ forumo.
 
-Visais klausimais prağome kreiptis á administratoriø %(listadmin)s.
+Visais klausimais praÅ¡ome kreiptis Ä¯ administratoriÅ³ %(listadmin)s.

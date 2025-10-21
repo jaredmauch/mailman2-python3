@@ -1,20 +1,20 @@
-Ez az emlékeztetõ %(hostname)s levelezõlista tagjainak minden hónap 
-elején elküldésre kerül. Tartalmazza a feliratkozásaidat és azt,
-hogy hogyan lehet megváltoztatni a beállításaidat, vagy leiratkozni
-a levelezõlistáról.
+Ez az emlÃ©keztetÅ‘ %(hostname)s levelezÅ‘lista tagjainak minden hÃ³nap 
+elejÃ©n elkÃ¼ldÃ©sre kerÃ¼l. Tartalmazza a feliratkozÃ¡saidat Ã©s azt,
+hogy hogyan lehet megvÃ¡ltoztatni a beÃ¡llÃ­tÃ¡saidat, vagy leiratkozni
+a levelezÅ‘listÃ¡rÃ³l.
 
-A Web-címeken a listával kapcsolatos beállításaidat, mint például
-a leiratkozást, vagy a levélküldés típusának beállítását, esetleg 
-szüneteltetését (pl. nyaralás idejére) módosíthatod/állíthatod be.
+A Web-cÃ­meken a listÃ¡val kapcsolatos beÃ¡llÃ­tÃ¡saidat, mint pÃ©ldÃ¡ul
+a leiratkozÃ¡st, vagy a levÃ©lkÃ¼ldÃ©s tÃ­pusÃ¡nak beÃ¡llÃ­tÃ¡sÃ¡t, esetleg 
+szÃ¼neteltetÃ©sÃ©t (pl. nyaralÃ¡s idejÃ©re) mÃ³dosÃ­thatod/Ã¡llÃ­thatod be.
 
-A Web elérhetõség mellett, természetesen e-mailen keresztül is el lehet
-végezni a változtatásokat. Bõvebb információért küldj egy levelet, a
-levelezési lista '-request' címére (például %(exreq)s) egy szimpla
-'help'-el a levél törzsében. A válaszlevélben részletes leírást
-fogsz kapni az alkalmazható parancsokról.
+A Web elÃ©rhetÅ‘sÃ©g mellett, termÃ©szetesen e-mailen keresztÃ¼l is el lehet
+vÃ©gezni a vÃ¡ltoztatÃ¡sokat. BÅ‘vebb informÃ¡ciÃ³Ã©rt kÃ¼ldj egy levelet, a
+levelezÃ©si lista '-request' cÃ­mÃ©re (pÃ©ldÃ¡ul %(exreq)s) egy szimpla
+'help'-el a levÃ©l tÃ¶rzsÃ©ben. A vÃ¡laszlevÃ©lben rÃ©szletes leÃ­rÃ¡st
+fogsz kapni az alkalmazhatÃ³ parancsokrÃ³l.
 
-Kérdéseidet, problémáidat, megjegyzéseidet, egyéb mást a(z) 
-%(owner)s címre küld.  Köszönjük!
+KÃ©rdÃ©seidet, problÃ©mÃ¡idat, megjegyzÃ©seidet, egyÃ©b mÃ¡st a(z) 
+%(owner)s cÃ­mre kÃ¼ld.  KÃ¶szÃ¶njÃ¼k!
 
 %(useraddr)s jelszava:
 

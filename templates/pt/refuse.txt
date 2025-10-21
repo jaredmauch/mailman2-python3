@@ -3,11 +3,11 @@ O seu pedido de envio de uma mensagem para a lista %(listname)s
     %(request)s
 
 foi rejeitada pelo moderador da lista. O moderador deu a seguinte
-raz„o para rejeitar a sua mensagem:
+raz√£o para rejeitar a sua mensagem:
 
 "%(reason)s"
 
-Quaisquer questıes ou coment·rios devem ser dirigidos ao moderador
+Quaisquer quest√µes ou coment√°rios devem ser dirigidos ao moderador
 da lista em:
 
     %(adminaddr)s

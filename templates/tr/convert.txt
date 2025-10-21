@@ -1,34 +1,34 @@
-%(listname)s mesaj listesi, büyük bir değişikliğe uğradı. Şu anda
-yeni bir mesaj listesi programı olan "Mailman" üzerinde çalışıyor.
-Bu, umarız listeyi yönetirken karşılaşılan birçok sorunu
+%(listname)s mesaj listesi, bÃ¼yÃ¼k bir deÄŸiÅŸikliÄŸe uÄŸradÄ±. Åu anda
+yeni bir mesaj listesi programÄ± olan "Mailman" Ã¼zerinde Ã§alÄ±ÅŸÄ±yor.
+Bu, umarÄ±z listeyi yÃ¶netirken karÅŸÄ±laÅŸÄ±lan birÃ§ok sorunu
 giderecektir.
 
-Bu sizi nasıl etkiler?
+Bu sizi nasÄ±l etkiler?
 
-1) Tüm listeye gönderilen mesajlar şu adrese gönderilmelidir: %(listaddr)s.
+1) TÃ¼m listeye gÃ¶nderilen mesajlar ÅŸu adrese gÃ¶nderilmelidir: %(listaddr)s.
 
-2) Sizi, başkalarının bilginiz dışında listeden çıkarmasını önlemek
-için size gelişigüzel bir şifre verildi. Bu, size ayrı bir mesajda
-gönderilecek, belki zaten bu mesajı aldınız. Şifrenizi unutursanız
-merak etmeyin, her ay bir şifre hatırlatıcı e-posta yoluyla size
-gönderilecek.
+2) Sizi, baÅŸkalarÄ±nÄ±n bilginiz dÄ±ÅŸÄ±nda listeden Ã§Ä±karmasÄ±nÄ± Ã¶nlemek
+iÃ§in size geliÅŸigÃ¼zel bir ÅŸifre verildi. Bu, size ayrÄ± bir mesajda
+gÃ¶nderilecek, belki zaten bu mesajÄ± aldÄ±nÄ±z. Åifrenizi unutursanÄ±z
+merak etmeyin, her ay bir ÅŸifre hatÄ±rlatÄ±cÄ± e-posta yoluyla size
+gÃ¶nderilecek.
 
-3) Eğer World Wide Web erişiminiz varsa, bu listeden çıkmak, toplu
-veya ayrı ayrı mesaj almak, listenin arşivlerini okumak (liste
-bir iki gün mesaj aldıktan sonra bunlar oluşacaktır) vb. işler için
-kullanabilirsiniz. Bu kaynaklar için web adresi:
+3) EÄŸer World Wide Web eriÅŸiminiz varsa, bu listeden Ã§Ä±kmak, toplu
+veya ayrÄ± ayrÄ± mesaj almak, listenin arÅŸivlerini okumak (liste
+bir iki gÃ¼n mesaj aldÄ±ktan sonra bunlar oluÅŸacaktÄ±r) vb. iÅŸler iÃ§in
+kullanabilirsiniz. Bu kaynaklar iÃ§in web adresi:
 
     %(listinfo_url)s
 
-4) WWW erişiminiz yoksa, aynı işleri e-posta yoluyla da yapabilirsiniz.
-%(requestaddr)s adresine konu satırı veya gövdesi sadece "help"
-(tırnaklar olmadan) sözcüğünü içeren bir e-posta gönderin. Daha
-geniş açıklamalar içeren bir otomatik yanıt alacaksınız.
+4) WWW eriÅŸiminiz yoksa, aynÄ± iÅŸleri e-posta yoluyla da yapabilirsiniz.
+%(requestaddr)s adresine konu satÄ±rÄ± veya gÃ¶vdesi sadece "help"
+(tÄ±rnaklar olmadan) sÃ¶zcÃ¼ÄŸÃ¼nÃ¼ iÃ§eren bir e-posta gÃ¶nderin. Daha
+geniÅŸ aÃ§Ä±klamalar iÃ§eren bir otomatik yanÄ±t alacaksÄ±nÄ±z.
 
-Lütfen bu yeni kurulum ile ilgili tüm soru ve sorunlarınızı
-%(adminaddr)s adresine gönderin.
+LÃ¼tfen bu yeni kurulum ile ilgili tÃ¼m soru ve sorunlarÄ±nÄ±zÄ±
+%(adminaddr)s adresine gÃ¶nderin.
 
-Bu mesaj Mailman %(version)s tarafından otomatik olarak oluşturulmuştur.
-Mailman yazılımı ile ilgili daha fazla bilgi için, http://www.list.org
-adresinden Mailman ana sayfasına ulaşabilirsiniz.
+Bu mesaj Mailman %(version)s tarafÄ±ndan otomatik olarak oluÅŸturulmuÅŸtur.
+Mailman yazÄ±lÄ±mÄ± ile ilgili daha fazla bilgi iÃ§in, http://www.list.org
+adresinden Mailman ana sayfasÄ±na ulaÅŸabilirsiniz.
 

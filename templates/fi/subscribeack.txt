@@ -1,31 +1,31 @@
 Tervetuloa %(real_name)s@%(host_name)s postituslistalle!
 %(welcome)s
-L‰hett‰‰ksesi postia t‰lle listalle, l‰het‰ viesti osoitteeseen:
+L√§hett√§√§ksesi postia t√§lle listalle, l√§het√§ viesti osoitteeseen:
 
   %(emailaddr)s
 
-Yleisi‰ tietoja listasta on saatavilla osoitteessa:
+Yleisi√§ tietoja listasta on saatavilla osoitteessa:
 
   %(listinfo_url)s
 
-Mik‰li haluat joskus erota listalta tai vaihtaa asetuksiasi 
-(esim. asettaa koontimoodin pois p‰‰lt‰ tai p‰‰lle, vaihtaa 
-salasanasi jne.), k‰y j‰sensivullasi osoitteessa:
+Mik√§li haluat joskus erota listalta tai vaihtaa asetuksiasi 
+(esim. asettaa koontimoodin pois p√§√§lt√§ tai p√§√§lle, vaihtaa 
+salasanasi jne.), k√§y j√§sensivullasi osoitteessa:
 
   %(optionsurl)s
 %(umbrella)s
 
-Voit myˆs tehd‰ samat muutokset s‰hkˆpostitse l‰hett‰m‰ll‰ 
+Voit my√∂s tehd√§ samat muutokset s√§hk√∂postitse l√§hett√§m√§ll√§ 
 viestin osoitteeseen:
 
   %(real_name)s-request@%(host_name)s
 
-Laita Otsikko- tai viestikentt‰‰n sana 'help' 
-(ilman heittomerkkej‰) ja saat takaisin viestin, 
-joka sis‰lt‰‰ ohjeet toimintojen suorittamiseksi.
+Laita Otsikko- tai viestikentt√§√§n sana 'help' 
+(ilman heittomerkkej√§) ja saat takaisin viestin, 
+joka sis√§lt√§√§ ohjeet toimintojen suorittamiseksi.
 
-Sinun pit‰‰ tiet‰‰ salasanasi listalle, ett‰ voit tehd‰ 
-muutokset (myˆs listan salasanan vaihto) tai erota listalta. 
+Sinun pit√§√§ tiet√§√§ salasanasi listalle, ett√§ voit tehd√§ 
+muutokset (my√∂s listan salasanan vaihto) tai erota listalta. 
 Salasanasi on:
 
   %(password)s
@@ -33,9 +33,9 @@ Salasanasi on:
 
 Normaalisti Mailman muistuttaa sinua %(host_name)s postituslistan 
 salasanoista kerran kuukaudessa, vaikkakin voit asettaa halutessasi 
-salasanan muistuksen pois p‰‰lt‰. T‰m‰ muistutus sis‰lt‰‰ myˆs 
-ohjeet siit‰, miten voit irtisanoutua listalta tai muuttaa tilisi 
-asetuksia. J‰sensivuilla on myˆs painike, jolla voit pyyt‰‰ 
-j‰rjestelm‰‰ l‰hett‰m‰‰n sinulle salasanasi.
+salasanan muistuksen pois p√§√§lt√§. T√§m√§ muistutus sis√§lt√§√§ my√∂s 
+ohjeet siit√§, miten voit irtisanoutua listalta tai muuttaa tilisi 
+asetuksia. J√§sensivuilla on my√∂s painike, jolla voit pyyt√§√§ 
+j√§rjestelm√§√§ l√§hett√§m√§√§n sinulle salasanasi.
 
 

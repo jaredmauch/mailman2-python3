@@ -1,37 +1,37 @@
-Bienvenido a la lista de distribuciÛn %(real_name)s@%(host_name)s
+Bienvenido a la lista de distribuci√≥n %(real_name)s@%(host_name)s
 %(welcome)s
 
-Para mandar un mensaje a esta lista, envÌelo a:
+Para mandar un mensaje a esta lista, env√≠elo a:
 
    %(emailaddr)s
 
-Puede obtener informaciÛn general sobre la lista en:
+Puede obtener informaci√≥n general sobre la lista en:
 
    %(listinfo_url)s
 
-Si alguna vez desea anular  su  subscripciÛn o cambiar las  opciones
+Si alguna vez desea anular  su  subscripci√≥n o cambiar las  opciones
 de la misma (p.ej.: cambiarse a modo resumido o no, cambiar su clave,
-etc.), consulte la p·gina de su subscripciÛn en:
+etc.), consulte la p√°gina de su subscripci√≥n en:
 
   %(optionsurl)s
 %(umbrella)s
 
-TambiÈn puede realizar estos cambios por medio de correo electrÛnico,
+Tambi√©n puede realizar estos cambios por medio de correo electr√≥nico,
 enviando un mensaje a:
 
   %(real_name)s-request@%(host_name)s
 
 indicando la palabra "help" en el asunto (no ponga las comillas) o en
-el cuerpo del mensaje. Se le devolver· un mensaje con instrucciones.
+el cuerpo del mensaje. Se le devolver√° un mensaje con instrucciones.
 
 Tiene que saber su clave para poder cambiar sus opciones (incluido el
-cambio de la propia clave) o para anular su subscripciÛn. Su clave es:
+cambio de la propia clave) o para anular su subscripci√≥n. Su clave es:
 
   %(password)s
 
-Normalmente, Mailman le recordar·  mensualmente las claves  que tenga en
-las listas de distribuciÛn de %(host_name)s, aunque si lo prefiere, puede
-inhabilitar este comportamiento.  El recordatorio tambiÈn incluir·
-instrucciones sobre como anular su subscripciÛn o cÛmo cambiar los
-par·metros de subscripciÛn. En la p·gina de opciones hay un botÛn que le
-enviar· un mensaje de correo electrÛnico con su clave.
+Normalmente, Mailman le recordar√°  mensualmente las claves  que tenga en
+las listas de distribuci√≥n de %(host_name)s, aunque si lo prefiere, puede
+inhabilitar este comportamiento.  El recordatorio tambi√©n incluir√°
+instrucciones sobre como anular su subscripci√≥n o c√≥mo cambiar los
+par√°metros de subscripci√≥n. En la p√°gina de opciones hay un bot√≥n que le
+enviar√° un mensaje de correo electr√≥nico con su clave.

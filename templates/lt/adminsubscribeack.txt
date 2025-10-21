@@ -1,4 +1,4 @@
-%(member)s sëkmingai prisijungë prie %(listname)s.
+%(member)s sÄ—kmingai prisijungÄ— prie %(listname)s.
 %(whence)s
 
 

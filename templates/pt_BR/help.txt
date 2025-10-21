@@ -1,34 +1,34 @@
-Ajuda para a lista de discuss„o %(listname)s:
+Ajuda para a lista de discuss√£o %(listname)s:
 
-Este È o e-mail para a ajuda dos comandos da vers„o %(version)s do 
+Este √© o e-mail para a ajuda dos comandos da vers√£o %(version)s do 
 "Mailman". Esta mensagem descreve comandos que pode enviar para 
-obter detalhes sobre o controle de sua inscriÁ„o nas listas 
-de discuss„o do Mailman neste site. O comando pode ser 
+obter detalhes sobre o controle de sua inscri√ß√£o nas listas 
+de discuss√£o do Mailman neste site. O comando pode ser 
 especificado no assunto ou no corpo da mensagem.
 
-Note que muitas das tarefas tambÈm podem ser feitas via World 
+Note que muitas das tarefas tamb√©m podem ser feitas via World 
 Wide Web, em:
 
     %(listinfo_url)s
 
-Em particular, vocÍ poder· usar o Web site para ter sua senha 
-enviada para seu endereÁo de entrega. 
+Em particular, voc√™ poder√° usar o Web site para ter sua senha 
+enviada para seu endere√ßo de entrega. 
 
-Comandos especÌficos da lista (subscribe, who, etc) devem ser 
-enviados para o endereÁo *-request da lista em particular, e.g. 
+Comandos espec√≠ficos da lista (subscribe, who, etc) devem ser 
+enviados para o endere√ßo *-request da lista em particular, e.g. 
 para a lista do 'mailman', use 'mailman-request@...'.
 
-Sobre os descritores - palavras entre "<>" significam Ìtens 
-REQUERIDOS e palavras entre "[]" significam Ìtens OPCIONAIS. N„o 
+Sobre os descritores - palavras entre "<>" significam √≠tens 
+REQUERIDOS e palavras entre "[]" significam √≠tens OPCIONAIS. N√£o 
 inclua "<>" ou "[]" quando usar os comandos.
 
-Os seguintes comandos s„o v·lidos:
+Os seguintes comandos s√£o v√°lidos:
 
     %(commands)s
 
 Os comandos devem ser enviados para %(requestaddr)s
 
-Questıes e outras perguntas que requerem atenÁ„o devem ser enviadas
+Quest√µes e outras perguntas que requerem aten√ß√£o devem ser enviadas
 para
 
     %(adminaddr)s

@@ -2,7 +2,7 @@ Il tuo messaggio intitolato
 
     %(subject)s
 
-è stato ricevuto correttamente dalla lista %(listname)s.
+Ã¨ stato ricevuto correttamente dalla lista %(listname)s.
 
 Pagina di informazioni sulla lista: %(listinfo_url)s
 Le tue preferenze: %(optionsurl)s

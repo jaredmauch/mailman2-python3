@@ -1,19 +1,19 @@
-®ádost o potvrzení po¾adavku na odhlá¹ení z konference %(listname)s
+Å½Ã¡dost o potvrzenÃ­ poÅ¾adavku na odhlÃ¡Å¡enÃ­ z konference %(listname)s
 
-Dostali jsme po¾adavek od %(remote)s na odhlá¹ení Va¹í emailové adresy
-"%(email)s" z konference %(listaddr)s. Pro potvrzení tohoto po¾adavku
-musíte buï nav¹tívit toto URL:
+Dostali jsme poÅ¾adavek od %(remote)s na odhlÃ¡Å¡enÃ­ VaÅ¡Ã­ emailovÃ© adresy
+"%(email)s" z konference %(listaddr)s. Pro potvrzenÃ­ tohoto poÅ¾adavku
+musÃ­te buÄ navÅ¡tÃ­vit toto URL:
 
     %(confirmurl)s
 
-nebo zaslat na adresu %(requestaddr)s pøíkaz:
+nebo zaslat na adresu %(requestaddr)s pÅ™Ã­kaz:
 
     confirm %(cookie)s
 
-Zcela postaèí pokud odpovíte na tuto zprávu pøes reply (odpovìdìt)
-a ponecháte Subject: zprávy beze zmìny (pøípadné Re: èi podobnı
-text pøidanı po¹tovním klientem nevadí).
+Zcela postaÄÃ­ pokud odpovÃ­te na tuto zprÃ¡vu pÅ™es reply (odpovÄ›dÄ›t)
+a ponechÃ¡te Subject: zprÃ¡vy beze zmÄ›ny (pÅ™Ã­padnÃ© Re: Äi podobnÃ½
+text pÅ™idanÃ½ poÅ¡tovnÃ­m klientem nevadÃ­).
 
-Pokud nechcete bıt odhlá¹eni, prostì tento po¾adavek ignorujte. 
-Pokud máte dal¹í dotazy, kontaktujte správce konference na adrese:
+Pokud nechcete bÃ½t odhlÃ¡Å¡eni, prostÄ› tento poÅ¾adavek ignorujte. 
+Pokud mÃ¡te dalÅ¡Ã­ dotazy, kontaktujte sprÃ¡vce konference na adrese:
 %(listadmin)s.

@@ -1,20 +1,20 @@
-Bu, %(hostname)s üzerindeki mesaj listesi üyelikleriniz ile ilgili,
-ayda bir gönderilen bir hatırlatmadır. Üyelik bilgilerinizi ve bir
-listedeki seçeneklerinizi nasıl değiştireceğinizi veya listeden nasıl
-çıkabileceğinizi açıklayan bilgiler içerir.
+Bu, %(hostname)s Ã¼zerindeki mesaj listesi Ã¼yelikleriniz ile ilgili,
+ayda bir gÃ¶nderilen bir hatÄ±rlatmadÄ±r. Ãœyelik bilgilerinizi ve bir
+listedeki seÃ§eneklerinizi nasÄ±l deÄŸiÅŸtireceÄŸinizi veya listeden nasÄ±l
+Ã§Ä±kabileceÄŸinizi aÃ§Ä±klayan bilgiler iÃ§erir.
 
-Üyelik durumunuzu ve yapılandırmanızı, listeden çıkmak, toplu mesaj
-almak, veya size gönderimi devre dışı bırakmak (örneğin tatile çıkarken)
-dahil değiştirmek için URL'leri ziyaret edebilirsiniz.
+Ãœyelik durumunuzu ve yapÄ±landÄ±rmanÄ±zÄ±, listeden Ã§Ä±kmak, toplu mesaj
+almak, veya size gÃ¶nderimi devre dÄ±ÅŸÄ± bÄ±rakmak (Ã¶rneÄŸin tatile Ã§Ä±karken)
+dahil deÄŸiÅŸtirmek iÃ§in URL'leri ziyaret edebilirsiniz.
 
-URL arayüzlerine ek olarak, bu tür değişiklikleri e-posta yoluyla da
-yapabilirsiniz. Daha fazla bilgi için listenin '-request' adresine
-(örneğin %(exreq)s), içinde sadece 'help' yazan bir mesaj göndererek
-açıklamaları içeren bir mesaj alabilirsiniz.
+URL arayÃ¼zlerine ek olarak, bu tÃ¼r deÄŸiÅŸiklikleri e-posta yoluyla da
+yapabilirsiniz. Daha fazla bilgi iÃ§in listenin '-request' adresine
+(Ã¶rneÄŸin %(exreq)s), iÃ§inde sadece 'help' yazan bir mesaj gÃ¶ndererek
+aÃ§Ä±klamalarÄ± iÃ§eren bir mesaj alabilirsiniz.
 
-Soru, sorun, öneriniz vb. varsa, bunları %(owner)s adresine
-gönderebilirsiniz. Teşekkürler!
+Soru, sorun, Ã¶neriniz vb. varsa, bunlarÄ± %(owner)s adresine
+gÃ¶nderebilirsiniz. TeÅŸekkÃ¼rler!
 
-%(useraddr)s için şifreler:
+%(useraddr)s iÃ§in ÅŸifreler:
 
 

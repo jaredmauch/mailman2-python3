@@ -1,37 +1,37 @@
-La llista de distribución `%(listname)s' acaba de crease pa tí.
-A continuación inclúise información básica sobro la llista.
+La llista de distribuciÃ³n `%(listname)s' acaba de crease pa tÃ­.
+A continuaciÃ³n inclÃºise informaciÃ³n bÃ¡sica sobro la llista.
 
 La clave p'alministrar la llista ye:
 
     %(password)s
 
-Necesites esta clave pa configurar la llista. Tamién ye necesaria pa
+Necesites esta clave pa configurar la llista. TamiÃ©n ye necesaria pa
 facer xeres alministratives tales comu aprobar los mensaxes si decides
 que la llista seya moderada. 
 
-Puedes configurar la llista na siguiente páxina WEB:
+Puedes configurar la llista na siguiente pÃ¡xina WEB:
 
     %(admin_url)s
 
-La páxina pa los usuarios de la llista ye:
+La pÃ¡xina pa los usuarios de la llista ye:
 
     %(listinfo_url)s
 
-Puedes inclusu personalizar eses páxinas a traviés de la páxina de
-configuración de la llista. Ye necesario que tengas conocimientos
+Puedes inclusu personalizar eses pÃ¡xinas a traviÃ©s de la pÃ¡xina de
+configuraciÃ³n de la llista. Ye necesario que tengas conocimientos
 de HTML pa poder facelo. 
 
-Tamién esiste un mecanismu de xestión per corréu-e pa los
+TamiÃ©n esiste un mecanismu de xestiÃ³n per corrÃ©u-e pa los
 usuarios de la llista (non pa los alministradores). Pa obtener 
-información sobro'l so usu, hai d'unviar un mensax cola pallabra
+informaciÃ³n sobro'l so usu, hai d'unviar un mensax cola pallabra
 'help' como asuntu (subject) o nel cuerpu del mesmu, a: 
 
     %(requestaddr)s
 
-P'anular la soscripción d'un usuariu: consulta la páxina 
-'listinfo' y sigui l'enllaz de la direición del usuariu o
-inxerta la mesma, como si tú fores elli. Usa la clave
-d'alministración n'arróu de la clave del usuariu. Tamién puedes usar la
-clave d'alministración pa camudar les opciones de los usuarios.
+P'anular la soscripciÃ³n d'un usuariu: consulta la pÃ¡xina 
+'listinfo' y sigui l'enllaz de la direiciÃ³n del usuariu o
+inxerta la mesma, como si tÃº fores elli. Usa la clave
+d'alministraciÃ³n n'arrÃ³u de la clave del usuariu. TamiÃ©n puedes usar la
+clave d'alministraciÃ³n pa camudar les opciones de los usuarios.
 
 Por favor, remite les tos dubies a %(siteowner)s.

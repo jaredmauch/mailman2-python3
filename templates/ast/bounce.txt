@@ -1,12 +1,12 @@
-Esto ye un avisu de rebote de corréu d'una llista Mailman.
+Esto ye un avisu de rebote de corrÃ©u d'una llista Mailman.
 
     Llista:      %(listname)s
     Miembru:     %(addr)s
-    Aición:      Soscripción %(negative)s%(did)s.
+    AiciÃ³n:      SoscripciÃ³n %(negative)s%(did)s.
     Motivu:      Abondos mensaxes fatales o devueltos
     %(but)s
 
 %(reenable)s
-Axúntase abaxo'l mensax devueltu que prevocó l'avisu.
+AxÃºntase abaxo'l mensax devueltu que prevocÃ³ l'avisu.
 
 Si tienes dalguna entruga, ponte en contautu col alministrador de mailman en %(owneraddr)s.

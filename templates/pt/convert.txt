@@ -1,31 +1,31 @@
-A lista %(listname)s acabou de sofrer uma grande alteraÁ„o. Passou a correr 
-um outro programa de gest„o chamado "Mailman". Esperamos que possa solucionar
+A lista %(listname)s acabou de sofrer uma grande altera√ß√£o. Passou a correr 
+um outro programa de gest√£o chamado "Mailman". Esperamos que possa solucionar
 muitos dos problemas administrativos que esta lista teve.
 
-Como È que isto o afecta?
+Como √© que isto o afecta?
 
 1) Mensagens destinadas a toda a lista devem ser enviadas para:: %(listaddr)s.
 
-2) Foi-lhe atribuÌda uma password arbitr·ria para evitar que outrso possam
-anular a sua inscriÁ„o sem que saiba. Foi-lhe j· enviada num email separado,
-o qual j· recebeu. N„o se preocupe se se esquecer da password; ela 
-ser-lhe-· enviada por email todos os meses.
+2) Foi-lhe atribu√≠da uma password arbitr√°ria para evitar que outrso possam
+anular a sua inscri√ß√£o sem que saiba. Foi-lhe j√° enviada num email separado,
+o qual j√° recebeu. N√£o se preocupe se se esquecer da password; ela 
+ser-lhe-√° enviada por email todos os meses.
 
-3) Se tem acesso ‡ internet pode utiliz·-la para anular a sua inscriÁ„o, 
+3) Se tem acesso √† internet pode utiliz√°-la para anular a sua inscri√ß√£o, 
 alterar o modo como recebe as suas mensagens, ver mensagens antigas (que
-estar„o disponÌveis um ou dois dias depois de a lista comeÁar a funcionar), 
-etc. O endereÁo para aceder a estes recursos È:
+estar√£o dispon√≠veis um ou dois dias depois de a lista come√ßar a funcionar), 
+etc. O endere√ßo para aceder a estes recursos √©:
 
     %(listinfo_url)s
 
-4) Se n„o tem acesso www pode executar as mesmas tarefas por email. Envie
-uma mensagem para %(requestaddr)s tendo como assunto (ou conte˙do) 
-unicamente a palavra "help/ajuda???????" (sem aspas). Receber· uma 
-resposta autom·tica com mais instruÁıes.
+4) Se n√£o tem acesso www pode executar as mesmas tarefas por email. Envie
+uma mensagem para %(requestaddr)s tendo como assunto (ou conte√∫do) 
+unicamente a palavra "help/ajuda???????" (sem aspas). Receber√° uma 
+resposta autom√°tica com mais instru√ß√µes.
 
-Por favor dirija quaisquer questıes ou problemas relacionados com este
+Por favor dirija quaisquer quest√µes ou problemas relacionados com este
 novo funcionamento a: %(adminaddr)s.
 
 Esta mensagem foi gerada automaticamente pelo Mailman %(version)s. Para
-ter mais informaÁıes sobre o programa  Mailman visite a home page do Mailman 
+ter mais informa√ß√µes sobre o programa  Mailman visite a home page do Mailman 
 em http://www.list.org/

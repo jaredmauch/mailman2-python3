@@ -1,28 +1,28 @@
 Hilfetext zur Mailingliste %(listname)s
 
-Sie lesen den Hilfetext für E-Mail-Befehle des Mailinglistenservers
+Sie lesen den Hilfetext fÃ¼r E-Mail-Befehle des Mailinglistenservers
 "Mailman", Version %(version)s. Im Folgenden werden Befehle beschrieben,
-die Sie senden können, um Informationen über Ihre Abonnements zu erhalten
-oder diese zu ändern. Alle Befehle können in der Betreffzeile (Subject)
+die Sie senden kÃ¶nnen, um Informationen Ã¼ber Ihre Abonnements zu erhalten
+oder diese zu Ã¤ndern. Alle Befehle kÃ¶nnen in der Betreffzeile (Subject)
 oder im Nachrichtentext (Body) stehen.
 
-Auf viele der folgenden Befehle kann auch über ein Webinterface
+Auf viele der folgenden Befehle kann auch Ã¼ber ein Webinterface
 zugegriffen werden, das Sie unter
 
     %(listinfo_url)s
 
-finden. Insbesondere können Sie über das Webinterface veranlassen, dass
+finden. Insbesondere kÃ¶nnen Sie Ã¼ber das Webinterface veranlassen, dass
 Ihnen Ihr Passwort an die Abonnementadresse geschickt wird.
 
 Listenspezifische Befehle (subscribe, who, usw.) sollten an die
-"*-request"-Adresse der Liste geschickt werden, für die Liste "mailman" würde
+"*-request"-Adresse der Liste geschickt werden, fÃ¼r die Liste "mailman" wÃ¼rde
 diese bspw. "mailman-request@example.org" lauten.
 
 Noch kurz zu den Beschreibungen: Worte in spitzen Klammern (<, >) sind
 ERFORDERLICHE Angaben, Worte in eckigen Klammern ([, ]) sind OPTIONALE
-Angaben. Die Klammern "<>" oder "[]" gehören NICHT zu den Befehlen.
+Angaben. Die Klammern "<>" oder "[]" gehÃ¶ren NICHT zu den Befehlen.
 
-Die folgenden Befehle sind gültig:
+Die folgenden Befehle sind gÃ¼ltig:
 
     %(commands)s
 
@@ -32,7 +32,7 @@ Alle Befehle sollten an
 
 gesendet werden.
 
-Fragen und Anliegen, die eines menschlichen Wesens bedürfen, sollten an
+Fragen und Anliegen, die eines menschlichen Wesens bedÃ¼rfen, sollten an
 
     %(adminaddr)s
 

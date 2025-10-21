@@ -2,12 +2,12 @@ La tua richiesta alla lista %(listname)s
 
     %(request)s
 
-è stata rifiutata dal moderatore.  
+Ã¨ stata rifiutata dal moderatore.  
 Il moderatore ha dato la seguente ragione per il rifiuto:
 
 "%(reason)s"
 
-Qualunque domanda o commento può essere inviato 
+Qualunque domanda o commento puÃ² essere inviato 
 all'amministratore della lista all'indirizzo:
 
     %(adminaddr)s

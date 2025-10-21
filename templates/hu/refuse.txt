@@ -1,13 +1,13 @@
-A(z) '%(listname)s' listára történõ alábbi kérelmedet
+A(z) '%(listname)s' listÃ¡ra tÃ¶rtÃ©nÅ‘ alÃ¡bbi kÃ©relmedet
 
     %(request)s
 
-a lista szerkesztõje nem fogadta el. A visszautasítás indoka a
-következõ:
+a lista szerkesztÅ‘je nem fogadta el. A visszautasÃ­tÃ¡s indoka a
+kÃ¶vetkezÅ‘:
 
 "%(reason)s"
 
-Kérdéseiddel vagy észrevételeiddel közvetlenül a lista adminisztrá-
-torához fordulhatsz a következõ címen:
+KÃ©rdÃ©seiddel vagy Ã©szrevÃ©teleiddel kÃ¶zvetlenÃ¼l a lista adminisztrÃ¡-
+torÃ¡hoz fordulhatsz a kÃ¶vetkezÅ‘ cÃ­men:
 
     %(adminaddr)s

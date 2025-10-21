@@ -1,26 +1,26 @@
-Vahvistuspyyntö postituslistalle %(listname)s liittymisestä
+VahvistuspyyntÃ¶ postituslistalle %(listname)s liittymisestÃ¤
 
-Olemme saaneet liittymispyynnön osoitteesta %(remote)s 
-liittää sinun sähköpostiosoitteesi, "%(email)s", 
+Olemme saaneet liittymispyynnÃ¶n osoitteesta %(remote)s 
+liittÃ¤Ã¤ sinun sÃ¤hkÃ¶postiosoitteesi, "%(email)s", 
 postituslistalle %(listaddr)s 
 
-Vahvistaaksesi liittymisesi postituslistalle vastaa tähän 
-viestiin. Älä muuta viestin otsikossa olevia tietoja.
+Vahvistaaksesi liittymisesi postituslistalle vastaa tÃ¤hÃ¤n 
+viestiin. Ã„lÃ¤ muuta viestin otsikossa olevia tietoja.
 
 Tai vahvista liittymisesi www-sivulla:
 
     %(confirmurl)s
 
-Tai lähetä seuraava viesti -- ja ainoastaan vain seuraava rivi -- 
+Tai lÃ¤hetÃ¤ seuraava viesti -- ja ainoastaan vain seuraava rivi -- 
 osoitteeseen %(requestaddr)s:
 
     confirm %(cookie)s
 
-Huomioi, että pelkkä Vastaa-toiminto on helpoin ja toimii lähes
-kaikilla sähköpostiohjelmilla. Jätä otsikkoriville teksti, jonka
-järjestelmä on sinne kirjoittanut.
+Huomioi, ettÃ¤ pelkkÃ¤ Vastaa-toiminto on helpoin ja toimii lÃ¤hes
+kaikilla sÃ¤hkÃ¶postiohjelmilla. JÃ¤tÃ¤ otsikkoriville teksti, jonka
+jÃ¤rjestelmÃ¤ on sinne kirjoittanut.
 
-Jos et halua liittyä tälle postituslistalle, tuhoa tämä viesti.
+Jos et halua liittyÃ¤ tÃ¤lle postituslistalle, tuhoa tÃ¤mÃ¤ viesti.
 
-Jos sinulla on jotain kysyttävää lähetä tai kysymyksesi 
-sähköpostiosoitteeseen: %(listadmin)s.
+Jos sinulla on jotain kysyttÃ¤vÃ¤Ã¤ lÃ¤hetÃ¤ tai kysymyksesi 
+sÃ¤hkÃ¶postiosoitteeseen: %(listadmin)s.

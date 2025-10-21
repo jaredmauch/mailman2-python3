@@ -1,13 +1,13 @@
-Como administrador da lista, é necessária sua autorização para 
+Como administrador da lista, Ã© necessÃ¡ria sua autorizaÃ§Ã£o para 
 a postagem da seguinte mensagem da lista:
 
     Lista ..: %(listname)s@%(hostname)s
     De .....: %(sender)s
     Assunto : %(subject)s
-    Razão ..: %(reason)s
+    RazÃ£o ..: %(reason)s
 
-Para sua conveniência, visite:
+Para sua conveniÃªncia, visite:
 
     %(admindb_url)s
 
-para aprovar ou não a mensagem.
+para aprovar ou nÃ£o a mensagem.

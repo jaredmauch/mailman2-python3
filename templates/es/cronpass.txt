@@ -1,23 +1,23 @@
-Esto es un recordatorio que se envía mensualmente sobre las
-subscripciones a listas de distribución que tiene usted en
-%(hostname)s. Incluye información que se puede usar para 
-cambiar sus opciones de subscripción así como para darse de
+Esto es un recordatorio que se envÃ­a mensualmente sobre las
+subscripciones a listas de distribuciÃ³n que tiene usted en
+%(hostname)s. Incluye informaciÃ³n que se puede usar para 
+cambiar sus opciones de subscripciÃ³n asÃ­ como para darse de
 baja de una lista.
 
-Puede visitar las URLs para cambiar la configuración de las
-subscripciones, darse de baja o desactivar la recepción de
+Puede visitar las URLs para cambiar la configuraciÃ³n de las
+subscripciones, darse de baja o desactivar la recepciÃ³n de
 los mensajes (por ejemplo durante las vacaciones).
 
-Además de las URLs, puede utilizar el correo electrónico para
-realizar dichos cambios. Si necesita mas información envíe un
-mensaje a la dirección de solicitudes ('-request') de la lista
+AdemÃ¡s de las URLs, puede utilizar el correo electrÃ³nico para
+realizar dichos cambios. Si necesita mas informaciÃ³n envÃ­e un
+mensaje a la direcciÃ³n de solicitudes ('-request') de la lista
 (por ejemplo, %(exreq)s) con la palabra
 'help' en el asunto (subject) o en el cuerpo del mensaje y 
-recibirá un mensaje con instrucciones.
+recibirÃ¡ un mensaje con instrucciones.
 
-Si tiene alguna pregunta, problema, comentario, etc, envíelo,
-por favor, a la dirección %(owner)s.
+Si tiene alguna pregunta, problema, comentario, etc, envÃ­elo,
+por favor, a la direcciÃ³n %(owner)s.
 
 Gracias
 
-Claves correspondientes a la dirección %(useraddr)s:
+Claves correspondientes a la direcciÃ³n %(useraddr)s:

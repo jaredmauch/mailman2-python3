@@ -1,4 +1,4 @@
-%(member)s je bilo uspeπno prijavljenih na %(listname)s.
+%(member)s je bilo uspe≈°no prijavljenih na %(listname)s.
 %(whence)s
 
 

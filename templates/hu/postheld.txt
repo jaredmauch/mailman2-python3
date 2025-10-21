@@ -1,15 +1,15 @@
-A(z) '%(listname)s' listára küldött alábbi tárgyú leveled
+A(z) '%(listname)s' listÃ¡ra kÃ¼ldÃ¶tt alÃ¡bbi tÃ¡rgyÃº leveled
 
     %(subject)s
 
-a szerkesztõ jóváhagyásáig nem kerül megjelenésre.
+a szerkesztÅ‘ jÃ³vÃ¡hagyÃ¡sÃ¡ig nem kerÃ¼l megjelenÃ©sre.
 
-Az ok amiért jóvá kell hagyni:
+Az ok amiÃ©rt jÃ³vÃ¡ kell hagyni:
 
     %(reason)s
 
-A levél vagy megjelenik a listán, vagy a szerkesztõ elutasító döntésérõl
-külön levélben értesítést kapsz. Ha mégsem szeretnéd, hogy a levél
-megjelenjen, akkor látogass el a következõ címre:
+A levÃ©l vagy megjelenik a listÃ¡n, vagy a szerkesztÅ‘ elutasÃ­tÃ³ dÃ¶ntÃ©sÃ©rÅ‘l
+kÃ¼lÃ¶n levÃ©lben Ã©rtesÃ­tÃ©st kapsz. Ha mÃ©gsem szeretnÃ©d, hogy a levÃ©l
+megjelenjen, akkor lÃ¡togass el a kÃ¶vetkezÅ‘ cÃ­mre:
 
    %(confirmurl)s

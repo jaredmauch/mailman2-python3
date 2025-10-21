@@ -1,12 +1,12 @@
-List nimega '%(listname)s' on loodud. Järgnev tekst annab lühi-
-ülevaate listi seadistustest ja edasisest konfigureerimisest.
+List nimega '%(listname)s' on loodud. JÃ¤rgnev tekst annab lÃ¼hi-
+Ã¼levaate listi seadistustest ja edasisest konfigureerimisest.
 
 Listi parool on:
 
     %(password)s
 
-Seda parooli läheb tarvis listi konfiguratsiooni muutmiseks. Sama
-parooli kasutatakse ka administreerimiseks, näiteks kirja listi 
+Seda parooli lÃ¤heb tarvis listi konfiguratsiooni muutmiseks. Sama
+parooli kasutatakse ka administreerimiseks, nÃ¤iteks kirja listi 
 lubamiseks, kui tegemist on modereeritava listiga
 
 Listi saab konfigureerida aadressilt:
@@ -17,20 +17,20 @@ Listi kasutajate jaoks on veebileht aadressil:
 
     %(listinfo_url)s
 
-Mõlema lehe kujundust on võimalik muuta listi konfigureerimise
+MÃµlema lehe kujundust on vÃµimalik muuta listi konfigureerimise
 juures, kuid selleks peab tundma HTMLi.
 
-Eksisteerib ka meilipõhine kasutajaliides listi kasutajatele
+Eksisteerib ka meilipÃµhine kasutajaliides listi kasutajatele
 (mitte administraatoritele); selle kohta saab infot saates
-kirja, mille sisus on ainult sõna "help" aadressile:
+kirja, mille sisus on ainult sÃµna "help" aadressile:
 
     %(requestaddr)s
 
 Tellija aadressi kustutamiseks listist ava 'listinfo' veebileht,
-seejärel klikkige vastavale aadressile või sisesta see tekstiväljale.
+seejÃ¤rel klikkige vastavale aadressile vÃµi sisesta see tekstivÃ¤ljale.
 Parooliks sisestage listi administraatoriparool. Sealtsamast saab
-muuta ka kõiki selle listi tellija seadistusi, k.a. kokkuvõtete
+muuta ka kÃµiki selle listi tellija seadistusi, k.a. kokkuvÃµtete
 saatmine, tellimuse peatamine, jne.
 
-Võimalikele küsimustele vastab ja probleeme lahendab
+VÃµimalikele kÃ¼simustele vastab ja probleeme lahendab
 	%(siteowner)s
