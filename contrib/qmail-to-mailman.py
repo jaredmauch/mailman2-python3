@@ -49,7 +49,7 @@ MailmanOwner = "postmaster@localhost"; # Postmaster and abuse mail recepient.
 # After you edit /var/qmail/control/virtualdomains, kill and restart qmail.
 #
 
-import sys, os, re
+import sys, os, re, string
 
 def main():
     os.nice(5)  # Handle mailing lists at non-interactive priority.
@@ -63,7 +63,7 @@ def main():
         sys.stderr.write("LOCAL not set in environment?\n")
         sys.exit(100)
 
-    local = local.lower()
+    local = string.lower(local)
     user = os.environ.get('USER', 'mailman')
     local = re.sub('^%s-' % user, '', local)
 

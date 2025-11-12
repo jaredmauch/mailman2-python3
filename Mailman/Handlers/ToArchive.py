@@ -26,15 +26,31 @@ from Mailman.Queue.sbcache import get_switchboard
 
 
 def process(mlist, msg, msgdata):
+    # DEBUG: Log archiver processing start
+    from Mailman.Logging.Syslog import syslog
+    syslog('debug', 'ToArchive: Starting archive processing for list %s', mlist.internal_name())
+    
     # short circuits
-    if msgdata.get('isdigest') or not mlist.archive:
+    if msgdata.get('isdigest'):
+        syslog('debug', 'ToArchive: Skipping digest message for list %s', mlist.internal_name())
         return
+    if not mlist.archive:
+        syslog('debug', 'ToArchive: Archiving disabled for list %s', mlist.internal_name())
+        return
+    
     # Common practice seems to favor "X-No-Archive: yes".  No other value for
     # this header seems to make sense, so we'll just test for it's presence.
     # I'm keeping "X-Archive: no" for backwards compatibility.
-    if 'x-no-archive' in msg or msg.get('x-archive', '').lower() == 'no':
+    if 'x-no-archive' in msg:
+        syslog('debug', 'ToArchive: Skipping message with X-No-Archive header for list %s', mlist.internal_name())
         return
+    if msg.get('x-archive', '').lower() == 'no':
+        syslog('debug', 'ToArchive: Skipping message with X-Archive: no for list %s', mlist.internal_name())
+        return
+    
     # Send the message to the archiver queue
     archq = get_switchboard(mm_cfg.ARCHQUEUE_DIR)
+    syslog('debug', 'ToArchive: Enqueuing message to archive queue for list %s', mlist.internal_name())
     # Send the message to the queue
     archq.enqueue(msg, msgdata)
+    syslog('debug', 'ToArchive: Successfully enqueued message to archive queue for list %s', mlist.internal_name())

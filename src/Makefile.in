@@ -27,9 +27,6 @@ srcdir= 	@srcdir@
 bindir= 	@bindir@
 DESTDIR=
 
-# Add build directory variable
-builddir = .
-
 CC=		@CC@
 CHMOD=  	@CHMOD@
 INSTALL=	@INSTALL@
@@ -52,10 +49,6 @@ CGIDIR= 	$(exec_prefix)/cgi-bin
 CGIEXT=		@CGIEXT@
 MAILDIR=	$(exec_prefix)/mail
 
-# Add required C compiler flags and libraries
-CFLAGS += -Wall -Wextra
-LIBS += -lm
-
 SHELL=		/bin/sh
 
 MAIL_FLAGS=	-DMAIL_GROUP="\"$(MAIL_GROUP)\""
@@ -68,8 +61,6 @@ COMMON_FLAGS=	-DPREFIX="\"$(prefix)\"" \
 		-DPYTHON="\"$(PYTHON)\"" \
 		$(HELPFUL)
 
-# Add dependency on system headers
-COMMON_DEPS = $(srcdir)/common.h $(srcdir)/common.c $(srcdir)/vsnprintf.c Makefile
 
 # Modes for directories and executables created by the install
 # process.  Default to group-writable directories but
@@ -96,34 +87,33 @@ SUID_MAIL_PROGS=
 
 PROGRAMS= $(CGI_PROGS) $(MAIL_PROGS) $(ALIAS_PROGS)
 
+
 # Rules
 
 all: $(PROGRAMS)
 
-mailman: $(builddir)/mail-wrapper.c $(COMMONOBJS) $(COMMON_DEPS)
-	$(CC) -I. $(MAIL_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(builddir)/mail-wrapper.c
+mailman: $(srcdir)/mail-wrapper.c $(COMMONOBJS)
+	$(CC) -I. $(MAIL_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(srcdir)/mail-wrapper.c
 
 #addaliases: $(srcdir)/alias-wrapper.c $(COMMONOBJS)
 #	$(CC) -I. $(ALIAS_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(srcdir)/alias-wrapper.c
 
-$(CGI_PROGS): $(builddir)/cgi-wrapper.c $(COMMONOBJS) $(COMMON_DEPS)
-	$(CC) -DSCRIPT="\"$@\"" -I. $(CGI_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(builddir)/cgi-wrapper.c
+$(CGI_PROGS): $(srcdir)/cgi-wrapper.c $(COMMONOBJS)
+	$(CC) -DSCRIPT="\"$@\"" -I. $(CGI_FLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(COMMONOBJS) -o $@ $(srcdir)/cgi-wrapper.c
 
 common.o: $(srcdir)/common.c $(srcdir)/common.h Makefile
-	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -o $@ $(srcdir)/common.c
+	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) $(srcdir)/common.c
 
 vsnprintf.o: $(srcdir)/vsnprintf.c Makefile
-	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -o $@ $(srcdir)/vsnprintf.c
+	$(CC) -c -I. $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) $(srcdir)/vsnprintf.c
 
 install: all
-	@echo "Installing CGI programs..."
 	for f in $(CGI_PROGS); \
 	do \
 	    exe=$(DESTDIR)$(CGIDIR)/$$f$(CGIEXT); \
 	    $(INSTALL_PROGRAM) $$f $$exe; \
 	    $(DIRSETGID) $$exe; \
 	done
-	@echo "Installing mail programs..."
 	for f in $(MAIL_PROGS); \
 	do \
 	    $(INSTALL_PROGRAM) $$f $(DESTDIR)$(MAILDIR); \

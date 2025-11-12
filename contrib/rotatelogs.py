@@ -39,13 +39,13 @@ and the logs are rotated.
 
 showLines = 100         #  lines of log messages to display before truncating
 
-import sys, os, time, errno
+import sys, os, string, time, errno
 import paths
 from Mailman import mm_cfg, Utils
 import fileinput, socket, time, stat
-import signal
 
 # Work around known problems with some RedHat cron daemons
+import signal
 signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 
 

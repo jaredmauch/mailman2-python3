@@ -1,45 +1,55 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
 <html>
 <head>
-<link href="mailman-install.css" rel="STYLESHEET" type="text/css"/>
-<link href="mailman-install.html" rel="first" title="GNU mailman - installation Manual"/>
-<link href="about.html" rel="last" title="About this document..."/>
-<link href="about.html" rel="help" title="About this document..."/>
-<link href="bsd-issues.html" rel="prev"/>
-<link href="node47.html" rel="parent"/>
-<link href="about.html" rel="next"/>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-<meta content="information" name="aesop"/>
+<link rel="STYLESHEET" href="mailman-install.css" type='text/css' />
+<link rel="first" href="mailman-install.html" title='GNU mailman - installation Manual' />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="prev" href="bsd-issues.html" />
+<link rel="parent" href="node47.html" />
+<link rel="next" href="about.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
 <title>15.3 MacOSX issues</title>
 </head>
 <body>
 <div class="navigation">
-<div id="top-navigation-panel" xml:id="top-navigation-panel">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="bsd-issues.html" rel="prev" title="15.2 bsd issues"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node47.html" rel="parent" title="15 platform and operating"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="about.html" rel="next" title="About this document ..."><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="15.2 bsd issues"
+  href="bsd-issues.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="15 platform and operating"
+  href="node47.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="About this document ..."
+  href="about.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - Installation Manual</td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="bsd-issues.html" rel="prev">15.2 BSD issues</a>
+<a class="sectref" rel="prev" href="bsd-issues.html">15.2 BSD issues</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="node47.html" rel="parent">15 Platform and operating</a>
+<a class="sectref" rel="parent" href="node47.html">15 Platform and operating</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="about.html" rel="next">About this document ...</a>
+<a class="sectref" rel="next" href="about.html">About this document ...</a>
 </div>
-<hr/></div>
+<hr /></div>
 </div>
 <!--End of Navigation Panel-->
+
 <h2><a name="SECTION0011530000000000000000">
 15.3 MacOSX issues</a>
 </h2>
+
 <p>
 <div class="Note"><b class="label"></b>
 
@@ -47,32 +57,34 @@ Much of the following is no longer applicable to more recent versions of
 MacOSX.  See the FAQ at <a class="url" href="http://wiki.list.org/x/O4A9">http://wiki.list.org/x/O4A9</a> for links to more
 recent information.
 </div>
+
 <p>
 Many people run Mailman on MacOSX.  Here are some pointers that have been
 collected on getting Mailman to run on MacOSX.
 
 <p>
+
 <ul>
 <li>Jaguar (MacOSX 10.2) comes with Python 2.2.  While this isn't the very
       latest stable version of Python, it ought to be sufficient to run
       Mailman 2.1.
 
 <p>
-</p></li>
+</li>
 <li>David B. O'Donnell has a web page describing his configuration of
       Mailman 2.0.13 and Postfix on MacOSX Server.
 
 <p>
 <a class="url" href="http://www.afp548.com/Articles/mail/python-mailman.html">http://www.afp548.com/Articles/mail/python-mailman.html</a>
 <p>
-</p></p></li>
+</li>
 <li>Kathleen Webb posted her experiences in getting Mailman running on
       Jaguar using Sendmail.
 
 <p>
 <a class="url" href="http://mail.python.org/pipermail/mailman-users/2002-October/022944.html">http://mail.python.org/pipermail/mailman-users/2002-October/022944.html</a>
 <p>
-</p></p></li>
+</li>
 <li>Panther server (MacOSX 10.3) comes with Mailman; Your operating system
       should contain documentation that will help you, and Apple has a tech
       document about a problem you might encounter running Mailman on Mac OS X
@@ -80,8 +92,9 @@ collected on getting Mailman to run on MacOSX.
 
 <p>
 <a class="url" href="http://docs.info.apple.com/article.html?artnum=107889">http://docs.info.apple.com/article.html?artnum=107889</a>
-</p></li>
+</li>
 </ul>
+
 <p>
 Terry Allen provides the following detailed instructions on running Mailman on
 the 'client' version of OSX, or in earlier versions of OSX:
@@ -157,13 +170,15 @@ chmod a+rx,g+ws .
 exit
 su mailman
 </pre></div>
+
 <p>
 For setting up Apache on OSX to handle Mailman, the steps are almost identical
 and the configuration file on a stock Mac OSX Client version is stored in the
 nearly standard location of <span class="file">/etc/httpd/httpd.conf</span>.
 
 <p>
-The <a class="ulink" href="http://www.afp548.com">AFP548.com</a> site has a time-saving automated startup item creator for
+The <a class="ulink" href="http://www.afp548.com"
+  >AFP548.com</a> site has a time-saving automated startup item creator for
 Mailman, which can be found at 
 <a class="url" href="http://www.afp548.com/Software/MailmanStartup.tar.gz">http://www.afp548.com/Software/MailmanStartup.tar.gz</a>
 <p>
@@ -175,36 +190,48 @@ the root or superuser, from the terminal, enter the following:
 gunzip MailmanStartup.tar.gz
 tar xvf MailmanStartup.tar
 </pre></div>
+
 <p>
 It will create the startup item for you so that when you reboot, Mailman will
 start up.
 
 <p>
+
 <div class="navigation">
-<div class="online-navigation">
-<p></p><hr/>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="bsd-issues.html" rel="prev" title="15.2 bsd issues"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node47.html" rel="parent" title="15 platform and operating"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="about.html" rel="next" title="About this document ..."><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="15.2 bsd issues"
+  href="bsd-issues.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="15 platform and operating"
+  href="node47.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="About this document ..."
+  href="about.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - Installation Manual</td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="bsd-issues.html" rel="prev">15.2 BSD issues</a>
+<a class="sectref" rel="prev" href="bsd-issues.html">15.2 BSD issues</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="node47.html" rel="parent">15 Platform and operating</a>
+<a class="sectref" rel="parent" href="node47.html">15 Platform and operating</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="about.html" rel="next">About this document ...</a>
+<a class="sectref" rel="next" href="about.html">About this document ...</a>
 </div>
 </div>
-<hr/>
+<hr />
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-</p></p></p></p></p></p></p></p></p></p></p></p></p></p></p></p></p></p></body>
+
+</body>
 </html>

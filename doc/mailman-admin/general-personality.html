@@ -1,48 +1,59 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
 <html>
 <head>
-<link href="mailman-admin.css" rel="STYLESHEET" type="text/css"/>
-<link href="mailman-admin.html" rel="first" title="GNU mailman - list Administration Manual"/>
-<link href="contents.html" rel="contents" title="Contents"/>
-<link href="about.html" rel="last" title="About this document..."/>
-<link href="about.html" rel="help" title="About this document..."/>
-<link href="node11.html" rel="next"/>
-<link href="node9.html" rel="prev"/>
-<link href="node9.html" rel="parent"/>
-<link href="node11.html" rel="next"/>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-<meta content="information" name="aesop"/>
+<link rel="STYLESHEET" href="mailman-admin.css" type='text/css' />
+<link rel="first" href="mailman-admin.html" title='GNU mailman - list Administration Manual' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="next" href="node11.html" />
+<link rel="prev" href="node9.html" />
+<link rel="parent" href="node9.html" />
+<link rel="next" href="node11.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
 <title>2.1.1 General list personality</title>
 </head>
 <body>
 <div class="navigation">
-<div id="top-navigation-panel" xml:id="top-navigation-panel">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node9.html" rel="prev" title="2.1 the General Options"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node9.html" rel="parent" title="2.1 the General Options"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node11.html" rel="next" title="2.1.2 reply-to header munging"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Administration Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="2.1 the General Options"
+  href="node9.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="2.1 the General Options"
+  href="node9.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="2.1.2 reply-to header munging"
+  href="node11.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - List Administration Manual</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="node9.html" rel="prev">2.1 The General Options</a>
+<a class="sectref" rel="prev" href="node9.html">2.1 The General Options</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="node9.html" rel="parent">2.1 The General Options</a>
+<a class="sectref" rel="parent" href="node9.html">2.1 The General Options</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="node11.html" rel="next">2.1.2 Reply-To header munging</a>
+<a class="sectref" rel="next" href="node11.html">2.1.2 Reply-To header munging</a>
 </div>
-<hr/></div>
+<hr /></div>
 </div>
 <!--End of Navigation Panel-->
+
 <h3><a name="SECTION002211000000000000000"></a><a name="general-personality"></a>
-<br/>
+<br>
 2.1.1 General list personality
 </h3>
+
 <p>
 These variables, grouped under the general list personality section,
 control some public information about the mailing list.
@@ -61,7 +72,7 @@ control some public information about the mailing list.
     real name can be <code>MyList</code>.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>owner</strong></dt>
 <dd>This variable contains a list of email addresses, one address per
     line, of the list owners.  These addresses are used whenever the
@@ -70,7 +81,7 @@ control some public information about the mailing list.
     <code>moderator</code> addresses (see below).
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>moderator</strong></dt>
 <dd>This variable contains a list of email addresses, one address per
     line, of the list moderators.  These addresses are often used in
@@ -79,7 +90,7 @@ control some public information about the mailing list.
     moderator addresses will receive a copy of the message.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>description</strong></dt>
 <dd>In the general list overview page, which shows you every available
     mailing list, each list is displayed with a short description.
@@ -89,7 +100,7 @@ control some public information about the mailing list.
     be relatively short and no longer than one line.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>info</strong></dt>
 <dd>This variable contains a longer description of the mailing list.
     It is included at the top of the list's information page, and it
@@ -99,7 +110,7 @@ control some public information about the mailing list.
     the list information page.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>subject_prefix</strong></dt>
 <dd>This is a string that will be prepended to the
     <span class="mailheader">Subject:</span> header of any message posted to the list.
@@ -110,6 +121,7 @@ control some public information about the mailing list.
 <div class="verbatim"><pre>
     Subject: This is a message
 </pre></div>
+
 <p>
 and the <code>subject_prefix</code> is <code>[My List] </code> (note the
     trailing space!), then the message will be received like so:
@@ -118,6 +130,7 @@ and the <code>subject_prefix</code> is <code>[My List] </code> (note the
 <div class="verbatim"><pre>
     Subject: [My List] This is a message
 </pre></div>
+
 <p>
 If you leave <code>subject_prefix</code> empty, no prefix will be added
     to the <span class="mailheader">Subject:</span>.  Mailman is careful not to add a
@@ -127,7 +140,7 @@ If you leave <code>subject_prefix</code> empty, no prefix will be added
     email standards, you may or may not want to add a trailing space.
 
 <p>
-</p></p></p></p></p></dd>
+</dd>
 <dt><strong>from_is_list</strong></dt>
 <dd>This applies to all non-digest messages sent by the list.  For settings
     that apply only to messages whose <span class="mailheader">From:</span> domain publishes a
@@ -148,7 +161,7 @@ If set to <em>Wrap Message</em> it wraps the original message as a MIME
     <span class="mailheader">Reply-To:</span> headers as above.
 
 <p>
-</p></p></p></dd>
+</dd>
 <dt><strong>anonymous_list</strong></dt>
 <dd>This variable allows you to turn on some simple anonymizing
     features of Mailman.  When you set this option to <em>Yes</em>,
@@ -162,34 +175,47 @@ Note that this option is simply an aid for anonymization, it
     evident in their signature, or in other mail headers, or even in
     the style of the content of the message.  There's little Mailman
     can do about this kind of identity leakage.
-</p></dd>
+</dd>
 </dl>
+
 <p>
+
 <div class="navigation">
-<div class="online-navigation">
-<p></p><hr/>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node9.html" rel="prev" title="2.1 the General Options"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node9.html" rel="parent" title="2.1 the General Options"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node11.html" rel="next" title="2.1.2 reply-to header munging"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Administration Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="2.1 the General Options"
+  href="node9.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="2.1 the General Options"
+  href="node9.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="2.1.2 reply-to header munging"
+  href="node11.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - List Administration Manual</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="node9.html" rel="prev">2.1 The General Options</a>
+<a class="sectref" rel="prev" href="node9.html">2.1 The General Options</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="node9.html" rel="parent">2.1 The General Options</a>
+<a class="sectref" rel="parent" href="node9.html">2.1 The General Options</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="node11.html" rel="next">2.1.2 Reply-To header munging</a>
+<a class="sectref" rel="next" href="node11.html">2.1.2 Reply-To header munging</a>
 </div>
 </div>
-<hr/>
+<hr />
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-</p></p></p></body>
+
+</body>
 </html>

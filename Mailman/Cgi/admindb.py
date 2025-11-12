@@ -22,30 +22,28 @@ from builtins import zip
 from builtins import str
 import sys
 import os
-import urllib.parse
+from Mailman.Utils import FieldStorage
+import codecs
 import errno
 import signal
 import email
 import email.errors
 import time
-from urllib.parse import quote_plus, unquote_plus
-import re
-from email.iterators import body_line_iterator
+from urllib.parse import quote_plus, unquote_plus, parse_qs
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
 from Mailman import Errors
-from Mailman.Message import Message
+from Mailman import Message
 from Mailman import i18n
 from Mailman.Handlers.Moderate import ModeratedMemberPost
-from Mailman.ListAdmin import HELDMSG, ListAdmin, PermissionError
+from Mailman.ListAdmin import HELDMSG
 from Mailman.ListAdmin import readMessage
 from Mailman.Cgi import Auth
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import syslog, mailman_log
+from Mailman.Logging.Syslog import syslog
 from Mailman.CSRFcheck import csrf_check
-import traceback
 
 EMPTYSTRING = ''
 NL = '\n'
@@ -69,6 +67,7 @@ AUTH_CONTEXTS = (mm_cfg.AuthListModerator, mm_cfg.AuthListAdmin,
                  mm_cfg.AuthSiteAdmin)
 
 
+
 def helds_by_skey(mlist, ssort=SSENDER):
     heldmsgs = mlist.GetHeldMessageIds()
     byskey = {}
@@ -106,22 +105,7 @@ def hacky_radio_buttons(btnname, labels, values, defaults, spacing=3):
     return btns
 
 
-def output_error_page(status, title, message, details=None):
-    doc = Document()
-    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-    doc.AddItem(Header(2, _(title)))
-    doc.AddItem(Bold(_(message)))
-    if details:
-        doc.AddItem(Preformatted(Utils.websafe(str(details))))
-    doc.AddItem(_('Please contact the site administrator.'))
-    return doc
-
-
-def output_success_page(doc):
-    print(doc.Format())
-    return
-
-
+
 def main():
     global ssort
     # Figure out which list is being requested
@@ -145,24 +129,14 @@ def main():
     # Now that we know which list to use, set the system's language to it.
     i18n.set_language(mlist.preferred_language)
 
-    # Initialize the document
-    doc = Document()
-    doc.set_language(mlist.preferred_language)
-
     # Make sure the user is authorized to see this page.
+    cgidata = FieldStorage(keep_blank_values=1)
     try:
-        if os.environ.get('REQUEST_METHOD', '').lower() == 'post':
-            content_type = os.environ.get('CONTENT_TYPE', '')
-            if content_type.startswith('application/x-www-form-urlencoded'):
-                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                form_data = sys.stdin.buffer.read(content_length).decode('latin-1')
-                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=1)
-            else:
-                raise ValueError('Invalid content type')
-        else:
-            cgidata = urllib.parse.parse_qs(os.environ.get('QUERY_STRING', ''), keep_blank_values=1)
-    except Exception:
+        cgidata.getfirst('adminpw', '')
+    except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
+        doc = Document()
+        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
@@ -174,19 +148,19 @@ def main():
     safe_params = ['adminpw', 'admlogin', 'msgid', 'sender', 'details']
     params = list(cgidata.keys())
     if set(params) - set(safe_params):
-        csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
                                   'admindb')
     else:
         csrf_checked = True
     # if password is present, void cookie to force password authentication.
-    if cgidata.get('adminpw', [''])[0]:
+    if cgidata.getfirst('adminpw'):
         os.environ['HTTP_COOKIE'] = ''
         csrf_checked = True
 
     if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
                                   mm_cfg.AuthListModerator,
                                   mm_cfg.AuthSiteAdmin),
-                                 cgidata.get('adminpw', [''])[0]):
+                                 cgidata.getfirst('adminpw', '')):
         if 'adminpw' in cgidata:
             # This is a re-authorization attempt
             msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
@@ -215,51 +189,170 @@ def main():
         Auth.loginpage(mlist, 'admindb', frontpage=1)
         return
 
+    # Set up the results document
+    doc = Document()
+    doc.set_language(mlist.preferred_language)
+
+    # See if we're requesting all the messages for a particular sender, or if
+    # we want a specific held message.
+    sender = None
+    msgid = None
+    details = None
+    envar = os.environ.get('QUERY_STRING')
+    if envar:
+        # POST methods, even if their actions have a query string, don't get
+        # put into FieldStorage's keys :-(
+        qs = parse_qs(envar).get('sender')
+        if qs and type(qs) == list:
+            sender = qs[0]
+        qs = parse_qs(envar).get('msgid')
+        if qs and type(qs) == list:
+            msgid = qs[0]
+        qs = parse_qs(envar).get('details')
+        if qs and type(qs) == list:
+            details = qs[0]
+
     # We need a signal handler to catch the SIGTERM that can come from Apache
     # when the user hits the browser's STOP button.  See the comment in
     # admin.py for details.
+    #
+    # BAW: Strictly speaking, the list should not need to be locked just to
+    # read the request database.  However the request database asserts that
+    # the list is locked in order to load it and it's not worth complicating
+    # that logic.
     def sigterm_handler(signum, frame, mlist=mlist):
-        try:
-            # Make sure the list gets unlocked...
-            mlist.Unlock()
-            # Log the termination
-            syslog('info', 'admindb: SIGTERM received, unlocking list and exiting')
-        except Exception as e:
-            syslog('error', 'admindb: Error in SIGTERM handler: %s', str(e))
-        finally:
-            # ...and ensure we exit, otherwise race conditions could cause us to
-            # enter MailList.Save() while we're in the unlocked state, and that
-            # could be bad!
-            sys.exit(0)
+        # Make sure the list gets unlocked...
+        mlist.Unlock()
+        # ...and ensure we exit, otherwise race conditions could cause us to
+        # enter MailList.Save() while we're in the unlocked state, and that
+        # could be bad!
+        sys.exit(0)
 
     mlist.Lock()
     try:
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        try:
-            process_form(mlist, doc, cgidata)
+        realname = mlist.real_name
+        if not list(cgidata.keys()) or 'admlogin' in cgidata:
+            # If this is not a form submission (i.e. there are no keys in the
+            # form) or it's a login, then we don't need to do much special.
+            doc.SetTitle(_(f'{realname} Administrative Database'))
+        elif not details:
+            # This is a form submission
+            doc.SetTitle(_(f'{realname} Administrative Database Results'))
+            if csrf_checked:
+                process_form(mlist, doc, cgidata)
+            else:
+                doc.addError(
+                    _('The form lifetime has expired. (request forgery check)'))
+        # Now print the results and we're done.  Short circuit for when there
+        # are no pending requests, but be sure to save the results!
+        admindburl = mlist.GetScriptURL('admindb', absolute=1)
+        if not mlist.NumRequestsPending():
+            title = _(f'{realname} Administrative Database')
+            doc.SetTitle(title)
+            doc.AddItem(Header(2, title))
+            doc.AddItem(_('There are no pending requests.'))
+            doc.AddItem(' ')
+            doc.AddItem(Link(admindburl,
+                             _('Click here to reload this page.')))
+            # Put 'Logout' link before the footer
+            doc.AddItem('\n<div align="right"><font size="+2">')
+            doc.AddItem(Link('%s/logout' % admindburl,
+                '<b>%s</b>' % _('Logout')))
+            doc.AddItem('</font></div>\n')
+            doc.AddItem(mlist.GetMailmanFooter())
+            print(doc.Format())
             mlist.Save()
-            # Output the success page with proper headers
-            print(doc.Format())
-        except PermissionError as e:
-            syslog('error', 'admindb: Permission error processing form: %s', str(e))
-            doc = Document()
-            doc.set_language(mlist.preferred_language)
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Permission error while processing request')))
-            print(doc.Format())
-        except Exception as e:
-            syslog('error', 'admindb: Error processing form: %s', str(e))
-            doc = Document()
-            doc.set_language(mlist.preferred_language)
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Error processing request')))
-            print(doc.Format())
+            return
+
+        form = Form(admindburl, mlist=mlist, contexts=AUTH_CONTEXTS)
+        # Add the instructions template
+        if details == 'instructions':
+            doc.AddItem(Header(
+                2, _('Detailed instructions for the administrative database')))
+        else:
+            doc.AddItem(Header(
+                2,
+                _('Administrative requests for mailing list:')
+                + ' <em>%s</em>' % mlist.real_name))
+        if details != 'instructions':
+            form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
+        nomessages = not mlist.GetHeldMessageIds()
+        if not (details or sender or msgid or nomessages):
+            form.AddItem(Center(
+                '<label>' +
+                CheckBox('discardalldefersp', 0).Format() +
+                '&nbsp;' +
+                _('Discard all messages marked <em>Defer</em>') +
+                '</label>'
+                ))
+        # Add a link back to the overview, if we're not viewing the overview!
+        adminurl = mlist.GetScriptURL('admin', absolute=1)
+        d = {'listname'  : mlist.real_name,
+             'detailsurl': admindburl + '?details=instructions',
+             'summaryurl': admindburl,
+             'viewallurl': admindburl + '?details=all',
+             'adminurl'  : adminurl,
+             'filterurl' : adminurl + '/privacy/sender',
+             }
+        addform = 1
+        if sender:
+            esender = Utils.websafe(sender)
+            d['description'] = _("all of {esender}'s held messages.")
+            doc.AddItem(Utils.maketext('admindbpreamble.html', d,
+                                       raw=1, mlist=mlist))
+            show_sender_requests(mlist, form, sender)
+        elif msgid:
+            d['description'] = _('a single held message.')
+            doc.AddItem(Utils.maketext('admindbpreamble.html', d,
+                                       raw=1, mlist=mlist))
+            show_message_requests(mlist, form, msgid)
+        elif details == 'all':
+            d['description'] = _('all held messages.')
+            doc.AddItem(Utils.maketext('admindbpreamble.html', d,
+                                       raw=1, mlist=mlist))
+            show_detailed_requests(mlist, form)
+        elif details == 'instructions':
+            doc.AddItem(Utils.maketext('admindbdetails.html', d,
+                                       raw=1, mlist=mlist))
+            addform = 0
+        else:
+            # Show a summary of all requests
+            doc.AddItem(Utils.maketext('admindbsummary.html', d,
+                                       raw=1, mlist=mlist))
+            num = show_pending_subs(mlist, form)
+            num += show_pending_unsubs(mlist, form)
+            num += show_helds_overview(mlist, form, ssort)
+            addform = num > 0
+        # Finish up the document, adding buttons to the form
+        if addform:
+            doc.AddItem(form)
+            form.AddItem('<hr>')
+            if not (details or sender or msgid or nomessages):
+                form.AddItem(Center(
+                    '<label>' +
+                    CheckBox('discardalldefersp', 0).Format() +
+                    '&nbsp;' +
+                    _('Discard all messages marked <em>Defer</em>') +
+                    '</label>'
+                    ))
+            form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
+        # Put 'Logout' link before the footer
+        doc.AddItem('\n<div align="right"><font size="+2">')
+        doc.AddItem(Link('%s/logout' % admindburl,
+            '<b>%s</b>' % _('Logout')))
+        doc.AddItem('</font></div>\n')
+        doc.AddItem(mlist.GetMailmanFooter())
+        print(doc.Format())
+        # Commit all changes
+        mlist.Save()
     finally:
         mlist.Unlock()
 
 
+
 def handle_no_list(msg=''):
     # Print something useful if no list was given.
     doc = Document()
@@ -274,11 +367,10 @@ def handle_no_list(msg=''):
     doc.AddItem(_(f'You must specify a list name.  Here is the {link}'))
     doc.AddItem('<hr>')
     doc.AddItem(MailmanLogo())
-    
-    # Return the document instead of outputting headers
-    return doc
+    print(doc.Format())
 
 
+
 def show_pending_subs(mlist, form):
     # Add the subscription request section
     pendingsubs = mlist.GetSubscriptionIds()
@@ -286,18 +378,11 @@ def show_pending_subs(mlist, form):
         return 0
     form.AddItem('<hr>')
     form.AddItem(Center(Header(2, _('Subscription Requests'))))
-    table = Table(
-        role="table",
-        aria_label=_("Pending Subscription Requests"),
-        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
-    )
+    table = Table(border=2)
     table.AddRow([Center(Bold(_('Address/name/time'))),
                   Center(Bold(_('Your decision'))),
                   Center(Bold(_('Reason for refusal')))
                   ])
-    table.AddCellInfo(table.GetCurrentRowIndex(), 0, role="columnheader", scope="col")
-    table.AddCellInfo(table.GetCurrentRowIndex(), 1, role="columnheader", scope="col")
-    table.AddCellInfo(table.GetCurrentRowIndex(), 2, role="columnheader", scope="col")
     # Alphabetical order by email address
     byaddrs = {}
     for id in pendingsubs:
@@ -329,16 +414,9 @@ def show_pending_subs(mlist, form):
                      CheckBox(f'ban-%d' % id, 1).Format() +
                      '&nbsp;' + _('Permanently ban from this list') +
                      '</label>')
-        # Ensure the address is properly decoded for display
-        if isinstance(addr, bytes):
-            try:
-                addr = addr.decode('utf-8')
-            except UnicodeDecodeError:
-                try:
-                    addr = addr.decode('latin-1')
-                except UnicodeDecodeError:
-                    addr = addr.decode('ascii', 'replace')
-        table.AddRow(['%s<br><em>%s</em><br>%s' % (Utils.websafe(addr),
+        # While the address may be a unicode, it must be ascii
+        paddr = addr.encode('us-ascii', 'replace')
+        table.AddRow(['%s<br><em>%s</em><br>%s' % (paddr,
                                                    Utils.websafe(fullname),
                                                    displaytime),
                       radio,
@@ -350,24 +428,18 @@ def show_pending_subs(mlist, form):
     return num
 
 
+
 def show_pending_unsubs(mlist, form):
     # Add the pending unsubscription request section
     lang = mlist.preferred_language
     pendingunsubs = mlist.GetUnsubscriptionIds()
     if not pendingunsubs:
         return 0
-    table = Table(
-        role="table",
-        aria_label=_("Pending Unsubscription Requests"),
-        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
-    )
+    table = Table(border=2)
     table.AddRow([Center(Bold(_('User address/name'))),
                   Center(Bold(_('Your decision'))),
                   Center(Bold(_('Reason for refusal')))
                   ])
-    table.AddCellInfo(table.GetCurrentRowIndex(), 0, role="columnheader", scope="col")
-    table.AddCellInfo(table.GetCurrentRowIndex(), 1, role="columnheader", scope="col")
-    table.AddCellInfo(table.GetCurrentRowIndex(), 2, role="columnheader", scope="col")
     # Alphabetical order by email address
     byaddrs = {}
     for id in pendingunsubs:
@@ -410,28 +482,7 @@ def show_pending_unsubs(mlist, form):
     return num
 
 
-def format_subject(subject, charset):
-    """Format a subject line with proper encoding handling."""
-    dispsubj = Utils.oneline(subject, charset)
-    if isinstance(dispsubj, bytes):
-        try:
-            dispsubj = dispsubj.decode(charset)
-        except UnicodeDecodeError:
-            dispsubj = dispsubj.decode('latin-1', 'replace')
-    return dispsubj
-
-
-def format_message_data(msgdata):
-    """Format message metadata with proper error handling."""
-    when = msgdata.get('received_time')
-    if when:
-        try:
-            return time.ctime(when)
-        except (TypeError, ValueError):
-            return _('Invalid timestamp')
-    return None
-
-
+
 def show_helds_overview(mlist, form, ssort=SSENDER):
     # Sort the held messages.
     byskey = helds_by_skey(mlist, ssort)
@@ -449,11 +500,7 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                 (ssort == SSENDER, ssort == SSENDERTIME, ssort == STIME))))
     # Add the by-sender overview tables
     admindburl = mlist.GetScriptURL('admindb', absolute=1)
-    table = Table(
-        role="table",
-        aria_label=_("Held Messages Overview"),
-        border=0
-    )
+    table = Table(border=0)
     form.AddItem(table)
     skeys = list(byskey.keys())
     skeys.sort()
@@ -463,27 +510,19 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
         esender = Utils.websafe(sender)
         senderurl = admindburl + '?sender=' + qsender
         # The encompassing sender table
-        stable = Table(
-            role="table",
-            aria_label=_("Messages from {sender}").format(sender=esender),
-            border=1
-        )
+        stable = Table(border=1)
         stable.AddRow([Center(Bold(_('From:')).Format() + esender)])
-        stable.AddCellInfo(stable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
-        left = Table(
-            role="table",
-            aria_label=_("Actions for messages from {sender}").format(sender=esender),
-            border=0
-        )
+        stable.AddCellInfo(stable.GetCurrentRowIndex(), 0, colspan=2)
+        left = Table(border=0)
         left.AddRow([_('Action to take on all these held messages:')])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         btns = hacky_radio_buttons(
             'senderaction-' + qsender,
             (_('Defer'), _('Accept'), _('Reject'), _('Discard')),
             (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT, mm_cfg.DISCARD),
             (1, 0, 0, 0))
         left.AddRow([btns])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         left.AddRow([
             '<label>' +
             CheckBox('senderpreserve-' + qsender, 1).Format() +
@@ -491,7 +530,7 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             _('Preserve messages for the site administrator') +
             '</label>'
             ])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         left.AddRow([
             '<label>' +
             CheckBox('senderforward-' + qsender, 1).Format() +
@@ -499,12 +538,12 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             _('Forward messages (individually) to:') +
             '</label>'
             ])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         left.AddRow([
             TextBox('senderforwardto-' + qsender,
                     value=mlist.GetOwnerEmail())
             ])
-        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         # If the sender is a member and the message is being held due to a
         # moderation bit, give the admin a chance to clear the member's mod
         # bit.  If this sender is not a member and is not already on one of
@@ -522,11 +561,11 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
             else:
                 left.AddRow(
                     [_('<em>The sender is now a member of this list</em>')])
-            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
         elif sender not in (mlist.accept_these_nonmembers +
-                             mlist.hold_these_nonmembers +
-                             mlist.reject_these_nonmembers +
-                             mlist.discard_these_nonmembers):
+                            mlist.hold_these_nonmembers +
+                            mlist.reject_these_nonmembers +
+                            mlist.discard_these_nonmembers):
             left.AddRow([
                 '<label>' +
                 CheckBox('senderfilterp-' + qsender, 1).Format() +
@@ -534,14 +573,14 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                 _(f'Add <b>{esender}</b> to one of these sender filters:') +
                 '</label>'
                 ])
-            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
             btns = hacky_radio_buttons(
                 'senderfilter-' + qsender,
                 (_('Accepts'), _('Holds'), _('Rejects'), _('Discards')),
                 (mm_cfg.ACCEPT, mm_cfg.HOLD, mm_cfg.REJECT, mm_cfg.DISCARD),
                 (0, 0, 0, 1))
             left.AddRow([btns])
-            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+            left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
             if sender not in mlist.ban_list:
                 left.AddRow([
                     '<label>' +
@@ -549,81 +588,56 @@ def show_helds_overview(mlist, form, ssort=SSENDER):
                     '&nbsp;' +
                     _(f"""Ban <b>{esender}</b> from ever subscribing to this
                     mailing list""") + '</label>'])
-                left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2, role="cell")
-        right = Table(
-            role="table",
-            aria_label=_("Actions for messages from {sender}").format(sender=esender),
-            border=0
-        )
+                left.AddCellInfo(left.GetCurrentRowIndex(), 0, colspan=2)
+        right = Table(border=0)
         right.AddRow([
             _(f"""Click on the message number to view the individual
             message, or you can """) +
             Link(senderurl, _(f'view all messages from {esender}')).Format()
             ])
-        right.AddCellInfo(right.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+        right.AddCellInfo(right.GetCurrentRowIndex(), 0, colspan=2)
         right.AddRow(['&nbsp;', '&nbsp;'])
         counter = 1
         for ptime, id in byskey[skey]:
+            info = mlist.GetRecord(id)
+            ptime, sender, subject, reason, filename, msgdata = info
+            # BAW: This is really the size of the message pickle, which should
+            # be close, but won't be exact.  Sigh, good enough.
             try:
-                info = mlist.GetRecord(id)
-                ptime, sender, subject, reason, filename, msgdata = info
-                # Get message size with proper error handling
-                try:
-                    size = os.path.getsize(os.path.join(mm_cfg.DATA_DIR, filename))
-                except OSError as e:
-                    if e.errno != errno.ENOENT:
-                        mailman_log('error', 'admindb: Error getting file size: %s\n%s',
-                                   str(e), traceback.format_exc())
-                        raise
-                    # Message already handled
-                    mlist.HandleRequest(id, mm_cfg.DISCARD)
-                    continue
-
-                # Format subject with proper encoding
-                charset = Utils.GetCharSet(mlist.preferred_language)
-                dispsubj = format_subject(subject, charset)
-                
-                t = Table(
-                    role="table",
-                    aria_label=_("Message {counter}").format(counter=counter),
-                    border=0
-                )
-                t.AddRow([Link(admindburl + '?msgid=%d' % id, '[%d]' % counter),
-                          Bold(_('Subject:')),
-                          Utils.websafe(dispsubj)
-                          ])
-                t.AddRow(['&nbsp;', Bold(_('Size:')), str(size) + _(' bytes')])
-                
-                # Format reason with proper encoding
-                if reason:
-                    try:
-                        reason = _(reason)
-                        if isinstance(reason, bytes):
-                            reason = reason.decode(charset, 'replace')
-                    except (UnicodeError, LookupError):
-                        reason = _('not available')
-                else:
-                    reason = _('not available')
-                t.AddRow(['&nbsp;', Bold(_('Reason:')), reason])
-                
-                # Format received time with proper error handling
-                received_time = format_message_data(msgdata)
-                if received_time:
-                    t.AddRow(['&nbsp;', Bold(_('Received:')), received_time])
-                
-                t.AddRow([InputObj(qsender, 'hidden', str(id), False).Format()])
-                counter += 1
-                right.AddRow([t])
-            except Exception as e:
-                mailman_log('error', 'admindb: Error processing held message %d: %s\n%s',
-                           id, str(e), traceback.format_exc())
+                size = os.path.getsize(os.path.join(mm_cfg.DATA_DIR, filename))
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
+                # This message must have gotten lost, i.e. it's already been
+                # handled by the time we got here.
+                mlist.HandleRequest(id, mm_cfg.DISCARD)
                 continue
-                
+            dispsubj = Utils.oneline(
+                subject, Utils.GetCharSet(mlist.preferred_language))
+            t = Table(border=0)
+            t.AddRow([Link(admindburl + '?msgid=%d' % id, '[%d]' % counter),
+                      Bold(_('Subject:')),
+                      Utils.websafe(dispsubj)
+                      ])
+            t.AddRow(['&nbsp;', Bold(_('Size:')), str(size) + _(' bytes')])
+            if reason:
+                reason = _(reason)
+            else:
+                reason = _('not available')
+            t.AddRow(['&nbsp;', Bold(_('Reason:')), reason])
+            # Include the date we received the message, if available
+            when = msgdata.get('received_time')
+            if when:
+                t.AddRow(['&nbsp;', Bold(_('Received:')),
+                          time.ctime(when)])
+            t.AddRow([InputObj(qsender, 'hidden', str(id), False).Format()])
+            counter += 1
+            right.AddRow([t])
         stable.AddRow([left, right])
         table.AddRow([stable])
     return 1
 
 
+
 def show_sender_requests(mlist, form, sender):
     byskey = helds_by_skey(mlist, SSENDER)
     if not byskey:
@@ -641,39 +655,18 @@ def show_sender_requests(mlist, form, sender):
         count += 1
 
 
+
 def show_message_requests(mlist, form, id):
     try:
         id = int(id)
         info = mlist.GetRecord(id)
-    except ValueError as e:
-        mailman_log('error', 'admindb: Invalid message ID "%s": %s\n%s', 
-                   id, str(e), traceback.format_exc())
-        form.AddItem(Header(2, _("Error")))
-        form.AddItem(Bold(_('Invalid message ID.')))
+    except (ValueError, KeyError):
+        # BAW: print an error message?
         return
-    except KeyError as e:
-        mailman_log('error', 'admindb: Message ID %d not found: %s\n%s', 
-                   id, str(e), traceback.format_exc())
-        form.AddItem(Header(2, _("Error")))
-        form.AddItem(Bold(_('Message not found.')))
-        return
-    except Exception as e:
-        mailman_log('error', 'admindb: Error getting message %d: %s\n%s', 
-                   id, str(e), traceback.format_exc())
-        form.AddItem(Header(2, _("Error")))
-        form.AddItem(Bold(_('Error retrieving message.')))
-        return
-
-    try:
-        show_post_requests(mlist, id, info, 1, 1, form)
-    except Exception as e:
-        mailman_log('error', 'admindb: Error showing message %d: %s\n%s', 
-                   id, str(e), traceback.format_exc())
-        form.AddItem(Header(2, _("Error")))
-        form.AddItem(Bold(_('Error displaying message.')))
-        return
+    show_post_requests(mlist, id, info, 1, 1, form)
 
 
+
 def show_detailed_requests(mlist, form):
     all = mlist.GetHeldMessageIds()
     total = len(all)
@@ -684,6 +677,7 @@ def show_detailed_requests(mlist, form):
         count += 1
 
 
+
 def show_post_requests(mlist, id, info, total, count, form):
     # Mailman.ListAdmin.__handlepost no longer tests for pre 2.0beta3
     ptime, sender, subject, reason, filename, msgdata = info
@@ -693,132 +687,107 @@ def show_post_requests(mlist, id, info, total, count, form):
     if total != 1:
         msg += _(f' (%(count)d of %(total)d)')
     form.AddItem(Center(Header(2, msg)))
-    
-    # Get the message file path
-    msgpath = os.path.join(mm_cfg.DATA_DIR, filename)
-    
-    # Try to read the message with better error handling
+    # We need to get the headers and part of the textual body of the message
+    # being held.  The best way to do this is to use the email Parser to get
+    # an actual object, which will be easier to deal with.  We probably could
+    # just do raw reads on the file.
     try:
-        msg = readMessage(msgpath)
+        msg = readMessage(os.path.join(mm_cfg.DATA_DIR, filename))
+        Utils.set_cte_if_missing(msg)
     except IOError as e:
         if e.errno != errno.ENOENT:
-            mailman_log('error', 'admindb: Error reading message file %s: %s\n%s',
-                       msgpath, str(e), traceback.format_exc())
             raise
         form.AddItem(_(f'<em>Message with id #%(id)d was lost.'))
         form.AddItem('<p>')
+        # BAW: kludge to remove id from requests.db.
         try:
             mlist.HandleRequest(id, mm_cfg.DISCARD)
         except Errors.LostHeldMessage:
             pass
         return
-    except email.errors.MessageParseError as e:
-        mailman_log('error', 'admindb: Corrupted message file %s: %s\n%s',
-                   msgpath, str(e), traceback.format_exc())
+    except email.errors.MessageParseError:
         form.AddItem(_(f'<em>Message with id #%(id)d is corrupted.'))
+        # BAW: Should we really delete this, or shuttle it off for site admin
+        # to look more closely at?
         form.AddItem('<p>')
+        # BAW: kludge to remove id from requests.db.
         try:
             mlist.HandleRequest(id, mm_cfg.DISCARD)
         except Errors.LostHeldMessage:
             pass
         return
-    except Exception as e:
-        mailman_log('error', 'admindb: Unexpected error reading message %d: %s\n%s',
-                   id, str(e), traceback.format_exc())
-        form.AddItem(_(f'<em>Error reading message #%(id)d.'))
-        form.AddItem('<p>')
-        return
-
-    # Get the header text and the message body excerpt with better encoding handling
+    # Get the header text and the message body excerpt
     lines = []
     chars = 0
+    # A negative value means, include the entire message regardless of size
     limit = mm_cfg.ADMINDB_PAGE_TEXT_LIMIT
-    
-    # Try to determine the message charset
-    charset = None
+
+    if msg.is_multipart():
+        for part in msg.walk():
+            if not hasattr(part, 'policy'):
+                part.policy = email._policybase.compat32
+            if part.get_content_type() == 'text/plain':
+                payload = part.get_payload(decode=True)
+                if payload:
+                    decoded_payload = codecs.decode(payload, 'unicode_escape')
+                    for line in decoded_payload.splitlines():
+                        lines.append(line)
+                        chars += len(line)
+                        if chars >= limit > 0:
+                            break
+                break
+    else:
+        payload = msg.get_payload(decode=True)
+        if payload:
+            decoded_payload = codecs.decode(payload, 'unicode_escape')
+            for line in decoded_payload.splitlines():
+                lines.append(line)
+                chars += len(line)
+                if chars >= limit > 0:
+                    break
+    # Ensure the full last line is included to avoid splitting multibyte characters
+    body = ''.join(lines)
+    # Get message charset and try encode in list charset
+    # We get it from the first text part.
+    # We need to replace invalid characters here or we can throw an uncaught
+    # exception in doc.Format().
     for part in msg.walk():
         if part.get_content_maintype() == 'text':
-            charset = part.get_content_charset()
-            if charset:
-                break
-    
-    # If no charset found, use list's preferred charset
-    if not charset:
-        charset = Utils.GetCharSet(mlist.preferred_language)
-    
-    # Read the message body with proper encoding
-    try:
-        for line in body_line_iterator(msg, decode=True):
-            # Try to decode the line if it's bytes
-            if isinstance(line, bytes):
-                try:
-                    line = line.decode(charset, 'replace')
-                except (UnicodeError, LookupError):
-                    line = line.decode('latin-1', 'replace')
-            
-            lines.append(line)
-            chars += len(line)
-            if chars >= limit > 0:
-                break
-    except Exception as e:
-        mailman_log('error', 'admindb: Error reading message body: %s\n%s',
-                   str(e), traceback.format_exc())
-        lines = [_('Error reading message body')]
-    
-    # Join the lines with proper encoding
-    try:
-        body = ''.join(lines)
-        if isinstance(body, bytes):
-            body = body.decode(charset, 'replace')
-    except (UnicodeError, LookupError):
-        body = _('Error decoding message body')
-    
-    # Format the headers with proper encoding
-    try:
-        hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
-        if isinstance(hdrtxt, bytes):
-            hdrtxt = hdrtxt.decode(charset, 'replace')
-    except (UnicodeError, LookupError):
-        hdrtxt = _('Error decoding message headers')
-    
-    # Format the subject with proper encoding
-    try:
-        dispsubj = Utils.oneline(subject, charset)
-        if isinstance(dispsubj, bytes):
-            dispsubj = dispsubj.decode(charset, 'replace')
-    except (UnicodeError, LookupError):
-        dispsubj = _('Error decoding subject')
-    
-    # Format the reason with proper encoding
-    try:
-        if reason:
-            reason = _(reason)
-            if isinstance(reason, bytes):
-                reason = reason.decode(charset, 'replace')
-        else:
-            reason = _('not available')
-    except (UnicodeError, LookupError):
-        reason = _('Error decoding reason')
-    
-    # Create the form table with proper encoding
-    t = Table(cellspacing=0, cellpadding=0)
-    t.AddRow([Bold(_('From:')), Utils.websafe(sender)])
+            # Watchout for charset= with no value.
+            mcset = part.get_content_charset() or 'us-ascii'
+            break
+    else:
+        mcset = 'us-ascii'
+    lcset = Utils.GetCharSet(mlist.preferred_language)
+    # <NOTE> Note that this following block breaks a lot of messages. Removing it allows them to stay in their native character sets.
+    # Leaving in as it seems like behavior people would have grown to expect.
+    if mcset != lcset:
+    # Ensure the body is in the list's preferred charset
+        try:
+            # If body is a str, encode to bytes using the source charset (mcset)
+            body_bytes = body.encode(mcset, 'replace') if isinstance(body, str) else body
+            # Then decode bytes to str using the list's charset (lcset)
+            body = body_bytes.decode(lcset, 'replace')
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            # Fallback in case of encoding/decoding issues
+            body = body.encode('ascii', 'replace').decode('ascii', 'replace')
+	# </NOTE>
+    hdrtxt = NL.join(['%s: %s' % (k, v) for k, v in list(msg.items())])
+    hdrtxt = Utils.websafe(hdrtxt)
+    # Okay, we've reconstituted the message just fine.  Now for the fun part!
+    t = Table(cellspacing=0, cellpadding=0, width='100%')
+    t.AddRow([Bold(_('From:')), sender])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
-    
-    t.AddRow([Bold(_('Subject:')), Utils.websafe(dispsubj)])
+    t.AddRow([Bold(_('Subject:')),
+              Utils.websafe(Utils.oneline(subject, lcset))])
     t.AddCellInfo(row+1, col-1, align='right')
-    
-    t.AddRow([Bold(_('Reason:')), Utils.websafe(reason)])
+    t.AddRow([Bold(_('Reason:')), _(reason)])
     t.AddCellInfo(row+2, col-1, align='right')
-    
-    # Format received time with proper error handling
-    received_time = format_message_data(msgdata)
-    if received_time:
-        t.AddRow([Bold(_('Received:')), received_time])
+    when = msgdata.get('received_time')
+    if when:
+        t.AddRow([Bold(_('Received:')), time.ctime(when)])
         t.AddCellInfo(row+3, col-1, align='right')
-    
-    # Add action buttons
     buttons = hacky_radio_buttons(id,
                 (_('Defer'), _('Approve'), _('Reject'), _('Discard')),
                 (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT, mm_cfg.DISCARD),
@@ -826,16 +795,12 @@ def show_post_requests(mlist, id, info, total, count, form):
                 spacing=5)
     t.AddRow([Bold(_('Action:')), buttons])
     t.AddCellInfo(t.GetCurrentRowIndex(), col-1, align='right')
-    
-    # Add preserve checkbox
     t.AddRow(['&nbsp;',
               '<label>' +
               CheckBox(f'preserve-%d' % id, 'on', 0).Format() +
               '&nbsp;' + _('Preserve message for site administrator') +
               '</label>'
               ])
-    
-    # Add forward checkbox and textbox
     t.AddRow(['&nbsp;',
               '<label>' +
               CheckBox(f'forward-%d' % id, 'on', 0).Format() +
@@ -844,8 +809,6 @@ def show_post_requests(mlist, id, info, total, count, form):
               TextBox(f'forward-addr-%d' % id, size=47,
                       value=mlist.GetOwnerEmail()).Format()
               ])
-    
-    # Add rejection notice textarea
     notice = msgdata.get('rejection_notice', _('[No explanation given]'))
     t.AddRow([
         Bold(_('If you reject this post,<br>please explain (optional):')),
@@ -854,91 +817,194 @@ def show_post_requests(mlist, id, info, total, count, form):
         ])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
-    
-    # Add message headers textarea
     t.AddRow([Bold(_('Message Headers:')),
-              TextArea('headers-%d' % id, Utils.websafe(hdrtxt),
+              TextArea('headers-%d' % id, hdrtxt,
                        rows=EXCERPT_HEIGHT, cols=EXCERPT_WIDTH, readonly=1)])
     row, col = t.GetCurrentRowIndex(), t.GetCurrentCellIndex()
     t.AddCellInfo(row, col-1, align='right')
-    
-    # Add message body textarea
     t.AddRow([Bold(_('Message Excerpt:')),
               TextArea('fulltext-%d' % id, Utils.websafe(body),
                        rows=EXCERPT_HEIGHT, cols=EXCERPT_WIDTH, readonly=1)])
     t.AddCellInfo(row+1, col-1, align='right')
-    
     form.AddItem(t)
     form.AddItem('<p>')
 
 
+
 def process_form(mlist, doc, cgidata):
-    """Process the admin database form with proper error handling."""
+    global ssort
+    senderactions = {}
+    badaddrs = []
+    # Sender-centric actions
+    for k in list(cgidata.keys()):
+        for prefix in ('senderaction-', 'senderpreserve-', 'senderforward-',
+                       'senderforwardto-', 'senderfilterp-', 'senderfilter-',
+                       'senderclearmodp-', 'senderbanp-'):
+            if k.startswith(prefix):
+                action = k[:len(prefix)-1]
+                qsender = k[len(prefix):]
+                sender = unquote_plus(qsender)
+                value = cgidata.getfirst(k)
+                senderactions.setdefault(sender, {})[action] = value
+                for id in cgidata.getlist(qsender):
+                    senderactions[sender].setdefault('message_ids',
+                                                     []).append(int(id))
+    # discard-all-defers
     try:
-        # Get the sender and message id from the query string with proper encoding
-        envar = os.environ.get('QUERY_STRING', '')
-        qs = urllib.parse.parse_qs(envar, keep_blank_values=True)
-        
-        # Handle both encoded and unencoded values
-        def safe_get(key, default=''):
-            values = qs.get(key, [default])
-            if not values:
-                return default
+        discardalldefersp = cgidata.getfirst('discardalldefersp', 0)
+    except ValueError:
+        discardalldefersp = 0
+    # Get the summary sequence
+    ssort = int(cgidata.getfirst('summary_sort', SSENDER))
+    for sender in list(senderactions.keys()):
+        actions = senderactions[sender]
+        # Handle what to do about all this sender's held messages
+        try:
+            action = int(actions.get('senderaction', mm_cfg.DEFER))
+        except ValueError:
+            action = mm_cfg.DEFER
+        if action == mm_cfg.DEFER and discardalldefersp:
+            action = mm_cfg.DISCARD
+        if action in (mm_cfg.DEFER, mm_cfg.APPROVE,
+                      mm_cfg.REJECT, mm_cfg.DISCARD):
+            preserve = actions.get('senderpreserve', 0)
+            forward = actions.get('senderforward', 0)
+            forwardaddr = actions.get('senderforwardto', '')
+            byskey = helds_by_skey(mlist, SSENDER)
+            for ptime, id in byskey.get((0, sender), []):
+                if id not in senderactions[sender]['message_ids']:
+                    # It arrived after the page was displayed. Skip it.
+                    continue
+                try:
+                    msgdata = mlist.GetRecord(id)[5]
+                    comment = msgdata.get('rejection_notice',
+                                      _('[No explanation given]'))
+                    mlist.HandleRequest(id, action, comment, preserve,
+                                        forward, forwardaddr)
+                except (KeyError, Errors.LostHeldMessage):
+                    # That's okay, it just means someone else has already
+                    # updated the database while we were staring at the page,
+                    # so just ignore it
+                    continue
+        # Now see if this sender should be added to one of the nonmember
+        # sender filters.
+        if actions.get('senderfilterp', 0):
+            # Check for an invalid sender address.
             try:
-                # Try to decode if it's bytes
-                if isinstance(values[0], bytes):
-                    return values[0].decode('utf-8', 'replace')
-                return values[0]
-            except (UnicodeError, AttributeError):
-                return str(values[0])
-        
-        sender = safe_get('sender')
-        msgid = safe_get('msgid')
-        details = safe_get('details')
-
-        # Set the page title with proper encoding
-        title = _(f'{mlist.real_name} Administrative Database')
-        doc.SetTitle(title)
-        doc.AddItem(Header(2, title))
-
-        # Create a form for the overview with proper encoding
-        form = Form(mlist.GetScriptURL('admindb', absolute=1), 
-                   mlist=mlist, 
-                   contexts=AUTH_CONTEXTS)
-        form.AddItem(Center(SubmitButton('submit', _('Submit All Data'))))
-
-        # Get the action from the form data with proper encoding
-        action = safe_get('action')
-        if not action:
-            # No action specified, show the overview
-            show_pending_subs(mlist, form)
-            show_pending_unsubs(mlist, form)
-            show_helds_overview(mlist, form)
-            doc.AddItem(form)
-            return
-
-        # Process the form submission
-        if action == 'submit':
-            # Process the form data
-            process_submissions(mlist, cgidata)
-            # Show success message
-            doc.AddItem(Header(2, _('Database Updated...')))
-            return
-
-        # If we get here, something went wrong
-        doc.AddItem(Header(2, _('Error')))
-        doc.AddItem(Bold(_('Invalid form submission.')))
-
-    except Exception as e:
-        mailman_log('error', 'admindb: Error in process_form: %s\n%s', 
-                   str(e), traceback.format_exc())
-        raise
-
-
-def format_body(body, mcset, lcset):
-    """Format the message body for display."""
-    if isinstance(body, bytes):
-        body = body.decode(mcset, 'replace')
-    elif not isinstance(body, str):
-        body = str(body)
-    return body.encode(lcset, 'replace')
+                Utils.ValidateEmail(sender)
+            except Errors.EmailAddressError:
+                # Don't check for dups.  Report it once for each checked box.
+                badaddrs.append(sender)
+            else:
+                try:
+                    which = int(actions.get('senderfilter'))
+                except ValueError:
+                    # Bogus form
+                    which = 'ignore'
+                if which == mm_cfg.ACCEPT:
+                    mlist.accept_these_nonmembers.append(sender)
+                elif which == mm_cfg.HOLD:
+                    mlist.hold_these_nonmembers.append(sender)
+                elif which == mm_cfg.REJECT:
+                    mlist.reject_these_nonmembers.append(sender)
+                elif which == mm_cfg.DISCARD:
+                    mlist.discard_these_nonmembers.append(sender)
+                # Otherwise, it's a bogus form, so ignore it
+        # And now see if we're to clear the member's moderation flag.
+        if actions.get('senderclearmodp', 0):
+            try:
+                mlist.setMemberOption(sender, mm_cfg.Moderate, 0)
+            except Errors.NotAMemberError:
+                # This person's not a member any more.  Oh well.
+                pass
+        # And should this address be banned?
+        if actions.get('senderbanp', 0):
+            # Check for an invalid sender address.
+            try:
+                Utils.ValidateEmail(sender)
+            except Errors.EmailAddressError:
+                # Don't check for dups.  Report it once for each checked box.
+                badaddrs.append(sender)
+            else:
+                if sender not in mlist.ban_list:
+                    mlist.ban_list.append(sender)
+    # Now, do message specific actions
+    banaddrs = []
+    erroraddrs = []
+    for k in list(cgidata.keys()):
+        formv = cgidata[k]
+        if type(formv) == list:
+            continue
+        try:
+            v = int(formv.value)
+            request_id = int(k)
+        except ValueError:
+            continue
+        if v not in (mm_cfg.DEFER, mm_cfg.APPROVE, mm_cfg.REJECT,
+                     mm_cfg.DISCARD, mm_cfg.SUBSCRIBE, mm_cfg.UNSUBSCRIBE,
+                     mm_cfg.ACCEPT, mm_cfg.HOLD):
+            continue
+        # Get the action comment and reasons if present.
+        commentkey = 'comment-%d' % request_id
+        preservekey = 'preserve-%d' % request_id
+        forwardkey = 'forward-%d' % request_id
+        forwardaddrkey = 'forward-addr-%d' % request_id
+        bankey = 'ban-%d' % request_id
+        # Defaults
+        try:
+            if mlist.GetRecordType(request_id) == HELDMSG:
+                msgdata = mlist.GetRecord(request_id)[5]
+                comment = msgdata.get('rejection_notice',
+                                      _('[No explanation given]'))
+            else:
+                comment = _('[No explanation given]')
+        except KeyError:
+            # Someone else must have handled this one after we got the page.
+            continue
+        preserve = 0
+        forward = 0
+        forwardaddr = ''
+        if commentkey in cgidata:
+            comment = cgidata[commentkey].value
+        if preservekey in cgidata:
+            preserve = cgidata[preservekey].value
+        if forwardkey in cgidata:
+            forward = cgidata[forwardkey].value
+        if forwardaddrkey in cgidata:
+            forwardaddr = cgidata[forwardaddrkey].value
+        # Should we ban this address?  Do this check before handling the
+        # request id because that will evict the record.
+        if cgidata.getfirst(bankey):
+            sender = mlist.GetRecord(request_id)[1]
+            if sender not in mlist.ban_list:
+                # We don't need to validate the sender.  An invalid address
+                # can't get here.
+                mlist.ban_list.append(sender)
+        # Handle the request id
+        try:
+            mlist.HandleRequest(request_id, v, comment,
+                                preserve, forward, forwardaddr)
+        except (KeyError, Errors.LostHeldMessage):
+            # That's okay, it just means someone else has already updated the
+            # database while we were staring at the page, so just ignore it
+            continue
+        except Errors.MMAlreadyAMember as v:
+            erroraddrs.append(v)
+        except Errors.MembershipIsBanned as pattern:
+            sender = mlist.GetRecord(request_id)[1]
+            banaddrs.append((sender, pattern))
+    # save the list and print the results
+    doc.AddItem(Header(2, _('Database Updated...')))
+    if erroraddrs:
+        for addr in erroraddrs:
+            addr = Utils.websafe(addr)
+            doc.AddItem(str(addr) + _(' is already a member') + '<br>')
+    if banaddrs:
+        for addr, patt in banaddrs:
+            addr = Utils.websafe(addr)
+            doc.AddItem(_(f'{addr} is banned (matched: {patt})') + '<br>')
+    if badaddrs:
+        for addr in badaddrs:
+            addr = Utils.websafe(addr)
+            doc.AddItem(str(addr) + ': ' + _('Bad/Invalid email address') +
+                        '<br>')

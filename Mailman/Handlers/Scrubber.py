@@ -17,15 +17,13 @@
 
 """Cleanse a message for archiving."""
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import os
 import re
 import time
 import errno
 import binascii
 import tempfile
-from io import StringIO, BytesIO
+from io import StringIO
 
 from email.utils import parsedate
 from email.parser import HeaderParser
@@ -35,7 +33,7 @@ from email.charset import Charset
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import LockFile
-from Mailman.Message import Message
+from Mailman import Message
 from Mailman.Errors import DiscardMessage
 from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
@@ -70,25 +68,25 @@ except ImportError:
         return all
 
 
+
 def guess_extension(ctype, ext):
-    """Guess the file extension for a content type.
-    
-    This function handles both strict and non-strict MIME type matching.
-    """
+    # mimetypes maps multiple extensions to the same type, e.g. .doc, .dot,
+    # and .wiz are all mapped to application/msword.  This sucks for finding
+    # the best reverse mapping.  If the extension is one of the giving
+    # mappings, we'll trust that, otherwise we'll just guess. :/
     all = guess_all_extensions(ctype, strict=False)
     if ext in all:
         return ext
-    if ctype.lower() == 'application/octet-stream':
+    if ctype.lower == 'application/octet-stream':
         # For this type, all[0] is '.obj'. '.bin' is better.
         return '.bin'
-    if ctype.lower() == 'text/plain':
+    if ctype.lower == 'text/plain':
         # For this type, all[0] is '.ksh'. '.txt' is better.
         return '.txt'
-    return all[0] if all else '.bin'
+    return all and all[0]
 
 
 def safe_strftime(fmt, t):
-    """Format time safely, handling invalid timestamps."""
     try:
         return time.strftime(fmt, t)
     except (TypeError, ValueError, OverflowError):
@@ -96,10 +94,10 @@ def safe_strftime(fmt, t):
 
 
 def calculate_attachments_dir(mlist, msg, msgdata):
-    """Calculate the directory for storing message attachments.
-    
-    Uses a combination of date and message ID to create unique paths.
-    """
+    # Calculate the directory that attachments for this message will go
+    # under.  To avoid inode limitations, the scheme will be:
+    # archives/private/<listname>/attachments/YYYYMMDD/<msgid-hash>/<files>
+    # Start by calculating the date-based and msgid-hash components.
     fmt = '%Y%m%d'
     datestr = msg.get('Date')
     if datestr:
@@ -113,7 +111,12 @@ def calculate_attachments_dir(mlist, msg, msgdata):
             datedir = safe_strftime(fmt, datestr)
     if not datedir:
         # What next?  Unixfrom, I guess.
-        parts = msg.get_unixfrom().split()
+        unixfrom = msg.get_unixfrom()
+        if unixfrom:
+            parts = unixfrom.split()
+        else:
+            # Fallback if no unixfrom
+            parts = []
         try:
             month = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6,
                      'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12,
@@ -124,8 +127,7 @@ def calculate_attachments_dir(mlist, msg, msgdata):
             # Best we can do I think
             month = day = year = 0
         datedir = '%04d%02d%02d' % (year, month, day)
-    if not datedir:
-        raise ValueError('Missing datedir parameter')
+    assert datedir
     # As for the msgid hash, we'll base this part on the Message-ID: so that
     # all attachments for the same message end up in the same directory (we'll
     # uniquify the filenames in that directory as needed).  We use the first 2
@@ -135,27 +137,26 @@ def calculate_attachments_dir(mlist, msg, msgdata):
     msgid = msg['message-id']
     if msgid is None:
         msgid = msg['Message-ID'] = Utils.unique_message_id(mlist)
+
+    msgid = msgid.encode()
     # We assume that the message id actually /is/ unique!
     digest = sha_new(msgid).hexdigest()
     return os.path.join('attachments', datedir, digest[:4] + digest[-4:])
 
 
 def replace_payload_by_text(msg, text, charset):
-    """Replace message payload with text using proper charset handling."""
+    # TK: This is a common function in replacing the attachment and the main
+    # message by a text (scrubbing).
     del msg['content-type']
     del msg['content-transfer-encoding']
-    
-    # Ensure we have str for text and bytes for charset
-    if isinstance(text, bytes):
-        text = text.decode('utf-8', 'replace')
     if isinstance(charset, str):
-        charset = charset.encode('ascii')
-        
+        # email 3.0.1 (python 2.4) doesn't like unicode
+        charset = charset.encode('us-ascii')
     msg.set_payload(text, charset)
 
 
+
 def process(mlist, msg, msgdata=None):
-    """Process a message for archiving, handling attachments appropriately."""
     sanitize = mm_cfg.ARCHIVE_HTML_SANITIZER
     outer = True
     if msgdata is None:
@@ -179,11 +180,25 @@ def process(mlist, msg, msgdata=None):
             # We need to choose a charset for the scrubbed message, so we'll
             # arbitrarily pick the charset of the first text/plain part in the
             # message.
+            # MAS: Also get the RFC 3676 stuff from this part. This seems to
+            # work OK for scrub_nondigest.  It will also work as far as
+            # scrubbing messages for the archive is concerned, but pipermail
+            # doesn't pay any attention to the RFC 3676 parameters.  The plain
+            # format digest is going to be a disaster in any case as some of
+            # messages will be format="flowed" and some not.  ToDigest creates
+            # its own Content-Type: header for the plain digest which won't
+            # have RFC 3676 parameters. If the message Content-Type: headers
+            # are retained for display in the digest, the parameters will be
+            # there for information, but not for the MUA. This is the best we
+            # can do without having get_payload() process the parameters.
             if charset is None:
                 charset = part.get_content_charset(lcset)
                 format = part.get_param('format')
                 delsp = part.get_param('delsp')
             # TK: if part is attached then check charset and scrub if none
+            # MAS: Content-Disposition is not a good test for 'attached'.
+            # RFC 2183 sec. 2.10 allows Content-Disposition on the main body.
+            # Make it specifically 'attachment'.
             if (part.get('content-disposition', '').lower() == 'attachment'
                     and not part.get_content_charset()):
                 omask = os.umask(0o002)
@@ -204,12 +219,16 @@ URL: %(url)s
                     raise DiscardMessage
                 replace_payload_by_text(part,
                                  _('HTML attachment scrubbed and removed'),
+                                 # Adding charset arg and removing content-type
+                                 # sets content-type to text/plain
                                  lcset)
             elif sanitize == 2:
                 # By leaving it alone, Pipermail will automatically escape it
                 pass
             elif sanitize == 3:
-                # Pull it out as an attachment but leave it unescaped
+                # Pull it out as an attachment but leave it unescaped.  This
+                # is dangerous, but perhaps useful for heavily moderated
+                # lists.
                 omask = os.umask(0o002)
                 try:
                     url = save_attachment(mlist, part, dir, filter_html=False)
@@ -220,13 +239,13 @@ An HTML attachment was scrubbed...
 URL: %(url)s
 """), lcset)
             else:
-                # HTML-escape it and store it as an attachment
-                payload = part.get_payload(decode=True)
-                if isinstance(payload, bytes):
-                    payload = payload.decode('utf-8', 'replace')
-                payload = Utils.websafe(payload)
+                # HTML-escape it and store it as an attachment, but make it
+                # look a /little/ bit prettier. :(
+                payload = Utils.websafe(part.get_payload(decode=True))
                 # For whitespace in the margin, change spaces into
-                # non-breaking spaces, and tabs into 8 of those
+                # non-breaking spaces, and tabs into 8 of those.  Then use a
+                # mono-space font.  Still looks hideous to me, but then I'd
+                # just as soon discard them.
                 def doreplace(s):
                     return s.expandtabs(8).replace(' ', '&nbsp;')
                 lines = [doreplace(s) for s in payload.split('\n')]
@@ -367,16 +386,26 @@ URL: %(url)s
             if isinstance(t, str):
                 if not t.endswith('\n'):
                     t += '\n'
-                text.append(t)
+            elif isinstance(t, bytes):
+                if not t.endswith(b'\n'):
+                    t += b'\n'
+            text.append(t)
         # Now join the text and set the payload
         sep = _('-------------- next part --------------\n')
         # The i18n separator is in the list's charset. Coerce it to the
         # message charset.
         try:
-            s = str(sep, lcset, 'replace')
-            sep = s.encode(charset, 'replace')
-        except (UnicodeError, LookupError, ValueError,
-                AssertionError):
+            if isinstance(sep, bytes):
+                # Only decode if it's a bytes object
+                s = sep.decode(lcset, 'replace')
+                sep = s.encode(charset, 'replace')
+            else:
+                # If it's already a str, no need to decode
+                sep = sep.encode(charset, 'replace')
+        except (UnicodeError, LookupError, ValueError, AssertionError) as e:
+            # If something failed and we are still a string, fall back to UTF-8
+            if isinstance(sep, str):
+                sep = sep.encode('utf-8', 'replace')
             pass
         replace_payload_by_text(msg, sep.join(text), charset)
         if format:
@@ -385,75 +414,160 @@ URL: %(url)s
             msg.set_param('DelSp', delsp)
     return msg
 
-
+
 def makedirs(dir):
-    """Create directory hierarchy safely."""
+    # Create all the directories to store this attachment in
     try:
         os.makedirs(dir, 0o02775)
         # Unfortunately, FreeBSD seems to be broken in that it doesn't honor
         # the mode arg of mkdir().
-        def twiddle(arg, dirname, names):
-            os.chmod(dirname, 0o02775)
-        os.path.walk(dir, twiddle, None)
+        def twiddle(arg, dirpath, dirnames):
+            for dirname in dirnames:
+                # Construct the full path for each directory
+                full_path = os.path.join(dirpath, dirname)
+                os.chmod(full_path, 0o02775)
+
+        for dirpath, dirnames, filenames in os.walk(dir):
+            twiddle(None, dirpath, dirnames)
     except OSError as e:
-        if e.errno != errno.EEXIST: raise
+        if e.errno != errno.EEXIST:
+            raise
 
-
+
 def save_attachment(mlist, msg, dir, filter_html=True):
-    """Save a message attachment safely.
-    
-    Returns the URL where the attachment was saved.
-    """
-    # Get the attachment filename
-    fname = msg.get_filename()
-    if not fname:
-        fname = msg.get_param('name')
-    if not fname:
-        # Use content-type if no filename is given
-        ctype = msg.get_content_type()
-        # Sanitize the content-type so it can be used as a filename
-        fname = re.sub(r'[^-\w.]', '_', ctype)
-        # Add an extension if possible
-        ext = guess_extension(ctype, '')
-        if ext:
-            fname += ext
-    
-    # Sanitize the filename
-    fname = re.sub(r'[/\\:]', '_', fname)
-    fname = re.sub(r'[^-\w.]', '_', fname)
-    fname = re.sub(r'^\.*', '_', fname)
-    
-    # Get the attachment content
-    payload = msg.get_payload(decode=True)
-    if not payload:
-        return None
-    
-    # Create attachment directory
-    dir = os.path.join(mlist.archive_dir(), dir)
-    makedirs(dir)
-    
-    # Save the attachment
+    fsdir = os.path.join(mlist.archive_dir(), dir)
+    makedirs(fsdir)
+    # Figure out the attachment type and get the decoded data
+    decodedpayload = msg.get_payload(decode=True)
+    # BAW: mimetypes ought to handle non-standard, but commonly found types,
+    # e.g. image/jpg (should be image/jpeg).  For now we just store such
+    # things as application/octet-streams since that seems the safest.
+    ctype = msg.get_content_type()
+    # i18n file name is encoded
+    lcset = Utils.GetCharSet(mlist.preferred_language)
+    filename = Utils.oneline(msg.get_filename(''), lcset)
+    filename, fnext = os.path.splitext(filename)
+    # For safety, we should confirm this is valid ext for content-type
+    # but we can use fnext if we introduce fnext filtering
+    if mm_cfg.SCRUBBER_USE_ATTACHMENT_FILENAME_EXTENSION:
+        # HTML message doesn't have filename :-(
+        ext = fnext or guess_extension(ctype, fnext)
+    else:
+        ext = guess_extension(ctype, fnext)
+    if not ext:
+        # We don't know what it is, so assume it's just a shapeless
+        # application/octet-stream, unless the Content-Type: is
+        # message/rfc822, in which case we know we'll coerce the type to
+        # text/plain below.
+        if ctype == 'message/rfc822':
+            ext = '.txt'
+        else:
+            ext = '.bin'
+    # Allow only alphanumerics, dash, underscore, and dot
+    ext = sre.sub('', ext)
     path = None
-    counter = 0
-    while True:
-        if counter:
-            fname_parts = os.path.splitext(fname)
-            fname = '%s-%d%s' % (fname_parts[0], counter, fname_parts[1])
-        path = os.path.join(dir, fname)
+    # We need a lock to calculate the next attachment number
+    lockfile = os.path.join(fsdir, 'attachments.lock')
+    lock = LockFile.LockFile(lockfile)
+    lock.lock()
+    try:
+        # Now base the filename on what's in the attachment, uniquifying it if
+        # necessary.
+        if not filename or mm_cfg.SCRUBBER_DONT_USE_ATTACHMENT_FILENAME:
+            filebase = 'attachment'
+        else:
+            # Sanitize the filename given in the message headers
+            parts = pre.split(filename)
+            filename = parts[-1]
+            # Strip off leading dots
+            filename = dre.sub('', filename)
+            # Allow only alphanumerics, dash, underscore, and dot
+            filename = sre.sub('', filename)
+            # If the filename's extension doesn't match the type we guessed,
+            # which one should we go with?  For now, let's go with the one we
+            # guessed so attachments can't lie about their type.  Also, if the
+            # filename /has/ no extension, then tack on the one we guessed.
+            # The extension was removed from the name above.
+            # Allow for extra and ext and keep it under 255 bytes.
+            filebase = filename[:240]
+        # Now we're looking for a unique name for this file on the file
+        # system.  If msgdir/filebase.ext isn't unique, we'll add a counter
+        # after filebase, e.g. msgdir/filebase-cnt.ext
+        counter = 0
+        extra = ''
+        while True:
+            path = os.path.join(fsdir, filebase + extra + ext)
+            # Generally it is not a good idea to test for file existance
+            # before just trying to create it, but the alternatives aren't
+            # wonderful (i.e. os.open(..., O_CREAT | O_EXCL) isn't
+            # NFS-safe).  Besides, we have an exclusive lock now, so we're
+            # guaranteed that no other process will be racing with us.
+            if os.path.exists(path):
+                counter += 1
+                extra = '-%04d' % counter
+            else:
+                break
+    finally:
+        lock.unlock()
+    # `path' now contains the unique filename for the attachment.  There's
+    # just one more step we need to do.  If the part is text/html and
+    # ARCHIVE_HTML_SANITIZER is a string (which it must be or we wouldn't be
+    # here), then send the attachment through the filter program for
+    # sanitization
+    if filter_html and ctype == 'text/html':
+        base, ext = os.path.splitext(path)
+        tmppath = base + '-tmp' + ext
+        fp = open(tmppath, 'w')
         try:
-            # Open in binary mode and write bytes directly
-            with open(path, 'wb') as fp:
-                fp.write(payload)
-            break
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-            counter += 1
-    
-    # Make the file group writable
-    os.chmod(path, 0o0664)
-    
-    # Return the URL
+            fp.write(decodedpayload)
+            fp.close()
+            cmd = mm_cfg.ARCHIVE_HTML_SANITIZER % {'filename' : tmppath}
+            progfp = os.popen(cmd, 'r')
+            decodedpayload = progfp.read()
+            status = progfp.close()
+            if status:
+                syslog('error',
+                       'HTML sanitizer exited with non-zero status: %s',
+                       status)
+        finally:
+            os.unlink(tmppath)
+        # BAW: Since we've now sanitized the document, it should be plain
+        # text.  Blarg, we really want the sanitizer to tell us what the type
+        # if the return data is. :(
+        ext = '.txt'
+        path = base + '.txt'
+    # Is it a message/rfc822 attachment?
+    elif ctype == 'message/rfc822':
+        submsg = msg.get_payload()
+
+        # submsg is usually a list containing a single Message object.
+        # We need to extract that Message object. (taken from Utils.websafe())
+        if isinstance(submsg, list) or isinstance(submsg, tuple):
+            if len(submsg) == 0:
+                submsg = ''
+            else:
+                submsg = submsg[-1]
+
+        # BAW: I'm sure we can eventually do better than this. :(
+        decodedpayload = Utils.websafe(str(submsg))
+
+        # encode the message back into the charset of the original message.
+        mcset = submsg.get_content_charset('')
+        if mcset == None or mcset == "":
+            mcset = 'utf-8'
+        decodedpayload = decodedpayload.encode(mcset)
+
+    fp = open(path, 'wb')
+    fp.write(decodedpayload)
+    fp.close()
+    # Now calculate the url
     baseurl = mlist.GetBaseArchiveURL()
-    url = '%s/%s/%s' % (baseurl, dir, fname)
+    # Private archives will likely have a trailing slash.  Normalize.
+    if baseurl[-1] != '/':
+        baseurl += '/'
+    # A trailing space in url string may save users who are using
+    # RFC-1738 compliant MUA (Not Mozilla).
+    # Trailing space will definitely be a problem with format=flowed.
+    # Bracket the URL instead.
+    url = '<' + baseurl + '%s/%s%s%s>' % (dir, filebase, extra, ext)
     return url

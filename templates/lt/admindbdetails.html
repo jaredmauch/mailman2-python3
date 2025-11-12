@@ -1,66 +1,5 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>The administrative requests are displayed in one of two ways, on a <a href="%(summaryurl)s">summary page</a>, and on a <em>details</em>
+The administrative requests are displayed in one of two ways, on a <a
+href="%(summaryurl)s">summary page</a>, and on a <em>details</em>
 page.  The summary page contains pending subscription and
 unsubscription requests, as well as postings being held for your
 approval, grouped by sender email address.  The details page contains
@@ -88,7 +27,8 @@ message's headers and an excerpt of the message body.
     a rejection notice.  For membership requests, this simply discards
     the request without notice to the person making the request.  This
     is usually the action you want to take for known spam.
-</li></li></li></li></ul>
+</ul>
+
 <p>For held messages, turn on the <b>Preserve</b> option if you want
 to save a copy of the message for the site administrator.  This is
 useful for abusive messages that you want to discard, but need to keep
@@ -110,7 +50,8 @@ is configured to put new members on probation, and you've decided that
 this member can be trusted to post to the list without approval.
 
 <p>If the sender is not a list member, you can add the email address to
-a <em>sender filter</em>.  Sender filters are described on the <a href="%(filterurl)s">sender filter privacy page</a>, and may be one of
+a <em>sender filter</em>.  Sender filters are described on the <a
+href="%(filterurl)s">sender filter privacy page</a>, and may be one of
 <b>auto-accept</b> (Accepts), <b>auto-hold</b> (Holds),
 <b>auto-reject</b> (Rejects), or <b>auto-discard</b> (Discards).  This
 option will not be available if the address is already on one of the
@@ -122,4 +63,3 @@ selected actions for all administrative requests that you've made a
 decision for.
 
 <p><a href="%(summaryurl)s">Return to the summary page</a>.
-</p></p></p></p></p></p></p>

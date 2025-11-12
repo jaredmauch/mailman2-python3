@@ -16,7 +16,7 @@
 
 dnl Process this file with autoconf to produce a configure script.
 AC_REVISION($Revision: 8122 $)
-AC_PREREQ([2.71])
+AC_PREREQ([2.69])
 AC_INIT
 AC_CONFIG_SRCDIR([src/common.h])
 
@@ -687,7 +687,12 @@ if test $ac_cv_func_syslog = no; then
 fi
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdio.h stdlib.h string.h inttypes.h stdint.h strings.h sys/stat.h sys/types.h unistd.h syslog.h])
+m4_warn([obsolete],
+[The preprocessor macro `STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  ISO C90 headers unconditionally.])dnl
+
+AC_CHECK_HEADERS(syslog.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UID_T
@@ -781,7 +786,7 @@ AC_CONFIG_FILES([misc/paths.py Mailman/Defaults.py Mailman/mm_cfg.py.dist
            Mailman/Queue/Makefile Mailman/MTA/Makefile Mailman/Gui/Makefile
            templates/Makefile cron/Makefile scripts/Makefile messages/Makefile
            cron/crontab.in misc/mailman Makefile
-           tests/Makefile tests/bounces/Makefile tests/msgs/Makefile
+           tests/Makefile tests/bounces/Makefile tests/msgs/Makefile Mailman/__init__.py
            $SCRIPTS])
 AC_CONFIG_COMMANDS([default],[echo "configuration completed at" `date`],[])
 AC_OUTPUT

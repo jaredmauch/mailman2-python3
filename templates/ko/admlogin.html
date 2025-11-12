@@ -1,96 +1,34 @@
 <html>
 <head>
-<title>%(listname)s ê´€ë¦¬ì ì¸ì¦</title>
+  <title>%(listname)s °ü¸®ÀÚ ÀÎÁõ</title>
 <script>function sf(){document.f.adminpw.focus();}</script>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff" onload="sf()">
-<form action="%(path)s" method="POST" name="f">
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
 %(message)s
-  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
-<b><font color="#000000" size="+1">%(listname)s ê´€ë¦¬ì ì¸ì¦
-	    </font></b>
-</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"> <div align="Right"> ë©”ì¼ë§ ë¦¬ìŠ¤íŠ¸ ê´€ë¦¬ì ë¹„ë°€ë²ˆí˜¸: </div> </td>
-<td style="padding: 8px; border: 1px solid #ccc;"> <input name="adminpw" size="30" type="password"/></td>
-</tr>
-<tr>
-<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"> <input name="request_login" type="SUBMIT" value="ë‚˜ë¥¼ ì•ˆìœ¼ë¡œ ë“¤ì—¬ë³´ë‚´ì¤˜!"/>
-</td>
-</tr>
-</table>
-<p><strong><em>ì¤‘ìš”:</em></strong> ì´ ì‹œì ë¶€í„° ì—¬ëŸ¬ë¶„ì˜ ë¸Œë¼ìš°ì €ì—
-      ì¿ í‚¤ê°€ ì €ì¥ë©ë‹ˆë‹¤. ì´ ë¶€ë¶„ë¶€í„° ì‹œì‘í•˜ì§€ ì•Šìœ¼ë©´, ë‹¤ë¥¸ ë³€ê²½ë“¤ì€
-      ì‹¤ì œë¡œ ì ìš©ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s °ü¸®ÀÚ ÀÎÁõ
+	    </FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD> <div ALIGN="Right"> ¸ŞÀÏ¸µ ¸®½ºÆ® °ü¸®ÀÚ ºñ¹Ğ¹øÈ£: </div> </TD>
+      <TD> <INPUT TYPE=password NAME=adminpw SIZE=30></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle> <INPUT TYPE=SUBMIT name="request_login"
+						     value="³ª¸¦ ¾ÈÀ¸·Î µé¿©º¸³»Áà!">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>Áß¿ä:</em></strong> ÀÌ ½ÃÁ¡ºÎÅÍ ¿©·¯ºĞÀÇ ºê¶ó¿ìÀú¿¡
+      ÄíÅ°°¡ ÀúÀåµË´Ï´Ù. ÀÌ ºÎºĞºÎÅÍ ½ÃÀÛÇÏÁö ¾ÊÀ¸¸é, ´Ù¸¥ º¯°æµéÀº
+      ½ÇÁ¦·Î Àû¿ëµÇÁö ¾Ê½À´Ï´Ù.
 
-      <p>Mailman ì˜ ê´€ë¦¬ ì¸í„°í˜ì´ìŠ¤ì—ëŠ” ì„¸ì…˜ ì¿ í‚¤ë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ë§¤ë²ˆ
-      ì¸ì¦í•  í•„ìš”ê°€ ì—†ìœ¼ë©° ì´ ì¿ í‚¤ëŠ” ì—¬ëŸ¬ë¶„ì´ ë¸Œë¼ìš°ì €ë¥¼ ëëƒˆê±°ë‚˜, <em>ê´€ë¦¬ì
-      í™”ë©´</em>ì—ì„œ ë³¼ìˆ˜ ìˆëŠ” "<em>ë¡œê·¸ì•„ì›ƒ</em>"(ì—¬ëŸ¬ë¶„ì´ ì„±ê³µì ìœ¼ë¡œ ë¡œê¸´ ì„ í•˜ë©´ ë³¼ ìˆ˜
-      ìˆìŠµë‹ˆë‹¤.) ë¥¼ í´ë¦­í•˜ë©´ ìë™ìœ¼ë¡œ ì§€ì›Œì§‘ë‹ˆë‹¤.
-</p></p></form>
-</body></html>
+      <p>Mailman ÀÇ °ü¸® ÀÎÅÍÆäÀÌ½º¿¡´Â ¼¼¼Ç ÄíÅ°¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡ ¸Å¹ø
+      ÀÎÁõÇÒ ÇÊ¿ä°¡ ¾øÀ¸¸ç ÀÌ ÄíÅ°´Â ¿©·¯ºĞÀÌ ºê¶ó¿ìÀú¸¦ ³¡³Â°Å³ª, <em>°ü¸®ÀÚ
+      È­¸é</em>¿¡¼­ º¼¼ö ÀÖ´Â "<em>·Î±×¾Æ¿ô</em>"(¿©·¯ºĞÀÌ ¼º°øÀûÀ¸·Î ·Î±ä À» ÇÏ¸é º¼ ¼ö
+      ÀÖ½À´Ï´Ù.) ¸¦ Å¬¸¯ÇÏ¸é ÀÚµ¿À¸·Î Áö¿öÁı´Ï´Ù.
+</FORM>

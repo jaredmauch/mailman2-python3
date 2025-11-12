@@ -38,7 +38,7 @@ class Language(GUIBase):
             return None
 
         # Set things up for the language choices
-        langs = mlist.available_languages
+        langs = mlist.GetAvailableLanguages()
         langnames = [_(Utils.GetLanguageDescr(L)) for L in langs]
         try:
             langi = langs.index(mlist.preferred_language)

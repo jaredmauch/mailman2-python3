@@ -22,6 +22,7 @@ from io import StringIO
 scre = re.compile(r'transcript of session follows', re.IGNORECASE)
 
 
+
 def process(msg):
     if msg.get_content_type() != 'multipart/mixed':
         return None

@@ -48,17 +48,12 @@ NL = '\n'
 # Format an arbitrary object.
 def HTMLFormatObject(item, indent):
     "Return a presentation of an object, invoking their Format method if any."
-    if item is None:
-        return ''
-    if isinstance(item, str):
+    if type(item) == type(''):
         return item
     elif not hasattr(item, "Format"):
-        return str(item)
+        return repr(item)
     else:
-        result = item.Format(indent)
-        if result is None:
-            return ''
-        return str(result)
+        return item.Format(indent)
 
 def CaseInsensitiveKeyedDict(d):
     result = {}
@@ -78,116 +73,96 @@ class Table(object):
         self.cell_info = {}
         self.row_info = {}
         self.opts = table_opts
-        self.current_row = -1
-        self.current_cell = -1
 
     def AddOptions(self, opts):
-        self.opts.update(opts)
+        DictMerge(self.opts, opts)
+
+    # Sets all of the cells.  It writes over whatever cells you had there
+    # previously.
 
     def SetAllCells(self, cells):
         self.cells = cells
 
+    # Add a new blank row at the end
     def NewRow(self):
         self.cells.append([])
-        self.current_row = len(self.cells) - 1
-        self.current_cell = -1
 
+    # Add a new blank cell at the end
     def NewCell(self):
-        self.cells[self.current_row].append(None)
-        self.current_cell = len(self.cells[self.current_row]) - 1
+        self.cells[-1].append('')
 
     def AddRow(self, row):
         self.cells.append(row)
 
     def AddCell(self, cell):
-        if self.current_row < 0:
-            self.NewRow()
-        self.cells[self.current_row].append(cell)
+        self.cells[-1].append(cell)
 
     def AddCellInfo(self, row, col, **kws):
+        kws = CaseInsensitiveKeyedDict(kws)
         if row not in self.cell_info:
-            self.cell_info[row] = {}
-        self.cell_info[row][col] = kws
+            self.cell_info[row] = { col : kws }
+        elif col in self.cell_info[row]:
+            DictMerge(self.cell_info[row], kws)
+        else:
+            self.cell_info[row][col] = kws
 
     def AddRowInfo(self, row, **kws):
-        self.row_info[row] = kws
+        kws = CaseInsensitiveKeyedDict(kws)
+        if row not in self.row_info:
+            self.row_info[row] = kws
+        else:
+            DictMerge(self.row_info[row], kws)
 
+    # What's the index for the row we just put in?
     def GetCurrentRowIndex(self):
-        return self.current_row
+        return len(self.cells)-1
 
+    # What's the index for the col we just put in?
     def GetCurrentCellIndex(self):
-        return self.current_cell
+        return len(self.cells[-1])-1
 
     def ExtractCellInfo(self, info):
+        valid_mods = ['align', 'valign', 'nowrap', 'rowspan', 'colspan',
+                      'bgcolor']
         output = ''
-        # Convert deprecated attributes to modern equivalents
-        if 'bgcolor' in info:
-            info['style'] = info.get('style', '') + f'background-color: {info["bgcolor"]};'
-            del info['bgcolor']
-        if 'align' in info:
-            info['style'] = info.get('style', '') + f'text-align: {info["align"]};'
-            del info['align']
-        if 'valign' in info:
-            info['style'] = info.get('style', '') + f'vertical-align: {info["valign"]};'
-            del info['valign']
-        if 'width' in info:
-            info['style'] = info.get('style', '') + f'width: {info["width"]};'
-            del info['width']
-        if 'height' in info:
-            info['style'] = info.get('style', '') + f'height: {info["height"]};'
-            del info['height']
-        # Add ARIA attributes for accessibility
-        if 'role' not in info:
-            info['role'] = 'cell'
-        for k, v in list(info.items()):
-            output = output + ' %s="%s"' % (k, v)
+
+        for (key, val) in list(info.items()):
+            if not key in valid_mods:
+                continue
+            if key == 'nowrap':
+                output = output + ' NOWRAP'
+                continue
+            else:
+                output = output + ' %s="%s"' % (key.upper(), val)
+
         return output
 
     def ExtractRowInfo(self, info):
+        valid_mods = ['align', 'valign', 'bgcolor']
         output = ''
-        # Convert deprecated attributes to modern equivalents
-        if 'bgcolor' in info:
-            info['style'] = info.get('style', '') + f'background-color: {info["bgcolor"]};'
-            del info['bgcolor']
-        if 'align' in info:
-            info['style'] = info.get('style', '') + f'text-align: {info["align"]};'
-            del info['align']
-        if 'valign' in info:
-            info['style'] = info.get('style', '') + f'vertical-align: {info["valign"]};'
-            del info['valign']
-        # Add ARIA attributes for accessibility
-        if 'role' not in info:
-            info['role'] = 'row'
-        for k, v in list(info.items()):
-            output = output + ' %s="%s"' % (k, v)
+
+        for (key, val) in list(info.items()):
+            if not key in valid_mods:
+                continue
+            output = output + ' %s="%s"' % (key.upper(), val)
+
         return output
 
     def ExtractTableInfo(self, info):
+        valid_mods = ['align', 'width', 'border', 'cellspacing', 'cellpadding',
+                      'bgcolor']
+
         output = ''
-        # Convert deprecated attributes to modern equivalents
-        if 'bgcolor' in info:
-            info['style'] = info.get('style', '') + f'background-color: {info["bgcolor"]};'
-            del info['bgcolor']
-        if 'align' in info:
-            info['style'] = info.get('style', '') + f'margin-left: auto; margin-right: auto;'
-            del info['align']
-        if 'width' in info:
-            info['style'] = info.get('style', '') + f'width: {info["width"]};'
-            del info['width']
-        if 'cellpadding' in info:
-            info['style'] = info.get('style', '') + f'border-spacing: {info["cellpadding"]}px;'
-            del info['cellpadding']
-        if 'cellspacing' in info:
-            info['style'] = info.get('style', '') + f'border-collapse: separate; border-spacing: {info["cellspacing"]}px;'
-            del info['cellspacing']
-        if 'border' in info:
-            info['style'] = info.get('style', '') + f'border: {info["border"]}px solid #ccc;'
-            del info['border']
-        # Add ARIA attributes for accessibility
-        if 'role' not in info:
-            info['role'] = 'table'
-        for k, v in list(info.items()):
-            output = output + ' %s="%s"' % (k, v)
+
+        for (key, val) in list(info.items()):
+            if not key in valid_mods:
+                continue
+            if key == 'border' and val == None:
+                output = output + ' BORDER'
+                continue
+            else:
+                output = output + ' %s="%s"' % (key.upper(), val)
+
         return output
 
     def FormatCell(self, row, col, indent):
@@ -201,8 +176,6 @@ class Table(object):
             output = output + self.ExtractCellInfo(my_info)
         item = self.cells[row][col]
         item_format = HTMLFormatObject(item, indent+4)
-        if not isinstance(item_format, str):
-            item_format = str(item_format)
         output = '%s>%s</td>' % (output, item_format)
         return output
 
@@ -228,10 +201,6 @@ class Table(object):
         output = '\n' + ' '*indent + '<table'
         output = output + self.ExtractTableInfo(self.opts)
         output = output + '>'
-
-        # Add caption for accessibility if not present
-        if 'aria-label' in self.opts:
-            output = output + '\n' + ' '*(indent+2) + '<caption class="visually-hidden">' + self.opts['aria-label'] + '</caption>'
 
         for i in range(len(self.cells)):
             output = output + self.FormatRow(i, indent + 2)
@@ -333,108 +302,41 @@ class Document(Container):
         self.title = title
 
     def Format(self, indent=0, **kws):
-        charset = 'utf-8'
+        charset = 'us-ascii'
         if self.language and Utils.IsLanguage(self.language):
             charset = Utils.GetCharSet(self.language)
         output = ['Content-Type: text/html; charset=%s\n' % charset]
-        output.append('<!DOCTYPE html>')
         if not self.suppress_head:
             kws.setdefault('bgcolor', self.bgcolor)
             tab = ' ' * indent
             output.extend([tab,
-                           '<html lang="%s">' % (self.language or 'en'),
-                           '<head>'
+                           '<HTML>',
+                           '<HEAD>'
                            ])
             if mm_cfg.IMAGE_LOGOS:
-                output.append('<link rel="shortcut icon" href="%s">' %
+                output.append('<LINK REL="SHORTCUT ICON" HREF="%s">' %
                               (mm_cfg.IMAGE_LOGOS + mm_cfg.SHORTCUT_ICON))
-            # Add viewport meta tag for responsive design
-            output.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
-            # Add charset meta tag
-            output.append('<meta charset="%s">' % charset)
+            # Hit all the bases
+            output.append('<META http-equiv="Content-Type" '
+                          'content="text/html; charset=%s">' % charset)
             if self.title:
-                output.append('%s<title>%s</title>' % (tab, self.title))
-            # Add modern CSS styling
+                output.append('%s<TITLE>%s</TITLE>' % (tab, self.title))
+            # Add CSS to visually hide some labeling text but allow screen
+            # readers to read it.
             output.append("""\
-<style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-    }
-    h1, h2, h3 {
-        color: #2c3e50;
-        margin-top: 1.5em;
-    }
-    a {
-        color: #3498db;
-        text-decoration: none;
-    }
-    a:hover {
-        text-decoration: underline;
-    }
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 1em 0;
-    }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-    th {
-        background-color: #f5f5f5;
-    }
-    tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    input[type="text"], input[type="password"], textarea {
-        width: 100%;
-        padding: 8px;
-        margin: 5px 0;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
-    input[type="submit"], button {
-        background-color: #3498db;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    input[type="submit"]:hover, button:hover {
-        background-color: #2980b9;
-    }
-    .error {
-        color: #e74c3c;
-        margin: 10px 0;
-    }
-    .success {
-        color: #27ae60;
-        margin: 10px 0;
-    }
-    .hidden {
-        position: absolute;
-        left: -10000px;
-        top: auto;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-    }
+<style type="text/css">
+    div.hidden
+        {position:absolute;
+        left:-10000px;
+        top:auto;
+        width:1px;
+        height:1px;
+        overflow:hidden;}
 </style>
 """)
             if mm_cfg.WEB_HEAD_ADD:
                 output.append(mm_cfg.WEB_HEAD_ADD)
-            output.append('%s</head>' % tab)
-            # Get language direction
-            direction = Utils.GetDirection(self.language)
-            # Add body tag with direction attribute
-            output.append('%s<body dir="%s">' % (tab, direction))
+            output.append('%s</HEAD>' % tab)
             quals = []
             # Default link colors
             if mm_cfg.WEB_VLINK_COLOR:
@@ -445,13 +347,15 @@ class Document(Container):
                 kws.setdefault('link', mm_cfg.WEB_LINK_COLOR)
             for k, v in list(kws.items()):
                 quals.append('%s="%s"' % (k, v))
-            if quals:
-                output[-1] = output[-1][:-1] + ' ' + ' '.join(quals) + '>'
+            output.append('%s<BODY %s' % (tab, SPACE.join(quals)))
+            # Language direction
+            direction = Utils.GetDirection(self.language)
+            output.append('dir="%s">' % direction)
         # Always do this...
         output.append(Container.Format(self, indent))
         if not self.suppress_head:
-            output.append('%s</body>' % tab)
-            output.append('%s</html>' % tab)
+            output.append('%s</BODY>' % tab)
+            output.append('%s</HTML>' % tab)
         return NL.join(output)
 
     def addError(self, errmsg, tag=None):
@@ -540,8 +444,7 @@ class Form(Container):
             spaces, self.action, self.method, encoding)
         if self.mlist:
             output = output + \
-                '<input type="hidden" name="csrf_token" value="%s">\n' \
-                % csrf_token(self.mlist, self.contexts, self.user)
+                '<input type="hidden" name="csrf_token" value="{}">\n'.format( csrf_token(self.mlist, self.contexts, self.user))
         output = output + Container.Format(self, indent+2)
         output = '%s\n%s</FORM>\n' % (output, spaces)
         return output
@@ -557,16 +460,16 @@ class InputObj(object):
 
     def Format(self, indent=0):
         charset = get_translation().charset() or 'us-ascii'
-        output = ['<INPUT name="%s" type="%s" value="%s"' %
-                  (self.name, self.type, self.value)]
+        output = [ '<INPUT name="{}" type="{}" value="{}"'.format(self.name, self.type, self.value) ]
         for item in list(self.kws.items()):
             output.append('%s="%s"' % item)
         if self.checked:
             output.append('CHECKED')
         output.append('>')
         ret = SPACE.join(output)
-        if self.type == 'TEXT' and isinstance(ret, bytes):
-            ret = ret.decode(charset, 'replace')
+        if self.type == 'TEXT' and isinstance(ret, str):
+            ret = ret.encode(charset, 'xmlcharrefreplace')
+            ret = ret.decode() # Does this break the charset?
         return ret
 
 
@@ -582,6 +485,8 @@ class TextBox(InputObj):
     def __init__(self, name, value='', size=mm_cfg.TEXTFIELDWIDTH):
         if isinstance(value, str):
             safevalue = Utils.websafe(value)
+        elif isinstance(value, bytes):
+            safevalue = value.decode()
         else:
             safevalue = value
         InputObj.__init__(self, name, "TEXT", safevalue, checked=0, size=size)
@@ -618,8 +523,9 @@ class TextArea(object):
         if self.readonly:
             output += ' READONLY'
         output += '>%s</TEXTAREA>' % self.text
-        if isinstance(output, bytes):
-            output = output.decode(charset, 'replace')
+        if isinstance(output, str):
+            output = output.encode(charset, 'xmlcharrefreplace')
+            output = output.decode() # Does this break the charset?
         return output
 
 class FileUpload(InputObj):
@@ -655,13 +561,7 @@ class WidgetArray(object):
         # for CheckedBoxes it is a vector.  Subclasses will assert length.
 
     def ischecked(self, i):
-        if isinstance(self.checked, int):
-            return i == self.checked
-        elif isinstance(self.checked, tuple):
-            return i in self.checked
-        elif isinstance(self.checked, list):
-            return i in self.checked
-        return 0
+        raise NotImplemented
 
     def Format(self, indent=0):
         t = Table(cellspacing=5)
@@ -750,7 +650,8 @@ class DefinitionList(Container):
 # These are the URLs which the image logos link to.  The Mailman home page now
 # points at the gnu.org site instead of the www.list.org mirror.
 #
-from mm_cfg import MAILMAN_URL
+MAILMAN_URL = mm_cfg.MAILMAN_URL
+# from Mailman.mm_cfg import MAILMAN_URL
 PYTHON_URL  = 'http://www.python.org/'
 GNU_URL     = 'http://www.gnu.org/'
 
