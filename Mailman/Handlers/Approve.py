@@ -79,13 +79,17 @@ def process(mlist, msg, msgdata):
         # XXX I'm not entirely sure why, but it is possible for the payload of
         # the part to be None, and you can't splitlines() on None.
         if part is not None and part.get_payload() is not None:
-            lines = part.get_payload(decode=True).splitlines()
+            payload = part.get_payload(decode=True)
+            # Ensure we have bytes, then decode to string for processing
+            if isinstance(payload, bytes):
+                payload = payload.decode('utf-8', errors='replace')
+            lines = payload.splitlines()
             line = ''
             for lineno, line in zip(list(range(len(lines))), lines):
                 if line.strip():
                     break
 
-            i = line.find(b':')
+            i = line.find(':')
             if i >= 0:
                 name = line[:i]
                 value = line[i+1:]
@@ -126,6 +130,9 @@ def process(mlist, msg, msgdata):
             for part in typed_subpart_iterator(msg, 'text'):
                 if part is not None and part.get_payload() is not None:
                     lines = part.get_payload(decode=True)
+                    # Ensure we have a string for regex operations
+                    if isinstance(lines, bytes):
+                        lines = lines.decode('utf-8', errors='replace')
                     if re.search(pattern, lines):
                         reset_payload(part, re.sub(pattern, '', lines))
                     elif re.search(pattern, re.sub('(?s)<.*?>', '', lines)):
