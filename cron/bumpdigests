@@ -30,7 +30,7 @@ all lists are bumped.
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -38,6 +38,8 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman import Errors
 from Mailman.i18n import _
+from Mailman.Message import Message
+from email import message_from_string
 
 # Work around known problems with some RedHat cron daemons
 import signal
@@ -46,7 +48,6 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -58,21 +59,17 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
+def parse_args():
+    parser = argparse.ArgumentParser(description='Increment the digest volume number and reset the digest number to one.')
+    parser.add_argument('listnames', nargs='*',
+                      help='The lists to bump. If no list names are given, all lists are bumped.')
+    return parser.parse_args()
+
+
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error as msg:
-        usage(1, msg)
+    args = parse_args()
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
-    if args:
-        listnames = args
-    else:
-        listnames = Utils.list_names()
+    listnames = args.listnames or Utils.list_names()
 
     if not listnames:
         print('Nothing to do.')
@@ -91,6 +88,5 @@ def main():
             mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     main()

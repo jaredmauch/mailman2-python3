@@ -33,27 +33,15 @@ marshals.  config.safety is a pickle written by 2.1a3 and beyond when the
 primary config.pck file could not be read.
 
 Usage: %(PROGRAM)s [options] [listname [listname ...]]
-
-Options:
-
-    --all / -a
-        Check the databases for all lists.  Otherwise only the lists named on
-        the command line are checked.
-
-    --verbose / -v
-        Verbose output.  The state of every tested file is printed.
-        Otherwise only corrupt files are displayed.
-
-    --help / -h
-        Print this text and exit.
 """
 
 import sys
 import os
 import errno
-import getopt
+import argparse
 import marshal
 import pickle
+import re
 
 import paths
 from Mailman import mm_cfg
@@ -64,90 +52,151 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Check a list\'s config database file for integrity.')
+    parser.add_argument('-a', '--all', action='store_true', default=True,
+                       help='Check the databases for all lists (default)')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Verbose output. The state of every tested file is printed')
+    parser.add_argument('listnames', nargs='*',
+                       help='List names to check (optional if --all is specified)')
+    return parser.parse_args()
 
 
-
-def testfile(dbfile):
-    if dbfile.endswith('.db') or dbfile.endswith('.db.last'):
-        loadfunc = marshal.load
-    elif dbfile.endswith('.pck') or dbfile.endswith('.pck.last'):
-        loadfunc = pickle.load
-    else:
-        assert 0
-    fp = open(dbfile)
+def testfile(dbfile, listname=None, verbose=0):
+    """Test the integrity of a list's config database file."""
     try:
-        loadfunc(fp)
-    finally:
-        fp.close()
-
-
-def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'ahv',
-                                   ['all', 'verbose', 'help'])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    verbose = 0
-    listnames = args
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-v', '--verbose'):
-            verbose = 1
-        elif opt in ('-a', '--all'):
-            listnames = Utils.list_names()
-
-    listnames = [n.lower().strip() for n in listnames]
-    if not listnames:
-        print(C_('Nothing to do.'))
-        sys.exit(0)
-
-    for listname in listnames:
-        if not Utils.list_exists(listname):
-            print(C_('No list named:'), listname)
-            continue
-        mlist = MailList(listname, lock=0)
-        pfile = os.path.join(mlist.fullpath(), 'config.pck')
-        plast = pfile + '.last'
-        dfile = os.path.join(mlist.fullpath(), 'config.db')
-        dlast = dfile + '.last'
-
         if verbose:
-            print(C_('List:'), listname)
-
-        for file in (pfile, plast, dfile, dlast):
-            status = 0
+            print('  Loading file %s for list %s...' % 
+                  (os.path.basename(dbfile), listname or 'unknown'))
+        if dbfile.endswith('.pck'):
+            # Try to load the pickle file
             try:
-                testfile(file)
-            except IOError as e:
-                # Don't report ENOENT unless we're in verbose mode
-                if verbose or e.errno != errno.ENOENT:
-                    status = e
-            except Exception as e:
-                status = e
-            # Report errors
-            if status:
-                if isinstance(status, EnvironmentError):
-                    # This already includes the file name
-                    print('   ', status)
-                else:
-                    print('    %s: %s' % (file, status))
-            elif verbose:
-                print(C_('   %(file)s: okay'))
+                with open(dbfile, 'rb') as fp:
+                    # Try loading with UTF-8 first, then fall back to latin1
+                    try:
+                        fp.seek(0)
+                        data = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                        if verbose:
+                            print('  Successfully loaded with UTF-8 encoding')
+                    except UnicodeDecodeError:
+                        fp.seek(0)
+                        data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        if verbose:
+                            print('  Successfully loaded with latin1 encoding')
+                    
+                    if verbose:
+                        # Get pickle version info from the loaded data
+                        if hasattr(data, '_protocol'):
+                            protocol = data._protocol
+                            print('  Pickle protocol: %d' % protocol)
+                        else:
+                            print('  Pickle protocol: unknown (not stored in data)')
+            except (EOFError, pickle.UnpicklingError) as e:
+                print('  Error loading file %s for list %s: %s' % 
+                      (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                # Always print error for request.pck files, even if not verbose
+                if dbfile.endswith('request.pck'):
+                    print('  File %s for list %s: ERROR - %s' % 
+                          (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                raise
+        elif dbfile.endswith('.db'):
+            # Try to load the marshal file
+            try:
+                with open(dbfile, 'rb') as fp:
+                    data = marshal.load(fp)
+                    if verbose:
+                        print('  Marshal format version: %d' % marshal.version)
+                        if marshal.version < 2:
+                            print('  WARNING: This file was likely written with Python 2')
+                            print('  String data may need special handling for Python 3 compatibility')
+            except (EOFError, ValueError) as e:
+                print('  Error loading file %s for list %s: %s' % 
+                      (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                # Always print error for request.pck files, even if not verbose
+                if dbfile.endswith('request.pck'):
+                    print('  File %s for list %s: ERROR - %s' % 
+                          (os.path.basename(dbfile), listname or 'unknown', str(e)))
+                raise
+        if verbose:
+            print('  File %s for list %s: OK' % 
+                  (os.path.basename(dbfile), listname or 'unknown'))
+    except Exception as e:
+        print('  Error loading file %s for list %s: %s' % 
+              (os.path.basename(dbfile), listname or 'unknown', str(e)))
+        # Always print error for request.pck files, even if not verbose
+        if dbfile.endswith('request.pck'):
+            print('  File %s for list %s: ERROR - %s' % 
+                  (os.path.basename(dbfile), listname or 'unknown', str(e)))
+        raise
 
 
-
+def main():
+    args = parse_args()
+    try:
+        if args.all or not args.listnames:
+            listnames = Utils.list_names()
+            if args.verbose:
+                print('Checking all lists (%d total)' % len(listnames))
+        else:
+            listnames = args.listnames
+            if args.verbose:
+                print('Checking specified lists (%d total)' % len(listnames))
+
+        # Convert list names to lowercase and strip whitespace
+        listnames = [n.lower().strip() for n in listnames]
+        if not listnames:
+            print('No lists found to check.')
+            sys.exit(0)
+
+        for listname in listnames:
+            if args.verbose:
+                print('\nProcessing list: %s' % listname)
+            
+            # Validate list name format
+            if len(re.sub(mm_cfg.ACCEPTABLE_LISTNAME_CHARACTERS, '', listname)) > 0:
+                print('  Invalid list name format: %s' % listname)
+                continue
+
+            listdir = os.path.join(mm_cfg.LIST_DATA_DIR, listname)
+            if not os.path.exists(listdir):
+                if args.verbose:
+                    print('  List directory does not exist: %s' % listdir)
+                continue
+
+            # Check if any of the required files exist
+            required_files = [
+                os.path.join(listdir, 'config.pck'),
+                os.path.join(listdir, 'config.pck.last'),
+                os.path.join(listdir, 'config.db'),
+                os.path.join(listdir, 'config.db.last'),
+                os.path.join(listdir, 'config.safety'),
+            ]
+            
+            has_required_files = any(os.path.exists(f) for f in required_files)
+            if not has_required_files:
+                if args.verbose:
+                    print('  No configuration files found for list: %s' % listname)
+                continue
+
+            # Check all possible database files
+            dbfiles = required_files + [
+                os.path.join(listdir, 'request.pck'),
+                os.path.join(listdir, 'request.pck.bak'),
+            ]
+
+            for dbfile in dbfiles:
+                if os.path.exists(dbfile):
+                    try:
+                        testfile(dbfile, listname, args.verbose)
+                    except Exception as e:
+                        print('  File %s: ERROR - %s' % (os.path.basename(dbfile), str(e)))
+                elif args.verbose:
+                    print('  File %s: Not found' % os.path.basename(dbfile))
+    except Exception as e:
+        print('Error getting list names: %s' % str(e))
+        sys.exit(1)
+
+
 if __name__ == '__main__':
     main()

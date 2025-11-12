@@ -1,12 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<HTML>
- <HEAD>
-   <TITLE> %(title)s
-   </TITLE>
-   <LINK REL="Index" HREF="index.html" >
-   <LINK REL="made" HREF="mailto:%(email_url)s?Subject=%(subject_url)s&In-Reply-To=%(in_reply_to_url)s">
-   <META NAME="robots" CONTENT="index,nofollow">
-   <style type="text/css">
+
+<html>
+<head>
+<title> %(title)s
+   </title>
+<link href="index.html" rel="Index"/>
+<link href="mailto:%(email_url)s?Subject=%(subject_url)s&amp;In-Reply-To=%(in_reply_to_url)s" rel="made"/>
+<meta content="index,nofollow" name="robots"/>
+<style type="text/css">
        pre {
            white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
            }
@@ -14,42 +15,40 @@
    %(encoding)s
    %(prev)s
    %(next)s
- </HEAD>
- <BODY BGCOLOR="#ffffff">
-   <H1>%(subject_html)s</H1>
-    <B>%(author_html)s</B> 
-    <A HREF="mailto:%(email_url)s?Subject=%(subject_url)s&In-Reply-To=%(in_reply_to_url)s"
-       TITLE="%(subject_html)s">%(email_html)s
-       </A><BR>
-    <I>%(datestr_html)s</I>
-    <P><UL>
+ <meta content="width=device-width, initial-scale=1.0" name="viewport"/></head>
+<body bgcolor="#ffffff">
+<h1>%(subject_html)s</h1>
+<b>%(author_html)s</b>
+<a href="mailto:%(email_url)s?Subject=%(subject_url)s&amp;In-Reply-To=%(in_reply_to_url)s" title="%(subject_html)s">%(email_html)s
+       </a><br/>
+<i>%(datestr_html)s</i>
+<p><ul>
         %(prev_wsubj)s
         %(next_wsubj)s
-         <LI> <B>Μηνύματα ταξινομημένα κατά:</B> 
-              <a href="date.html#%(sequence)s">[ ημερομηνία ]</a>
-              <a href="thread.html#%(sequence)s">[ ακολουθία μηνυμάτων ]</a>
-              <a href="subject.html#%(sequence)s">[ θέμα ]</a>
-              <a href="author.html#%(sequence)s">[ συγγραφέα ]</a>
-         </LI>
-       </UL>
-    <HR>  
+         <li> <b>ΞΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο„Ξ±ΞΎΞΉΞ½ΞΏΞΌΞ·ΞΌΞ­Ξ½Ξ± ΞΊΞ±Ο„Ξ¬:</b>
+<a href="date.html#%(sequence)s">[ Ξ·ΞΌΞµΟΞΏΞΌΞ·Ξ½Ξ―Ξ± ]</a>
+<a href="thread.html#%(sequence)s">[ Ξ±ΞΊΞΏΞ»ΞΏΟ…ΞΈΞ―Ξ± ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½ ]</a>
+<a href="subject.html#%(sequence)s">[ ΞΈΞ­ΞΌΞ± ]</a>
+<a href="author.html#%(sequence)s">[ ΟƒΟ…Ξ³Ξ³ΟΞ±Ο†Ξ­Ξ± ]</a>
+</li>
+</ul>
+<hr/>
 <!--beginarticle-->
 %(body)s
 <!--endarticle-->
-    <HR>
-    <P><UL>
-        <!--threads-->
+<hr/>
+<p><ul>
+<!--threads-->
 	%(prev_wsubj)s
 	%(next_wsubj)s
-         <LI> <B>Μηνύματα ταξινομημένα κατά:</B> 
-              <a href="date.html#%(sequence)s">[ ημερομηνία ]</a>
-              <a href="thread.html#%(sequence)s">[ ακολουθία μηνυμάτων ]</a>
-              <a href="subject.html#%(sequence)s">[ θέμα ]</a>
-              <a href="author.html#%(sequence)s">[ συγγραφέα ]</a>
-         </LI>
-       </UL>
-
-<hr>
-<a href="%(listurl)s">Περισσότερες πληροφορίες για την %(listname)s
-λίστα ηλεκτρονικού ταχυδρομείου</a><br>
-</body></html>
+         <li> <b>ΞΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο„Ξ±ΞΎΞΉΞ½ΞΏΞΌΞ·ΞΌΞ­Ξ½Ξ± ΞΊΞ±Ο„Ξ¬:</b>
+<a href="date.html#%(sequence)s">[ Ξ·ΞΌΞµΟΞΏΞΌΞ·Ξ½Ξ―Ξ± ]</a>
+<a href="thread.html#%(sequence)s">[ Ξ±ΞΊΞΏΞ»ΞΏΟ…ΞΈΞ―Ξ± ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½ ]</a>
+<a href="subject.html#%(sequence)s">[ ΞΈΞ­ΞΌΞ± ]</a>
+<a href="author.html#%(sequence)s">[ ΟƒΟ…Ξ³Ξ³ΟΞ±Ο†Ξ­Ξ± ]</a>
+</li>
+</ul>
+<hr/>
+<a href="%(listurl)s">Ξ ΞµΟΞΉΟƒΟƒΟΟ„ΞµΟΞµΟ‚ Ο€Ξ»Ξ·ΟΞΏΟ†ΞΏΟΞ―ΞµΟ‚ Ξ³ΞΉΞ± Ο„Ξ·Ξ½ %(listname)s
+Ξ»Ξ―ΟƒΟ„Ξ± Ξ·Ξ»ΞµΞΊΟ„ΟΞΏΞ½ΞΉΞΊΞΏΟ Ο„Ξ±Ο‡Ο…Ξ΄ΟΞΏΞΌΞµΞ―ΞΏΟ…</a><br/>
+</p></p></body></html>

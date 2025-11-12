@@ -1,55 +1,45 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<link rel="STYLESHEET" href="mailman-member.css" type='text/css' />
-<link rel="first" href="mailman-member.html" title='GNU mailman - list Member Manual' />
-<link rel='contents' href='contents.html' title="Contents" />
-<link rel='last' href='about.html' title='About this document...' />
-<link rel='help' href='about.html' title='About this document...' />
-<link rel="prev" href="node9.html" />
-<link rel="parent" href="node8.html" />
-<link rel="next" href="node11.html" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name='aesop' content='information' />
+<link href="mailman-member.css" rel="STYLESHEET" type="text/css"/>
+<link href="mailman-member.html" rel="first" title="GNU mailman - list Member Manual"/>
+<link href="contents.html" rel="contents" title="Contents"/>
+<link href="about.html" rel="last" title="About this document..."/>
+<link href="about.html" rel="help" title="About this document..."/>
+<link href="node9.html" rel="prev"/>
+<link href="node8.html" rel="parent"/>
+<link href="node11.html" rel="next"/>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="information" name="aesop"/>
 <title>3.2 The email interface</title>
 </head>
 <body>
 <div class="navigation">
-<div id='top-navigation-panel' xml:id='top-navigation-panel'>
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div id="top-navigation-panel" xml:id="top-navigation-panel">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="3.1 the web interface"
-  href="node9.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="3 Mailman's interfaces"
-  href="node8.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="4 i need to"
-  href="node11.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - List Member Manual</td>
-<td class='online-navigation'><a rel="contents" title="Table of Contents"
-  href="contents.html"><img src='contents.png'
-  border='0' height='32'  alt='Contents' width='32' /></a></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node9.html" rel="prev" title="3.1 the web interface"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node8.html" rel="parent" title="3 Mailman's interfaces"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node11.html" rel="next" title="4 i need to"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Member Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node9.html">3.1 The web interface</a>
+<a class="sectref" href="node9.html" rel="prev">3.1 The web interface</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="node8.html">3 Mailman's interfaces</a>
+<a class="sectref" href="node8.html" rel="parent">3 Mailman's interfaces</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node11.html">4 I need to</a>
+<a class="sectref" href="node11.html" rel="next">4 I need to</a>
 </div>
-<hr /></div>
+<hr/></div>
 </div>
 <!--End of Navigation Panel-->
-
 <h2><a name="SECTION002320000000000000000"></a><a name="sec:email"></a>
-<br>
+<br/>
 3.2 The email interface
 </h2>
 Every mailing list has a set of email addresses to which messages can be 
@@ -59,13 +49,12 @@ commands.  For a fictional mailing list called
 <span class="email">mylist@example.com</span>, you'd find these addresses:
 
 <p>
-
 <ul>
 <li><span class="email">mylist@example.com</span> - this is the email address people should
       use for new postings to the list.
 
 <p>
-</li>
+</p></li>
 <li><span class="email">mylist-join@example.com</span> - by sending a message to this address,
       a new member can request subscription to the list.  Both the
       <span class="mailheader">Subject:</span> header and body of such a message are
@@ -73,7 +62,7 @@ commands.  For a fictional mailing list called
       the -join address.
 
 <p>
-</li>
+</p></li>
 <li><span class="email">mylist-leave@example.com</span> - by sending a message to this address,
       a member can request unsubscription from the list.  As with the
       -join address, the <span class="mailheader">Subject:</span> header and body of the
@@ -81,21 +70,21 @@ commands.  For a fictional mailing list called
       an alias for the -leave address.
 
 <p>
-</li>
+</p></li>
 <li><span class="email">mylist-owner@example.com</span> - This address reaches the list owner
       and list moderators directly.  This is the address you use if 
 		you need to contact the person or people in charge.
 
 <p>
-</li>
+</p></li>
 <li><span class="email">mylist-request@example.com</span> - This address reaches a mail robot
       which processes email commands that can be used to set member
       subscription options, as well as process other commands.
       A list of members' email commands is provided in 
-		Appendix&nbsp;<a href="node41.html#a:commands">A</a>.
+		Appendix <a href="node41.html#a:commands">A</a>.
 
 <p>
-</li>
+</p></li>
 <li><span class="email">mylist-bounces@example.com</span> - This address receives bounces from
       members whose addresses have become either temporarily or
       permanently inactive.  The -bounces address is also a mail robot
@@ -106,13 +95,12 @@ commands.  For a fictional mailing list called
       administrators.
 
 <p>
-</li>
+</p></li>
 <li><span class="email">mylist-confirm@example.com</span> - This address is another email
       robot, which processes confirmation messages for subscription
       and unsubscription requests.
 </li>
 </ul>
-
 <p>
 There's also an -admin address which also reaches the list administrators,
 but this address only exists for compatibility with older versions of
@@ -141,43 +129,31 @@ Appendices <a href="node41.html#a:commands">A</a> and <a href="node42.html#a:opt
 adapted from the output of the <var>help</var> command.)
 
 <p>
-
 <div class="navigation">
-<div class='online-navigation'>
-<p></p><hr />
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div class="online-navigation">
+<p></p><hr/>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="3.1 the web interface"
-  href="node9.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="3 Mailman's interfaces"
-  href="node8.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="4 i need to"
-  href="node11.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - List Member Manual</td>
-<td class='online-navigation'><a rel="contents" title="Table of Contents"
-  href="contents.html"><img src='contents.png'
-  border='0' height='32'  alt='Contents' width='32' /></a></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node9.html" rel="prev" title="3.1 the web interface"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node8.html" rel="parent" title="3 Mailman's interfaces"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node11.html" rel="next" title="4 i need to"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Member Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node9.html">3.1 The web interface</a>
+<a class="sectref" href="node9.html" rel="prev">3.1 The web interface</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="node8.html">3 Mailman's interfaces</a>
+<a class="sectref" href="node8.html" rel="parent">3 Mailman's interfaces</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node11.html">4 I need to</a>
+<a class="sectref" href="node11.html" rel="next">4 I need to</a>
 </div>
 </div>
-<hr />
+<hr/>
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-
-</body>
+</p></p></p></p></p></p></p></body>
 </html>

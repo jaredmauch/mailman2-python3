@@ -1,52 +1,110 @@
 <!-- $Revision: 3394 $ -->
-<HTML>
-  <HEAD>
-    <TITLE>מנויי <MM-List-Name></TITLE>
-  
-  </HEAD>
-  <BODY BGCOLOR="#ffffff" dir="rtl">
-
-    <P>
-    <TABLE WIDTH="100%" COLS="1" BORDER="0" CELLSPACING="4" CELLPADDING="5">
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	  <B><FONT COLOR="#000000" SIZE="+1">מנויי <MM-List-Name>
-		</FONT></B>
-	</TD>
-      </TR>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" ALIGN="CENTER">
-	    
-          <P align = "right"> <MM-lang-form-start><MM-displang-box>
-                       <MM-list-langs><MM-form-end></p>        
-
-	  <P>לחץ על הכתובת שלך כדי לבקר בעמוד אפשריות המנוי
-		שלך. <br><I>(רשומות בסוגריים מציינים מנויים
-		שלא מקבלים דואר (לא פעילים)).</I></P>
-	</TD>
-      </TR>
-      <TR WIDTH="100%" VALIGN="top">
-	<TD BGCOLOR="#FFF0D0" WIDTH="50%">
-	  <center>
-	    <B><FONT COLOR="#000000"><MM-Num-Reg-Users>
-		  מנוים לא בתקצירים של <MM-List-Name>:</FONT></B>
-	  </center>
-	</TD>
-	<TD BGCOLOR="#FFF0D0" WIDTH="50%">
-	  <center>
-	    <B><FONT COLOR="#000000"><MM-Num-Digesters> מנוים בתקצירים של <MM-List-Name>:</FONT></B> 
-	  </center>
-	</TD>
-      </TR>
-      <TR VALIGN="top">
-	<td>
-	  <P><MM-Regular-Users>
-	</td>
-	<td>
-	  <P><MM-Digest-Users>
-	</td>
-      </tr>
-    </table>
-<MM-Mailman-Footer>
-</BODY>
-</HTML>
+<html>
+<head>
+<title>מנויי <mm-list-name></mm-list-name></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff" dir="rtl">
+<p>
+<table aria-label="Table" cols="1" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000" size="+1">מנויי <mm-list-name>
+</mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td align="CENTER" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<p align="right"> <mm-lang-form-start><mm-displang-box>
+<mm-list-langs><mm-form-end></mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></p>
+<p>לחץ על הכתובת שלך כדי לבקר בעמוד אפשריות המנוי
+		שלך. <br/><i>(רשומות בסוגריים מציינים מנויים
+		שלא מקבלים דואר (לא פעילים)).</i></p>
+</td>
+</tr>
+<tr valign="top" width="100%">
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<center>
+<b><font color="#000000"><mm-num-reg-users>
+		  מנוים לא בתקצירים של <mm-list-name>:</mm-list-name></mm-num-reg-users></font></b>
+</center>
+</td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<center>
+<b><font color="#000000"><mm-num-digesters> מנוים בתקצירים של <mm-list-name>:</mm-list-name></mm-num-digesters></font></b>
+</center>
+</td>
+</tr>
+<tr valign="top">
+<td style="padding: 8px; border: 1px solid #ccc;">
+<p><mm-regular-users>
+</mm-regular-users></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
+<p><mm-digest-users>
+</mm-digest-users></p></td>
+</tr>
+</table>
+<mm-mailman-footer>
+</mm-mailman-footer></p></body>
+</html>

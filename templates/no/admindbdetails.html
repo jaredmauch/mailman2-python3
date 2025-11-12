@@ -1,62 +1,122 @@
-Administrative foresp&oslash;rsler kan vises p&aring; to m&aring;ter, enten som en <a
-href="%(summaryurl)s">oversikt</a>, eller med <em>alle detaljer</em>.
-P&aring; oversiktsiden vises b&aring;de ventende p&aring;meldinger/utmeldinger og
-epost som venter p&aring; godkjenning for &aring; bli distribuert via listen.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Administrative forespørsler kan vises på to måter, enten som en <a href="%(summaryurl)s">oversikt</a>, eller med <em>alle detaljer</em>.
+På oversiktsiden vises både ventende påmeldinger/utmeldinger og
+epost som venter på godkjenning for å bli distribuert via listen.
 Detaljsiden viser i tillegg epostenes meldingshoder og et utdrag av
 innholdet i dem.
 
-<p>P&aring; begge sidene kan du angi f&oslash;lgende tiltak:
+<p>På begge sidene kan du angi følgende tiltak:
 
 <ul>
-<li><b>Avvent</b> -- Utsett avgj&oslash;relsen. Ingenting blir gjort med
-    denne foresp&oslash;rselen n&aring;, men epost som venter p&aring; godkjenning kan du
-    ta vare p&aring; eller videresende (se nedenfor).
+<li><b>Avvent</b> -- Utsett avgjørelsen. Ingenting blir gjort med
+    denne forespørselen nå, men epost som venter på godkjenning kan du
+    ta vare på eller videresende (se nedenfor).
 
 <li><b>Godkjenne</b> -- Godta meldingen slik den er og distribuere den
-    til listen. For foresp&oslash;rsler om medlemskap, iverksette utmelding eller
-    p&aring;melding.
+    til listen. For forespørsler om medlemskap, iverksette utmelding eller
+    påmelding.
 
-<li><b>Avsl&aring;</b> -- Slette meldingen og gi beskjed tilbake til
-    avsenderen om at meldingen ikke ble godkjent. For foresp&oslash;rsler om
-    medlemskap, avsl&aring; utmelding eller p&aring;melding. I alle tilfeller b&oslash;r
-    du ogs&aring; oppgi en grunn i den tilh&oslash;rende tekstboksen.
+<li><b>Avslå</b> -- Slette meldingen og gi beskjed tilbake til
+    avsenderen om at meldingen ikke ble godkjent. For forespørsler om
+    medlemskap, avslå utmelding eller påmelding. I alle tilfeller bør
+    du også oppgi en grunn i den tilhørende tekstboksen.
 
 <li><b>Kaste</b> -- Slette meldingen uten at noe beskjed sendes
-    til avsender. Nyttig for s&oslash;ppel-epost og reklame-epost (spam).
-    For foresp&oslash;rsler om medlemskap, avsl&aring; utmelding eller p&aring;melding, uten
-    at den som pr&oslash;vde &aring; melde seg ut av eller p&aring; listen f&aring;r vite noe
+    til avsender. Nyttig for søppel-epost og reklame-epost (spam).
+    For forespørsler om medlemskap, avslå utmelding eller påmelding, uten
+    at den som prøvde å melde seg ut av eller på listen får vite noe
     om det.
 
-</ul>
-
-<p>Kryss av for <b>Ta vare p&aring; meldingen</b> dersom du &oslash;nsker &aring; lagre en kopi for
-systemets administrator. Dette kan v&aelig;re nyttig for meldinger som er
+</li></li></li></li></ul>
+<p>Kryss av for <b>Ta vare på meldingen</b> dersom du ønsker å lagre en kopi for
+systemets administrator. Dette kan være nyttig for meldinger som er
 knyttet til misbruk av systemet og som du egentlig vil slette, men som kan
-v&aelig;re nyttig &aring; ta en titt p&aring; senere.
+være nyttig å ta en titt på senere.
 
 <p>Kryss av for <b>Videresend denne meldingen</b> og oppgi en epostadresse
-hvis du vil videresende meldingen til noen andre. For &aring; redigere en epost
-som holdes tilbake f&oslash;r den sendes til listen, b&oslash;r du sende den til deg selv
+hvis du vil videresende meldingen til noen andre. For å redigere en epost
+som holdes tilbake før den sendes til listen, bør du sende den til deg selv
 (eller evt. listens eiere), og slette den opprinnelige eposten.
-Deretter, n&aring;r eposten kommer i innboksen din, rediger den og gj&oslash;r de endringer
-du &oslash;nsker, og send den s&aring; til listen p&aring; nytt, med et <tt>Approved:</tt> felt
+Deretter, når eposten kommer i innboksen din, rediger den og gjør de endringer
+du ønsker, og send den så til listen på nytt, med et <tt>Approved:</tt> felt
 i meldingshodet etterfulgt av listens passord. Husk at det er vanlig netiquette
-i et slikt tilfelle &aring; oppgi at du har redigert innholdet.
+i et slikt tilfelle å oppgi at du har redigert innholdet.
 
 <p>Hvis avsenderen er medlem av listen men er moderert, kan du fjerne
-moderasjonsflagget hvis du &oslash;nsker det. Dette er nyttig n&aring;r du har satt
-opp listen slik at nye medlemmer har en pr&oslash;vetid p&aring; listen, og du har bestemt
-at n&aring; er pr&oslash;vetiden over for dette medlemmet.
+moderasjonsflagget hvis du ønsker det. Dette er nyttig når du har satt
+opp listen slik at nye medlemmer har en prøvetid på listen, og du har bestemt
+at nå er prøvetiden over for dette medlemmet.
 
-<p>Hvis avsenderen ikke er medlem av listen, kan du f&aring; epostadressen lagt inn
-i et av <em>avsenderfiltrene</em>. Avsenderfiltre er forklart p&aring; <a
-href="%(filterurl)s">Filtrering p&aring; avsender</a>-siden, og kan v&aelig;re
-<b>auto-godkjenne</b>, <b>auto-holdetilbake</b>, <b>auto-avsl&aring;</b>, eller
-<b>auto-forkast</b>. Dette valget vil ikke v&aelig;re tilgjengelig dersom denne adressen
+<p>Hvis avsenderen ikke er medlem av listen, kan du få epostadressen lagt inn
+i et av <em>avsenderfiltrene</em>. Avsenderfiltre er forklart på <a href="%(filterurl)s">Filtrering på avsender</a>-siden, og kan være
+<b>auto-godkjenne</b>, <b>auto-holdetilbake</b>, <b>auto-avslå</b>, eller
+<b>auto-forkast</b>. Dette valget vil ikke være tilgjengelig dersom denne adressen
 allerede er lagt inn i et slikt filter.
 
-<p>Etter du har foretatt dine valg, klikk p&aring; <em>Utf&oslash;re</em>
-knappen p&aring; toppen eller bunnen av siden. Det vil iverksette dine
-avgj&oslash;relser.
+<p>Etter du har foretatt dine valg, klikk på <em>Utføre</em>
+knappen på toppen eller bunnen av siden. Det vil iverksette dine
+avgjørelser.
 
 <p><a href="%(summaryurl)s">Tilbake til oversiktsiden</a>.
+</p></p></p></p></p></p></p>

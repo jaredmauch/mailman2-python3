@@ -2,6 +2,7 @@
 
 # majordomo2mailman.pl - Migrate Majordomo mailing lists to Mailman 2.0
 #          Copyright (C) 2002 Heiko Rommel (rommel@suse.de)
+#          Updated 2024 for modern Perl features
 
 # BAW: Note this probably needs to be upgraded to work with MM2.1
 
@@ -27,9 +28,12 @@
 # "...umbrella..." or "...taboo..." -> Mailman-Admin-Guide
 
 use strict;
-use Getopt::Long;
+use warnings;
+use feature 'say';
+use Getopt::Long qw(:config no_ignore_case bundling);
 use Fcntl;
-use POSIX qw (tmpnam);
+use POSIX qw(tmpnam);
+use Pod::Usage;
 
 use vars qw (
 	     $majordomo $mydomain $myurl
@@ -71,18 +75,51 @@ $susearchuser = "archdummy";
 
 $usagemsg = "usage: majordomo2mailman [-h|--help] [-d|--debug] [-u|--update] < (-a|--all) | list-of-mailinglists >";
 
+# Site-specific settings
+my %config = (
+    mydomain               => "my.domain",
+    majordomo              => "majordomo", # the master Majordomo address for your site
+    aliasin                => "/var/lib/majordomo/aliases",
+    listdir                => "/var/lib/majordomo/lists",
+    aliasout               => "/tmp/aliases",
+    myurl                  => "http://my.domain/mailman/",
+    mailmanbin             => "/usr/lib/mailman/bin",
+    umbrella_member_suffix => "-owner",
+    private                => "yes", # is this a private/Intranet site ?
+    newsserver             => "news.my.domain",
+    newsprefix             => "intern.",
+    susehack               => "no",
+    susearchuser           => "archdummy",
+);
+
+# Command line options
+my %opts = (
+    help    => 0,
+    debug   => 0,
+    all     => 0,
+    update  => 0,
+);
+
+# Parse command line arguments
 GetOptions(
-           "h|help" => \$help,
-	   "d|debug" => \$debug,
-	   "a|all" => \$all,
-	   "u|update" => \$update
-) or die "$usagemsg\n";
+    "help|h"    => \$opts{help},
+    "debug|d"   => \$opts{debug},
+    "all|a"     => \$opts{all},
+    "update|u"  => \$opts{update},
+) or pod2usage(2);
 
-if (defined($help)) { die "$usagemsg\n"; }
+# Show help if requested
+pod2usage(1) if $opts{help};
 
-if ((not defined($all)) and (@ARGV<1)) { die "$usagemsg\n"; }
+# Validate arguments
+if (!$opts{all} && @ARGV < 1) {
+    pod2usage("Error: You must specify either --all or a list of mailing lists");
+}
 
-if ($<) { die "this script must be run as root!\n"; }
+# Check for root privileges
+if ($<) {
+    die "Error: This script must be run as root!\n";
+}
 
 #
 # 1)
@@ -185,7 +222,7 @@ for $ml ((defined ($all)) ? sort keys %mlowners : @ARGV) {
   $mlconf{"unsubscribe_policy"} = "closed" if ( -e "$listdir/$ml.closed");
 
   if ( -e "$listdir/$ml.auto" && -e "$listdir/$ml.closed") {
-    print STDERR "sowohl $ml.auto als auch $ml.closed existieren. Wähle $ml.closed\n"; 
+    print STDERR "sowohl $ml.auto als auch $ml.closed existieren. Wï¿½hle $ml.closed\n"; 
   }
   else {
     $mlconf{"subscribe_policy"} = "auto" if ( -e"$listdir/$ml.auto"); 
@@ -689,4 +726,86 @@ sub mm_posters {
     $mmconf{"posters"} = "[]";
   }
 }
+
+__END__
+
+=head1 NAME
+
+majordomo2mailman.pl - Migrate Majordomo mailing lists to Mailman 2.0
+
+=head1 SYNOPSIS
+
+majordomo2mailman.pl [options] [list-of-mailinglists]
+
+ Options:
+   -h, --help      Show this help message
+   -d, --debug     Enable debug output
+   -a, --all       Process all mailing lists
+   -u, --update    Update existing lists
+
+=head1 DESCRIPTION
+
+This script migrates Majordomo mailing lists to Mailman 2.0. It handles the conversion of list configurations, members, and settings.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h, --help>
+
+Show this help message and exit.
+
+=item B<-d, --debug>
+
+Enable debug output for troubleshooting.
+
+=item B<-a, --all>
+
+Process all mailing lists found in the Majordomo configuration.
+
+=item B<-u, --update>
+
+Update existing Mailman lists instead of creating new ones.
+
+=back
+
+=head1 EXAMPLES
+
+  # Process specific lists
+  majordomo2mailman.pl list1 list2 list3
+
+  # Process all lists
+  majordomo2mailman.pl --all
+
+  # Update existing lists
+  majordomo2mailman.pl --update list1 list2
+
+=head1 REQUIREMENTS
+
+This script must be run as root. It requires Perl 5.10 or later and the following Perl modules:
+
+=over 4
+
+=item * Getopt::Long
+
+=item * Fcntl
+
+=item * POSIX
+
+=item * Pod::Usage
+
+=back
+
+=head1 AUTHOR
+
+Heiko Rommel (rommel@suse.de)
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 1, or (at your option)
+any later version.
+
+=cut
 

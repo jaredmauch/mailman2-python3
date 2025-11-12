@@ -40,7 +40,7 @@ from __future__ import unicode_literals
 
 import sys
 import getpass
-import getopt
+import argparse
 
 import paths
 from Mailman import Utils
@@ -48,39 +48,24 @@ from Mailman import Utils
 PROGRAM = sys.argv[0]
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(__doc__, file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Set the site password, prompting from the terminal.')
+    parser.add_argument('-c', '--listcreator', action='store_true',
+                       help='Set the list creator password instead of the site password')
+    parser.add_argument('password', nargs='?',
+                       help='The password to set (optional, will prompt if not provided)')
+    return parser.parse_args()
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'ch',
-                                   ['listcreator', 'help'])
-    except getopt.error as msg:
-        usage(1, msg)
+    args = parse_args()
 
     # Defaults
-    siteadmin = 1
-    pwdesc = 'site'
+    siteadmin = not args.listcreator
+    pwdesc = 'list creator' if args.listcreator else 'site'
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-c', '--listcreator'):
-            siteadmin = 0
-            pwdesc = 'list creator'
-
-    if len(args) == 1:
-        pw1 = args[0]
+    if args.password:
+        pw1 = args.password
     else:
         try:
             pw1 = getpass.getpass('New %(pwdesc)s password: ')
@@ -100,6 +85,5 @@ def main():
         print('Password change failed.')
 
 
-
 if __name__ == '__main__':
     main()

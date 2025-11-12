@@ -31,7 +31,7 @@ import sys
 import pwd
 import grp
 import errno
-import getopt
+import argparse
 from stat import *
 
 try:
@@ -55,7 +55,6 @@ PROGRAM = sys.argv[0]
 
 # Gotta check the archives/private/*/database/* files
 
-
 class State:
     FIX = False
     VERBOSE = False
@@ -70,7 +69,6 @@ ARTICLEFILEPERMS = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 PRIVATEPERMS = QFILEPERMS
 
 
-
 def statmode(path):
     return os.stat(path)[ST_MODE]
 
@@ -91,7 +89,6 @@ def getgrgid(gid):
     return data
 
 
-
 def checkwalk(arg, dirname, names):
     # Short-circuit duplicates
     if seen.has_key(dirname):
@@ -354,32 +351,20 @@ def checkdata():
                     print()
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Check the permissions for the Mailman installation.')
+    parser.add_argument('-f', '--fix', action='store_true',
+                       help='Fix all the permission problems found')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Be verbose')
+    return parser.parse_args()
 
 
-if __name__ == '__main__':
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'fvh',
-                                   ['fix', 'verbose', 'help'])
-    except getopt.error as msg:
-        usage(1, msg)
+def main():
+    args = parse_args()
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-f', '--fix'):
-            STATE.FIX = True
-        elif opt in ('-v', '--verbose'):
-            STATE.VERBOSE = True
+    STATE.FIX = args.fix
+    STATE.VERBOSE = args.verbose
 
     checkall()
     checkarchives()
@@ -390,8 +375,17 @@ if __name__ == '__main__':
     checkadminpw()
     checkmta()
 
-    if not STATE.ERRORS:
-        print(C_('No problems found'))
+    if STATE.ERRORS:
+        if STATE.FIX:
+            print(C_('Fixed %(STATE.ERRORS)d permission problems.'))
+        else:
+            print(C_('Found %(STATE.ERRORS)d permission problems.'))
+            print(C_('Run with -f to fix them.'))
+        sys.exit(1)
     else:
-        print(C_('Problems found:'), STATE.ERRORS)
-        print(C_('Re-run as %(MAILMAN_USER)s (or root) with -f flag to fix'))
+        print(C_('No permission problems found.'))
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()

@@ -100,7 +100,14 @@ def get_listnames(domain=None):
     from Mailman.Utils import list_exists
     # We don't currently support separate virtual domain directories
     got = []
-    for fn in os.listdir(mm_cfg.LIST_DATA_DIR):
+    # Ensure LIST_DATA_DIR is a string
+    list_dir = mm_cfg.LIST_DATA_DIR
+    if isinstance(list_dir, bytes):
+        list_dir = list_dir.decode('utf-8', 'replace')
+    for fn in os.listdir(list_dir):
         if list_exists(fn):
+            # Ensure we return strings, not bytes
+            if isinstance(fn, bytes):
+                fn = fn.decode('utf-8', 'replace')
             got.append(fn)
     return got

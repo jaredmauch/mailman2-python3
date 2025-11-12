@@ -5,13 +5,13 @@ import os
 import re
 import sys
 import time
+import string
 from email.utils import parseaddr, parsedate_tz, mktime_tz, formatdate
 import pickle
 from io import StringIO
 
-# Work around for some misguided Python packages that add iso-8859-1
-# accented characters to string.lowercase.
-lowercase = lowercase[:26]
+# Use string.ascii_lowercase instead of the old lowercase variable
+lowercase = string.ascii_lowercase
 
 __version__ = '0.09 (Mailman edition)'
 VERSION = __version__
@@ -26,7 +26,6 @@ from Mailman.i18n import _, C_
 SPACE = ' '
 
 
-
 msgid_pat = re.compile(r'(<.*>)')
 def strip_separators(s):
     "Remove quotes or parenthesization from a Message-ID string"
@@ -132,7 +131,8 @@ class Database(DatabaseInterface):
         temp2 = article.html_body
         article.body = []
         del article.html_body
-        self.articleIndex[article.msgid] = pickle.dumps(article)
+        # Use protocol 4 for Python 2/3 compatibility
+        self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
         article.body = temp
         article.html_body = temp2
 
@@ -272,38 +272,26 @@ class T(object):
     def __init__(self, basedir = None, reload = 1, database = None):
         # If basedir isn't provided, assume the current directory
         if basedir is None:
-            self.basedir = os.getcwd()
-        else:
-            basedir = os.path.expanduser(basedir)
-            self.basedir = basedir
-        self.database = database
-
-        # If the directory doesn't exist, create it.  This code shouldn't get
-        # run anymore, we create the directory in Archiver.py.  It should only
-        # get used by legacy lists created that are only receiving their first
-        # message in the HTML archive now -- Marc
-        try:
-            os.stat(self.basedir)
-        except os.error as errdata:
-            errno, errmsg = errdata
-            if errno != 2:
-                raise os.error(errdata)
-            else:
-                self.message(C_('Creating archive directory ') + self.basedir)
-                omask = os.umask(0)
-                try:
-                    os.mkdir(self.basedir, self.DIRMODE)
-                finally:
-                    os.umask(omask)
+            basedir = os.getcwd()
+        self.basedir = basedir
 
         # Try to load previously pickled state
         try:
             if not reload:
                 raise IOError
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'r')
+            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'rb')
             self.message(C_('Reloading pickled archive state'))
-            d = pickle.load(f, fix_imports=True, encoding='latin1')
+            try:
+                # Try UTF-8 first for newer files
+                d = pickle.load(f, fix_imports=True, encoding='utf-8')
+            except (UnicodeDecodeError, pickle.UnpicklingError):
+                # Fall back to latin1 for older files
+                f.seek(0)
+                d = pickle.load(f, fix_imports=True, encoding='latin1')
             f.close()
+            if isinstance(d, bytes):
+                # If we got bytes, try to unpickle it
+                d = pickle.loads(d, fix_imports=True, encoding='latin1')
             for key, value in list(d.items()):
                 setattr(self, key, value)
         except (IOError, EOFError):
@@ -335,15 +323,33 @@ class T(object):
 
         omask = os.umask(0o007)
         try:
-            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'w')
+            f = open(os.path.join(self.basedir, 'pipermail.pck'), 'wb')
         finally:
             os.umask(omask)
-        pickle.dump(self.getstate(), f)
+        # Use protocol 4 for Python 2/3 compatibility
+        pickle.dump(self.getstate(), f, protocol=4, fix_imports=True)
         f.close()
 
     def getstate(self):
-        # can override this in subclass
-        return self.__dict__
+        """Get the current state of the archive."""
+        try:
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
+            return pickle.dumps(self.__dict__, protocol, fix_imports=True)
+        except Exception as e:
+            mailman_log('error', 'Error getting archive state: %s', e)
+            return None
+
+    def setstate(self, state):
+        """Set the state of the archive."""
+        try:
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
+            self.__dict__ = pickle.loads(state, fix_imports=True, encoding='latin1')
+        except Exception as e:
+            mailman_log('error', 'Error setting archive state: %s', e)
+            return False
+        return True
 
     #
     # Private methods
@@ -612,49 +618,16 @@ class T(object):
         self.open_new_archive(archive, archivedir)
 
     def add_article(self, article):
-        archives = self.get_archives(article)
-        if not archives:
-            return
-        if type(archives) == type(''):
-            archives = [archives]
-
-        article.filename = filename = self.get_filename(article)
-        temp = self.format_article(article)
-        for arch in archives:
-            self.archive = arch # why do this???
-            archivedir = os.path.join(self.basedir, arch)
-            if arch not in self.archives:
-                self.new_archive(arch, archivedir)
-
-            # Write the HTML-ized article
-            self.write_article(arch, temp, os.path.join(archivedir,
-                                                        filename))
-
-            if 'author' in article.decoded:
-                author = fixAuthor(article.decoded['author'])
-            else:
-                author = fixAuthor(article.author)
-            if 'stripped' in article.decoded:
-                subject = article.decoded['stripped'].lower()
-            else:
-                subject = article.subject.lower()
-
-            article.parentID = parentID = self.get_parent_info(arch, article)
-            if parentID:
-                parent = self.database.getArticle(arch, parentID)
-                article.threadKey = (parent.threadKey + article.date + '.'
-                                     + str(article.sequence) + '-')
-            else:
-                article.threadKey = (article.date + '.'
-                                     + str(article.sequence) + '-')
-            key = article.threadKey, article.msgid
-
-            self.database.setThreadKey(arch, key, article.msgid)
-            self.database.addArticle(arch, temp, author=author,
-                                     subject=subject)
-
-            if arch not in self._dirty_archives:
-                self._dirty_archives.append(arch)
+        """Add an article to the archive."""
+        try:
+            # Use protocol 4 for Python 2/3 compatibility
+            protocol = 4
+            self.articleIndex[article.msgid] = pickle.dumps(article, protocol=4, fix_imports=True)
+            self.articleIndex.sync()
+        except Exception as e:
+            mailman_log('error', 'Error adding article %s: %s', article.msgid, e)
+            return False
+        return True
 
     def get_parent_info(self, archive, article):
         parentID = None

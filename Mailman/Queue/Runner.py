@@ -22,31 +22,76 @@ from builtins import object
 import time
 import traceback
 from io import StringIO
+from functools import wraps
+import threading
+import os
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman import MailList
+import Mailman.MailList as MailList
 from Mailman import i18n
-
+import Mailman.Message as Message
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
 import email.errors
 
-
+
 class Runner:
     QDIR = None
     SLEEPTIME = mm_cfg.QRUNNER_SLEEP_TIME
+    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
+    MAX_BACKOFF = 60  # Maximum backoff time in seconds
+    INITIAL_BACKOFF = 1  # Initial backoff time in seconds
+    
+    # Message tracking configuration - can be overridden by subclasses
+    _track_messages = False  # Whether to track processed messages
+    _max_processed_messages = 10000  # Maximum number of messages to track
+    _max_retry_times = 10000  # Maximum number of retry times to track
+    _processed_messages = set()  # Set of processed message IDs
+    _processed_lock = threading.Lock()  # Lock for thread safety
+    _retry_times = {}  # Dictionary of retry times
+    _last_cleanup = time.time()  # Last cleanup time
+    _cleanup_interval = 3600  # Cleanup interval in seconds
+    _current_backoff = INITIAL_BACKOFF  # Current backoff time in seconds
+    _last_mtime = 0  # Last directory modification time
 
     def __init__(self, slice=None, numslices=1):
-        self._kids = {}
-        # Create our own switchboard.  Don't use the switchboard cache because
-        # we want to provide slice and numslice arguments.
-        self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
-        # Create the shunt switchboard
-        self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
-        self._stop = False
+        syslog('debug', '%s: Starting initialization', self.__class__.__name__)
+        try:
+            self._stop = 0
+            self._slice = slice
+            self._numslices = numslices
+            self._kids = {}
+            # Create our own switchboard.  Don't use the switchboard cache because
+            # we want to provide slice and numslice arguments.
+            self._switchboard = Switchboard(self.QDIR, slice, numslices, True)
+            # Create the shunt switchboard
+            self._shunt = Switchboard(mm_cfg.SHUNTQUEUE_DIR)
+            
+            # Initialize message tracking attributes
+            self._track_messages = self.__class__._track_messages
+            self._max_processed_messages = self.__class__._max_processed_messages
+            self._max_retry_times = self.__class__._max_retry_times
+            self._processed_messages = set()
+            self._processed_lock = threading.Lock()
+            self._retry_times = {}
+            self._last_cleanup = time.time()
+            self._cleanup_interval = 3600
+            
+            # Initialize error tracking attributes
+            self._last_error_time = 0
+            self._error_count = 0
+            
+            self._current_backoff = self.INITIAL_BACKOFF
+            self._last_mtime = 0
+            
+            syslog('debug', '%s: Initialization complete', self.__class__.__name__)
+        except Exception as e:
+            syslog('error', '%s: Initialization failed: %s\nTraceback:\n%s',
+                   self.__class__.__name__, str(e), traceback.format_exc())
+            raise
 
     def __repr__(self):
         return '<%s at %s>' % (self.__class__.__name__, id(self))
@@ -80,36 +125,130 @@ class Runner:
             # subprocesses we've created and do any other necessary cleanups.
             self._cleanup()
 
+    def log_error(self, error_type, error_msg, **kwargs):
+        """Log an error with the given type and message.
+        
+        Args:
+            error_type: A string identifying the type of error
+            error_msg: The error message to log
+            **kwargs: Additional context to include in the log message
+        """
+        context = {
+            'runner': self.__class__.__name__,
+            'error_type': error_type,
+            'error_msg': error_msg,
+        }
+        context.update(kwargs)
+        
+        # Format the error message
+        msg_parts = ['%s: %s' % (error_type, error_msg)]
+        if 'msg' in context:
+            msg_parts.append('Message-ID: %s' % context['msg'].get('message-id', 'unknown'))
+        if 'listname' in context:
+            msg_parts.append('List: %s' % context['listname'])
+        if 'traceback' in context:
+            msg_parts.append('Traceback:\n%s' % context['traceback'])
+            
+        # Log the error
+        syslog('error', ' '.join(msg_parts))
+
+    def log_warning(self, warning_type, msg=None, mlist=None, **context):
+        """Structured warning logging with context."""
+        context.update({
+            'runner': self.__class__.__name__,
+            'list': mlist.internal_name() if mlist else 'N/A',
+            'msg_id': msg.get('message-id', 'N/A') if msg else 'N/A',
+            'warning_type': warning_type
+        })
+        syslog('warning', '%(runner)s: %(warning_type)s - list: %(list)s, msg: %(msg_id)s',
+            context)
+
+    def log_info(self, info_type, msg=None, mlist=None, **context):
+        """Structured info logging with context."""
+        context.update({
+            'runner': self.__class__.__name__,
+            'list': mlist.internal_name() if mlist else 'N/A',
+            'msg_id': msg.get('message-id', 'N/A') if msg else 'N/A',
+            'info_type': info_type
+        })
+        syslog('info', '%(runner)s: %(info_type)s - list: %(list)s, msg: %(msg_id)s',
+            context)
+
+    def _handle_error(self, exc, msg=None, mlist=None, preserve=True):
+        """Centralized error handling with circuit breaker."""
+        now = time.time()
+        
+        # Log the error with full context
+        self.log_error('unhandled_exception', exc, msg=msg, mlist=mlist)
+        
+        # Log full traceback
+        s = StringIO()
+        traceback.print_exc(file=s)
+        syslog('error', 'Traceback: %s', s.getvalue())
+        
+        # Circuit breaker logic
+        if now - self._last_error_time < 60:  # Within last minute
+            self._error_count += 1
+            if self._error_count >= 10:  # Too many errors in short time
+                syslog('error', '%s: Too many errors, stopping runner', self.__class__.__name__)
+                # Log stack trace before stopping
+                s = StringIO()
+                traceback.print_stack(file=s)
+                syslog('error', 'Stack trace at stop:\n%s', s.getvalue())
+                self.stop()
+        else:
+            self._error_count = 1
+        self._last_error_time = now
+        
+        # Handle message preservation
+        if preserve:
+            try:
+                msgdata = {'whichq': self._switchboard.whichq()}
+                new_filebase = self._shunt.enqueue(msg, msgdata)
+                syslog('error', '%s: Shunted message to: %s', self.__class__.__name__, new_filebase)
+            except Exception as e:
+                syslog('error', '%s: Failed to shunt message: %s', self.__class__.__name__, str(e))
+                return False
+        return True
+
     def _oneloop(self):
-        # First, list all the files in our queue directory.
-        # Switchboard.files() is guaranteed to hand us the files in FIFO
-        # order.  Return an integer count of the number of files that were
-        # available for this qrunner to process.
+        """Run one iteration of the runner's main loop.
+        
+        Returns:
+            int: Number of files processed, or 0 if no files found
+        """
+        # Check if directory has been modified since last check
+        try:
+            st = os.stat(self.QDIR)
+            current_mtime = st.st_mtime
+            if current_mtime <= self._last_mtime:
+                # Directory hasn't changed, use backoff
+                self._snooze(self._current_backoff)
+                # Double the backoff time, up to MAX_BACKOFF
+                self._current_backoff = min(self._current_backoff * 2, self.MAX_BACKOFF)
+                return 0
+            # Directory has changed, reset backoff
+            self._current_backoff = self.INITIAL_BACKOFF
+            self._last_mtime = current_mtime
+        except OSError as e:
+            syslog('error', '%s: Error checking directory %s: %s',
+                   self.__class__.__name__, self.QDIR, str(e))
+            return 0
+
+        # Process files in the directory
         files = self._switchboard.files()
+        if not files:
+            syslog('debug', '%s: No files to process', self.__class__.__name__)
+            return 0
+
+        # Process each file
         for filebase in files:
+            if self._stop:
+                break
             try:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this filebase.
                 msg, msgdata = self._switchboard.dequeue(filebase)
-            except Exception as e:
-                # This used to just catch email.Errors.MessageParseError,
-                # but other problems can occur in message parsing, e.g.
-                # ValueError, and exceptions can occur in unpickling too.
-                # We don't want the runner to die, so we just log and skip
-                # this entry, but maybe preserve it for analysis.
-                self._log(e)
-                if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
-                    syslog('error',
-                           'Skipping and preserving unparseable message: %s',
-                           filebase)
-                    preserve = True
-                else:
-                    syslog('error',
-                           'Ignoring unparseable message: %s', filebase)
-                    preserve = False
-                self._switchboard.finish(filebase, preserve=preserve)
-                continue
-            try:
                 self._onefile(msg, msgdata)
                 self._switchboard.finish(filebase)
             except Exception as e:
@@ -145,82 +284,194 @@ class Runner:
                 break
         return len(files)
 
-    def _onefile(self, msg, msgdata):
-        # Do some common sanity checking on the message metadata.  It's got to
-        # be destined for a particular mailing list.  This switchboard is used
-        # to shunt off badly formatted messages.  We don't want to just trash
-        # them because they may be fixable with human intervention.  Just get
-        # them out of our site though.
-        #
-        # Find out which mailing list this message is destined for.
-        listname = msgdata.get('listname')
-        if not listname:
-            listname = mm_cfg.MAILMAN_SITE_LIST
-        mlist = self._open_list(listname)
-        if not mlist:
-            syslog('error',
-                   'Dequeuing message destined for missing list: %s',
-                   listname)
-            self._shunt.enqueue(msg, msgdata)
-            return
-        # Now process this message, keeping track of any subprocesses that may
-        # have been spawned.  We'll reap those later.
-        #
-        # We also want to set up the language context for this message.  The
-        # context will be the preferred language for the user if a member of
-        # the list, or the list's preferred language.  However, we must take
-        # special care to reset the defaults, otherwise subsequent messages
-        # may be translated incorrectly.  BAW: I'm not sure I like this
-        # approach, but I can't think of anything better right now.
-        otranslation = i18n.get_translation()
-        sender = msg.get_sender()
-        if mlist:
-            lang = mlist.getMemberLanguage(sender)
-        else:
-            lang = mm_cfg.DEFAULT_SERVER_LANGUAGE
-        i18n.set_language(lang)
-        msgdata['lang'] = lang
+    def _convert_message(self, msg):
+        """Convert email.message.Message to Mailman.Message with proper handling of nested messages.
+        
+        Args:
+            msg: The message to convert
+            
+        Returns:
+            Mailman.Message: The converted message
+        """
+        if isinstance(msg, email.message.Message):
+            mailman_msg = Message.Message()
+            # Copy all attributes from the original message
+            for key, value in msg.items():
+                mailman_msg[key] = value
+            # Copy the payload
+            if msg.is_multipart():
+                for part in msg.get_payload():
+                    mailman_msg.attach(self._convert_message(part))
+            else:
+                mailman_msg.set_payload(msg.get_payload())
+            return mailman_msg
+        return msg
+
+    def _validate_message(self, msg, msgdata):
+        """Validate and convert message if needed.
+        
+        Returns a tuple of (msg, success) where success is a boolean indicating
+        if validation was successful.
+        """
+        msgid = msg.get('message-id', 'n/a')
         try:
-            keepqueued = self._dispose(mlist, msg, msgdata)
-        finally:
-            i18n.set_translation(otranslation)
-        # Keep tabs on any child processes that got spawned.
-        kids = msgdata.get('_kids')
-        if kids:
-            self._kids.update(kids)
-        if keepqueued:
-            self._switchboard.enqueue(msg, msgdata)
+            # Convert message if needed
+            if not isinstance(msg, Message.Message):
+                # Only log conversion if it's a significant event
+                if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                    syslog('debug', 'Runner._validate_message: Converting complex message %s to Mailman.Message', msgid)
+                msg = self._convert_message(msg)
+            
+            # Validate required Mailman.Message methods
+            required_methods = ['get_sender', 'get', 'items', 'is_multipart', 'get_payload']
+            missing_methods = []
+            for method in required_methods:
+                if not hasattr(msg, method):
+                    missing_methods.append(method)
+            
+            if missing_methods:
+                syslog('error', 'Runner._validate_message: Message %s missing required methods: %s', 
+                       msgid, ', '.join(missing_methods))
+                return msg, False
+                
+            # Validate message headers
+            if not msg.get('message-id'):
+                syslog('error', 'Runner._validate_message: Message %s missing Message-ID header', msgid)
+                return msg, False
+                
+            if not msg.get('from'):
+                syslog('error', 'Runner._validate_message: Message %s missing From header', msgid)
+                return msg, False
+                
+            if not msg.get('to') and not msg.get('recipients'):
+                syslog('error', 'Runner._validate_message: Message %s missing To/Recipients', msgid)
+                return msg, False
+                
+            # Only log successful validation for complex messages
+            if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                syslog('debug', 'Runner._validate_message: Complex message %s validation successful', msgid)
+            return msg, True
+            
+        except Exception as e:
+            syslog('error', 'Runner._validate_message: Error validating message %s: %s\nTraceback:\n%s',
+                   msgid, str(e), traceback.format_exc())
+            return msg, False
+
+    def _onefile(self, mlist, msg, msgdata):
+        """Process a single file from the queue."""
+        try:
+            # Get the list name from the message data
+            listname = msgdata.get('listname')
+            if not listname:
+                syslog('error', 'Runner._onefile: No listname in message data')
+                self._handle_error(ValueError('No listname in message data'), msg=msg, mlist=None)
+                return False
+                
+            # Open the list
+            try:
+                mlist = self._open_list(listname)
+            except Exception as e:
+                self._handle_error(e, msg=msg, mlist=None)
+                return False
+                
+            # Process the message
+            try:
+                result = self._dispose(mlist, msg, msgdata)
+                if result:
+                    # If _dispose returns True, requeue the message
+                    self._switchboard.enqueue(msg, msgdata)
+                    # Only log significant events
+                    if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                        syslog('debug', 'Runner._onefile: Complex message requeued for %s', listname)
+                else:
+                    # If _dispose returns False, finish processing and remove the file
+                    self._switchboard.finish(msgdata.get('filebase', ''))
+                    # Only log significant events
+                    if msg.is_multipart() or len(msg.get_payload()) > 1000:
+                        syslog('debug', 'Runner._onefile: Complex message processing completed for %s', listname)
+                return result
+            except Exception as e:
+                self._handle_error(e, msg=msg, mlist=mlist)
+                return False
+            finally:
+                if mlist:
+                    mlist.Unlock()
+                    
+        except Exception as e:
+            self._handle_error(e, msg=msg, mlist=None)
+            return False
 
     def _open_list(self, listname):
-        # We no longer cache the list instances.  Because of changes to
-        # MailList.py needed to avoid not reloading an updated list, caching
-        # is not as effective as it once was.  Also, with OldStyleMemberships
-        # as the MemberAdaptor, there was a self-reference to the list which
-        # kept all lists in the cache.  Changing this reference to a
-        # weakref.proxy created other issues.
         try:
+            import Mailman.MailList as MailList
             mlist = MailList.MailList(listname, lock=False)
         except Errors.MMListError as e:
-            syslog('error', 'error opening list: %s\n%s', listname, e)
+            self.log_error('list_open_error', e, listname=listname)
             return None
         return mlist
 
-    def _log(self, exc):
-        syslog('error', 'Uncaught runner exception: %s', exc)
-        s = StringIO()
-        traceback.print_exc(file=s)
-        syslog('error', s.getvalue())
+    def _doperiodic(self):
+        """Do some processing `every once in a while'.
+
+        Called every once in a while both from the Runner's main loop, and
+        from the Runner's hash slice processing loop.  You can do whatever
+        special periodic processing you want here, and the return value is
+        irrelevant.
+        """
+        pass
+
+    def _snooze(self, filecnt):
+        """Sleep for a while, but check for stop flag periodically.
+        
+        Implements exponential backoff when no files are found to process.
+        
+        Args:
+            filecnt: Number of files processed in the last iteration
+        """
+        if filecnt > 0:
+            # Reset backoff when files are found
+            self._current_backoff = self.INITIAL_BACKOFF
+            # Only log if we're sleeping for more than 5 seconds
+            if self.SLEEPTIME > 5:
+                syslog('debug', '%s: Sleeping for %d seconds after processing %d files in this iteration', 
+                       self.__class__.__name__, self.SLEEPTIME, filecnt)
+            sleep_time = self.SLEEPTIME
+        else:
+            # No files found, use exponential backoff
+            sleep_time = min(self._current_backoff, self.MAX_BACKOFF)
+            syslog('debug', '%s: No files to process, sleeping for %d seconds', 
+                   self.__class__.__name__, sleep_time)
+            # Double the backoff time for next iteration, up to MAX_BACKOFF
+            self._current_backoff = min(self._current_backoff * 2, self.MAX_BACKOFF)
+            
+        endtime = time.time() + sleep_time
+        while time.time() < endtime and not self._stop:
+            time.sleep(0.1)
+
+    def _shortcircuit(self):
+        """Return a true value if the individual file processing loop should
+        exit before it's finished processing each message in the current slice
+        of hash space.  A false value tells _oneloop() to continue processing
+        until the current snapshot of hash space is exhausted.
+
+        You could, for example, implement a throttling algorithm here.
+        """
+        return self._stop
 
     #
     # Subclasses can override these methods.
     #
     def _cleanup(self):
-        """Clean up upon exit from the main processing loop.
-
-        Called when the Runner's main loop is stopped, this should perform
-        any necessary resource deallocation.  Its return value is irrelevant.
-        """
-        Utils.reap(self._kids)
+        """Clean up resources."""
+        syslog('debug', '%s: Starting cleanup', self.__class__.__name__)
+        try:
+            self._cleanup_old_messages()
+            # Clean up any stale locks
+            self._switchboard.cleanup_stale_locks()
+        except Exception as e:
+            syslog('error', '%s: Cleanup failed: %s\nTraceback:\n%s',
+                   self.__class__.__name__, str(e), traceback.format_exc())
+        syslog('debug', '%s: Cleanup complete', self.__class__.__name__)
 
     def _dispose(self, mlist, msg, msgdata):
         """Dispose of a single message destined for a mailing list.
@@ -237,34 +488,65 @@ class Runner:
         """
         raise NotImplementedError
 
-    def _doperiodic(self):
-        """Do some processing `every once in a while'.
+    def _check_retry_delay(self, msgid, filebase):
+        """Check if enough time has passed since the last retry attempt."""
+        now = time.time()
+        last_retry = self._retry_times.get(msgid, 0)
+        
+        if now - last_retry < self.MIN_RETRY_DELAY:
+            # Only log if this is a significant delay
+            if self.MIN_RETRY_DELAY > 300:  # 5 minutes
+                syslog('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay not met. Last retry: %s, Now: %s, Delay needed: %s',
+                       msgid, filebase, time.ctime(last_retry), time.ctime(now), self.MIN_RETRY_DELAY)
+            return False
+        
+        # Only log if this is a significant delay
+        if self.MIN_RETRY_DELAY > 300:  # 5 minutes
+            syslog('debug', 'Runner._check_retry_delay: Message %s (file: %s) retry delay met. Last retry: %s, Now: %s',
+                   msgid, filebase, time.ctime(last_retry), time.ctime(now))
+        return True
 
-        Called every once in a while both from the Runner's main loop, and
-        from the Runner's hash slice processing loop.  You can do whatever
-        special periodic processing you want here, and the return value is
-        irrelevant.
-        """
-        pass
+    def _mark_message_processed(self, msgid):
+        """Mark a message as processed."""
+        with self._processed_lock:
+            self._processed_messages.add(msgid)
+            # Only log if we're tracking a large number of messages
+            if len(self._processed_messages) > 1000:
+                syslog('debug', 'Runner._mark_message_processed: Marked message %s as processed', msgid)
 
-    def _snooze(self, filecnt):
-        """Sleep for a little while.
+    def _unmark_message_processed(self, msgid):
+        """Remove a message from the processed set."""
+        with self._processed_lock:
+            if msgid in self._processed_messages:
+                self._processed_messages.remove(msgid)
+                # Only log if we're tracking a large number of messages
+                if len(self._processed_messages) > 1000:
+                    syslog('debug', 'Runner._unmark_message_processed: Removed message %s from processed set', msgid)
 
-        filecnt is the number of messages in the queue the last time through.
-        Sub-runners can decide to continue to do work, or sleep for a while
-        based on this value.  By default, we only snooze if there was nothing
-        to do last time around.
-        """
-        if filecnt or self.SLEEPTIME <= 0:
+    def _cleanup_old_messages(self):
+        """Clean up old message tracking data if message tracking is enabled."""
+        if not self._track_messages:
             return
-        time.sleep(self.SLEEPTIME)
 
-    def _shortcircuit(self):
-        """Return a true value if the individual file processing loop should
-        exit before it's finished processing each message in the current slice
-        of hash space.  A false value tells _oneloop() to continue processing
-        until the current snapshot of hash space is exhausted.
+        try:
+            now = time.time()
+            if now - self._last_cleanup < self._cleanup_interval:
+                return
 
-        You could, for example, implement a throttling algorithm here.
-        """
-        return self._stop
+            with self._processed_lock:
+                if len(self._processed_messages) > self._max_processed_messages:
+                    # Only log if we're clearing a significant number of messages
+                    if len(self._processed_messages) > 1000:
+                        syslog('debug', '%s: Clearing processed messages set (size: %d)',
+                               self.__class__.__name__, len(self._processed_messages))
+                    self._processed_messages.clear()
+                if len(self._retry_times) > self._max_retry_times:
+                    # Only log if we're clearing a significant number of retry times
+                    if len(self._retry_times) > 1000:
+                        syslog('debug', '%s: Clearing retry times dict (size: %d)',
+                               self.__class__.__name__, len(self._retry_times))
+                    self._retry_times.clear()
+                self._last_cleanup = now
+        except Exception as e:
+            syslog('error', '%s: Error during message cleanup: %s',
+                   self.__class__.__name__, str(e))

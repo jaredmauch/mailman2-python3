@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! @PYTHON@
 #
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
@@ -46,7 +46,7 @@ Python pickle.  In either case, if you want to override the default assumption
 """
 
 import sys
-import getopt
+import argparse
 import pprint
 import pickle
 import marshal
@@ -58,56 +58,46 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__) % globals(), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Dump the contents of any Mailman `database\' file.')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-m', '--marshal', action='store_true',
+                      help='Assume the file contains a Python marshal')
+    group.add_argument('-p', '--pickle', action='store_true',
+                      help='Assume the file contains a Python pickle')
+    parser.add_argument('-n', '--noprint', action='store_true',
+                      help='Don\'t attempt to pretty print the object')
+    parser.add_argument('filename',
+                      help='The database file to dump')
+    return parser.parse_args()
 
 
-
-def main():
+def load_pickle(fp):
+    """Load a pickle file with Python 2/3 compatibility."""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'mphn',
-                                   ['marshal', 'pickle', 'help', 'noprint'])
-    except getopt.error as msg:
-        usage(1, msg)
+        return pickle.load(fp, fix_imports=True, encoding='latin1')
+    except Exception as e:
+        print('Error loading pickle file: %s' % e)
+        return None
 
-    # Options.
-    # None == guess, 0 == pickle, 1 == marshal
-    filetype = None
-    doprint = True
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-p', '--pickle'):
-            filetype = 0
-        elif opt in ('-m', '--marshal'):
-            filetype = 1
-        elif opt in ('-n', '--noprint'):
-            doprint = False
+def main():
+    args = parse_args()
 
-    if len(args) < 1:
-        usage(1, C_('No filename given.'))
-    elif len(args) > 1:
-        pargs = COMMASPACE.join(args)
-        usage(1, C_('Bad arguments: %(pargs)s'))
+    # Determine file type
+    if args.marshal:
+        filetype = 1  # marshal
+    elif args.pickle:
+        filetype = 0  # pickle
     else:
-        filename = args[0]
-
-    if filetype is None:
-        if filename.endswith('.db'):
-            filetype = 1
-        elif filename.endswith('.pck'):
-            filetype = 0
+        if args.filename.endswith('.db'):
+            filetype = 1  # marshal
+        elif args.filename.endswith('.pck'):
+            filetype = 0  # pickle
         else:
-            usage(1, C_('Please specify either -p or -m.'))
+            print(C_('Please specify either -p or -m.'), file=sys.stderr)
+            sys.exit(1)
 
     # Handle dbs
     pp = pprint.PrettyPrinter(indent=4)
@@ -115,22 +105,41 @@ def main():
         load = marshal.load
         typename = 'marshal'
     else:
-        load = pickle.load
+        load = load_pickle
         typename = 'pickle'
-    fp = open(filename, 'rb')
+    fp = open(args.filename, 'rb')
     m = []
     try:
         cnt = 1
-        if doprint:
+        if not args.noprint:
             print(C_('[----- start %(typename)s file -----]'))
         while True:
             try:
                 obj = load(fp)
+                # Handle string/bytes conversion
+                if isinstance(obj, bytes):
+                    obj = obj.decode('utf-8', 'replace')
+                elif isinstance(obj, dict):
+                    new_obj = {}
+                    for k, v in obj.items():
+                        if isinstance(k, bytes):
+                            k = k.decode('utf-8', 'replace')
+                        if isinstance(v, bytes):
+                            v = v.decode('utf-8', 'replace')
+                        new_obj[k] = v
+                    obj = new_obj
+                elif isinstance(obj, list):
+                    new_obj = []
+                    for item in obj:
+                        if isinstance(item, bytes):
+                            item = item.decode('utf-8', 'replace')
+                        new_obj.append(item)
+                    obj = new_obj
             except EOFError:
-                if doprint:
+                if not args.noprint:
                     print(C_('[----- end %(typename)s file -----]'))
                 break
-            if doprint:
+            if not args.noprint:
                 print(C_('<----- start object %(cnt)s ----->'))
                 if isinstance(obj, str):
                     print(obj)
@@ -143,6 +152,5 @@ def main():
     return m
 
 
-
 if __name__ == '__main__':
     msg = main()

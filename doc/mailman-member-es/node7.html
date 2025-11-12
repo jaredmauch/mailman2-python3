@@ -1,58 +1,47 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<link rel="STYLESHEET" href="mailman-member-es.css" type='text/css' />
-<link rel="first" href="mailman-member-es.html" title='GNU&nbsp;Mailman Manual&nbsp;del&nbsp;Suscriptor&nbsp;de&nbsp;Listas' />
-<link rel='contents' href='contents.html' title="Contents" />
-<link rel='last' href='about.html' title='About this document...' />
-<link rel='help' href='about.html' title='About this document...' />
-<link rel="next" href="node8.html" />
-<link rel="prev" href="node3.html" />
-<link rel="parent" href="contents.html" />
-<link rel="next" href="node8.html" />
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<meta name='aesop' content='information' />
+<link href="mailman-member-es.css" rel="STYLESHEET" type="text/css"/>
+<link href="mailman-member-es.html" rel="first" title="GNU Mailman Manual del Suscriptor de Listas"/>
+<link href="contents.html" rel="contents" title="Contents"/>
+<link href="about.html" rel="last" title="About this document..."/>
+<link href="about.html" rel="help" title="About this document..."/>
+<link href="node8.html" rel="next"/>
+<link href="node3.html" rel="prev"/>
+<link href="contents.html" rel="parent"/>
+<link href="node8.html" rel="next"/>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="information" name="aesop"/>
 <title>2 Pasando de nuestros ejemplos a las listas reales</title>
 </head>
 <body>
 <div class="navigation">
-<div id='top-navigation-panel' xml:id='top-navigation-panel'>
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div id="top-navigation-panel" xml:id="top-navigation-panel">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="1.3 gnu Mailman"
-  href="node6.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="Índice General"
-  href="contents.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="3 interfaces de Mailman"
-  href="node8.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU&nbsp;Mailman Manual&nbsp;del&nbsp;Suscriptor&nbsp;de&nbsp;Listas</td>
-<td class='online-navigation'><a rel="contents" title="Table of Contents"
-  href="contents.html"><img src='contents.png'
-  border='0' height='32'  alt='Contents' width='32' /></a></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node6.html" rel="prev" title="1.3 gnu Mailman"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="parent" title="Índice General"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node8.html" rel="next" title="3 interfaces de Mailman"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman Manual del Suscriptor de Listas</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node6.html">1.3 GNU Mailman</a>
+<a class="sectref" href="node6.html" rel="prev">1.3 GNU Mailman</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="contents.html">Índice General</a>
+<a class="sectref" href="contents.html" rel="parent">Índice General</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node8.html">3 Interfaces de Mailman</a>
+<a class="sectref" href="node8.html" rel="next">3 Interfaces de Mailman</a>
 </div>
-<hr /></div>
+<hr/></div>
 </div>
 <!--End of Navigation Panel-->
-
 <h1><a name="SECTION002200000000000000000">
 2 Pasando de nuestros ejemplos a las listas reales</a>
 </h1>
-
 <p>
 A menudo es más fácil, simplemente dar un ejemplo que explicar exactamente
 como encontrar la dirección de una lista específica.  Por ello, aquí
@@ -83,7 +72,6 @@ valores apropiados para una lista real:
 <dd>El nombre del servidor web que gestiona el interfaz web de la lista.  Este puede ser el mismo utilizado como DOMINIO, y a menudo se refiere a la misma máquina, pero no tiene que ser idéntico. 
 </dd>
 </dl>
-
 <p>
 Como ejemplo de la vida real, si usted está interesado en la lista de usuarios
 mailman (mailman-users), usted realizaría las siguientes sustituciones:
@@ -101,43 +89,31 @@ omisión, así que usted tiene que seleccionar mirar todas las cabeceras antes
 que pueda mirar estas cabeceras informativas.
 
 <p>
-
 <div class="navigation">
-<div class='online-navigation'>
-<p></p><hr />
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div class="online-navigation">
+<p></p><hr/>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="1.3 gnu Mailman"
-  href="node6.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="Índice General"
-  href="contents.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="3 interfaces de Mailman"
-  href="node8.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU&nbsp;Mailman Manual&nbsp;del&nbsp;Suscriptor&nbsp;de&nbsp;Listas</td>
-<td class='online-navigation'><a rel="contents" title="Table of Contents"
-  href="contents.html"><img src='contents.png'
-  border='0' height='32'  alt='Contents' width='32' /></a></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node6.html" rel="prev" title="1.3 gnu Mailman"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="parent" title="Índice General"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node8.html" rel="next" title="3 interfaces de Mailman"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman Manual del Suscriptor de Listas</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node6.html">1.3 GNU Mailman</a>
+<a class="sectref" href="node6.html" rel="prev">1.3 GNU Mailman</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="contents.html">Índice General</a>
+<a class="sectref" href="contents.html" rel="parent">Índice General</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node8.html">3 Interfaces de Mailman</a>
+<a class="sectref" href="node8.html" rel="next">3 Interfaces de Mailman</a>
 </div>
 </div>
-<hr />
+<hr/>
 <span class="release-info">Release 2.1, documentation updated on 11 de enero 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-
-</body>
+</p></p></p></p></p></p></body>
 </html>

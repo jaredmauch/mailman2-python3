@@ -1,58 +1,47 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<link rel="STYLESHEET" href="mailman-admin.css" type='text/css' />
-<link rel="first" href="mailman-admin.html" title='GNU mailman - list Administration Manual' />
-<link rel='contents' href='contents.html' title="Contents" />
-<link rel='last' href='about.html' title='About this document...' />
-<link rel='help' href='about.html' title='About this document...' />
-<link rel="next" href="node27.html" />
-<link rel="prev" href="node25.html" />
-<link rel="parent" href="node8.html" />
-<link rel="next" href="node27.html" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name='aesop' content='information' />
+<link href="mailman-admin.css" rel="STYLESHEET" type="text/css"/>
+<link href="mailman-admin.html" rel="first" title="GNU mailman - list Administration Manual"/>
+<link href="contents.html" rel="contents" title="Contents"/>
+<link href="about.html" rel="last" title="About this document..."/>
+<link href="about.html" rel="help" title="About this document..."/>
+<link href="node27.html" rel="next"/>
+<link href="node25.html" rel="prev"/>
+<link href="node8.html" rel="parent"/>
+<link href="node27.html" rel="next"/>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="information" name="aesop"/>
 <title>2.9 The Archiving Options Category</title>
 </head>
 <body>
 <div class="navigation">
-<div id='top-navigation-panel' xml:id='top-navigation-panel'>
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div id="top-navigation-panel" xml:id="top-navigation-panel">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="2.8 the Bounce Processing"
-  href="node25.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="2 the List Configuration"
-  href="node8.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="2.10 the Mail/News Gateway"
-  href="node27.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - List Administration Manual</td>
-<td class='online-navigation'><a rel="contents" title="Table of Contents"
-  href="contents.html"><img src='contents.png'
-  border='0' height='32'  alt='Contents' width='32' /></a></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node25.html" rel="prev" title="2.8 the Bounce Processing"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node8.html" rel="parent" title="2 the List Configuration"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node27.html" rel="next" title="2.10 the Mail/News Gateway"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Administration Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node25.html">2.8 The Bounce Processing</a>
+<a class="sectref" href="node25.html" rel="prev">2.8 The Bounce Processing</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="node8.html">2 The List Configuration</a>
+<a class="sectref" href="node8.html" rel="parent">2 The List Configuration</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node27.html">2.10 The Mail/News Gateway</a>
+<a class="sectref" href="node27.html" rel="next">2.10 The Mail/News Gateway</a>
 </div>
-<hr /></div>
+<hr/></div>
 </div>
 <!--End of Navigation Panel-->
-
 <h2><a name="SECTION002290000000000000000">
 2.9 The Archiving Options Category</a>
 </h2>
-
 <p>
 Mailman comes with a built-in web-based archiver called
 <em>Pipermail</em>, although it can be configured to use external,
@@ -75,7 +64,7 @@ Note that senders can control whether their own posts are
     ways.
 
 <p>
-</dd>
+</p></p></dd>
 <dt><strong>archive_private</strong></dt>
 <dd>Controls whether Pipermail archives are private or public.
     Private archives require a valid member address and password, or a
@@ -83,7 +72,7 @@ Note that senders can control whether their own posts are
     option has no effect when a third party archiver is used.
 
 <p>
-</dd>
+</p></dd>
 <dt><strong>archive_volume_frequency</strong></dt>
 <dd>Controls how Pipermail splits messages in the archive.  The most
     common option is <em>Monthly</em> meaning a new archive volume is
@@ -93,45 +82,32 @@ Note that senders can control whether their own posts are
     This option has no effect when a third party archiver is used.
 </dd>
 </dl>
-
 <p>
-
 <div class="navigation">
-<div class='online-navigation'>
-<p></p><hr />
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div class="online-navigation">
+<p></p><hr/>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="2.8 the Bounce Processing"
-  href="node25.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="2 the List Configuration"
-  href="node8.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="2.10 the Mail/News Gateway"
-  href="node27.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - List Administration Manual</td>
-<td class='online-navigation'><a rel="contents" title="Table of Contents"
-  href="contents.html"><img src='contents.png'
-  border='0' height='32'  alt='Contents' width='32' /></a></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node25.html" rel="prev" title="2.8 the Bounce Processing"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node8.html" rel="parent" title="2 the List Configuration"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node27.html" rel="next" title="2.10 the Mail/News Gateway"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Administration Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node25.html">2.8 The Bounce Processing</a>
+<a class="sectref" href="node25.html" rel="prev">2.8 The Bounce Processing</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="node8.html">2 The List Configuration</a>
+<a class="sectref" href="node8.html" rel="parent">2 The List Configuration</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node27.html">2.10 The Mail/News Gateway</a>
+<a class="sectref" href="node27.html" rel="next">2.10 The Mail/News Gateway</a>
 </div>
 </div>
-<hr />
+<hr/>
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-
-</body>
+</p></p></p></body>
 </html>

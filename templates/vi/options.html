@@ -1,40 +1,99 @@
 <html>
 <head>
-    <link rel="SHORTCUT ICON" href="<mm-favicon>">
-    <title>Cấu hình thành viên <MM-Presentable-User> cho hộp thư chung <MM-List-Name>
-    </title>
-</head>
-<BODY BGCOLOR="#ffffff">
-    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
-        <FONT COLOR="#000000" SIZE=+1>
-        Cấu hình thành viên hộp thư chung <MM-List-Name> cho <MM-Presentable-User>
-        </FONT></B></TD></TR>
-    </TABLE>
-<p>
-<table width="100%" border="0" cellspacing="5" cellpadding="5">
-    <tr><td>
-        <b>Trạng thái đăng ký, mật khẩu và các tùy chọn của <MM-Presentable-User></b> cho hộp thư chung <MM-List-Name>.
-        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
-    </tr><tr>
-        <td colspan="2">
-        <MM-Case-Preserved-User>
-
-        <MM-Disabled-Notice>
-
-        <p><mm-results>
-        </td>
-    </tr>
+<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
+<title>Cấu hình thành viên <mm-presentable-user> cho hộp thư chung <mm-list-name>
+</mm-list-name></mm-presentable-user></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
+<font color="#000000" size="+1">
+        Cấu hình thành viên hộp thư chung <mm-list-name> cho <mm-presentable-user>
+</mm-presentable-user></mm-list-name></font></b></td></tr>
 </table>
-
-<MM-Form-Start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
-        <FONT COLOR="#000000">
-        <B>Thay đổi thông tin thành viên <MM-List-Name> của bạn</B>
-        </FONT></TD></TR>
-    <tr><td colspan="2">Bạn có thể thay đổi địa chỉ đã đăng ký với hộp thư chung này, bằng cách nhập địa chỉ thư mới vào trường bên dưới. Ghi chú rằng địa chỉ mới sẽ nhận một lá thư xác nhận, và việc xác nhận này phải làm xong để kích hoạt thay đổi này.
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<b>Trạng thái đăng ký, mật khẩu và các tùy chọn của <mm-presentable-user></mm-presentable-user></b> cho hộp thư chung <mm-list-name>.
+        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
+</tr><tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<mm-case-preserved-user>
+<mm-disabled-notice>
+<p><mm-results>
+</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
+</tr>
+</table>
+<mm-form-start>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<font color="#000000">
+<b>Thay đổi thông tin thành viên <mm-list-name> của bạn</mm-list-name></b>
+</font></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">Bạn có thể thay đổi địa chỉ đã đăng ký với hộp thư chung này, bằng cách nhập địa chỉ thư mới vào trường bên dưới. Ghi chú rằng địa chỉ mới sẽ nhận một lá thư xác nhận, và việc xác nhận này phải làm xong để kích hoạt thay đổi này.
 
         <p>Việc xác nhận quá giờ sau khoảng <mm-pending-days>.
 
@@ -44,211 +103,184 @@
         <p>Nếu bạn muốn thay đổi thông tin thành viên mình trong mọi hộp thư chung với đó bạn đã đăng ký trên <mm-host>, hãy bật tùy chọn
         <em>Đổi toàn cục</em>.
 
-        </td></tr>
-    <tr><td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-        <tr><td bgcolor="#dddddd"><div align="right">Địa chỉ mới :</div></td>
-            <td><mm-new-address-box></td>
-            </tr>
-        <tr><td bgcolor="#dddddd"><div align="right">Nhập lại để xác nhận:</div></td> 
-            <td><mm-confirm-address-box></td>
-            </tr>
-        </tr></table></center>
-        </td>
-        <td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-            <tr><td bgcolor="#dddddd"><div align="right">Họ tên bạn (tùy chọn):</div></td>
-            <td><mm-fullname-box></td>
-            </tr>
-        </table></center>
-        </td>
-        </tr>
-    <tr><td colspan="2"><center><mm-change-address-button>
-        <p><mm-global-change-of-address>Đổi toàn cục</center></td>
-    </tr>
-</table>
-
+        </mm-host></p></p></mm-pending-days></p></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Địa chỉ mới :</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
+</tr>
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Nhập lại để xác nhận:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
+</tr>
+</table></center></td></tr></table>
+<td><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Họ tên bạn (tùy chọn):</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
+</tr>
+</table></center>
+</td>
+<tr><td colspan="2"><center><mm-change-address-button>
+<p><mm-global-change-of-address>Đổi toàn cục</mm-global-change-of-address></p></mm-change-address-button></center></td>
+</tr>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
-    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Hủy đăng ký ra hộp thư chung <MM-List-Name></B></td>
-
-        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Các sự đăng ký <MM-Host> của bạn</B>
-        </FONT></TD></TR>
-
-    <tr><td>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>Hủy đăng ký ra hộp thư chung <mm-list-name></mm-list-name></b></font></td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>Các sự đăng ký <mm-host> của bạn</mm-host></b>
+</font></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
     Hãy bật hộp chọn xác nhận và bấm cái nút này để hủy đăng ký ra hộp thư chung này.  <strong>Cảnh báo :</strong>
         Hành động này có tác động ngay!
         <p>
-        <center><MM-Unsubscribe-Button></center></td>
-    <td>
+<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
     Bạn có thể xem danh sách các hộp thư chung tại <mm-host> trong đó bạn là thành viên. Hãy sư dụng khả năng này nếu bạn muốn làm cùng thay đổi trong các sự đăng ký khác này.
 
         <p>
-        <center><MM-Other-Subscriptions-Submit></center>
-        </TD></TR>
+<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
+</p></mm-host></td></tr>
 </table>
-
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Mật khẩu <MM-List-Name> của bạn</B>
-        </FONT></TD></TR>
-
-    <tr valign="TOP"><td WIDTH="50%">
-        <a name=reminder>
-        <center>
-        <h3>Bạn đã quên mật khẩu mình không?</h3>
-        </center>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>Mật khẩu <mm-list-name> của bạn</mm-list-name></b>
+</font></td></tr>
+<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="reminder">
+<center>
+<h3>Bạn đã quên mật khẩu mình không?</h3>
+</center>
         Hãy nhắp vào cái nút này để nhận thư chứa mật khẩu mình tại địa chỉ thành viên.
-        <p><MM-Umbrella-Notice>
-        <center>
-        <MM-Email-My-Pw>
-        </center>
-        </td>
-
-    <td WIDTH="50%">
-        <a name=changepw>
-        <center>
-        <h3>Thay đổi mật khẩu</h3>
-        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
-            <TR><TD BGCOLOR="#dddddd"><div align="right">Mật khẩu mới :</div></TD>
-                <TD><MM-New-Pass-Box></TD>
-                </TR>
-            <TR>
-                <TD BGCOLOR="#dddddd"><div align="right">Nhập lại để xác nhận:</div></TD>
-                <TD><MM-Confirm-Pass-Box></TD>
-            </TR>
-        </table>
-
-        <MM-Change-Pass-Button>
-        <p><center><mm-global-pw-changes-button>Đổi toàn cục
-        </center>
-</TABLE>
-
-<p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Tùy chọn đăng ký <MM-List-Name> của bạn</B>
-        </FONT></TD></TR>
+        <p><mm-umbrella-notice>
+<center>
+<mm-email-my-pw>
+</mm-email-my-pw></center>
+</mm-umbrella-notice></p></a></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="changepw">
+<center>
+<h3>Thay đổi mật khẩu</h3>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Mật khẩu mới :</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Nhập lại để xác nhận:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
+</tr>
 </table>
-
+<mm-change-pass-button>
+<p><center><mm-global-pw-changes-button>Đổi toàn cục
+        </mm-global-pw-changes-button></center>
+</p></mm-change-pass-button></center></a></td></tr></table>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>Tùy chọn đăng ký <mm-list-name> của bạn</mm-list-name></b>
+</font></td></tr>
+</table>
 <p>
 <i><strong>Giá trị hiện thời hoạt động có dấu chọn ở cạnh.</strong></i>
-
 <p>Ghi chú rằng một số tùy chọn có khả năng <em>Đặt toàn cục</em>. Việc bật khả năng này sẽ áp dụng thay đổi đó vào mọi hộp thư chung trong đó bạn là thành viên trên máy <mm-host>.  Hãy nhắp vào
 <em>Liệt kê các sự đăng ký mình khác</em> bên trên để xem các hộp thư khác với đó bạn đã đăng ký.
 <p>
-<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
-    <tr><TD BGCOLOR="#cccccc">
-        <a name="disable">
-        <strong>Phát thư</strong></a><p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<a name="disable">
+<strong>Phát thư</strong></a><p>
         Đặt tùy chọn này là <em>Bật</em> để nhận các thư được gởi cho hộp thư chung này.  Còn đặt nó là <em>Tắt</em> nếu bạn muốn tiếp tục đăng ký, nhưng tạm thời không muốn nhận thư (v.d. khi nghỉ). Nếu bạn có phải tắt phát thư, đừng quên bật lại khả năng đó khi bạn trở về : nó sẽ không được bật lại tự động.
-        </td><td bgcolor="#cccccc">
-        <mm-delivery-enable-button>Bật<br>
-        <mm-delivery-disable-button>Tắt<p>
-        <mm-global-deliver-button><i>Đặt toàn cục</i>
-        </td></tr>
-
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-delivery-enable-button>Bật<br/>
+<mm-delivery-disable-button>Tắt<p>
+<mm-global-deliver-button><i>Đặt toàn cục</i>
+</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
 <!--Start-Digests-Delete-->
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Đặt chế độ nhận bó thư</strong><p>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Đặt chế độ nhận bó thư</strong><p>
        Nếu bạn bật chế độ nhận bó thư, bạn sẽ nhận nhiều bài thư trong một lá thư (thường nhận một thư trên mỗi ngày, nhưng có thể nhận thư nhiều hơn từ hộp thư chung rất bận), thay vào nhận mỗi thư riêng một khi nó được gởi. Nếu bạn tắt chế độ nhận bó thư, có lẽ bạn sẽ nhận một bó thư cuối cùng trước khi bắt đầu nhận lại bài thư riêng.
-        </td><td bgcolor="#cccccc">
-        <MM-Undigest-Radio-Button>Tắt<br>
-        <MM-Digest-Radio-Button>Bật
-        </td></tr>
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Nhận bó thư MIME hay thô?</strong><p>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-undigest-radio-button>Tắt<br/>
+<mm-digest-radio-button>Bật
+        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Nhận bó thư MIME hay thô?</strong><p>
        Trình thư của bạn có lẽ không hỗ trợ bó thư MIME. Bó thư MIME thường dụng, nhưng nếu bạn gặp khó khăn đọc chúng, hãy chọn văn bản thô.
-        </td><td bgcolor="#cccccc">
-        <MM-Mime-Digests-Button>MIME<br>
-        <MM-Plain-Digests-Button>Thô<p>
-        <mm-global-mime-button><i>Đặt toàn cục</i>
-        </td></tr>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-mime-digests-button>MIME<br/>
+<mm-plain-digests-button>Thô<p>
+<mm-global-mime-button><i>Đặt toàn cục</i>
+</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
 <!--End-Digests-Delete-->
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Nhận bài thư mình đã gởi cho hộp thư không?</strong><p>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Nhận bài thư mình đã gởi cho hộp thư không?</strong><p>
         Thường, bạn sẽ nhận mỗi thư bạn đã gởi cho hộp thư. Nếu bạn không muốn nhận thư này, đặt tùy chọn này là <em>Không</em>.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-receive-own-mail-button>Không<br>
-        <mm-receive-own-mail-button>Có
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Nhận thư thừa nhận khi bạn gởi thư cho hộp thư không?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-ack-posts-button>Không<br>
-        <mm-ack-posts-button>Có
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Nhận thư nhắc nhở mật khẩu cho hộp thư này không?</strong><p>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-receive-own-mail-button>Không<br/>
+<mm-receive-own-mail-button>Có
+        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Nhận thư thừa nhận khi bạn gởi thư cho hộp thư không?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-ack-posts-button>Không<br/>
+<mm-ack-posts-button>Có
+        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Nhận thư nhắc nhở mật khẩu cho hộp thư này không?</strong><p>
         Hàng tháng bạn sẽ nhận một lá thư chứa lời nhắc nhở mật khẩu cho mỗi hộp thư trên máy này, với đó bạn đã đăng ký. Bạn có thể tắt khả năng này cho từng hộp thư bằng cách chọn <em>Không</em> cho tùy chọn này. Nếu bạn tắt lời nhắc nhở cho tất cả các hộp thư với đó bạn đã đăng ký, bạn sẽ không nhận thư nhắc nhở nào.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-get-password-reminder-button>Không<br>
-        <mm-get-password-reminder-button>Có<p>
-        <mm-global-remind-button><i>Đặt toàn cục</i>
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Ẩn mặt trong danh sách thành viên không?</strong><p>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-get-password-reminder-button>Không<br/>
+<mm-get-password-reminder-button>Có<p>
+<mm-global-remind-button><i>Đặt toàn cục</i>
+</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Ẩn mặt trong danh sách thành viên không?</strong><p>
         Khi người nào xem danh sách các thành viên cùa hộp thư này, địa chỉ thư của bạn thường được hiển thị (cách mờ để tránh chương trình bắt địa chỉ để gởi thư rác). Nếu bạn không muốn địa chỉ thư của mình hiển thị trong bản liệt kê thành viên này bằng cách nào cả, hãy chọn <em>Có</em> cho tùy chọn này.
-        </td><td bgcolor="#cccccc">
-        <MM-Public-Subscription-Button>Không<br>
-        <MM-Hide-Subscription-Button>Có
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Bạn có muốn sử dụng ngôn ngữ nào?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <MM-list-langs>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Bạn có muốn đăng ký với những phân loại chủ đề nào?</strong><p>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-public-subscription-button>Không<br/>
+<mm-hide-subscription-button>Có
+        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Bạn có muốn sử dụng ngôn ngữ nào?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-langs>
+</mm-list-langs></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Bạn có muốn đăng ký với những phân loại chủ đề nào?</strong><p>
                 Bằng cách chọn một hay nhiều chủ đề, bạn có thể lọc viễn thông trong hộp thư chung này, để nhận chỉ một tập hợp con của các thư đã gởi cho nó. Thư nào khớp với một của những chủ đề bị bạn chọn, sẽ được gởi cho bạn; thư không khớp sẽ không.
 
                 <p>Cách xử lý thư nào không khớp với chủ đề nào phụ thuộc vào giá trị của tùy chọn bên dưới đây. Nếu bạn không chọn chủ đề riêng, bạn sẽ nhận mọi thư được gởi cho hộp thư chung này.
-        </td><td bgcolor="#cccccc">
-        <mm-topics>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Bạn có muốn nhận thư nào không khớp với bộ lọc chủ đề nào không?</strong><p>
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-topics>
+</mm-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Bạn có muốn nhận thư nào không khớp với bộ lọc chủ đề nào không?</strong><p>
         Tùy chọn này chỉ có tác động nếu bạn đã đăng ký với ít nhất một chủ đề bên trên. Nó đặt quy tắc phát thư mặc định cho thư nào không khớp với bộ lọc chủ đề nào. Việc chọn <em>Không</em> không phát cho bạn thư nào không khớp bộ lọc chủ đề nào, còn việc chọn <em>Có</em> có phải.
 
                 <p>Nếu bạn không chọn chủ đề riêng bên trên, bạn sẽ nhận mọi thư được gởi cho hộp thư chung này.
-        </td><td bgcolor="#cccccc">
-        <mm-suppress-nonmatching-topics>Không<br>
-        <mm-receive-nonmatching-topics>Có
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Tránh nhận bản sao của thư không?</strong><p>
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-suppress-nonmatching-topics>Không<br/>
+<mm-receive-nonmatching-topics>Có
+        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Tránh nhận bản sao của thư không?</strong><p>
 
                 Khi bạn được ghi dứt khoát trong dòng đầu <tt>To:</tt> (Cho) hay
                 <tt>Cc:</tt> (Chép cho) của thư từ hộp thư chung, bạn có thể chọn không nhận bản sao thêm từ hộp đó. Hãy chọn <em>Có</em> để tránh nhận bản sao từ hộp thư, còn chọn <em>Không</em> để nhận.
 
                 <p>Nếu hộp thư chung này đã bật khả năng tạo thư cá nhân, và bạn chọn nhận bản sao, mỗi bản sao sẽ có dòng đầu <tt>X-Mailman-Copy: yes</tt> (sao chép? Có) được thêm vào nó.
 
-        </td><td bgcolor="#cccccc">
-        <mm-receive-duplicates-button>Không<br>
-        <mm-dont-receive-duplicates-button>Có<p>
-        <mm-global-nodupes-button><i>Đặt toàn cục</i>
-        </td></tr>
-
-    <tr><TD colspan="2">
-        <center><MM-options-Submit-button></center>
-        </td></tr>
-
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-receive-duplicates-button>Không<br/>
+<mm-dont-receive-duplicates-button>Có<p>
+<mm-global-nodupes-button><i>Đặt toàn cục</i>
+</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-options-submit-button></mm-options-submit-button></center>
+</td></tr>
 </table>
-</center>
 <p>
-<MM-Form-End>
-
-<MM-Mailman-Footer>
-</body>
+<mm-form-end>
+<mm-mailman-footer>
+</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
 </html>

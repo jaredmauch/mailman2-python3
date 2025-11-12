@@ -68,10 +68,12 @@ msgid "<P>Currently, there are no archives. </P>"
 msgstr "<P>目前沒有歸檔。</P>"
 
 #: Mailman/Archiver/HyperArch.py:821
+#, fuzzy
 msgid "Gzip'd Text%(sz)s"
 msgstr "Gzip 壓過的 %(sz)s"
 
 #: Mailman/Archiver/HyperArch.py:826
+#, fuzzy
 msgid "Text%(sz)s"
 msgstr "文字 %(sz)s"
 
@@ -144,18 +146,22 @@ msgid "Third"
 msgstr "第三"
 
 #: Mailman/Archiver/HyperArch.py:938
+#, fuzzy
 msgid "%(ord)s quarter %(year)i"
 msgstr "%(year)i年%(ord)s季"
 
 #: Mailman/Archiver/HyperArch.py:945
+#, fuzzy
 msgid "%(month)s %(year)i"
 msgstr "%(year)i年%(month)s"
 
 #: Mailman/Archiver/HyperArch.py:950
+#, fuzzy
 msgid "The Week Of Monday %(day)i %(month)s %(year)i"
 msgstr "%(year)i年%(month)s%(day)i日（星期一）該週"
 
 #: Mailman/Archiver/HyperArch.py:954
+#, fuzzy
 msgid "%(day)i %(month)s %(year)i"
 msgstr "%(year)i年%(month)s%(day)i日"
 
@@ -164,10 +170,12 @@ msgid "Computing threaded index\n"
 msgstr "正在計算討論串的索引\n"
 
 #: Mailman/Archiver/HyperArch.py:1319
+#, fuzzy
 msgid "Updating HTML for article %(seq)s"
 msgstr "正在更新 %(seq)s 號文件的 HTML"
 
 #: Mailman/Archiver/HyperArch.py:1326
+#, fuzzy
 msgid "article file %(filename)s is missing!"
 msgstr "文件檔 %(filename)s 不見了！"
 
@@ -184,6 +192,7 @@ msgid "Pickling archive state into "
 msgstr "正要把歸檔的狀態存到"
 
 #: Mailman/Archiver/pipermail.py:453
+#, fuzzy
 msgid "Updating index files for archive [%(archive)s]"
 msgstr "正在更新歸檔 [%(archive)s] 的索引"
 
@@ -192,6 +201,7 @@ msgid "  Thread"
 msgstr "討論串"
 
 #: Mailman/Archiver/pipermail.py:597
+#, fuzzy
 msgid "#%(counter)05d %(msgid)s"
 msgstr "#%(counter)05d %(msgid)s"
 
@@ -229,6 +239,7 @@ msgid "disabled address"
 msgstr "關閉"
 
 #: Mailman/Bouncer.py:304
+#, fuzzy
 msgid " The last bounce received from you was dated %(date)s"
 msgstr "您信箱的前一次退信是在 %(date)s"
 
@@ -256,6 +267,7 @@ msgstr "論壇管理人"
 #: Mailman/Cgi/options.py:101 Mailman/Cgi/private.py:108
 #: Mailman/Cgi/rmlist.py:75 Mailman/Cgi/roster.py:59
 #: Mailman/Cgi/subscribe.py:67
+#, fuzzy
 msgid "No such list <em>%(safelistname)s</em>"
 msgstr "沒有<em>%(safelistname)s</em>這個論壇"
 
@@ -323,6 +335,7 @@ msgstr ""
 "您修好這個問題為止。%(rm)r"
 
 #: Mailman/Cgi/admin.py:268
+#, fuzzy
 msgid "%(hostname)s mailing lists - Admin Links"
 msgstr "%(hostname)s 通信論壇 - 管理人網頁的連結"
 
@@ -335,12 +348,14 @@ msgid "Mailman"
 msgstr "郵差"
 
 #: Mailman/Cgi/admin.py:310
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised %(mailmanlink)s\n"
 "            mailing lists on %(hostname)s."
 msgstr "<p>現在在 %(hostname)s 上沒有公告任何 %(mailmanlink)s 通信論壇。"
 
 #: Mailman/Cgi/admin.py:316
+#, fuzzy
 msgid ""
 "<p>Below is the collection of publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s.  Click on a list\n"
@@ -354,6 +369,7 @@ msgid "right "
 msgstr "對的"
 
 #: Mailman/Cgi/admin.py:325
+#, fuzzy
 msgid ""
 "To visit the administrators configuration page for an\n"
 "        unadvertised list, open a URL similar to this one, but with a '/' "
@@ -396,6 +412,7 @@ msgid "No valid variable name found."
 msgstr "找不到正確的變數名稱。"
 
 #: Mailman/Cgi/admin.py:395
+#, fuzzy
 msgid ""
 "%(realname)s Mailing list Configuration Help\n"
 "    <br><em>%(varname)s</em> Option"
@@ -404,6 +421,7 @@ msgstr ""
 "<br><em>%(varname)s</em>選項"
 
 #: Mailman/Cgi/admin.py:402
+#, fuzzy
 msgid "Mailman %(varname)s List Option Help"
 msgstr "Mailman %(varname)s 論壇選項的支援訊息"
 
@@ -421,14 +439,17 @@ msgstr ""
 "您也可以"
 
 #: Mailman/Cgi/admin.py:431
+#, fuzzy
 msgid "return to the %(categoryname)s options page."
 msgstr "返回 %(categoryname)s 選項網頁。"
 
 #: Mailman/Cgi/admin.py:446
+#, fuzzy
 msgid "%(realname)s Administration (%(label)s)"
 msgstr "%(realname)s 管理 (%(label)s)"
 
 #: Mailman/Cgi/admin.py:447
+#, fuzzy
 msgid "%(realname)s mailing list administration<br>%(label)s Section"
 msgstr "%(realname)s 通信論壇管理<br>%(label)s 部分"
 
@@ -506,6 +527,7 @@ msgid "Value"
 msgstr "值"
 
 #: Mailman/Cgi/admin.py:668
+#, fuzzy
 msgid ""
 "Badly formed options entry:\n"
 " %(record)s"
@@ -604,10 +626,12 @@ msgid "Move rule down"
 msgstr "把規則下移"
 
 #: Mailman/Cgi/admin.py:870
+#, fuzzy
 msgid "<br>(Edit <b>%(varname)s</b>)"
 msgstr "<br>（編輯 <b>%(varname)s</b>）"
 
 #: Mailman/Cgi/admin.py:872
+#, fuzzy
 msgid "<br>(Details for <b>%(varname)s</b>)"
 msgstr "<br>（<b>%(varname)s</b>的細節）"
 
@@ -647,6 +671,7 @@ msgid "(help)"
 msgstr "（求助）"
 
 #: Mailman/Cgi/admin.py:930
+#, fuzzy
 msgid "Find member %(link)s:"
 msgstr "尋找%(link)s訂戶："
 
@@ -659,10 +684,12 @@ msgid "Bad regular expression: "
 msgstr "不良的正則表示式："
 
 #: Mailman/Cgi/admin.py:1013
+#, fuzzy
 msgid "%(allcnt)s members total, %(membercnt)s shown"
 msgstr "共有 %(allcnt)s 個訂戶，顯示了 %(membercnt)s 個"
 
 #: Mailman/Cgi/admin.py:1016
+#, fuzzy
 msgid "%(allcnt)s members total"
 msgstr "共有 %(allcnt)s 個訂戶"
 
@@ -831,6 +858,7 @@ msgid ""
 msgstr "<p><em>想看其他訂戶的話，點選以下所列各頁：</em>"
 
 #: Mailman/Cgi/admin.py:1221
+#, fuzzy
 msgid "from %(start)s to %(end)s"
 msgstr "從 %(start)s 到 %(end)s"
 
@@ -966,6 +994,7 @@ msgid "Change list ownership passwords"
 msgstr "變更論壇管理人密碼"
 
 #: Mailman/Cgi/admin.py:1364
+#, fuzzy
 msgid ""
 "The <em>list administrators</em> are the people who have ultimate control "
 "over\n"
@@ -1131,8 +1160,9 @@ msgid "%(schange_to)s is already a member"
 msgstr "已經是訂戶"
 
 #: Mailman/Cgi/admin.py:1620
+#, fuzzy
 msgid "%(schange_to)s matches banned pattern %(spat)s"
-msgstr ""
+msgstr "已經是訂戶"
 
 #: Mailman/Cgi/admin.py:1622
 msgid "Address %(schange_from)s changed to %(schange_to)s"
@@ -1172,6 +1202,7 @@ msgid "Not subscribed"
 msgstr "不是訂戶"
 
 #: Mailman/Cgi/admin.py:1773
+#, fuzzy
 msgid "Ignoring changes to deleted member: %(user)s"
 msgstr "忽略對已除名訂戶 %(user)s 的設定"
 
@@ -1184,10 +1215,12 @@ msgid "Error Unsubscribing:"
 msgstr "退訂時出錯："
 
 #: Mailman/Cgi/admindb.py:235 Mailman/Cgi/admindb.py:248
+#, fuzzy
 msgid "%(realname)s Administrative Database"
 msgstr "%(realname)s 行政資料庫"
 
 #: Mailman/Cgi/admindb.py:238
+#, fuzzy
 msgid "%(realname)s Administrative Database Results"
 msgstr "%(realname)s 行政資料庫的結果"
 
@@ -1216,6 +1249,7 @@ msgid "Discard all messages marked <em>Defer</em>"
 msgstr "拋棄所有標為<em>擱置</em>的訊息"
 
 #: Mailman/Cgi/admindb.py:298
+#, fuzzy
 msgid "all of %(esender)s's held messages."
 msgstr "%(esender)s 所有保留住的訊息。"
 
@@ -1236,6 +1270,7 @@ msgid "list of available mailing lists."
 msgstr "通信論壇列表。"
 
 #: Mailman/Cgi/admindb.py:362
+#, fuzzy
 msgid "You must specify a list name.  Here is the %(link)s"
 msgstr "您必須指定論壇名稱。這裡是 %(link)s"
 
@@ -1318,6 +1353,7 @@ msgid "<em>The sender is now a member of this list</em>"
 msgstr "<em>寄件人現在是本論壇的訂戶了</em>"
 
 #: Mailman/Cgi/admindb.py:568
+#, fuzzy
 msgid "Add <b>%(esender)s</b> to one of these sender filters:"
 msgstr "把 <b>%(esender)s</b> 加到這些寄件人過濾器之中："
 
@@ -1338,6 +1374,7 @@ msgid "Rejects"
 msgstr "退回的"
 
 #: Mailman/Cgi/admindb.py:584
+#, fuzzy
 msgid ""
 "Ban <b>%(esender)s</b> from ever subscribing to this\n"
 "                    mailing list"
@@ -1350,6 +1387,7 @@ msgid ""
 msgstr "點擊訊息號碼就可以看到個別訊息，或者您可以"
 
 #: Mailman/Cgi/admindb.py:591
+#, fuzzy
 msgid "view all messages from %(esender)s"
 msgstr "觀看所有 %(esender)s 寄來的信"
 
@@ -1472,6 +1510,7 @@ msgid ""
 msgstr "要求變更的地址已經退訂了，因此這項要求遭到取消。"
 
 #: Mailman/Cgi/confirm.py:178
+#, fuzzy
 msgid "System error, bad content: %(content)s"
 msgstr "系統錯誤，壞內容： %(content)s"
 
@@ -1507,6 +1546,7 @@ msgid "Confirm subscription request"
 msgstr "確認您要訂閱的要求"
 
 #: Mailman/Cgi/confirm.py:259
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    subscription request to the mailing list <em>%(listname)s</em>.  Your\n"
@@ -1535,6 +1575,7 @@ msgstr ""
 " <p>或按<em>取消訂閱</em>鈕如果您不想訂閱本論壇。"
 
 #: Mailman/Cgi/confirm.py:275
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to continue with\n"
 "        the subscription request to the mailing list <em>%(listname)s</em>.\n"
@@ -1581,6 +1622,7 @@ msgid "Preferred language:"
 msgstr "最愛用的語言："
 
 #: Mailman/Cgi/confirm.py:317
+#, fuzzy
 msgid "Subscribe to list %(listname)s"
 msgstr "訂閱 %(listname)s 論壇"
 
@@ -1597,6 +1639,7 @@ msgid "Awaiting moderator approval"
 msgstr "等待主持人核准"
 
 #: Mailman/Cgi/confirm.py:386
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request to "
 "the\n"
@@ -1647,6 +1690,7 @@ msgid "Subscription request confirmed"
 msgstr "已確認您的訂閱要求"
 
 #: Mailman/Cgi/confirm.py:418
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request for\n"
 "            \"%(addr)s\" to the %(listname)s mailing list.  A separate\n"
@@ -1672,6 +1716,7 @@ msgid "Unsubscription request confirmed"
 msgstr "確認了您的退訂要求"
 
 #: Mailman/Cgi/confirm.py:469
+#, fuzzy
 msgid ""
 "            You have successfully unsubscribed from the %(listname)s "
 "mailing\n"
@@ -1691,6 +1736,7 @@ msgid "<em>Not available</em>"
 msgstr "<em>無法取得</em>"
 
 #: Mailman/Cgi/confirm.py:498
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    unsubscription request from the mailing list <em>%(listname)s</em>.  "
@@ -1753,6 +1799,7 @@ msgid "Change of address request confirmed"
 msgstr "變更地址的要求已經獲得確認"
 
 #: Mailman/Cgi/confirm.py:571
+#, fuzzy
 msgid ""
 "            You have successfully changed your address on the %(listname)s\n"
 "            mailing list from <b>%(oldaddr)s</b> to <b>%(newaddr)s</b>.  "
@@ -1760,8 +1807,8 @@ msgid ""
 "            can now <a href=\"%(optionsurl)s\">proceed to your membership\n"
 "            login page</a>."
 msgstr ""
-"您已經把您訂閱 %(listname)s 郵遞論壇的地址從 <b>%(oldaddr)s</b> 變更為 <b>"
-"%(newaddr)s</b>。\n"
+"您已經把您訂閱 %(listname)s 郵遞論壇的地址從 <b>%(oldaddr)s</b> 變更為 "
+"<b>%(newaddr)s</b>。\n"
 "您現在可以 <a href=\"%(optionsurl)s\">連上您的登入網頁</a>。"
 
 #: Mailman/Cgi/confirm.py:583
@@ -1773,6 +1820,7 @@ msgid "globally"
 msgstr "整批地"
 
 #: Mailman/Cgi/confirm.py:605
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    change of address request for the mailing list <em>%(listname)s</em>.  "
@@ -1824,6 +1872,7 @@ msgid "Sender discarded message via web."
 msgstr "寄件人用 web 拋棄了這篇訊息。"
 
 #: Mailman/Cgi/confirm.py:674
+#, fuzzy
 msgid ""
 "The held message with the Subject:\n"
 "            header <em>%(subject)s</em> could not be found.  The most "
@@ -1842,6 +1891,7 @@ msgid "Posted message canceled"
 msgstr "取消掉已刊登的訊息了。"
 
 #: Mailman/Cgi/confirm.py:685
+#, fuzzy
 msgid ""
 "            You have successfully canceled the posting of your message with\n"
 "            the Subject: header <em>%(subject)s</em> to the mailing list\n"
@@ -1861,6 +1911,7 @@ msgid ""
 msgstr "您要找的保留訊息已經由論壇管理人處理掉了。"
 
 #: Mailman/Cgi/confirm.py:735
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to cancel the\n"
 "    posting of your message to the mailing list <em>%(listname)s</em>:\n"
@@ -1905,6 +1956,7 @@ msgid "Membership re-enabled."
 msgstr "已恢復訂閱"
 
 #: Mailman/Cgi/confirm.py:798
+#, fuzzy
 msgid ""
 "            You have successfully re-enabled your membership in the\n"
 "            %(listname)s mailing list.  You can now <a\n"
@@ -1919,6 +1971,7 @@ msgid "Re-enable mailing list membership"
 msgstr "恢復訂閱郵遞論壇"
 
 #: Mailman/Cgi/confirm.py:827
+#, fuzzy
 msgid ""
 "We're sorry, but you have already been unsubscribed\n"
 "        from this mailing list.  To re-subscribe, please visit the\n"
@@ -1932,6 +1985,7 @@ msgid "<em>not available</em>"
 msgstr "<em>無法取用</em>"
 
 #: Mailman/Cgi/confirm.py:846
+#, fuzzy
 msgid ""
 "Your membership in the %(realname)s mailing list is\n"
 "    currently disabled due to excessive bounces.  Your confirmation is\n"
@@ -1995,10 +2049,12 @@ msgid "administrative list overview"
 msgstr "論壇管理概述"
 
 #: Mailman/Cgi/create.py:115
+#, fuzzy
 msgid "List name must not include \"@\": %(safelistname)s"
 msgstr "論壇名稱不可含有\"@\": %(safelistname)s"
 
 #: Mailman/Cgi/create.py:122
+#, fuzzy
 msgid "List already exists: %(safelistname)s"
 msgstr "論壇已存在： %(safelistname)s"
 
@@ -2030,18 +2086,22 @@ msgid "You are not authorized to create new mailing lists"
 msgstr "您沒有建立新郵遞論壇的權限"
 
 #: Mailman/Cgi/create.py:182
+#, fuzzy
 msgid "Unknown virtual host: %(safehostname)s"
 msgstr "未知的虛擬主機：%(safehostname)s"
 
 #: Mailman/Cgi/create.py:218 bin/newlist:219
+#, fuzzy
 msgid "Bad owner email address: %(s)s"
 msgstr "不正確的擁有人 email 地址： %(s)s"
 
 #: Mailman/Cgi/create.py:223 bin/newlist:182 bin/newlist:223
+#, fuzzy
 msgid "List already exists: %(listname)s"
 msgstr "論壇已經存在： %(listname)s"
 
 #: Mailman/Cgi/create.py:231 bin/newlist:217
+#, fuzzy
 msgid "Illegal list name: %(s)s"
 msgstr "非法的論壇名稱： %(s)s"
 
@@ -2054,6 +2114,7 @@ msgstr ""
 "請聯絡網站管理人以尋求協助。"
 
 #: Mailman/Cgi/create.py:273 bin/newlist:265
+#, fuzzy
 msgid "Your new mailing list: %(listname)s"
 msgstr "您的新郵遞論壇： %(listname)s"
 
@@ -2062,6 +2123,7 @@ msgid "Mailing list creation results"
 msgstr "建立郵遞論壇的結果"
 
 #: Mailman/Cgi/create.py:288
+#, fuzzy
 msgid ""
 "You have successfully created the mailing list\n"
 "    <b>%(listname)s</b> and notification has been sent to the list owner\n"
@@ -2084,6 +2146,7 @@ msgid "Create another list"
 msgstr "建立另一個論壇"
 
 #: Mailman/Cgi/create.py:312
+#, fuzzy
 msgid "Create a %(hostname)s Mailing List"
 msgstr "建立 %(hostname)s 上的郵遞論壇"
 
@@ -2171,6 +2234,7 @@ msgstr ""
 "回答 <em>是</em> 即可讓新訂戶要登的訊息自動交由主持人核准。"
 
 #: Mailman/Cgi/create.py:432
+#, fuzzy
 msgid ""
 "Initial list of supported languages.  <p>Note that if you do not\n"
 "        select at least one initial language, the list will use the server\n"
@@ -2275,6 +2339,7 @@ msgid "List name is required."
 msgstr "需要論壇名稱。"
 
 #: Mailman/Cgi/edithtml.py:154
+#, fuzzy
 msgid "%(realname)s -- Edit html for %(template_info)s"
 msgstr "%(realname)s － 編輯 %(template_info)s 的 html"
 
@@ -2283,10 +2348,12 @@ msgid "Edit HTML : Error"
 msgstr "編輯 HTML : 錯誤"
 
 #: Mailman/Cgi/edithtml.py:161
+#, fuzzy
 msgid "%(safetemplatename)s: Invalid template"
 msgstr "%(safetemplatename)s:：樣版不正確"
 
 #: Mailman/Cgi/edithtml.py:166 Mailman/Cgi/edithtml.py:167
+#, fuzzy
 msgid "%(realname)s -- HTML Page Editing"
 msgstr "%(realname)s － HTML 網頁編輯"
 
@@ -2345,16 +2412,19 @@ msgid "HTML successfully updated."
 msgstr "HTML 已更新成功。"
 
 #: Mailman/Cgi/listinfo.py:89
+#, fuzzy
 msgid "%(hostname)s Mailing Lists"
 msgstr "%(hostname)s 郵遞論壇"
 
 #: Mailman/Cgi/listinfo.py:127
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s."
 msgstr "<p> %(hostname)s 上現在沒有公告出來的 %(mailmanlink)s 郵遞論壇"
 
 #: Mailman/Cgi/listinfo.py:131
+#, fuzzy
 msgid ""
 "<p>Below is a listing of all the public mailing lists on\n"
 "            %(hostname)s.  Click on a list name to get more information "
@@ -2372,6 +2442,7 @@ msgid "right"
 msgstr "對的"
 
 #: Mailman/Cgi/listinfo.py:140
+#, fuzzy
 msgid ""
 " To visit the general information page for an unadvertised list,\n"
 "        open a URL similar to this one, but with a '/' and the %(adj)s\n"
@@ -2432,6 +2503,7 @@ msgstr "非法的 email 地址"
 
 #: Mailman/Cgi/options.py:183 Mailman/Cgi/options.py:240
 #: Mailman/Cgi/options.py:264
+#, fuzzy
 msgid "No such member: %(safeuser)s."
 msgstr "沒有此訂戶：%(safeuser)s。"
 
@@ -2480,6 +2552,7 @@ msgid "Note: "
 msgstr ""
 
 #: Mailman/Cgi/options.py:378
+#, fuzzy
 msgid "List subscriptions for %(safeuser)s on %(hostname)s"
 msgstr "列出 %(safeuser)s 在 %(hostname)s 上的訂閱清單"
 
@@ -2505,6 +2578,7 @@ msgid "You are already using that email address"
 msgstr "您本來就在用那個 email 地址"
 
 #: Mailman/Cgi/options.py:459
+#, fuzzy
 msgid ""
 "The new address you requested %(newaddr)s is already a member of the\n"
 "%(listname)s mailing list, however you have also requested a global change "
@@ -2517,6 +2591,7 @@ msgstr ""
 "在確認之後，所有含有 %(safeuser)s 的郵遞論壇都會變動。"
 
 #: Mailman/Cgi/options.py:468
+#, fuzzy
 msgid "The new address is already a member: %(newaddr)s"
 msgstr "新地址已經是訂戶： %(newaddr)s"
 
@@ -2525,6 +2600,7 @@ msgid "Addresses may not be blank"
 msgstr "地址欄不可留空"
 
 #: Mailman/Cgi/options.py:488
+#, fuzzy
 msgid "A confirmation message has been sent to %(newaddr)s. "
 msgstr "已經寄確認信到 %(newaddr)s。"
 
@@ -2537,6 +2613,7 @@ msgid "Illegal email address provided"
 msgstr "提供的 email 地址不合法"
 
 #: Mailman/Cgi/options.py:501
+#, fuzzy
 msgid "%(newaddr)s is already a member of the list."
 msgstr "%(newaddr)s 本來就是本論壇訂戶。"
 
@@ -2617,6 +2694,7 @@ msgstr ""
 "一旦論壇主持人作出決定，您就會收到通知。"
 
 #: Mailman/Cgi/options.py:623
+#, fuzzy
 msgid ""
 "You have been successfully unsubscribed from the\n"
 "            mailing list %(fqdn_listname)s.  If you were receiving digest\n"
@@ -2704,6 +2782,7 @@ msgid "day"
 msgstr "天"
 
 #: Mailman/Cgi/options.py:900
+#, fuzzy
 msgid "%(days)d %(units)s"
 msgstr "%(days)d %(units)s"
 
@@ -2716,6 +2795,7 @@ msgid "<em>No topics defined</em>"
 msgstr "<em>尚未定義任何標題</em>"
 
 #: Mailman/Cgi/options.py:940
+#, fuzzy
 msgid ""
 "\n"
 "You are subscribed to this list with the case-preserved address\n"
@@ -2725,6 +2805,7 @@ msgstr ""
 "您以保留大寫字母的地址 <em>%(cpuser)s</em> 訂閱本論壇。"
 
 #: Mailman/Cgi/options.py:956
+#, fuzzy
 msgid "%(realname)s list: member options login page"
 msgstr "%(realname)s 的列表: 會員選項登入頁"
 
@@ -2733,10 +2814,12 @@ msgid "email address and "
 msgstr "訂戶地址和"
 
 #: Mailman/Cgi/options.py:960
+#, fuzzy
 msgid "%(realname)s list: member options for user %(safeuser)s"
 msgstr "%(realname)s 的列表： %(safeuser)s 的訂戶選項。"
 
 #: Mailman/Cgi/options.py:986
+#, fuzzy
 msgid ""
 "In order to change your membership option, you must\n"
 "    first log in by giving your %(extra)smembership password in the section\n"
@@ -2804,6 +2887,7 @@ msgid "<missing>"
 msgstr "<missing>"
 
 #: Mailman/Cgi/options.py:1140
+#, fuzzy
 msgid "Requested topic is not valid: %(topicname)s"
 msgstr "要求的標題無效: %(topicname)s"
 
@@ -2832,6 +2916,7 @@ msgid "Private archive - \"./\" and \"../\" not allowed in URL."
 msgstr ""
 
 #: Mailman/Cgi/private.py:109
+#, fuzzy
 msgid "Private Archive Error - %(msg)s"
 msgstr "祕密歸檔錯誤 - %(msg)s"
 
@@ -2869,12 +2954,14 @@ msgid "Mailing list deletion results"
 msgstr "刪除通信論壇的結果"
 
 #: Mailman/Cgi/rmlist.py:187
+#, fuzzy
 msgid ""
 "You have successfully deleted the mailing list\n"
 "    <b>%(listname)s</b>."
 msgstr "你已經刪除了 <b>%(listname)s</b> 通信論壇。"
 
 #: Mailman/Cgi/rmlist.py:191
+#, fuzzy
 msgid ""
 "There were some problems deleting the mailing list\n"
 "        <b>%(listname)s</b>.  Contact your site administrator at "
@@ -2884,6 +2971,7 @@ msgstr ""
 "刪除 <b>%(listname)s</b> 通信論壇時發生問題，請聯絡在 %(sitelist)s 的站長。"
 
 #: Mailman/Cgi/rmlist.py:208
+#, fuzzy
 msgid "Permanently remove mailing list <em>%(realname)s</em>"
 msgstr "永久刪除 <em>%(realname)s</em> 通信論壇"
 
@@ -2946,6 +3034,7 @@ msgid "Invalid options to CGI script"
 msgstr "錯誤的 CGI 選項"
 
 #: Mailman/Cgi/roster.py:118
+#, fuzzy
 msgid "%(realname)s roster authentication failed."
 msgstr "取得 %(realname)s 訂戶名單時認證失敗。"
 
@@ -3012,6 +3101,7 @@ msgstr ""
 "您很快就會收到含有進一步指示的確認信。"
 
 #: Mailman/Cgi/subscribe.py:262
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this\n"
 "        mailing list.  If you think this restriction is erroneous, please\n"
@@ -3033,6 +3123,7 @@ msgid ""
 msgstr "您給的 email 地址不安全所以我們不能通過您的訂閱申請。"
 
 #: Mailman/Cgi/subscribe.py:278
+#, fuzzy
 msgid ""
 "Confirmation from your email address is required, to prevent anyone from\n"
 "subscribing you without permission.  Instructions are being sent to you at\n"
@@ -3045,6 +3136,7 @@ msgstr ""
 "算有效。"
 
 #: Mailman/Cgi/subscribe.py:290
+#, fuzzy
 msgid ""
 "Your subscription request was deferred because %(x)s.  Your request has "
 "been\n"
@@ -3065,6 +3157,7 @@ msgid "Mailman privacy alert"
 msgstr "Mailman 隱私權警告"
 
 #: Mailman/Cgi/subscribe.py:316
+#, fuzzy
 msgid ""
 "An attempt was made to subscribe your address to the mailing list\n"
 "%(listaddr)s.  You are already subscribed to this mailing list.\n"
@@ -3100,6 +3193,7 @@ msgid "This list only supports digest delivery."
 msgstr "本論壇僅提供文摘訂閱方式。"
 
 #: Mailman/Cgi/subscribe.py:344
+#, fuzzy
 msgid "You have been successfully subscribed to the %(realname)s mailing list."
 msgstr "您已經成功訂閱了 %(realname)s 論壇。"
 
@@ -3221,26 +3315,32 @@ msgid "n/a"
 msgstr "無"
 
 #: Mailman/Commands/cmd_info.py:44
+#, fuzzy
 msgid "List name:    %(listname)s"
 msgstr "論壇名稱: %(listname)s"
 
 #: Mailman/Commands/cmd_info.py:45
+#, fuzzy
 msgid "Description:  %(description)s"
 msgstr "描述: %(description)s"
 
 #: Mailman/Commands/cmd_info.py:46
+#, fuzzy
 msgid "Postings to:  %(postaddr)s"
 msgstr "發表到: %(postaddr)s"
 
 #: Mailman/Commands/cmd_info.py:47
+#, fuzzy
 msgid "List Helpbot: %(requestaddr)s"
 msgstr "論壇的 Helpbot: %(requestaddr)s"
 
 #: Mailman/Commands/cmd_info.py:48
+#, fuzzy
 msgid "List Owners:  %(owneraddr)s"
 msgstr "論壇擁有人: %(owneraddr)s"
 
 #: Mailman/Commands/cmd_info.py:49
+#, fuzzy
 msgid "More information: %(listurl)s"
 msgstr "進一步的資料: %(listurl)s"
 
@@ -3263,18 +3363,22 @@ msgstr ""
 " 列出這台 GNU Mailman 伺服器的公開通信論壇。\n"
 
 #: Mailman/Commands/cmd_lists.py:44
+#, fuzzy
 msgid "Public mailing lists at %(hostname)s:"
 msgstr "在 %(hostname)s 上的公開通信論壇："
 
 #: Mailman/Commands/cmd_lists.py:66
+#, fuzzy
 msgid "%(i)3d. List name:   %(realname)s"
 msgstr "%(i)3d。論譠名稱： %(realname)s"
 
 #: Mailman/Commands/cmd_lists.py:67
+#, fuzzy
 msgid "     Description: %(description)s"
 msgstr " 描述： %(description)s"
 
 #: Mailman/Commands/cmd_lists.py:68
+#, fuzzy
 msgid "     Requests to: %(requestaddr)s"
 msgstr " 意見要求： %(requestaddr)s"
 
@@ -3305,12 +3409,14 @@ msgstr ""
 "請注意，回應總是寄到您的訂閱地址。\n"
 
 #: Mailman/Commands/cmd_password.py:51 Mailman/Commands/cmd_password.py:66
+#, fuzzy
 msgid "Your password is: %(password)s"
 msgstr "你的密碼是： %(password)s"
 
 #: Mailman/Commands/cmd_password.py:57 Mailman/Commands/cmd_password.py:72
 #: Mailman/Commands/cmd_password.py:95 Mailman/Commands/cmd_password.py:121
 #: Mailman/Commands/cmd_set.py:149 Mailman/Commands/cmd_set.py:219
+#, fuzzy
 msgid "You are not a member of the %(listname)s mailing list"
 msgstr "您不是 %(listname)s 通信論壇的訂戶"
 
@@ -3430,6 +3536,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Commands/cmd_set.py:122
+#, fuzzy
 msgid "Bad set command: %(subcmd)s"
 msgstr "不好的 set 命令: %(subcmd)s"
 
@@ -3450,6 +3557,7 @@ msgid "on"
 msgstr "開"
 
 #: Mailman/Commands/cmd_set.py:154
+#, fuzzy
 msgid "    ack %(onoff)s"
 msgstr " ack %(onoff)s"
 
@@ -3487,22 +3595,27 @@ msgid "due to bounces"
 msgstr "由於退信"
 
 #: Mailman/Commands/cmd_set.py:186
+#, fuzzy
 msgid "    %(status)s (%(how)s on %(date)s)"
 msgstr "%(status)s （%(how)s 在 %(date)s）"
 
 #: Mailman/Commands/cmd_set.py:192
+#, fuzzy
 msgid "    myposts %(onoff)s"
 msgstr "我的發表 %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:195
+#, fuzzy
 msgid "    hide %(onoff)s"
 msgstr "隱藏 %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:199
+#, fuzzy
 msgid "    duplicates %(onoff)s"
 msgstr " 複本 %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:203
+#, fuzzy
 msgid "    reminders %(onoff)s"
 msgstr "「定期提醒」 %(onoff)s"
 
@@ -3511,6 +3624,7 @@ msgid "You did not give the correct password"
 msgstr "密碼錯誤。"
 
 #: Mailman/Commands/cmd_set.py:236 Mailman/Commands/cmd_set.py:283
+#, fuzzy
 msgid "Bad argument: %(arg)s"
 msgstr "參數錯誤: %(arg)s"
 
@@ -3585,6 +3699,7 @@ msgstr ""
 "那麼就要指定 address 了，像是 address=you@your.mail.host\n"
 
 #: Mailman/Commands/cmd_subscribe.py:62
+#, fuzzy
 msgid "Bad digest specifier: %(arg)s"
 msgstr "錯誤的摘要標籤. %(arg)s"
 
@@ -3593,6 +3708,7 @@ msgid "No valid address found to subscribe"
 msgstr "沒找到可訂閱的有效郵件位址"
 
 #: Mailman/Commands/cmd_subscribe.py:113
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this mailing list.\n"
 "If you think this restriction is erroneous, please contact the list\n"
@@ -3628,6 +3744,7 @@ msgid "This list only supports digest subscriptions!"
 msgstr "本論壇僅提供訂閱文摘！"
 
 #: Mailman/Commands/cmd_subscribe.py:146
+#, fuzzy
 msgid ""
 "Your subscription request has been forwarded to the list administrator\n"
 "at %(listowner)s for review."
@@ -3660,6 +3777,7 @@ msgstr ""
 "那麼就要指定 address 了，像是 address=you@your.mail.host\n"
 
 #: Mailman/Commands/cmd_unsubscribe.py:62
+#, fuzzy
 msgid "%(address)s is not a member of the %(listname)s mailing list"
 msgstr "%(address)s 不是 %(listname)s 論壇的訂戶"
 
@@ -3902,6 +4020,7 @@ msgid "Chinese (Taiwan)"
 msgstr "繁體中文(Taiwan)"
 
 #: Mailman/Deliverer.py:53
+#, fuzzy
 msgid ""
 "Note: Since this is a list of mailing lists, administrative\n"
 "notices like the password reminder will be sent to\n"
@@ -3915,14 +4034,17 @@ msgid " (Digest mode)"
 msgstr " (文摘模式)"
 
 #: Mailman/Deliverer.py:79
+#, fuzzy
 msgid "Welcome to the \"%(realname)s\" mailing list%(digmode)s"
 msgstr "歡迎加入 \"%(realname)s\" 通信論壇 %(digmode)s"
 
 #: Mailman/Deliverer.py:89
+#, fuzzy
 msgid "You have been unsubscribed from the %(realname)s mailing list"
 msgstr "您已經退訂 \"%(realname)s\" 論壇了"
 
 #: Mailman/Deliverer.py:116
+#, fuzzy
 msgid "%(listfullname)s mailing list reminder"
 msgstr "%(listfullname)s 通信論壇提醒"
 
@@ -3935,6 +4057,7 @@ msgid "Hostile subscription attempt detected"
 msgstr "發現惡意的訂閱嘗試"
 
 #: Mailman/Deliverer.py:169
+#, fuzzy
 msgid ""
 "%(address)s was invited to a different mailing\n"
 "list, but in a deliberate malicious attempt they tried to confirm the\n"
@@ -3945,6 +4068,7 @@ msgstr ""
 "作任何動作，只是想說您應該會想知道。"
 
 #: Mailman/Deliverer.py:188
+#, fuzzy
 msgid ""
 "You invited %(address)s to your list, but in a\n"
 "deliberate malicious attempt, they tried to confirm the invitation to a\n"
@@ -3956,6 +4080,7 @@ msgstr ""
 "要作任何動作，只是想說您應該會想知道。"
 
 #: Mailman/Deliverer.py:221
+#, fuzzy
 msgid "%(listname)s mailing list probe message"
 msgstr "%(listname)s 通信論壇的探視訊息"
 
@@ -4151,8 +4276,8 @@ msgid ""
 "            membership.\n"
 "\n"
 "            <p>You can control both the\n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">number\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">number\n"
 "            of reminders</a> the member will receive and the\n"
 "            <a href=\"?VARHELP=bounce/"
 "bounce_you_are_disabled_warnings_interval\"\n"
@@ -4293,8 +4418,8 @@ msgid ""
 "             <em>No</em> those messages too will get discarded.  You may "
 "want\n"
 "             to set up an\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">autoresponse\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">autoresponse\n"
 "             message</a> for email to the -owner and -admin address."
 msgstr ""
 
@@ -4346,6 +4471,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Gui/Bounce.py:194
+#, fuzzy
 msgid ""
 "Bad value for <a href=\"?VARHELP=bounce/%(property)s\"\n"
 "                >%(property)s</a>: %(val)s"
@@ -4444,8 +4570,8 @@ msgid ""
 "Use this option to remove each message attachment that does\n"
 "             not have a matching content type.  Requirements and formats "
 "are\n"
-"             exactly like <a href=\"?VARHELP=contentfilter/filter_mime_types"
-"\"\n"
+"             exactly like <a href=\"?VARHELP=contentfilter/"
+"filter_mime_types\"\n"
 "             >filter_mime_types</a>.\n"
 "\n"
 "             <p><b>Note:</b> if you add entries to this list but don't add\n"
@@ -4522,6 +4648,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Gui/ContentFilter.py:171
+#, fuzzy
 msgid "Bad MIME type ignored: %(spectype)s"
 msgstr "錯誤的MIME格式被忽略: %(spectype)s"
 
@@ -4619,6 +4746,7 @@ msgid ""
 msgstr "若已有新資料的話，就讓 Mailman 現在寄出新的文摘囉？"
 
 #: Mailman/Gui/Digest.py:145
+#, fuzzy
 msgid ""
 "The next digest will be sent as volume\n"
 "            %(volume)s, number %(number)s"
@@ -4638,10 +4766,12 @@ msgid "Invalid value for variable: %(property)s"
 msgstr "不正確的設定: %(property)s"
 
 #: Mailman/Gui/GUIBase.py:178
+#, fuzzy
 msgid "Bad email address for option %(property)s: %(error)s"
 msgstr "選項 %(property)s 內為錯誤的 Email 信箱: %(error)s"
 
 #: Mailman/Gui/GUIBase.py:204
+#, fuzzy
 msgid ""
 "The following illegal substitution variables were\n"
 "                found in the <code>%(property)s</code> string:\n"
@@ -4751,8 +4881,8 @@ msgid ""
 "             <p>In order to split the list ownership duties into\n"
 "             administrators and moderators, you must\n"
 "             <a href=\"passwords\">set a separate moderator password</a>,\n"
-"             and also provide the <a href=\"?VARHELP=general/moderator"
-"\">email\n"
+"             and also provide the <a href=\"?VARHELP=general/"
+"moderator\">email\n"
 "             addresses of the list moderators</a>.  Note that the field you\n"
 "             are changing here specifies the list administrators."
 msgstr ""
@@ -5023,13 +5153,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5057,8 +5187,8 @@ msgstr ""
 "<p>基於許多原因，我們不建議您更換 <tt>Reply-To:</tt> 的內容。\n"
 "其一是有些投書者依賴自己的 <tt>Reply-To:</tt> 來設定他們正\n"
 "確的回信地址。 其二是修改 <tt>Reply-To:</tt> 不易回覆私人信件。\n"
-"請參考 <a href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To' Munging\n"
+"請參考 <a href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To' Munging\n"
 "Considered Harmful</a> ，這裡有這個題目進一步的討論。  請到 <a\n"
 "href=\"http://marc.merlins.org/netrants/reply-to-useful.html\">Reply-To\n"
 "Munging Considered Useful</a> 發表您的意見。\n"
@@ -5077,8 +5207,8 @@ msgstr "明確的 <tt>Reply-To:</tt> 標題。"
 msgid ""
 "This is the address set in the <tt>Reply-To:</tt> header\n"
 "             when the <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             option is set to <em>Explicit address</em>.\n"
 "\n"
 "             <p>There are many reasons not to introduce or override the\n"
@@ -5086,13 +5216,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5120,8 +5250,8 @@ msgstr ""
 "<p>基於許多原因，我們不建議您更換信件 <tt>Reply-To:</tt>的標題。\n"
 "其一是有些投書者依賴自己的 <tt>Reply-To:</tt> 來設定他們正\n"
 "確的回信地址。 其二是修改 <tt>Reply-To:</tt> 不易回覆私人信件。\n"
-"請參考 <a href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To' Munging\n"
+"請參考 <a href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To' Munging\n"
 "Considered Harmful</a> ，這裡有這個題目進一步的討論。  請到 <a\n"
 "href=\"http://marc.merlins.org/netrants/reply-to-useful.html\">Reply-To\n"
 "Munging Considered Useful</a> 發表您的意見。\n"
@@ -5176,8 +5306,8 @@ msgid ""
 "             member list addresses, but rather to the owner of those member\n"
 "             lists.  In that case, the value of this setting is appended to\n"
 "             the member's account name for such notices.  `-owner' is the\n"
-"             typical choice.  This setting has no effect when \"umbrella_list"
-"\"\n"
+"             typical choice.  This setting has no effect when "
+"\"umbrella_list\"\n"
 "             is \"No\"."
 msgstr ""
 "當設定\"樹狀論壇\"時就代表該論壇擁有其他通信論壇為其會員，因此管理的提醒郵"
@@ -6120,13 +6250,13 @@ msgid ""
 "            either individually or as a group.  Any\n"
 "            posting from a non-member who is not explicitly accepted,\n"
 "            rejected, or discarded, will have their posting filtered by the\n"
-"            <a href=\"?VARHELP=privacy/sender/generic_nonmember_action"
-"\">general\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"generic_nonmember_action\">general\n"
 "            non-member rules</a>.\n"
 "\n"
 "            <p>In the text boxes below, add one address per line; start the\n"
 "            line with a ^ character to designate a <a href=\n"
-"            \"https://docs.python.org/2/library/re.html\"\n"
+"            \"https://docs.python.org/3/library/re.html\"\n"
 "            >Python regular expression</a>.  When entering backslashes, do "
 "so\n"
 "            as if you were using Python raw strings (i.e. you generally "
@@ -6151,7 +6281,7 @@ msgstr ""
 "a>的過濾。\n"
 "\n"
 " <p>在下面的文字框中每行填入一個地址，在行首寫 ^ 字元代表是\n"
-"<a href=\"https://docs.python.org/2/library/re.html\">Python 正規表示式</"
+"<a href=\"https://docs.python.org/3/library/re.html\">Python 正規表示式</"
 "a>。\n"
 "要填入反斜線【譯註：╲】的話，請直接打反斜線即可，不用多加一個反斜線逸出。\n"
 "\n"
@@ -6166,6 +6296,7 @@ msgid "By default, should new list member postings be moderated?"
 msgstr "新訂戶的刊登要不要預設成待審？"
 
 #: Mailman/Gui/Privacy.py:218
+#, fuzzy
 msgid ""
 "Each list member has a <em>moderation flag</em> which says\n"
 "             whether messages from the list member can be posted directly "
@@ -6211,8 +6342,8 @@ msgid ""
 "If a member posts this many times, within a period of time\n"
 "               the member is automatically moderated.  Use 0 to disable.  "
 "See\n"
-"               <a href=\"?VARHELP=privacy/sender/member_verbosity_interval"
-"\"\n"
+"               <a href=\"?VARHELP=privacy/sender/"
+"member_verbosity_interval\"\n"
 "               >member_verbosity_interval</a> for details on the time "
 "period.\n"
 "\n"
@@ -6620,6 +6751,7 @@ msgid ""
 msgstr "從設定為自動拋棄的非訂戶寄來的刊登該不該轉寄給論壇主持人？"
 
 #: Mailman/Gui/Privacy.py:494
+#, fuzzy
 msgid ""
 "Text to include in any rejection notice to be sent to\n"
 "             non-members who post to this list. This notice can include\n"
@@ -6843,7 +6975,7 @@ msgstr ""
 msgid ""
 "The topic filter categorizes each incoming email message\n"
 "             according to <a\n"
-"            href=\"https://docs.python.org/2/library/re.html\">regular\n"
+"            href=\"https://docs.python.org/3/library/re.html\">regular\n"
 "             expression filters</a> you specify below.  If the message's\n"
 "             <code>Subject:</code> or <code>Keywords:</code> header contains "
 "a\n"
@@ -6861,8 +6993,8 @@ msgid ""
 "             <p>The body of the message can also be optionally scanned for\n"
 "             <code>Subject:</code> and <code>Keywords:</code> headers, as\n"
 "             specified by the <a\n"
-"       href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a>\n"
+"       href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a>\n"
 "             configuration variable."
 msgstr ""
 
@@ -7086,6 +7218,7 @@ msgid "%(listinfo_link)s list run by %(owner_link)s"
 msgstr ""
 
 #: Mailman/HTMLFormatter.py:57
+#, fuzzy
 msgid "%(realname)s administrative interface"
 msgstr "%(realname)s 管理介面"
 
@@ -7094,6 +7227,7 @@ msgid " (requires authorization)"
 msgstr "(待稽核)"
 
 #: Mailman/HTMLFormatter.py:61
+#, fuzzy
 msgid "Overview of all %(hostname)s mailing lists"
 msgstr "通信論壇列表。"
 
@@ -7116,6 +7250,7 @@ msgid "; it was disabled by the list administrator"
 msgstr "已被壇主關閉"
 
 #: Mailman/HTMLFormatter.py:146
+#, fuzzy
 msgid ""
 "; it was disabled due to excessive bounces.  The\n"
 "            last bounce was received on %(date)s"
@@ -7128,6 +7263,7 @@ msgid "; it was disabled for unknown reasons"
 msgstr "未知原因被關閉"
 
 #: Mailman/HTMLFormatter.py:151
+#, fuzzy
 msgid "Note: your list delivery is currently disabled%(reason)s."
 msgstr "備註 - 您論壇的收信設定由於%(reason)s現在是關閉的。"
 
@@ -7140,6 +7276,7 @@ msgid "the list administrator"
 msgstr "壇主"
 
 #: Mailman/HTMLFormatter.py:157
+#, fuzzy
 msgid ""
 "<p>%(note)s\n"
 "\n"
@@ -7158,6 +7295,7 @@ msgstr ""
 "若有任何疑問或須協助，請聯絡 %(mailto)s"
 
 #: Mailman/HTMLFormatter.py:169
+#, fuzzy
 msgid ""
 "<p>We have received some recent bounces from your\n"
 "            address.  Your current <em>bounce score</em> is %(score)s out of "
@@ -7215,18 +7353,21 @@ msgstr ""
 "送壇主核准。稍後您會收到壇主的裁決 email。"
 
 #: Mailman/HTMLFormatter.py:208
+#, fuzzy
 msgid ""
 "This is %(also)sa private list, which means that the\n"
 "            list of members is not available to non-members."
 msgstr "這是 %(also)s 上的私人論壇，也就是說會員清單不對非會員公開。"
 
 #: Mailman/HTMLFormatter.py:211
+#, fuzzy
 msgid ""
 "This is %(also)sa hidden list, which means that the\n"
 "            list of members is available only to the list administrator."
 msgstr "這是 %(also)sa 隱形的論壇，會員清單僅限壇主查閱。"
 
 #: Mailman/HTMLFormatter.py:214
+#, fuzzy
 msgid ""
 "This is %(also)sa public list, which means that the\n"
 "            list of members list is available to everyone."
@@ -7351,6 +7492,7 @@ msgid "The current archive"
 msgstr "現在的檔案"
 
 #: Mailman/Handlers/Acknowledge.py:59
+#, fuzzy
 msgid "%(realname)s post acknowledgement"
 msgstr "%(realname)s 發言回執"
 
@@ -7437,6 +7579,7 @@ msgid "Message may contain administrivia"
 msgstr "訊息包含管理指令"
 
 #: Mailman/Handlers/Hold.py:84
+#, fuzzy
 msgid ""
 "Please do *not* post administrative requests to the mailing\n"
 "list.  If you wish to subscribe, visit %(listurl)s or send a message with "
@@ -7476,10 +7619,12 @@ msgid "Posting to a moderated newsgroup"
 msgstr "投書到管制的論壇"
 
 #: Mailman/Handlers/Hold.py:252
+#, fuzzy
 msgid "Your message to %(listname)s awaits moderator approval"
 msgstr "您寄到 %(listname)s 的信件已送交壇主裁決"
 
 #: Mailman/Handlers/Hold.py:271
+#, fuzzy
 msgid "%(listname)s post from %(sender)s requires approval"
 msgstr "%(listname)s 發言 來自 %(sender)s 需要核准"
 
@@ -7552,6 +7697,7 @@ msgid "The attached message has been automatically discarded."
 msgstr "附加的訊息已被自動丟棄。"
 
 #: Mailman/Handlers/Replybot.py:75
+#, fuzzy
 msgid "Auto-response for your message to the \"%(realname)s\" mailing list"
 msgstr "自動回覆您的訊息至 \"%(realname)s\"  論壇"
 
@@ -7575,6 +7721,7 @@ msgid "HTML attachment scrubbed and removed"
 msgstr "HTML 附加檔被抹去並移除"
 
 #: Mailman/Handlers/Scrubber.py:234 Mailman/Handlers/Scrubber.py:259
+#, fuzzy
 msgid ""
 "An HTML attachment was scrubbed...\n"
 "URL: %(url)s\n"
@@ -7629,6 +7776,7 @@ msgstr ""
 "URL: %(url)s\n"
 
 #: Mailman/Handlers/Scrubber.py:347
+#, fuzzy
 msgid "Skipped content of type %(partctype)s\n"
 msgstr "跳過 %(partctype)s 型態的內容\n"
 
@@ -7658,6 +7806,7 @@ msgid "Message rejected by filter rule match"
 msgstr "訊息被過濾規則匹配程式所拒絕"
 
 #: Mailman/Handlers/ToDigest.py:173
+#, fuzzy
 msgid "%(realname)s Digest, Vol %(volume)d, Issue %(issue)d"
 msgstr "%(realname)s 摘要、容量 %(volume)d、條目 %(issue)d"
 
@@ -7707,6 +7856,7 @@ msgid "Forward of moderated message"
 msgstr "轉送管制的信件"
 
 #: Mailman/ListAdmin.py:405
+#, fuzzy
 msgid "New subscription request to list %(realname)s from %(addr)s"
 msgstr "%(realname)s 論壇訂閱申請，由 %(addr)s 提出"
 
@@ -7720,6 +7870,7 @@ msgid "via admin approval"
 msgstr "繼續等待審核"
 
 #: Mailman/ListAdmin.py:466
+#, fuzzy
 msgid "New unsubscription request from %(realname)s by %(addr)s"
 msgstr "%(realname)s 論壇退訂申請，由 %(addr)s 提出"
 
@@ -7732,10 +7883,12 @@ msgid "Original Message"
 msgstr "原始發言"
 
 #: Mailman/ListAdmin.py:526
+#, fuzzy
 msgid "Request to mailing list %(realname)s rejected"
 msgstr "在論壇 %(realname)s 的申請已被拒絕"
 
 #: Mailman/MTA/Manual.py:66
+#, fuzzy
 msgid ""
 "The mailing list `%(listname)s' has been created via the through-the-web\n"
 "interface.  In order to complete the activation of this mailing list, the\n"
@@ -7766,10 +7919,12 @@ msgid "## %(listname)s mailing list"
 msgstr "##通信論壇 %(listname)s"
 
 #: Mailman/MTA/Manual.py:99
+#, fuzzy
 msgid "Mailing list creation request for list %(listname)s"
 msgstr "通信論壇 %(listname)s 發起事務申請"
 
 #: Mailman/MTA/Manual.py:113
+#, fuzzy
 msgid ""
 "The mailing list `%(listname)s' has been removed via the through-the-web\n"
 "interface.  In order to complete the de-activation of this mailing list, "
@@ -7787,6 +7942,7 @@ msgstr ""
 "以下是整個 /etc/aliases 檔案的內容：\n"
 
 #: Mailman/MTA/Manual.py:123
+#, fuzzy
 msgid ""
 "\n"
 "To finish removing your mailing list, you must edit your /etc/aliases (or\n"
@@ -7803,14 +7959,17 @@ msgstr ""
 "## 通信論壇 %(listname)s"
 
 #: Mailman/MTA/Manual.py:142
+#, fuzzy
 msgid "Mailing list removal request for list %(listname)s"
 msgstr "通信論壇 %(listname)s 移除申請"
 
 #: Mailman/MTA/Postfix.py:442
+#, fuzzy
 msgid "checking permissions on %(file)s"
 msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: Mailman/MTA/Postfix.py:452
+#, fuzzy
 msgid "%(file)s permissions must be 0664 (got %(octmode)s)"
 msgstr "%(file)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
@@ -7824,26 +7983,32 @@ msgid "(fixing)"
 msgstr "修正中"
 
 #: Mailman/MTA/Postfix.py:470
+#, fuzzy
 msgid "checking ownership of %(dbfile)s"
 msgstr "檢查 %(dbfile)s 檔案所有權中"
 
 #: Mailman/MTA/Postfix.py:478
+#, fuzzy
 msgid "%(dbfile)s owned by %(owner)s (must be owned by %(user)s"
 msgstr "%(dbfile)s的檔案所有權為 %(owner)s 所有，所有人需更改為 %(user)s"
 
 #: Mailman/MTA/Postfix.py:491
+#, fuzzy
 msgid "%(dbfile)s permissions must be 0664 (got %(octmode)s)"
 msgstr "%(dbfile)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: Mailman/MailList.py:219
+#, fuzzy
 msgid "Your confirmation is required to join the %(listname)s mailing list"
 msgstr "請確認退出 %(listname)s 論壇"
 
 #: Mailman/MailList.py:230
+#, fuzzy
 msgid "Your confirmation is required to leave the %(listname)s mailing list"
 msgstr "請確認加入 %(listname)s 論壇"
 
 #: Mailman/MailList.py:999 Mailman/MailList.py:1492
+#, fuzzy
 msgid " from %(remote)s"
 msgstr " 寄自 %(remote)s"
 
@@ -8062,6 +8227,7 @@ msgid "Server Local Time"
 msgstr "伺服器時間"
 
 #: Mailman/i18n.py:180
+#, fuzzy
 msgid ""
 "%(wday)s %(mon)s %(day)2i %(hh)02i:%(mm)02i:%(ss)02i %(tzname)s %(year)04i"
 msgstr ""
@@ -8156,16 +8322,19 @@ msgid "Invited: %(member)s"
 msgstr "已訂閱者: %(member)s"
 
 #: bin/add_members:187
+#, fuzzy
 msgid "Subscribed: %(member)s"
 msgstr "已訂閱者: %(member)s"
 
 #: bin/add_members:237
+#, fuzzy
 msgid "Bad argument to -w/--welcome-msg: %(arg)s"
-msgstr ""
+msgstr "參數錯誤: %(arg)s"
 
 #: bin/add_members:244
+#, fuzzy
 msgid "Bad argument to -a/--admin-notify: %(arg)s"
-msgstr ""
+msgstr "參數錯誤: %(arg)s"
 
 #: bin/add_members:252
 msgid "Cannot read both digest and normal members from standard input."
@@ -8332,8 +8501,9 @@ msgid ""
 msgstr ""
 
 #: bin/change_pw:145
+#, fuzzy
 msgid "Bad arguments: %(strargs)s"
-msgstr ""
+msgstr "參數錯誤: %(arg)s"
 
 #: bin/change_pw:149
 #, fuzzy
@@ -8341,12 +8511,14 @@ msgid "Empty list passwords are not allowed"
 msgstr "不允許管理者密碼空白"
 
 #: bin/change_pw:181
+#, fuzzy
 msgid "New %(listname)s password: %(notifypassword)s"
-msgstr ""
+msgstr "論壇 %(listname)s 的初始密碼："
 
 #: bin/change_pw:190
+#, fuzzy
 msgid "Your new %(listname)s list password"
-msgstr ""
+msgstr "論壇 %(listname)s 的初始密碼："
 
 #: bin/change_pw:191
 msgid ""
@@ -8425,40 +8597,47 @@ msgid ""
 msgstr ""
 
 #: bin/check_perms:110
+#, fuzzy
 msgid "    checking gid and mode for %(path)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:122
 msgid "%(path)s bad group (has: %(groupname)s, expected %(MAILMAN_GROUP)s)"
 msgstr ""
 
 #: bin/check_perms:151
+#, fuzzy
 msgid "directory permissions must be %(octperms)s: %(path)s"
-msgstr ""
+msgstr "%(dbfile)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: bin/check_perms:160
+#, fuzzy
 msgid "source perms must be %(octperms)s: %(path)s"
-msgstr ""
+msgstr "%(dbfile)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: bin/check_perms:171
+#, fuzzy
 msgid "article db files must be %(octperms)s: %(path)s"
-msgstr ""
+msgstr "%(dbfile)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: bin/check_perms:183
+#, fuzzy
 msgid "checking mode for %(prefix)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:193
 msgid "WARNING: directory does not exist: %(d)s"
 msgstr ""
 
 #: bin/check_perms:197
+#, fuzzy
 msgid "directory must be at least 02775: %(d)s"
-msgstr ""
+msgstr "%(file)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: bin/check_perms:209
+#, fuzzy
 msgid "checking perms on %(private)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:214
 msgid "%(private)s must not be other-readable"
@@ -8486,40 +8665,46 @@ msgid "checking cgi-bin permissions"
 msgstr ""
 
 #: bin/check_perms:278
+#, fuzzy
 msgid "    checking set-gid for %(path)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:282
 msgid "%(path)s must be set-gid"
 msgstr ""
 
 #: bin/check_perms:292
+#, fuzzy
 msgid "checking set-gid for %(wrapper)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:296
 msgid "%(wrapper)s must be set-gid"
 msgstr ""
 
 #: bin/check_perms:306
+#, fuzzy
 msgid "checking permissions on %(pwfile)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:315
+#, fuzzy
 msgid "%(pwfile)s permissions must be exactly 0640 (got %(octmode)s)"
-msgstr ""
+msgstr "%(file)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: bin/check_perms:340
 msgid "checking permissions on list data"
 msgstr ""
 
 #: bin/check_perms:348
+#, fuzzy
 msgid "    checking permissions on: %(path)s"
-msgstr ""
+msgstr "檢查 %(file)s 檔案讀寫權中"
 
 #: bin/check_perms:356
+#, fuzzy
 msgid "file permissions must be at least 660: %(path)s"
-msgstr ""
+msgstr "%(file)s的檔案讀寫權為 %(octmode)s ，需更改為 0664"
 
 #: bin/check_perms:401
 msgid "No problems found"
@@ -8572,8 +8757,9 @@ msgid "Unix-From line changed: %(lineno)d"
 msgstr ""
 
 #: bin/cleanarch:111
+#, fuzzy
 msgid "Bad status number: %(arg)s"
-msgstr ""
+msgstr "參數錯誤: %(arg)s"
 
 #: bin/cleanarch:167
 msgid "%(messages)d messages found"
@@ -8678,10 +8864,11 @@ msgid "Not a valid email address: %(toaddr)s"
 msgstr "不正確 的 email 地址"
 
 #: bin/clone_member:215
+#, fuzzy
 msgid ""
 "Error opening list \"%(listname)s\", skipping.\n"
 "%(e)s"
-msgstr ""
+msgstr "開啟論壇 %(listname)s 設定檔案錯誤，略過"
 
 #: bin/config_list:20
 msgid ""
@@ -8767,12 +8954,14 @@ msgid "Non-standard property restored: %(k)s"
 msgstr ""
 
 #: bin/config_list:288
+#, fuzzy
 msgid "Invalid value for property: %(k)s"
-msgstr ""
+msgstr "不正確的設定: %(property)s"
 
 #: bin/config_list:291
+#, fuzzy
 msgid "Bad email address for option %(k)s: %(v)s"
-msgstr ""
+msgstr "選項 %(property)s 內為錯誤的 Email 信箱: %(error)s"
 
 #: bin/config_list:348
 msgid "Only one of -i or -o is allowed"
@@ -8821,12 +9010,14 @@ msgid ""
 msgstr ""
 
 #: bin/discard:94
+#, fuzzy
 msgid "Ignoring non-held message: %(f)s"
-msgstr ""
+msgstr "忽略對已除名訂戶 %(user)s 的設定"
 
 #: bin/discard:100
+#, fuzzy
 msgid "Ignoring held msg w/bad id: %(f)s"
-msgstr ""
+msgstr "忽略對已除名訂戶 %(user)s 的設定"
 
 #: bin/discard:112
 #, fuzzy
@@ -8876,8 +9067,9 @@ msgid "No filename given."
 msgstr "[沒有說明原因]"
 
 #: bin/dumpdb:108
+#, fuzzy
 msgid "Bad arguments: %(pargs)s"
-msgstr ""
+msgstr "參數錯誤: %(arg)s"
 
 #: bin/dumpdb:118
 msgid "Please specify either -p or -m."
@@ -8980,7 +9172,7 @@ msgid ""
 "Complete\n"
 "specifications are at:\n"
 "\n"
-"https://docs.python.org/2/library/re.html\n"
+"https://docs.python.org/3/library/re.html\n"
 "\n"
 "Address matches are case-insensitive, but case-preserved addresses are\n"
 "displayed.\n"
@@ -9128,8 +9320,9 @@ msgid ""
 msgstr ""
 
 #: bin/list_admins:97
+#, fuzzy
 msgid "List: %(listname)s, \tOwners: %(owners)s"
-msgstr ""
+msgstr "論壇擁有人: %(owneraddr)s"
 
 #: bin/list_lists:19
 msgid ""
@@ -9236,12 +9429,14 @@ msgid ""
 msgstr ""
 
 #: bin/list_members:198
+#, fuzzy
 msgid "Bad --nomail option: %(why)s"
-msgstr ""
+msgstr "錯誤的摘要標籤. %(arg)s"
 
 #: bin/list_members:209
+#, fuzzy
 msgid "Bad --digest option: %(kind)s"
-msgstr ""
+msgstr "錯誤的摘要標籤. %(arg)s"
 
 #: bin/list_members:213 bin/list_members:217 bin/list_members:221
 #: bin/list_members:225
@@ -9425,8 +9620,9 @@ msgid ""
 msgstr ""
 
 #: bin/mailmanctl:280 cron/mailpasswds:119
+#, fuzzy
 msgid "Site list is missing: %(sitelistname)s"
-msgstr ""
+msgstr "論壇已存在： %(safelistname)s"
 
 #: bin/mailmanctl:305
 msgid "Run this program as root or as the %(name)s user, or use -u."
@@ -9438,8 +9634,9 @@ msgid "No command given."
 msgstr "[沒有說明原因]"
 
 #: bin/mailmanctl:339
+#, fuzzy
 msgid "Bad command: %(command)s"
-msgstr ""
+msgstr "不好的 set 命令: %(subcmd)s"
 
 #: bin/mailmanctl:344
 msgid "Warning!  You may encounter permission problems."
@@ -9654,6 +9851,7 @@ msgid ""
 msgstr ""
 
 #: bin/newlist:162
+#, fuzzy
 msgid "Unknown language: %(lang)s"
 msgstr "未知的語言：%(lang)s"
 
@@ -9666,6 +9864,7 @@ msgid "Enter the email of the person running the list: "
 msgstr "輸入本論壇主持人的電子郵件："
 
 #: bin/newlist:193
+#, fuzzy
 msgid "Initial %(listname)s password: "
 msgstr "論壇 %(listname)s 的初始密碼："
 
@@ -9675,11 +9874,12 @@ msgstr "論壇不能是空密碼"
 
 #: bin/newlist:220
 msgid ""
-" - owner addresses need to be fully-qualified names like \"owner@example.com"
-"\", not just \"owner\"."
+" - owner addresses need to be fully-qualified names like \"owner@example."
+"com\", not just \"owner\"."
 msgstr ""
 
 #: bin/newlist:244
+#, fuzzy
 msgid "Hit enter to notify %(listname)s owner..."
 msgstr "按下輸入鍵來通知 %(listname)s 論壇主持人"
 
@@ -9841,18 +10041,22 @@ msgid ""
 msgstr ""
 
 #: bin/remove_members:156
+#, fuzzy
 msgid "Could not open file for reading: %(filename)s."
 msgstr "無法開啟檔案 %(filename)s 讀取資料"
 
 #: bin/remove_members:163
+#, fuzzy
 msgid "Error opening list %(listname)s... skipping."
 msgstr "開啟論壇 %(listname)s 設定檔案錯誤，略過"
 
 #: bin/remove_members:173
+#, fuzzy
 msgid "No such member: %(addr)s"
 msgstr "沒有成員: %(addr)s。"
 
 #: bin/remove_members:178
+#, fuzzy
 msgid "User `%(addr)s' removed from list: %(listname)s."
 msgstr "成員 `%(addr)s' 已由論壇 %(listname)s 移除。"
 
@@ -9908,20 +10112,23 @@ msgid ""
 msgstr ""
 
 #: bin/rmlist:73 bin/rmlist:76
+#, fuzzy
 msgid "Removing %(msg)s"
-msgstr ""
+msgstr "正在刪除 %(src)s"
 
 #: bin/rmlist:81
 msgid "%(listname)s %(msg)s not found as %(filename)s"
 msgstr ""
 
 #: bin/rmlist:105
+#, fuzzy
 msgid "No such list (or list already deleted): %(listname)s"
-msgstr ""
+msgstr "無此論壇 \"%s\": %s\n"
 
 #: bin/rmlist:108
+#, fuzzy
 msgid "No such list: %(listname)s.  Removing its residual archives."
-msgstr ""
+msgstr "無此論壇 \"%s\": %s\n"
 
 #: bin/rmlist:112
 msgid "Not removing archives.  Reinvoke with -a to remove them."
@@ -10053,6 +10260,7 @@ msgid "No argument to -f given"
 msgstr "[沒有說明原因]"
 
 #: bin/sync_members:172
+#, fuzzy
 msgid "Illegal option: %(opt)s"
 msgstr "不正確的選項: %(opt)s"
 
@@ -10083,14 +10291,17 @@ msgid "You must fix the preceding invalid addresses first."
 msgstr "您一定要先把前面的錯誤地址修好才行。"
 
 #: bin/sync_members:264
+#, fuzzy
 msgid "Added  : %(s)s"
 msgstr "增加： %(s)s"
 
 #: bin/sync_members:289
+#, fuzzy
 msgid "Removed: %(s)s"
 msgstr "刪除： %(s)s"
 
 #: bin/transcheck:19
+#, fuzzy
 msgid ""
 "\n"
 "Check a given Mailman translation, making sure that variables and\n"
@@ -10210,8 +10421,9 @@ msgid ""
 msgstr ""
 
 #: bin/update:107
+#, fuzzy
 msgid "Fixing language templates: %(listname)s"
-msgstr ""
+msgstr "正在更新郵遞論壇： %(listname)s"
 
 #: bin/update:196 bin/update:711
 msgid "WARNING: could not acquire lock for list: %(listname)s"
@@ -10263,18 +10475,24 @@ msgid "- updating old private mbox file"
 msgstr ""
 
 #: bin/update:295
+#, fuzzy
 msgid ""
 "    unknown file in the way, moving\n"
 "        %(o_pri_mbox_file)s\n"
 "    to\n"
 "        %(newname)s"
 msgstr ""
+" 被未知的檔案擋住了，將\n"
+" %(o_pub_mbox_file)s\n"
+" 改名為\n"
+" %(newname)s"
 
 #: bin/update:309
 msgid "- updating old public mbox file"
 msgstr "－ 更新舊的公共信箱檔"
 
 #: bin/update:317
+#, fuzzy
 msgid ""
 "    unknown file in the way, moving\n"
 "        %(o_pub_mbox_file)s\n"
@@ -10303,18 +10521,22 @@ msgid "- %(o_tmpl)s doesn't exist, leaving untouched"
 msgstr "－ %(o_tmpl)s 不存在，留著不碰"
 
 #: bin/update:396
+#, fuzzy
 msgid "removing directory %(src)s and everything underneath"
 msgstr "正在刪除 %(src)s 目錄樹"
 
 #: bin/update:399
+#, fuzzy
 msgid "removing %(src)s"
 msgstr "正在刪除 %(src)s"
 
 #: bin/update:403
+#, fuzzy
 msgid "Warning: couldn't remove %(src)s -- %(rest)s"
 msgstr "警告：無法刪除 %(src)s － %(rest)s"
 
 #: bin/update:408
+#, fuzzy
 msgid "couldn't remove old file %(pyc)s -- %(rest)s"
 msgstr "無法刪除舊檔案 %(pyc)s － %(rest)s"
 
@@ -10327,6 +10549,7 @@ msgid "Warning!  Not a directory: %(dirpath)s"
 msgstr ""
 
 #: bin/update:530
+#, fuzzy
 msgid "message is unparsable: %(filebase)s"
 msgstr "無法解析的訊息： %(filebase)s"
 
@@ -10343,10 +10566,12 @@ msgid "Updating Mailman 2.1.4 pending.pck database"
 msgstr "正在更新 Mailman 2.1.4 的 pending.pck 資料庫"
 
 #: bin/update:598
+#, fuzzy
 msgid "Ignoring bad pended data: %(key)s: %(val)s"
 msgstr "忽略壞的待處理資料： %(key)s: %(val)s"
 
 #: bin/update:614
+#, fuzzy
 msgid "WARNING: Ignoring duplicate pending ID: %(id)s."
 msgstr "警告：忽略掉重複的待決識別字：%(id)s。"
 
@@ -10371,6 +10596,7 @@ msgid "done"
 msgstr "做完了"
 
 #: bin/update:691
+#, fuzzy
 msgid "Updating mailing list: %(listname)s"
 msgstr "正在更新郵遞論壇： %(listname)s"
 
@@ -10427,6 +10653,7 @@ msgid "No updates are necessary."
 msgstr "沒有更新的必要。"
 
 #: bin/update:796
+#, fuzzy
 msgid ""
 "Downgrade detected, from version %(hexlversion)s to version %(hextversion)s\n"
 "This is probably not safe.\n"
@@ -10437,10 +10664,12 @@ msgstr ""
 "離開中。"
 
 #: bin/update:801
+#, fuzzy
 msgid "Upgrading from version %(hexlversion)s to %(hextversion)s"
 msgstr "正在從 %(hexlversion)s 升級到 %(hextversion)s"
 
 #: bin/update:810
+#, fuzzy
 msgid ""
 "\n"
 "ERROR:\n"
@@ -10690,6 +10919,7 @@ msgstr ""
 "在例外發生時會被呼叫。"
 
 #: bin/withlist:175
+#, fuzzy
 msgid "Unlocking (but not saving) list: %(listname)s"
 msgstr "解開（但不儲存）論壇： %(listname)s"
 
@@ -10698,6 +10928,7 @@ msgid "Finalizing"
 msgstr "收尾中"
 
 #: bin/withlist:188
+#, fuzzy
 msgid "Loading list %(listname)s"
 msgstr "正在載入論壇 %(listname)s"
 
@@ -10710,6 +10941,7 @@ msgid "(unlocked)"
 msgstr "（解開了）"
 
 #: bin/withlist:197
+#, fuzzy
 msgid "Unknown list: %(listname)s"
 msgstr "未知論壇： %(listname)s"
 
@@ -10722,18 +10954,22 @@ msgid "--all requires --run"
 msgstr "--all 需要 --run"
 
 #: bin/withlist:266
+#, fuzzy
 msgid "Importing %(module)s..."
 msgstr "正在載入 %(module)s 模組..."
 
 #: bin/withlist:270
+#, fuzzy
 msgid "Running %(module)s.%(callable)s()..."
 msgstr "正在執行 %(module)s.%(callable)s()..."
 
 #: bin/withlist:291
+#, fuzzy
 msgid "The variable `m' is the %(listname)s MailList instance"
 msgstr "變數 `m' 是 %(listname)s MailList 實物"
 
 #: cron/bumpdigests:19
+#, fuzzy
 msgid ""
 "Increment the digest volume number and reset the digest number to one.\n"
 "\n"
@@ -10760,6 +10996,7 @@ msgstr ""
 "幫在命令列指定的論壇開新的一冊文摘，如果沒指定論壇就幫所有的論壇都開。\n"
 
 #: cron/checkdbs:20
+#, fuzzy
 msgid ""
 "Check for pending admin requests and mail the list owners if necessary.\n"
 "\n"
@@ -10788,10 +11025,12 @@ msgstr ""
 "\n"
 
 #: cron/checkdbs:121
+#, fuzzy
 msgid "%(count)d %(realname)s moderator request(s) waiting"
 msgstr "%(realname)s 論壇有 %(count)d 個要求待處理"
 
 #: cron/checkdbs:124
+#, fuzzy
 msgid "%(realname)s moderator request check result"
 msgstr "%(realname)s 審查件數檢查的結果"
 
@@ -10813,6 +11052,7 @@ msgstr ""
 "待審的訊息："
 
 #: cron/checkdbs:169
+#, fuzzy
 msgid ""
 "From: %(sender)s on %(date)s\n"
 "Subject: %(subject)s\n"
@@ -10845,6 +11085,7 @@ msgid ""
 msgstr ""
 
 #: cron/disabled:20
+#, fuzzy
 msgid ""
 "Process disabled members, recommended once per day.\n"
 "\n"
@@ -10957,6 +11198,7 @@ msgstr ""
 "\n"
 
 #: cron/mailpasswds:19
+#, fuzzy
 msgid ""
 "Send password reminders for all lists to all users.\n"
 "\n"
@@ -11007,10 +11249,12 @@ msgid "Password // URL"
 msgstr "密碼 // 網址"
 
 #: cron/mailpasswds:222
+#, fuzzy
 msgid "%(host)s mailing list memberships reminder"
 msgstr " %(host)s 郵遞論壇的會籍提醒通知書"
 
 #: cron/nightly_gzip:19
+#, fuzzy
 msgid ""
 "Re-generate the Pipermail gzip'd archive flat files.\n"
 "\n"
@@ -11401,8 +11645,8 @@ msgstr ""
 #~ "outsiders.  (See also the <a href=\"%s/archive\">Archival Options "
 #~ "section</a> for separate archive-privacy settings.)"
 #~ msgstr ""
-#~ "論壇管制政策，包括防垃圾信措施，會員及非會員。(個別歸檔設定請參考<a href="
-#~ "\"%s/archive\">歸檔設定頁</a> )"
+#~ "論壇管制政策，包括防垃圾信措施，會員及非會員。(個別歸檔設定請參考<a "
+#~ "href=\"%s/archive\">歸檔設定頁</a> )"
 
 #~ msgid ""
 #~ "An unexpected Mailman error has occurred in\n"

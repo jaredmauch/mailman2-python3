@@ -30,7 +30,7 @@ $NOUSERS = "\nPersonal e-mail addresses are not offered by this server.";
 
 use FileHandle;
 use Sys::Hostname;
-use Socket;
+use Socket qw(getaddrinfo inet_ntop AF_INET AF_INET6 SOCK_STREAM);
 
 ($VERS_STR = $VERSION) =~ s/^\$\S+\s+(\S+),v\s+(\S+\s+\S+\s+\S+).*/\1 \2/;
 
@@ -117,8 +117,19 @@ Content-Disposition: attachment
 ## Get my IP address, in case my sendmail doesn't tell me my name.
 sub get_ip_addr {
 	my $host = hostname;
-	my $ip = gethostbyname($host);
-	return inet_ntoa($ip);
+	my ($err, @res) = getaddrinfo($host, undef, {socktype => SOCK_STREAM});
+	if ($err) {
+		# Handle error
+		return undef;
+	}
+	# Get the first IPv4 address
+	for my $ai (@res) {
+		if ($ai->{family} == AF_INET) {
+			my ($err, $ipaddr) = inet_ntop(AF_INET, $ai->{addr});
+			return $ipaddr if !$err;
+		}
+	}
+	return undef;
 }
 
 ## Split an address into its base list name and the appropriate command

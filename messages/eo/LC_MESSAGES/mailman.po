@@ -64,10 +64,12 @@ msgid "<P>Currently, there are no archives. </P>"
 msgstr "<P>Nun ne estas arĥivoj. </P>"
 
 #: Mailman/Archiver/HyperArch.py:821
+#, fuzzy
 msgid "Gzip'd Text%(sz)s"
 msgstr "Teksto kunpremita per gzip%(sz)s"
 
 #: Mailman/Archiver/HyperArch.py:826
+#, fuzzy
 msgid "Text%(sz)s"
 msgstr "Teksto%(sz)s"
 
@@ -140,18 +142,22 @@ msgid "Third"
 msgstr "Tria"
 
 #: Mailman/Archiver/HyperArch.py:938
+#, fuzzy
 msgid "%(ord)s quarter %(year)i"
 msgstr "%(ord)s kvarmonato %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:945
+#, fuzzy
 msgid "%(month)s %(year)i"
 msgstr "%(month)s %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:950
+#, fuzzy
 msgid "The Week Of Monday %(day)i %(month)s %(year)i"
 msgstr "La semajno de lundo la %(day)in de %(month)s %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:954
+#, fuzzy
 msgid "%(day)i %(month)s %(year)i"
 msgstr "%(day)in de %(month)s %(year)i"
 
@@ -160,10 +166,12 @@ msgid "Computing threaded index\n"
 msgstr "Komputante fadenatan indekson\n"
 
 #: Mailman/Archiver/HyperArch.py:1319
+#, fuzzy
 msgid "Updating HTML for article %(seq)s"
 msgstr "Ĝisdatigante la HTML'on de la artikolo %(seq)s"
 
 #: Mailman/Archiver/HyperArch.py:1326
+#, fuzzy
 msgid "article file %(filename)s is missing!"
 msgstr "artikoldosiero %(filename)s ne trovita!"
 
@@ -252,8 +260,9 @@ msgstr ""
 #: Mailman/Cgi/options.py:101 Mailman/Cgi/private.py:108
 #: Mailman/Cgi/rmlist.py:75 Mailman/Cgi/roster.py:59
 #: Mailman/Cgi/subscribe.py:67
+#, fuzzy
 msgid "No such list <em>%(safelistname)s</em>"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: Mailman/Cgi/admin.py:97 Mailman/Cgi/admindb.py:136 Mailman/Cgi/confirm.py:80
 #: Mailman/Cgi/confirm.py:334 Mailman/Cgi/create.py:50
@@ -314,8 +323,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/Cgi/admin.py:268
+#, fuzzy
 msgid "%(hostname)s mailing lists - Admin Links"
-msgstr ""
+msgstr "Dissendolistoj ĉe %(hostname)s"
 
 #: Mailman/Cgi/admin.py:303 Mailman/Cgi/listinfo.py:121
 msgid "Welcome!"
@@ -326,23 +336,30 @@ msgid "Mailman"
 msgstr ""
 
 #: Mailman/Cgi/admin.py:310
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised %(mailmanlink)s\n"
 "            mailing lists on %(hostname)s."
 msgstr ""
+"<p>Estas neniu listo %(mailmanlink)s\n"
+"            publike videbla ĉe %(hostname)s."
 
 #: Mailman/Cgi/admin.py:316
+#, fuzzy
 msgid ""
 "<p>Below is the collection of publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s.  Click on a list\n"
 "            name to visit the configuration pages for that list."
 msgstr ""
+"<p>Estas neniu listo %(mailmanlink)s\n"
+"            publike videbla ĉe %(hostname)s."
 
 #: Mailman/Cgi/admin.py:323
 msgid "right "
 msgstr ""
 
 #: Mailman/Cgi/admin.py:325
+#, fuzzy
 msgid ""
 "To visit the administrators configuration page for an\n"
 "        unadvertised list, open a URL similar to this one, but with a '/' "
@@ -353,6 +370,11 @@ msgid ""
 "\n"
 "        <p>General list information can be found at "
 msgstr ""
+" Por viziti la informo-paĝon de nepublika listo,\n"
+"        malfermu retadreson URL similan al ĉi tiu, sed kun '/' kaj la "
+"%(adj)s\n"
+"        nomon de la listo aldonita.\n"
+"        <p>Se vi estas listestsro, vi povas viziti "
 
 #: Mailman/Cgi/admin.py:332
 msgid "the mailing list overview page"
@@ -404,12 +426,14 @@ msgid "return to the %(categoryname)s options page."
 msgstr ""
 
 #: Mailman/Cgi/admin.py:446
+#, fuzzy
 msgid "%(realname)s Administration (%(label)s)"
-msgstr ""
+msgstr "Mastruma interfaco de %(realname)s"
 
 #: Mailman/Cgi/admin.py:447
+#, fuzzy
 msgid "%(realname)s mailing list administration<br>%(label)s Section"
-msgstr ""
+msgstr "Mastruma interfaco de %(realname)s"
 
 #: Mailman/Cgi/admin.py:464
 msgid "Configuration Categories"
@@ -1021,8 +1045,9 @@ msgstr ""
 
 #: Mailman/Cgi/admin.py:1529 Mailman/Cgi/admin.py:1703 bin/add_members:175
 #: bin/clone_member:136 bin/sync_members:268
+#, fuzzy
 msgid "Banned address (matched %(pattern)s)"
-msgstr ""
+msgstr "Poŝto blokita (kaplinio respondas al %(pattern)s)"
 
 #: Mailman/Cgi/admin.py:1535
 msgid "Successfully invited:"
@@ -1127,12 +1152,14 @@ msgid "Error Unsubscribing:"
 msgstr ""
 
 #: Mailman/Cgi/admindb.py:235 Mailman/Cgi/admindb.py:248
+#, fuzzy
 msgid "%(realname)s Administrative Database"
-msgstr ""
+msgstr "Mastruma interfaco de %(realname)s"
 
 #: Mailman/Cgi/admindb.py:238
+#, fuzzy
 msgid "%(realname)s Administrative Database Results"
-msgstr ""
+msgstr "Mastruma interfaco de %(realname)s"
 
 #: Mailman/Cgi/admindb.py:251
 msgid "There are no pending requests."
@@ -1179,8 +1206,9 @@ msgid "list of available mailing lists."
 msgstr ""
 
 #: Mailman/Cgi/admindb.py:362
+#, fuzzy
 msgid "You must specify a list name.  Here is the %(link)s"
-msgstr ""
+msgstr "Vi devas indiki liston."
 
 #: Mailman/Cgi/admindb.py:375
 msgid "Subscription Requests"
@@ -1370,14 +1398,16 @@ msgid " is already a member"
 msgstr ""
 
 #: Mailman/Cgi/admindb.py:973
+#, fuzzy
 msgid "%(addr)s is banned (matched: %(patt)s)"
-msgstr ""
+msgstr "Poŝto blokita (kaplinio respondas al %(pattern)s)"
 
 #: Mailman/Cgi/confirm.py:88
 msgid "Confirmation string was empty."
 msgstr "La konfirmo-kodo estis malplena."
 
 #: Mailman/Cgi/confirm.py:108
+#, fuzzy
 msgid ""
 "<b>Invalid confirmation string:</b>\n"
 "    %(safecookie)s.\n"
@@ -1421,6 +1451,7 @@ msgstr ""
 "                    nuligita."
 
 #: Mailman/Cgi/confirm.py:178
+#, fuzzy
 msgid "System error, bad content: %(content)s"
 msgstr "Sistem-eraro, malbona enhavo: %(content)s"
 
@@ -1458,6 +1489,7 @@ msgid "Confirm subscription request"
 msgstr "Konfirmu abonpeton"
 
 #: Mailman/Cgi/confirm.py:259
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    subscription request to the mailing list <em>%(listname)s</em>.  Your\n"
@@ -1490,6 +1522,7 @@ msgstr ""
 "    deziras aboni la liston."
 
 #: Mailman/Cgi/confirm.py:275
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to continue with\n"
 "        the subscription request to the mailing list <em>%(listname)s</em>.\n"
@@ -1540,6 +1573,7 @@ msgid "Preferred language:"
 msgstr "Preferata lingvo:"
 
 #: Mailman/Cgi/confirm.py:317
+#, fuzzy
 msgid "Subscribe to list %(listname)s"
 msgstr "Abonigu min al %(listname)s"
 
@@ -1556,6 +1590,7 @@ msgid "Awaiting moderator approval"
 msgstr "Atendate aprobon de moderiganto"
 
 #: Mailman/Cgi/confirm.py:386
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request to "
 "the\n"
@@ -1586,6 +1621,7 @@ msgid "You are already a member of this mailing list!"
 msgstr "Vi jam abonas ĉi tiun liston!"
 
 #: Mailman/Cgi/confirm.py:400
+#, fuzzy
 msgid ""
 "You are currently banned from subscribing to\n"
 "            this list.  If you think this restriction is erroneous, please\n"
@@ -1610,6 +1646,7 @@ msgid "Subscription request confirmed"
 msgstr "Abonpeto konfirmita"
 
 #: Mailman/Cgi/confirm.py:418
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request for\n"
 "            \"%(addr)s\" to the %(listname)s mailing list.  A separate\n"
@@ -1639,6 +1676,7 @@ msgid "Unsubscription request confirmed"
 msgstr "Malabonpeto konfirmita"
 
 #: Mailman/Cgi/confirm.py:469
+#, fuzzy
 msgid ""
 "            You have successfully unsubscribed from the %(listname)s "
 "mailing\n"
@@ -1659,6 +1697,7 @@ msgid "<em>Not available</em>"
 msgstr "<em>Ne disponebla</em>"
 
 #: Mailman/Cgi/confirm.py:498
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    unsubscription request from the mailing list <em>%(listname)s</em>.  "
@@ -1702,6 +1741,7 @@ msgid "You have canceled your change of address request."
 msgstr "Vi nuligis vian peton ŝanĝi adreson."
 
 #: Mailman/Cgi/confirm.py:555
+#, fuzzy
 msgid ""
 "%(newaddr)s is banned from subscribing to the\n"
 "            %(realname)s list.  If you think this restriction is erroneous,\n"
@@ -1712,6 +1752,7 @@ msgstr ""
 "        kontaktu la listestron ĉe %(owneraddr)s."
 
 #: Mailman/Cgi/confirm.py:560
+#, fuzzy
 msgid ""
 "%(newaddr)s is already a member of\n"
 "            the %(realname)s list.  It is possible that you are attempting\n"
@@ -1726,6 +1767,7 @@ msgid "Change of address request confirmed"
 msgstr "Peto ŝanĝi adreson konfirmita"
 
 #: Mailman/Cgi/confirm.py:571
+#, fuzzy
 msgid ""
 "            You have successfully changed your address on the %(listname)s\n"
 "            mailing list from <b>%(oldaddr)s</b> to <b>%(newaddr)s</b>.  "
@@ -1747,6 +1789,7 @@ msgid "globally"
 msgstr "ĉie"
 
 #: Mailman/Cgi/confirm.py:605
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    change of address request for the mailing list <em>%(listname)s</em>.  "
@@ -1808,6 +1851,7 @@ msgid "Sender discarded message via web."
 msgstr "La sendinto forigis la mesaĝon per retejo."
 
 #: Mailman/Cgi/confirm.py:674
+#, fuzzy
 msgid ""
 "The held message with the Subject:\n"
 "            header <em>%(subject)s</em> could not be found.  The most "
@@ -1827,6 +1871,7 @@ msgid "Posted message canceled"
 msgstr "Sendo de poŝto nuligita"
 
 #: Mailman/Cgi/confirm.py:685
+#, fuzzy
 msgid ""
 "            You have successfully canceled the posting of your message with\n"
 "            the Subject: header <em>%(subject)s</em> to the mailing list\n"
@@ -1849,6 +1894,7 @@ msgstr ""
 "        jam pritraktis la listestro."
 
 #: Mailman/Cgi/confirm.py:735
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to cancel the\n"
 "    posting of your message to the mailing list <em>%(listname)s</em>:\n"
@@ -1896,6 +1942,7 @@ msgid "Membership re-enabled."
 msgstr "Abono reŝaltita."
 
 #: Mailman/Cgi/confirm.py:798
+#, fuzzy
 msgid ""
 "            You have successfully re-enabled your membership in the\n"
 "            %(listname)s mailing list.  You can now <a\n"
@@ -1912,6 +1959,7 @@ msgid "Re-enable mailing list membership"
 msgstr "Reŝaltu abonon de la dissendolisto"
 
 #: Mailman/Cgi/confirm.py:827
+#, fuzzy
 msgid ""
 "We're sorry, but you have already been unsubscribed\n"
 "        from this mailing list.  To re-subscribe, please visit the\n"
@@ -1926,6 +1974,7 @@ msgid "<em>not available</em>"
 msgstr "<em>ne disponebla</em>"
 
 #: Mailman/Cgi/confirm.py:846
+#, fuzzy
 msgid ""
 "Your membership in the %(realname)s mailing list is\n"
 "    currently disabled due to excessive bounces.  Your confirmation is\n"
@@ -1992,12 +2041,14 @@ msgid "administrative list overview"
 msgstr ""
 
 #: Mailman/Cgi/create.py:115
+#, fuzzy
 msgid "List name must not include \"@\": %(safelistname)s"
-msgstr ""
+msgstr "Listonomo:    %(listname)s"
 
 #: Mailman/Cgi/create.py:122
+#, fuzzy
 msgid "List already exists: %(safelistname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: Mailman/Cgi/create.py:126
 msgid "You forgot to enter the list name"
@@ -2027,16 +2078,19 @@ msgid "You are not authorized to create new mailing lists"
 msgstr ""
 
 #: Mailman/Cgi/create.py:182
+#, fuzzy
 msgid "Unknown virtual host: %(safehostname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: Mailman/Cgi/create.py:218 bin/newlist:219
+#, fuzzy
 msgid "Bad owner email address: %(s)s"
-msgstr ""
+msgstr "Via retpoŝtadreso:"
 
 #: Mailman/Cgi/create.py:223 bin/newlist:182 bin/newlist:223
+#, fuzzy
 msgid "List already exists: %(listname)s"
-msgstr ""
+msgstr "Listonomo:    %(listname)s"
 
 #: Mailman/Cgi/create.py:231 bin/newlist:217
 msgid "Illegal list name: %(s)s"
@@ -2049,8 +2103,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/Cgi/create.py:273 bin/newlist:265
+#, fuzzy
 msgid "Your new mailing list: %(listname)s"
-msgstr ""
+msgstr "Publikaj dissendolistoj ĉe %(hostname)s:"
 
 #: Mailman/Cgi/create.py:282
 msgid "Mailing list creation results"
@@ -2076,8 +2131,9 @@ msgid "Create another list"
 msgstr ""
 
 #: Mailman/Cgi/create.py:312
+#, fuzzy
 msgid "Create a %(hostname)s Mailing List"
-msgstr ""
+msgstr "Dissendolistoj ĉe %(hostname)s"
 
 #: Mailman/Cgi/create.py:321 Mailman/Cgi/rmlist.py:219
 #: Mailman/Gui/Bounce.py:196 Mailman/htmlformat.py:360
@@ -2311,10 +2367,12 @@ msgid "HTML successfully updated."
 msgstr ""
 
 #: Mailman/Cgi/listinfo.py:89
+#, fuzzy
 msgid "%(hostname)s Mailing Lists"
 msgstr "Dissendolistoj ĉe %(hostname)s"
 
 #: Mailman/Cgi/listinfo.py:127
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s."
@@ -2323,6 +2381,7 @@ msgstr ""
 "            publike videbla ĉe %(hostname)s."
 
 #: Mailman/Cgi/listinfo.py:131
+#, fuzzy
 msgid ""
 "<p>Below is a listing of all the public mailing lists on\n"
 "            %(hostname)s.  Click on a list name to get more information "
@@ -2342,6 +2401,7 @@ msgid "right"
 msgstr "dekstren"
 
 #: Mailman/Cgi/listinfo.py:140
+#, fuzzy
 msgid ""
 " To visit the general information page for an unadvertised list,\n"
 "        open a URL similar to this one, but with a '/' and the %(adj)s\n"
@@ -2391,6 +2451,7 @@ msgid "CGI script error"
 msgstr "Eraro de la recepto CGI"
 
 #: Mailman/Cgi/options.py:71
+#, fuzzy
 msgid "Invalid request method: %(method)s"
 msgstr "Nevalida pet-maniero: %(method)s"
 
@@ -2404,6 +2465,7 @@ msgstr "Retpoŝtadreso nevalida"
 
 #: Mailman/Cgi/options.py:183 Mailman/Cgi/options.py:240
 #: Mailman/Cgi/options.py:264
+#, fuzzy
 msgid "No such member: %(safeuser)s."
 msgstr "Membro neekzistanta: %(safeuser)s."
 
@@ -2455,6 +2517,7 @@ msgid "Note: "
 msgstr "Rimarku"
 
 #: Mailman/Cgi/options.py:378
+#, fuzzy
 msgid "List subscriptions for %(safeuser)s on %(hostname)s"
 msgstr "Abonoj de %(safeuser)s ĉe %(hostname)s"
 
@@ -2485,6 +2548,7 @@ msgid "You are already using that email address"
 msgstr "Vi jam uzas ĉi tiun retpoŝtadreson"
 
 #: Mailman/Cgi/options.py:459
+#, fuzzy
 msgid ""
 "The new address you requested %(newaddr)s is already a member of the\n"
 "%(listname)s mailing list, however you have also requested a global change "
@@ -2498,6 +2562,7 @@ msgstr ""
 "%(safeuser)s ŝanĝiĝos. "
 
 #: Mailman/Cgi/options.py:468
+#, fuzzy
 msgid "The new address is already a member: %(newaddr)s"
 msgstr "La nova adreso jam estas abonanto: %(newaddr)s"
 
@@ -2506,6 +2571,7 @@ msgid "Addresses may not be blank"
 msgstr "La adreso ne povas esti neniu"
 
 #: Mailman/Cgi/options.py:488
+#, fuzzy
 msgid "A confirmation message has been sent to %(newaddr)s. "
 msgstr "Konfirmilo estas sendita al %(newaddr)s."
 
@@ -2518,10 +2584,12 @@ msgid "Illegal email address provided"
 msgstr "Retpoŝtadreso nevalida"
 
 #: Mailman/Cgi/options.py:501
+#, fuzzy
 msgid "%(newaddr)s is already a member of the list."
 msgstr "%(newaddr)s jam abonas la liston."
 
 #: Mailman/Cgi/options.py:504
+#, fuzzy
 msgid ""
 "%(newaddr)s is banned from this list.  If you\n"
 "                      think this restriction is erroneous, please contact\n"
@@ -2597,6 +2665,7 @@ msgstr ""
 "            sciigon post la decido de la moderigantoj."
 
 #: Mailman/Cgi/options.py:623
+#, fuzzy
 msgid ""
 "You have been successfully unsubscribed from the\n"
 "            mailing list %(fqdn_listname)s.  If you were receiving digest\n"
@@ -2690,6 +2759,7 @@ msgid "day"
 msgstr "tago"
 
 #: Mailman/Cgi/options.py:900
+#, fuzzy
 msgid "%(days)d %(units)s"
 msgstr "%(days)d %(units)s"
 
@@ -2702,6 +2772,7 @@ msgid "<em>No topics defined</em>"
 msgstr "<em>Neniu temo difinita</em>"
 
 #: Mailman/Cgi/options.py:940
+#, fuzzy
 msgid ""
 "\n"
 "You are subscribed to this list with the case-preserved address\n"
@@ -2712,6 +2783,7 @@ msgstr ""
 "<em>%(cpuser)s</em>."
 
 #: Mailman/Cgi/options.py:956
+#, fuzzy
 msgid "%(realname)s list: member options login page"
 msgstr "Listo %(realname)s: ensaluto en la agordo-paĝon de la abonanto"
 
@@ -2720,10 +2792,12 @@ msgid "email address and "
 msgstr "retpoŝtadreson kaj "
 
 #: Mailman/Cgi/options.py:960
+#, fuzzy
 msgid "%(realname)s list: member options for user %(safeuser)s"
 msgstr "Listo %(realname)s: abon-agordoj por uzanto %(safeuser)s"
 
 #: Mailman/Cgi/options.py:986
+#, fuzzy
 msgid ""
 "In order to change your membership option, you must\n"
 "    first log in by giving your %(extra)smembership password in the section\n"
@@ -2798,6 +2872,7 @@ msgid "<missing>"
 msgstr "<mankanta>"
 
 #: Mailman/Cgi/options.py:1140
+#, fuzzy
 msgid "Requested topic is not valid: %(topicname)s"
 msgstr "La temo ne estas valida: %(topicname)s"
 
@@ -2826,6 +2901,7 @@ msgid "Private archive - \"./\" and \"../\" not allowed in URL."
 msgstr "Privata arĥivo - \"./\" kaj \"../\" ne akceptebla en URL."
 
 #: Mailman/Cgi/private.py:109
+#, fuzzy
 msgid "Private Archive Error - %(msg)s"
 msgstr "Eraro en la privata arĥivo - %(msg)s"
 
@@ -2846,6 +2922,7 @@ msgid "Private archive file not found"
 msgstr "Dosiero de la privata arĥivo ne trovita"
 
 #: Mailman/Cgi/rmlist.py:76
+#, fuzzy
 msgid "No such list %(safelistname)s"
 msgstr "Listo neekzistanta: %(safelistname)s"
 
@@ -2880,8 +2957,9 @@ msgid "Permanently remove mailing list <em>%(realname)s</em>"
 msgstr ""
 
 #: Mailman/Cgi/rmlist.py:209
+#, fuzzy
 msgid "Permanently remove mailing list %(realname)s"
-msgstr ""
+msgstr "Publikaj dissendolistoj ĉe %(hostname)s:"
 
 #: Mailman/Cgi/rmlist.py:222
 msgid ""
@@ -2927,6 +3005,7 @@ msgid "Invalid options to CGI script"
 msgstr "Agordoj nevalidaj al recepto CGI"
 
 #: Mailman/Cgi/roster.py:118
+#, fuzzy
 msgid "%(realname)s roster authentication failed."
 msgstr "Malsukcesa ensaluto al listanaro de %(realname)s."
 
@@ -2995,6 +3074,7 @@ msgstr ""
 "Vi baldaŭ ricevos konfirmilon per retpoŝto kun pliaj instrukcioj. "
 
 #: Mailman/Cgi/subscribe.py:262
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this\n"
 "        mailing list.  If you think this restriction is erroneous, please\n"
@@ -3021,6 +3101,7 @@ msgstr ""
 "ne estas sekura."
 
 #: Mailman/Cgi/subscribe.py:278
+#, fuzzy
 msgid ""
 "Confirmation from your email address is required, to prevent anyone from\n"
 "subscribing you without permission.  Instructions are being sent to you at\n"
@@ -3033,6 +3114,7 @@ msgstr ""
 "Rimarku ke via abono ne komenciĝos dum vi ne konfirmos."
 
 #: Mailman/Cgi/subscribe.py:290
+#, fuzzy
 msgid ""
 "Your subscription request was deferred because %(x)s.  Your request has "
 "been\n"
@@ -3053,6 +3135,7 @@ msgid "Mailman privacy alert"
 msgstr "Alarmo de privateco Mailman"
 
 #: Mailman/Cgi/subscribe.py:316
+#, fuzzy
 msgid ""
 "An attempt was made to subscribe your address to the mailing list\n"
 "%(listaddr)s.  You are already subscribed to this mailing list.\n"
@@ -3092,6 +3175,7 @@ msgid "This list only supports digest delivery."
 msgstr "Ĉi tiu listo nur liveras resumojn."
 
 #: Mailman/Cgi/subscribe.py:344
+#, fuzzy
 msgid "You have been successfully subscribed to the %(realname)s mailing list."
 msgstr "Vi estas sukcese malabonigita el la listo %(realname)s."
 
@@ -3115,6 +3199,7 @@ msgid "Usage:"
 msgstr "Uzo:"
 
 #: Mailman/Commands/cmd_confirm.py:50
+#, fuzzy
 msgid ""
 "Invalid confirmation string.  Note that confirmation strings expire\n"
 "approximately %(days)s days after the initial request.  They also expire if\n"
@@ -3139,6 +3224,7 @@ msgstr ""
 "retpoŝtadreson?"
 
 #: Mailman/Commands/cmd_confirm.py:69
+#, fuzzy
 msgid ""
 "You are currently banned from subscribing to this list.  If you think this\n"
 "restriction is erroneous, please contact the list owners at\n"
@@ -3219,26 +3305,32 @@ msgid "n/a"
 msgstr "n/a"
 
 #: Mailman/Commands/cmd_info.py:44
+#, fuzzy
 msgid "List name:    %(listname)s"
 msgstr "Listonomo:    %(listname)s"
 
 #: Mailman/Commands/cmd_info.py:45
+#, fuzzy
 msgid "Description:  %(description)s"
 msgstr "Priskribo:  %(description)s"
 
 #: Mailman/Commands/cmd_info.py:46
+#, fuzzy
 msgid "Postings to:  %(postaddr)s"
 msgstr "Poŝto al:  %(postaddr)s"
 
 #: Mailman/Commands/cmd_info.py:47
+#, fuzzy
 msgid "List Helpbot: %(requestaddr)s"
 msgstr "Helpo-roboto: %(requestaddr)s"
 
 #: Mailman/Commands/cmd_info.py:48
+#, fuzzy
 msgid "List Owners:  %(owneraddr)s"
 msgstr "Listestroj:  %(owneraddr)s"
 
 #: Mailman/Commands/cmd_info.py:49
+#, fuzzy
 msgid "More information: %(listurl)s"
 msgstr "Plia informo: %(listurl)s"
 
@@ -3262,18 +3354,22 @@ msgstr ""
 "GNU.\n"
 
 #: Mailman/Commands/cmd_lists.py:44
+#, fuzzy
 msgid "Public mailing lists at %(hostname)s:"
 msgstr "Publikaj dissendolistoj ĉe %(hostname)s:"
 
 #: Mailman/Commands/cmd_lists.py:66
+#, fuzzy
 msgid "%(i)3d. List name:   %(realname)s"
 msgstr "%(i)3d. Nomo de la listo:   %(realname)s"
 
 #: Mailman/Commands/cmd_lists.py:67
+#, fuzzy
 msgid "     Description: %(description)s"
 msgstr "     Priskribo: %(description)s"
 
 #: Mailman/Commands/cmd_lists.py:68
+#, fuzzy
 msgid "     Requests to: %(requestaddr)s"
 msgstr "     Petoj al: %(requestaddr)s"
 
@@ -3309,12 +3405,14 @@ msgstr ""
 "        respondo ĉiam estas sendata al la abon-adreso.\n"
 
 #: Mailman/Commands/cmd_password.py:51 Mailman/Commands/cmd_password.py:66
+#, fuzzy
 msgid "Your password is: %(password)s"
 msgstr "Via pasvorto estas: %(password)s"
 
 #: Mailman/Commands/cmd_password.py:57 Mailman/Commands/cmd_password.py:72
 #: Mailman/Commands/cmd_password.py:95 Mailman/Commands/cmd_password.py:121
 #: Mailman/Commands/cmd_set.py:149 Mailman/Commands/cmd_set.py:219
+#, fuzzy
 msgid "You are not a member of the %(listname)s mailing list"
 msgstr "Vi ne estas membro de la dissendolisto %(listname)s"
 
@@ -3502,6 +3600,7 @@ msgstr ""
 "        de la pasvorto de ĉi tiu dissendolisto.\n"
 
 #: Mailman/Commands/cmd_set.py:122
+#, fuzzy
 msgid "Bad set command: %(subcmd)s"
 msgstr "Malĝusta ordono 'set': %(subcmd)s"
 
@@ -3522,6 +3621,7 @@ msgid "on"
 msgstr "aktiva"
 
 #: Mailman/Commands/cmd_set.py:154
+#, fuzzy
 msgid "    ack %(onoff)s"
 msgstr "    sciigo (ack) %(onoff)s"
 
@@ -3559,22 +3659,27 @@ msgid "due to bounces"
 msgstr "pro resaltoj"
 
 #: Mailman/Commands/cmd_set.py:186
+#, fuzzy
 msgid "    %(status)s (%(how)s on %(date)s)"
 msgstr "    %(status)s (%(how)s la %(date)s)"
 
 #: Mailman/Commands/cmd_set.py:192
+#, fuzzy
 msgid "    myposts %(onoff)s"
 msgstr "    mia poŝto %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:195
+#, fuzzy
 msgid "    hide %(onoff)s"
 msgstr "    kaŝado %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:199
+#, fuzzy
 msgid "    duplicates %(onoff)s"
 msgstr "    duoblaĵoj %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:203
+#, fuzzy
 msgid "    reminders %(onoff)s"
 msgstr "    memorigoj %(onoff)s"
 
@@ -3583,6 +3688,7 @@ msgid "You did not give the correct password"
 msgstr "Vi ne enskribis la ĝustan pasvorton"
 
 #: Mailman/Commands/cmd_set.py:236 Mailman/Commands/cmd_set.py:283
+#, fuzzy
 msgid "Bad argument: %(arg)s"
 msgstr "Malĝusta ordonero: %(arg)s"
 
@@ -3659,6 +3765,7 @@ msgstr ""
 "        'address=<adreso>' (sen krampoj nek citiloj!)\n"
 
 #: Mailman/Commands/cmd_subscribe.py:62
+#, fuzzy
 msgid "Bad digest specifier: %(arg)s"
 msgstr "Malĝusta precizigo de resumoj: %(arg)s"
 
@@ -3667,6 +3774,7 @@ msgid "No valid address found to subscribe"
 msgstr "Abonebla adreso ne estas trovita"
 
 #: Mailman/Commands/cmd_subscribe.py:113
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this mailing list.\n"
 "If you think this restriction is erroneous, please contact the list\n"
@@ -3705,6 +3813,7 @@ msgid "This list only supports digest subscriptions!"
 msgstr "Ĉi tiu listo nur akceptas resum-abonojn!"
 
 #: Mailman/Commands/cmd_subscribe.py:146
+#, fuzzy
 msgid ""
 "Your subscription request has been forwarded to the list administrator\n"
 "at %(listowner)s for review."
@@ -3738,6 +3847,7 @@ msgstr ""
 "        (sen krampoj nek citiloj!)\n"
 
 #: Mailman/Commands/cmd_unsubscribe.py:62
+#, fuzzy
 msgid "%(address)s is not a member of the %(listname)s mailing list"
 msgstr "%(address)s ne abonas la dissendoliston %(listname)s"
 
@@ -3988,6 +4098,7 @@ msgid "Chinese (Taiwan)"
 msgstr "ĉina (Tajvano)"
 
 #: Mailman/Deliverer.py:53
+#, fuzzy
 msgid ""
 "Note: Since this is a list of mailing lists, administrative\n"
 "notices like the password reminder will be sent to\n"
@@ -4002,14 +4113,17 @@ msgid " (Digest mode)"
 msgstr " (resum-modo)"
 
 #: Mailman/Deliverer.py:79
+#, fuzzy
 msgid "Welcome to the \"%(realname)s\" mailing list%(digmode)s"
 msgstr "Bonvenon en la liston \"%(realname)s\"%(digmode)s"
 
 #: Mailman/Deliverer.py:89
+#, fuzzy
 msgid "You have been unsubscribed from the %(realname)s mailing list"
 msgstr "Vi estas malabonigita el la listo %(realname)s"
 
 #: Mailman/Deliverer.py:116
+#, fuzzy
 msgid "%(listfullname)s mailing list reminder"
 msgstr "Rememorigo el la dissendolisto %(listfullname)s"
 
@@ -4022,6 +4136,7 @@ msgid "Hostile subscription attempt detected"
 msgstr "Malica abonprovo rimarkita"
 
 #: Mailman/Deliverer.py:169
+#, fuzzy
 msgid ""
 "%(address)s was invited to a different mailing\n"
 "list, but in a deliberate malicious attempt they tried to confirm the\n"
@@ -4034,6 +4149,7 @@ msgstr ""
 "reago via estas bezonata."
 
 #: Mailman/Deliverer.py:188
+#, fuzzy
 msgid ""
 "You invited %(address)s to your list, but in a\n"
 "deliberate malicious attempt, they tried to confirm the invitation to a\n"
@@ -4047,6 +4163,7 @@ msgstr ""
 "reago via estas bezonata."
 
 #: Mailman/Deliverer.py:221
+#, fuzzy
 msgid "%(listname)s mailing list probe message"
 msgstr "Provmesaĝo de la dissendolisto %(listname)s"
 
@@ -4222,8 +4339,8 @@ msgid ""
 "            membership.\n"
 "\n"
 "            <p>You can control both the\n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">number\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">number\n"
 "            of reminders</a> the member will receive and the\n"
 "            <a href=\"?VARHELP=bounce/"
 "bounce_you_are_disabled_warnings_interval\"\n"
@@ -4345,8 +4462,8 @@ msgid ""
 "             <em>No</em> those messages too will get discarded.  You may "
 "want\n"
 "             to set up an\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">autoresponse\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">autoresponse\n"
 "             message</a> for email to the -owner and -admin address."
 msgstr ""
 
@@ -4493,8 +4610,8 @@ msgid ""
 "Use this option to remove each message attachment that does\n"
 "             not have a matching content type.  Requirements and formats "
 "are\n"
-"             exactly like <a href=\"?VARHELP=contentfilter/filter_mime_types"
-"\"\n"
+"             exactly like <a href=\"?VARHELP=contentfilter/"
+"filter_mime_types\"\n"
 "             >filter_mime_types</a>.\n"
 "\n"
 "             <p><b>Note:</b> if you add entries to this list but don't add\n"
@@ -4681,8 +4798,9 @@ msgid "Invalid value for variable: %(property)s"
 msgstr ""
 
 #: Mailman/Gui/GUIBase.py:178
+#, fuzzy
 msgid "Bad email address for option %(property)s: %(error)s"
-msgstr ""
+msgstr "Retpoŝtadreso malĝusta"
 
 #: Mailman/Gui/GUIBase.py:204
 msgid ""
@@ -4778,8 +4896,8 @@ msgid ""
 "             <p>In order to split the list ownership duties into\n"
 "             administrators and moderators, you must\n"
 "             <a href=\"passwords\">set a separate moderator password</a>,\n"
-"             and also provide the <a href=\"?VARHELP=general/moderator"
-"\">email\n"
+"             and also provide the <a href=\"?VARHELP=general/"
+"moderator\">email\n"
 "             addresses of the list moderators</a>.  Note that the field you\n"
 "             are changing here specifies the list administrators."
 msgstr ""
@@ -5025,13 +5143,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5056,8 +5174,8 @@ msgstr ""
 msgid ""
 "This is the address set in the <tt>Reply-To:</tt> header\n"
 "             when the <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             option is set to <em>Explicit address</em>.\n"
 "\n"
 "             <p>There are many reasons not to introduce or override the\n"
@@ -5065,13 +5183,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5130,8 +5248,8 @@ msgid ""
 "             member list addresses, but rather to the owner of those member\n"
 "             lists.  In that case, the value of this setting is appended to\n"
 "             the member's account name for such notices.  `-owner' is the\n"
-"             typical choice.  This setting has no effect when \"umbrella_list"
-"\"\n"
+"             typical choice.  This setting has no effect when "
+"\"umbrella_list\"\n"
 "             is \"No\"."
 msgstr ""
 
@@ -5982,13 +6100,13 @@ msgid ""
 "            either individually or as a group.  Any\n"
 "            posting from a non-member who is not explicitly accepted,\n"
 "            rejected, or discarded, will have their posting filtered by the\n"
-"            <a href=\"?VARHELP=privacy/sender/generic_nonmember_action"
-"\">general\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"generic_nonmember_action\">general\n"
 "            non-member rules</a>.\n"
 "\n"
 "            <p>In the text boxes below, add one address per line; start the\n"
 "            line with a ^ character to designate a <a href=\n"
-"            \"https://docs.python.org/2/library/re.html\"\n"
+"            \"https://docs.python.org/3/library/re.html\"\n"
 "            >Python regular expression</a>.  When entering backslashes, do "
 "so\n"
 "            as if you were using Python raw strings (i.e. you generally "
@@ -6042,8 +6160,8 @@ msgid ""
 "If a member posts this many times, within a period of time\n"
 "               the member is automatically moderated.  Use 0 to disable.  "
 "See\n"
-"               <a href=\"?VARHELP=privacy/sender/member_verbosity_interval"
-"\"\n"
+"               <a href=\"?VARHELP=privacy/sender/"
+"member_verbosity_interval\"\n"
 "               >member_verbosity_interval</a> for details on the time "
 "period.\n"
 "\n"
@@ -6588,7 +6706,7 @@ msgstr ""
 msgid ""
 "The topic filter categorizes each incoming email message\n"
 "             according to <a\n"
-"            href=\"https://docs.python.org/2/library/re.html\">regular\n"
+"            href=\"https://docs.python.org/3/library/re.html\">regular\n"
 "             expression filters</a> you specify below.  If the message's\n"
 "             <code>Subject:</code> or <code>Keywords:</code> header contains "
 "a\n"
@@ -6606,8 +6724,8 @@ msgid ""
 "             <p>The body of the message can also be optionally scanned for\n"
 "             <code>Subject:</code> and <code>Keywords:</code> headers, as\n"
 "             specified by the <a\n"
-"       href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a>\n"
+"       href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a>\n"
 "             configuration variable."
 msgstr ""
 
@@ -6816,6 +6934,7 @@ msgid "%(listinfo_link)s list run by %(owner_link)s"
 msgstr "Listo %(listinfo_link)s mastrumata de %(owner_link)s"
 
 #: Mailman/HTMLFormatter.py:57
+#, fuzzy
 msgid "%(realname)s administrative interface"
 msgstr "Mastruma interfaco de %(realname)s"
 
@@ -6824,6 +6943,7 @@ msgid " (requires authorization)"
 msgstr " (postulas rajtigon)"
 
 #: Mailman/HTMLFormatter.py:61
+#, fuzzy
 msgid "Overview of all %(hostname)s mailing lists"
 msgstr "Tuto de ĉiuj listoj ĉe %(hostname)s"
 
@@ -6844,6 +6964,7 @@ msgid "; it was disabled by the list administrator"
 msgstr "; ĝin malŝaltis la listestro"
 
 #: Mailman/HTMLFormatter.py:146
+#, fuzzy
 msgid ""
 "; it was disabled due to excessive bounces.  The\n"
 "            last bounce was received on %(date)s"
@@ -6856,6 +6977,7 @@ msgid "; it was disabled for unknown reasons"
 msgstr "; ĝi estas malŝaltita pro nekonata kialo"
 
 #: Mailman/HTMLFormatter.py:151
+#, fuzzy
 msgid "Note: your list delivery is currently disabled%(reason)s."
 msgstr "Atentu: liverado de via listo estas nun malŝaltita%(reason)s."
 
@@ -6868,6 +6990,7 @@ msgid "the list administrator"
 msgstr "la listestro"
 
 #: Mailman/HTMLFormatter.py:157
+#, fuzzy
 msgid ""
 "<p>%(note)s\n"
 "\n"
@@ -6886,6 +7009,7 @@ msgstr ""
 "            havas demandon aŭ bezonas helpon."
 
 #: Mailman/HTMLFormatter.py:169
+#, fuzzy
 msgid ""
 "<p>We have received some recent bounces from your\n"
 "            address.  Your current <em>bounce score</em> is %(score)s out of "
@@ -6904,6 +7028,7 @@ msgstr ""
 "            rekomencita, se la problemoj estas solvataj baldaŭ."
 
 #: Mailman/HTMLFormatter.py:181
+#, fuzzy
 msgid ""
 "(Note - you are subscribing to a list of mailing lists, so the %(type)s "
 "notice will be sent to the admin address for your membership, %(addr)s.)<p>"
@@ -6950,6 +7075,7 @@ msgstr ""
 "            per retpoŝto pri la decido de la moderiganto."
 
 #: Mailman/HTMLFormatter.py:208
+#, fuzzy
 msgid ""
 "This is %(also)sa private list, which means that the\n"
 "            list of members is not available to non-members."
@@ -6958,6 +7084,7 @@ msgstr ""
 "            la listanaro ne estas videbla al ne-abonantoj."
 
 #: Mailman/HTMLFormatter.py:211
+#, fuzzy
 msgid ""
 "This is %(also)sa hidden list, which means that the\n"
 "            list of members is available only to the list administrator."
@@ -6966,6 +7093,7 @@ msgstr ""
 "            la listanaro estas videbla nur por la listestro."
 
 #: Mailman/HTMLFormatter.py:214
+#, fuzzy
 msgid ""
 "This is %(also)sa public list, which means that the\n"
 "            list of members list is available to everyone."
@@ -6982,6 +7110,7 @@ msgstr ""
 "                trudpoŝtistoj facile)."
 
 #: Mailman/HTMLFormatter.py:222
+#, fuzzy
 msgid ""
 "<p>(Note that this is an umbrella list, intended to\n"
 "            have only other mailing lists as members.  Among other things,\n"
@@ -6998,6 +7127,7 @@ msgid "<b><i>either</i></b> "
 msgstr "<b><i>aŭ</i></b> "
 
 #: Mailman/HTMLFormatter.py:256
+#, fuzzy
 msgid ""
 "To unsubscribe from %(realname)s, get a password reminder,\n"
 "        or change your subscription options %(either)senter your "
@@ -7032,6 +7162,7 @@ msgstr ""
 "        vian retpoŝtadreson."
 
 #: Mailman/HTMLFormatter.py:277
+#, fuzzy
 msgid ""
 "(<i>%(which)s is only available to the list\n"
 "                members.</i>)"
@@ -7040,6 +7171,7 @@ msgstr ""
 "                abonantoj.</i>)"
 
 #: Mailman/HTMLFormatter.py:281
+#, fuzzy
 msgid ""
 "(<i>%(which)s is only available to the list\n"
 "            administrator.</i>)"
@@ -7100,6 +7232,7 @@ msgid "The current archive"
 msgstr "La nuna arĥivo"
 
 #: Mailman/Handlers/Acknowledge.py:59
+#, fuzzy
 msgid "%(realname)s post acknowledgement"
 msgstr "Rekono de mesaĝo de %(realname)s"
 
@@ -7116,6 +7249,7 @@ msgstr ""
 "estas kodigita en la HTML ĝi ne povas esti sekure forviŝata.\n"
 
 #: Mailman/Handlers/CalcRecips.py:79
+#, fuzzy
 msgid ""
 "Your urgent message to the %(realname)s mailing list was not authorized for\n"
 "delivery.  The original message as received by Mailman is attached.\n"
@@ -7193,6 +7327,7 @@ msgstr ""
 "anstataŭ la liston"
 
 #: Mailman/Handlers/Hold.py:84
+#, fuzzy
 msgid ""
 "Please do *not* post administrative requests to the mailing\n"
 "list.  If you wish to subscribe, visit %(listurl)s or send a message with "
@@ -7234,10 +7369,12 @@ msgid "Posting to a moderated newsgroup"
 msgstr "Poŝto al moderigata novaĵgrupo"
 
 #: Mailman/Handlers/Hold.py:252
+#, fuzzy
 msgid "Your message to %(listname)s awaits moderator approval"
 msgstr "Via mesaĝo al %(listname)s atendas la aprobon de la moderiganto"
 
 #: Mailman/Handlers/Hold.py:271
+#, fuzzy
 msgid "%(listname)s post from %(sender)s requires approval"
 msgstr "Poŝto al %(listname)s de %(sender)s postulas aprobon"
 
@@ -7280,6 +7417,7 @@ msgid "After content filtering, the message was empty"
 msgstr "Post filtrado de la enhavo, la mesaĝo estis malplena"
 
 #: Mailman/Handlers/MimeDel.py:269
+#, fuzzy
 msgid ""
 "The attached message matched the %(listname)s mailing list's content "
 "filtering\n"
@@ -7322,6 +7460,7 @@ msgid "The attached message has been automatically discarded."
 msgstr "La alkroĉita mesaĝo estis aŭtomate forviŝita."
 
 #: Mailman/Handlers/Replybot.py:75
+#, fuzzy
 msgid "Auto-response for your message to the \"%(realname)s\" mailing list"
 msgstr "Aŭtoimata respondo de via mesaĝo al la dissendolisto\"%(realname)s\" "
 
@@ -7345,6 +7484,7 @@ msgid "HTML attachment scrubbed and removed"
 msgstr "HTML-aranĝa alkroĉaĵo estis elsarkita kaj forviŝita"
 
 #: Mailman/Handlers/Scrubber.py:234 Mailman/Handlers/Scrubber.py:259
+#, fuzzy
 msgid ""
 "An HTML attachment was scrubbed...\n"
 "URL: %(url)s\n"
@@ -7399,6 +7539,7 @@ msgstr ""
 "Retadreso: %(url)s\n"
 
 #: Mailman/Handlers/Scrubber.py:347
+#, fuzzy
 msgid "Skipped content of type %(partctype)s\n"
 msgstr "Preterlasita enhavo el speco %(partctype)s\n"
 
@@ -7431,6 +7572,7 @@ msgid "Message rejected by filter rule match"
 msgstr "Poŝto malakceptita pro kontentigo de filtro"
 
 #: Mailman/Handlers/ToDigest.py:173
+#, fuzzy
 msgid "%(realname)s Digest, Vol %(volume)d, Issue %(issue)d"
 msgstr "Resumo de %(realname)s, volumo %(volume)d, eldono %(issue)d"
 
@@ -7468,6 +7610,7 @@ msgid "End of "
 msgstr "Fino de "
 
 #: Mailman/ListAdmin.py:309
+#, fuzzy
 msgid "Posting of your message titled \"%(subject)s\""
 msgstr "Sendo de via mesaĝo titolita \"%(subject)s\""
 
@@ -7480,8 +7623,9 @@ msgid "Forward of moderated message"
 msgstr "Plusendo de moderigita mesaĝo"
 
 #: Mailman/ListAdmin.py:405
+#, fuzzy
 msgid "New subscription request to list %(realname)s from %(addr)s"
-msgstr ""
+msgstr "Malabonpeto konfirmita"
 
 #: Mailman/ListAdmin.py:432
 msgid "Subscription request"
@@ -7493,8 +7637,9 @@ msgid "via admin approval"
 msgstr "Ankoraŭ atendas aprobon"
 
 #: Mailman/ListAdmin.py:466
+#, fuzzy
 msgid "New unsubscription request from %(realname)s by %(addr)s"
-msgstr ""
+msgstr "Malabonpeto konfirmita"
 
 #: Mailman/ListAdmin.py:490
 msgid "Unsubscription request"
@@ -7505,8 +7650,9 @@ msgid "Original Message"
 msgstr ""
 
 #: Mailman/ListAdmin.py:526
+#, fuzzy
 msgid "Request to mailing list %(realname)s rejected"
-msgstr ""
+msgstr "Publikaj dissendolistoj ĉe %(hostname)s:"
 
 #: Mailman/MTA/Manual.py:66
 msgid ""
@@ -7526,8 +7672,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/MTA/Manual.py:82
+#, fuzzy
 msgid "## %(listname)s mailing list"
-msgstr ""
+msgstr "Dissendolistoj ĉe %(hostname)s"
 
 #: Mailman/MTA/Manual.py:99
 msgid "Mailing list creation request for list %(listname)s"
@@ -7588,23 +7735,28 @@ msgid "%(dbfile)s permissions must be 0664 (got %(octmode)s)"
 msgstr ""
 
 #: Mailman/MailList.py:219
+#, fuzzy
 msgid "Your confirmation is required to join the %(listname)s mailing list"
 msgstr "Via konfirmo estas bezonata por aboni la dissendoliston %(listname)s"
 
 #: Mailman/MailList.py:230
+#, fuzzy
 msgid "Your confirmation is required to leave the %(listname)s mailing list"
 msgstr ""
 "Via konfirmo estas bezonata por malaboni la dissendoliston %(listname)s"
 
 #: Mailman/MailList.py:999 Mailman/MailList.py:1492
+#, fuzzy
 msgid " from %(remote)s"
 msgstr " de %(remote)s"
 
 #: Mailman/MailList.py:1043
+#, fuzzy
 msgid "subscriptions to %(realname)s require moderator approval"
 msgstr "aboni la liston %(realname)s postulas aprobon de moderiganto"
 
 #: Mailman/MailList.py:1125 bin/add_members:299
+#, fuzzy
 msgid "%(realname)s subscription notification"
 msgstr "Sciigo de abono de %(realname)s"
 
@@ -7613,10 +7765,12 @@ msgid "unsubscriptions require moderator approval"
 msgstr "malabonoj postulas aprobon de moderiganto"
 
 #: Mailman/MailList.py:1166
+#, fuzzy
 msgid "%(realname)s unsubscribe notification"
 msgstr "Sciigo de malabono de %(realname)s"
 
 #: Mailman/MailList.py:1328
+#, fuzzy
 msgid "%(realname)s address change notification"
 msgstr "Sciigo de adresoŝanĝo de %(realname)s"
 
@@ -7631,6 +7785,7 @@ msgid "via web confirmation"
 msgstr "Konfirmokodo nevalida"
 
 #: Mailman/MailList.py:1396
+#, fuzzy
 msgid "subscriptions to %(name)s require administrator approval"
 msgstr "aboni la liston %(name)s postulas aprobon de listestro"
 
@@ -7893,28 +8048,32 @@ msgid "Bad/Invalid email address: blank line"
 msgstr ""
 
 #: bin/add_members:180
+#, fuzzy
 msgid "Bad/Invalid email address: %(member)s"
-msgstr ""
+msgstr "Retpoŝtadreso malĝusta"
 
 #: bin/add_members:182
 msgid "Hostile address (illegal characters): %(member)s"
 msgstr ""
 
 #: bin/add_members:185
+#, fuzzy
 msgid "Invited: %(member)s"
-msgstr ""
+msgstr "Retpoŝtadreso malĝusta"
 
 #: bin/add_members:187
 msgid "Subscribed: %(member)s"
 msgstr ""
 
 #: bin/add_members:237
+#, fuzzy
 msgid "Bad argument to -w/--welcome-msg: %(arg)s"
-msgstr ""
+msgstr "Malĝusta ordonero: %(arg)s"
 
 #: bin/add_members:244
+#, fuzzy
 msgid "Bad argument to -a/--admin-notify: %(arg)s"
-msgstr ""
+msgstr "Malĝusta ordonero: %(arg)s"
 
 #: bin/add_members:252
 msgid "Cannot read both digest and normal members from standard input."
@@ -7927,8 +8086,9 @@ msgstr ""
 #: bin/add_members:261 bin/config_list:110 bin/export.py:271 bin/find_member:97
 #: bin/inject:91 bin/list_admins:90 bin/list_members:252 bin/sync_members:222
 #: cron/bumpdigests:86
+#, fuzzy
 msgid "No such list: %(listname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/add_members:285 bin/change_pw:159 bin/check_db:114 bin/discard:83
 #: bin/sync_members:244 bin/update:302 bin/update:323 bin/update:577
@@ -7990,10 +8150,11 @@ msgid "listname is required"
 msgstr ""
 
 #: bin/arch:143 bin/change_pw:107 bin/config_list:257
+#, fuzzy
 msgid ""
 "No such list \"%(listname)s\"\n"
 "%(e)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/arch:168
 msgid "Cannot open mbox file %(mbox)s: %(msg)s"
@@ -8077,8 +8238,9 @@ msgid ""
 msgstr ""
 
 #: bin/change_pw:145
+#, fuzzy
 msgid "Bad arguments: %(strargs)s"
-msgstr ""
+msgstr "Malĝusta ordonero: %(arg)s"
 
 #: bin/change_pw:149
 msgid "Empty list passwords are not allowed"
@@ -8315,8 +8477,9 @@ msgid "Unix-From line changed: %(lineno)d"
 msgstr ""
 
 #: bin/cleanarch:111
+#, fuzzy
 msgid "Bad status number: %(arg)s"
-msgstr ""
+msgstr "Malĝusta ordonero: %(arg)s"
 
 #: bin/cleanarch:167
 msgid "%(messages)d messages found"
@@ -8413,14 +8576,16 @@ msgid "    original address removed:"
 msgstr ""
 
 #: bin/clone_member:202
+#, fuzzy
 msgid "Not a valid email address: %(toaddr)s"
-msgstr ""
+msgstr "Vi devas indiki validan retpoŝtadreson."
 
 #: bin/clone_member:215
+#, fuzzy
 msgid ""
 "Error opening list \"%(listname)s\", skipping.\n"
 "%(e)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/config_list:20
 msgid ""
@@ -8509,8 +8674,9 @@ msgid "Invalid value for property: %(k)s"
 msgstr ""
 
 #: bin/config_list:291
+#, fuzzy
 msgid "Bad email address for option %(k)s: %(v)s"
-msgstr ""
+msgstr "Retpoŝtadreso malĝusta"
 
 #: bin/config_list:348
 msgid "Only one of -i or -o is allowed"
@@ -8565,8 +8731,9 @@ msgid "Ignoring held msg w/bad id: %(f)s"
 msgstr ""
 
 #: bin/discard:112
+#, fuzzy
 msgid "Discarded held msg #%(id)s for list %(listname)s"
-msgstr ""
+msgstr "Abonigu min al %(listname)s"
 
 #: bin/dumpdb:19
 msgid ""
@@ -8610,8 +8777,9 @@ msgid "No filename given."
 msgstr ""
 
 #: bin/dumpdb:108
+#, fuzzy
 msgid "Bad arguments: %(pargs)s"
-msgstr ""
+msgstr "Malĝusta ordonero: %(arg)s"
 
 #: bin/dumpdb:118
 msgid "Please specify either -p or -m."
@@ -8713,7 +8881,7 @@ msgid ""
 "Complete\n"
 "specifications are at:\n"
 "\n"
-"https://docs.python.org/2/library/re.html\n"
+"https://docs.python.org/3/library/re.html\n"
 "\n"
 "Address matches are case-insensitive, but case-preserved addresses are\n"
 "displayed.\n"
@@ -8859,8 +9027,9 @@ msgid ""
 msgstr ""
 
 #: bin/list_admins:97
+#, fuzzy
 msgid "List: %(listname)s, \tOwners: %(owners)s"
-msgstr ""
+msgstr "Listestroj:  %(owneraddr)s"
 
 #: bin/list_lists:19
 msgid ""
@@ -8965,12 +9134,14 @@ msgid ""
 msgstr ""
 
 #: bin/list_members:198
+#, fuzzy
 msgid "Bad --nomail option: %(why)s"
-msgstr ""
+msgstr "Malĝusta precizigo de resumoj: %(arg)s"
 
 #: bin/list_members:209
+#, fuzzy
 msgid "Bad --digest option: %(kind)s"
-msgstr ""
+msgstr "Malĝusta precizigo de resumoj: %(arg)s"
 
 #: bin/list_members:213 bin/list_members:217 bin/list_members:221
 #: bin/list_members:225
@@ -9154,8 +9325,9 @@ msgid ""
 msgstr ""
 
 #: bin/mailmanctl:280 cron/mailpasswds:119
+#, fuzzy
 msgid "Site list is missing: %(sitelistname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/mailmanctl:305
 msgid "Run this program as root or as the %(name)s user, or use -u."
@@ -9166,8 +9338,9 @@ msgid "No command given."
 msgstr ""
 
 #: bin/mailmanctl:339
+#, fuzzy
 msgid "Bad command: %(command)s"
-msgstr ""
+msgstr "Malĝusta ordono 'set': %(subcmd)s"
 
 #: bin/mailmanctl:344
 msgid "Warning!  You may encounter permission problems."
@@ -9381,8 +9554,9 @@ msgid ""
 msgstr ""
 
 #: bin/newlist:162
+#, fuzzy
 msgid "Unknown language: %(lang)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/newlist:167
 msgid "Enter the name of the list: "
@@ -9402,8 +9576,8 @@ msgstr ""
 
 #: bin/newlist:220
 msgid ""
-" - owner addresses need to be fully-qualified names like \"owner@example.com"
-"\", not just \"owner\"."
+" - owner addresses need to be fully-qualified names like \"owner@example."
+"com\", not just \"owner\"."
 msgstr ""
 
 #: bin/newlist:244
@@ -9571,12 +9745,14 @@ msgid "Could not open file for reading: %(filename)s."
 msgstr ""
 
 #: bin/remove_members:163
+#, fuzzy
 msgid "Error opening list %(listname)s... skipping."
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/remove_members:173
+#, fuzzy
 msgid "No such member: %(addr)s"
-msgstr ""
+msgstr "Membro neekzistanta: %(safeuser)s."
 
 #: bin/remove_members:178
 msgid "User `%(addr)s' removed from list: %(listname)s."
@@ -9603,8 +9779,9 @@ msgid ""
 msgstr ""
 
 #: bin/reset_pw.py:77
+#, fuzzy
 msgid "Changing passwords for list: %(listname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/reset_pw.py:83
 msgid "New password for member %(member)40s: %(randompw)s"
@@ -9641,8 +9818,9 @@ msgid "%(listname)s %(msg)s not found as %(filename)s"
 msgstr ""
 
 #: bin/rmlist:105
+#, fuzzy
 msgid "No such list (or list already deleted): %(listname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/rmlist:108
 msgid "No such list: %(listname)s.  Removing its residual archives."
@@ -9911,8 +10089,9 @@ msgid ""
 msgstr ""
 
 #: bin/update:107
+#, fuzzy
 msgid "Fixing language templates: %(listname)s"
-msgstr ""
+msgstr "Publikaj dissendolistoj ĉe %(hostname)s:"
 
 #: bin/update:196 bin/update:711
 msgid "WARNING: could not acquire lock for list: %(listname)s"
@@ -10066,8 +10245,9 @@ msgid "done"
 msgstr ""
 
 #: bin/update:691
+#, fuzzy
 msgid "Updating mailing list: %(listname)s"
-msgstr ""
+msgstr "Publikaj dissendolistoj ĉe %(hostname)s:"
 
 #: bin/update:694
 msgid "Updating Usenet watermarks"
@@ -10272,16 +10452,18 @@ msgid ""
 msgstr ""
 
 #: bin/withlist:175
+#, fuzzy
 msgid "Unlocking (but not saving) list: %(listname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/withlist:179
 msgid "Finalizing"
 msgstr ""
 
 #: bin/withlist:188
+#, fuzzy
 msgid "Loading list %(listname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/withlist:190
 msgid "(locked)"
@@ -10292,8 +10474,9 @@ msgid "(unlocked)"
 msgstr ""
 
 #: bin/withlist:197
+#, fuzzy
 msgid "Unknown list: %(listname)s"
-msgstr ""
+msgstr "Listo neekzistanta: %(safelistname)s"
 
 #: bin/withlist:237
 msgid "No list name supplied."
@@ -10499,8 +10682,9 @@ msgid "Password // URL"
 msgstr ""
 
 #: cron/mailpasswds:222
+#, fuzzy
 msgid "%(host)s mailing list memberships reminder"
-msgstr ""
+msgstr "Rememorigo el la dissendolisto %(listfullname)s"
 
 #: cron/nightly_gzip:19
 msgid ""

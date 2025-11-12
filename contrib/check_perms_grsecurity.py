@@ -157,9 +157,9 @@ class CheckFixUid:
         except ValueError:
             file.insert(file.index("import paths\n")+1, "import CheckFixUid\n")
             for i in range(len(file)-1, 0, -1):
-                object=re.compile("^([   ]*)main\(").search(file[i])
+                object=re.compile(r"^([   ]*)main\(").search(file[i])
                 # Special hack to support patching of update
-                object2=re.compile("^([     ]*).*=[      ]*main\(").search(file[i])
+                object2=re.compile(r"^([     ]*).*=[      ]*main\(").search(file[i])
                 if object:
                     print("Patching " + script)
                     file.insert(i,

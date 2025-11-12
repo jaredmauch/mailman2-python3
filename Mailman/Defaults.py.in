@@ -18,7 +18,6 @@
 # USA.
 
 """Distributed default settings for significant Mailman config variables."""
-from __future__ import absolute_import
 
 # NEVER make site configuration changes to this file.  ALWAYS make them in
 # mm_cfg.py instead, in the designated area.  See the comments in that file
@@ -178,7 +177,7 @@ HTML_TO_PLAIN_TEXT_COMMAND = '/usr/bin/lynx -dump %(filename)s'
 # A Python regular expression character class which defines the characters
 # allowed in list names.  Lists cannot be created with names containing any
 # character that doesn't match this class.  Do not include '/' in this list.
-ACCEPTABLE_LISTNAME_CHARACTERS = '[-+_.=a-z0-9]'
+ACCEPTABLE_LISTNAME_CHARACTERS = r'[-+_.=a-z0-9]'
 
 # The number of characters in the longest listname in the installation.  The
 # fix for LP: #1780874 truncates list names in web URLs to this length to avoid
@@ -262,7 +261,7 @@ KNOWN_SPAMMERS = []
 # normalized unicodes against normalized unicode headers.  This setting
 # determines the normalization form.  It is one of 'NFC', 'NFD', 'NFKC' or
 # 'NFKD'.  See
-# https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
+# https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize
 NORMALIZE_FORM = 'NFKC'
 
 
@@ -632,7 +631,7 @@ NNTP_USERNAME = None
 NNTP_PASSWORD = None
 
 # Set this if you have an NNTP server you prefer gatewayed lists to use.
-DEFAULT_NNTP_HOST = ''
+DEFAULT_NNTP_HOST = None
 
 # These variables controls how headers must be cleansed in order to be
 # accepted by your NNTP server.  Some servers like INN reject messages
@@ -939,10 +938,10 @@ QRUNNERS = [
     ('CommandRunner',  1), # commands and bounces from the outside world
     ('IncomingRunner', 4), # posts from the outside world
     ('NewsRunner',     1), # outgoing messages to the nntpd
-    ('OutgoingRunner', 8), # outgoing messages to the smtpd
+    ('OutgoingRunner', 1), # outgoing messages to the smtpd (single instance with process coordination)
     ('VirginRunner',   1), # internally crafted (virgin birth) messages
     ('RetryRunner',    1), # retry temporarily failed deliveries
-    ]
+]
 
 # Set this to Yes to use the `Maildir' delivery option.  If you change this
 # you will need to re-run bin/genaliases for MTAs that don't use list

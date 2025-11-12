@@ -1,56 +1,46 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<link rel="STYLESHEET" href="mailman-install.css" type='text/css' />
-<link rel="first" href="mailman-install.html" title='GNU mailman - installation Manual' />
-<link rel='last' href='about.html' title='About this document...' />
-<link rel='help' href='about.html' title='About this document...' />
-<link rel="prev" href="node31.html" />
-<link rel="parent" href="mail-server.html" />
-<link rel="next" href="node36.html" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name='aesop' content='information' />
+<link href="mailman-install.css" rel="STYLESHEET" type="text/css"/>
+<link href="mailman-install.html" rel="first" title="GNU mailman - installation Manual"/>
+<link href="about.html" rel="last" title="About this document..."/>
+<link href="about.html" rel="help" title="About this document..."/>
+<link href="node31.html" rel="prev"/>
+<link href="mail-server.html" rel="parent"/>
+<link href="node36.html" rel="next"/>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="information" name="aesop"/>
 <title>6.4 Using the Qmail mail server</title>
 </head>
 <body>
 <div class="navigation">
-<div id='top-navigation-panel' xml:id='top-navigation-panel'>
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div id="top-navigation-panel" xml:id="top-navigation-panel">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="6.3.3 performance notes"
-  href="node34.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="6 set up your"
-  href="mail-server.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="6.4.1 information on VERP"
-  href="node36.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - Installation Manual</td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node34.html" rel="prev" title="6.3.3 performance notes"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="mail-server.html" rel="parent" title="6 set up your"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node36.html" rel="next" title="6.4.1 information on VERP"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node34.html">6.3.3 Performance notes</a>
+<a class="sectref" href="node34.html" rel="prev">6.3.3 Performance notes</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="mail-server.html">6 Set up your</a>
+<a class="sectref" href="mail-server.html" rel="parent">6 Set up your</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node36.html">6.4.1 Information on VERP</a>
+<a class="sectref" href="node36.html" rel="next">6.4.1 Information on VERP</a>
 </div>
-<hr /></div>
+<hr/></div>
 </div>
 <!--End of Navigation Panel-->
-
 <h2><a name="SECTION001640000000000000000"></a><a name="qmail-issues"></a>
-<br>
+<br/>
 6.4 Using the Qmail mail server
 </h2>
-
 <p>
 There are some issues that users of the qmail mail transport agent have
 encountered.  None of the core maintainers use qmail, so all of this
@@ -59,7 +49,6 @@ Martin Preishuber and Christian Tismer, with notes by Balazs Nagy (BN) and
 Norbert Bollow (NB).
 
 <p>
-
 <ul>
 <li>You might need to set the mail-gid user to either <code>qmail</code>,
       <code>mailman</code>, or <code>nofiles</code> by using the
@@ -80,7 +69,7 @@ If you are going to be directing virtual domains directly to the
       <code>mailman-listname*</code>.
 
 <p>
-</li>
+</p></p></p></li>
 <li>If there is a user <code>mailman</code> on your system, the alias
       <code>mailman-owner</code> will work only in <span class="file">~mailman</span>.  You have to do
       a <b class="program">touch .qmail-owner</b> in <span class="file">~mailman</span> directory to create
@@ -92,7 +81,7 @@ If you are going to be directing virtual domains directly to the
       be a user to whom mail can be delivered.  (See ``man 8 qmail-getpw''.)
 
 <p>
-</li>
+</p></p></li>
 <li>In a related issue, if you have any users with the same name as one of
       your mailing lists, you will have problems if list names contain
       "<tt class="samp">-</tt>" in them.  Putting <span class="file">.qmail</span> redirections into the user's
@@ -105,7 +94,6 @@ If you are going to be directing virtual domains directly to the
   +zope-:alias:112:11:/var/qmail/alias:-:zope-:
   .
 </pre></div>
-
 <p>
 where in this case the listname is e.g. <code>zope-users</code>.
 
@@ -115,7 +103,7 @@ where in this case the listname is e.g. <code>zope-users</code>.
       <code>mailman</code> user in charge of this virtual domain.
 
 <p>
-</li>
+</p></p></p></p></li>
 <li><em>BN:</em>If inbound messages are delivered by another user than
       <code>mailman</code>, it's necessary to allow it to access <span class="file">~mailman</span>.
       Be sure that <span class="file">~mailman</span> has group writing access and setgid bit is
@@ -141,7 +129,6 @@ Then make your aliases:
           .qmail              =&gt; mailman@...'s letters
           .qmail-owner        =&gt; mailman-owner's letters
 </pre></div>
-
 <p>
 For list aliases, you can either create them manually:
 
@@ -152,7 +139,6 @@ For list aliases, you can either create them manually:
           .qmail-list-request =&gt; requests to 'list'
           etc
 </pre></div>
-
 <p>
 or for automatic list alias handling (when using the lists.kva.hu
       virtual as above), see <span class="file">contrib/qmail-to-mailman.py</span> in the Mailman
@@ -163,12 +149,11 @@ or for automatic list alias handling (when using the lists.kva.hu
 <div class="verbatim"><pre>
           |preline /path/to/python /path/to/qmail-to-mailman.py
 </pre></div>
-
 <p>
 and new lists will automatically be picked up.
 
 <p>
-</li>
+</p></p></p></p></p></p></p></p></p></li>
 <li>You have to make sure that the localhost can relay.  If you start qmail
       via inetd and tcpenv, you need some line the following in your
       <span class="file">/etc/hosts.allow</span> file:
@@ -177,7 +162,6 @@ and new lists will automatically be picked up.
 <div class="verbatim"><pre>
       tcp-env: 127. 10.205.200. : setenv RELAYCLIENT
 </pre></div>
-
 <p>
 where 10.205.200. is your IP address block.  If you use tcpserver, then
       you need something like the following in your <span class="file">/etc/tcp.smtp</span> file:
@@ -187,21 +171,19 @@ where 10.205.200. is your IP address block.  If you use tcpserver, then
       10.205.200.:allow,RELAYCLIENT=""
       127.:allow,RELAYCLIENT=""
 </pre></div>
-
 <p>
-</li>
+</p></p></p></p></li>
 <li><em>BN:</em> Bigger <span class="file">/var/qmail/control/concurrencyremote</span> values
       work better sending outbound messages, within reason.  Unless you know
       your system can handle it (many if not most cannot) this should not be
       set to a value greater than 120.
 
 <p>
-</li>
+</p></li>
 <li>More information about setting up qmail and relaying can be found in the
       qmail documentation.
 </li>
 </ul>
-
 <p>
 <em>BN:</em> Last but not least, here's a little script to generate aliases to
 your lists (if for some reason you can/will not have them automatically picked
@@ -231,7 +213,6 @@ Mailman 2.0 would most likely change <span class="file">/usr/local/mailman</span
 <span class="file">/home/mailman</span>.  If in doubt, refer to the <b class="programopt">--prefix</b>
 option passed to <b class="program">configure</b> during compile time.
 </div>
-
 <p>
 <div class="verbatim"><pre>
 #!/bin/sh
@@ -253,55 +234,42 @@ if [ $# = 1 ]; then
 fi
 </pre></div>
 <p>
-
-<p><br /></p><hr class='online-navigation' />
-<div class='online-navigation'>
+<p><br/></p><hr class="online-navigation"/>
+<div class="online-navigation">
 <!--Table of Child-Links-->
 <a name="CHILD_LINKS"><strong>Subsections</strong></a>
-
 <ul class="ChildLinks">
 <li><a href="node36.html">6.4.1 Information on VERP</a>
 <li><a href="node37.html">6.4.2 Virtual mail server</a>
 <li><a href="node38.html">6.4.3 More information</a>
-</ul>
+</li></li></li></ul>
 <!--End of Table of Child-Links-->
 </div>
-
 <div class="navigation">
-<div class='online-navigation'>
-<p></p><hr />
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div class="online-navigation">
+<p></p><hr/>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="6.3.3 performance notes"
-  href="node34.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="6 set up your"
-  href="mail-server.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="6.4.1 information on VERP"
-  href="node36.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - Installation Manual</td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node34.html" rel="prev" title="6.3.3 performance notes"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="mail-server.html" rel="parent" title="6 set up your"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node36.html" rel="next" title="6.4.1 information on VERP"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="node34.html">6.3.3 Performance notes</a>
+<a class="sectref" href="node34.html" rel="prev">6.3.3 Performance notes</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="mail-server.html">6 Set up your</a>
+<a class="sectref" href="mail-server.html" rel="parent">6 Set up your</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node36.html">6.4.1 Information on VERP</a>
+<a class="sectref" href="node36.html" rel="next">6.4.1 Information on VERP</a>
 </div>
 </div>
-<hr />
+<hr/>
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-
-</body>
+</p></p></p></p></p></p></p></p></body>
 </html>

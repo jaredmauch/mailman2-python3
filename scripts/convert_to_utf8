@@ -1,0 +1,134 @@
+#!/usr/bin/python3
+
+import os
+import subprocess
+import sys
+import getopt
+import re
+
+debug = False
+
+# We need to know the original encoding of the files, "file -bi" is not reliable.
+# These values were pulled out of Mailman/Defaults.py before they were all updated to utf-8.
+old_encoding_map = {
+    'ast'   : 'iso-8859-1',
+    'cs'    : 'iso-8859-2',
+    'da'    : 'iso-8859-1',
+    'de'    : 'iso-8859-1',
+    'es'    : 'iso-8859-1',
+    'et'    : 'iso-8859-15',
+    'eu'    : 'iso-8859-15',
+    'fi'    : 'iso-8859-1',
+    'fr'    : 'iso-8859-1',
+    'el'    : 'iso-8859-7',
+    'hr'    : 'iso-8859-2',
+    'hu'    : 'iso-8859-2',
+    'ia'    : 'iso-8859-15',
+    'it'    : 'iso-8859-1',
+    'ja'    : 'euc-jp',
+    'ko'    : 'euc-kr',
+    'lt'    : 'iso-8859-13',
+    'nl'    : 'iso-8859-1',
+    'no'    : 'iso-8859-1',
+    'pl'    : 'iso-8859-2',
+    'pt'    : 'iso-8859-1',
+    'pt_BR' : 'iso-8859-1',
+    'sl'    : 'iso-8859-2',
+    'sv'    : 'iso-8859-1',
+    'tr'    : 'iso-8859-9',
+}
+
+def convert_files(directory):
+    file_count = 0
+    for root, dirs, files in os.walk(directory):
+        for filename in files:
+            file_path   = os.path.join(root, filename)
+            dir_path    = os.path.dirname(file_path)
+            locale_name = os.path.basename(dir_path)
+
+            is_lcmessage = False
+            if locale_name == 'LC_MESSAGES':
+                locale_name = os.path.dirname(dir_path)
+                locale_name = os.path.basename(locale_name)
+                is_lcmessage = True
+
+            if not locale_name in old_encoding_map:
+                _print(f"!!! Skipping locale {locale_name}, not a known locale.")
+                break
+
+            target_extensions = ( '.html', '.txt', '.po' )
+            if not filename.endswith(target_extensions):
+                _print(f"!!! Skipping file {filename}, not " + ', '.join(target_extensions))
+                continue
+
+            _print(f"*** Working on locale: {locale_name} file: {file_path} known encoding: {old_encoding_map[locale_name]}")
+            try:
+                current_encoding = subprocess.check_output(
+                    ["file", "-bi", file_path]
+                ).decode().strip().split('charset=')[-1]
+                _print(f"***** Currrent file encoding: {current_encoding}")
+            except Exception as e:
+                print(f"!!! Failed to get current file encoding for {file_path}: {e.stdout.decode()}", file=sys.stderr)
+                exit(1)
+
+            if( current_encoding.endswith('ascii') or current_encoding == 'utf-8' ):
+                _print(f"!!! Skipping {filename}, already utf-8 or ascii.")
+                continue
+
+            temp_file = f"{file_path}.tmp"
+            try:
+                _print(f"******* Converting {filename} from {old_encoding_map[locale_name]} to UTF-8.")
+                subprocess.check_output(
+                    ["iconv", "-f", old_encoding_map[locale_name], "-t", 'UTF-8', file_path, "-o", temp_file],
+                    stderr=subprocess.STDOUT,
+                )
+                os.replace(temp_file, file_path)
+            except Exception as e:
+                print(f"!!! Failed to convert {filename}: {e.stdout.decode()}", file=sys.stderr)
+                exit(1)
+
+            if is_lcmessage:
+                with open(os.path.abspath(file_path), 'r') as lcfile:
+                    file_lines = lcfile.read()
+
+                with open(os.path.abspath(file_path), 'w') as lcfile:
+                    file_lines = re.sub(r'\n"Content-Type: text/plain; charset=.*\n', '\n"Content-Type: text/plain; charset=utf-8\\\\n"\n', file_lines, count=1)
+                    lcfile.write(file_lines)
+
+            file_count += 1
+
+    print(f"Converted {file_count} templates to UTF-8.")
+
+def _print(msg):
+    if debug: print(msg)
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hd:v', ['help', 'directory=', 'verbose'])
+    except getopt.error as e:
+        usage()
+
+    searchdir = None
+
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage()
+        elif opt in ('-d', '--directory'):
+            searchdir = arg
+        elif opt in ('-v', '--verbose' ):
+            global debug
+            debug = True
+
+    if not searchdir:
+        print('Need a search directory.', file=sys.stderr)
+        usage()
+
+    convert_files(searchdir)
+
+def usage():
+    print("usage: ./convert_to_utf8.py [-v|--verbose] [-d|--directory] $directory");
+    exit(1)
+
+if __name__ == '__main__':
+    main()
+    exit(0)

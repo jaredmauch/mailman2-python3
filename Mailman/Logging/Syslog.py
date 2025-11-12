@@ -26,12 +26,10 @@ import quopri
 from Mailman.Logging.StampedLogger import StampedLogger
 
 
-
 # Global, shared logger instance.  All clients should use this object.
-syslog = None
+_syslog = None
 
 
-
 # Don't instantiate except below.
 class _Syslog(object):
     def __init__(self):
@@ -77,5 +75,30 @@ class _Syslog(object):
             logger.close()
         self._logfiles.clear()
 
+    def mailman_log(self, ident, msg):
+        """Log a message to mailman's logging system."""
+        if isinstance(msg, bytes):
+            msg = msg.decode('iso-8859-1', 'replace')
+        elif not isinstance(msg, str):
+            msg = str(msg)
+        self.write(ident, msg)
 
-syslog = _Syslog()
+_syslog = _Syslog()
+
+def mailman_log(ident, msg, *args):
+    """Log a message to mailman's logging system."""
+    if isinstance(msg, bytes):
+        msg = msg.decode('iso-8859-1', 'replace')
+    elif not isinstance(msg, str):
+        msg = str(msg)
+    if args:
+        msg = msg % args
+    # Remove u prefix if present (Python 2 compatibility)
+    if msg.startswith("u'") and msg.endswith("'"):
+        msg = msg[2:-1]
+    elif msg.startswith('u"') and msg.endswith('"'):
+        msg = msg[2:-1]
+    _syslog.mailman_log(ident, msg)
+
+# For backward compatibility
+syslog = mailman_log

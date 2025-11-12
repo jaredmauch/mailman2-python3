@@ -44,7 +44,7 @@ Where:
 
 import re
 import sys
-import getopt
+import argparse
 import paths
 
 from Mailman import mm_cfg
@@ -66,31 +66,18 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'apbV:h',
-                                   ['advertised', 'public-archive', 'bare',
-                                    'virtual-host-overview=',
-                                    'help'])
-    except getopt.error as msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description='List all mailing lists.')
+    parser.add_argument('-a', '--advertised', action='store_true',
+                       help='List only those mailing lists that are publically advertised')
+    parser.add_argument('-p', '--public-archive', action='store_true',
+                       help='List only those lists with public archives')
+    parser.add_argument('-V', '--virtual-host-overview',
+                       help='List only those mailing lists that are homed to the given virtual domain')
+    parser.add_argument('-b', '--bare', action='store_true',
+                       help='Displays only the list name, with no description')
 
-    advertised = 0
-    public = 0
-    vhost = None
-    bare = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-a', '--advertised'):
-            advertised = 1
-        elif opt in ('-p', '--public-archive'):
-            public = 1
-        elif opt in ('-V', '--virtual-host-overview'):
-            vhost = arg
-        elif opt in ('-b', '--bare'):
-            bare = 1
+    args = parser.parse_args()
 
     names = Utils.list_names()
     names.sort()
@@ -98,39 +85,53 @@ def main():
     mlists = []
     longest = 0
     for n in names:
+        # Ensure name is a string
+        if isinstance(n, bytes):
+            n = n.decode('utf-8', 'replace')
         try:
             mlist = MailList.MailList(n, lock=0)
         except Errors.MMUnknownListError:
             # The list could have been deleted by another process.
             continue
-        if advertised and not mlist.advertised:
+        if args.advertised and not mlist.advertised:
             continue
-        if public and mlist.archive_private:
+        if args.public_archive and mlist.archive_private:
             continue
-        if (vhost and mm_cfg.VIRTUAL_HOST_OVERVIEW and
-               not re.search('://%s/' % re.escape(vhost),
+        if (args.virtual_host_overview and mm_cfg.VIRTUAL_HOST_OVERVIEW and
+               not re.search('://%s/' % re.escape(args.virtual_host_overview),
                    mlist.web_page_url,
                    re.IGNORECASE)):
             continue
         mlists.append(mlist)
-        longest = max(len(mlist.real_name), longest)
+        # Ensure real_name is a string
+        real_name = mlist.real_name
+        if isinstance(real_name, bytes):
+            real_name = real_name.decode('utf-8', 'replace')
+        longest = max(len(real_name), longest)
 
-    if not mlists and not bare:
-        print(C_('No matching mailing lists found'))
+    if not mlists and not args.bare:
+        print('No matching mailing lists found')
         return
 
-    if not bare:
-        print(len(mlists), C_('matching mailing lists found:'))
+    if not args.bare:
+        print(len(mlists), 'matching mailing lists found:')
 
     format = '%%%ds - %%.%ds' % (longest, 77 - longest)
     for mlist in mlists:
-        if bare:
-            print(mlist.internal_name())
+        if args.bare:
+            name = mlist.internal_name()
+            if isinstance(name, bytes):
+                name = name.decode('utf-8', 'replace')
+            print(name)
         else:
-            description = mlist.description or C_('[no description available]')
-            print('   ', format % (mlist.real_name, description))
+            real_name = mlist.real_name
+            if isinstance(real_name, bytes):
+                real_name = real_name.decode('utf-8', 'replace')
+            description = mlist.description or '[no description available]'
+            if isinstance(description, bytes):
+                description = description.decode('utf-8', 'replace')
+            print('   ', format % (real_name, description))
 
 
-
 if __name__ == '__main__':
     main()

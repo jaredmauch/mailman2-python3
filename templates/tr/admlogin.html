@@ -1,41 +1,100 @@
 <html>
 <head>
-  <title>%(listname)s %(who)s Girişi</title>
-  <script>function sf(){document.f.adminpw.focus();}</script>
-</head>
-<body bgcolor="#ffffff" onLoad="sf()">
-<FORM METHOD=POST ACTION="%(path)s" name="f">
+<title>%(listname)s %(who)s GiriÃ¾i</title>
+<script>function sf(){document.f.adminpw.focus();}</script>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff" onload="sf()">
+<form action="%(path)s" method="POST" name="f">
 %(message)s
-  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	<B><FONT COLOR="#000000" SIZE="+1">%(listname)s %(who)s
-	    Girişi</FONT></B>
-      </TD>
-    </TR>
-    <tr>
-      <TD><div ALIGN="Right">Liste %(who)s Şifresi:</div></TD>
-      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
-    </tr>
-    <tr>
-      <td colspan=2 align=middle><INPUT type="SUBMIT"
-                                        name="admlogin"
-					value="Giriş...">
-      </td>
-    </tr>
-  </TABLE>
-      <p><strong><em>&Ouml;nemli:</em></strong> Bu noktadan itibaren tarayıcınızda
-      tanımlama bilgilerini (cookie) etkinleştirmiş olmanız gerekir, yoksa hi&ccedil;bir
-      y&ouml;netimsel değişiklik yapılmayacaktır.
+  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
+<b><font color="#000000" size="+1">%(listname)s %(who)s
+	    GiriÃ¾i</font></b>
+</td>
+</tr>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">Liste %(who)s Ãifresi:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><input name="adminpw" size="30" type="password"/></td>
+</tr>
+<tr>
+<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"><input name="admlogin" type="SUBMIT" value="GiriÃ¾..."/>
+</td>
+</tr>
+</table>
+<p><strong><em>Ã–nemli:</em></strong> Bu noktadan itibaren tarayÃ½cÃ½nÃ½zda
+      tanÃ½mlama bilgilerini (cookie) etkinleÃ¾tirmiÃ¾ olmanÃ½z gerekir, yoksa hiÃ§bir
+      yÃ¶netimsel deÃ°iÃ¾iklik yapÃ½lmayacaktÃ½r.
 
-      <p>Mailman'in y&ouml;netimsel aray&uuml;z&uuml;nde oturum tanımlayıcı bilgileri
-      kullanılır, b&ouml;ylece her y&ouml;netimsel işlemde tekrar yetkilendirme
-      yapmanıza gerek kalmaz. Bu tanımlayıcı bilgi tarayıcınızdan
-      &ccedil;ıktığınızda otomatik olarak yok olur, veya siz tanımlayıcı
-      bilgiyi <em>Diğer Y&ouml;netimsel Aktiviteler</em> başlığı altındaki
-      <em>&Ccedil;ıkış</em> linkine tıklayarak (başarıyla giriş yaptığınızda
-      bunu g&ouml;receksiniz) kendiniz yok edebilirsiniz.
-</FORM>
+      <p>Mailman'in yÃ¶netimsel arayÃ¼zÃ¼nde oturum tanÃ½mlayÃ½cÃ½ bilgileri
+      kullanÃ½lÃ½r, bÃ¶ylece her yÃ¶netimsel iÃ¾lemde tekrar yetkilendirme
+      yapmanÃ½za gerek kalmaz. Bu tanÃ½mlayÃ½cÃ½ bilgi tarayÃ½cÃ½nÃ½zdan
+      Ã§Ã½ktÃ½Ã°Ã½nÃ½zda otomatik olarak yok olur, veya siz tanÃ½mlayÃ½cÃ½
+      bilgiyi <em>DiÃ°er YÃ¶netimsel Aktiviteler</em> baÃ¾lÃ½Ã°Ã½ altÃ½ndaki
+      <em>Ã‡Ã½kÃ½Ã¾</em> linkine tÃ½klayarak (baÃ¾arÃ½yla giriÃ¾ yaptÃ½Ã°Ã½nÃ½zda
+      bunu gÃ¶receksiniz) kendiniz yok edebilirsiniz.
+</p></p></form>
 </body>
 </html>
-

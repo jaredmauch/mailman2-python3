@@ -40,7 +40,8 @@ def process(mlist, msg, msgdata):
         # Calculate the extra personalization dictionary.  Note that the
         # length of the recips list better be exactly 1.
         recips = msgdata.get('recips')
-        assert type(recips) == ListType and len(recips) == 1
+        if not (isinstance(recips, list) and len(recips) == 1):
+            raise ValueError(f'Invalid recipients: expected list with one item, got {type(recips)} with {len(recips)} items')
         member = recips[0].lower()
         d['user_address'] = member
         try:
@@ -135,7 +136,7 @@ def process(mlist, msg, msgdata):
         # The next easiest thing to do is just prepend the header and append
         # the footer as additional subparts
         payload = msg.get_payload()
-        if not isinstance(payload, ListType):
+        if not isinstance(payload, list):
             payload = [payload]
         if footer:
             mimeftr = MIMEText(footer, 'plain', lcset)
@@ -176,7 +177,7 @@ def process(mlist, msg, msgdata):
     inner.set_default_type(msg.get_default_type())
     if not copied:
         inner['Content-Type'] = inner.get_content_type()
-    if msg['mime-version'] == None:
+    if msg['mime-version'] is None:
         msg['MIME-Version'] = '1.0'
     # BAW: HACK ALERT.
     if hasattr(msg, '__version__'):
@@ -200,12 +201,34 @@ def process(mlist, msg, msgdata):
     msg['Content-Type'] = 'multipart/mixed'
 
 
-
 def decorate(mlist, template, what, extradict=None):
     # `what' is just a descriptive phrase used in the log message
     
+    # If template is None, return empty string
+    if template is None:
+        syslog('error', 'Template is None for %s', what)
+        return ''
+    
+    # If template is a Message object, get its content
+    if isinstance(template, Message):
+        try:
+            template = template.get_payload(decode=True)
+            if isinstance(template, bytes):
+                template = template.decode('utf-8', 'replace')
+        except Exception as e:
+            syslog('error', 'Error getting payload from Message template for %s: %s', what, str(e))
+            return ''
+    
+    # Ensure template is a string
+    if not isinstance(template, str):
+        try:
+            template = str(template)
+        except Exception as e:
+            syslog('error', 'Error converting template to string for %s: %s', what, str(e))
+            return ''
+    
     # If template is only whitespace, ignore it.
-    if len(re.sub('\s', '', template)) == 0:
+    if len(re.sub(r'\s', '', template)) == 0:
         return ''
 
     # BAW: We've found too many situations where Python can be fooled into

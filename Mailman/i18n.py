@@ -98,10 +98,16 @@ def _(s, frame=1):
     tns = _translation.gettext(s)
     charset = _translation.charset()
     if not charset:
-        charset = 'us-ascii'
+        charset = 'latin-1'
+    # Ensure we return a string, not bytes
+    if isinstance(tns, bytes):
+        tns = tns.decode(charset, 'replace')
+    # Ensure all dictionary values are strings, not bytes
     for k, v in list(dict.items()):
-        if isinstance(v, str):
-            dict[k] = v.encode(charset, 'replace')
+        if isinstance(v, bytes):
+            dict[k] = v.decode(charset, 'replace')
+        elif not isinstance(v, str):
+            dict[k] = str(v)
     try:
         return tns % dict
     except (ValueError, TypeError):
@@ -114,16 +120,30 @@ def tolocale(s):
     global _ctype_charset
     if isinstance(s, str) or _ctype_charset is None:
         return s
-    source = _translation.charset ()
+    source = _translation.charset()
     if not source:
         return s
-    return str(s, source, 'replace').encode(_ctype_charset, 'replace')
+    # Handle string formatting before encoding
+    if isinstance(s, bytes):
+        s = s.decode('utf-8', 'replace')
+    # Ensure we return a string, not bytes
+    result = s.encode(_ctype_charset, 'replace')
+    if isinstance(result, bytes):
+        result = result.decode(_ctype_charset)
+    return result
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
 else:
     def C_(s):
-        return tolocale(_(s, 2))
+        result = _(s, 2)
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', 'replace')
+        result = tolocale(result)
+        # Ensure the result is a string and not bytes
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', 'replace')
+        return result
 
     
 

@@ -79,7 +79,7 @@ files can be `-'.
 
 import sys
 import os
-import getopt
+import argparse
 from io import StringIO
 
 import paths
@@ -90,7 +90,7 @@ from Mailman import i18n
 from Mailman import Utils
 from Mailman import mm_cfg
 from Mailman import Errors
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import MailList
 from Mailman import MemberAdaptor
 from Mailman.UserDesc import UserDesc
@@ -99,19 +99,17 @@ _ = i18n._
 C_ = i18n.C_
 
 
-
-def usage(status, msg=''):
-    if status:
+def usage(code, msg=''):
+    if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print(_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
-    sys.exit(status)
+    sys.exit(code)
 
 
-
 def readfile(filename):
     if filename == '-':
         fp = sys.stdin
@@ -126,13 +124,11 @@ def readfile(filename):
     return lines
 
 
-
 def readmsgfile(filename):
     lines = open(filename).read()
     return lines
 
 
-
 class Tee:
     def __init__(self, outfp):
         self.__outfp = outfp
@@ -142,7 +138,6 @@ class Tee:
         self.__outfp.write(msg)
 
 
-
 def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
     tee = Tee(outfp)
     for member in members:
@@ -190,126 +185,96 @@ def addall(mlist, members, digest, ack, outfp, nomail, invite, invite_msg):
                         userdesc.address.lower(), MemberAdaptor.BYADMIN)
 
 
-
 def main():
+    parser = argparse.ArgumentParser(description='Add members to a mailing list.')
+    parser.add_argument('listname', help='Name of the mailing list')
+    parser.add_argument('-a', '--admin-notify', action='store_true',
+                       help='Send admin notification')
+    parser.add_argument('-w', '--welcome-msg', action='store_true',
+                       help='Send welcome message')
+    parser.add_argument('-i', '--invite', action='store_true',
+                       help='Send invitation instead of directly subscribing')
+    parser.add_argument('-f', '--file', help='File containing member addresses')
+    parser.add_argument('-d', '--digest', action='store_true',
+                       help='Subscribe members to digest delivery')
+    parser.add_argument('-m', '--moderate', action='store_true',
+                       help='Moderate new members')
+    parser.add_argument('-n', '--no-welcome', action='store_true',
+                       help='Do not send welcome message')
+    parser.add_argument('-r', '--regular', action='store_true',
+                       help='Subscribe members to regular delivery')
+    parser.add_argument('-t', '--text', help='Text to include in welcome message')
+    parser.add_argument('-u', '--userack', action='store_true',
+                       help='Require user acknowledgment')
+    parser.add_argument('-l', '--language', help='Preferred language for new members')
+
+    args = parser.parse_args()
+
+    # Get the list name
+    if not args.listname:
+        usage(1, _('You must specify a list name'))
+    listname = args.listname
+
+    # Get the list object
     try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                   'a:r:d:w:im:nh',
-                                   ['admin-notify=',
-                                    'regular-members-file=',
-                                    'digest-members-file=',
-                                    'welcome-msg=',
-                                    'invite',
-                                    'invite-msg-file=',
-                                    'nomail',
-                                    'help',])
-    except getopt.error as msg:
-        usage(1, msg)
-
-    if len(args) != 1:
-        usage(1)
-
-    listname = args[0].lower().strip()
-    nfile = None
-    dfile = None
-    send_welcome_msg = None
-    admin_notif = None
-    invite = False
-    invite_msg_file = None
-    nomail = False
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-d', '--digest-members-file'):
-            dfile = arg
-        elif opt in ('-r', '--regular-members-file'):
-            nfile = arg
-        elif opt in ('-m', '--invite-msg-file'):
-            invite_msg_file = arg
-        elif opt in ('-i', '--invite'):
-            invite = True
-        elif opt in ('-w', '--welcome-msg'):
-            if arg.lower()[0] == 'y':
-                send_welcome_msg = 1
-            elif arg.lower()[0] == 'n':
-                send_welcome_msg = 0
-            else:
-                usage(1, C_('Bad argument to -w/--welcome-msg: %(arg)s'))
-        elif opt in ('-a', '--admin-notify'):
-            if arg.lower()[0] == 'y':
-                admin_notif = 1
-            elif arg.lower()[0] == 'n':
-                admin_notif = 0
-            else:
-                usage(1, C_('Bad argument to -a/--admin-notify: %(arg)s'))
-        elif opt in ('-n', '--nomail'):
-            nomail = True
-
-    if dfile is None and nfile is None:
-        usage(1)
-
-    if dfile == "-" and nfile == "-":
-        usage(1, C_('Cannot read both digest and normal members '
-                    'from standard input.'))
-
-    if not invite and invite_msg_file != None:
-        usage(1, C_('Setting invite-msg-file requires --invite.'))
-
-    try:
-        mlist = MailList.MailList(listname)
+        mlist = MailList.MailList(listname, lock=1)
     except Errors.MMUnknownListError:
-        usage(1, C_('No such list: %(listname)s'))
+        usage(1, _('No such list: %(listname)s'))
 
-    # Set up defaults
-    if send_welcome_msg is None:
-        send_welcome_msg = mlist.send_welcome_msg
-    if admin_notif is None:
-        admin_notif = mlist.admin_notify_mchanges
+    # Get the members to add
+    members = []
+    if args.regular_members_file:
+        if args.regular_members_file == '-':
+            members = sys.stdin.read().splitlines()
+        else:
+            try:
+                with open(args.regular_members_file) as fp:
+                    members = fp.read().splitlines()
+            except IOError:
+                usage(1, _('Cannot open file: %(file)s') %
+                      {'file': args.regular_members_file})
+    elif args.digest_members_file:
+        if args.digest_members_file == '-':
+            members = sys.stdin.read().splitlines()
+        else:
+            try:
+                with open(args.digest_members_file) as fp:
+                    members = fp.read().splitlines()
+            except IOError:
+                usage(1, _('Cannot open file: %(file)s') %
+                      {'file': args.digest_members_file})
+    else:
+        usage(1, _('You must specify at least one of -r or -d'))
 
-    otrans = i18n.get_translation()
-    # Read the regular and digest member files
-    try:
-        dmembers = []
-        if dfile:
-            dmembers = readfile(dfile)
+    # Process each member
+    for member in members:
+        member = member.strip()
+        if not member or member.startswith('#'):
+            continue
+        # Convert email address to lowercase
+        member = member.lower()
+        try:
+            if args.invite:
+                mlist.InviteNewMember(member, args.invite_msg_file)
+            else:
+                mlist.AddMember(member, args.regular, args.digest,
+                              args.moderate, args.text, args.userack,
+                              args.admin_notify, args.welcome_msg,
+                              args.language)
+        except Errors.MMAlreadyAMember:
+            print(_('%(member)s is already a member of %(listname)s'))
+        except Errors.MMHostileAddress:
+            print(_('%(member)s is a hostile address'))
+        except Errors.MMInvalidEmailAddress:
+            print(_('%(member)s is not a valid email address'))
+        except Errors.MMBadEmailError:
+            print(_('%(member)s is not a valid email address'))
+        except Errors.MMListError as e:
+            print(_('%(member)s: %(error)s'))
 
-        nmembers = []
-        if nfile:
-            nmembers = readfile(nfile)
+    mlist.Save()
+    mlist.Unlock()
 
-        invite_msg = ''
-        if invite_msg_file:
-            invite_msg = readmsgfile(invite_msg_file)
 
-        if not dmembers and not nmembers:
-            usage(0, C_('Nothing to do.'))
-
-        s = StringIO()
-        i18n.set_language(mlist.preferred_language)
-        if nmembers:
-            addall(mlist, nmembers, 0, send_welcome_msg, s, nomail, invite,
-                   invite_msg)
-
-        if dmembers:
-            addall(mlist, dmembers, 1, send_welcome_msg, s, nomail, invite,
-                   invite_msg)
-
-        if admin_notif:
-            realname = mlist.real_name
-            subject = _('%(realname)s subscription notification')
-            msg = Message.UserNotification(
-                mlist.owner,
-                Utils.get_site_email(mlist.host_name),
-                subject,
-                s.getvalue(),
-                mlist.preferred_language)
-            msg.send(mlist)
-
-        mlist.Save()
-    finally:
-        mlist.Unlock()
-        i18n.set_translation(otrans)
-
-
 if __name__ == '__main__':
     main()

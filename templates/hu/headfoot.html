@@ -1,23 +1,85 @@
-Ez a sz&ouml;veg olyan <a href="https://docs.python.org/2/library/stdtypes.html#string-formatting-operations">Python-t&iacute;pus&uacute; v&aacute;ltoz&oacute;k</a>at mutat be, amelyekkel a lista egyes jellemz&#337;ire lehet hivatkozni.
-Az al&aacute;bbi v&aacute;ltoz&oacute;k jelent&eacute;se:
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Ez a szöveg olyan <a href="https://docs.python.org/3/library/stdtypes.html#string-formatting-operations">Python-típusú változók</a>at mutat be, amelyekkel a lista egyes jellemzőire lehet hivatkozni.
+Az alábbi változók jelentése:
 
 <ul>
- <li><b>real_name</b> - A lista `pedik&#369;r&ouml;z&ouml;tt' neve; &aacute;ltal&aacute;ban a 
- lista neve nagy kezd&#337;bet&#369;vel.
+<li><b>real_name</b> - A lista `pedikűrözött' neve; általában a 
+ lista neve nagy kezdőbetűvel.
 
- <li><b>list_name</b> - Az a n&eacute;v, amellyel a list&aacute;t az URL-lel 
- megadott c&iacute;m alapj&aacute;n azonos&iacute;tani lehet, kis- &eacute;s nagybet&#369;k sz&aacute;m&iacute;tanak.
+ <li><b>list_name</b> - Az a név, amellyel a listát az URL-lel 
+ megadott cím alapján azonosítani lehet, kis- és nagybetűk számítanak.
  
- <li><b>host_name</b> - Tartom&aacute;nyn&eacute;vvel kieg&eacute;sz&iacute;tett teljes neve a g&eacute;pnek,
- amelyen a levelez&#337;list&aacute;k m&#369;k&ouml;dnek.
+ <li><b>host_name</b> - Tartománynévvel kiegészített teljes neve a gépnek,
+ amelyen a levelezőlisták működnek.
 
- <li><b>web_page_url</b> - Mailman kiindul&aacute;si URL-je. Ezut&aacute;n lehet megadni 
- pl. <em>listinfo/%(list_name)s</em> r&eacute;szt, hogy a k&iacute;v&aacute;nt levelez&#337;lista 
- inform&aacute;ci&oacute;s lapja megjelenjen. 
+ <li><b>web_page_url</b> - Mailman kiindulási URL-je. Ezután lehet megadni 
+ pl. <em>listinfo/%(list_name)s</em> részt, hogy a kívánt levelezőlista 
+ információs lapja megjelenjen. 
 
- <li><b>description</b> - R&ouml;vid le&iacute;r&aacute;s a levelez&#337;list&aacute;r&oacute;l.
+ <li><b>description</b> - Rövid leírás a levelezőlistáról.
  
- <li><b>info</b> - A levelez&#337;lista r&eacute;szletes le&iacute;r&aacute;sa.
+ <li><b>info</b> - A levelezőlista részletes leírása.
 
- <li><b>cgiext</b> - A CGI szkriptek kiterjeszt&eacute;se.
-</ul>
+ <li><b>cgiext</b> - A CGI szkriptek kiterjesztése.
+</li></li></li></li></li></li></li></ul>
