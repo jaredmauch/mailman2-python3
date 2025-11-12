@@ -1,57 +1,47 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<link rel="STYLESHEET" href="mailman-install.css" type='text/css' />
-<link rel="first" href="mailman-install.html" title='GNU mailman - installation Manual' />
-<link rel='last' href='about.html' title='About this document...' />
-<link rel='help' href='about.html' title='About this document...' />
-<link rel="next" href="node41.html" />
-<link rel="prev" href="customizing.html" />
-<link rel="parent" href="front.html" />
-<link rel="next" href="node41.html" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name='aesop' content='information' />
+<link href="mailman-install.css" rel="STYLESHEET" type="text/css"/>
+<link href="mailman-install.html" rel="first" title="GNU mailman - installation Manual"/>
+<link href="about.html" rel="last" title="About this document..."/>
+<link href="about.html" rel="help" title="About this document..."/>
+<link href="node41.html" rel="next"/>
+<link href="customizing.html" rel="prev"/>
+<link href="front.html" rel="parent"/>
+<link href="node41.html" rel="next"/>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="information" name="aesop"/>
 <title>8 Create a site-wide mailing list</title>
 </head>
 <body>
 <div class="navigation">
-<div id='top-navigation-panel' xml:id='top-navigation-panel'>
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div id="top-navigation-panel" xml:id="top-navigation-panel">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="7 review your site"
-  href="customizing.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="Front Matter"
-  href="front.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="9 set up cron"
-  href="node41.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - Installation Manual</td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="customizing.html" rel="prev" title="7 review your site"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="front.html" rel="parent" title="Front Matter"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node41.html" rel="next" title="9 set up cron"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="customizing.html">7 Review your site</a>
+<a class="sectref" href="customizing.html" rel="prev">7 Review your site</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="front.html">Front Matter</a>
+<a class="sectref" href="front.html" rel="parent">Front Matter</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node41.html">9 Set up cron</a>
+<a class="sectref" href="node41.html" rel="next">9 Set up cron</a>
 </div>
-<hr /></div>
+<hr/></div>
 </div>
 <!--End of Navigation Panel-->
-
 <h1><a name="SECTION001800000000000000000"></a><a name="site-list"></a>
-<br>
+<br/>
 8 Create a site-wide mailing list
 </h1>
-
 <p>
 After you have completed the integration of Mailman and your mail server, you
 need to create a ``site-wide'' mailing list.  This is the one that password
@@ -65,7 +55,6 @@ the prompts:
 <div class="verbatim"><pre>
     % bin/newlist mailman
 </pre></div>
-
 <p>
 Now configure your site list.  There is a convenient template for a generic
 site list in the installation directory, under <span class="file">data/sitelist.cfg</span> which
@@ -81,7 +70,6 @@ running:
 <div class="verbatim"><pre>
     % bin/config_list -i data/sitelist.cfg mailman
 </pre></div>
-
 <p>
 After applying the <span class="file">sitelist.cfg</span> options, be sure you review the
 site list's configuration via the admin pages.
@@ -90,42 +78,31 @@ site list's configuration via the admin pages.
 You should also subscribe yourself to the site list.
 
 <p>
-
 <div class="navigation">
-<div class='online-navigation'>
-<p></p><hr />
-<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<div class="online-navigation">
+<p></p><hr/>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
 <tr>
-<td class='online-navigation'><a rel="prev" title="7 review your site"
-  href="customizing.html"><img src='previous.png'
-  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
-<td class='online-navigation'><a rel="parent" title="Front Matter"
-  href="front.html"><img src='up.png'
-  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
-<td class='online-navigation'><a rel="next" title="9 set up cron"
-  href="node41.html"><img src='next.png'
-  border='0' height='32'  alt='Next Page' width='32' /></a></td>
-<td align="center" width="100%">GNU Mailman - Installation Manual</td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
-<td class='online-navigation'><img src='blank.png'
-  border='0' height='32'  alt='' width='32' /></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="customizing.html" rel="prev" title="7 review your site"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="front.html" rel="parent" title="Front Matter"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node41.html" rel="next" title="9 set up cron"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
+<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
 </tr></table>
-<div class='online-navigation'>
+<div class="online-navigation">
 <b class="navlabel">Previous:</b>
-<a class="sectref" rel="prev" href="customizing.html">7 Review your site</a>
+<a class="sectref" href="customizing.html" rel="prev">7 Review your site</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" rel="parent" href="front.html">Front Matter</a>
+<a class="sectref" href="front.html" rel="parent">Front Matter</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" rel="next" href="node41.html">9 Set up cron</a>
+<a class="sectref" href="node41.html" rel="next">9 Set up cron</a>
 </div>
 </div>
-<hr />
+<hr/>
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-
-</body>
+</p></p></p></p></p></p></p></p></body>
 </html>

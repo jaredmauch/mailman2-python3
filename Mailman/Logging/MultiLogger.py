@@ -63,7 +63,7 @@ class MultiLogger:
             # you want to be sure that a bug in one logger doesn't prevent
             # logging to all the other loggers
             try:
-                if logger <> sys.__stderr__ and logger <> sys.__stdout__:
+                if logger != sys.__stderr__ and logger != sys.__stdout__:
                     logger.close()
             except:
                 _logexc(logger)

@@ -44,7 +44,7 @@ CFLAGS=		$(OPT) $(DEFS)
 PACKAGEDIR= 	$(prefix)/messages
 SHELL=		/bin/sh
 DIRSETGID=	chmod g+s
-MSGFMT= 	@PYTHON@ ../build/bin/msgfmt.py
+MSGFMT= 	python3 ../bin/msgfmt.py
 MSGMERGE=	msgmerge
 
 # CVS available languages

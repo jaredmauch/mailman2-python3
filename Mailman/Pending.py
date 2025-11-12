@@ -17,14 +17,20 @@
 
 """Track pending actions which require confirmation."""
 
+from builtins import str
+from builtins import object
 import os
 import time
 import errno
 import random
-import cPickle
+import pickle
+import socket
+import traceback
+import signal
 
 from Mailman import mm_cfg
 from Mailman import UserDesc
+from Mailman import Utils
 from Mailman.Utils import sha_new
 
 # Types of pending records
@@ -40,93 +46,119 @@ _ALLKEYS = (SUBSCRIPTION, UNSUBSCRIPTION,
             RE_ENABLE, PROBE_BOUNCE,
             )
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 _missing = []
 
 
 
-class Pending:
+class Pending(object):
     def InitTempVars(self):
         self.__pendfile = os.path.join(self.fullpath(), 'pending.pck')
 
-    def pend_new(self, op, *content, **kws):
-        """Create a new entry in the pending database, returning cookie for it.
+    def pend_new(self, operation, data=None):
+        """Add a new pending request to the list.
+
+        :param operation: The operation to perform.
+        :type operation: string
+        :param data: The data associated with the operation.
+        :type data: any
+        :return: The cookie for the pending request.
+        :rtype: string
         """
-        assert op in _ALLKEYS, 'op: %s' % op
-        lifetime = kws.get('lifetime', mm_cfg.PENDING_REQUEST_LIFE)
-        # We try the main loop several times. If we get a lock error somewhere
-        # (for instance because someone broke the lock) we simply try again.
-        assert self.Locked()
-        # Load the database
-        db = self.__load()
-        # Calculate a unique cookie.  Algorithm vetted by the Timbot.  time()
-        # has high resolution on Linux, clock() on Windows.  random gives us
-        # about 45 bits in Python 2.2, 53 bits on Python 2.3.  The time and
-        # clock values basically help obscure the random number generator, as
-        # does the hash calculation.  The integral parts of the time values
-        # are discarded because they're the most predictable bits.
-        while True:
-            now = time.time()
-            x = random.random() + now % 1.0 + time.clock() % 1.0
-            cookie = sha_new(repr(x)).hexdigest()
-            # We'll never get a duplicate, but we'll be anal about checking
-            # anyway.
-            if not db.has_key(cookie):
-                break
-        # Store the content, plus the time in the future when this entry will
-        # be evicted from the database, due to staleness.
-        db[cookie] = (op,) + content
-        evictions = db.setdefault('evictions', {})
-        evictions[cookie] = now + lifetime
-        self.__save(db)
+        # Make sure we have a lock
+        assert self.Locked(), 'List must be locked before pending operations'
+        
+        # Generate a unique cookie
+        cookie = Utils.unique_message_id(mlist=self)
+        
+        # Store the pending request
+        self._pending[cookie] = (operation, data)
+        
         return cookie
 
     def __load(self):
+        """Load the pending database with improved error handling."""
+        filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
+        filename_backup = filename + '.bak'
+
+        # Try loading the main file first
         try:
-            fp = open(self.__pendfile)
-        except IOError, e:
-            if e.errno <> errno.ENOENT: raise
-            return {'evictions': {}}
-        try:
-            return cPickle.load(fp)
-        finally:
-            fp.close()
+            with open(filename, 'rb') as fp:
+                try:
+                    data = fp.read()
+                    if not data:
+                        return {}
+                    return pickle.loads(data, fix_imports=True, encoding='latin1')
+                except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
+                    syslog('error', 'Error loading pending.pck: %s\nTraceback:\n%s', 
+                           str(e), traceback.format_exc())
+
+            # If we get here, the main file failed to load properly
+            if os.path.exists(filename_backup):
+                syslog('info', 'Attempting to load from backup file')
+                with open(filename_backup, 'rb') as fp:
+                    try:
+                        data = fp.read()
+                        if not data:
+                            return {}
+                        db = pickle.loads(data, fix_imports=True, encoding='latin1')
+                        # Successfully loaded backup, restore it as main
+                        import shutil
+                        shutil.copy2(filename_backup, filename)
+                        return db
+                    except (EOFError, ValueError, TypeError, pickle.UnpicklingError) as e:
+                        syslog('error', 'Error loading backup pending.pck: %s\nTraceback:\n%s', 
+                               str(e), traceback.format_exc())
+
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                syslog('error', 'IOError loading pending.pck: %s\nTraceback:\n%s', 
+                       str(e), traceback.format_exc())
+
+        # If we get here, both main and backup files failed or don't exist
+        return {}
 
     def __save(self, db):
-        evictions = db['evictions']
-        now = time.time()
-        for cookie, data in db.items():
-            if cookie in ('evictions', 'version'):
-                continue
-            timestamp = evictions[cookie]
-            if now > timestamp:
-                # The entry is stale, so remove it.
-                del db[cookie]
-                del evictions[cookie]
-        # Clean out any bogus eviction entries.
-        for cookie in evictions.keys():
-            if not db.has_key(cookie):
-                del evictions[cookie]
-        db['version'] = mm_cfg.PENDING_FILE_SCHEMA_VERSION
-        tmpfile = '%s.tmp.%d.%d' % (self.__pendfile, os.getpid(), now)
-        omask = os.umask(007)
-        try:
-            fp = open(tmpfile, 'w')
+        """Save the pending database with atomic operations and backup."""
+        if not db:
+            return
+
+        filename = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
+        filename_tmp = filename + '.tmp.%s.%d' % (socket.gethostname(), os.getpid())
+        filename_backup = filename + '.bak'
+
+        # First create a backup of the current file if it exists
+        if os.path.exists(filename):
             try:
-                cPickle.dump(db, fp)
+                import shutil
+                shutil.copy2(filename, filename_backup)
+            except IOError as e:
+                syslog('error', 'Error creating backup: %s', str(e))
+
+        # Save to temporary file first
+        try:
+            # Ensure directory exists
+            dirname = os.path.dirname(filename)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname, 0o755)
+
+            with open(filename_tmp, 'wb') as fp:
+                # Use protocol 4 for better compatibility
+                pickle.dump(db, fp, protocol=4, fix_imports=True)
                 fp.flush()
-                os.fsync(fp.fileno())
-            finally:
-                fp.close()
-            os.rename(tmpfile, self.__pendfile)
-        finally:
-            os.umask(omask)
+                if hasattr(os, 'fsync'):
+                    os.fsync(fp.fileno())
+
+            # Atomic rename
+            os.rename(filename_tmp, filename)
+
+        except (IOError, OSError) as e:
+            syslog('error', 'Error saving pending.pck: %s', str(e))
+            # Try to clean up
+            try:
+                os.unlink(filename_tmp)
+            except OSError:
+                pass
+            raise
 
     def pend_confirm(self, cookie, expunge=True):
         """Return data for cookie, or None if not found.
@@ -162,10 +194,10 @@ class Pending:
 def _update(olddb):
     db = {}
     # We don't need this entry anymore
-    if olddb.has_key('lastculltime'):
+    if 'lastculltime' in olddb:
         del olddb['lastculltime']
     evictions = db.setdefault('evictions', {})
-    for cookie, data in olddb.items():
+    for cookie, data in list(olddb.items()):
         # The cookies used to be kept as a 6 digit integer.  We now keep the
         # cookies as a string (sha in our case, but it doesn't matter for
         # cookie matching).

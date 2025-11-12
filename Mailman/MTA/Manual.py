@@ -18,22 +18,15 @@
 """Creation/deletion hooks for manual /etc/aliases files."""
 
 import sys
-import email.Utils
-from cStringIO import StringIO
+import email.utils
+from io import StringIO
 
 from Mailman import mm_cfg
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Utils
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import _, C_
 from Mailman.MTA.Utils import makealiases
-
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 
 
 # no-ops for interface compliance
@@ -74,27 +67,27 @@ Here are the entries for the /etc/aliases file:
         outfp = sfp
     else:
         if not quiet:
-            print C_("""\
+            print(C_("""\
 To finish creating your mailing list, you must edit your /etc/aliases (or
 equivalent) file by adding the following lines, and possibly running the
 `newaliases' program:
-""")
-        print C_("""\
-## %(listname)s mailing list""")
+"""))
+        print(C_("""\
+## %(listname)s mailing list"""))
         outfp = sys.stdout
     # Common path
     for k, v in makealiases(listname):
-        print >> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
+        print(k + ':', ((fieldsz - len(k)) * ' '), v, file=outfp)
     # If we're using the command line interface, we're done.  For ttw, we need
     # to actually send the message to mailman-owner now.
     if not cgi:
-        print >> outfp
+        print('', file=outfp)
         return
     # Send the message to the site -owner so someone can do something about
     # this request.
     siteowner = Utils.get_site_email(extra='owner')
     # Should this be sent in the site list's preferred language?
-    msg = Message.UserNotification(
+    msg = Mailman.Message.UserNotification(
         siteowner, siteowner,
         _('Mailing list creation request for list %(listname)s'),
         sfp.getvalue(), mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -120,27 +113,27 @@ Here are the entries in the /etc/aliases file that should be removed:
 """)
         outfp = sfp
     else:
-        print C_("""
+        print(C_("""
 To finish removing your mailing list, you must edit your /etc/aliases (or
 equivalent) file by removing the following lines, and possibly running the
 `newaliases' program:
 
-## %(listname)s mailing list""")
+## %(listname)s mailing list"""))
         outfp = sys.stdout
     # Common path
     for k, v in makealiases(listname):
-        print >> outfp, k + ':', ((fieldsz - len(k)) * ' '), v
+        print(k + ':', ((fieldsz - len(k)) * ' '), v, file=outfp)
     # If we're using the command line interface, we're done.  For ttw, we need
     # to actually send the message to mailman-owner now.
     if not cgi:
-        print >> outfp
+        print(file=outfp)
         return
     siteowner = Utils.get_site_email(extra='owner')
     # Should this be sent in the site list's preferred language?
-    msg = Message.UserNotification(
+    msg = Mailman.Message.UserNotification(
         siteowner, siteowner,
         _('Mailing list removal request for list %(listname)s'),
         sfp.getvalue(), mm_cfg.DEFAULT_SERVER_LANGUAGE)
-    msg['Date'] = email.Utils.formatdate(localtime=1)
+    msg['Date'] = email.utils.formatdate(localtime=1)
     outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-    outq.enqueue(msg, recips=[siteowner], nodecorate=1)
+    outq.enqueue(msg, msgdata={'recips': [siteowner], 'nodecorate': 1})

@@ -42,7 +42,7 @@ import sys
 import os
 import time
 from stat import *
-import getopt
+import argparse
 
 try:
     import gzip
@@ -66,21 +66,19 @@ VERBOSE = 0
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__) % globals()
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Re-generate the Pipermail gzip\'d archive flat files.')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                      help='print each file as it\'s being gzip\'d')
+    parser.add_argument('listnames', nargs='*',
+                      help='Optionally, only compress the .txt files for the named lists')
+    return parser.parse_args()
 
 
 
 def compress(txtfile):
     if VERBOSE:
-        print "gzip'ing:", txtfile
+        print("gzip'ing:", txtfile)
     infp = open(txtfile)
     outfp = gzip.open(txtfile+'.gz', 'wb', 6)
     outfp.write(infp.read())
@@ -91,21 +89,12 @@ def compress(txtfile):
 
 def main():
     global VERBOSE
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'vh', ['verbose', 'help'])
-    except getopt.error, msg:
-        usage(1, msg)
-
-    # defaults
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-v', '--verbose'):
-            VERBOSE = 1
+    args = parse_args()
+    VERBOSE = args.verbose
 
     # limit to the specified lists?
-    if args:
-        listnames = args
+    if args.listnames:
+        listnames = args.listnames
     else:
         listnames = Utils.list_names()
 
@@ -121,13 +110,13 @@ def main():
             # has the list received any messages?  if not, last_post_time will
             # be zero, so it's not really a bogus archive dir.
             if mlist.last_post_time > 0:
-                print 'List', name, 'has a bogus archive_directory:', dir
+                print('List', name, 'has a bogus archive_directory:', dir)
             continue
         if VERBOSE:
-            print 'Processing list:', name
+            print('Processing list:', name)
         files = []
         for f in allfiles:
-            if f[-4:] <> '.txt':
+            if f[-4:] != '.txt':
                 continue
             # stat both the .txt and .txt.gz files and append them only if 
             # the former is newer than the latter.
@@ -153,7 +142,7 @@ if __name__ == '__main__' and \
     # the mbox, and the gzip file is not created on demand (i.e. for every
     # individual post).  This is the normal mode of operation.  Also, be sure
     # we can actually import the gzip module!
-    omask = os.umask(002)
+    omask = os.umask(0o002)
     try:
         main()
     finally:

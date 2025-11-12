@@ -33,6 +33,17 @@ Options:
         reminders are sent for all lists.  Multiple -l/--listname options are
         allowed.
 
+    -t email
+    --test=email
+        Test mode: Send password reminders to the specified email address
+        instead of the actual list members. Useful for testing the reminder
+        format and content.
+
+    -v
+    --verbose
+        Verbose mode: Display message content and recipient information
+        before sending.
+
     -h/--help
         Print this message and exit.
 """
@@ -41,8 +52,8 @@ Options:
 import sys
 import os
 import errno
-import getopt
-from types import UnicodeType
+import argparse
+import random
 
 import paths
 # mm_cfg must be imported before the other modules, due to the side-effect of
@@ -52,7 +63,7 @@ from Mailman import mm_cfg
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import UserNotification
 from Mailman import i18n
 from Mailman.Logging.Syslog import syslog
 
@@ -66,46 +77,31 @@ PROGRAM = sys.argv[0]
 _ = i18n._
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
-
-
-
 def tounicode(s, enc):
-    if isinstance(s, UnicodeType):
+    if isinstance(s, str):
         return s
-    return unicode(s, enc, 'replace')
-
-
-
-def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:h',
-                                   ['listname=', 'help'])
-    except getopt.error, msg:
-        usage(1, msg)
+        return str(s, enc, 'replace')
+    except (UnicodeDecodeError, LookupError):
+        # Try Latin-1 as fallback
+        return str(s, 'latin-1', 'replace')
 
-    if args:
-        usage(1)
 
-    listnames = None
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        if opt in ('-l', '--listname'):
-            if listnames is None:
-                listnames = [arg]
-            else:
-                listnames.append(arg)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Send password reminders for all lists to all users.')
+    parser.add_argument('-l', '--listname', action='append',
+                       help='Send password reminders for the named list only')
+    parser.add_argument('-t', '--test', metavar='email',
+                       help='Test mode: Send to specified email address instead of members')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Verbose mode: Display message content and recipient information')
+    return parser.parse_args()
 
+
+def main():
+    args = parse_args()
+
+    listnames = args.listname
     if listnames is None:
         listnames = Utils.list_names()
 
@@ -116,7 +112,7 @@ def main():
     except Errors.MMUnknownListError:
         # Do it this way for I18n's _()
         sitelistname = mm_cfg.MAILMAN_SITE_LIST
-        print >> sys.stderr, _('Site list is missing: %(sitelistname)s')
+        print(_('Site list is missing: %(sitelistname)s'), file=sys.stderr)
         syslog('error', 'Site list is missing: %s', mm_cfg.MAILMAN_SITE_LIST)
         sys.exit(1)
 
@@ -124,17 +120,48 @@ def main():
     # there's only one key in this dictionary: mm_cfg.DEFAULT_EMAIL_HOST.  The
     # values are lists of the unlocked MailList instances.
     byhost = {}
+    skipped_lists = []
     for listname in listnames:
-        mlist = MailList.MailList(listname, lock=0)
-        if not mlist.send_reminders:
+        try:
+            if args.verbose:
+                print(f"\nProcessing list: {listname}")
+            mlist = MailList.MailList(listname, lock=0)
+            # Handle potential bytes in list configuration
+            listname = tounicode(listname, 'latin-1')
+            if isinstance(mlist.real_name, bytes):
+                mlist.real_name = tounicode(mlist.real_name, 'latin-1')
+            if isinstance(mlist.internal_name(), bytes):
+                mlist.internal_name = tounicode(mlist.internal_name(), 'latin-1')
+            if not mlist.send_reminders:
+                if args.verbose:
+                    print(f"Skipping list {listname} - password reminders disabled")
+                skipped_lists.append((listname, "password reminders disabled"))
+                continue
+            if mm_cfg.VIRTUAL_HOST_OVERVIEW:
+                host = mlist.host_name
+                if isinstance(host, bytes):
+                    host = tounicode(host, 'latin-1')
+            else:
+                # See the note in Defaults.py concerning DEFAULT_HOST_NAME
+                # vs. DEFAULT_EMAIL_HOST.
+                host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
+                if isinstance(host, bytes):
+                    host = tounicode(host, 'latin-1')
+            byhost.setdefault(host, []).append(mlist)
+        except Exception as e:
+            if args.verbose:
+                print(f"Error processing list {listname}: {str(e)}")
+            skipped_lists.append((listname, str(e)))
             continue
-        if mm_cfg.VIRTUAL_HOST_OVERVIEW:
-            host = mlist.host_name
-        else:
-            # See the note in Defaults.py concerning DEFAULT_HOST_NAME
-            # vs. DEFAULT_EMAIL_HOST.
-            host = mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST
-        byhost.setdefault(host, []).append(mlist)
+
+    # If we're in test mode and no lists were found, show a message
+    if args.test and not byhost:
+        print(f"No lists found for test email {args.test}")
+        if skipped_lists:
+            print("\nSkipped lists:")
+            for listname, reason in skipped_lists:
+                print(f"  {listname}: {reason}")
+        sys.exit(0)
 
     # Now for each virtual host, collate the user information.  Each user
     # entry has the form (listaddr, password, optionsurl)
@@ -143,26 +170,72 @@ def main():
         userinfo = {}
         for mlist in byhost[host]:
             listaddr = mlist.GetListEmail()
-            for member in mlist.getMembers():
-                # The user may have disabled reminders for this list
-                if mlist.getMemberOption(member,
-                                         mm_cfg.SuppressPasswordReminder):
-                    continue
-                # Group by the lower-cased address, since Mailman always
-                # treates person@dom.ain the same as PERSON@dom.ain.
+            if args.verbose:
+                print(f"\nProcessing list: {mlist.internal_name()}")
+            # In test mode, we'll use the test email address for all lists
+            if args.test:
+                member = args.test
                 try:
-                    password = mlist.getMemberPassword(member)
-                except Errors.NotAMemberError:
-                    # Here's a member with no passwords, which I think was
-                    # possible in older versions of Mailman.  Log this and
-                    # move on.
-                    syslog('error', 'password-less member %s for list %s',
-                           member, mlist.internal_name())
+                    # Try to get the member's password if they are a member
+                    if args.verbose:
+                        print(f"  Checking membership for: {member}")
+                    try:
+                        password = mlist.getMemberPassword(member)
+                        if args.verbose:
+                            print(f"  Found password for member")
+                    except Errors.NotAMemberError:
+                        # Silently skip if not a member in test mode
+                        continue
+                    try:
+                        optionsurl = mlist.GetOptionsURL(member)
+                        if args.verbose:
+                            print(f"  Got options URL: {optionsurl}")
+                    except Errors.NotAMemberError:
+                        # If we can't get the options URL, use a default one
+                        optionsurl = f"{mlist.GetBaseURL()}/options/{mlist.internal_name()}"
+                        if args.verbose:
+                            print(f"  Using default options URL: {optionsurl}")
+                    # Use the list's default language
+                    lang = mlist.preferred_language
+                    info = (listaddr, password, optionsurl, lang)
+                    userinfo.setdefault(member, []).append(info)
+                except Exception as e:
+                    if args.verbose:
+                        print(f"  Error processing list {mlist.internal_name()}: {str(e)}")
+                    skipped_lists.append((mlist.internal_name(), str(e)))
                     continue
-                optionsurl = mlist.GetOptionsURL(member)
-                lang = mlist.getMemberLanguage(member)
-                info = (listaddr, password, optionsurl, lang)
-                userinfo.setdefault(member, []).append(info)
+            else:
+                # Normal mode - process all members
+                for member in mlist.getMembers():
+                    # The user may have disabled reminders for this list
+                    if mlist.getMemberOption(member,
+                                             mm_cfg.SuppressPasswordReminder):
+                        continue
+                    # Group by the lower-cased address, since Mailman always
+                    # treates person@dom.ain the same as PERSON@dom.ain.
+                    try:
+                        password = mlist.getMemberPassword(member)
+                    except Errors.NotAMemberError:
+                        # Silently skip members without passwords
+                        continue
+                    try:
+                        optionsurl = mlist.GetOptionsURL(member)
+                    except Errors.NotAMemberError:
+                        # If we can't get the options URL, use a default one
+                        optionsurl = f"{mlist.GetBaseURL()}/options/{mlist.internal_name()}"
+                    lang = mlist.getMemberLanguage(member)
+                    info = (listaddr, password, optionsurl, lang)
+                    userinfo.setdefault(member, []).append(info)
+
+        # If we're in test mode and no user info was collected, show a message
+        if args.test and not userinfo:
+            print(f"No valid list memberships found for test email {args.test} on host {host}")
+            if skipped_lists:
+                print("\nSkipped lists:")
+                for listname, reason in skipped_lists:
+                    print(f"  {listname}: {reason}")
+            continue
+
         # Now that we've collected user information for this host, send each
         # user the password reminder.
         for addr in userinfo.keys():
@@ -217,9 +290,15 @@ def main():
                 header = tounicode(header, enc)
                 # Add the table to the end so it doesn't get wrapped/filled
                 text += (header + '\n' + NL.join(table))
-                msg = Message.UserNotification(
+                if args.test:
+                    # In test mode, add a note that this is a test message
+                    text += "\n\n[TEST MODE] This is a test password reminder message."
+                # Ensure host is properly decoded
+                if isinstance(host, bytes):
+                    host = tounicode(host, 'latin-1')
+                msg = UserNotification(
                     addr, siteowner,
-                    _('%(host)s mailing list memberships reminder'),
+                    _('%(host)s mailing list memberships reminder') % {'host': host},
                     text.encode(enc, 'replace'), poplang)
                 # Note that text must be encoded into 'enc' because unicode
                 # cause error within email module in some language (Japanese).
@@ -228,6 +307,27 @@ def main():
             msg['X-No-Archive'] = 'yes'
             del msg['auto-submitted']
             msg['Auto-Submitted'] = 'auto-generated'
+            if args.test:
+                # In test mode, add a test header
+                msg['X-Mailman-Test-Mode'] = 'yes'
+
+            if args.verbose:
+                print("\n=== Password Reminder Message ===")
+                print(f"To: {addr}")
+                print(f"From: {siteowner}")
+                print(f"Subject: {msg['Subject']}")
+                print("\nMessage Content:")
+                print("-" * 50)
+                print(text)
+                print("-" * 50)
+                if not args.test:
+                    print("\nPress Enter to send (or Ctrl+C to abort)...")
+                    try:
+                        input()
+                    except KeyboardInterrupt:
+                        print("\nAborted.")
+                        sys.exit(1)
+
             # We want to make this look like it's coming from the siteowner's
             # list, but we also want to be sure that the apparent host name is
             # the current virtual host.  Look in CookHeaders.py for why this
@@ -238,6 +338,5 @@ def main():
                                   })
 
 
-
 if __name__ == '__main__':
     main()

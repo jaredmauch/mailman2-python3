@@ -38,13 +38,15 @@ Options:
 
 import os
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import _
+from Mailman.Message import Message
+from email import message_from_string
 
 # Work around known problems with some RedHat cron daemons
 import signal
@@ -53,41 +55,32 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 PROGRAM = sys.argv[0]
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__)
+    print(_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
+def parse_args():
+    parser = argparse.ArgumentParser(description='Dispatch digests for lists w/pending messages and digest_send_periodic set.')
+    parser.add_argument('-l', '--listname', action='append',
+                      help='Send the digest for the given list only, otherwise the digests for all lists are sent out. May be repeated to do multiple lists.')
+    parser.add_argument('-e', '--exceptlist', action='append',
+                      help='Don\'t send the digest for the given list. May be repeated to skip multiple lists.')
+    return parser.parse_args()
+
+
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hl:e:',
-                                   ['help', 'listname=', 'exceptlist='])
-    except getopt.error, msg:
-        usage(1, msg)
+    args = parse_args()
 
-    if args:
-        usage(1)
-
-    exceptlists = []
-    listnames = []
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-l', '--listname'):
-            listnames.append(arg)
-        elif opt in ('-e', '--exceptlist'):
-            exceptlists.append(arg)
-
-    if not listnames:
-        listnames = Utils.list_names()
+    exceptlists = args.exceptlist or []
+    listnames = args.listname or Utils.list_names()
+    
     for listname in exceptlists:
         try:
             listnames.remove(listname)
@@ -105,16 +98,14 @@ def main():
                 # We are unable to predict what exception may occur in digest
                 # processing and we don't want to lose the other digests, so
                 # we catch everything.
-                except Exception, errmsg:
-                    print >> sys.stderr, \
-                      'List: %s: problem processing %s:\n%s' % \
+                except Exception as errmsg:
+                    print( 'List: %s: problem processing %s:\n%s' % \
                         (listname,
                          os.path.join(mlist.fullpath(), 'digest.mbox'),
-                         errmsg)
+                         errmsg), file=sys.stderr)
             finally:
                 mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     main()

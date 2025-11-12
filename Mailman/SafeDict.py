@@ -16,8 +16,7 @@
 
 """A `safe' dictionary for string interpolation."""
 
-from types import StringType
-from UserDict import UserDict
+from collections import UserDict
 
 COMMASPACE = ', '
 
@@ -32,10 +31,10 @@ class SafeDict(UserDict):
         try:
             return self.data[key]
         except KeyError:
-            if isinstance(key, StringType):
+            if isinstance(key, str):
                 return '%('+key+')s'
             else:
-                return '<Missing key: %s>' % `key`
+                return '<Missing key: %s>' % repr(key)
 
     def interpolate(self, template):
         return template % self
@@ -61,7 +60,7 @@ class MsgSafeDict(SafeDict):
 
     def copy(self):
         d = self.data.copy()
-        for k in self.__msg.keys():
+        for k in list(self.__msg.keys()):
             vals = self.__msg.get_all(k)
             if len(vals) == 1:
                 d['msg_'+k.lower()] = vals[0]

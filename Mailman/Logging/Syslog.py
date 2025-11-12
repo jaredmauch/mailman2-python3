@@ -20,19 +20,18 @@
 This might eventually be replaced by a syslog based logger, hence the name.
 """
 
+from builtins import object
 import quopri
 
 from Mailman.Logging.StampedLogger import StampedLogger
 
 
-
 # Global, shared logger instance.  All clients should use this object.
-syslog = None
+_syslog = None
 
 
-
 # Don't instantiate except below.
-class _Syslog:
+class _Syslog(object):
     def __init__(self):
         self._logfiles = {}
 
@@ -56,7 +55,7 @@ class _Syslog:
             if kws:
                 msg %= kws
         # It's really bad if exceptions in the syslogger cause other crashes
-        except Exception, e:
+        except Exception as e:
             msg = 'Bad format "%s": %s: %s' % (origmsg, repr(e), e)
         try:
             logf.write(msg + '\n')
@@ -64,7 +63,7 @@ class _Syslog:
             # Python 2.4 may fail to write 8bit (non-ascii) characters
             # Also, if msg is unicode with non-ascii, quopri.encodestring()
             # will throw UnicodeEncodeError, so avoid that.
-            if isinstance(msg, unicode):
+            if isinstance(msg, str):
                 msg = msg.encode('iso-8859-1', 'replace')
             logf.write(quopri.encodestring(msg) + '\n')
 
@@ -72,9 +71,34 @@ class _Syslog:
     __call__ = write
 
     def close(self):
-        for kind, logger in self._logfiles.items():
+        for kind, logger in list(self._logfiles.items()):
             logger.close()
         self._logfiles.clear()
 
+    def mailman_log(self, ident, msg):
+        """Log a message to mailman's logging system."""
+        if isinstance(msg, bytes):
+            msg = msg.decode('iso-8859-1', 'replace')
+        elif not isinstance(msg, str):
+            msg = str(msg)
+        self.write(ident, msg)
 
-syslog = _Syslog()
+_syslog = _Syslog()
+
+def mailman_log(ident, msg, *args):
+    """Log a message to mailman's logging system."""
+    if isinstance(msg, bytes):
+        msg = msg.decode('iso-8859-1', 'replace')
+    elif not isinstance(msg, str):
+        msg = str(msg)
+    if args:
+        msg = msg % args
+    # Remove u prefix if present (Python 2 compatibility)
+    if msg.startswith("u'") and msg.endswith("'"):
+        msg = msg[2:-1]
+    elif msg.startswith('u"') and msg.endswith('"'):
+        msg = msg[2:-1]
+    _syslog.mailman_log(ident, msg)
+
+# For backward compatibility
+syslog = mailman_log

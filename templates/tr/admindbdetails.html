@@ -1,66 +1,127 @@
-Y&ouml;netimsel istekler, iki yoldan biriyle g&ouml;r&uuml;nt&uuml;lenir, bir
-<a href="%(summaryurl)s">&ouml;zet sayfasında</a> ve bir <em>ayrıntılar</em>
-sayfasında. &Ouml;zet sayfası, &uuml;yelik ve &uuml;yelikten &ccedil;ıkma istekleri ile
-onayınız i&ccedil;in bekletilen mesajları g&ouml;nderici e-posta adresine g&ouml;re
-gruplanmış şekilde g&ouml;r&uuml;nt&uuml;ler. Ayrıntılar sayfası, t&uuml;m başlıklar ve
-mesaj g&ouml;vdesinden bir alıntı da i&ccedil;eren, bekletilen her mesajla
-ilgili daha ayrıntılı bir g&ouml;r&uuml;n&uuml;m i&ccedil;erir.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>YÃ¶netimsel istekler, iki yoldan biriyle gÃ¶rÃ¼ntÃ¼lenir, bir
+<a href="%(summaryurl)s">Ã¶zet sayfasÃ½nda</a> ve bir <em>ayrÃ½ntÃ½lar</em>
+sayfasÃ½nda. Ã–zet sayfasÃ½, Ã¼yelik ve Ã¼yelikten Ã§Ã½kma istekleri ile
+onayÃ½nÃ½z iÃ§in bekletilen mesajlarÃ½ gÃ¶nderici e-posta adresine gÃ¶re
+gruplanmÃ½Ã¾ Ã¾ekilde gÃ¶rÃ¼ntÃ¼ler. AyrÃ½ntÃ½lar sayfasÃ½, tÃ¼m baÃ¾lÃ½klar ve
+mesaj gÃ¶vdesinden bir alÃ½ntÃ½ da iÃ§eren, bekletilen her mesajla
+ilgili daha ayrÃ½ntÃ½lÃ½ bir gÃ¶rÃ¼nÃ¼m iÃ§erir.
 
-<p>T&uuml;m sayfalarda, aşağıdaki eylemler kullanılabilir:
+<p>TÃ¼m sayfalarda, aÃ¾aÃ°Ã½daki eylemler kullanÃ½labilir:
 
 <ul>
-<li><b>Ertele</b> -- Kararınızı daha sonraya erteler. Şimdilik bu
-    y&ouml;netimsel istek i&ccedil;in bir eylem ger&ccedil;ekleştirilmez, fakat bekletilen
-    mesajlar i&ccedil;in, mesajı hala iletebilir veya saklayabilirsiniz
-    (aşağıya bakın).
+<li><b>Ertele</b> -- KararÃ½nÃ½zÃ½ daha sonraya erteler. Ãimdilik bu
+    yÃ¶netimsel istek iÃ§in bir eylem gerÃ§ekleÃ¾tirilmez, fakat bekletilen
+    mesajlar iÃ§in, mesajÃ½ hala iletebilir veya saklayabilirsiniz
+    (aÃ¾aÃ°Ã½ya bakÃ½n).
 
-<li><b>Onayla</b> -- Mesajı, listeye g&ouml;nderilmesi i&ccedil;in onaylar. &Uuml;yelik
-    istekleri i&ccedil;in, &uuml;yelik durumundaki değişikliği onaylar.
+<li><b>Onayla</b> -- MesajÃ½, listeye gÃ¶nderilmesi iÃ§in onaylar. Ãœyelik
+    istekleri iÃ§in, Ã¼yelik durumundaki deÃ°iÃ¾ikliÃ°i onaylar.
 
-<li><b>Reddet</b> -- Mesajı reddeder, g&ouml;ndericiye bir reddetme bildirimi
-    g&ouml;nderir ve &ouml;zg&uuml;n mesajı g&ouml;zardı eder. &Uuml;yelik istekleri i&ccedil;in, &uuml;yelik
-    durumundaki değişikliği reddeder. Her iki durumda da, reddetme
-    nedeniniz olarak, se&ccedil;eneğin yanındaki yazı kutusuna bir neden
-    yazmanız uygun olacaktır.
+<li><b>Reddet</b> -- MesajÃ½ reddeder, gÃ¶ndericiye bir reddetme bildirimi
+    gÃ¶nderir ve Ã¶zgÃ¼n mesajÃ½ gÃ¶zardÃ½ eder. Ãœyelik istekleri iÃ§in, Ã¼yelik
+    durumundaki deÃ°iÃ¾ikliÃ°i reddeder. Her iki durumda da, reddetme
+    nedeniniz olarak, seÃ§eneÃ°in yanÃ½ndaki yazÃ½ kutusuna bir neden
+    yazmanÃ½z uygun olacaktÃ½r.
 
-<li><b>G&ouml;zardı Et</b> -- &Ouml;zg&uuml;n mesajı siler ve g&ouml;ndericiye bir reddetme
-    bildirimi g&ouml;ndermez. &Uuml;yelik istekleri i&ccedil;in, isteği yapan kişiye
-    bildirmeden, isteği g&ouml;zardı eder. Bu, genellikle spam mesajlar i&ccedil;in
-    kullanmak isteyebileceğiniz bir eylemdir.
-</ul>
+<li><b>GÃ¶zardÃ½ Et</b> -- Ã–zgÃ¼n mesajÃ½ siler ve gÃ¶ndericiye bir reddetme
+    bildirimi gÃ¶ndermez. Ãœyelik istekleri iÃ§in, isteÃ°i yapan kiÃ¾iye
+    bildirmeden, isteÃ°i gÃ¶zardÃ½ eder. Bu, genellikle spam mesajlar iÃ§in
+    kullanmak isteyebileceÃ°iniz bir eylemdir.
+</li></li></li></li></ul>
+<p>Bekletilen mesajlar iÃ§in, <strong>Sakla</strong> seÃ§eneÃ°ini seÃ§erek
+mesajÃ½n bir kopyasÃ½nÃ½ site yÃ¶neticisi iÃ§in kaydedebilirsiniz. Bu,
+gÃ¶zardÃ½ etmek, fakat sonraki bir zamanda araÃ¾tÃ½rma iÃ§in kaydÃ½nÃ½ tutmak
+istediÃ°iniz kÃ¶tÃ¼ amaÃ§lÃ½ mesajlar iÃ§in kullanÃ½Ã¾lÃ½dÃ½r.
 
-<p>Bekletilen mesajlar i&ccedil;in, <strong>Sakla</strong> se&ccedil;eneğini se&ccedil;erek
-mesajın bir kopyasını site y&ouml;neticisi i&ccedil;in kaydedebilirsiniz. Bu,
-g&ouml;zardı etmek, fakat sonraki bir zamanda araştırma i&ccedil;in kaydını tutmak
-istediğiniz k&ouml;t&uuml; ama&ccedil;lı mesajlar i&ccedil;in kullanışlıdır.
+<p>MesajÃ½ listede olmayan baÃ¾ka birisine iletmek iÃ§in <strong>Ãlet</strong>
+seÃ§eneÃ°ini seÃ§in ve iletim adresini yazÃ½n. Bekletilen bir mesajÃ½ listeye
+gÃ¶nderilmeden  Ã¶nce dÃ¼zenlemek isterseniz, Ã¶nce mesajÃ½ kendinize (liste
+sahiplerine deÃ°il) iletip Ã¶zgÃ¼n mesajÃ½ gÃ¶zardÃ½ etmelisiniz. Daha sonra
+mesaj size geldiÃ°inde dÃ¼zenlemelerinizi yapÃ½n ve bir <tt>Approved:</tt>
+baÃ¾lÃ½Ã°Ã½na liste Ã¾ifresini yazarak mesajÃ½ tekrar listeye gÃ¶nderin. Bu
+durumda, tekrar gÃ¶nderdiÃ°iniz mesaja, yazÃ½yÃ½ dÃ¼zenlediÃ°inizi aÃ§Ã½klayan
+bir not eklemeniz uygun olacaktÃ½r.
 
-<p>Mesajı listede olmayan başka birisine iletmek i&ccedil;in <strong>İlet</strong>
-se&ccedil;eneğini se&ccedil;in ve iletim adresini yazın. Bekletilen bir mesajı listeye
-g&ouml;nderilmeden  &ouml;nce d&uuml;zenlemek isterseniz, &ouml;nce mesajı kendinize (liste
-sahiplerine değil) iletip &ouml;zg&uuml;n mesajı g&ouml;zardı etmelisiniz. Daha sonra
-mesaj size geldiğinde d&uuml;zenlemelerinizi yapın ve bir <tt>Approved:</tt>
-başlığına liste şifresini yazarak mesajı tekrar listeye g&ouml;nderin. Bu
-durumda, tekrar g&ouml;nderdiğiniz mesaja, yazıyı d&uuml;zenlediğinizi a&ccedil;ıklayan
-bir not eklemeniz uygun olacaktır.
+<p>GÃ¶nderici, moderatÃ¶r onaylÃ½ bir liste Ã¼yesiyse isteÃ°e baÃ°lÃ½ olarak
+o kiÃ¾inin moderatÃ¶r onay ayarÃ½nÃ½ da silebilirsiniz. Bu, yeni Ã¼yeleri
+bir deneme sÃ¼resine koyduÃ°unuzda ve artÃ½k bu Ã¼yeye onay gerektirmeden
+listeye mesaj gÃ¶nderebilmesi iÃ§in gÃ¼venilebileceÃ°ine karar verdiÃ°inizde
+kullanÃ½Ã¾lÃ½dÃ½r.
 
-<p>G&ouml;nderici, moderat&ouml;r onaylı bir liste &uuml;yesiyse isteğe bağlı olarak
-o kişinin moderat&ouml;r onay ayarını da silebilirsiniz. Bu, yeni &uuml;yeleri
-bir deneme s&uuml;resine koyduğunuzda ve artık bu &uuml;yeye onay gerektirmeden
-listeye mesaj g&ouml;nderebilmesi i&ccedil;in g&uuml;venilebileceğine karar verdiğinizde
-kullanışlıdır.
-
-<p>G&ouml;nderici bir liste &uuml;yesi değilse, e-posta adresini bir <em>g&ouml;nderici
-filtresine</em> ekleyebilirsiniz. G&ouml;nderici filtreleri, <a
-href="%(filterurl)s">g&ouml;nderici filtreleri gizlilik sayfasında</a>
-tanımlanır ve <b>otomatik onayla</b> (Onaylanacaklar),
+<p>GÃ¶nderici bir liste Ã¼yesi deÃ°ilse, e-posta adresini bir <em>gÃ¶nderici
+filtresine</em> ekleyebilirsiniz. GÃ¶nderici filtreleri, <a href="%(filterurl)s">gÃ¶nderici filtreleri gizlilik sayfasÃ½nda</a>
+tanÃ½mlanÃ½r ve <b>otomatik onayla</b> (Onaylanacaklar),
 <b>otomatik reddet</b> (Reddedilecekler), <b>otomatik beklet</b>
-(Bekletilecekler) veya <b>otomatik g&ouml;zardı et</b> (G&ouml;zardı edilecekler)
-olabilir. Bu se&ccedil;enek, e-posta adresi halen bir g&ouml;nderici filtresine kayıtlıysa
-g&ouml;r&uuml;lmez.
+(Bekletilecekler) veya <b>otomatik gÃ¶zardÃ½ et</b> (GÃ¶zardÃ½ edilecekler)
+olabilir. Bu seÃ§enek, e-posta adresi halen bir gÃ¶nderici filtresine kayÃ½tlÃ½ysa
+gÃ¶rÃ¼lmez.
 
-<p>İşiniz bittiğinde, sayfanın en altındaki <em>T&uuml;m Veriyi G&ouml;nder</em>
-d&uuml;ğmesine tıklayın. Bu d&uuml;ğme, bir karar verdiğiniz t&uuml;m y&ouml;netimsel
-isteklerle ilgili se&ccedil;ilen eylemleri g&ouml;nderir.
+<p>ÃÃ¾iniz bittiÃ°inde, sayfanÃ½n en altÃ½ndaki <em>TÃ¼m Veriyi GÃ¶nder</em>
+dÃ¼Ã°mesine tÃ½klayÃ½n. Bu dÃ¼Ã°me, bir karar verdiÃ°iniz tÃ¼m yÃ¶netimsel
+isteklerle ilgili seÃ§ilen eylemleri gÃ¶nderir.
 
-<p><a href="%(summaryurl)s">&Ouml;zet sayfasına geri d&ouml;n</a>.
+<p><a href="%(summaryurl)s">Ã–zet sayfasÃ½na geri dÃ¶n</a>.
 
+</p></p></p></p></p></p></p>

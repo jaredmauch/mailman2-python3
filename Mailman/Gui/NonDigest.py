@@ -35,7 +35,7 @@ class NonDigest(GUIBase):
         return 'nondigest', _('Non-digest&nbsp;options')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'nondigest':
+        if category != 'nondigest':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 
@@ -125,15 +125,18 @@ and footers:
         else:
             extra = ''
 
+        # Ensure headfoot is not None
+        headfoot = headfoot or ''
+
         info.extend([('msg_header', mm_cfg.Text, (10, WIDTH), 0,
              _('Header added to mail sent to regular list members'),
-             _('''Text prepended to the top of every immediately-delivery
-             message. ''') + headfoot + extra),
+             str(_('''Text prepended to the top of every immediately-delivery
+             message. ''')) + str(headfoot) + str(extra)),
 
             ('msg_footer', mm_cfg.Text, (10, WIDTH), 0,
              _('Footer added to mail sent to regular list members'),
-             _('''Text appended to the bottom of every immediately-delivery
-             message. ''') + headfoot + extra),
+             str(_('''Text appended to the bottom of every immediately-delivery
+             message. ''')) + str(headfoot) + str(extra)),
             ])
 
         info.extend([

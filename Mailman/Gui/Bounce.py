@@ -20,13 +20,12 @@ from Mailman.mm_cfg import days
 from Mailman.Gui.GUIBase import GUIBase
 
 
-
 class Bounce(GUIBase):
     def GetConfigCategory(self):
         return 'bounce', _('Bounce processing')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'bounce':
+        if category != 'bounce':
             return None
         return [
             _("""These policies control the automatic bounce processing system

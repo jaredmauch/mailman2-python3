@@ -72,7 +72,7 @@ def process(res, args):
             modhelps[cmdname] = help
     # Now sort the command helps
     helptext = []
-    keys = modhelps.keys()
+    keys = list(modhelps.keys())
     keys.sort()
     for cmd in keys:
         helptext.append(modhelps[cmd])

@@ -39,10 +39,11 @@ Options:
 filename is the name of the plaintext message file to inject.  If omitted,
 standard input is used.
 """
+from __future__ import print_function
 
 import sys
 import os
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -51,58 +52,40 @@ from Mailman import Post
 from Mailman.i18n import C_
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, C_(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Inject a message from a file into Mailman\'s incoming queue.')
+    parser.add_argument('-l', '--listname', required=True,
+                       help='The name of the list to inject this message to')
+    parser.add_argument('-q', '--queue',
+                       help='The name of the queue to inject the message to')
+    parser.add_argument('filename', nargs='?',
+                       help='The name of the plaintext message file to inject')
+    return parser.parse_args()
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hl:q:L',
-            ['help', 'listname=', 'queue=', 'showqnames'])
-    except getopt.error, msg:
-        usage(1, msg)
+    args = parse_args()
 
     qdir = mm_cfg.INQUEUE_DIR
-    listname = None
+    if args.queue:
+        qdir = os.path.join(mm_cfg.QUEUE_DIR, args.queue)
+        if not os.path.isdir(qdir):
+            print(C_('Bad queue directory: %(qdir)s'), file=sys.stderr)
+            sys.exit(1)
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-q', '--queue'):
-            qdir = os.path.join(mm_cfg.QUEUE_DIR, arg)
-            if not os.path.isdir(qdir):
-                usage(1, C_('Bad queue directory: %(qdir)s'))
-        elif opt in ('-l', '--listname'):
-            listname = arg.lower()
+    listname = args.listname.lower()
+    if not Utils.list_exists(listname):
+        print(C_('No such list: %(listname)s'), file=sys.stderr)
+        sys.exit(1)
 
-    if listname is None:
-        usage(1, C_('A list name is required'))
-    elif not Utils.list_exists(listname):
-        usage(1, C_('No such list: %(listname)s'))
-
-    if len(args) == 0:
-        # Use standard input
-        msgtext = sys.stdin.read()
-    elif len(args) == 1:
-        fp = open(args[0])
-        msgtext = fp.read()
-        fp.close()
+    if args.filename:
+        with open(args.filename) as fp:
+            msgtext = fp.read()
     else:
-        usage(1)
+        msgtext = sys.stdin.read()
 
     Post.inject(listname, msgtext, qdir=qdir)
 
 
-
 if __name__ == '__main__':
     main()

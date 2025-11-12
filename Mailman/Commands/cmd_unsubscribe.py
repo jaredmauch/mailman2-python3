@@ -24,7 +24,7 @@
         quotes!)
 """
 
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import Errors
 from Mailman.i18n import _
@@ -85,7 +85,7 @@ approval."""))
         # No admin approval is necessary, so we can just delete them if the
         # passwords match.
         oldpw = mlist.getMemberPassword(address)
-        if oldpw <> password:
+        if oldpw != password:
             res.results.append(_('You gave the wrong password'))
             return STOP
         mlist.ApprovedDeleteMember(address, 'mailcmd')

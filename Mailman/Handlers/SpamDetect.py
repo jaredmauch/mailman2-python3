@@ -25,12 +25,13 @@ immediately.
 TBD: This needs to be made more configurable and robust.
 """
 
-import re
+from __future__ import absolute_import, print_function, unicode_literals
 
+import re
 from unicodedata import normalize
-from email.Errors import HeaderParseError
-from email.Header import decode_header
-from email.Utils import parseaddr
+from email.errors import HeaderParseError
+from email.header import decode_header
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -38,12 +39,7 @@ from Mailman import i18n
 from Mailman import Utils
 from Mailman.Handlers.Hold import hold_for_approval
 from Mailman.Logging.Syslog import syslog
-
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
+from Mailman.Message import Message
 
 # First, play footsie with _ so that the following are marked as translated,
 # but aren't actually translated until we need the text later on.
@@ -51,7 +47,6 @@ def _(s):
     return s
 
 
-
 class SpamDetected(Errors.DiscardMessage):
     """The message contains known spam"""
 
@@ -68,38 +63,71 @@ class HeaderMatchHold(Errors.HoldMessage):
 _ = i18n._
 
 
-
-def getDecodedHeaders(msg, cset='utf-8'):
-    """Returns a unicode containing all the headers of msg, unfolded and
-    RFC 2047 decoded, normalized and separated by new lines.
+def getDecodedHeaders(msg, lcset):
+    """Return a Unicode string containing all headers of msg, unfolded and RFC 2047
+    decoded.  If a header cannot be decoded, it is replaced with a string of
+    question marks.
     """
-
-    headers = u''
-    for h, v in msg.items():
-        uvalue = u''
-        try:
-            v = decode_header(re.sub('\n\s', ' ', v))
-        except HeaderParseError:
-            v = [(v, 'us-ascii')]
-        for frag, cs in v:
-            if not cs:
-                cs = 'us-ascii'
+    headers = []
+    for name in msg.keys():
+        # Get all values for this header (could be multiple)
+        for value in msg.get_all(name, []):
             try:
-                uvalue += unicode(frag, cs, 'replace')
-            except LookupError:
-                # The encoding charset is unknown.  At this point, frag
-                # has been QP or base64 decoded into a byte string whose
-                # charset we don't know how to handle.  We will try to
-                # unicode it as iso-8859-1 which may result in a garbled
-                # mess, but we have to do something.
-                uvalue += unicode(frag, 'iso-8859-1', 'replace')
-        uhdr = h.decode('us-ascii', 'replace')
-        headers += u'%s: %s\n' % (h, normalize(mm_cfg.NORMALIZE_FORM, uvalue))
-    return headers
+                # Format as "Header: Value"
+                header_line = '%s: %s' % (name, value)
+                # Ensure we have a string
+                if isinstance(header_line, bytes):
+                    header_line = header_line.decode('utf-8', 'replace')
+                headers.append(header_line)
+            except (UnicodeError, AttributeError):
+                # If we can't decode it, replace with question marks
+                headers.append('?' * len(str(value)))
+    return '\n'.join(headers)
 
 
-
 def process(mlist, msg, msgdata):
+    # Check for Google Groups messages first
+    google_groups_headers = [
+        'X-Google-Groups-Id',
+        'X-Google-Groups-Info',
+        'X-Google-Groups-Url',
+        'X-Google-Groups-Name',
+        'X-Google-Groups-Email'
+    ]
+    
+    for header in google_groups_headers:
+        if msg.get(header):
+            syslog('vette', 'Google Groups message detected via header %s, discarding', header)
+            # Send bounce to the message's errors-to address
+            try:
+                bounce_msg = Message()
+                bounce_msg['From'] = mlist.GetBounceEmail()
+                # Use the message's errors-to header if present, otherwise use the From address
+                bounce_to = msg.get('errors-to') or msg.get('from', 'unknown')
+                bounce_msg['To'] = bounce_to
+                bounce_msg['Subject'] = 'Message rejected: Google Groups not allowed'
+                bounce_msg['Message-ID'] = Utils.unique_message_id(mlist)
+                bounce_msg['Date'] = Utils.formatdate(localtime=True)
+                bounce_msg['X-Mailman-From'] = msg.get('from', 'unknown')
+                bounce_msg['X-Mailman-To'] = msg.get('to', 'unknown')
+                bounce_msg['X-Mailman-List'] = mlist.internal_name()
+                bounce_msg['X-Mailman-Reason'] = 'Google Groups messages are not allowed'
+                
+                # Include original message headers
+                bounce_text = 'Original message headers:\n'
+                for name, value in msg.items():
+                    bounce_text += f'{name}: {value}\n'
+                bounce_msg.set_payload(bounce_text)
+                
+                # Send the bounce
+                mlist.BounceMessage(bounce_msg, msgdata)
+                syslog('vette', 'Sent bounce to %s for rejected Google Groups message', bounce_to)
+            except Exception as e:
+                syslog('error', 'Failed to send bounce for Google Groups message: %s', str(e))
+            
+            # Discard the original message
+            raise Errors.DiscardMessage
+
     # Before anything else, check DMARC if necessary.  We do this as early
     # as possible so reject/discard actions trump other holds/approvals and
     # wrap/munge actions get flagged even for approved messages.
@@ -107,7 +135,7 @@ def process(mlist, msg, msgdata):
     # discard actions.
     if not msgdata.get('toowner'):
         msgdata['from_is_list'] = 0
-        dn, addr = parseaddr(msg.get('from'))
+        dn, addr = parseaddr(msg.get('from', ''))
         if addr and mlist.dmarc_moderation_action > 0:
             if (mlist.GetPattern(addr, mlist.dmarc_moderation_addresses) or
                 Utils.IsDMARCProhibited(mlist, addr)):
@@ -129,12 +157,14 @@ def process(mlist, msg, msgdata):
 publishes a DMARC policy of reject or quarantine, and your message has been
 automatically rejected.  If you think that your messages are being rejected in
 error, contact the mailing list owner at %(listowner)s."""))
-                    raise Errors.RejectMessage, text
+                    raise Errors.RejectMessage(text)
                 elif mlist.dmarc_moderation_action == 4:
                     raise Errors.DiscardMessage
 
         # Get member address if any.
-        for sender in msg.get_senders():
+        for sender_tuple in msg.get_senders():
+            # Extract email address from the (realname, address) tuple
+            _, sender = sender_tuple
             if mlist.isMember(sender):
                 break
         else:
@@ -153,6 +183,8 @@ error, contact the mailing list owner at %(listowner)s."""))
     for header, regex in mm_cfg.KNOWN_SPAMMERS:
         cre = re.compile(regex, re.IGNORECASE)
         for value in msg.get_all(header, []):
+            if isinstance(value, bytes):
+                value = value.decode('utf-8', 'replace')
             mo = cre.search(value)
             if mo:
                 # we've detected spam, so throw the message away
@@ -160,7 +192,7 @@ error, contact the mailing list owner at %(listowner)s."""))
     # Now do header_filter_rules
     # TK: Collect headers in sub-parts because attachment filename
     # extension may be a clue to possible virus/spam.
-    headers = u''
+    headers = ''
     # Get the character set of the lists preferred language for headers
     lcset = Utils.GetCharSet(mlist.preferred_language)
     for p in msg.walk():

@@ -17,17 +17,18 @@
 
 """Unit tests for Mailman/SecurityManager.py
 """
+from __future__ import print_function
 
 import os
 import unittest
 import errno
-import Cookie
+import http.cookies
 try:
     import crypt
 except ImportError:
     crypt = None
 # Don't use cStringIO because we're going to inherit
-from StringIO import StringIO
+from io import StringIO
 try:
     from Mailman import __init__
 except ImportError:
@@ -99,12 +100,12 @@ class TestAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         TestBase.tearDown(self)
 
     def test_auth_creator(self):
@@ -217,11 +218,11 @@ class TestWebAuthenticate(TestBase):
         mlist.addNewMember('aperson@dom.ain', password='qqQQqq')
         # Set up the cookie data
         sfp = StripperIO()
-        print >> sfp, mlist.MakeCookie(mm_cfg.AuthSiteAdmin)
+        print(mlist.MakeCookie(mm_cfg.AuthSiteAdmin), file=sfp)
         # AuthCreator isn't handled in AuthContextInfo()
-        print >> sfp, mlist.MakeCookie(mm_cfg.AuthListAdmin)
-        print >> sfp, mlist.MakeCookie(mm_cfg.AuthListModerator)
-        print >> sfp, mlist.MakeCookie(mm_cfg.AuthUser, 'aperson@dom.ain')
+        print(mlist.MakeCookie(mm_cfg.AuthListAdmin), file=sfp)
+        print(mlist.MakeCookie(mm_cfg.AuthListModerator), file=sfp)
+        print(mlist.MakeCookie(mm_cfg.AuthUser, 'aperson@dom.ain'), file=sfp)
         # Strip off the "Set-Cookie: " prefix
         cookie = sfp.getvalue()
         os.environ['HTTP_COOKIE'] = cookie
@@ -229,12 +230,12 @@ class TestWebAuthenticate(TestBase):
     def tearDown(self):
         try:
             os.unlink(mm_cfg.SITE_PW_FILE)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         try:
             os.unlink(mm_cfg.LISTCREATOR_PW_FILE)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
         del os.environ['HTTP_COOKIE']
         TestBase.tearDown(self)
 

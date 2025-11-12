@@ -54,7 +54,7 @@ MailmanOwner = "postmaster@localhost"; # Postmaster and abuse mail recepient.
 # Note: "preline" is a Courier program which ensures a Unix "From " header
 # is on the message.  Archiving will break without this.
 
-import sys, os, re, string
+import sys, os, re
 
 def main():
         os.nice(5)  # Handle mailing lists at non-interactive priority.
@@ -62,7 +62,7 @@ def main():
         os.chdir(MailmanVar + "/lists")
 
         try:
-                local = string.lower(os.environ["LOCAL"])
+                local = str.lower(os.environ["LOCAL"])
         except:
                 # This might happen if we're not using qmail.
                 sys.stderr.write("LOCAL not set in environment?\n")
@@ -77,12 +77,12 @@ def main():
                         sys.exit(0)
 
         type = "post"
-        listname = string.lower(local)
+        listname = str.lower(local)
         types = (("-admin$", "admin"),
                          ("-bounces$", "bounces"),
-                         ("-bounces\+.*$", "bounces"),          # for VERP
+                         (r"-bounces\+.*$", "bounces"),          # for VERP
                          ("-confirm$", "confirm"),
-                         ("-confirm\+.*$", "confirm"),
+                         (r"-confirm\+.*$", "confirm"),
                          ("-join$", "join"),
                          ("-leave$", "leave"),
                          ("-owner$", "owner"),
@@ -114,12 +114,12 @@ give you directions on how to post to each mailing list.\n"""
 
 try:
         sys.exit(main())
-except SystemExit, argument:
+except SystemExit as argument:
         sys.exit(argument)
 
-except Exception, argument:
+except Exception as argument:
         info = sys.exc_info()
         trace = info[2]
-        sys.stderr.write("%s %s\n" % (sys.exc_type, argument))
+        sys.stderr.write("%s %s\n" % (sys.exc_info()[0], argument))
         sys.stderr.write("LINE %d\n" % (trace.tb_lineno))
         sys.exit(111) # Soft failure, try again later.

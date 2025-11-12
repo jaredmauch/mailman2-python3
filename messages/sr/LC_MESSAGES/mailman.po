@@ -68,10 +68,12 @@ msgid "<P>Currently, there are no archives. </P>"
 msgstr "<P>Тренутно нема архива. </P>"
 
 #: Mailman/Archiver/HyperArch.py:821
+#, fuzzy
 msgid "Gzip'd Text%(sz)s"
 msgstr "Гзип-ован Текст %(sz)s"
 
 #: Mailman/Archiver/HyperArch.py:826
+#, fuzzy
 msgid "Text%(sz)s"
 msgstr "Текст %(sz)s"
 
@@ -144,18 +146,22 @@ msgid "Third"
 msgstr "Трећи"
 
 #: Mailman/Archiver/HyperArch.py:938
+#, fuzzy
 msgid "%(ord)s quarter %(year)i"
 msgstr "%(ord)s четвртина %(godine)i"
 
 #: Mailman/Archiver/HyperArch.py:945
+#, fuzzy
 msgid "%(month)s %(year)i"
 msgstr "%(month)s %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:950
+#, fuzzy
 msgid "The Week Of Monday %(day)i %(month)s %(year)i"
 msgstr "Недјеља од понедјељка %(day)i %(month)s %(year)i"
 
 #: Mailman/Archiver/HyperArch.py:954
+#, fuzzy
 msgid "%(day)i %(month)s %(year)i"
 msgstr "%(day)i %(month)s %(year)i"
 
@@ -186,6 +192,7 @@ msgid "Pickling archive state into "
 msgstr "Постављање стања архиве"
 
 #: Mailman/Archiver/pipermail.py:453
+#, fuzzy
 msgid "Updating index files for archive [%(archive)s]"
 msgstr "Ажурирање индексних фајлова за архиву  [%(archive)s]"
 
@@ -194,6 +201,7 @@ msgid "  Thread"
 msgstr "Стабло"
 
 #: Mailman/Archiver/pipermail.py:597
+#, fuzzy
 msgid "#%(counter)05d %(msgid)s"
 msgstr "#%(counter)05d %(msgid)s"
 
@@ -258,6 +266,7 @@ msgstr "Администратор"
 #: Mailman/Cgi/options.py:101 Mailman/Cgi/private.py:108
 #: Mailman/Cgi/rmlist.py:75 Mailman/Cgi/roster.py:59
 #: Mailman/Cgi/subscribe.py:67
+#, fuzzy
 msgid "No such list <em>%(safelistname)s</em>"
 msgstr "Нема листе <em>%(safelistname)s</em>"
 
@@ -330,6 +339,7 @@ msgstr ""
 "док не решите проблем.%(rm)r"
 
 #: Mailman/Cgi/admin.py:268
+#, fuzzy
 msgid "%(hostname)s mailing lists - Admin Links"
 msgstr "%(hostname)s листе слања - администраторске везе"
 
@@ -342,12 +352,14 @@ msgid "Mailman"
 msgstr "Mailman"
 
 #: Mailman/Cgi/admin.py:310
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised %(mailmanlink)s\n"
 "            mailing lists on %(hostname)s."
 msgstr "<p>Тренутно нема јавно доступних листа на %(hostname)s.</p>"
 
 #: Mailman/Cgi/admin.py:316
+#, fuzzy
 msgid ""
 "<p>Below is the collection of publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s.  Click on a list\n"
@@ -363,6 +375,7 @@ msgid "right "
 msgstr "десно"
 
 #: Mailman/Cgi/admin.py:325
+#, fuzzy
 msgid ""
 "To visit the administrators configuration page for an\n"
 "        unadvertised list, open a URL similar to this one, but with a '/' "
@@ -407,6 +420,7 @@ msgid "No valid variable name found."
 msgstr "Није пронађена исправна променљива."
 
 #: Mailman/Cgi/admin.py:395
+#, fuzzy
 msgid ""
 "%(realname)s Mailing list Configuration Help\n"
 "    <br><em>%(varname)s</em> Option"
@@ -415,6 +429,7 @@ msgstr ""
 "    <br><em>%(varname)s</em> Опција"
 
 #: Mailman/Cgi/admin.py:402
+#, fuzzy
 msgid "Mailman %(varname)s List Option Help"
 msgstr "Помоћ за: %(varname)s "
 
@@ -434,14 +449,17 @@ msgstr ""
 "    "
 
 #: Mailman/Cgi/admin.py:431
+#, fuzzy
 msgid "return to the %(categoryname)s options page."
 msgstr "повратак у листу опција категорије %(categoryname)s o"
 
 #: Mailman/Cgi/admin.py:446
+#, fuzzy
 msgid "%(realname)s Administration (%(label)s)"
 msgstr "Администрација: %(realname)s (%(label)s)"
 
 #: Mailman/Cgi/admin.py:447
+#, fuzzy
 msgid "%(realname)s mailing list administration<br>%(label)s Section"
 msgstr "администрација листе слања %(realname)s <br>Секција %(label)s"
 
@@ -525,6 +543,7 @@ msgid "Value"
 msgstr "Вриједност"
 
 #: Mailman/Cgi/admin.py:668
+#, fuzzy
 msgid ""
 "Badly formed options entry:\n"
 " %(record)s"
@@ -625,10 +644,12 @@ msgid "Move rule down"
 msgstr ""
 
 #: Mailman/Cgi/admin.py:870
+#, fuzzy
 msgid "<br>(Edit <b>%(varname)s</b>)"
 msgstr "<br>(Промјена: <b>%(varname)s</b>)"
 
 #: Mailman/Cgi/admin.py:872
+#, fuzzy
 msgid "<br>(Details for <b>%(varname)s</b>)"
 msgstr "<br>(Детаљи за: <b>%(varname)s</b>)"
 
@@ -669,6 +690,7 @@ msgid "(help)"
 msgstr "(помоћ)"
 
 #: Mailman/Cgi/admin.py:930
+#, fuzzy
 msgid "Find member %(link)s:"
 msgstr "Проналажење члана  %(link)s:"
 
@@ -681,10 +703,12 @@ msgid "Bad regular expression: "
 msgstr "Погрешан систематски израз:"
 
 #: Mailman/Cgi/admin.py:1013
+#, fuzzy
 msgid "%(allcnt)s members total, %(membercnt)s shown"
 msgstr "Укупно чланова: %(allcnt)s, чланова приказано: %(membercnt)s"
 
 #: Mailman/Cgi/admin.py:1016
+#, fuzzy
 msgid "%(allcnt)s members total"
 msgstr "Укупно чланова: %(allcnt)s."
 
@@ -1005,6 +1029,7 @@ msgid "Change list ownership passwords"
 msgstr "Промјена лозинке за власника листе"
 
 #: Mailman/Cgi/admin.py:1364
+#, fuzzy
 msgid ""
 "The <em>list administrators</em> are the people who have ultimate control "
 "over\n"
@@ -1035,8 +1060,8 @@ msgstr ""
 "на листу.\n"
 "<p>Да би подијелили послове управљања листом на администраторе и\n"
 "модераторе, морате поставити посебну модераторску лозинку у доња\n"
-"поља, и такође обезбједити е-адресе моредатора листе у <a href="
-"\"%(adminurl)s/general\">\n"
+"поља, и такође обезбједити е-адресе моредатора листе у <a "
+"href=\"%(adminurl)s/general\">\n"
 "секцији са општим опцијама</a>."
 
 #: Mailman/Cgi/admin.py:1383
@@ -1176,8 +1201,9 @@ msgid "%(schange_to)s is already a member"
 msgstr " је већ члан"
 
 #: Mailman/Cgi/admin.py:1620
+#, fuzzy
 msgid "%(schange_to)s matches banned pattern %(spat)s"
-msgstr ""
+msgstr " је већ члан"
 
 #: Mailman/Cgi/admin.py:1622
 msgid "Address %(schange_from)s changed to %(schange_to)s"
@@ -1216,6 +1242,7 @@ msgid "Not subscribed"
 msgstr "Није-су уписан-и"
 
 #: Mailman/Cgi/admin.py:1773
+#, fuzzy
 msgid "Ignoring changes to deleted member: %(user)s"
 msgstr "Игнорисање промјена за искљученог члана: %(user)s"
 
@@ -1228,12 +1255,14 @@ msgid "Error Unsubscribing:"
 msgstr "Грешка при испису:"
 
 #: Mailman/Cgi/admindb.py:235 Mailman/Cgi/admindb.py:248
+#, fuzzy
 msgid "%(realname)s Administrative Database"
-msgstr ""
+msgstr "Администрација: %(realname)s (%(label)s)"
 
 #: Mailman/Cgi/admindb.py:238
+#, fuzzy
 msgid "%(realname)s Administrative Database Results"
-msgstr ""
+msgstr "Администрација: %(realname)s (%(label)s)"
 
 #: Mailman/Cgi/admindb.py:251
 msgid "There are no pending requests."
@@ -1260,8 +1289,9 @@ msgid "Discard all messages marked <em>Defer</em>"
 msgstr ""
 
 #: Mailman/Cgi/admindb.py:298
+#, fuzzy
 msgid "all of %(esender)s's held messages."
-msgstr ""
+msgstr "све задржане поруке."
 
 #: Mailman/Cgi/admindb.py:303
 msgid "a single held message."
@@ -1280,6 +1310,7 @@ msgid "list of available mailing lists."
 msgstr "листа доступних листа слања."
 
 #: Mailman/Cgi/admindb.py:362
+#, fuzzy
 msgid "You must specify a list name.  Here is the %(link)s"
 msgstr "Морате унијети име листе. Овдје је %(link)s"
 
@@ -1383,6 +1414,7 @@ msgid "Rejects"
 msgstr "Одбацивање"
 
 #: Mailman/Cgi/admindb.py:584
+#, fuzzy
 msgid ""
 "Ban <b>%(esender)s</b> from ever subscribing to this\n"
 "                    mailing list"
@@ -1399,6 +1431,7 @@ msgstr ""
 "            или можете "
 
 #: Mailman/Cgi/admindb.py:591
+#, fuzzy
 msgid "view all messages from %(esender)s"
 msgstr "прегледати све поруке од: %(esender)s"
 
@@ -1513,6 +1546,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Cgi/confirm.py:178
+#, fuzzy
 msgid "System error, bad content: %(content)s"
 msgstr "Системска грешка, погрешан садржај: %(content)s"
 
@@ -1602,6 +1636,7 @@ msgid "Preferred language:"
 msgstr "Језик: "
 
 #: Mailman/Cgi/confirm.py:317
+#, fuzzy
 msgid "Subscribe to list %(listname)s"
 msgstr "Пријава на листу %(listname)s"
 
@@ -1985,14 +2020,17 @@ msgid "Unknown virtual host: %(safehostname)s"
 msgstr "Непозната листа: %(listname)s"
 
 #: Mailman/Cgi/create.py:218 bin/newlist:219
+#, fuzzy
 msgid "Bad owner email address: %(s)s"
 msgstr "Лоша адреса власника листе: %(s)s"
 
 #: Mailman/Cgi/create.py:223 bin/newlist:182 bin/newlist:223
+#, fuzzy
 msgid "List already exists: %(listname)s"
 msgstr "Листа са називом %(listname)s већ постоји"
 
 #: Mailman/Cgi/create.py:231 bin/newlist:217
+#, fuzzy
 msgid "Illegal list name: %(s)s"
 msgstr "Недозвољено име листе: %(s)s"
 
@@ -2005,6 +2043,7 @@ msgstr ""
 "Молимо вас да контактирате администратора сајта за помоћ."
 
 #: Mailman/Cgi/create.py:273 bin/newlist:265
+#, fuzzy
 msgid "Your new mailing list: %(listname)s"
 msgstr "Ваша нова листа слања:  %(listname)s"
 
@@ -2013,6 +2052,7 @@ msgid "Mailing list creation results"
 msgstr "Резултати отварања листе "
 
 #: Mailman/Cgi/create.py:288
+#, fuzzy
 msgid ""
 "You have successfully created the mailing list\n"
 "    <b>%(listname)s</b> and notification has been sent to the list owner\n"
@@ -2035,6 +2075,7 @@ msgid "Create another list"
 msgstr "Креирајте другу листу"
 
 #: Mailman/Cgi/create.py:312
+#, fuzzy
 msgid "Create a %(hostname)s Mailing List"
 msgstr "Отварање листе слања ( %(hostname)s)"
 
@@ -2299,16 +2340,19 @@ msgid "HTML successfully updated."
 msgstr "HTML је успјешно освјежен."
 
 #: Mailman/Cgi/listinfo.py:89
+#, fuzzy
 msgid "%(hostname)s Mailing Lists"
 msgstr "Листе слања у оквиру %(hostname)s"
 
 #: Mailman/Cgi/listinfo.py:127
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s."
-msgstr ""
+msgstr "<p>Тренутно нема јавно доступних листа на %(hostname)s.</p>"
 
 #: Mailman/Cgi/listinfo.py:131
+#, fuzzy
 msgid ""
 "<p>Below is a listing of all the public mailing lists on\n"
 "            %(hostname)s.  Click on a list name to get more information "
@@ -2327,12 +2371,20 @@ msgid "right"
 msgstr "десно"
 
 #: Mailman/Cgi/listinfo.py:140
+#, fuzzy
 msgid ""
 " To visit the general information page for an unadvertised list,\n"
 "        open a URL similar to this one, but with a '/' and the %(adj)s\n"
 "        list name appended.\n"
 "        <p>List administrators, you can visit "
 msgstr ""
+"Да бисте посетили администраторску страницу за \n"
+"подешавања приватне листе, отворите везу сличну овој \n"
+"али са '/' и %(extra)slist  суфиксом у називу. Ако имате \n"
+"одговарајуће надлежности, можете и <a href=\"%(creatorurl)s\">отворити "
+"новулисту слања</a>.\n"
+"\n"
+"<p>Основне информације могу се пронаћи на "
 
 #: Mailman/Cgi/listinfo.py:145
 msgid "the list admin overview page"
@@ -2382,6 +2434,7 @@ msgstr "Лоша е-адреса"
 
 #: Mailman/Cgi/options.py:183 Mailman/Cgi/options.py:240
 #: Mailman/Cgi/options.py:264
+#, fuzzy
 msgid "No such member: %(safeuser)s."
 msgstr "Нема корисника %(safeuser)s."
 
@@ -2462,14 +2515,16 @@ msgid ""
 msgstr ""
 
 #: Mailman/Cgi/options.py:468
+#, fuzzy
 msgid "The new address is already a member: %(newaddr)s"
-msgstr ""
+msgstr "%(newaddr)s већ је члан листе."
 
 #: Mailman/Cgi/options.py:474
 msgid "Addresses may not be blank"
 msgstr "Адресе не могу бити празне"
 
 #: Mailman/Cgi/options.py:488
+#, fuzzy
 msgid "A confirmation message has been sent to %(newaddr)s. "
 msgstr "Порука за потврду је послана на %(newaddr)s. "
 
@@ -2482,6 +2537,7 @@ msgid "Illegal email address provided"
 msgstr "Унесена је недозвољена адреса"
 
 #: Mailman/Cgi/options.py:501
+#, fuzzy
 msgid "%(newaddr)s is already a member of the list."
 msgstr "%(newaddr)s већ је члан листе."
 
@@ -2644,16 +2700,18 @@ msgid ""
 msgstr ""
 
 #: Mailman/Cgi/options.py:956
+#, fuzzy
 msgid "%(realname)s list: member options login page"
-msgstr ""
+msgstr "Страна за уређивање корисничких опција"
 
 #: Mailman/Cgi/options.py:957
 msgid "email address and "
 msgstr "е-адреса и"
 
 #: Mailman/Cgi/options.py:960
+#, fuzzy
 msgid "%(realname)s list: member options for user %(safeuser)s"
-msgstr ""
+msgstr "Страна за уређивање корисничких опција"
 
 #: Mailman/Cgi/options.py:986
 msgid ""
@@ -2713,6 +2771,7 @@ msgid "<missing>"
 msgstr "<недостаје>"
 
 #: Mailman/Cgi/options.py:1140
+#, fuzzy
 msgid "Requested topic is not valid: %(topicname)s"
 msgstr "Тема:  %(topicname)s не постоји"
 
@@ -2741,6 +2800,7 @@ msgid "Private archive - \"./\" and \"../\" not allowed in URL."
 msgstr ""
 
 #: Mailman/Cgi/private.py:109
+#, fuzzy
 msgid "Private Archive Error - %(msg)s"
 msgstr "Грешка у приватној архиви - %(msg)s"
 
@@ -2778,10 +2838,14 @@ msgid "Mailing list deletion results"
 msgstr "Резултати брисања листе слања"
 
 #: Mailman/Cgi/rmlist.py:187
+#, fuzzy
 msgid ""
 "You have successfully deleted the mailing list\n"
 "    <b>%(listname)s</b>."
 msgstr ""
+"Успјешно сте отворили листу слања\n"
+"    <b>%(listname)s</b>, обавјештење је послано путем е-поште\n"
+"    <b>%(owner)s</b>.  Сада можете:"
 
 #: Mailman/Cgi/rmlist.py:191
 msgid ""
@@ -2792,8 +2856,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/Cgi/rmlist.py:208
+#, fuzzy
 msgid "Permanently remove mailing list <em>%(realname)s</em>"
-msgstr ""
+msgstr "Ваша нова листа слања:  %(listname)s"
 
 #: Mailman/Cgi/rmlist.py:209
 #, fuzzy
@@ -2844,8 +2909,9 @@ msgid "Invalid options to CGI script"
 msgstr ""
 
 #: Mailman/Cgi/roster.py:118
+#, fuzzy
 msgid "%(realname)s roster authentication failed."
-msgstr ""
+msgstr "Пријављивање није успјело."
 
 #: Mailman/Cgi/subscribe.py:128
 msgid "You must supply a valid email address."
@@ -2977,6 +3043,7 @@ msgid "This list only supports digest delivery."
 msgstr "Ова листа подржава само доставу порука путем прегледа."
 
 #: Mailman/Cgi/subscribe.py:344
+#, fuzzy
 msgid "You have been successfully subscribed to the %(realname)s mailing list."
 msgstr "Успјешно сте се учланили на листу %(realname)s."
 
@@ -3081,26 +3148,32 @@ msgid "n/a"
 msgstr "непознато"
 
 #: Mailman/Commands/cmd_info.py:44
+#, fuzzy
 msgid "List name:    %(listname)s"
 msgstr "Име листе  %(listname)s"
 
 #: Mailman/Commands/cmd_info.py:45
+#, fuzzy
 msgid "Description:  %(description)s"
 msgstr "Опис:  %(description)s"
 
 #: Mailman/Commands/cmd_info.py:46
+#, fuzzy
 msgid "Postings to:  %(postaddr)s"
 msgstr "Слање на: %(postaddr)s"
 
 #: Mailman/Commands/cmd_info.py:47
+#, fuzzy
 msgid "List Helpbot: %(requestaddr)s"
 msgstr "Помоћ: %(requestaddr)s"
 
 #: Mailman/Commands/cmd_info.py:48
+#, fuzzy
 msgid "List Owners:  %(owneraddr)s"
 msgstr "Власници листе: %(owneraddr)s"
 
 #: Mailman/Commands/cmd_info.py:49
+#, fuzzy
 msgid "More information: %(listurl)s"
 msgstr "Више информација:  %(listurl)s"
 
@@ -3120,20 +3193,24 @@ msgid ""
 msgstr ""
 
 #: Mailman/Commands/cmd_lists.py:44
+#, fuzzy
 msgid "Public mailing lists at %(hostname)s:"
 msgstr "Јавне листе слања на %(hostname)s:"
 
 #: Mailman/Commands/cmd_lists.py:66
+#, fuzzy
 msgid "%(i)3d. List name:   %(realname)s"
 msgstr "%(i)3d. Име листе: %(realname)s"
 
 #: Mailman/Commands/cmd_lists.py:67
+#, fuzzy
 msgid "     Description: %(description)s"
 msgstr "     Опис : %(description)s"
 
 #: Mailman/Commands/cmd_lists.py:68
+#, fuzzy
 msgid "     Requests to: %(requestaddr)s"
-msgstr ""
+msgstr "Помоћ: %(requestaddr)s"
 
 #: Mailman/Commands/cmd_password.py:17
 msgid ""
@@ -3154,14 +3231,16 @@ msgid ""
 msgstr ""
 
 #: Mailman/Commands/cmd_password.py:51 Mailman/Commands/cmd_password.py:66
+#, fuzzy
 msgid "Your password is: %(password)s"
 msgstr "Ваша лозинка је: %(password)s"
 
 #: Mailman/Commands/cmd_password.py:57 Mailman/Commands/cmd_password.py:72
 #: Mailman/Commands/cmd_password.py:95 Mailman/Commands/cmd_password.py:121
 #: Mailman/Commands/cmd_set.py:149 Mailman/Commands/cmd_set.py:219
+#, fuzzy
 msgid "You are not a member of the %(listname)s mailing list"
-msgstr ""
+msgstr "Ви сте члан ове листе!"
 
 #: Mailman/Commands/cmd_password.py:85 Mailman/Commands/cmd_password.py:111
 msgid ""
@@ -3351,8 +3430,9 @@ msgid "You did not give the correct password"
 msgstr ""
 
 #: Mailman/Commands/cmd_set.py:236 Mailman/Commands/cmd_set.py:283
+#, fuzzy
 msgid "Bad argument: %(arg)s"
-msgstr ""
+msgstr "Погрешни аргументи: %(strargs)s"
 
 #: Mailman/Commands/cmd_set.py:241 Mailman/Commands/cmd_set.py:261
 msgid "Not authenticated"
@@ -3413,8 +3493,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/Commands/cmd_subscribe.py:62
+#, fuzzy
 msgid "Bad digest specifier: %(arg)s"
-msgstr ""
+msgstr "Погрешни аргументи: %(strargs)s"
 
 #: Mailman/Commands/cmd_subscribe.py:92
 msgid "No valid address found to subscribe"
@@ -3476,8 +3557,9 @@ msgid ""
 msgstr ""
 
 #: Mailman/Commands/cmd_unsubscribe.py:62
+#, fuzzy
 msgid "%(address)s is not a member of the %(listname)s mailing list"
-msgstr ""
+msgstr "Ви сте члан ове листе!"
 
 #: Mailman/Commands/cmd_unsubscribe.py:69
 msgid ""
@@ -3722,16 +3804,19 @@ msgid " (Digest mode)"
 msgstr ""
 
 #: Mailman/Deliverer.py:79
+#, fuzzy
 msgid "Welcome to the \"%(realname)s\" mailing list%(digmode)s"
-msgstr ""
+msgstr "Аутоматски одговор на вашу поруку: "
 
 #: Mailman/Deliverer.py:89
+#, fuzzy
 msgid "You have been unsubscribed from the %(realname)s mailing list"
-msgstr ""
+msgstr "Успјешно сте се учланили на листу %(realname)s."
 
 #: Mailman/Deliverer.py:116
+#, fuzzy
 msgid "%(listfullname)s mailing list reminder"
-msgstr ""
+msgstr "Отварање листе слања ( %(hostname)s)"
 
 #: Mailman/Deliverer.py:144
 msgid "No reason given"
@@ -3935,8 +4020,8 @@ msgid ""
 "            membership.\n"
 "\n"
 "            <p>You can control both the\n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">number\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">number\n"
 "            of reminders</a> the member will receive and the\n"
 "            <a href=\"?VARHELP=bounce/"
 "bounce_you_are_disabled_warnings_interval\"\n"
@@ -4058,8 +4143,8 @@ msgid ""
 "             <em>No</em> those messages too will get discarded.  You may "
 "want\n"
 "             to set up an\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">autoresponse\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">autoresponse\n"
 "             message</a> for email to the -owner and -admin address."
 msgstr ""
 
@@ -4206,8 +4291,8 @@ msgid ""
 "Use this option to remove each message attachment that does\n"
 "             not have a matching content type.  Requirements and formats "
 "are\n"
-"             exactly like <a href=\"?VARHELP=contentfilter/filter_mime_types"
-"\"\n"
+"             exactly like <a href=\"?VARHELP=contentfilter/"
+"filter_mime_types\"\n"
 "             >filter_mime_types</a>.\n"
 "\n"
 "             <p><b>Note:</b> if you add entries to this list but don't add\n"
@@ -4502,8 +4587,8 @@ msgid ""
 "             <p>In order to split the list ownership duties into\n"
 "             administrators and moderators, you must\n"
 "             <a href=\"passwords\">set a separate moderator password</a>,\n"
-"             and also provide the <a href=\"?VARHELP=general/moderator"
-"\">email\n"
+"             and also provide the <a href=\"?VARHELP=general/"
+"moderator\">email\n"
 "             addresses of the list moderators</a>.  Note that the field you\n"
 "             are changing here specifies the list administrators."
 msgstr ""
@@ -4519,8 +4604,8 @@ msgstr ""
 "на листу.\n"
 "<p>Да би подијелили послове управљања листом на администраторе и\n"
 "модераторе, морате поставити посебну модераторску лозинку у доња\n"
-"поља, и такође обезбједити е-адресе моредатора листе у <a href="
-"\"%(adminurl)s/general\">\n"
+"поља, и такође обезбједити е-адресе моредатора листе у <a "
+"href=\"%(adminurl)s/general\">\n"
 "секцији са општим опцијама</a>."
 
 #: Mailman/Gui/General.py:102
@@ -4765,13 +4850,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -4796,8 +4881,8 @@ msgstr ""
 msgid ""
 "This is the address set in the <tt>Reply-To:</tt> header\n"
 "             when the <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             option is set to <em>Explicit address</em>.\n"
 "\n"
 "             <p>There are many reasons not to introduce or override the\n"
@@ -4805,13 +4890,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -4870,8 +4955,8 @@ msgid ""
 "             member list addresses, but rather to the owner of those member\n"
 "             lists.  In that case, the value of this setting is appended to\n"
 "             the member's account name for such notices.  `-owner' is the\n"
-"             typical choice.  This setting has no effect when \"umbrella_list"
-"\"\n"
+"             typical choice.  This setting has no effect when "
+"\"umbrella_list\"\n"
 "             is \"No\"."
 msgstr ""
 
@@ -5728,13 +5813,13 @@ msgid ""
 "            either individually or as a group.  Any\n"
 "            posting from a non-member who is not explicitly accepted,\n"
 "            rejected, or discarded, will have their posting filtered by the\n"
-"            <a href=\"?VARHELP=privacy/sender/generic_nonmember_action"
-"\">general\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"generic_nonmember_action\">general\n"
 "            non-member rules</a>.\n"
 "\n"
 "            <p>In the text boxes below, add one address per line; start the\n"
 "            line with a ^ character to designate a <a href=\n"
-"            \"https://docs.python.org/2/library/re.html\"\n"
+"            \"https://docs.python.org/3/library/re.html\"\n"
 "            >Python regular expression</a>.  When entering backslashes, do "
 "so\n"
 "            as if you were using Python raw strings (i.e. you generally "
@@ -5788,8 +5873,8 @@ msgid ""
 "If a member posts this many times, within a period of time\n"
 "               the member is automatically moderated.  Use 0 to disable.  "
 "See\n"
-"               <a href=\"?VARHELP=privacy/sender/member_verbosity_interval"
-"\"\n"
+"               <a href=\"?VARHELP=privacy/sender/"
+"member_verbosity_interval\"\n"
 "               >member_verbosity_interval</a> for details on the time "
 "period.\n"
 "\n"
@@ -6336,7 +6421,7 @@ msgstr ""
 msgid ""
 "The topic filter categorizes each incoming email message\n"
 "             according to <a\n"
-"            href=\"https://docs.python.org/2/library/re.html\">regular\n"
+"            href=\"https://docs.python.org/3/library/re.html\">regular\n"
 "             expression filters</a> you specify below.  If the message's\n"
 "             <code>Subject:</code> or <code>Keywords:</code> header contains "
 "a\n"
@@ -6354,8 +6439,8 @@ msgid ""
 "             <p>The body of the message can also be optionally scanned for\n"
 "             <code>Subject:</code> and <code>Keywords:</code> headers, as\n"
 "             specified by the <a\n"
-"       href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a>\n"
+"       href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a>\n"
 "             configuration variable."
 msgstr ""
 
@@ -6564,14 +6649,16 @@ msgid "%(listinfo_link)s list run by %(owner_link)s"
 msgstr ""
 
 #: Mailman/HTMLFormatter.py:57
+#, fuzzy
 msgid "%(realname)s administrative interface"
-msgstr ""
+msgstr "Администрација: %(realname)s (%(label)s)"
 
 #: Mailman/HTMLFormatter.py:58
 msgid " (requires authorization)"
 msgstr " (неопходна ауторизација) "
 
 #: Mailman/HTMLFormatter.py:61
+#, fuzzy
 msgid "Overview of all %(hostname)s mailing lists"
 msgstr "Преглед свих листа на %(hostname)s"
 
@@ -6916,8 +7003,9 @@ msgid "Your message to %(listname)s awaits moderator approval"
 msgstr ""
 
 #: Mailman/Handlers/Hold.py:271
+#, fuzzy
 msgid "%(listname)s post from %(sender)s requires approval"
-msgstr ""
+msgstr "Слање на листу захтјева потврду."
 
 #: Mailman/Handlers/Hold.py:278
 msgid ""
@@ -7004,6 +7092,7 @@ msgid "HTML attachment scrubbed and removed"
 msgstr "HTML прилог је прочишћен и искључен "
 
 #: Mailman/Handlers/Scrubber.py:234 Mailman/Handlers/Scrubber.py:259
+#, fuzzy
 msgid ""
 "An HTML attachment was scrubbed...\n"
 "URL: %(url)s\n"
@@ -7117,8 +7206,9 @@ msgid "Forward of moderated message"
 msgstr "Прослијеђивање модерисане поруке"
 
 #: Mailman/ListAdmin.py:405
+#, fuzzy
 msgid "New subscription request to list %(realname)s from %(addr)s"
-msgstr ""
+msgstr "Захтјев за испис потврђен."
 
 #: Mailman/ListAdmin.py:432
 msgid "Subscription request"
@@ -7130,8 +7220,9 @@ msgid "via admin approval"
 msgstr "Настави са чекањем одобрења"
 
 #: Mailman/ListAdmin.py:466
+#, fuzzy
 msgid "New unsubscription request from %(realname)s by %(addr)s"
-msgstr ""
+msgstr "Захтјев за испис потврђен."
 
 #: Mailman/ListAdmin.py:490
 msgid "Unsubscription request"
@@ -7142,8 +7233,9 @@ msgid "Original Message"
 msgstr "Изворна порука"
 
 #: Mailman/ListAdmin.py:526
+#, fuzzy
 msgid "Request to mailing list %(realname)s rejected"
-msgstr ""
+msgstr "Ваша нова листа слања:  %(listname)s"
 
 #: Mailman/MTA/Manual.py:66
 msgid ""
@@ -7168,8 +7260,9 @@ msgid "## %(listname)s mailing list"
 msgstr "Отварање листе слања ( %(hostname)s)"
 
 #: Mailman/MTA/Manual.py:99
+#, fuzzy
 msgid "Mailing list creation request for list %(listname)s"
-msgstr ""
+msgstr "Резултати отварања листе "
 
 #: Mailman/MTA/Manual.py:113
 msgid ""
@@ -7193,12 +7286,14 @@ msgid ""
 msgstr ""
 
 #: Mailman/MTA/Manual.py:142
+#, fuzzy
 msgid "Mailing list removal request for list %(listname)s"
-msgstr ""
+msgstr "Учитавање листе %(listname)s"
 
 #: Mailman/MTA/Postfix.py:442
+#, fuzzy
 msgid "checking permissions on %(file)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: Mailman/MTA/Postfix.py:452
 msgid "%(file)s permissions must be 0664 (got %(octmode)s)"
@@ -7214,8 +7309,9 @@ msgid "(fixing)"
 msgstr "(поправљање)"
 
 #: Mailman/MTA/Postfix.py:470
+#, fuzzy
 msgid "checking ownership of %(dbfile)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: Mailman/MTA/Postfix.py:478
 msgid "%(dbfile)s owned by %(owner)s (must be owned by %(user)s"
@@ -7244,20 +7340,23 @@ msgid "subscriptions to %(realname)s require moderator approval"
 msgstr ""
 
 #: Mailman/MailList.py:1125 bin/add_members:299
+#, fuzzy
 msgid "%(realname)s subscription notification"
-msgstr ""
+msgstr "Обавештење о прекомерном слању"
 
 #: Mailman/MailList.py:1145
 msgid "unsubscriptions require moderator approval"
 msgstr ""
 
 #: Mailman/MailList.py:1166
+#, fuzzy
 msgid "%(realname)s unsubscribe notification"
-msgstr ""
+msgstr "Обавештење о прекомерном слању"
 
 #: Mailman/MailList.py:1328
+#, fuzzy
 msgid "%(realname)s address change notification"
-msgstr ""
+msgstr "Обавештење о прекомерном слању"
 
 #: Mailman/MailList.py:1362
 #, fuzzy
@@ -7513,6 +7612,7 @@ msgid ""
 msgstr ""
 
 #: bin/add_members:162 bin/add_members:172
+#, fuzzy
 msgid "Already a member: %(member)s"
 msgstr "%(member)s је већ члан"
 
@@ -7521,10 +7621,12 @@ msgid "Bad/Invalid email address: blank line"
 msgstr "Лоша е-адреса: празна линија"
 
 #: bin/add_members:180
+#, fuzzy
 msgid "Bad/Invalid email address: %(member)s"
 msgstr "Лоша е-адреса: %(member)s"
 
 #: bin/add_members:182
+#, fuzzy
 msgid "Hostile address (illegal characters): %(member)s"
 msgstr "Лоша адреса (недозвољени знакови): %(member)s"
 
@@ -7534,16 +7636,19 @@ msgid "Invited: %(member)s"
 msgstr "Учлањен: %(member)s"
 
 #: bin/add_members:187
+#, fuzzy
 msgid "Subscribed: %(member)s"
 msgstr "Учлањен: %(member)s"
 
 #: bin/add_members:237
+#, fuzzy
 msgid "Bad argument to -w/--welcome-msg: %(arg)s"
-msgstr ""
+msgstr "Погрешни аргументи: %(strargs)s"
 
 #: bin/add_members:244
+#, fuzzy
 msgid "Bad argument to -a/--admin-notify: %(arg)s"
-msgstr ""
+msgstr "Погрешни аргументи: %(strargs)s"
 
 #: bin/add_members:252
 msgid "Cannot read both digest and normal members from standard input."
@@ -7556,6 +7661,7 @@ msgstr ""
 #: bin/add_members:261 bin/config_list:110 bin/export.py:271 bin/find_member:97
 #: bin/inject:91 bin/list_admins:90 bin/list_members:252 bin/sync_members:222
 #: cron/bumpdigests:86
+#, fuzzy
 msgid "No such list: %(listname)s"
 msgstr "Нема листе под називом %(listname)s"
 
@@ -7619,6 +7725,7 @@ msgid "listname is required"
 msgstr "име листе је обавезно."
 
 #: bin/arch:143 bin/change_pw:107 bin/config_list:257
+#, fuzzy
 msgid ""
 "No such list \"%(listname)s\"\n"
 "%(e)s"
@@ -7708,6 +7815,7 @@ msgid ""
 msgstr ""
 
 #: bin/change_pw:145
+#, fuzzy
 msgid "Bad arguments: %(strargs)s"
 msgstr "Погрешни аргументи: %(strargs)s"
 
@@ -7716,10 +7824,12 @@ msgid "Empty list passwords are not allowed"
 msgstr "Морате имати лозинку за листу"
 
 #: bin/change_pw:181
+#, fuzzy
 msgid "New %(listname)s password: %(notifypassword)s"
 msgstr "Нова лозинка за листу %(listname)s: %(notifypassword)s"
 
 #: bin/change_pw:190
+#, fuzzy
 msgid "Your new %(listname)s list password"
 msgstr "Ваша нова лозинка за листу %(listname)s"
 
@@ -7784,6 +7894,7 @@ msgid "List:"
 msgstr "Листа:"
 
 #: bin/check_db:148
+#, fuzzy
 msgid "   %(file)s: okay"
 msgstr "   %(file)s: у реду"
 
@@ -7799,6 +7910,7 @@ msgid ""
 msgstr ""
 
 #: bin/check_perms:110
+#, fuzzy
 msgid "    checking gid and mode for %(path)s"
 msgstr "  провјеравање гид-а и мода за  %(path)s"
 
@@ -7819,8 +7931,9 @@ msgid "article db files must be %(octperms)s: %(path)s"
 msgstr ""
 
 #: bin/check_perms:183
+#, fuzzy
 msgid "checking mode for %(prefix)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: bin/check_perms:193
 msgid "WARNING: directory does not exist: %(d)s"
@@ -7831,8 +7944,9 @@ msgid "directory must be at least 02775: %(d)s"
 msgstr ""
 
 #: bin/check_perms:209
+#, fuzzy
 msgid "checking perms on %(private)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: bin/check_perms:214
 msgid "%(private)s must not be other-readable"
@@ -7860,24 +7974,27 @@ msgid "checking cgi-bin permissions"
 msgstr ""
 
 #: bin/check_perms:278
+#, fuzzy
 msgid "    checking set-gid for %(path)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: bin/check_perms:282
 msgid "%(path)s must be set-gid"
 msgstr ""
 
 #: bin/check_perms:292
+#, fuzzy
 msgid "checking set-gid for %(wrapper)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: bin/check_perms:296
 msgid "%(wrapper)s must be set-gid"
 msgstr ""
 
 #: bin/check_perms:306
+#, fuzzy
 msgid "checking permissions on %(pwfile)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: bin/check_perms:315
 msgid "%(pwfile)s permissions must be exactly 0640 (got %(octmode)s)"
@@ -7888,8 +8005,9 @@ msgid "checking permissions on list data"
 msgstr ""
 
 #: bin/check_perms:348
+#, fuzzy
 msgid "    checking permissions on: %(path)s"
-msgstr ""
+msgstr "  провјеравање гид-а и мода за  %(path)s"
 
 #: bin/check_perms:356
 msgid "file permissions must be at least 660: %(path)s"
@@ -7946,8 +8064,9 @@ msgid "Unix-From line changed: %(lineno)d"
 msgstr ""
 
 #: bin/cleanarch:111
+#, fuzzy
 msgid "Bad status number: %(arg)s"
-msgstr ""
+msgstr "Погрешни аргументи: %(strargs)s"
 
 #: bin/cleanarch:167
 msgid "%(messages)d messages found"
@@ -8044,14 +8163,18 @@ msgid "    original address removed:"
 msgstr ""
 
 #: bin/clone_member:202
+#, fuzzy
 msgid "Not a valid email address: %(toaddr)s"
-msgstr ""
+msgstr "Лоша е-адреса: %(member)s"
 
 #: bin/clone_member:215
+#, fuzzy
 msgid ""
 "Error opening list \"%(listname)s\", skipping.\n"
 "%(e)s"
 msgstr ""
+"Нема листе под називом \"%(listname)s\"\n"
+"%(e)s"
 
 #: bin/config_list:20
 msgid ""
@@ -8140,8 +8263,11 @@ msgid "Invalid value for property: %(k)s"
 msgstr ""
 
 #: bin/config_list:291
+#, fuzzy
 msgid "Bad email address for option %(k)s: %(v)s"
 msgstr ""
+"Неправилно формирана ставка:\n"
+" %(record)s"
 
 #: bin/config_list:348
 msgid "Only one of -i or -o is allowed"
@@ -8193,8 +8319,9 @@ msgid "Ignoring non-held message: %(f)s"
 msgstr "Игнорисање промјена за искљученог члана: %(user)s"
 
 #: bin/discard:100
+#, fuzzy
 msgid "Ignoring held msg w/bad id: %(f)s"
-msgstr ""
+msgstr "Игнорисање промјена за искљученог члана: %(user)s"
 
 #: bin/discard:112
 #, fuzzy
@@ -8243,8 +8370,9 @@ msgid "No filename given."
 msgstr "Није дат назив фајла."
 
 #: bin/dumpdb:108
+#, fuzzy
 msgid "Bad arguments: %(pargs)s"
-msgstr ""
+msgstr "Погрешни аргументи: %(strargs)s"
 
 #: bin/dumpdb:118
 msgid "Please specify either -p or -m."
@@ -8347,7 +8475,7 @@ msgid ""
 "Complete\n"
 "specifications are at:\n"
 "\n"
-"https://docs.python.org/2/library/re.html\n"
+"https://docs.python.org/3/library/re.html\n"
 "\n"
 "Address matches are case-insensitive, but case-preserved addresses are\n"
 "displayed.\n"
@@ -8494,8 +8622,9 @@ msgid ""
 msgstr ""
 
 #: bin/list_admins:97
+#, fuzzy
 msgid "List: %(listname)s, \tOwners: %(owners)s"
-msgstr ""
+msgstr "Власници листе: %(owneraddr)s"
 
 #: bin/list_lists:19
 msgid ""
@@ -8604,8 +8733,9 @@ msgid "Bad --nomail option: %(why)s"
 msgstr ""
 
 #: bin/list_members:209
+#, fuzzy
 msgid "Bad --digest option: %(kind)s"
-msgstr ""
+msgstr "Прегледи - опције"
 
 #: bin/list_members:213 bin/list_members:217 bin/list_members:221
 #: bin/list_members:225
@@ -8789,6 +8919,7 @@ msgid ""
 msgstr ""
 
 #: bin/mailmanctl:280 cron/mailpasswds:119
+#, fuzzy
 msgid "Site list is missing: %(sitelistname)s"
 msgstr "Недостаје сајт листе:  %(sitelistname)s"
 
@@ -8858,6 +8989,7 @@ msgid "list creator"
 msgstr "покретач листе"
 
 #: bin/mmsitepass:86
+#, fuzzy
 msgid "New %(pwdesc)s password: "
 msgstr "Нова лозинка (%(pwdesc)s):"
 
@@ -9016,6 +9148,7 @@ msgid ""
 msgstr ""
 
 #: bin/newlist:162
+#, fuzzy
 msgid "Unknown language: %(lang)s"
 msgstr "Непознат језик: %(lang)s"
 
@@ -9028,6 +9161,7 @@ msgid "Enter the email of the person running the list: "
 msgstr "Унесите е-адресу особе која покреће листу: "
 
 #: bin/newlist:193
+#, fuzzy
 msgid "Initial %(listname)s password: "
 msgstr "Почетна лозинка за листу %(listname)s"
 
@@ -9037,8 +9171,8 @@ msgstr "Мора бити изабрана лозинка за листу"
 
 #: bin/newlist:220
 msgid ""
-" - owner addresses need to be fully-qualified names like \"owner@example.com"
-"\", not just \"owner\"."
+" - owner addresses need to be fully-qualified names like \"owner@example."
+"com\", not just \"owner\"."
 msgstr ""
 
 #: bin/newlist:244
@@ -9202,14 +9336,17 @@ msgid ""
 msgstr ""
 
 #: bin/remove_members:156
+#, fuzzy
 msgid "Could not open file for reading: %(filename)s."
-msgstr ""
+msgstr "Неуспјешно отварање фајла за писање:"
 
 #: bin/remove_members:163
+#, fuzzy
 msgid "Error opening list %(listname)s... skipping."
-msgstr ""
+msgstr "Учитавање листе %(listname)s"
 
 #: bin/remove_members:173
+#, fuzzy
 msgid "No such member: %(addr)s"
 msgstr "Нема члана: %(addr)s"
 
@@ -9269,6 +9406,7 @@ msgid ""
 msgstr ""
 
 #: bin/rmlist:73 bin/rmlist:76
+#, fuzzy
 msgid "Removing %(msg)s"
 msgstr "Уклањање %(msg)s"
 
@@ -9277,12 +9415,14 @@ msgid "%(listname)s %(msg)s not found as %(filename)s"
 msgstr ""
 
 #: bin/rmlist:105
+#, fuzzy
 msgid "No such list (or list already deleted): %(listname)s"
-msgstr ""
+msgstr "Нема листе под називом %(listname)s"
 
 #: bin/rmlist:108
+#, fuzzy
 msgid "No such list: %(listname)s.  Removing its residual archives."
-msgstr ""
+msgstr "Нема листе под називом %(listname)s"
 
 #: bin/rmlist:112
 msgid "Not removing archives.  Reinvoke with -a to remove them."
@@ -9396,6 +9536,7 @@ msgid ""
 msgstr ""
 
 #: bin/sync_members:115
+#, fuzzy
 msgid "Bad choice: %(yesno)s"
 msgstr "Погрешан избор: %(yesno)s"
 
@@ -9412,6 +9553,7 @@ msgid "No argument to -f given"
 msgstr ""
 
 #: bin/sync_members:172
+#, fuzzy
 msgid "Illegal option: %(opt)s"
 msgstr "Погрешна опција:  %(opt)s"
 
@@ -9440,10 +9582,12 @@ msgid "You must fix the preceding invalid addresses first."
 msgstr ""
 
 #: bin/sync_members:264
+#, fuzzy
 msgid "Added  : %(s)s"
 msgstr "Додан: %(s)s"
 
 #: bin/sync_members:289
+#, fuzzy
 msgid "Removed: %(s)s"
 msgstr "Уклоњен: %(s)s"
 
@@ -9548,8 +9692,9 @@ msgid ""
 msgstr ""
 
 #: bin/update:107
+#, fuzzy
 msgid "Fixing language templates: %(listname)s"
-msgstr ""
+msgstr "Ваша нова листа слања:  %(listname)s"
 
 #: bin/update:196 bin/update:711
 msgid "WARNING: could not acquire lock for list: %(listname)s"
@@ -9641,6 +9786,7 @@ msgid "removing directory %(src)s and everything underneath"
 msgstr ""
 
 #: bin/update:399
+#, fuzzy
 msgid "removing %(src)s"
 msgstr "уклањање %(src)s"
 
@@ -9705,8 +9851,9 @@ msgid "done"
 msgstr "завршено"
 
 #: bin/update:691
+#, fuzzy
 msgid "Updating mailing list: %(listname)s"
-msgstr ""
+msgstr "Ваша нова листа слања:  %(listname)s"
 
 #: bin/update:694
 msgid "Updating Usenet watermarks"
@@ -9911,14 +10058,16 @@ msgid ""
 msgstr ""
 
 #: bin/withlist:175
+#, fuzzy
 msgid "Unlocking (but not saving) list: %(listname)s"
-msgstr ""
+msgstr "Непозната листа: %(listname)s"
 
 #: bin/withlist:179
 msgid "Finalizing"
 msgstr "Завршавање"
 
 #: bin/withlist:188
+#, fuzzy
 msgid "Loading list %(listname)s"
 msgstr "Учитавање листе %(listname)s"
 
@@ -9931,6 +10080,7 @@ msgid "(unlocked)"
 msgstr "(откључано)"
 
 #: bin/withlist:197
+#, fuzzy
 msgid "Unknown list: %(listname)s"
 msgstr "Непозната листа: %(listname)s"
 
@@ -9943,14 +10093,17 @@ msgid "--all requires --run"
 msgstr "--all захтјева -run"
 
 #: bin/withlist:266
+#, fuzzy
 msgid "Importing %(module)s..."
 msgstr "Увођење %(module)s..."
 
 #: bin/withlist:270
+#, fuzzy
 msgid "Running %(module)s.%(callable)s()..."
 msgstr "Извршавање %(module)s.%(callable)s()..."
 
 #: bin/withlist:291
+#, fuzzy
 msgid "The variable `m' is the %(listname)s MailList instance"
 msgstr "Варијабла `m' је %(listname)s инстанца"
 
@@ -10014,6 +10167,7 @@ msgstr ""
 "Поруке на чекању:"
 
 #: cron/checkdbs:169
+#, fuzzy
 msgid ""
 "From: %(sender)s on %(date)s\n"
 "Subject: %(subject)s\n"
@@ -10144,6 +10298,7 @@ msgid "Password // URL"
 msgstr "Лозинка // УРЛ"
 
 #: cron/mailpasswds:222
+#, fuzzy
 msgid "%(host)s mailing list memberships reminder"
 msgstr "Подсјетник листа слања %(host)s "
 

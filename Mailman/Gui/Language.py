@@ -34,11 +34,11 @@ class Language(GUIBase):
         return 'language', _('Language&nbsp;options')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'language':
+        if category != 'language':
             return None
 
         # Set things up for the language choices
-        langs = mlist.GetAvailableLanguages()
+        langs = mlist.available_languages
         langnames = [_(Utils.GetLanguageDescr(L)) for L in langs]
         try:
             langi = langs.index(mlist.preferred_language)
@@ -56,7 +56,7 @@ class Language(GUIBase):
             except LookupError:
                 return 0
 
-        all = [key for key in mm_cfg.LC_DESCRIPTIONS.keys()
+        all = [key for key in list(mm_cfg.LC_DESCRIPTIONS.keys())
                if checkcodec(Utils.GetCharSet(key))]
         all.sort()
         checked = [L in langs for L in all]

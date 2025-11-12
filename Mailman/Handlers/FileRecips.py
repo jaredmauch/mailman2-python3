@@ -25,13 +25,13 @@ from Mailman import Errors
 
 
 def process(mlist, msg, msgdata):
-    if msgdata.has_key('recips'):
+    if 'recips' in msgdata:
         return
     filename = os.path.join(mlist.fullpath(), 'members.txt')
     try:
         fp = open(filename)
-    except IOError, e:
-        if e.errno <> errno.ENOENT:
+    except IOError as e:
+        if e.errno != errno.ENOENT:
             raise
         # If the file didn't exist, just set an empty recipients list
         msgdata['recips'] = []

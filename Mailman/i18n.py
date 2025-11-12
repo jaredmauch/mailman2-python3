@@ -15,11 +15,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
+from builtins import str
+from builtins import range
 import sys
 import time
 import locale
 import gettext
-from types import StringType, UnicodeType
 
 from Mailman import mm_cfg
 from Mailman.SafeDict import SafeDict
@@ -93,13 +94,20 @@ def _(s, frame=1):
     # into encoded 8-bit strings.  BAW: Returning a Unicode here broke too
     # much other stuff and _() has many tentacles.  Eventually I think we want
     # to use Unicode everywhere.
+    # XXX python3 str does not require encode/decode
     tns = _translation.gettext(s)
     charset = _translation.charset()
     if not charset:
-        charset = 'us-ascii'
-    for k, v in dict.items():
-        if isinstance(v, UnicodeType):
-            dict[k] = v.encode(charset, 'replace')
+        charset = 'latin-1'
+    # Ensure we return a string, not bytes
+    if isinstance(tns, bytes):
+        tns = tns.decode(charset, 'replace')
+    # Ensure all dictionary values are strings, not bytes
+    for k, v in list(dict.items()):
+        if isinstance(v, bytes):
+            dict[k] = v.decode(charset, 'replace')
+        elif not isinstance(v, str):
+            dict[k] = str(v)
     try:
         return tns % dict
     except (ValueError, TypeError):
@@ -110,18 +118,32 @@ def _(s, frame=1):
 
 def tolocale(s):
     global _ctype_charset
-    if isinstance(s, UnicodeType) or _ctype_charset is None:
+    if isinstance(s, str) or _ctype_charset is None:
         return s
-    source = _translation.charset ()
+    source = _translation.charset()
     if not source:
         return s
-    return unicode(s, source, 'replace').encode(_ctype_charset, 'replace')
+    # Handle string formatting before encoding
+    if isinstance(s, bytes):
+        s = s.decode('utf-8', 'replace')
+    # Ensure we return a string, not bytes
+    result = s.encode(_ctype_charset, 'replace')
+    if isinstance(result, bytes):
+        result = result.decode(_ctype_charset)
+    return result
 
 if mm_cfg.DISABLE_COMMAND_LOCALE_CSET:
     C_ = _
 else:
     def C_(s):
-        return tolocale(_(s, 2))
+        result = _(s, 2)
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', 'replace')
+        result = tolocale(result)
+        # Ensure the result is a string and not bytes
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', 'replace')
+        return result
 
     
 
@@ -139,7 +161,7 @@ def ctime(date):
         ]
 
     tzname = _('Server Local Time')
-    if isinstance(date, StringType):
+    if isinstance(date, str):
         try:
             year, mon, day, hh, mm, ss, wday, ydat, dst = time.strptime(date)
             if dst in (0,1):

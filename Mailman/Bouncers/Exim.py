@@ -21,7 +21,7 @@ an `addresslist' of failed addresses.
 
 """
 
-from email.Utils import getaddresses
+from email.utils import getaddresses
 
 
 

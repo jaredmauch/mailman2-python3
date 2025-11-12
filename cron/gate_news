@@ -31,19 +31,20 @@ Where options are
 import sys
 import os
 import time
-import getopt
+import argparse
 import socket
 import nntplib
 
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-import email.Errors
-from email.Parser import Parser
+import email.errors
+from Mailman.Message import Message
+from email.parser import Parser
+from email import message_from_string
 
 from Mailman import mm_cfg
 from Mailman import MailList
 from Mailman import Utils
-from Mailman import Message
 from Mailman import LockFile
 from Mailman.i18n import _
 from Mailman.Queue.sbcache import get_switchboard
@@ -67,26 +68,11 @@ class _ContinueLoop(Exception):
     pass
 
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
+def parse_args():
+    parser = argparse.ArgumentParser(description='Poll the NNTP servers for messages to be gatewayed to mailing lists.')
+    return parser.parse_args()
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, _(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
-
-
-
 _hostcache = {}
 
 def open_newsgroup(mlist):
@@ -101,7 +87,7 @@ def open_newsgroup(mlist):
                                 readermode=True,
                                 user=mm_cfg.NNTP_USERNAME,
                                 password=mm_cfg.NNTP_PASSWORD)
-        except (socket.error, nntplib.NNTPError, IOError, EOFError), e:
+        except (socket.error, nntplib.NNTPError, IOError, EOFError) as e:
             syslog('fromusenet',
                    'error opening connection to nntp_host: %s\n%s',
                    mlist.nntp_host, e)
@@ -122,7 +108,6 @@ def clearcache():
     _hostcache.clear()
 
 
-
 # This function requires the list to be locked.
 def poll_newsgroup(mlist, conn, first, last, glock):
     listname = mlist.internal_name()
@@ -130,7 +115,7 @@ def poll_newsgroup(mlist, conn, first, last, glock):
     for num in range(first, last):
         glock.refresh()
         try:
-            headers = conn.head(`num`)[3]
+            headers = conn.head(repr(num))[3]
             # I don't know how this happens, but skip an empty message.
             if not headers:
                 raise _ContinueLoop
@@ -141,13 +126,13 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                 value = header[:i].lower()
                 if i > 0 and value == 'to':
                     found_to = 1
-                if value <> 'x-beenthere':
+                if value != 'x-beenthere':
                     continue
                 if header[i:] == ': %s' % mlist.GetListEmail():
                     beenthere = 1
                     break
             if not beenthere:
-                body = conn.body(`num`)[3]
+                body = conn.body(repr(num))[3]
                 # Usenet originated messages will not have a Unix envelope
                 # (i.e. "From " header).  This breaks Pipermail archiving, so
                 # we will synthesize one.  Be sure to use the format searched
@@ -161,10 +146,10 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                 lines.append('')
                 lines.extend(body)
                 lines.append('')
-                p = Parser(Message.Message)
+                p = Parser(Message)
                 try:
                     msg = p.parsestr(NL.join(lines))
-                except email.Errors.MessageError, e:
+                except email.errors.MessageError as e:
                     syslog('fromusenet',
                            'email package exception for %s:%d\n%s',
                            mlist.linked_newsgroup, num, e)
@@ -181,7 +166,7 @@ def poll_newsgroup(mlist, conn, first, last, glock):
                             fromusenet = 1)
                 syslog('fromusenet',
                        'posted to list %s: %7d' % (listname, num))
-        except nntplib.NNTPError, e:
+        except nntplib.NNTPError as e:
             syslog('fromusenet',
                    'NNTP error for list %s: %7d' % (listname, num))
             syslog('fromusenet', str(e))
@@ -195,7 +180,6 @@ def poll_newsgroup(mlist, conn, first, last, glock):
     mlist.usenet_watermark = num
 
 
-
 def process_lists(glock):
     for listname in Utils.list_names():
         glock.refresh()
@@ -212,7 +196,7 @@ def process_lists(glock):
         # Open the newsgroup, but let most exceptions percolate up.
         try:
             conn, first, last = open_newsgroup(mlist)
-        except (socket.error, nntplib.NNTPError, IOError, EOFError), e:
+        except (socket.error, nntplib.NNTPError, IOError, EOFError) as e:
             syslog('fromusenet',
                    "%s: couldn't open newsgroup %s: skipping\n%s",
                    listname, mlist.linked_newsgroup, e)
@@ -259,35 +243,17 @@ def process_lists(glock):
                (listname, mlist.usenet_watermark))
 
 
-
 def main():
-    lock = LockFile.LockFile(GATENEWS_LOCK_FILE,
-                             # it's okay to hijack this
-                             lifetime=LOCK_LIFETIME)
+    args = parse_args()
+    # Get the lock
+    glock = LockFile(GATENEWS_LOCK_FILE, lifetime=LOCK_LIFETIME)
     try:
-        lock.lock(timeout=0.5)
-    except LockFile.TimeOutError:
-        syslog('fromusenet', 'Could not acquire gate_news lock')
-        return
-    try:
-        process_lists(lock)
+        glock.lock()
+        process_lists(glock)
     finally:
         clearcache()
-        lock.unlock(unconditionally=1)
+        glock.unlock()
 
 
-
 if __name__ == '__main__':
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error, msg:
-        usage(1, msg)
-
-    if args:
-        usage(1, 'No args are expected')
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
     main()

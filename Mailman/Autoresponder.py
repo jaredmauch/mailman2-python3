@@ -17,12 +17,14 @@
 """MailList mixin class managing the autoresponder.
 """
 
+from builtins import object
 from Mailman import mm_cfg
 from Mailman.i18n import _
+import time
 
 
 
-class Autoresponder:
+class Autoresponder(object):
     def InitVars(self):
         # configurable
         self.autorespond_postings = 0
@@ -40,4 +42,38 @@ class Autoresponder:
         self.postings_responses = {}
         self.admin_responses = {}
         self.request_responses = {}
+
+    def autorespondToSender(self, sender, lang):
+        """Check if we should autorespond to this sender.
+        
+        Args:
+            sender: The email address of the sender
+            lang: The language to use for the response
+            
+        Returns:
+            True if we should autorespond, False otherwise
+        """
+        # Check if we're in the grace period
+        now = time.time()
+        graceperiod = self.autoresponse_graceperiod
+        if graceperiod > 0:
+            # Check the appropriate response dictionary based on the type of message
+            if self.autorespond_admin:
+                quiet_until = self.admin_responses.get(sender, 0)
+            elif self.autorespond_requests:
+                quiet_until = self.request_responses.get(sender, 0)
+            else:
+                quiet_until = self.postings_responses.get(sender, 0)
+            if quiet_until > now:
+                return False
+                
+        # Update the appropriate response dictionary
+        if self.autorespond_admin:
+            self.admin_responses[sender] = now + graceperiod
+        elif self.autorespond_requests:
+            self.request_responses[sender] = now + graceperiod
+        else:
+            self.postings_responses[sender] = now + graceperiod
+            
+        return True
 

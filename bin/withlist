@@ -80,10 +80,10 @@ Mailman installation directory called `listaddr.py', with the following
 two functions:
 
 def listaddr(mlist):
-    print mlist.GetListEmail()
+    print(mlist.GetListEmail())
 
 def requestaddr(mlist):
-    print mlist.GetRequestEmail()
+    print(mlist.GetRequestEmail())
 
 Now, from the command line you can print the list's posting address by running
 the following from the command line:
@@ -113,7 +113,7 @@ def changepw(mlist, addr, newpasswd):
         mlist.setMemberPassword(addr, newpasswd)
         mlist.Save()
     except NotAMemberError:
-        print 'No address matched:', addr
+        print('No address matched:', addr)
 
 and run this from the command line:
  %% bin/withlist -l -r changepw mylist somebody@somewhere.org foobar
@@ -122,20 +122,13 @@ and run this from the command line:
 import os
 import sys
 import code
-import getopt
+import argparse
 
 import paths
 from Mailman import Errors
 from Mailman import MailList
 from Mailman import Utils
 from Mailman.i18n import C_
-
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 
 # `m' will be the MailList object and `r' will be the results of the callable
 m = None
@@ -148,15 +141,33 @@ LOCK = False
 sys.path.append(os.path.dirname(sys.argv[0]))
 
 
-
+def parse_args():
+    parser = argparse.ArgumentParser(description='General framework for interacting with a mailing list object.')
+    parser.add_argument('-l', '--lock', action='store_true',
+                       help='Lock the list when opening')
+    parser.add_argument('-r', '--run',
+                       help='Run the specified module.callable')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Suppress verbose output')
+    parser.add_argument('-i', '--interactive', action='store_true',
+                       help='Leave at interactive prompt after processing')
+    parser.add_argument('-a', '--all', action='store_true',
+                       help='Process all lists')
+    parser.add_argument('listname', nargs='?',
+                       help='Name of the list to process')
+    parser.add_argument('args', nargs='*',
+                       help='Additional arguments to pass to the callable')
+    return parser.parse_args()
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=sys.stderr)
     sys.exit(code)
 
 
@@ -172,29 +183,28 @@ def atexit():
     if m.Locked():
         if VERBOSE:
             listname = m.internal_name()
-            print >> sys.stderr, C_(
-                'Unlocking (but not saving) list: %(listname)s')
+            print(C_(
+                'Unlocking (but not saving) list: %(listname)s'), file=sys.stderr)
         m.Unlock()
     if VERBOSE:
-        print >> sys.stderr, C_('Finalizing')
+        print(C_('Finalizing'), file=sys.stderr)
     del m
 
 
-
 def do_list(listname, args, func):
     global m
     # first try to open mailing list
     if VERBOSE:
-        print >> sys.stderr, C_('Loading list %(listname)s'),
+        print(C_('Loading list %(listname)s'), file=sys.stderr)
         if LOCK:
-            print >> sys.stderr, C_('(locked)')
+            print(C_('(locked)'), file=sys.stderr)
         else:
-            print >> sys.stderr, C_('(unlocked)')
+            print(C_('(unlocked)'), file=sys.stderr)
 
     try:
         m = MailList.MailList(listname, lock=LOCK)
     except Errors.MMUnknownListError:
-        print >> sys.stderr, C_('Unknown list: %(listname)s')
+        print(C_('Unknown list: %(listname)s'), file=sys.stderr)
         m = None
 
     # try to import the module and run the callable
@@ -203,78 +213,66 @@ def do_list(listname, args, func):
     return None
 
 
-
 def main():
-    global VERBOSE
-    global LOCK
-    global r
+    global VERBOSE, LOCK
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hlr:qia',
-            ['help', 'lock', 'run=', 'quiet', 'interactive', 'all'])
-    except getopt.error, msg:
-        usage(1, msg)
+        args = parse_args()
+    except SystemExit:
+        usage(1)
 
-    run = None
-    interact = None
-    all = False
-    dolist = True
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-l', '--lock'):
-            LOCK = True
-        elif opt in ('-r', '--run'):
-            run = arg
-        elif opt in ('-q', '--quiet'):
-            VERBOSE = False
-        elif opt in ('-i', '--interactive'):
-            interact = True
-        elif opt in ('-a', '--all'):
-            all = True
+    VERBOSE = not args.quiet
+    LOCK = args.lock
 
-    if len(args) < 1 and not all:
-        warning = C_('No list name supplied.')
-        if interact:
-            # Let them keep going
-            print warning
-            dolist = False
-        else:
-            usage(1, warning)
-
-    if all and not run:
-        usage(1, C_('--all requires --run'))
-
-    # The default for interact is 1 unless -r was given
+    # The default for interact is True unless -r was given
+    interact = args.interactive
     if interact is None:
-        if run is None:
-            interact = True
-        else:
-            interact = False
+        interact = args.run is None
 
-    # try to import the module for the callable
+    # Import the callable if one was specified
     func = None
-    if run:
-        i = run.rfind('.')
-        if i < 0:
-            module = run
-            callable = run
-        else:
-            module = run[:i]
-            callable = run[i+1:]
+    if args.run:
         if VERBOSE:
-            print >> sys.stderr, C_('Importing %(module)s...')
-        __import__(module)
-        mod = sys.modules[module]
-        if VERBOSE:
-            print >> sys.stderr, C_('Running %(module)s.%(callable)s()...')
-        func = getattr(mod, callable)
+            print(C_('Importing %(module)s...'), file=sys.stderr)
+        try:
+            if '.' in args.run:
+                module, callable = args.run.rsplit('.', 1)
+                mod = __import__(module, globals(), locals(), [callable])
+                func = getattr(mod, callable)
+            else:
+                mod = __import__(args.run, globals(), locals(), [])
+                func = getattr(mod, args.run)
+        except (ImportError, AttributeError) as e:
+            print(C_('Error importing %(module)s: %(error)s'),
+                  file=sys.stderr)
+            sys.exit(1)
 
-    if all:
-        r = [do_list(listname, args, func) for listname in Utils.list_names()]
-    elif dolist:
-        listname = args.pop(0).lower().strip()
-        r = do_list(listname, args, func)
+    # Handle the --all option
+    if args.all:
+        if args.listname:
+            usage(1, C_('Cannot specify listname with --all'))
+        if not args.run:
+            usage(1, C_('--all requires --run'))
+        results = []
+        for listname in Utils.list_names():
+            if VERBOSE:
+                print(C_('Processing list: %(listname)s'), file=sys.stderr)
+            result = do_list(listname, args.args, func)
+            if result is not None:
+                results.append(result)
+        r = results
+    else:
+        if not args.listname:
+            warning = C_('No list name supplied.')
+            if interact:
+                # Let them keep going
+                print(warning)
+                dolist = False
+            else:
+                usage(1, warning)
+        else:
+            dolist = True
+            listname = args.listname.lower().strip()
+            r = do_list(listname, args.args, func)
 
     # Now go to interactive mode, perhaps
     if interact:
@@ -292,8 +290,10 @@ def main():
         else:
             ban = None
         code.InteractiveConsole(namespace).interact(ban)
+    else:
+        # We're done
+        sys.exit(0)
 
 
-
 sys.exitfunc = atexit
 main()

@@ -18,6 +18,7 @@
 # USA.
 
 """Export an XML representation of a mailing list."""
+from __future__ import print_function
 
 import os
 import sys
@@ -25,6 +26,7 @@ import base64
 import codecs
 import datetime
 import optparse
+import pickle
 
 from xml.sax.saxutils import escape
 
@@ -81,7 +83,7 @@ class Indenter:
         assert self._indent >= 0
 
     def write(self, s):
-        if s <> '\n':
+        if s != '\n':
             self._fp.write(self._indent * self._width * ' ')
         self._fp.write(s)
 
@@ -101,6 +103,8 @@ class XMLDumper(object):
             if v is None:
                 v = ''
             else:
+                if isinstance(v, bytes):
+                    v = v.decode('utf-8', 'replace')
                 v = escape(str(v))
             attrs.append('%s="%s"' % (k, v))
         return SPACE.join(attrs)
@@ -115,11 +119,11 @@ class XMLDumper(object):
         else:
             attrstr = ''
         if more:
-            print >> self._fp, '<%s%s>' % (name, attrstr)
+            print('<%s%s>' % (name, attrstr), file=self._fp)
             self._fp.indent()
             self._stack.append(name)
         else:
-            print >> self._fp, '<%s%s/>' % (name, attrstr)
+            print('<%s%s/>' % (name, attrstr), file=self._fp)
 
     # Use this method when you know you have sub-elements.
     def _push_element(self, _name, **_tagattrs):
@@ -133,7 +137,7 @@ class XMLDumper(object):
             name = self._stack.pop()
             assert name == _name, 'got: %s, expected: %s' % (_name, name)
             self._fp.dedent()
-            print >> self._fp, '</%s>' % name
+            print('</%s>' % name, file=self._fp)
 
     # Use this method when you do not have sub-elements
     def _element(self, _name, _value=None, **_attributes):
@@ -143,10 +147,12 @@ class XMLDumper(object):
         else:
             attrs = ''
         if _value is None:
-            print >> self._fp, '<%s%s/>' % (_name, attrs)
+            print('<%s%s/>' % (_name, attrs), file=self._fp)
         else:
-            value = escape(unicode(_value))
-            print >> self._fp, '<%s%s>%s</%s>' % (_name, attrs, value, _name)
+            if isinstance(_value, bytes):
+                _value = _value.decode('utf-8', 'replace')
+            value = escape(str(_value))
+            print('<%s%s>%s</%s>' % (_name, attrs, value, _name), file=self._fp)
 
     def _do_list_categories(self, mlist, k, subcat=None):
         is_converted = bool(getattr(mlist, 'use_dollar_strings', False))
@@ -178,9 +184,13 @@ class XMLDumper(object):
             if isinstance(value, list):
                 self._push_element('option', name=varname, type=widget_type)
                 for v in value:
+                    if isinstance(v, bytes):
+                        v = v.decode('utf-8', 'replace')
                     self._element('value', v)
                 self._pop_element('option')
             else:
+                if isinstance(value, bytes):
+                    value = value.decode('utf-8', 'replace')
                 self._element('option', value, name=varname, type=widget_type)
 
     def _dump_list(self, mlist, password_scheme):
@@ -209,7 +219,7 @@ class XMLDumper(object):
         for member in sorted(mlist.getMembers()):
             attrs = dict(id=member)
             cased = mlist.getMemberCPAddress(member)
-            if cased <> member:
+            if cased != member:
                 attrs['original'] = cased
             self._push_element('member', **attrs)
             self._element('realname', mlist.getMemberName(member))
@@ -258,8 +268,31 @@ class XMLDumper(object):
         self._pop_element('roster')
         self._pop_element('list')
 
+    def _do_list_archives(self, mlist):
+        # Get the archive directory
+        archive_dir = os.path.join(mlist.archive_dir(), 'private')
+        if not os.path.exists(archive_dir):
+            return
+        # Get all the archive files
+        for filename in os.listdir(archive_dir):
+            if filename.endswith('.mbox'):
+                if isinstance(filename, bytes):
+                    filename = filename.decode('utf-8', 'replace')
+                self._push_element('archive', filename=filename)
+                # Get the archive file's metadata
+                metadata_file = os.path.join(archive_dir, filename + '.metadata')
+                if os.path.exists(metadata_file):
+                    metadata = self.load_metadata(metadata_file)
+                    for key, value in metadata.items():
+                        if isinstance(key, bytes):
+                            key = key.decode('utf-8', 'replace')
+                        if isinstance(value, bytes):
+                            value = value.decode('utf-8', 'replace')
+                        self._element('metadata', str(value), name=key)
+                self._pop_element('archive')
+
     def dump(self, listnames, password_scheme):
-        print >> self._fp, '<?xml version="1.0" encoding="UTF-8"?>'
+        print('<?xml version="1.0" encoding="UTF-8"?>', file=self._fp)
         self._push_element('mailman', **{
             'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
             'xsi:noNamespaceSchemaLocation': 'ssi-1.0.xsd',
@@ -268,14 +301,26 @@ class XMLDumper(object):
             try:
                 mlist = MailList(listname, lock=False)
             except Errors.MMUnknownListError:
-                print >> sys.stderr, C_('No such list: %(listname)s')
+                print(C_('No such list: %(listname)s'), file=sys.stderr)
                 continue
             self._dump_list(mlist, password_scheme)
+            self._do_list_archives(mlist)
         self._pop_element('mailman')
 
     def close(self):
         while self._stack:
             self._pop_element()
+
+    def load_metadata(self, filename):
+        """Load metadata from a pickle file."""
+        try:
+            with open(filename, 'rb') as fp:
+                # Use protocol 2 for Python 2/3 compatibility
+                metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
+            return metadata
+        except Exception as e:
+            print('Error loading metadata from %s: %s' % (filename, e))
+            return None
 
 
 
@@ -345,7 +390,7 @@ included in the XML output.  Multiple -l flags may be given."""))
         parser.error(C_('Unexpected arguments'))
     if opts.list_hash_schemes:
         for label in SCHEMES:
-            print label.upper()
+            print(label.upper())
         sys.exit(0)
     if opts.password_scheme.lower() not in SCHEMES:
         parser.error(C_('Invalid password scheme'))

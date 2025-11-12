@@ -26,7 +26,7 @@
         response is always sent to the subscribed address.
 """
 
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman.i18n import _

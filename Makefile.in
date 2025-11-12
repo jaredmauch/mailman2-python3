@@ -22,24 +22,23 @@
 
 SHELL=		/bin/sh
 
-VPATH=		@srcdir@
-srcdir=		@srcdir@
-bindir=		@bindir@
-prefix=		@prefix@
-exec_prefix=	@exec_prefix@
-var_prefix=	@VAR_PREFIX@
+srcdir=		.
+bindir=		${exec_prefix}/bin
+prefix=		/usr/local/mailman
+exec_prefix=	${prefix}
+var_prefix=	/usr/local/mailman
 DESTDIR=
 
-CC=		@CC@
-INSTALL=	@INSTALL@
-PYTHON= 	@PYTHON@
+CC=		gcc
+INSTALL=	/usr/bin/install -c
+PYTHON= 	/usr/bin/python3
 
-DEFS=		@DEFS@
+DEFS=		-DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DHAVE_STRERROR=1 -DHAVE_SETREGID=1 -DHAVE_SYSLOG=1 -DHAVE_STDIO_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_STRINGS_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_UNISTD_H=1 -DSTDC_HEADERS=1 -DHAVE_STDIO_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_STRINGS_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_UNISTD_H=1 -DHAVE_SYSLOG_H=1 -DGETGROUPS_T=gid_t -DHAVE_VSNPRINTF=1
 
 # Customizable but not set by configure
 
-OPT=		@OPT@
-CFLAGS=		@CFLAGS@ $(OPT) $(DEFS)
+OPT=		-g -O2
+CFLAGS=		-g -O2 $(OPT) $(DEFS)
 
 VAR_DIRS= \
 	logs archives lists locks data spam qfiles \
@@ -57,7 +56,6 @@ ARCH_DEP_DIRS=	cgi-bin mail
 # Directories make should decend into
 SUBDIRS=	bin cron misc Mailman scripts src templates messages tests
 
-
 # Modes for directories and executables created by the install
 # process.  Default to group-writable directories but
 # user-only-writable for executables.
@@ -69,21 +67,167 @@ DIRSETGID=	chmod g+s
 
 DATE = $(shell python -c 'import time; print time.strftime("%d-%b-%Y"),')
 LANGPACK = README-I18N.en templates messages
-EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.files --exclude=*.old
+EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.files --exclude=*.old --exclude=msgfmt-python2.py --exclude=pygettext.py
+
+# Add these variables after the existing variable definitions
+PYTHON_FILES = $(shell find . -name "*.py")
+PYTHON_DIRS = $(shell find . -type d -name "Mailman")
+INSTALLED_SCRIPTS = $(shell find $(DESTDIR)$(prefix)/bin -type f -executable 2>/dev/null || true)
+SOURCE_SCRIPTS = $(shell find build/bin -type f -executable -name "*.py" 2>/dev/null || true)
+PYLINT = pylint
+PYLINT_FLAGS = --disable=C0111,C0103,C0303,W0311,W0603,W0621,R0903,R0913,R0914,R0915
+
+# Detect number of CPUs for parallel builds
+ifeq ($(shell uname -s),Darwin)
+  NPROCS := $(shell sysctl -n hw.ncpu)
+else
+  NPROCS := $(shell nproc 2>/dev/null || echo 1)
+endif
+
+# Default to using all available CPUs for parallel builds
+MAKEFLAGS += -j$(NPROCS)
+
+# Add this function to check for script mismatches
+define check_scripts
+	@echo "Checking for script mismatches..."
+	@for script in $(INSTALLED_SCRIPTS); do \
+	    base_script=$$(basename $$script); \
+	    if [ ! -f build/bin/$$base_script ]; then \
+		echo "WARNING: Script $$base_script exists in installation but not in source"; \
+	    fi; \
+	done
+	@for script in $(SOURCE_SCRIPTS); do \
+	    base_script=$$(basename $$script); \
+	    case "$$base_script" in \
+		msgfmt-python2.py|pygettext.py) \
+		    ;; \
+		*) \
+		    if [ ! -f $(DESTDIR)$(prefix)/bin/$$base_script ]; then \
+			echo "WARNING: Script $$base_script exists in source but not in installation"; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+endef
+
+# Add this function to handle variable substitutions
+define substitute_vars
+	@echo "Substituting variables in $$1..."
+	@sed -e 's|@PYTHON@|$(PYTHON)|g' \
+	     -e 's|@prefix@|$(prefix)|g' \
+	     -e 's|@exec_prefix@|$(exec_prefix)|g' \
+	     -e 's|@bindir@|$(bindir)|g' \
+	     -e 's|@var_prefix@|$(var_prefix)|g' \
+	     $$1 > $$1.tmp && mv $$1.tmp $$1
+endef
+
+# Add this function to check for language file changes
+define check_lang_file
+	@if [ -f "$(DESTDIR)$(prefix)/$$1" ]; then \
+		if cmp -s "$$1" "$(DESTDIR)$(prefix)/$$1"; then \
+			echo "Skipping unchanged language file: $$1"; \
+			exit 0; \
+		fi; \
+	fi; \
+	exit 1;
+endef
+
+# Add lint target
+.PHONY: lint
+lint:
+	@echo "Running pylint on installed Python files..."
+	@if [ -d "$(DESTDIR)$(prefix)" ]; then \
+		find $(DESTDIR)$(prefix) -name "*.py" -type f -print0 | \
+		xargs -0 $(PYLINT) $(PYLINT_FLAGS) || true; \
+	else \
+		echo "No installed files found at $(DESTDIR)$(prefix)"; \
+		echo "Please run 'make install' first"; \
+		exit 1; \
+	fi
 
 # Rules
 
-all: subdirs
+.PHONY: all build install clean distclean prepare-build clean-pyc doinstall update langpack
 
-subdirs: $(SUBDIRS)
-	for d in $(SUBDIRS); \
-	do \
-	    (cd $$d; $(MAKE)); \
+# Default target
+all: prepare-build
+	@for d in $(SUBDIRS); do \
+		(cd $$d && $(MAKE) all) || exit 1; \
 	done
 
-install: doinstall update
+# Build directory preparation
+prepare-build:
+	@echo "Preparing build directory..."
+	@for d in $(SUBDIRS); do \
+		dir=build/$$d; \
+		if test ! -d $$dir; then \
+			$(srcdir)/mkinstalldirs $$dir; \
+		fi; \
+		for f in $$d/*; do \
+			if test -f $$f; then \
+				if test ! -f build/$$f -o $$f -nt build/$$f; then \
+					cp -p $$f build/$$f; \
+					# Check if file contains variables to substitute \
+					if grep -q '/usr/bin/python3\|/usr/local/mailman\|$${prefix}\|$${exec_prefix}/bin\|@var_prefix@' build/$$f; then \
+						sed -i 's|/usr/bin/python3|$(PYTHON)|g' build/$$f; \
+						sed -i 's|/usr/local/mailman|$(prefix)|g' build/$$f; \
+						sed -i 's|$${prefix}|$(exec_prefix)|g' build/$$f; \
+						sed -i 's|$${exec_prefix}/bin|$(bindir)|g' build/$$f; \
+					fi; \
+				fi; \
+			fi; \
+		done; \
+	done
+	@echo "Creating Python build directories..."
+	@for d in Mailman scripts misc tests; do \
+		dir=build/$$d; \
+		if test ! -d $$dir; then \
+			$(srcdir)/mkinstalldirs $$dir; \
+		fi; \
+	done
 
-doinstall: $(SUBDIRS)
+build: prepare-build
+	@echo "Building Python files..."
+	@if [ -d "build" ]; then \
+		$(PYTHON) -m compileall -q build; \
+		$(PYTHON) -m compileall -q build/Mailman; \
+		$(PYTHON) -m compileall -q build/bin; \
+		$(PYTHON) -m compileall -q build/scripts; \
+		$(PYTHON) -m compileall -q build/cron; \
+		$(PYTHON) -m compileall -q build/misc; \
+		$(PYTHON) -m compileall -q build/tests; \
+		$(PYTHON) -O -m compileall -q build; \
+		$(PYTHON) -O -m compileall -q build/Mailman; \
+		$(PYTHON) -O -m compileall -q build/bin; \
+		$(PYTHON) -O -m compileall -q build/scripts; \
+		$(PYTHON) -O -m compileall -q build/cron; \
+		$(PYTHON) -O -m compileall -q build/misc; \
+		$(PYTHON) -O -m compileall -q build/tests; \
+	fi
+	@echo "Build complete."
+
+install: build
+	@for d in $(SUBDIRS); do \
+		(cd $$d && $(MAKE) install) || exit 1; \
+	done
+	@echo "Installation complete."
+
+clean-pyc:
+	@echo "Cleaning Python bytecode files..."
+	@for d in $(PYTHON_DIRS); do \
+	    if [ -d "$$d" ]; then \
+		find "$$d" -name "*.pyc" -delete 2>/dev/null || true; \
+		find "$$d" -name "*.pyo" -delete 2>/dev/null || true; \
+		find "$$d" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true; \
+	    fi; \
+	done
+	@if [ -d "build" ]; then \
+	    find build -name "*.pyc" -delete 2>/dev/null || true; \
+	    find build -name "*.pyo" -delete 2>/dev/null || true; \
+	    find build -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true; \
+	fi
+
+doinstall: install clean-pyc
 	@echo "Creating architecture independent directories..."
 	@for d in $(VAR_DIRS); \
 	do \
@@ -120,32 +264,47 @@ doinstall: $(SUBDIRS)
 	    else true; \
 	    fi; \
 	done
+	@echo "Installing Python files..."
+	@for d in $(PYTHON_DIRS); do \
+	    find $$d -name "*.py" -type f -print0 | while IFS= read -r -d '' f; do \
+		install -D -m $(FILEMODE) "$$f" "$(DESTDIR)$(prefix)/$$f"; \
+		touch "$(DESTDIR)$(prefix)/$$f"; \
+	    done; \
+	done
+	@echo "Installing language files..."
+	@for d in templates messages; do \
+	    find $$d -type f -print0 | while IFS= read -r -d '' f; do \
+		if ! $(call check_lang_file,$$f); then \
+		    echo "Installing language file: $$f"; \
+		    install -D -m $(FILEMODE) "$$f" "$(DESTDIR)$(prefix)/$$f"; \
+		fi; \
+	    done; \
+	done
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) DESTDIR=$(DESTDIR) install); \
 	done
-	$(PYTHON) -c 'from compileall import *; compile_dir("$(DESTDIR)$(prefix)/Mailman", ddir="$(prefix)/Mailman")'
 
-# Only run bin/update if we aren't installing in DESTDIR, as this
-# means there are probably no lists to deal with, and it wouldn't
-# work anyway (because of import paths.)
-update:
+# Only run bin/update if we aren't installing in DESTDIR
+update: install
 	@(cd $(DESTDIR)$(prefix) ; test -n "$(DESTDIR)" || bin/update)
 
-clean: $(SUBDIRS)
+clean: clean-pyc
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) clean); \
 	done
 	-rm -f update.log
+	-rm -rf build
+	-rm -f $(shell find . -name "*.pyc" 2>/dev/null || true)
+	-rm -f $(shell find . -name "*.pyo" 2>/dev/null || true)
 
-distclean: $(SUBDIRS)
+distclean: clean
 	@for d in $(SUBDIRS); \
 	do \
 	    (cd $$d; $(MAKE) distclean); \
 	done
 	-rm -f config.cache config.log config.status Makefile
-	-rm -rf build
 
 langpack:
 	tar zcvf langpack-$(DATE).tgz $(EXCLUDES) $(LANGPACK)

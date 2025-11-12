@@ -17,6 +17,7 @@
 
 """Mixin class with list-digest handling methods and settings."""
 
+from builtins import object
 import os
 from stat import ST_SIZE
 import errno
@@ -24,12 +25,15 @@ import errno
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Handlers import ToDigest
 from Mailman.i18n import _
 
+# Lazy import to avoid circular dependency
+def get_to_digest():
+    import Mailman.Handlers.ToDigest as ToDigest
+    return ToDigest
 
-
-class Digester:
+
+class Digester(object):
     def InitVars(self):
         # Configurable
         self.digestable = mm_cfg.DEFAULT_DIGESTABLE
@@ -41,6 +45,8 @@ class Digester:
         self.digest_header = mm_cfg.DEFAULT_DIGEST_HEADER
         self.digest_footer = mm_cfg.DEFAULT_DIGEST_FOOTER
         self.digest_volume_frequency = mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY
+        self._new_volume = 0  # Initialize _new_volume to False
+        self.volume = 1  # Initialize volume to 1
         # Non-configurable.
         self.one_last_digest = {}
         self.digest_members = {}
@@ -57,13 +63,13 @@ class Digester:
                 # See if there's a digest pending for this mailing list
                 if os.stat(digestmbox)[ST_SIZE] > 0:
                     mboxfp = open(digestmbox)
-                    ToDigest.send_digests(self, mboxfp)
+                    get_to_digest().send_digests(self, mboxfp)
                     os.unlink(digestmbox)
             finally:
                 if mboxfp:
                     mboxfp.close()
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        except OSError as e:
+            if e.errno != errno.ENOENT: raise
             # List has no outstanding digests
             return 0
         return 1

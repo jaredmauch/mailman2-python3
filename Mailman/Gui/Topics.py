@@ -23,12 +23,6 @@ from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
 from Mailman.Gui.GUIBase import GUIBase
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
 OR = '|'
 
 
@@ -38,7 +32,7 @@ class Topics(GUIBase):
         return 'topics', _('Topics')
 
     def GetConfigInfo(self, mlist, category, subcat=None):
-        if category <> 'topics':
+        if category != 'topics':
             return None
         WIDTH = mm_cfg.TEXTFIELDWIDTH
 
@@ -50,7 +44,7 @@ class Topics(GUIBase):
 
              _("""The topic filter categorizes each incoming email message
              according to <a
-            href="https://docs.python.org/2/library/re.html">regular
+            href="https://docs.python.org/3/library/re.html">regular
              expression filters</a> you specify below.  If the message's
              <code>Subject:</code> or <code>Keywords:</code> header contains a
              match against a topic filter, the message is logically placed
@@ -95,7 +89,7 @@ class Topics(GUIBase):
 
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         # MAS: Did we come from the authentication page?
-        if not cgidata.has_key('topic_box_01'):
+        if 'topic_box_01' not in cgidata:
             return
         topics = []
         # We start i at 1 and keep going until we no longer find items keyed
@@ -111,16 +105,16 @@ class Topics(GUIBase):
             newtag   = 'topic_new_%02d' % i
             i += 1
             # Was this a delete?  If so, we can just ignore this entry
-            if cgidata.has_key(deltag):
+            if deltag in cgidata:
                 continue
             # Get the data for the current box
-            name  = cgidata.getfirst(boxtag)
-            pattern = cgidata.getfirst(reboxtag)
-            desc  = cgidata.getfirst(desctag)
+            name = cgidata.get(boxtag, [''])[0]
+            pattern = cgidata.get(reboxtag, [''])[0]
+            desc = cgidata.get(desctag, [''])[0]
             if name is None:
                 # We came to the end of the boxes
                 break
-            if cgidata.has_key(newtag) and (not name or not pattern):
+            if newtag in cgidata and (not name or not pattern):
                 # This new entry is incomplete.
                 doc.addError(_("""Topic specifications require both a name and
                 a pattern.  Incomplete topics will be ignored."""))
@@ -136,9 +130,9 @@ class Topics(GUIBase):
                 legal regular expression.  It will be discarded."""))
                 continue
             # Was this an add item?
-            if cgidata.has_key(addtag):
+            if addtag in cgidata:
                 # Where should the new one be added?
-                where = cgidata.getfirst(wheretag)
+                where = cgidata.get(wheretag, ['after'])[0]
                 if where == 'before':
                     # Add a new empty topics box before the current one
                     topics.append(('', '', '', True))
@@ -154,16 +148,34 @@ class Topics(GUIBase):
         # options.
         mlist.topics = topics
         try:
-            mlist.topics_enabled = int(cgidata.getfirst(
-                'topics_enabled',
-                mlist.topics_enabled))
+            mlist.topics_enabled = int(cgidata.get('topics_enabled', [mlist.topics_enabled])[0])
         except ValueError:
             # BAW: should really print a warning
             pass
         try:
-            mlist.topics_bodylines_limit = int(cgidata.getfirst(
-                'topics_bodylines_limit',
-                mlist.topics_bodylines_limit))
+            mlist.topics_bodylines_limit = int(cgidata.get('topics_bodylines_limit', [mlist.topics_bodylines_limit])[0])
         except ValueError:
             # BAW: should really print a warning
             pass
+
+    def process_form(self, mlist, cgidata):
+        # Get the topic information from the form
+        name = cgidata.get(boxtag, [''])[0]
+        pattern = cgidata.get(reboxtag, [''])[0]
+        desc = cgidata.get(desctag, [''])[0]
+        where = cgidata.get(wheretag, [''])[0]
+        
+        # Update list settings
+        mlist.topics_enabled = int(cgidata.get('topics_enabled', ['0'])[0])
+        mlist.topics_bodylines_limit = int(cgidata.get('topics_bodylines_limit', ['0'])[0])
+        
+        # Process the topic
+        if name and pattern:
+            if where == 'add':
+                mlist.AddTopic(name, pattern, desc)
+            elif where == 'change':
+                mlist.ChangeTopic(name, pattern, desc)
+            elif where == 'delete':
+                mlist.DeleteTopic(name)
+        
+        mlist.Save()

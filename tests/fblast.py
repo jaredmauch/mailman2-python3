@@ -23,6 +23,7 @@ Here's how I use this one:
 
 - let this run until you're tired of it, then hit ^C
 """
+from __future__ import print_function
 
 FROMADDR = 'ok@dom.ain'
 LISTADDR = 'list@dom.ain'
@@ -43,7 +44,7 @@ try:
         sys.stdout.flush()
         i += 1
         if i % 50 == 0:
-            print
+            print()
         for j in range(10):
             conn.sendmail(FROMADDR, [LISTADDR], """\
 From: %(FROMADDR)s

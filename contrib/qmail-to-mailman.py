@@ -49,7 +49,7 @@ MailmanOwner = "postmaster@localhost"; # Postmaster and abuse mail recepient.
 # After you edit /var/qmail/control/virtualdomains, kill and restart qmail.
 #
 
-import sys, os, re, string
+import sys, os, re
 
 def main():
     os.nice(5)  # Handle mailing lists at non-interactive priority.
@@ -63,7 +63,7 @@ def main():
         sys.stderr.write("LOCAL not set in environment?\n")
         sys.exit(100)
 
-    local = string.lower(local)
+    local = local.lower()
     user = os.environ.get('USER', 'mailman')
     local = re.sub('^%s-' % user, '', local)
 
@@ -111,12 +111,12 @@ give you directions on how to post to each mailing list.\n"""
 
 try:
     sys.exit(main())
-except SystemExit, argument:
+except SystemExit as argument:
     sys.exit(argument)
 
-except Exception, argument:
+except Exception as argument:
     info = sys.exc_info()
     trace = info[2]
-    sys.stderr.write("%s %s\n" % (sys.exc_type, argument))
+    sys.stderr.write("%s %s\n" % (sys.exc_info()[0], argument))
     sys.stderr.write("Line %d\n" % (trace.tb_lineno))
     sys.exit(111)       # Soft failure, try again later.

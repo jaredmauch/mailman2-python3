@@ -19,103 +19,61 @@
 
 import time
 
+from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman import Errors
+from Mailman import i18n
+from Mailman.Message import UserNotification
+from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
 from Mailman.SafeDict import SafeDict
-from Mailman.Logging.Syslog import syslog
 
+# Set up i18n
+_ = i18n._
+i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-
 def process(mlist, msg, msgdata):
-    # Normally, the replybot should get a shot at this message, but there are
-    # some important short-circuits, mostly to suppress 'bot storms, at least
-    # for well behaved email bots (there are other governors for misbehaving
-    # 'bots).  First, if the original message has an "X-Ack: No" header, we
-    # skip the replybot.  Then, if the message has a Precedence header with
-    # values bulk, junk, or list, and there's no explicit "X-Ack: yes" header,
-    # we short-circuit.  Finally, if the message metadata has a true 'noack'
-    # key, then we skip the replybot too.
-    ack = msg.get('x-ack', '').lower()
-    if ack == 'no' or msgdata.get('noack'):
-        return
-    precedence = msg.get('precedence', '').lower()
-    if ack <> 'yes' and precedence in ('bulk', 'junk', 'list'):
-        return
-    # Check to see if the list is even configured to autorespond to this email
-    # message.  Note: the owner script sets the `toowner' key, and the various
-    # confirm, join, leave, request, subscribe and unsubscribe scripts set the
-    # keys we use for `torequest'.
-    toadmin = msgdata.get('toowner')
-    torequest = msgdata.get('torequest') or msgdata.get('toconfirm') or \
-                    msgdata.get('tojoin') or msgdata.get('toleave')
-    if ((toadmin and not mlist.autorespond_admin) or
-           (torequest and not mlist.autorespond_requests) or \
-           (not toadmin and not torequest and not mlist.autorespond_postings)):
-        return
-    # Now see if we're in the grace period for this sender.  graceperiod <= 0
-    # means always autorespond, as does an "X-Ack: yes" header (useful for
-    # debugging).
+    """Process a message through the replybot handler.
+    
+    Args:
+        mlist: The MailList object
+        msg: The message to process
+        msgdata: Additional message metadata
+        
+    Returns:
+        bool: True if message should be discarded, False otherwise
+    """
+    # Get the sender
     sender = msg.get_sender()
-    now = time.time()
-    graceperiod = mlist.autoresponse_graceperiod
-    if graceperiod > 0 and ack <> 'yes':
-        if toadmin:
-            quiet_until = mlist.admin_responses.get(sender, 0)
-        elif torequest:
-            quiet_until = mlist.request_responses.get(sender, 0)
-        else:
-            quiet_until = mlist.postings_responses.get(sender, 0)
-        if quiet_until > now:
-            return
-    #
-    # Okay, we know we're going to auto-respond to this sender, craft the
-    # message, send it, and update the database.
-    realname = mlist.real_name
-    subject = _(
-        'Auto-response for your message to the "%(realname)s" mailing list')
-    # Do string interpolation
-    d = SafeDict({'listname'    : realname,
-                  'listurl'     : mlist.GetScriptURL('listinfo'),
-                  'requestemail': mlist.GetRequestEmail(),
-                  # BAW: Deprecate adminemail; it's not advertised but still
-                  # supported for backwards compatibility.
-                  'adminemail'  : mlist.GetBouncesEmail(),
-                  'owneremail'  : mlist.GetOwnerEmail(),
-                  })
-    # Just because we're using a SafeDict doesn't mean we can't get all sorts
-    # of other exceptions from the string interpolation.  Let's be ultra
-    # conservative here.
-    if toadmin:
-        rtext = mlist.autoresponse_admin_text
-    elif torequest:
-        rtext = mlist.autoresponse_request_text
-    else:
-        rtext = mlist.autoresponse_postings_text
-    # Using $-strings?
-    if getattr(mlist, 'use_dollar_strings', 0):
-        rtext = Utils.to_percent(rtext)
-    try:
-        text = rtext % d
-    except Exception:
-        syslog('error', 'Bad autoreply text for list: %s\n%s',
-               mlist.internal_name(), rtext)
-        text = rtext
-    # Wrap the response.
-    text = Utils.wrap(text)
-    outmsg = Message.UserNotification(sender, mlist.GetBouncesEmail(),
-                                      subject, text, mlist.preferred_language)
-    outmsg['X-Mailer'] = _('The Mailman Replybot')
-    # prevent recursions and mail loops!
-    outmsg['X-Ack'] = 'No'
-    outmsg.send(mlist)
-    # update the grace period database
-    if graceperiod > 0:
-        # graceperiod is in days, we need # of seconds
-        quiet_until = now + graceperiod * 24 * 60 * 60
-        if toadmin:
-            mlist.admin_responses[sender] = quiet_until
-        elif torequest:
-            mlist.request_responses[sender] = quiet_until
-        else:
-            mlist.postings_responses[sender] = quiet_until
+    if not sender:
+        return False
+        
+    # Check if we should autorespond
+    if not mlist.autorespondToSender(sender, msgdata.get('lang', mlist.preferred_language)):
+        return False
+        
+    # Create the response message
+    outmsg = UserNotification(sender, mlist.GetBouncesEmail(),
+                            _('Automatic response from %(listname)s') % {'listname': mlist.real_name},
+                            lang=msgdata.get('lang', mlist.preferred_language))
+                            
+    # Set the message content
+    outmsg.set_type('text/plain')
+    outmsg.set_payload(_("""\
+This message is an automatic response from %(listname)s.
+
+Your message has been received and will be processed by the list
+administrators.  Please do not send this message again.
+
+If you have any questions, please contact the list administrator at
+%(adminaddr)s.
+
+Thank you for your interest in the %(listname)s mailing list.
+""") % {'listname': mlist.real_name,
+        'adminaddr': mlist.GetOwnerEmail()})
+        
+    # Send the response
+    outmsg.send(mlist, msgdata=msgdata)
+    
+    # Return True to indicate the original message should be discarded
+    return True

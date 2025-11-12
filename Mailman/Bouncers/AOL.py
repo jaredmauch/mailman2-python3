@@ -18,12 +18,12 @@
 """Recognizes a class of messages from AOL that report only Screen Name."""
 
 import re
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 scre = re.compile('mail to the following recipients could not be delivered')
 
 def process(msg):
-    if msg.get_content_type() <> 'text/plain':
+    if msg.get_content_type() != 'text/plain':
         return
     if not parseaddr(msg.get('from', ''))[1].lower().endswith('@aol.com'):
         return

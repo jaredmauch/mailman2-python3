@@ -25,24 +25,17 @@ import errno
 
 from Mailman import mm_cfg
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
 
 def _makedir(path):
     try:
         omask = os.umask(0)
         try:
-            os.makedirs(path, 02775)
+            os.makedirs(path, 0o2775)
         finally:
             os.umask(omask)
-    except OSError, e:
+    except OSError as e:
         # Ignore the exceptions if the directory already exists
-        if e.errno <> errno.EEXIST:
+        if e.errno != errno.EEXIST:
             raise
 
 
@@ -107,7 +100,14 @@ def get_listnames(domain=None):
     from Mailman.Utils import list_exists
     # We don't currently support separate virtual domain directories
     got = []
-    for fn in os.listdir(mm_cfg.LIST_DATA_DIR):
+    # Ensure LIST_DATA_DIR is a string
+    list_dir = mm_cfg.LIST_DATA_DIR
+    if isinstance(list_dir, bytes):
+        list_dir = list_dir.decode('utf-8', 'replace')
+    for fn in os.listdir(list_dir):
         if list_exists(fn):
+            # Ensure we return strings, not bytes
+            if isinstance(fn, bytes):
+                fn = fn.decode('utf-8', 'replace')
             got.append(fn)
     return got

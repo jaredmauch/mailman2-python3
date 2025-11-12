@@ -14,7 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-from email.Utils import parseaddr, formatdate
+from builtins import object
+from email.utils import parseaddr, formatdate
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -245,7 +246,7 @@ class SetCommands:
 
     def set_ack(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -255,7 +256,7 @@ class SetCommands:
 
     def set_digest(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         if not self.__authok:
             res.results.append(_('Not authenticated'))
@@ -287,7 +288,7 @@ class SetCommands:
 
     def set_delivery(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -305,7 +306,7 @@ class SetCommands:
 
     def set_myposts(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -317,7 +318,7 @@ class SetCommands:
 
     def set_hide(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -328,7 +329,7 @@ class SetCommands:
 
     def set_duplicates(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:
@@ -340,7 +341,7 @@ class SetCommands:
 
     def set_reminders(self, res, args):
         mlist = res.mlist
-        if len(args) <> 1:
+        if len(args) != 1:
             return self._usage(res)
         status = self._status(res, args[0])
         if status < 0:

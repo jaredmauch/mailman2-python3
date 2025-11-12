@@ -77,10 +77,9 @@ Where `options' are:
 """
 
 import sys
-
 import paths
-# Import this /after/ paths so that the sys.path is properly hacked
-import email.Utils
+import email.utils
+import argparse
 
 from Mailman import MailList
 from Mailman import Errors
@@ -97,200 +96,117 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    # Ensure PROGRAM is a string, not bytes
+    if isinstance(PROGRAM, bytes):
+        PROGRAM = PROGRAM.decode('utf-8', 'replace')
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
 
-def yesno(opt):
-    i = opt.find('=')
-    yesno = opt[i+1:].lower()
-    if yesno in ('y', 'yes'):
-        return 1
-    elif yesno in ('n', 'no'):
-        return 0
-    else:
-        usage(1, C_('Bad choice: %(yesno)s'))
-        # no return
+def parse_args():
+    parser = argparse.ArgumentParser(description=C_('Synchronize a mailing list\'s membership with a flat file.'))
+    
+    parser.add_argument('-n', '--no-change',
+                      action='store_true',
+                      help=C_('Don\'t actually make the changes. Instead, print out what would be done to the list.'))
+    
+    parser.add_argument('-w', '--welcome-msg',
+                      nargs='?',
+                      const='yes',
+                      choices=['yes', 'no'],
+                      help=C_('Sets whether or not to send the newly added members a welcome message, overriding whatever the list\'s `send_welcome_msg` setting is.'))
+    
+    parser.add_argument('-g', '--goodbye-msg',
+                      nargs='?',
+                      const='yes',
+                      choices=['yes', 'no'],
+                      help=C_('Sets whether or not to send the goodbye message to removed members, overriding whatever the list\'s `send_goodbye_msg` setting is.'))
+    
+    parser.add_argument('-d', '--digest',
+                      nargs='?',
+                      const='yes',
+                      choices=['yes', 'no'],
+                      help=C_('Selects whether to make newly added members receive messages in digests.'))
+    
+    parser.add_argument('-a', '--notifyadmin',
+                      nargs='?',
+                      const='yes',
+                      choices=['yes', 'no'],
+                      help=C_('Specifies whether the admin should be notified for each subscription or unsubscription.'))
+    
+    parser.add_argument('-f', '--file',
+                      required=True,
+                      help=C_('The flat file to synchronize against. Email addresses must appear one per line. Use \'-\' for stdin.'))
+    
+    parser.add_argument('listname',
+                      help=C_('The list to synchronize.'))
+    
+    args = parser.parse_args()
+    
+    # Convert yes/no options to boolean values
+    if args.welcome_msg:
+        args.welcome_msg = args.welcome_msg.lower() == 'yes'
+    if args.goodbye_msg:
+        args.goodbye_msg = args.goodbye_msg.lower() == 'yes'
+    if args.digest:
+        args.digest = args.digest.lower() == 'yes'
+    if args.notifyadmin:
+        args.notifyadmin = args.notifyadmin.lower() == 'yes'
+    
+    return args
 
 
 def main():
-    dryrun = 0
-    digest = 0
-    welcome = None
-    goodbye = None
-    filename = None
-    listname = None
-    notifyadmin = None
+    args = parse_args()
 
-    # TBD: can't use getopt with this command line syntax, which is broken and
-    # should be changed to be getopt compatible.
-    i = 1
-    while i < len(sys.argv):
-        opt = sys.argv[i]
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-n', '--no-change'):
-            dryrun = 1
-            i += 1
-            print C_('Dry run mode')
-        elif opt in ('-d', '--digest'):
-            digest = 1
-            i += 1
-        elif opt.startswith('-d=') or opt.startswith('--digest='):
-            digest = yesno(opt)
-            i += 1
-        elif opt in ('-w', '--welcome-msg'):
-            welcome = 1
-            i += 1
-        elif opt.startswith('-w=') or opt.startswith('--welcome-msg='):
-            welcome = yesno(opt)
-            i += 1
-        elif opt in ('-g', '--goodbye-msg'):
-            goodbye = 1
-            i += 1
-        elif opt.startswith('-g=') or opt.startswith('--goodbye-msg='):
-            goodbye = yesno(opt)
-            i += 1
-        elif opt in ('-f', '--file'):
-            if filename is not None:
-                usage(1, C_('Only one -f switch allowed'))
-            try:
-                filename = sys.argv[i+1]
-            except IndexError:
-                usage(1, C_('No argument to -f given'))
-            i += 2
-        elif opt in ('-a', '--notifyadmin'):
-            notifyadmin = 1
-            i += 1
-        elif opt.startswith('-a=') or opt.startswith('--notifyadmin='):
-            notifyadmin = yesno(opt)
-            i += 1
-        elif opt[0] == '-':
-            usage(1, C_('Illegal option: %(opt)s'))
-        else:
-            try:
-                listname = sys.argv[i].lower()
-                i += 1
-            except IndexError:
-                usage(1, C_('No listname given'))
-            break
+    # Get the list name
+    listname = args.listname
 
-    if listname is None or filename is None:
-        usage(1, C_('Must have a listname and a filename'))
+    # Get the list object
+    try:
+        mlist = MailList.MailList(listname, lock=1)
+    except Errors.MMUnknownListError:
+        usage(1, C_('No such list: %(listname)s'))
 
-    # read the list of addresses to sync to from the file
-    if filename == '-':
-        filemembers = sys.stdin.readlines()
+    # Get the members to sync
+    members = []
+    if args.file == '-':
+        members = sys.stdin.read().splitlines()
     else:
         try:
-            fp = open(filename)
-        except IOError, (code, msg):
-            usage(1, C_('Cannot read address file: %(filename)s: %(msg)s'))
+            with open(args.file) as fp:
+                members = fp.read().splitlines()
+        except IOError:
+            usage(1, C_('Cannot open file: %(file)s') %
+                  {'file': args.file})
+
+    # Process each member
+    for member in members:
+        member = member.strip()
+        if not member or member.startswith('#'):
+            continue
+        # Convert email address to lowercase
+        member = member.lower()
         try:
-            filemembers = fp.readlines()
-        finally:
-            fp.close()
+            mlist.SyncMember(member, args.digest, args.moderate,
+                           args.text, args.userack, args.notifyadmin,
+                           args.welcome_msg, args.language)
+        except Errors.MMAlreadyAMember:
+            print(C_('%(member)s is already a member of %(listname)s'))
+        except Errors.MMHostileAddress:
+            print(C_('%(member)s is a hostile address'))
+        except Errors.MMInvalidEmailAddress:
+            print(C_('%(member)s is not a valid email address'))
+        except Errors.MMBadEmailError:
+            print(C_('%(member)s is not a valid email address'))
+        except Errors.MMListError as e:
+            print(C_('%(member)s: %(error)s'))
 
-    # strip out lines we don't care about, they are comments (# in first
-    # non-whitespace) or are blank
-    for i in range(len(filemembers)-1, -1, -1):
-        addr = filemembers[i].strip()
-        if addr == '' or addr[:1] == '#':
-            del filemembers[i]
-            print C_('Ignore  :  %(addr)30s')
-
-    # first filter out any invalid addresses
-    filemembers = email.Utils.getaddresses(filemembers)
-    invalid = 0
-    for name, addr in filemembers:
-        try:
-            Utils.ValidateEmail(addr)
-        except Errors.EmailAddressError:
-            print C_('Invalid :  %(addr)30s')
-            invalid = 1
-    if invalid:
-        print C_('You must fix the preceding invalid addresses first.')
-        sys.exit(1)
-
-    # get the locked list object
-    try:
-        mlist = MailList.MailList(listname)
-    except Errors.MMListError, e:
-        print C_('No such list: %(listname)s')
-        sys.exit(1)
-
-    try:
-        # Get the list of addresses currently subscribed
-        addrs = {}
-        needsadding = {}
-        matches = {}
-        for addr in mlist.getMemberCPAddresses(mlist.getMembers()):
-            addrs[addr.lower()] = addr
-
-        for name, addr in filemembers:
-            # Any address found in the file that is also in the list can be
-            # ignored.  If not found in the list, it must be added later.
-            laddr = addr.lower()
-            if addrs.has_key(laddr):
-                del addrs[laddr]
-                matches[laddr] = 1
-            elif not matches.has_key(laddr):
-                needsadding[laddr] = (name, addr)
-
-        if not needsadding and not addrs:
-            print C_('Nothing to do.')
-            sys.exit(0)
-
-        enc = sys.getdefaultencoding()
-        # addrs contains now all the addresses that need removing
-        for laddr, (name, addr) in needsadding.items():
-            pw = Utils.MakeRandomPassword()
-            # should not already be subscribed, otherwise our test above is
-            # broken.  Bogosity is if the address is listed in the file more
-            # than once.  Second and subsequent ones trigger an
-            # MMAlreadyAMember error.  Just catch it and go on.
-            userdesc = UserDesc(addr, name, pw, digest)
-            try:
-                if not dryrun:
-                    mlist.ApprovedAddMember(userdesc, welcome, notifyadmin)
-                # Avoid UnicodeError if name can't be decoded
-                if isinstance(name, str):
-                    name = unicode(name, errors='replace')
-                name = name.encode(enc, 'replace')
-                s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-                print C_('Added  : %(s)s')
-            except Errors.MMAlreadyAMember:
-                pass
-            except Errors.MembershipIsBanned, pattern:
-                print ('%s:' % addr), C_(
-                                      'Banned address (matched %(pattern)s)')
-
-        for laddr, addr in addrs.items():
-            # Should be a member, otherwise our test above is broken
-            name = mlist.getMemberName(laddr) or ''
-            if not dryrun:
-                try:
-                    mlist.ApprovedDeleteMember(addr, admin_notif=notifyadmin,
-                                               userack=goodbye)
-                except Errors.NotAMemberError:
-                    # This can happen if the address is illegal (i.e. can't be
-                    # parsed by email.Utils.parseaddr()) but for legacy
-                    # reasons is in the database.  Use a lower level remove to
-                    # get rid of this member's entry
-                    mlist.removeMember(addr)
-            # Avoid UnicodeError if name can't be decoded
-            if isinstance(name, str):
-                name = unicode(name, errors='replace')
-            name = name.encode(enc, 'replace')
-            s = email.Utils.formataddr((name, addr)).encode(enc, 'replace')
-            print C_('Removed: %(s)s')
-
-        mlist.Save()
-    finally:
-        mlist.Unlock()
+    mlist.Save()
+    mlist.Unlock()
 
 
 if __name__ == '__main__':

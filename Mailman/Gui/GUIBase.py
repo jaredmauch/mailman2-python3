@@ -17,8 +17,9 @@
 
 """Base class for all web GUI components."""
 
+from builtins import str
+from builtins import object
 import re
-from types import TupleType, ListType
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -38,6 +39,12 @@ class GUIBase:
     def _getValidValue(self, mlist, property, wtype, val):
         # Coerce and validate the new value.
         #
+        # First convert any bytes to strings
+        if isinstance(val, bytes):
+            try:
+                val = val.decode('utf-8')
+            except UnicodeDecodeError:
+                val = val.decode('latin1')
         # Radio buttons and boolean toggles both have integral type
         if wtype in (mm_cfg.Radio, mm_cfg.Toggle):
             # Let ValueErrors propagate
@@ -60,7 +67,7 @@ class GUIBase:
         if wtype in (mm_cfg.EmailList, mm_cfg.EmailListEx):
             # BAW: value might already be a list, if this is coming from
             # config_list input.  Sigh.
-            if isinstance(val, ListType):
+            if isinstance(val, list):
                 return val
             addrs = []
             bad_addrs = []
@@ -96,7 +103,7 @@ class GUIBase:
                         bad_addrs.append(addr)
                 addrs.append(addr)
             if bad_addrs:
-                raise Errors.EmailAddressError, ', '.join(bad_addrs)
+                raise Errors.EmailAddressError(', '.join(bad_addrs))
             return addrs
         # This is a host name, i.e. verbatim
         if wtype == mm_cfg.Host:
@@ -123,7 +130,7 @@ class GUIBase:
         # Checkboxes return a list of the selected items, even if only one is
         # selected.
         if wtype == mm_cfg.Checkbox:
-            if isinstance(val, ListType):
+            if isinstance(val, list):
                 return val
             return [val]
         if wtype == mm_cfg.FileUpload:
@@ -137,8 +144,14 @@ class GUIBase:
 
     def _setValue(self, mlist, property, val, doc):
         # Set the value, or override to take special action on the property
-        if not property.startswith('_') and getattr(mlist, property) <> val:
-            setattr(mlist, property, val)
+        if not property.startswith('_'):
+            if isinstance(val, bytes):
+                try:
+                    val = val.decode('utf-8')
+                except UnicodeDecodeError:
+                    val = val.decode('latin1')
+            if getattr(mlist, property) != val:
+                setattr(mlist, property, val)
 
     def _postValidate(self, mlist, doc):
         # Validate all the attributes for this category
@@ -147,7 +160,7 @@ class GUIBase:
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         for item in self.GetConfigInfo(mlist, category, subcat):
             # Skip descriptions and legacy non-attributes
-            if not isinstance(item, TupleType) or len(item) < 5:
+            if not isinstance(item, tuple) or len(item) < 5:
                 continue
             # Unpack the gui item description
             property, wtype, args, deps, desc = item[0:5]
@@ -157,11 +170,11 @@ class GUIBase:
             #
             # The property may be uploadable...
             uploadprop = property + '_upload'
-            if cgidata.has_key(uploadprop) and cgidata[uploadprop].value:
+            if uploadprop in cgidata and cgidata[uploadprop].value:
                 val = cgidata[uploadprop].value
-            elif not cgidata.has_key(property):
+            elif property not in cgidata:
                 continue
-            elif isinstance(cgidata[property], ListType):
+            elif isinstance(cgidata[property], list):
                 val = [x.value for x in cgidata[property]]
             else:
                 val = cgidata[property].value
@@ -172,7 +185,7 @@ class GUIBase:
             except ValueError:
                 doc.addError(_('Invalid value for variable: %(property)s'))
             # This is the parent of MMBadEmailError and MMHostileAddress
-            except Errors.EmailAddressError, error:
+            except Errors.EmailAddressError as error:
                 error = Utils.websafe(str(error))
                 doc.addError(
                     _('Bad email address for option %(property)s: %(error)s'))
@@ -186,6 +199,11 @@ class GUIBase:
     # Convenience method for handling $-string attributes
     def _convertString(self, mlist, property, alloweds, val, doc):
         # Is the list using $-strings?
+        if isinstance(val, bytes):
+            try:
+                val = val.decode('utf-8')
+            except UnicodeDecodeError:
+                val = val.decode('latin1')
         dollarp = getattr(mlist, 'use_dollar_strings', 0)
         if dollarp:
             ids = Utils.dollar_identifiers(val)
@@ -194,11 +212,11 @@ class GUIBase:
             ids = Utils.percent_identifiers(val)
         # Here's the list of allowable interpolations
         for allowed in alloweds:
-            if ids.has_key(allowed):
+            if allowed in ids:
                 del ids[allowed]
         if ids:
             # What's left are not allowed
-            badkeys = ids.keys()
+            badkeys = list(ids.keys())
             badkeys.sort()
             bad = BADJOINER.join(badkeys)
             doc.addError(_(
@@ -214,7 +232,7 @@ class GUIBase:
         # the corrected string.
         if not dollarp:
             fixed = Utils.to_percent(Utils.to_dollar(val))
-            if fixed <> val:
+            if fixed != val:
                 doc.addError(_(
                     """Your <code>%(property)s</code> string appeared to
                     have some correctable problems in its new value.
@@ -223,3 +241,9 @@ class GUIBase:
                     """))
                 return fixed
         return val
+
+    def AddItem(self, item):
+        """Add an item to the list of items to be displayed."""
+        if not isinstance(item, tuple) or len(item) < 5:
+            raise ValueError('Item must be a tuple with at least 5 elements')
+        self.items.append(item)

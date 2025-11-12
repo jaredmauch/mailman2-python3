@@ -32,24 +32,12 @@ lines that start "From " but do not pass this stricter test are escaped with a
 > character.
 
 Usage: cleanarch [options] < inputfile > outputfile
-Options:
-    -s n
-    --status=n
-        Print a # character every n lines processed
-
-    -q / --quiet
-        Don't print changed line information to standard error.
-
-    -n / --dry-run
-        Don't actually output anything.
-
-    -h / --help
-        Print this message and exit
 """
+from __future__ import print_function
 
 import re
 import sys
-import getopt
+import argparse
 import mailbox
 
 import paths
@@ -63,55 +51,31 @@ cre = re.compile(mailbox.UnixMailbox._fromlinepattern)
 fre = re.compile(r'[\041-\071\073-\176]+')
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print >> fd, C_(__doc__)
-    if msg:
-        print >> fd, msg
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Clean up an .mbox archive file.')
+    parser.add_argument('-s', '--status', type=int,
+                       help='Print a # character every n lines processed')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Don\'t print changed line information to standard error')
+    parser.add_argument('-n', '--dry-run', action='store_true',
+                       help='Don\'t actually output anything')
+    return parser.parse_args()
 
 
-
 def escape_line(line, lineno, quiet, output):
     if output:
         sys.stdout.write('>' + line)
     if not quiet:
-        print >> sys.stderr, C_('Unix-From line changed: %(lineno)d')
-        print >> sys.stderr, line[:-1]
+        print(C_('Unix-From line changed: %(lineno)d'), file=sys.stderr)
+        print(line[:-1], file=sys.stderr)
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hqns:',
-            ['help', 'quiet', 'dry-run', 'status='])
-    except getopt.error, msg:
-        usage(1, msg)
+    args = parse_args()
 
-    quiet = False
-    output = True
-    status = -1
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-q', '--quiet'):
-            quiet = True
-        elif opt in ('-n', '--dry-run'):
-            output = False
-        elif opt in ('-s', '--status'):
-            try:
-                status = int(arg)
-            except ValueError:
-                usage(1, C_('Bad status number: %(arg)s'))
-
-    if args:
-        usage(1)
+    quiet = args.quiet
+    output = not args.dry_run
+    status = args.status
 
     lineno = 0
     statuscnt = 0
@@ -147,7 +111,7 @@ def main():
                     if output:
                         # Before we spit out the From_ line, make sure the
                         # previous line was blank.
-                        if prevline is not None and prevline <> '\n':
+                        if prevline is not None and prevline != '\n':
                             sys.stdout.write('\n')
                         sys.stdout.write(line)
                         sys.stdout.write(nextline)
@@ -157,16 +121,15 @@ def main():
         elif output:
             # Any old line
             sys.stdout.write(line)
-        if status > 0 and (lineno % status) == 0:
+        if status and status > 0 and (lineno % status) == 0:
             sys.stderr.write('#')
             statuscnt += 1
             if statuscnt > 50:
-                print >> sys.stderr
+                print(file=sys.stderr)
                 statuscnt = 0
         prevline = line
-    print >> sys.stderr, C_('%(messages)d messages found')
+    print(C_('%(messages)d messages found'), file=sys.stderr)
 
 
-
 if __name__ == '__main__':
     main()

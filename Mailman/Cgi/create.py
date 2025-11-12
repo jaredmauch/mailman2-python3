@@ -16,16 +16,17 @@
 # USA.
 
 """Create mailing lists through the web."""
+from __future__ import print_function
 
+from builtins import object
 import sys
 import os
 import signal
-import cgi
-from types import ListType
+import urllib.parse
 
 from Mailman import mm_cfg
 from Mailman import MailList
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
@@ -37,21 +38,39 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-    cgidata = cgi.FieldStorage()
     try:
-        cgidata.getfirst('doit', '')
+        if os.environ.get('REQUEST_METHOD') == 'POST':
+            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+            if content_length > 0:
+                form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
+                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
+            else:
+                cgidata = {}
+        else:
+            query_string = os.environ.get('QUERY_STRING', '')
+            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    except Exception:
+        # Someone crafted a POST with a bad Content-Type:.
+        doc.AddItem(Header(2, _("Error")))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
+        print(doc.Format())
+        return
+
+    try:
+        cgidata.get('doit', [''])[0]
     except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
         # Send this with a 400 status.
-        print 'Status: 400 Bad Request'
-        print doc.Format()
+        print('Status: 400 Bad Request')
+        print(doc.Format())
         return
 
     parts = Utils.GetPathPieces()
@@ -62,10 +81,10 @@ def main():
         doc.AddItem(
             Header(3, Bold(FontAttr(title, color='#ff0000', size='+2'))))
         syslog('error', 'Bad URL specification: %s', parts)
-    elif cgidata.has_key('doit'):
+    elif 'doit' in cgidata:
         # We must be processing the list creation request
         process_request(doc, cgidata)
-    elif cgidata.has_key('clear'):
+    elif 'clear' in cgidata:
         request_creation(doc)
     else:
         # Put up the list creation request form
@@ -79,47 +98,45 @@ def main():
                 Link(Utils.ScriptURL('admin'),
                      _('administrative list overview')).Format())
     doc.AddItem(MailmanLogo())
-    print doc.Format()
+    print(doc.Format())
 
 
-
 def process_request(doc, cgidata):
     # Lowercase the listname since this is treated as the "internal" name.
-    listname = cgidata.getfirst('listname', '').strip().lower()
-    owner    = cgidata.getfirst('owner', '').strip()
+    listname = cgidata.get('listname', [''])[0].strip().lower()
+    owner    = cgidata.get('owner', [''])[0].strip()
     try:
-        autogen  = int(cgidata.getfirst('autogen', '0'))
+        autogen  = int(cgidata.get('autogen', ['0'])[0])
     except ValueError:
         autogen = 0
     try:
-        notify  = int(cgidata.getfirst('notify', '0'))
+        notify  = int(cgidata.get('notify', ['0'])[0])
     except ValueError:
         notify = 0
     try:
-        moderate = int(cgidata.getfirst('moderate',
-                       mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
+        moderate = int(cgidata.get('moderate', ['0'])[0])
     except ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
-    password = cgidata.getfirst('password', '').strip()
-    confirm  = cgidata.getfirst('confirm', '').strip()
-    auth     = cgidata.getfirst('auth', '').strip()
-    langs    = cgidata.getvalue('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
+    password = cgidata.get('password', [''])[0].strip()
+    confirm  = cgidata.get('confirm', [''])[0].strip()
+    auth     = cgidata.get('auth', [''])[0].strip()
+    langs    = cgidata.get('langs', [mm_cfg.DEFAULT_SERVER_LANGUAGE])
 
-    if not isinstance(langs, ListType):
+    if not isinstance(langs, list):
         langs = [langs]
     # Sanity check
     safelistname = Utils.websafe(listname)
     if '@' in listname:
         request_creation(doc, cgidata,
-                         _('List name must not include "@": %(safelistname)s'))
+                         _('List name must not include "@": {safelistname}'))
         return
     if Utils.list_exists(listname):
         # BAW: should we tell them the list already exists?  This could be
         # used to mine/guess the existance of non-advertised lists.  Then
         # again, that can be done in other ways already, so oh well.
         request_creation(doc, cgidata,
-                         _('List already exists: %(safelistname)s'))
+                         _('List already exists: {safelistname}'))
         return
     if not listname:
         request_creation(doc, cgidata,
@@ -134,14 +151,14 @@ def process_request(doc, cgidata):
         if password or confirm:
             request_creation(
                 doc, cgidata,
-                _('''Leave the initial password (and confirmation) fields
+                _(f'''Leave the initial password (and confirmation) fields
                 blank if you want Mailman to autogenerate the list
                 passwords.'''))
             return
         password = confirm = Utils.MakeRandomPassword(
             mm_cfg.ADMIN_PASSWORD_LENGTH)
     else:
-        if password <> confirm:
+        if password != confirm:
             request_creation(doc, cgidata,
                              _('Initial list passwords do not match'))
             return
@@ -176,10 +193,10 @@ def process_request(doc, cgidata):
     # Make sure the web hostname matches one of our virtual domains
     hostname = Utils.get_domain()
     if mm_cfg.VIRTUAL_HOST_OVERVIEW and \
-           not mm_cfg.VIRTUAL_HOSTS.has_key(hostname):
+           hostname not in mm_cfg.VIRTUAL_HOSTS:
         safehostname = Utils.websafe(hostname)
         request_creation(doc, cgidata,
-                         _('Unknown virtual host: %(safehostname)s'))
+                         _('Unknown virtual host: {safehostname}'))
         return
     emailhost = mm_cfg.VIRTUAL_HOSTS.get(hostname, mm_cfg.DEFAULT_EMAIL_HOST)
     # We've got all the data we need, so go ahead and try to create the list
@@ -202,38 +219,38 @@ def process_request(doc, cgidata):
         # Guarantee that all newly created files have the proper permission.
         # proper group ownership should be assured by the autoconf script
         # enforcing that all directories have the group sticky bit set
-        oldmask = os.umask(002)
+        oldmask = os.umask(0o002)
         try:
             try:
                 mlist.Create(listname, owner, pw, langs, emailhost,
                              urlhost=hostname)
             finally:
                 os.umask(oldmask)
-        except Errors.EmailAddressError, e:
+        except Errors.EmailAddressError as e:
             if e.args:
                 s = Utils.websafe(e.args[0])
             else:
                 s = Utils.websafe(owner)
             request_creation(doc, cgidata,
-                             _('Bad owner email address: %(s)s'))
+                             _('Bad owner email address: {s}'))
             return
         except Errors.MMListAlreadyExistsError:
             # MAS: List already exists so we don't need to websafe it.
             request_creation(doc, cgidata,
-                             _('List already exists: %(listname)s'))
+                             _('List already exists: {listname}'))
             return
-        except Errors.BadListNameError, e:
+        except Errors.BadListNameError as e:
             if e.args:
                 s = Utils.websafe(e.args[0])
             else:
                 s = Utils.websafe(listname)
             request_creation(doc, cgidata,
-                             _('Illegal list name: %(s)s'))
+                             _('Illegal list name: {s}'))
             return
         except Errors.MMListError:
             request_creation(
                 doc, cgidata,
-                _('''Some unknown error occurred while creating the list.
+                _(f'''Some unknown error occurred while creating the list.
                 Please contact the site administrator for assistance.'''))
             return
 
@@ -268,9 +285,9 @@ def process_request(doc, cgidata):
              'requestaddr' : mlist.GetRequestEmail(),
              'siteowner'   : siteowner,
              }, mlist=mlist)
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             owner, siteowner,
-            _('Your new mailing list: %(listname)s'),
+            _('Your new mailing list: {listname}'),
             text, mlist.preferred_language)
         msg.send(mlist)
 
@@ -281,13 +298,19 @@ def process_request(doc, cgidata):
 
     title = _('Mailing list creation results')
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("List Creation Results"),
+        border=0,
+        width='100%'
+    )
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
-    table.AddRow([_('''You have successfully created the mailing list
-    <b>%(listname)s</b> and notification has been sent to the list owner
-    <b>%(owner)s</b>.  You can now:''')])
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
+    table.AddRow([_(f'''You have successfully created the mailing list
+    <b>{listname}</b> and notification has been sent to the list owner
+    <b>{owner}</b>.  You can now:''')])
     ullist = UnorderedList()
     ullist.AddItem(Link(listinfo_url, _("Visit the list's info page")))
     ullist.AddItem(Link(admin_url, _("Visit the list's admin page")))
@@ -296,31 +319,34 @@ def process_request(doc, cgidata):
     doc.AddItem(table)
 
 
-
 # Because the cgi module blows
-class Dummy:
-    def getfirst(self, name, default):
+class Dummy(object):
+    def get(self, name, default):
         return default
 dummy = Dummy()
 
 
-
 def request_creation(doc, cgidata=dummy, errmsg=None):
     # What virtual domain are we using?
     hostname = Utils.get_domain()
     # Set up the document
-    title = _('Create a %(hostname)s Mailing List')
+    title = _(f"Create a {hostname} Mailing List")
     doc.SetTitle(title)
-    table = Table(border=0, width='100%')
+    table = Table(
+        role="table",
+        aria_label=_("List Creation Form"),
+        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
+    )
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
+                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
+                      role="cell")
     # Add any error message
     if errmsg:
         table.AddRow([Header(3, Bold(
             FontAttr(_('Error: '), color='#ff0000', size='+2').Format() +
             Italic(errmsg).Format()))])
-    table.AddRow([_("""You can create a new mailing list by entering the
+    table.AddRow([_(f"""You can create a new mailing list by entering the
     relevant information into the form below.  The name of the mailing list
     will be used as the primary address for posting messages to the list, so
     it should be lowercased.  You will not be able to change this once the
@@ -343,77 +369,102 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     # Build the form for the necessary input
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
     form = Form(Utils.ScriptURL('create'))
-    ftable = Table(border=0, cols='2', width='100%',
-                   cellspacing=3, cellpadding=4)
+    ftable = Table(
+        role="table",
+        aria_label=_("List Creation Form Fields"),
+        style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;"
+    )
 
     ftable.AddRow([Center(Italic(_('List Identity')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
 
-    listname = cgidata.getfirst('listname', '')
-    # MAS: Don't websafe twice.  TextBox does it.
+    listname = cgidata.get('listname', [''])[0]
     ftable.AddRow([Label(_('Name of list:')),
-                   TextBox('listname', listname)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+                   TextBox('listname', listname, aria_label=_('Name of list'))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
-    owner = cgidata.getfirst('owner', '')
-    # MAS: Don't websafe twice.  TextBox does it.
+    owner = cgidata.get('owner', [''])[0]
     ftable.AddRow([Label(_('Initial list owner address:')),
-                   TextBox('owner', owner)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+                   TextBox('owner', owner, aria_label=_('Initial list owner address'))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     try:
-        autogen = int(cgidata.getfirst('autogen', '0'))
+        autogen = int(cgidata.get('autogen', ['0'])[0])
     except ValueError:
         autogen = 0
     ftable.AddRow([Label(_('Auto-generate initial list password?')),
                    RadioButtonArray('autogen', (_('No'), _('Yes')),
                                     checked=autogen,
-                                    values=(0, 1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+                                    values=(0, 1),
+                                    aria_label=_('Auto-generate initial list password'))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
-    safepasswd = Utils.websafe(cgidata.getfirst('password', ''))
+    safepasswd = Utils.websafe(cgidata.get('password', [''])[0])
     ftable.AddRow([Label(_('Initial list password:')),
                    PasswordBox('password', safepasswd)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
-    safeconfirm = Utils.websafe(cgidata.getfirst('confirm', ''))
+    safeconfirm = Utils.websafe(cgidata.get('confirm', [''])[0])
     ftable.AddRow([Label(_('Confirm initial password:')),
                    PasswordBox('confirm', safeconfirm)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     try:
-        notify = int(cgidata.getfirst('notify', '1'))
+        notify = int(cgidata.get('notify', ['1'])[0])
     except ValueError:
         notify = 1
     try:
-        moderate = int(cgidata.getfirst('moderate',
-                       mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION))
+        moderate = int(cgidata.get('moderate', ['0'])[0])
     except ValueError:
         moderate = mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION
 
     ftable.AddRow([Center(Italic(_('List Characteristics')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
 
     ftable.AddRow([
-        Label(_("""Should new members be quarantined before they
+        Label(_(f"""Should new members be quarantined before they
     are allowed to post unmoderated to this list?  Answer <em>Yes</em> to hold
     new member postings for moderator approval by default.""")),
         RadioButtonArray('moderate', (_('No'), _('Yes')),
                          checked=moderate,
                          values=(0,1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
     # Create the table of initially supported languages, sorted on the long
     # name of the language.
     revmap = {}
-    for key, (name, charset, direction) in mm_cfg.LC_DESCRIPTIONS.items():
+    for key, (name, charset, direction) in list(mm_cfg.LC_DESCRIPTIONS.items()):
         revmap[_(name)] = key
-    langnames = revmap.keys()
+    langnames = list(revmap.keys())
     langnames.sort()
     langs = []
     for name in langnames:
@@ -432,27 +483,39 @@ def request_creation(doc, cgidata=dummy, errmsg=None):
     ftable.AddRow([Label(_(
         '''Initial list of supported languages.  <p>Note that if you do not
         select at least one initial language, the list will use the server
-        default language of %(deflang)s''')),
+        default language of {deflang}''')),
                    CheckBoxArray('langs',
                                  [_(Utils.GetLanguageDescr(L)) for L in langs],
                                  checked=checked,
                                  values=langs)])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     ftable.AddRow([Label(_('Send "list created" email to list owner?')),
                    RadioButtonArray('notify', (_('No'), _('Yes')),
                                     checked=notify,
                                     values=(0, 1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     ftable.AddRow(['<hr>'])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
     ftable.AddRow([Label(_("List creator's (authentication) password:")),
                    PasswordBox('auth')])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
+                      style=f'background-color: {GREY}',
+                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
+                      style=f'background-color: {GREY}',
+                      role="cell")
 
     ftable.AddRow([Center(SubmitButton('doit', _('Create List'))),
                    Center(SubmitButton('clear', _('Clear Form')))])

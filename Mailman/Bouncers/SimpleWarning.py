@@ -17,7 +17,9 @@
 
 """Recognizes simple heuristically delimited warnings."""
 
+import re
 import email
+from email.iterators import body_line_iterator
 
 from Mailman.Bouncers.BouncerAPI import Stop
 from Mailman.Bouncers.SimpleMatch import _c
@@ -74,7 +76,7 @@ def process(msg):
     addrs = {}
     for scre, ecre, acre in patterns:
         state = 0
-        for line in email.Iterators.body_line_iterator(msg, decode=True):
+        for line in body_line_iterator(msg, decode=True):
             if state == 0:
                 if scre.search(line):
                     state = 1

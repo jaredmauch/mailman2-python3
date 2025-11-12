@@ -34,7 +34,7 @@ Options:
 
 import os
 import sys
-import getopt
+import argparse
 
 import paths                                      # path hacking
 from Mailman import mm_cfg
@@ -42,41 +42,29 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Regenerate Mailman specific aliases from scratch.')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Reduce verbosity of MTA output')
+    return parser.parse_args()
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
-    quiet = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hq',
-                                   ['help', 'quiet'])
-    except getopt.error, msg:
-        usage(1, msg)
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-q', '--quiet'):
-            quiet = True
-
-    if args:
+        args = parse_args()
+    except SystemExit:
         usage(1)
 
     if not mm_cfg.MTA:
@@ -101,17 +89,17 @@ def main():
         mlists.setdefault(mlist.host_name, []).append(mlist)
     # Make sure the files are created rw-rw-xxx; it should be okay to be world
     # readable.
-    omask = os.umask(002)
+    omask = os.umask(0o002)
     try:
         MTA.clear()
         if not mlists:
-            MTA.create(None, nolock=True, quiet=quiet)
+            MTA.create(None, nolock=True, quiet=args.quiet)
         else:
             for hostname, vlists in mlists.items():
                 for mlist in vlists:
-                    MTA.create(mlist, nolock=True, quiet=quiet)
+                    MTA.create(mlist, nolock=True, quiet=args.quiet)
                     # Be verbose for only the first printed list
-                    quiet = True
+                    args.quiet = True
     finally:
         lock.unlock(unconditionally=True)
         # Postfix has not been updating the maps. This call will do it.
@@ -119,6 +107,5 @@ def main():
         os.umask(omask)
 
 
-
 if __name__ == '__main__':
     main()

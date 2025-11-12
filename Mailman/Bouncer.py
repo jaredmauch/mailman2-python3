@@ -17,16 +17,24 @@
 
 """Handle delivery bounces."""
 
+from builtins import object
 import sys
 import time
-from types import StringType
+import os
+import email
+import errno
+import pickle
+import email.message
+from email.message import Message
 
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 
+import Mailman
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman import Errors
+from Mailman.Message import Message
 from Mailman import MemberAdaptor
 from Mailman import Pending
 from Mailman.Errors import MMUnknownListError
@@ -53,7 +61,7 @@ _ = i18n._
 
 
 
-class _BounceInfo:
+class _BounceInfo(object):
     def __init__(self, member, score, date, noticesleft):
         self.member = member
         self.cookie = None
@@ -78,7 +86,7 @@ class _BounceInfo:
 
 
 
-class Bouncer:
+class Bouncer(object):
     def InitVars(self):
         # Configurable...
         self.bounce_processing = mm_cfg.DEFAULT_BOUNCE_PROCESSING
@@ -150,7 +158,7 @@ class Bouncer:
             syslog('bounce', '%s: %s bounce score: %s', self.internal_name(),
                    member, info.score)
             # Continue to the check phase below
-        elif self.getDeliveryStatus(member) <> MemberAdaptor.ENABLED:
+        elif self.getDeliveryStatus(member) != MemberAdaptor.ENABLED:
             # The user is already disabled, so we can just ignore subsequent
             # bounces.  These are likely due to residual messages that were
             # sent before disabling the member, but took a while to bounce.
@@ -246,7 +254,7 @@ class Bouncer:
              'owneraddr': siteowner,
              }, mlist=self)
         subject = _('Bounce action notification')
-        umsg = Message.UserNotification(self.GetOwnerEmail(),
+        umsg = Mailman.Message.UserNotification(self.GetOwnerEmail(),
                                         siteowner, subject,
                                         lang=self.preferred_language)
         # BAW: Be sure you set the type before trying to attach, or you'll get
@@ -254,7 +262,7 @@ class Bouncer:
         umsg.set_type('multipart/mixed')
         umsg.attach(
             MIMEText(text, _charset=Utils.GetCharSet(self.preferred_language)))
-        if isinstance(msg, StringType):
+        if isinstance(msg, str):
             umsg.attach(MIMEText(msg))
         else:
             umsg.attach(MIMEMessage(msg))
@@ -315,11 +323,11 @@ class Bouncer:
              'owneraddr'  : self.GetOwnerEmail(),
              'reason'     : txtreason,
              }, lang=lang, mlist=self)
-        msg = Message.UserNotification(member, reqaddr, text=text, lang=lang)
+        msg = Mailman.Message.UserNotification(member, reqaddr, text=text, lang=lang)
         # BAW: See the comment in MailList.py ChangeMemberAddress() for why we
         # set the Subject this way.
         del msg['subject']
-        msg['Subject'] = 'confirm ' + info.cookie
+        msg['Subject'] = _('confirm %(cookie)s') % {'cookie': info.cookie}
         # Send without Precedence: bulk.  Bug #808821.
         msg.send(self, noprecedence=True)
         info.noticesleft -= 1
@@ -340,7 +348,7 @@ class Bouncer:
         else:
             notice = _(e.notice())
         # Currently we always craft bounces as MIME messages.
-        bmsg = Message.UserNotification(msg.get_sender(),
+        bmsg = Mailman.Message.UserNotification(msg.get_sender(),
                                         self.GetOwnerEmail(),
                                         subject,
                                         lang=self.preferred_language)

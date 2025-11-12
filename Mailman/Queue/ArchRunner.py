@@ -17,7 +17,7 @@
 """Archive queue runner."""
 
 import time
-from email.Utils import parsedate_tz, mktime_tz, formatdate
+from email.utils import parsedate_tz, mktime_tz, formatdate
 
 from Mailman import i18n
 from Mailman import mm_cfg
@@ -35,7 +35,7 @@ class ArchRunner(Runner):
         # original message.
         clobber = 0
         originaldate = msg.get('date')
-        receivedtime = formatdate(msgdata['received_time'])
+        receivedtime = formatdate(msgdata.get('received_time', time.time()))
         if not originaldate:
             clobber = 1
         elif mm_cfg.ARCHIVER_CLOBBER_DATE_POLICY == 1:

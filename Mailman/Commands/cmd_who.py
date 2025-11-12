@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-from email.Utils import parseaddr
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import i18n
@@ -116,7 +116,7 @@ def process(res, args):
             ok = full = True
     else:
         # Admin only
-        if len(args) <> 1:
+        if len(args) != 1:
             usage(res)
             return STOP
         if mlist.Authenticate((mm_cfg.AuthListModerator,

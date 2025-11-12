@@ -23,13 +23,14 @@ on the `recips' attribute of the message.  This attribute is used by the
 SendmailDeliver and BulkDeliver modules.
 """
 
-import email.Utils
+import email.utils
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Errors
 from Mailman.MemberAdaptor import ENABLED
-from Mailman.MailList import MailList
+# Remove the MailList import from here since it's causing a circular dependency
+# from Mailman.MailList import MailList
 from Mailman.i18n import _
 from Mailman.Logging.Syslog import syslog
 from Mailman.Errors import MMUnknownListError
@@ -41,11 +42,14 @@ except NameError: # Python2.3
     from sets import Set as set
 
 
-
 def process(mlist, msg, msgdata):
+    """Process message to calculate recipients."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     # Short circuit if we've already calculated the recipients list,
     # regardless of whether the list is empty or not.
-    if msgdata.has_key('recips'):
+    if 'recips' in msgdata:
         return
     # Should the original sender should be included in the recipients list?
     include_sender = 1
@@ -80,7 +84,7 @@ def process(mlist, msg, msgdata):
 Your urgent message to the %(realname)s mailing list was not authorized for
 delivery.  The original message as received by Mailman is attached.
 """)
-            raise Errors.RejectMessage, Utils.wrap(text)
+            raise Errors.RejectMessage(Utils.wrap(text))
     # Calculate the regular recipients of the message
     recips = [mlist.getMemberCPAddress(m)
               for m in mlist.getRegularMemberKeys()
@@ -103,8 +107,11 @@ delivery.  The original message as received by Mailman is attached.
     msgdata['recips'] = recips
 
 
-
 def do_topic_filters(mlist, msg, msgdata, recips):
+    """Apply topic filters to recipients."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     if not mlist.topics_enabled:
         # MAS: if topics are currently disabled for the list, send to all
         # regardless of ReceiveNonmatchingTopics
@@ -149,8 +156,12 @@ def do_topic_filters(mlist, msg, msgdata, recips):
     for user in zaprecips:
         recips.remove(user)
 
-
+
 def do_exclude(mlist, msg, msgdata, recips):
+    """Handle recipient exclusions."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     # regular_exclude_lists are the other mailing lists on this mailman
     # installation whose members are excluded from the regular (non-digest)
     # delivery of this list if those list addresses appear in To: or Cc:
@@ -158,7 +169,7 @@ def do_exclude(mlist, msg, msgdata, recips):
     if not mlist.regular_exclude_lists:
         return recips
     recips = set(recips)
-    destinations = email.Utils.getaddresses(msg.get_all('to', []) +
+    destinations = email.utils.getaddresses(msg.get_all('to', []) +
                                             msg.get_all('cc', []))
     destinations = [y.lower() for x,y in destinations]
     for listname in mlist.regular_exclude_lists:
@@ -198,15 +209,19 @@ def do_exclude(mlist, msg, msgdata, recips):
         recips -= srecips
     return list(recips)
 
-
+
 def do_include(mlist, msg, msgdata, recips):
+    """Handle recipient inclusions."""
+    # Import MailList here to avoid circular dependency
+    from Mailman.MailList import MailList
+    
     # regular_include_lists are the other mailing lists on this mailman
     # installation whose members are included in the regular (non-digest)
     # delivery if those list addresses don't appear in To: or Cc: headers.
     if not mlist.regular_include_lists:
         return recips
     recips = set(recips)
-    destinations = email.Utils.getaddresses(msg.get_all('to', []) +
+    destinations = email.utils.getaddresses(msg.get_all('to', []) +
                                             msg.get_all('cc', []))
     destinations = [y.lower() for x,y in destinations]
     for listname in mlist.regular_include_lists:

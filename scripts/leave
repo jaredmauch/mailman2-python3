@@ -23,6 +23,7 @@ of the target mailing list.
 
 Errors are redirected to logs/errors.
 """
+from __future__ import print_function
 
 import sys
 
@@ -32,20 +33,21 @@ from Mailman import Utils
 from Mailman.i18n import _
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Utils import LogStdErr
+from Mailman.Message import Message
+from email import message_from_string
 
 LogStdErr('error', 'leave')
 
 
-
 def main():
     try:
         listname = sys.argv[1]
     except IndexError:
-        print >> sys.stderr, _('leave script got no listname.')
+        print(_('leave script got no listname.'), file=sys.stderr)
         sys.exit(1)
     # Make sure the list exists
     if not Utils.list_exists(listname):
-        print >> sys.stderr, _('leave script, list not found: %(listname)s')
+        print(_('leave script, list not found: %(listname)s'), file=sys.stderr)
         sys.exit(1)
     # Immediately queue the message for the bounce/cmd qrunner to process.
     # The advantage to this approach is that messages should never get lost --
@@ -53,9 +55,17 @@ def main():
     # is a good example; if the limit is hit, the proc is SIGKILL'd giving us
     # no chance to save the message.
     cmdq = get_switchboard(mm_cfg.CMDQUEUE_DIR)
-    cmdq.enqueue(sys.stdin.read(), listname=listname, toleave=1, _plaintext=1)
+    msgtext = sys.stdin.read()
+    emsg = message_from_string(msgtext)
+    if not isinstance(emsg, Message):
+        mmsg = Message()
+        for k, v in emsg.items():
+            mmsg[k] = v
+        mmsg.set_payload(emsg.get_payload())
+    else:
+        mmsg = emsg
+    cmdq.enqueue(mmsg, msgdata={'listname': listname, 'toleave': 1, '_plaintext': 1})
 
 
-
 if __name__ == '__main__':
     main()

@@ -17,21 +17,36 @@
 
 """NNTP queue runner."""
 
+from builtins import str
 import re
 import socket
-import nntplib
-from cStringIO import StringIO
+from io import StringIO
+import time
+import traceback
+import os
+import pickle
 
 import email
-from email.Utils import getaddresses
+from email.utils import getaddresses, parsedate_tz, mktime_tz
+from email.iterators import body_line_iterator
 
 COMMASPACE = ', '
 
 from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman import Errors
+from Mailman import i18n
 from Mailman.Queue.Runner import Runner
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mailman_log, syslog
+import Mailman.Message as Message
+import Mailman.MailList as MailList
 
+# Only import nntplib if NNTP support is enabled
+try:
+    import nntplib
+    HAVE_NNTP = True
+except ImportError:
+    HAVE_NNTP = False
 
 # Matches our Mailman crafted Message-IDs.  See Utils.unique_message_id()
 mcre = re.compile(r"""
@@ -46,54 +61,207 @@ mcre = re.compile(r"""
     """, re.VERBOSE)
 
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
-
 class NewsRunner(Runner):
     QDIR = mm_cfg.NEWSQUEUE_DIR
 
-    def _dispose(self, mlist, msg, msgdata):
-        # Make sure we have the most up-to-date state
-        mlist.Load()
-        if not msgdata.get('prepped'):
-            prepare_message(mlist, msg, msgdata)
-        try:
-            # Flatten the message object, sticking it in a StringIO object
-            fp = StringIO(msg.as_string())
-            conn = None
+    def __init__(self, slice=None, numslices=1):
+        # First check if NNTP support is enabled
+        if not mm_cfg.NNTP_SUPPORT:
+            syslog('warning', 'NNTP support is not enabled. NewsRunner will not process messages.')
+            return
+        if not mm_cfg.DEFAULT_NNTP_HOST:
+            syslog('info', 'NewsRunner not processing messages due to DEFAULT_NNTP_HOST not being set')
+            return
+        # Initialize the base class
+        Runner.__init__(self, slice, numslices)
+        # Check if any lists require NNTP support
+        self._nntp_lists = []
+        for listname in Utils.list_names():
             try:
-                try:
-                    nntp_host, nntp_port = Utils.nntpsplit(mlist.nntp_host)
-                    conn = nntplib.NNTP(nntp_host, nntp_port,
-                                        readermode=True,
-                                        user=mm_cfg.NNTP_USERNAME,
-                                        password=mm_cfg.NNTP_PASSWORD)
-                    conn.post(fp)
-                except nntplib.error_temp, e:
-                    syslog('error',
-                           '(NNTPDirect) NNTP error for list "%s": %s',
-                           mlist.internal_name(), e)
-                except socket.error, e:
-                    syslog('error',
-                           '(NNTPDirect) socket error for list "%s": %s',
-                           mlist.internal_name(), e)
-            finally:
-                if conn:
-                    conn.quit()
-        except Exception, e:
-            # Some other exception occurred, which we definitely did not
-            # expect, so set this message up for requeuing.
-            self._log(e)
+                mlist = MailList.MailList(listname, lock=False)
+                if mlist.nntp_host:
+                    self._nntp_lists.append(listname)
+            except Errors.MMListError:
+                continue
+        if not self._nntp_lists:
+            syslog('info', 'No lists require NNTP support. NewsRunner will not be started.')
+            return
+        # Initialize the NNTP connection
+        self._nntp = None
+        self._connect()
+
+    def _connect(self):
+        """Connect to the NNTP server."""
+        try:
+            self._nntp = nntplib.NNTP(mm_cfg.DEFAULT_NNTP_HOST,
+                                    mm_cfg.DEFAULT_NNTP_PORT,
+                                    mm_cfg.DEFAULT_NNTP_USER,
+                                    mm_cfg.DEFAULT_NNTP_PASS)
+        except Exception as e:
+            syslog('error', 'NewsRunner error: %s', str(e))
+            self._nntp = None
+
+    def _validate_message(self, msg, msgdata):
+        """Validate the message for news posting.
+        
+        Args:
+            msg: The message to validate
+            msgdata: Additional message metadata
+            
+        Returns:
+            tuple: (msg, success) where success is True if validation passed
+        """
+        try:
+            # Check if the message has a Message-ID
+            if not msg.get('message-id'):
+                syslog('error', 'Message validation failed for news message')
+                return msg, False
+            return msg, True
+        except Exception as e:
+            syslog('error', 'Error validating news message: %s', str(e))
+            return msg, False
+
+    def _dispose(self, mlist, msg, msgdata):
+        """Post the message to the newsgroup."""
+        try:
+            # Get the newsgroup name
+            newsgroup = mlist.nntp_host
+            if not newsgroup:
+                return False
+            # Post the message
+            self._nntp.post(str(msg))
+            return False
+        except Exception as e:
+            syslog('error', 'Error posting message to newsgroup for list %s: %s',
+                   mlist.internal_name(), str(e))
             return True
-        return False
+
+    def _onefile(self, msg, msgdata):
+        """Process a single news message.
+        
+        This method overrides the base class's _onefile to add news-specific
+        validation and processing.
+        
+        Args:
+            msg: The message to process
+            msgdata: Additional message metadata
+        """
+        try:
+            # Validate the message
+            msg, success = self._validate_message(msg, msgdata)
+            if not success:
+                syslog('error', 'NewsRunner._onefile: Message validation failed')
+                self._shunt.enqueue(msg, msgdata)
+                return
+                
+            # Get the list name from the message data
+            listname = msgdata.get('listname')
+            if not listname:
+                syslog('error', 'NewsRunner._onefile: No listname in message data')
+                self._shunt.enqueue(msg, msgdata)
+                return
+                
+            # Open the list
+            try:
+                mlist = self._open_list(listname)
+            except Exception as e:
+                self.log_error('list_open_error', str(e), listname=listname)
+                self._shunt.enqueue(msg, msgdata)
+                return
+                
+            # Process the message
+            try:
+                keepqueued = self._dispose(mlist, msg, msgdata)
+                if keepqueued:
+                    self._switchboard.enqueue(msg, msgdata)
+            except Exception as e:
+                self._handle_error(e, msg=msg, mlist=mlist)
+                
+        except Exception as e:
+            syslog('error', 'NewsRunner._onefile: Unexpected error: %s', str(e))
+            self._shunt.enqueue(msg, msgdata)
+
+    def _oneloop(self):
+        """Process one batch of messages from the news queue."""
+        try:
+            # Get the list of files to process
+            files = self._switchboard.files()
+            filecnt = len(files)
+            
+            # Process each file
+            for filebase in files:
+                try:
+                    # Check if the file exists before dequeuing
+                    pckfile = os.path.join(self.QDIR, filebase + '.pck')
+                    if not os.path.exists(pckfile):
+                        syslog('error', 'NewsRunner._oneloop: File %s does not exist, skipping', pckfile)
+                        continue
+                        
+                    # Check if file is locked
+                    lockfile = os.path.join(self.QDIR, filebase + '.pck.lock')
+                    if os.path.exists(lockfile):
+                        syslog('debug', 'NewsRunner._oneloop: File %s is locked by another process, skipping', filebase)
+                        continue
+                    
+                    # Dequeue the file
+                    msg, msgdata = self._switchboard.dequeue(filebase)
+                    if msg is None:
+                        continue
+                        
+                    # Process the message
+                    try:
+                        self._onefile(msg, msgdata)
+                    except Exception as e:
+                        syslog('error', 'NewsRunner._oneloop: Error processing message %s: %s', filebase, str(e))
+                        continue
+                        
+                except Exception as e:
+                    syslog('error', 'NewsRunner._oneloop: Error dequeuing file %s: %s', filebase, str(e))
+                    continue
+                    
+        except Exception as e:
+            syslog('error', 'NewsRunner._oneloop: Error in main loop: %s', str(e))
+            return 0
+            
+        return filecnt
+
+    def _queue_news(self, listname, msg, msgdata):
+        """Queue a news message for processing."""
+        # Create a unique filename
+        now = time.time()
+        filename = os.path.join(mm_cfg.NEWSQUEUE_DIR,
+                               '%d.%d.pck' % (os.getpid(), now))
+        
+        # Write the message and metadata to the pickle file
+        try:
+            # Use protocol 4 for Python 3 compatibility
+            with open(filename, 'wb') as fp:
+                pickle.dump(listname, fp, protocol=4, fix_imports=True)
+                pickle.dump(msg, fp, protocol=4, fix_imports=True)
+                pickle.dump(msgdata, fp, protocol=4, fix_imports=True)
+            # Set the file's mode appropriately
+            os.chmod(filename, 0o660)
+        except (IOError, OSError) as e:
+            try:
+                os.unlink(filename)
+            except (IOError, OSError):
+                pass
+            raise SwitchboardError('Could not save news message to %s: %s' %
+                                 (filename, e))
+
+    def _cleanup(self):
+        """Clean up resources before termination."""
+        # Close any open NNTP connections
+        if hasattr(self, '_nntp') and self._nntp:
+            try:
+                self._nntp.quit()
+            except Exception:
+                pass
+            self._nntp = None
+        # Call parent cleanup
+        super(NewsRunner, self)._cleanup()
 
 
-
 def prepare_message(mlist, msg, msgdata):
     # If the newsgroup is moderated, we need to add this header for the Usenet
     # software to accept the posting, and not forward it on to the n.g.'s
@@ -160,7 +328,7 @@ def prepare_message(mlist, msg, msgdata):
     # Lines: is useful
     if msg['Lines'] is None:
         # BAW: is there a better way?
-        count = len(list(email.Iterators.body_line_iterator(msg)))
+        count = len(list(body_line_iterator(msg)))
         msg['Lines'] = str(count)
     # Massage the message headers by remove some and rewriting others.  This
     # woon't completely sanitize the message, but it will eliminate the bulk

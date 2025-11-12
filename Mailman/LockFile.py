@@ -51,6 +51,7 @@ called `LockFile.log' and placed in the temp directory (calculated from
 tempfile.mktemp()).
 
 """
+from __future__ import print_function
 
 # This code has undergone several revisions, with contributions from Barry
 # Warsaw, Thomas Wouters, Harald Meland, and John Viega.  It should also work
@@ -58,6 +59,9 @@ tempfile.mktemp()).
 # requiring file locking.  See the __main__ section at the bottom of the file
 # for unit testing.
 
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import socket
 import time
@@ -65,48 +69,13 @@ import errno
 import random
 import traceback
 from stat import ST_NLINK, ST_MTIME
+from Mailman.Logging.Syslog import mailman_log
 
 # Units are floating-point seconds.
 DEFAULT_LOCK_LIFETIME  = 15
 # Allowable a bit of clock skew
 CLOCK_SLOP = 10
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
-
-
-
-# Figure out what logfile to use.  This is different depending on whether
-# we're running in a Mailman context or not.
-_logfile = None
-
-def _get_logfile():
-    global _logfile
-    if _logfile is None:
-        try:
-            from Mailman.Logging.StampedLogger import StampedLogger
-            _logfile = StampedLogger('locks')
-        except ImportError:
-            # not running inside Mailman
-            import tempfile
-            dir = os.path.split(tempfile.mktemp())[0]
-            path = os.path.join(dir, 'LockFile.log')
-            # open in line-buffered mode
-            class SimpleUserFile:
-                def __init__(self, path):
-                    self.__fp = open(path, 'a', 1)
-                    self.__prefix = '(%d) ' % os.getpid()
-                def write(self, msg):
-                    now = '%.3f' % time.time()
-                    self.__fp.write(self.__prefix + now + ' ' + msg)
-            _logfile = SimpleUserFile(path)
-    return _logfile
-
-
-
 # Exceptions that can be raised by this module
 class LockError(Exception):
     """Base class for all exceptions in this module."""
@@ -121,7 +90,6 @@ class TimeOutError(LockError):
     """The timeout interval elapsed before the lock succeeded."""
 
 
-
 class LockFile:
     """A portable way to lock resources by way of the file system.
 
@@ -143,28 +111,32 @@ class LockFile:
         Return the lock's lifetime.
 
     refresh([newlifetime[, unconditionally]]):
-        Refreshes the lifetime of a locked file.  Use this if you realize that
-        you need to keep a resource locked longer than you thought.  With
-        optional newlifetime, set the lock's lifetime.   Raises NotLockedError
-        if the lock is not set, unless optional unconditionally flag is set to
-        true.
+        Refreshes the lifetime of a locked file.
+
+        Use this if you realize that you need to keep a resource locked longer
+        than you thought. With optional newlifetime, set the lock's lifetime.
+        Raises NotLockedError if the lock is not set, unless optional
+        unconditionally flag is set to true.
 
     lock([timeout]):
-        Acquire the lock.  This blocks until the lock is acquired unless
-        optional timeout is greater than 0, in which case, a TimeOutError is
-        raised when timeout number of seconds (or possibly more) expires
-        without lock acquisition.  Raises AlreadyLockedError if the lock is
-        already set.
+        Acquire the lock.
+
+        This blocks until the lock is acquired unless optional timeout is
+        greater than 0, in which case, a TimeOutError is raised when timeout
+        number of seconds (or possibly more) expires without lock acquisition.
+        Raises AlreadyLockedError if the lock is already set.
 
     unlock([unconditionally]):
-        Relinquishes the lock.  Raises a NotLockedError if the lock is not
-        set, unless optional unconditionally is true.
+        Relinquishes the lock.
+
+        Raises a NotLockedError if the lock is not set, unless optional
+        unconditionally is true.
 
     locked():
-        Return true if the lock is set, otherwise false.  To avoid race
-        conditions, this refreshes the lock (on set locks).
+        Return true if the lock is set, otherwise false.
 
-    """
+        To avoid race conditions, this refreshes the lock (on set locks).
+        """
     # BAW: We need to watch out for two lock objects in the same process
     # pointing to the same lock file.  Without this, if you lock lf1 and do
     # not lock lf2, lf2.locked() will still return true.  NOTE: this gimmick
@@ -196,171 +168,46 @@ class LockFile:
         # For transferring ownership across a fork.
         self.__owned = True
 
-    def __repr__(self):
-        return '<LockFile %s: %s [%s: %ssec] pid=%s>' % (
-            id(self), self.__lockfile,
-            self.locked() and 'locked' or 'unlocked',
-            self.__lifetime, os.getpid())
-
-    def set_lifetime(self, lifetime):
-        """Set a new lock lifetime.
-
-        This takes affect the next time the file is locked, but does not
-        refresh a locked file.
-        """
-        self.__lifetime = lifetime
-
-    def get_lifetime(self):
-        """Return the lock's lifetime."""
-        return self.__lifetime
-
-    def refresh(self, newlifetime=None, unconditionally=False):
-        """Refreshes the lifetime of a locked file.
-
-        Use this if you realize that you need to keep a resource locked longer
-        than you thought.  With optional newlifetime, set the lock's lifetime.
-        Raises NotLockedError if the lock is not set, unless optional
-        unconditionally flag is set to true.
-        """
-        if newlifetime is not None:
-            self.set_lifetime(newlifetime)
-        # Do we have the lock?  As a side effect, this refreshes the lock!
-        if not self.locked() and not unconditionally:
-            raise NotLockedError, '%s: %s' % (repr(self), self.__read())
-
-    def lock(self, timeout=0):
-        """Acquire the lock.
-
-        This blocks until the lock is acquired unless optional timeout is
-        greater than 0, in which case, a TimeOutError is raised when timeout
-        number of seconds (or possibly more) expires without lock acquisition.
-        Raises AlreadyLockedError if the lock is already set.
-        """
-        if timeout:
-            timeout_time = time.time() + timeout
-        # Make sure my temp lockfile exists, and that its contents are
-        # up-to-date (e.g. the temp file name, and the lock lifetime).
-        self.__write()
-        # TBD: This next call can fail with an EPERM.  I have no idea why, but
-        # I'm nervous about wrapping this in a try/except.  It seems to be a
-        # very rare occurence, only happens from cron, and (only?) on Solaris
-        # 2.6.
-        self.__touch()
-        self.__writelog('laying claim')
-        # for quieting the logging output
-        loopcount = -1
-        while True:
-            loopcount += 1
-            # Create the hard link and test for exactly 2 links to the file
-            try:
-                os.link(self.__tmpfname, self.__lockfile)
-                # If we got here, we know we know we got the lock, and never
-                # had it before, so we're done.  Just touch it again for the
-                # fun of it.
-                self.__writelog('got the lock')
-                self.__touch()
-                break
-            except OSError, e:
-                # The link failed for some reason, possibly because someone
-                # else already has the lock (i.e. we got an EEXIST), or for
-                # some other bizarre reason.
-                if e.errno == errno.ENOENT:
-                    # TBD: in some Linux environments, it is possible to get
-                    # an ENOENT, which is truly strange, because this means
-                    # that self.__tmpfname doesn't exist at the time of the
-                    # os.link(), but self.__write() is supposed to guarantee
-                    # that this happens!  I don't honestly know why this
-                    # happens, but for now we just say we didn't acquire the
-                    # lock, and try again next time.
-                    pass
-                elif e.errno <> errno.EEXIST:
-                    # Something very bizarre happened.  Clean up our state and
-                    # pass the error on up.
-                    self.__writelog('unexpected link error: %s' % e,
-                                    important=True)
-                    os.unlink(self.__tmpfname)
-                    raise
-                elif self.__linkcount() <> 2:
-                    # Somebody's messin' with us!  Log this, and try again
-                    # later.  TBD: should we raise an exception?
-                    self.__writelog('unexpected linkcount: %d' %
-                                    self.__linkcount(), important=True)
-                elif self.__read() == self.__tmpfname:
-                    # It was us that already had the link.
-                    self.__writelog('already locked')
-                    raise AlreadyLockedError
-                # otherwise, someone else has the lock
-                pass
-            # We did not acquire the lock, because someone else already has
-            # it.  Have we timed out in our quest for the lock?
-            if timeout and timeout_time < time.time():
-                os.unlink(self.__tmpfname)
-                self.__writelog('timed out')
-                raise TimeOutError
-            # Okay, we haven't timed out, but we didn't get the lock.  Let's
-            # find if the lock lifetime has expired.
-            if time.time() > self.__releasetime() + CLOCK_SLOP:
-                # Yes, so break the lock.
-                self.__break()
-                self.__writelog('lifetime has expired, breaking',
-                                important=True)
-            # Okay, someone else has the lock, our claim hasn't timed out yet,
-            # and the expected lock lifetime hasn't expired yet.  So let's
-            # wait a while for the owner of the lock to give it up.
-            elif not loopcount % 100:
-                self.__writelog('waiting for claim')
-            self.__sleep()
-
-    def unlock(self, unconditionally=False):
-        """Unlock the lock.
-
-        If we don't already own the lock (either because of unbalanced unlock
-        calls, or because the lock was stolen out from under us), raise a
-        NotLockedError, unless optional `unconditionally' is true.
-        """
-        islocked = self.locked()
-        if not islocked and not unconditionally:
-            raise NotLockedError
-        # If we owned the lock, remove the global file, relinquishing it.
-        if islocked:
-            try:
-                os.unlink(self.__lockfile)
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
-        # Remove our tempfile
-        try:
-            os.unlink(self.__tmpfname)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
-        self.__writelog('unlocked')
-
     def locked(self):
-        """Return true if we own the lock, false if we do not.
+        """Return true if the lock is set, otherwise false.
 
-        Checking the status of the lock resets the lock's lifetime, which
-        helps avoid race conditions during the lock status test.
+        To avoid race conditions, this refreshes the lock (on set locks).
         """
-        # Discourage breaking the lock for a while.
         try:
-            self.__touch()
-        except OSError, e:
-            if e.errno == errno.EPERM:
-                # We can't touch the file because we're not the owner.  I
-                # don't see how we can own the lock if we're not the owner.
-                return False
-            else:
-                raise
-        # TBD: can the link count ever be > 2?
-        if self.__linkcount() <> 2:
+            # Get the link count of our temp file
+            nlinks = self.__linkcount()
+            if nlinks == 2:
+                # We have the lock, refresh it
+                self.__touch()
+                return True
             return False
-        return self.__read() == self.__tmpfname
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                mailman_log('error', 'stat failed: %s', str(e))
+                raise
+            return False
 
     def finalize(self):
-        self.unlock(unconditionally=True)
+        """Clean up the lock file."""
+        try:
+            if self.locked():
+                self.unlock(unconditionally=True)
+        except Exception as e:
+            mailman_log('error', 'Error during finalize: %s', str(e))
+            raise
 
     def __del__(self):
+        """Clean up when the object is garbage collected."""
         if self.__owned:
-            self.finalize()
+            try:
+                self.finalize()
+            except Exception as e:
+                # Don't raise exceptions during garbage collection
+                # Just log if we can
+                try:
+                    mailman_log('error', 'Error during cleanup: %s', str(e))
+                except:
+                    pass
 
     # Use these only if you're transfering ownership to a child process across
     # a fork.  Use at your own risk, but it should be race-condition safe.
@@ -374,129 +221,483 @@ class LockFile:
         self.__touch()
         # Find out current claim's temp filename
         winner = self.__read()
-        # Now twiddle ours to the given pid
-        self.__tmpfname = '%s.%s.%d' % (
+        
+        # Create a new temporary file with the target PID
+        new_tmpfname = '%s.%s.%d' % (
             self.__lockfile, socket.gethostname(), pid)
-        # Create a hard link from the global lock file to the temp file.  This
-        # actually does things in reverse order of normal operation because we
-        # know that lockfile exists, and tmpfname better not!
-        os.link(self.__lockfile, self.__tmpfname)
-        # Now update the lock file to contain a reference to the new owner
-        self.__write()
-        # Toggle off our ownership of the file so we don't try to finalize it
-        # in our __del__()
-        self.__owned = False
-        # Unlink the old winner, completing the transfer
-        os.unlink(winner)
-        # And do some sanity checks
-        assert self.__linkcount() == 2
-        assert self.locked()
-        self.__writelog('transferred the lock')
+            
+        try:
+            # Write the new PID and hostname to the new temp file
+            with open(new_tmpfname, 'w') as fp:
+                fp.write('%d %s\n' % (pid, socket.gethostname()))
+            os.chmod(new_tmpfname, 0o660)
+            
+            # Use atomic rename to transfer the lock
+            os.rename(new_tmpfname, self.__lockfile)
+            
+            # Toggle off our ownership of the file so we don't try to finalize it
+            # in our __del__()
+            self.__owned = False
+            
+            # Unlink the old winner, completing the transfer
+            try:
+                os.unlink(winner)
+            except OSError:
+                pass
+                
+            # Update our temp filename for future operations
+            self.__tmpfname = new_tmpfname
+            
+            # Verify the lock is still valid
+            if not self.locked():
+                raise LockError('Lock transfer failed: lock not acquired')
+                
+            mailman_log('debug', 'Successfully transferred lock from %s to %s', winner, new_tmpfname)
+            return
+            
+        except OSError as e:
+            # Clean up on failure
+            try:
+                os.unlink(new_tmpfname)
+            except OSError:
+                pass
+            mailman_log('error', 'Error during lock transfer: %s', str(e))
+            raise LockError('Lock transfer failed: %s' % str(e))
 
     def _take_possession(self):
-        self.__tmpfname = tmpfname = '%s.%s.%d' % (
-            self.__lockfile, socket.gethostname(), os.getpid())
-        # Wait until the linkcount is 2, indicating the parent has completed
-        # the transfer.
-        while self.__linkcount() <> 2 or self.__read() <> tmpfname:
-            time.sleep(0.25)
-        self.__writelog('took possession of the lock')
+        """Try to take possession of the lock file.
 
-    def _disown(self):
-        self.__owned = False
+        Returns 0 if we successfully took possession of the lock file, -1 if we
+        did not, and -2 if something very bad happened.
+        """
+        mailman_log('debug', 'attempting to take possession of lock')
+        
+        # First, clean up any stale temp files for all processes
+        self.clean_stale_locks()
+        
+        # Create a temp file with our PID and hostname
+        lockfile_dir = os.path.dirname(self.__lockfile)
+        hostname = socket.gethostname()
+        suffix = '.%s.%d' % (hostname, os.getpid())
+        tempfile = self.__lockfile + suffix
+        
+        try:
+            # Write our PID and hostname to help with debugging
+            with open(tempfile, 'w') as fp:
+                fp.write('%d %s\n' % (os.getpid(), hostname))
+            # Set group read-write permissions (660)
+            os.chmod(tempfile, 0o660)
+        except (IOError, OSError) as e:
+            mailman_log('error', 'failed to create temp file: %s', str(e))
+            return -2
+
+        # Try to create a hard link from the global lock file to our temp file
+        try:
+            os.link(tempfile, self.__lockfile)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                # Lock file exists, check if it's stale
+                try:
+                    with open(self.__lockfile, 'r') as fp:
+                        pid_host = fp.read().strip().split()
+                        if len(pid_host) == 2:
+                            pid = int(pid_host[0])
+                            if not self._is_pid_valid(pid):
+                                # Stale lock, try to break it
+                                mailman_log('debug', 'stale lock detected (pid=%d)', pid)
+                                self._break()
+                                # Try to create the link again
+                                try:
+                                    os.link(tempfile, self.__lockfile)
+                                except OSError as e2:
+                                    if e2.errno == errno.EEXIST:
+                                        return -1
+                                    raise
+                            else:
+                                return -1
+                except (IOError, OSError, ValueError):
+                    # Error reading lock file or invalid PID, try to break it
+                    mailman_log('error', 'error reading lock file, attempting to break')
+                    self._break()
+                    try:
+                        os.link(tempfile, self.__lockfile)
+                    except OSError as e2:
+                        if e2.errno == errno.EEXIST:
+                            return -1
+                        raise
+            else:
+                raise
+
+        # Success! Set group read-write permissions on the lock file
+        try:
+            os.chmod(self.__lockfile, 0o660)
+        except (IOError, OSError):
+            pass  # Don't fail if we can't set permissions
+
+        mailman_log('debug', 'successfully acquired lock')
+        return 0
+
+    def _is_pid_valid(self, pid):
+        """Check if a PID is still valid (process exists).
+        
+        Returns True if the process exists, False otherwise.
+        """
+        try:
+            # First check if process exists
+            os.kill(pid, 0)
+            
+            # On Linux, check if it's a zombie
+            try:
+                with open(f'/proc/{pid}/status') as f:
+                    status = f.read()
+                    if 'State:' in status and 'Z (zombie)' in status:
+                        mailman_log('debug', 'found zombie process (pid %d)', pid)
+                        return False
+            except (IOError, OSError):
+                pass
+                
+            return True
+        except OSError:
+            return False
+
+    def _break(self):
+        """Break the lock.
+
+        Returns 0 if we successfully broke the lock, -1 if we didn't, and -2 if
+        something very bad happened.
+        """
+        mailman_log('debug', 'breaking the lock')
+        try:
+            if not os.path.exists(self.__lockfile):
+                mailman_log('debug', 'nothing to break -- lock file does not exist')
+                return -1
+            # Read the lock file to get the old PID
+            try:
+                with open(self.__lockfile) as fp:
+                    content = fp.read().strip()
+                    if not content:
+                        mailman_log('debug', 'lock file is empty')
+                        os.unlink(self.__lockfile)
+                        return 0
+                        
+                    # Parse PID and hostname from lock file
+                    try:
+                        parts = content.split()
+                        if len(parts) >= 2:
+                            pid = int(parts[0])
+                            lock_hostname = ' '.join(parts[1:])  # Handle hostnames with spaces
+                            if lock_hostname != socket.gethostname():
+                                mailman_log('debug', 'lock owned by different host: %s', lock_hostname)
+                                return -1
+                        else:
+                            # Try old format
+                            try:
+                                pid = int(content)
+                            except ValueError:
+                                mailman_log('debug', 'invalid lock file format: %s', content)
+                                os.unlink(self.__lockfile)
+                                return 0
+                            
+                        if not self._is_pid_valid(pid):
+                            mailman_log('debug', 'breaking stale lock owned by pid %d', pid)
+                            # Add random delay between 1-10 seconds before breaking lock
+                            delay = random.uniform(1, 10)
+                            mailman_log('debug', 'waiting %.2f seconds before breaking lock', delay)
+                            time.sleep(delay)
+                            os.unlink(self.__lockfile)
+                            return 0
+                        mailman_log('debug', 'lock is valid (pid %d)', pid)
+                        return -1
+                    except (ValueError, IndexError) as e:
+                        mailman_log('error', 'error parsing lock content: %s', str(e))
+                        os.unlink(self.__lockfile)
+                        return 0
+            except (ValueError, OSError) as e:
+                mailman_log('error', 'error reading lock: %s', e)
+                try:
+                    os.unlink(self.__lockfile)
+                    return 0
+                except OSError:
+                    return -2
+        except OSError as e:
+            mailman_log('error', 'error breaking lock: %s', e)
+            return -2
+
+    def clean_stale_locks(self):
+        """Clean up any stale lock files for this lock.
+        
+        This is a safe method that can be called to clean up stale lock files
+        without attempting to acquire the lock.
+        """
+        mailman_log('debug', 'cleaning stale locks')
+        try:
+            # Check for the main lock file
+            if os.path.exists(self.__lockfile):
+                try:
+                    with open(self.__lockfile) as fp:
+                        content = fp.read().strip().split()
+                        if not content:
+                            mailman_log('debug', 'lock file is empty')
+                            os.unlink(self.__lockfile)
+                            return
+                            
+                        # Parse PID and hostname from lock file
+                        if len(content) >= 2:
+                            pid = int(content[0])
+                            lock_hostname = content[1]
+                            
+                            # Only clean locks from our host
+                            if lock_hostname == socket.gethostname():
+                                if not self._is_pid_valid(pid):
+                                    mailman_log('debug', 'removing stale lock (pid %d)', pid)
+                                    try:
+                                        os.unlink(self.__lockfile)
+                                    except OSError:
+                                        pass
+                        else:
+                            # Try old format
+                            try:
+                                pid = int(content[0])
+                                if not self._is_pid_valid(pid):
+                                    mailman_log('debug', 'removing stale lock (pid %d)', pid)
+                                    try:
+                                        os.unlink(self.__lockfile)
+                                    except OSError:
+                                        pass
+                            except (ValueError, IndexError):
+                                mailman_log('debug', 'invalid lock file format')
+                                try:
+                                    os.unlink(self.__lockfile)
+                                except OSError:
+                                    pass
+                except (ValueError, OSError) as e:
+                    mailman_log('error', 'error reading lock: %s', e)
+                    try:
+                        os.unlink(self.__lockfile)
+                    except OSError:
+                        pass
+            
+            # Clean up any temp files
+            lockfile_dir = os.path.dirname(self.__lockfile)
+            base = os.path.basename(self.__lockfile)
+            try:
+                for filename in os.listdir(lockfile_dir):
+                    if filename.startswith(base + '.'):
+                        filepath = os.path.join(lockfile_dir, filename)
+                        try:
+                            # Check if temp file is old (> 1 hour)
+                            if time.time() - os.path.getmtime(filepath) > 3600:
+                                os.unlink(filepath)
+                                mailman_log('debug', 'removed old temp file: %s', filepath)
+                        except OSError as e:
+                            mailman_log('error', 'error removing temp file %s: %s', filepath, e)
+            except OSError as e:
+                mailman_log('error', 'error listing directory: %s', e)
+        except OSError as e:
+            mailman_log('error', 'error cleaning locks: %s', e)
 
     #
     # Private interface
     #
 
-    def __writelog(self, msg, important=0):
-        if self.__withlogging or important:
-            logf = _get_logfile()
-            logf.write('%s %s\n' % (self.__logprefix, msg))
-            traceback.print_stack(file=logf)
+    def __atomic_write(self, filename, content):
+        """Atomically write content to a file using a temporary file."""
+        tempname = filename + '.tmp'
+        try:
+            # Write to temporary file first
+            with open(tempname, 'w') as f:
+                f.write(content)
+            # Atomic rename
+            os.rename(tempname, filename)
+        except Exception as e:
+            # Clean up temp file if it exists
+            try:
+                os.unlink(tempname)
+            except OSError:
+                pass
+            raise e
 
     def __write(self):
+        """Write the lock file contents."""
         # Make sure it's group writable
-        oldmask = os.umask(002)
         try:
-            fp = open(self.__tmpfname, 'w')
-            fp.write(self.__tmpfname)
-            fp.close()
-        finally:
-            os.umask(oldmask)
+            os.chmod(self.__tmpfname, 0o664)
+        except OSError:
+            pass
+        self.__atomic_write(self.__tmpfname, self.__tmpfname)
 
     def __read(self):
+        """Read the lock file contents."""
         try:
-            fp = open(self.__lockfile)
-            filename = fp.read()
-            fp.close()
-            return filename
-        except EnvironmentError, e:
-            if e.errno <> errno.ENOENT: raise
-            return None
+            with open(self.__lockfile, 'r') as fp:
+                return fp.read().strip()
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            return ''
 
     def __touch(self, filename=None):
-        t = time.time() + self.__lifetime
+        """Touch the file to update its mtime."""
+        if filename is None:
+            filename = self.__tmpfname
         try:
-            # TBD: We probably don't need to modify atime, but this is easier.
-            os.utime(filename or self.__tmpfname, (t, t))
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+            os.utime(filename, None)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
     def __releasetime(self):
+        """Return the time when the lock should be released."""
         try:
-            return os.stat(self.__lockfile)[ST_MTIME]
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
-            return -1
+            mtime = os.stat(self.__lockfile)[ST_MTIME]
+            return mtime + self.__lifetime + CLOCK_SLOP
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            return 0
 
     def __linkcount(self):
-        try:
-            return os.stat(self.__lockfile)[ST_NLINK]
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
-            return -1
-
-    def __break(self):
-        # First, touch the global lock file.  This reduces but does not
-        # eliminate the chance for a race condition during breaking.  Two
-        # processes could both pass the test for lock expiry in lock() before
-        # one of them gets to touch the global lockfile.  This shouldn't be
-        # too bad because all they'll do in this function is wax the lock
-        # files, not claim the lock, and we can be defensive for ENOENTs
-        # here.
-        #
-        # Touching the lock could fail if the process breaking the lock and
-        # the process that claimed the lock have different owners.  We could
-        # solve this by set-uid'ing the CGI and mail wrappers, but I don't
-        # think it's that big a problem.
-        try:
-            self.__touch(self.__lockfile)
-        except OSError, e:
-            if e.errno <> errno.EPERM: raise
-        # Get the name of the old winner's temp file.
-        winner = self.__read()
-        # Remove the global lockfile, which actually breaks the lock.
-        try:
-            os.unlink(self.__lockfile)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
-        # Try to remove the old winner's temp file, since we're assuming the
-        # winner process has hung or died.  Don't worry too much if we can't
-        # unlink their temp file -- this doesn't wreck the locking algorithm,
-        # but will leave temp file turds laying around, a minor inconvenience.
-        try:
-            if winner:
-                os.unlink(winner)
-        except OSError, e:
-            if e.errno <> errno.ENOENT: raise
+        """Return the link count of our temp file."""
+        return os.stat(self.__tmpfname)[ST_NLINK]
 
     def __sleep(self):
-        interval = random.random() * 2.0 + 0.01
-        time.sleep(interval)
+        """Sleep for a random amount of time."""
+        time.sleep(random.random() * 0.1)
+
+    def __cleanup(self):
+        """Clean up any temporary files."""
+        try:
+            if os.path.exists(self.__tmpfname):
+                os.unlink(self.__tmpfname)
+        except Exception as e:
+            mailman_log('error', 'error during cleanup: %s', str(e))
+
+    def __nfs_safe_stat(self, filename):
+        """Perform NFS-safe stat operation with retries."""
+        for i in range(self.__nfs_max_retries):
+            try:
+                return os.stat(filename)
+            except OSError as e:
+                if e.errno == errno.ESTALE:
+                    # NFS stale file handle
+                    time.sleep(self.__nfs_retry_delay)
+                    continue
+                raise
+        raise OSError(errno.ESTALE, "NFS stale file handle after retries")
+
+    def __break(self):
+        """Break a stale lock.
+
+        First, touch the global lock file.  This reduces but does not
+        eliminate the chance for a race condition during breaking.  Two
+        processes could both pass the test for lock expiry in lock() before
+        one of them gets to touch the global lockfile.  This shouldn't be
+        too bad because all they'll do in this function is wax the lock
+        files, not claim the lock, and we can be defensive for ENOENTs
+        here.
+
+        Touching the lock could fail if the process breaking the lock and
+        the process that claimed the lock have different owners.  We could
+        solve this by set-uid'ing the CGI and mail wrappers, but I don't
+        think it's that big a problem.
+        """
+        mailman_log('debug', 'breaking lock')
+        try:
+            self.__touch(self.__lockfile)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                mailman_log('error', 'touch failed: %s', str(e))
+                raise
+        try:
+            os.unlink(self.__lockfile)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                mailman_log('error', 'unlink failed: %s', str(e))
+                raise
+        mailman_log('debug', 'lock broken')
+
+    def lock(self, timeout=0):
+        """Acquire the lock.
+
+        This blocks until the lock is acquired unless optional timeout is
+        greater than 0, in which case, a TimeOutError is raised when timeout
+        number of seconds (or possibly more) expires without lock acquisition.
+        Raises AlreadyLockedError if the lock is already set.
+        """
+        if self.locked():
+            raise AlreadyLockedError('Lock already set')
+
+        start = time.time()
+        while True:
+            try:
+                # Create our temp file
+                with open(self.__tmpfname, 'w') as fp:
+                    fp.write(self.__tmpfname)
+                # Set group read-write permissions
+                os.chmod(self.__tmpfname, 0o660)
+                # Try to create a hard link
+                try:
+                    os.link(self.__tmpfname, self.__lockfile)
+                    # Success! We got the lock
+                    self.__touch()
+                    return
+                except OSError as e:
+                    if e.errno != errno.EEXIST:
+                        raise
+                    # Lock exists, check if it's stale
+                    try:
+                        releasetime = self.__releasetime()
+                        if time.time() > releasetime:
+                            # Lock is stale, try to break it
+                            self.__break()
+                            continue
+                    except OSError:
+                        # Lock file doesn't exist, try again
+                        continue
+            except OSError as e:
+                mailman_log('error', 'Error creating lock: %s', str(e))
+                raise
+
+            # Check timeout
+            if timeout > 0 and time.time() - start > timeout:
+                raise TimeOutError('Timeout waiting for lock')
+
+            # Sleep a bit before trying again
+            self.__sleep()
+
+    def unlock(self, unconditionally=False):
+        """Relinquishes the lock.
+
+        Raises a NotLockedError if the lock is not set, unless optional
+        unconditionally is true.
+        """
+        if not unconditionally and not self.locked():
+            raise NotLockedError('Lock not set')
+        try:
+            # Remove the lock file
+            os.unlink(self.__lockfile)
+            # Clean up our temp file
+            self.__cleanup()
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                mailman_log('error', 'Error removing lock: %s', str(e))
+                raise
+
+    def refresh(self, newlifetime=None, unconditionally=False):
+        """Refreshes the lifetime of a locked file.
+        
+        Use this if you realize that you need to keep a resource locked longer
+        than you thought. With optional newlifetime, set the lock's lifetime.
+        Raises NotLockedError if the lock is not set, unless optional
+        unconditionally flag is set to true.
+        """
+        if not unconditionally and not self.locked():
+            raise NotLockedError('Lock not set')
+        if newlifetime is not None:
+            self.__lifetime = newlifetime
+        self.__touch()
 
 
-
 # Unit test framework
 def _dochild():
     prefix = '[%d]' % os.getpid()
@@ -507,7 +708,7 @@ def _dochild():
     # than this.
     workinterval = 5 * random.random()
     hitwait = 20 * random.random()
-    print prefix, 'workinterval:', workinterval
+    print((prefix, 'workinterval:', workinterval))
     islocked = False
     t0 = 0
     t1 = 0
@@ -515,26 +716,26 @@ def _dochild():
     try:
         try:
             t0 = time.time()
-            print prefix, 'acquiring...'
+            print((prefix, 'acquiring...'))
             lockfile.lock()
-            print prefix, 'acquired...'
+            print(( prefix, 'acquired...'))
             islocked = True
         except TimeOutError:
-            print prefix, 'timed out'
+            print((prefix, 'timed out'))
         else:
             t1 = time.time()
-            print prefix, 'acquisition time:', t1-t0, 'seconds'
+            print((prefix, 'acquisition time:', t1-t0, 'seconds'))
             time.sleep(workinterval)
     finally:
         if islocked:
             try:
                 lockfile.unlock()
                 t2 = time.time()
-                print prefix, 'lock hold time:', t2-t1, 'seconds'
+                print((prefix, 'lock hold time:', t2-t1, 'seconds'))
             except NotLockedError:
-                print prefix, 'lock was broken'
+                print((prefix, 'lock was broken'))
     # wait for next web hit
-    print prefix, 'webhit sleep:', hitwait
+    print((prefix, 'webhit sleep:', hitwait))
     time.sleep(hitwait)
 
 
@@ -543,18 +744,18 @@ def _seed():
         fp = open('/dev/random')
         d = fp.read(40)
         fp.close()
-    except EnvironmentError, e:
-        if e.errno <> errno.ENOENT:
+    except EnvironmentError as e:
+        if e.errno != errno.ENOENT:
             raise
         from Mailman.Utils import sha_new
-        d = sha_new(`os.getpid()`+`time.time()`).hexdigest()
+        d = sha_new(str(os.getpid())+str(time.time())).hexdigest()
     random.seed(d)
 
 
 def _onetest():
     loopcount = random.randint(1, 100)
     for i in range(loopcount):
-        print 'Loop %d of %d' % (i+1, loopcount)
+        print('Loop %d of %d' % (i+1, loopcount))
         pid = os.fork()
         if pid:
             # parent, wait for child to exit
@@ -573,7 +774,7 @@ def _reap(kids):
     if not kids:
         return
     pid, status = os.waitpid(-1, os.WNOHANG)
-    if pid <> 0:
+    if pid != 0:
         del kids[pid]
 
 

@@ -32,10 +32,11 @@ Options:
         Run the message through all the bounce modules.  Normally this script
         stops at the first one that finds a match.
 """
+from __future__ import print_function
 
 import sys
 import email
-import getopt
+import argparse
 
 import paths
 from Mailman.Bouncers import BouncerAPI
@@ -44,32 +45,21 @@ PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
 
-
-def usage(code, msg=''):
-    print __doc__ % globals()
-    if msg:
-        print msg
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Test the bounce detection for files containing bounces.')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Verbose output')
+    parser.add_argument('-a', '--all', action='store_true',
+                       help='Run the message through all the bounce modules')
+    parser.add_argument('files', nargs='+',
+                       help='Files to process')
+    return parser.parse_args()
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hva',
-                                   ['help', 'verbose', 'all'])
-    except getopt.error, msg:
-        usage(1, msg)
+    args = parse_args()
 
-    all = verbose = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-v', '--verbose'):
-            verbose = 1
-        elif opt in ('-a', '--all'):
-            all = 1
-
-    for file in args:
+    for file in args.files:
         fp = open(file)
         msg = email.message_from_file(fp)
         fp.close()
@@ -78,19 +68,18 @@ def main():
             __import__(modname)
             addrs = sys.modules[modname].process(msg)
             if addrs is BouncerAPI.Stop:
-                print module, 'got a Stop'
-                if not all:
+                print(module, 'got a Stop')
+                if not args.all:
                     break
                 continue
             if not addrs:
-                if verbose:
-                    print module, 'found no matches'
+                if args.verbose:
+                    print(module, 'found no matches')
             else:
-                print module, 'found', COMMASPACE.join(addrs)
-                if not all:
+                print(module, 'found', COMMASPACE.join(addrs))
+                if not args.all:
                     break
 
 
-
 if __name__ == '__main__':
     main()

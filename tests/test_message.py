@@ -16,6 +16,7 @@
 
 """Unit tests for the various Message class methods.
 """
+from __future__ import print_function
 
 import sys
 import unittest
@@ -25,7 +26,7 @@ try:
 except ImportError:
     import paths
 
-from Mailman import Message
+from Mailman.Message import Message
 from Mailman import Version
 from Mailman import Errors
 
@@ -37,7 +38,7 @@ class TestSentMessage1(EmailBase):
     def test_user_notification(self):
         eq = self.assertEqual
         unless = self.failUnless
-        msg = Message.UserNotification(
+        msg = Mailman.Message.UserNotification(
             'aperson@dom.ain',
             '_xtest@dom.ain',
             'Your Test List',
@@ -76,7 +77,7 @@ From: nobody@dom.ain
 Subject: and another thing
 
 yadda yadda yadda
-""", Message.Message)
+""", Message)
         self._mlist.BounceMessage(msg, {})
         qmsg = email.message_from_string(self._readmsg())
         unless(qmsg.is_multipart())
@@ -113,8 +114,8 @@ if __name__ == '__main__':
     else:
         x = sys.argv[1]
     if x not in ('1', '2'):
-        print >> sys.stderr, (
-            'usage: python test_message.py [n] where n = 1, 2 is the sub-test to run.')
+        print((
+            'usage: python test_message.py [n] where n = 1, 2 is the sub-test to run.'), file=sys.stderr)
         sys.exit(1)
     unittest.TextTestRunner(verbosity=2).run(suite(x)) 
 

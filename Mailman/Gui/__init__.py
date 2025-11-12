@@ -14,19 +14,19 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-from Archive import Archive
-from Autoresponse import Autoresponse
-from Bounce import Bounce
-from Digest import Digest
-from General import General
-from Membership import Membership
-from NonDigest import NonDigest
-from Passwords import Passwords
-from Privacy import Privacy
-from Topics import Topics
-from Usenet import Usenet
-from Language import Language
-from ContentFilter import ContentFilter
+from .Archive import Archive
+from .Autoresponse import Autoresponse
+from .Bounce import Bounce
+from .Digest import Digest
+from .General import General
+from .Membership import Membership
+from .NonDigest import NonDigest
+from .Passwords import Passwords
+from .Privacy import Privacy
+from .Topics import Topics
+from .Usenet import Usenet
+from .Language import Language
+from .ContentFilter import ContentFilter
 
 # Don't export this symbol outside the package
 del GUIBase

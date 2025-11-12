@@ -29,11 +29,12 @@ cd $MAILMAN_DIR
 Where <lang> is your country code (e.g. 'it' for Italy) and -q is
 to ask for a brief summary.
 """
+from __future__ import print_function
 
 import sys
 import re
 import os
-import getopt
+import argparse
 
 import paths
 from Mailman.i18n import C_
@@ -41,19 +42,25 @@ from Mailman.i18n import C_
 program = sys.argv[0]
 
 
-
+def parse_args():
+    parser = argparse.ArgumentParser(description='Check a given Mailman translation.')
+    parser.add_argument('lang', help='Country code (e.g. "it" for Italy)')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Ask for a brief summary')
+    return parser.parse_args()
+
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 class TransChecker:
     "check a translation comparing with the original string"
     def __init__(self, regexp, escaped=None):
@@ -69,7 +76,7 @@ class TransChecker:
         for key in self.regexp.findall(string):
             if self.escaped and self.escaped.match(key):
                 continue
-            if self.dict.has_key(key):
+            if key in self.dict:
                 self.dict[key] += 1
             else:
                 self.dict[key] = 1
@@ -79,7 +86,7 @@ class TransChecker:
         for key in self.regexp.findall(string):
             if self.escaped and self.escaped.match(key):
                 continue
-            if self.dict.has_key(key):
+            if key in self.dict:
                 self.dict[key] -= 1
             else:
                 self.errs.append(
@@ -119,7 +126,6 @@ class TransChecker:
         self.errs = []
 
 
-
 class POParser:
     "parse a .po file extracting msgids and msgstrs"
     def __init__(self, filename=""):
@@ -224,7 +230,7 @@ class POParser:
                         if c == "\\":
                             # a quoted char...
                             c = self.f.read(1)
-                            if self.esc.has_key(c):
+                            if c in self.esc:
                                 self.msgid += self.esc[c]
                             else:
                                 self.msgid += c
@@ -262,7 +268,7 @@ class POParser:
                         if c == "\\":
                             # a quoted char...
                             c = self.f.read(1)
-                            if self.esc.has_key(c):
+                            if c in self.esc:
                                 self.msgstr += self.esc[c]
                             else:
                                 self.msgstr += c
@@ -275,7 +281,6 @@ class POParser:
 
 
 
-
 def check_file(translatedFile, originalFile, html=0, quiet=0):
     """check a translated template against the original one
        search also <MM-*> tags if html is not zero"""
@@ -289,7 +294,7 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
         f = open(originalFile)
     except IOError:
         if not quiet:
-            print " - Can'open original file " + originalFile
+            print(" - Can'open original file " + originalFile)
         return 1
 
     while 1:
@@ -303,7 +308,7 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
         f = open(translatedFile)
     except IOError:
         if not quiet:
-            print " - Can'open translated file " + translatedFile
+            print(" - Can'open translated file " + translatedFile)
         return 1
 
     while 1:
@@ -318,11 +323,10 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
     for desc in c.computeErrors():
         n +=1
         if not quiet:
-            print " - %(desc)s" % { 'desc': desc }
+            print(" - %(desc)s" % { 'desc': desc })
     return n
 
 
-
 def check_po(file, quiet=0):
     "scan the po file comparing msgids with msgstrs"
     n = 0
@@ -336,78 +340,64 @@ def check_po(file, quiet=0):
             for desc in c.computeErrors():
                 n += 1
                 if not quiet:
-                    print " - near line %(line)d %(file)s: %(desc)s" % {
+                    print(" - near line %(line)d %(file)s: %(desc)s" % {
                         'line': p.line,
                         'file': p.files,
                         'desc': desc
-                    }
+                    })
     p.close()
     return n
 
-
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'qh', ['quiet', 'help'])
-    except getopt.error, msg:
-        usage(1, msg)
-
-    quiet = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-q', '--quiet'):
-            quiet = 1
-
-    if len(args) <> 1:
+        args = parse_args()
+    except SystemExit:
         usage(1)
 
-    lang = args[0]
+    lang = args.lang
+    quiet = args.quiet
 
-    isHtml = re.compile("\.html$");
-    isTxt = re.compile("\.txt$");
+    # Check if the language directory exists
+    lang_dir = os.path.join(paths.prefix, 'messages', lang)
+    if not os.path.isdir(lang_dir):
+        usage(1, C_('Language directory %(lang_dir)s does not exist'))
 
-    numerrors = 0
-    numfiles = 0
-    try:
-        files = os.listdir("templates/" + lang + "/")
-    except:
-        print "can't open templates/%s/" % lang
-    for file in files:
-        fileEN = "templates/en/" + file
-        fileIT = "templates/" + lang + "/" + file
-        errlist = []
-        if isHtml.search(file):
-            if not quiet:
-                print "HTML checking " + fileIT + "... "
-            n = check_file(fileIT, fileEN, html=1, quiet=quiet)
-            if n:
-                numerrors += n
-                numfiles += 1
-        elif isTxt.search(file):
-            if not quiet:
-                print "TXT  checking " + fileIT + "... "
-            n = check_file(fileIT, fileEN, html=0, quiet=quiet)
-            if n:
-                numerrors += n
-                numfiles += 1
+    # Initialize checkers
+    var_checker = TransChecker(r'%\([^\)]+\)s')
+    tag_checker = TransChecker(r'<[^>]+>', r'&[^;]+;')
 
-        else:
-            continue
+    # Parse the .po file
+    po_file = os.path.join(lang_dir, 'mailman.po')
+    if not os.path.isfile(po_file):
+        usage(1, C_('PO file %(po_file)s does not exist'))
 
-    file = "messages/" + lang + "/LC_MESSAGES/mailman.po"
-    if not quiet:
-        print "PO   checking " + file + "... "
-    n = check_po(file, quiet=quiet)
-    if n:
-        numerrors += n
-        numfiles += 1
+    parser = POParser(po_file)
+    while parser.parse():
+        var_checker.checkin(parser.msgid)
+        var_checker.checkout(parser.msgstr)
+        tag_checker.checkin(parser.msgid)
+        tag_checker.checkout(parser.msgstr)
 
+    # Print results
     if quiet:
-        print "%(errs)u warnings in %(files)u files" % {
-            'errs':  numerrors,
-            'files': numfiles
-        }
+        print("%(lang)s: %(var_status)s %(tag_status)s" % {
+            'lang': lang,
+            'var_status': var_checker.status(),
+            'tag_status': tag_checker.status()
+        })
+    else:
+        print(C_('Translation check for %(lang)s:'), file=sys.stderr)
+        print(C_('Variables: %(var_status)s'), file=sys.stderr)
+        if var_checker.errs:
+            print(var_checker.errorsAsString(), file=sys.stderr)
+        print(C_('Tags: %(tag_status)s'), file=sys.stderr)
+        if tag_checker.errs:
+            print(tag_checker.errorsAsString(), file=sys.stderr)
 
-
+    # Exit with error if there are any issues
+    if var_checker.errs or tag_checker.errs:
+        sys.exit(1)
+
+
 if __name__ == '__main__':
     main()

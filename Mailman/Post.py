@@ -20,6 +20,8 @@ import sys
 
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
+from Mailman.Message import Message
+from email import message_from_string
 
 
 
@@ -33,7 +35,19 @@ def inject(listname, msg, recips=None, qdir=None):
            }
     if recips:
         kws['recips'] = recips
-    queue.enqueue(msg, **kws)
+    # Ensure msg is a Mailman.Message.Message
+    if isinstance(msg, str):
+        emsg = message_from_string(msg)
+    else:
+        emsg = msg
+    if not isinstance(emsg, Message):
+        mmsg = Message()
+        for k, v in emsg.items():
+            mmsg[k] = v
+        mmsg.set_payload(emsg.get_payload())
+    else:
+        mmsg = emsg
+    queue.enqueue(mmsg, msgdata=kws)
 
 
 

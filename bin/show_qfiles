@@ -31,65 +31,74 @@ Options:
 
 Example: show_qfiles qfiles/shunt/*.pck
 """
+from __future__ import print_function
 
 import sys
-import getopt
-from cPickle import load
+import argparse
+from pickle import load
+import pickle
 
 import paths
 from Mailman.i18n import C_
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
 
-
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hq', ['help', 'quiet'])
-    except getopt.error, msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description='Show the contents of one or more Mailman queue files.')
+    parser.add_argument('qfiles', nargs='+', help='Queue files to display')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                       help='Don\'t print helpful message delimiters')
 
-    quiet = False
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-q', '--quiet'):
-            quiet = True
+    args = parser.parse_args()
 
-    if not args:
-        usage(1, "Not enough arguments")
-
-    for filename in args:
-        if not quiet:
-            print '====================>', filename
-        fp = open(filename)
+    for filename in args.qfiles:
+        if not args.quiet:
+            print(('====================>', filename))
         if filename.endswith(".pck"):
-            msg = load(fp)
-            data = load(fp)
-            if data.get('_parsemsg'):
-                sys.stdout.write(msg)
-            else:
-                sys.stdout.write(msg.as_string())
+            try:
+                with open(filename, 'rb') as fp:
+                    try:
+                        # Try UTF-8 first for newer files
+                        data = load(fp, fix_imports=True, encoding='utf-8')
+                        if isinstance(data, tuple) and len(data) == 2:
+                            msg, metadata = data
+                        else:
+                            msg = data
+                            metadata = {}
+                    except (UnicodeDecodeError, pickle.UnpicklingError):
+                        # Fall back to latin1 for older files
+                        fp.seek(0)
+                        data = load(fp, fix_imports=True, encoding='latin1')
+                        if isinstance(data, tuple) and len(data) == 2:
+                            msg, metadata = data
+                        else:
+                            msg = data
+                            metadata = {}
+                    
+                    # Handle the message output
+                    if isinstance(msg, str):
+                        sys.stdout.write(msg)
+                    elif hasattr(msg, 'as_string'):
+                        sys.stdout.write(msg.as_string())
+                    else:
+                        sys.stdout.write(str(msg))
+            except Exception as e:
+                print('Error reading pickle file %s: %s' % (filename, str(e)), file=sys.stderr)
+                sys.exit(1)
         else:
-            sys.stdout.write(fp.read())
+            with open(filename) as fp:
+                sys.stdout.write(fp.read())
 
 
-
 if __name__ == '__main__':
     main()

@@ -15,20 +15,22 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 """sina.com bounces"""
+from __future__ import print_function
 
 import re
-from email import Iterators
+import email
+from email.iterators import body_line_iterator
+from email.header import decode_header
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
-
 def process(msg):
-    if msg.get('from', '').lower() <> 'mailer-daemon@sina.com':
-        print 'out 1'
+    if msg.get('from', '').lower() != 'mailer-daemon@sina.com':
+        print('out 1')
         return []
     if not msg.is_multipart():
-        print 'out 2'
+        print('out 2')
         return []
     # The interesting bits are in the first text/plain multipart
     part = None
@@ -37,11 +39,11 @@ def process(msg):
     except IndexError:
         pass
     if not part:
-        print 'out 3'
+        print('out 3')
         return []
     addrs = {}
-    for line in Iterators.body_line_iterator(part):
+    for line in body_line_iterator(part):
         mo = acre.match(line)
         if mo:
             addrs[mo.group('addr')] = 1
-    return addrs.keys()
+    return list(addrs.keys())

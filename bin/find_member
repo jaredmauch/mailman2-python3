@@ -49,16 +49,17 @@ specifically excluded.
 Regular expression syntax is Perl5-like, using the Python re module.  Complete
 specifications are at:
 
-https://docs.python.org/2/library/re.html
+https://docs.python.org/3/library/re.html
 
 Address matches are case-insensitive, but case-preserved addresses are
 displayed.
 
 """
-
+from builtins import *
+from builtins import object
 import sys
 import re
-import getopt
+import argparse
 
 import paths
 from Mailman import Utils
@@ -70,19 +71,17 @@ AS_MEMBER = 0x01
 AS_OWNER = 0x02
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, C_(__doc__)
+    print(C_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
-
 def scanlists(options):
     cres = []
     for r in options.regexps:
@@ -94,7 +93,7 @@ def scanlists(options):
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Errors.MMListError:
-            print C_('No such list: %(listname)s')
+            print(C_('No such list: %(listname)s'))
             continue
         if options.owners:
             owners = mlist.owner
@@ -119,66 +118,53 @@ def scanlists(options):
     return matches
 
 
-
-class Options:
+class Options(object):
     listnames = Utils.list_names()
     owners = None
 
 
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:x:wh',
-                                   ['listname=', 'exclude=', 'owners',
-                                    'help'])
-    except getopt.error, msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description='Find all lists that a member\'s address is on.')
+    parser.add_argument('regexps', nargs='+', help='Python regular expression to match against')
+    parser.add_argument('-l', '--listname', action='append',
+                       help='Include only the named list in the search')
+    parser.add_argument('-x', '--exclude', action='append',
+                       help='Exclude the named list from the search')
+    parser.add_argument('-w', '--owners', action='store_true',
+                       help='Search list owners as well as members')
+
+    args = parser.parse_args()
 
     options = Options()
-    loptseen = 0
-    excludes = []
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-l', '--listname'):
-            if not loptseen:
-                options.listnames = []
-                loptseen = 1
-            options.listnames.append(arg.lower())
-        elif opt in ('-x', '--exclude'):
-            excludes.append(arg.lower())
-        elif opt in ('-w', '--owners'):
-            options.owners = 1
-
-    for ex in excludes:
-        try:
-            options.listnames.remove(ex)
-        except ValueError:
-            pass
-
-    if not args:
-        usage(1, C_('Search regular expression required'))
-
-    options.regexps = args
+    if args.listname:
+        options.listnames = [name.lower() for name in args.listname]
+    if args.exclude:
+        for ex in args.exclude:
+            try:
+                options.listnames.remove(ex.lower())
+            except ValueError:
+                pass
+    options.owners = args.owners
+    options.regexps = args.regexps
 
     if not options.listnames:
-        print C_('No lists to search')
+        print(C_('No lists to search'))
         return
 
     matches = scanlists(options)
-    addrs = matches.keys()
+    addrs = list(matches.keys())
     addrs.sort()
     for k in addrs:
         hits = matches[k]
-        lists = hits.keys()
-        print k, C_('found in:')
+        lists = list(hits.keys())
+        print(k, C_('found in:'))
         for name in lists:
             aswhat = hits[name]
             if aswhat & AS_MEMBER:
-                print '    ', name
+                print('    ', name)
             if aswhat & AS_OWNER:
-                print '    ', name, C_('(as owner)')
+                print('    ', name, C_('(as owner)'))
 
 
-
 if __name__ == '__main__':
     main()

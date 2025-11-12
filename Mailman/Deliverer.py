@@ -18,35 +18,85 @@
 
 """Mixin class with message delivery routines."""
 
-from email.MIMEText import MIMEText
-from email.MIMEMessage import MIMEMessage
+from builtins import str
+from builtins import object
+from email.mime.text import MIMEText
+from email.mime.message import MIMEMessage
 
 from Mailman import mm_cfg
 from Mailman import Errors
 from Mailman import Utils
-from Mailman import Message
+from Mailman.Message import Message, UserNotification
 from Mailman import i18n
 from Mailman import Pending
 from Mailman.Logging.Syslog import syslog
 
 _ = i18n._
 
-try:
-    True, False
-except NameError:
-    True = 1
-    False = 0
+import sys
+import os
+import time
+import email
+import errno
+import pickle
+import email.message
+from email.message import Message
+from email.header import decode_header, make_header, Header
+from email.errors import HeaderParseError
+from email.iterators import typed_subpart_iterator
 
+from Mailman.htmlformat import *
+from Mailman.Logging.Syslog import mailman_log
+from Mailman.Utils import validate_ip_address
+import Mailman.Handlers.Replybot as Replybot
+from Mailman.i18n import _
+from Mailman import LockFile
+
+# Lazy imports to avoid circular dependencies
+def get_replybot():
+    import Mailman.Handlers.Replybot as Replybot
+    return Replybot
+
+def get_maillist():
+    import Mailman.MailList as MailList
+    return MailList.MailList
 
 
-class Deliverer:
+class Deliverer(object):
+    def deliver(self, msg, msgdata):
+        """Deliver a message to the list's members.
+        
+        Args:
+            msg: The message to deliver
+            msgdata: Additional message metadata
+            
+        This method delegates to the configured delivery module's process function.
+        """
+        # Import the delivery module
+        modname = 'Mailman.Handlers.' + mm_cfg.DELIVERY_MODULE
+        try:
+            mod = __import__(modname)
+            process = getattr(sys.modules[modname], 'process')
+        except (ImportError, AttributeError) as e:
+            syslog('error', 'Failed to import delivery module %s: %s', modname, str(e))
+            raise
+            
+        # Process the message
+        process(self, msg, msgdata)
+
     def SendSubscribeAck(self, name, password, digest, text=''):
-        pluser = self.getMemberLanguage(name)
+        try:
+            pluser = self.getMemberLanguage(name)
+        except AttributeError:
+            try:
+                pluser = self.preferred_language
+            except AttributeError:
+                pluser = 'en'  # Default to English if no language is available
         # Need to set this here to get the proper l10n of the Subject:
         i18n.set_language(pluser)
-        if self.welcome_msg:
-            welcome = Utils.wrap(self.welcome_msg) + '\n'
-        else:
+        try:
+            welcome = Utils.wrap(self.welcome_msg) + '\n' if self.welcome_msg else ''
+        except AttributeError:
             welcome = ''
         if self.umbrella_list:
             addr = self.GetMemberAdminEmail(name)
@@ -57,7 +107,7 @@ your membership administrative address, %(addr)s.'''))
         else:
             umbrella = ''
         # get the text from the template
-        text += Utils.maketext(
+        text += str(Utils.maketext(
             'subscribeack.txt',
             {'real_name'   : self.real_name,
              'host_name'   : self.host_name,
@@ -68,15 +118,15 @@ your membership administrative address, %(addr)s.'''))
              'optionsurl'  : self.GetOptionsURL(name, absolute=True),
              'password'    : password,
              'user'        : self.getMemberCPAddress(name),
-             }, lang=pluser, mlist=self)
+             }, lang=pluser, mlist=self))
         if digest:
             digmode = _(' (Digest mode)')
         else:
             digmode = ''
         realname = self.real_name
-        msg = Message.UserNotification(
+        msg = UserNotification(
             self.GetMemberAdminEmail(name), self.GetRequestEmail(),
-            _('Welcome to the "%(realname)s" mailing list%(digmode)s'),
+            _('Welcome to the "%(realname)s" mailing list%(digmode)s') % {'realname': realname, 'digmode': digmode},
             text, pluser)
         msg['X-No-Archive'] = 'yes'
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
@@ -84,9 +134,9 @@ your membership administrative address, %(addr)s.'''))
     def SendUnsubscribeAck(self, addr, lang):
         realname = self.real_name
         i18n.set_language(lang)
-        msg = Message.UserNotification(
+        msg = UserNotification(
             self.GetMemberAdminEmail(addr), self.GetBouncesEmail(),
-            _('You have been unsubscribed from the %(realname)s mailing list'),
+            _('You have been unsubscribed from the %(realname)s mailing list') % {'realname': realname},
             Utils.wrap(self.goodbye_msg), lang)
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
 
@@ -118,10 +168,9 @@ your membership administrative address, %(addr)s.'''))
         lang = self.getMemberLanguage(user)
         cset = Utils.GetCharSet(lang)
         password = self.getMemberPassword(user)
-        # TK: Make unprintables to ?
-        # The list owner should allow users to set language options if they
-        # want to use non-us-ascii characters in password and send it back.
-        password = unicode(password, cset, 'replace').encode(cset, 'replace')
+        # Handle password encoding properly for Python 3
+        if isinstance(password, bytes):
+            password = password.decode(cset, 'replace')
         # get the text from the template
         text = Utils.maketext(
             'userpass.txt',
@@ -133,7 +182,7 @@ your membership administrative address, %(addr)s.'''))
              'requestaddr': requestaddr,
              'owneraddr'  : self.GetOwnerEmail(),
             }, lang=lang, mlist=self)
-        msg = Message.UserNotification(recipient, adminaddr, subject, text,
+        msg = UserNotification(recipient, adminaddr, subject, text,
                                        lang)
         msg['X-No-Archive'] = 'yes'
         msg.send(self, verp=mm_cfg.VERP_PERSONALIZED_DELIVERIES)
@@ -147,7 +196,7 @@ your membership administrative address, %(addr)s.'''))
         text = MIMEText(Utils.wrap(text),
                         _charset=Utils.GetCharSet(self.preferred_language))
         attachment = MIMEMessage(msg)
-        notice = Message.OwnerNotification(
+        notice = UserNotification(
             self, subject, tomoderators=tomoderators)
         # Make it look like the message is going to the -owner address
         notice.set_type('multipart/mixed')
@@ -163,7 +212,7 @@ your membership administrative address, %(addr)s.'''))
         syslog('mischief', '%s was invited to %s but confirmed to %s',
                address, listname, selfname)
         # First send a notice to the attacked list
-        msg = Message.OwnerNotification(
+        msg = UserNotification(
             self,
             _('Hostile subscription attempt detected'),
             Utils.wrap(_("""%(address)s was invited to a different mailing
@@ -182,7 +231,7 @@ action by you is required.""")))
         otrans = i18n.get_translation()
         i18n.set_language(mlist.preferred_language)
         try:
-            msg = Message.OwnerNotification(
+            msg = UserNotification(
                 mlist,
                 _('Hostile subscription attempt detected'),
                 Utils.wrap(_("""You invited %(address)s to your list, but in a
@@ -221,7 +270,7 @@ is required.""")))
             subject = _('%(listname)s mailing list probe message')
         finally:
             i18n.set_translation(otrans)
-        outer = Message.UserNotification(member, probeaddr, subject,
+        outer = UserNotification(member, probeaddr, subject,
                                          lang=ulang)
         outer.set_type('multipart/mixed')
         text = MIMEText(text, _charset=Utils.GetCharSet(ulang))

@@ -29,7 +29,7 @@ import errno
 import tempfile
 from os.path import splitext
 
-from email.Iterators import typed_subpart_iterator
+from email.iterators import typed_subpart_iterator
 
 from Mailman import mm_cfg
 from Mailman import Errors
@@ -40,8 +40,12 @@ from Mailman.Version import VERSION
 from Mailman.i18n import _
 from Mailman.Utils import oneline
 
+# Lazy import to avoid circular dependency
+def get_switchboard(qdir):
+    from Mailman.Queue.sbcache import get_switchboard
+    return get_switchboard(qdir)
 
-
+
 def process(mlist, msg, msgdata):
     # Short-circuits
     if not mlist.filter_content:
@@ -103,7 +107,7 @@ def process(mlist, msg, msgdata):
         recast_multipart(msg)
     # If we removed some parts, make note of this
     changedp = 0
-    if numparts <> len([subpart for subpart in msg.walk()]):
+    if numparts != len([subpart for subpart in msg.walk()]):
         changedp = 1
     # Now perhaps convert all text/html to text/plain
     if mlist.convert_html_to_plaintext and mm_cfg.HTML_TO_PLAIN_TEXT_COMMAND:
@@ -119,7 +123,6 @@ def process(mlist, msg, msgdata):
         msg['X-Content-Filtered-By'] = 'Mailman/MimeDel %s' % VERSION
 
 
-
 def reset_payload(msg, subpart):
     # Reset payload of msg to contents of subpart, and fix up content headers
     payload = subpart.get_payload()
@@ -140,7 +143,6 @@ def reset_payload(msg, subpart):
         msg['Content-Description'] = cdesc
 
 
-
 def filter_parts(msg, filtertypes, passtypes, filterexts, passexts):
     # Look at all the message's subparts, and recursively filter
     if not msg.is_multipart():
@@ -178,7 +180,6 @@ def filter_parts(msg, filtertypes, passtypes, filterexts, passexts):
     return 1
 
 
-
 def collapse_multipart_alternatives(msg):
     if not msg.is_multipart():
         return
@@ -205,7 +206,6 @@ def collapse_multipart_alternatives(msg):
     msg.set_payload(newpayload)
 
 
-
 def recast_multipart(msg):
     # If we're left with a multipart message with only one sub-part, recast
     # the message to just the sub-part, but not if the part is message/rfc822
@@ -217,7 +217,7 @@ def recast_multipart(msg):
         return
     if msg.is_multipart():
         if (len(msg.get_payload()) == 1 and
-                msg.get_content_type() <> 'message/rfc822'):
+                msg.get_content_type() != 'message/rfc822'):
             reset_payload(msg, msg.get_payload(0))
             # now that we've recast this part, check the subordinate parts
             recast_multipart(msg)
@@ -227,7 +227,6 @@ def recast_multipart(msg):
                 recast_multipart(part)
 
 
-
 def to_plaintext(msg):
     changedp = 0
     for subpart in typed_subpart_iterator(msg, 'text', 'html'):
@@ -245,8 +244,8 @@ def to_plaintext(msg):
         finally:
             try:
                 os.unlink(filename)
-            except OSError, e:
-                if e.errno <> errno.ENOENT: raise
+            except OSError as e:
+                if e.errno != errno.ENOENT: raise
         # Now replace the payload of the subpart and twiddle the Content-Type:
         del subpart['content-transfer-encoding']
         subpart.set_payload(plaintext)
@@ -255,12 +254,11 @@ def to_plaintext(msg):
     return changedp
 
 
-
 def dispose(mlist, msg, msgdata, why):
     # filter_action == 0 just discards, see below
     if mlist.filter_action == 1:
         # Bounce the message to the original author
-        raise Errors.RejectMessage, why
+        raise Errors.RejectMessage(why)
     if mlist.filter_action == 2:
         # Forward it on to the list owner
         listname = mlist.internal_name()

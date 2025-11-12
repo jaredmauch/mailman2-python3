@@ -33,19 +33,19 @@ run again until another version change is detected.
 """
 
 
+from builtins import str
+from builtins import range
 import email
+from Mailman.Message import Message
 
-from types import ListType, StringType
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
 from Mailman.Bouncer import _BounceInfo
 from Mailman.MemberAdaptor import UNKNOWN
 from Mailman.Logging.Syslog import syslog
 
 
-
 def Update(l, stored_state):
     "Dispose of old vars and user options, mapping to new ones when suitable."
     ZapOldVars(l)
@@ -56,7 +56,6 @@ def Update(l, stored_state):
     NewRequestsDatabase(l)
 
 
-
 def ZapOldVars(mlist):
     for name in ('num_spawns', 'filter_prog', 'clobber_date',
                  'public_archive_file_dir', 'private_archive_file_dir',
@@ -71,7 +70,6 @@ def ZapOldVars(mlist):
             delattr(mlist, name)
 
 
-
 uniqueval = []
 def UpdateOldVars(l, stored_state):
     """Transform old variable values into new ones, deleting old ones.
@@ -87,7 +85,7 @@ def UpdateOldVars(l, stored_state):
 
         """
         if hasattr(l, oldname):
-            if not state.has_key(newname):
+            if newname not in state:
                 setattr(l, newname, getattr(l, oldname))
             delattr(l, oldname)
         if not hasattr(l, newname) and newdefault is not uniqueval:
@@ -137,7 +135,7 @@ def UpdateOldVars(l, stored_state):
             else:
                 return None
         elif isinstance(v, dict):
-            for k, ov in v.items():
+            for k, ov in list(v.items()):
                 nv = doitem(ov, f, t)
                 if nv:
                     changed = True
@@ -154,12 +152,12 @@ def UpdateOldVars(l, stored_state):
         from charset f to charset t."""
 
         try:
-            u = unicode(s, f)
+            u = str(s, f)
             is_f = True
         except ValueError:
             is_f = False
         try:
-            unicode(s, t)
+            str(s, t)
             is_t = True
         except ValueError:
             is_t = False
@@ -348,12 +346,12 @@ def UpdateOldVars(l, stored_state):
     # transfer the list data type for holding members and digest members
     # to the dict data type starting file format version 11
     #
-    if type(l.members) is ListType:
+    if isinstance(l.members, list):
         members = {}
         for m in l.members:
             members[m] = 1
         l.members = members
-    if type(l.digest_members) is ListType:
+    if isinstance(l.digest_members, list):
         dmembers = {}
         for dm in l.digest_members:
             dmembers[dm] = 1
@@ -369,20 +367,20 @@ def UpdateOldVars(l, stored_state):
     # both these are always lowercased, but if there is a case difference, the
     # value contains the case preserved value
     #
-    for k in l.members.keys():
-        if k.lower() <> k:
+    for k in list(l.members.keys()):
+        if k.lower() != k:
             l.members[k.lower()] = Utils.LCDomain(k)
             del l.members[k]
-        elif type(l.members[k]) == StringType and k == l.members[k].lower():
+        elif isinstance(l.members[k], str) and k == l.members[k].lower():
             # already converted
             pass
         else:
             l.members[k] = 0
-    for k in l.digest_members.keys():
-        if k.lower() <> k:
+    for k in list(l.digest_members.keys()):
+        if k.lower() != k:
             l.digest_members[k.lower()] = Utils.LCDomain(k)
             del l.digest_members[k]
-        elif type(l.digest_members[k]) == StringType and \
+        elif isinstance(l.digest_members[k], str) and \
                  k == l.digest_members[k].lower():
             # already converted
             pass
@@ -392,7 +390,7 @@ def UpdateOldVars(l, stored_state):
     # Convert pre 2.2 topics regexps which were compiled in verbose mode
     # to a non-verbose equivalent.
     #
-    if stored_state['data_version'] < 106 and stored_state.has_key('topics'):
+    if stored_state['data_version'] < 106 and 'topics' in stored_state:
         l.topics = []
         for name, pattern, description, emptyflag in stored_state['topics']:
             pattern = Utils.strip_verbose_pattern(pattern)
@@ -415,7 +413,6 @@ def UpdateOldVars(l, stored_state):
                  mm_cfg.DEFAULT_FROM_IS_LIST)
 
 
-
 def NewVars(l):
     """Add defaults for these new variables if they don't exist."""
     def add_only_if_missing(attr, initval, l=l):
@@ -542,24 +539,22 @@ def NewVars(l):
                         mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE)
 
 
-
 def UpdateOldUsers(mlist):
     """Transform sense of changed user options."""
     # pre-1.0b11 to 1.0b11.  Force all keys in l.passwords to be lowercase
     passwords = {}
-    for k, v in mlist.passwords.items():
+    for k, v in list(mlist.passwords.items()):
         passwords[k.lower()] = v
     mlist.passwords = passwords
     # Go through all the keys in bounce_info.  If the key is not a member, or
     # if the data is not a _BounceInfo instance, chuck the bounce info.  We're
     # doing things differently now.
-    for m in mlist.bounce_info.keys():
+    for m in list(mlist.bounce_info.keys()):
         if not mlist.isMember(m) or not isinstance(mlist.getBounceInfo(m),
                                                    _BounceInfo):
             del mlist.bounce_info[m]
 
 
-
 def CanonicalizeUserOptions(l):
     """Fix up the user options."""
     # I want to put a flag in the list database which tells this routine to
@@ -569,12 +564,12 @@ def CanonicalizeUserOptions(l):
     # pre 1.0rc2 to 1.0rc3.  For all keys in l.user_options to be lowercase,
     # but merge options for both cases
     options = {}
-    for k, v in l.user_options.items():
+    for k, v in list(l.user_options.items()):
         if k is None:
             continue
         lcuser = k.lower()
         flags = 0
-        if options.has_key(lcuser):
+        if lcuser in options:
             flags = options[lcuser]
         flags |= v
         options[lcuser] = flags
@@ -582,7 +577,7 @@ def CanonicalizeUserOptions(l):
     # 2.1alpha3 -> 2.1alpha4.  The DisableDelivery flag is now moved into
     # get/setDeilveryStatus().  This must be done after the addresses are
     # canonicalized.
-    for k, v in l.user_options.items():
+    for k, v in list(l.user_options.items()):
         if not l.isMember(k):
             # There's a key in user_options that isn't associated with a real
             # member address.  This is likely caused by an earlier bug.
@@ -595,14 +590,13 @@ def CanonicalizeUserOptions(l):
     l.useropts_version = 1
 
 
-
 def NewRequestsDatabase(l):
     """With version 1.2, we use a new pending request database schema."""
     r = getattr(l, 'requests', {})
     if not r:
         # no old-style requests
         return
-    for k, v in r.items():
+    for k, v in list(r.items()):
         if k == 'post':
             # This is a list of tuples with the following format
             #
@@ -619,7 +613,7 @@ def NewRequestsDatabase(l):
             for p in v:
                 author, text = p[2]
                 reason = p[3]
-                msg = email.message_from_string(text, Message.Message)
+                msg = email.message_from_string(text, Message)
                 l.HoldMessage(msg, reason)
             del r[k]
         elif k == 'add_member':

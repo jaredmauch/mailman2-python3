@@ -1,10 +1,73 @@
-Αυτή η σελίδα περιέχει ένα υποσύνολο από τα <em>%(listname)s</em> μηνύματα τα οποία 
-κρατούνται περιμένοντας την έγκρισή σας.  Αυτή τη στιγμή δείχνει
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Ξ‘Ο…Ο„Ξ® Ξ· ΟƒΞµΞ»Ξ―Ξ΄Ξ± Ο€ΞµΟΞΉΞ­Ο‡ΞµΞΉ Ξ­Ξ½Ξ± Ο…Ο€ΞΏΟƒΟΞ½ΞΏΞ»ΞΏ Ξ±Ο€Ο Ο„Ξ± <em>%(listname)s</em> ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο„Ξ± ΞΏΟ€ΞΏΞ―Ξ± 
+ΞΊΟΞ±Ο„ΞΏΟΞ½Ο„Ξ±ΞΉ Ο€ΞµΟΞΉΞΌΞ­Ξ½ΞΏΞ½Ο„Ξ±Ο‚ Ο„Ξ·Ξ½ Ξ­Ξ³ΞΊΟΞΉΟƒΞ® ΟƒΞ±Ο‚.  Ξ‘Ο…Ο„Ξ® Ο„Ξ· ΟƒΟ„ΞΉΞ³ΞΌΞ® Ξ΄ΞµΞ―Ο‡Ξ½ΞµΞΉ
 %(description)s
 
-<p>Για κάθε διαχειριστικό αίτημα , παρακαλώ επιλέξτε την ενέργεια που θέλετε,
-ενεργοποιώντας την επιλογή <b>Υποβολή όλων των Δεδομένων</b> όταν τελειώσετε.  
-Αναλυτικότερες οδηγίες είναι διαθέσιμες <a href="%(detailsurl)s"> εδώ </a>.
+<p>Ξ“ΞΉΞ± ΞΊΞ¬ΞΈΞµ Ξ΄ΞΉΞ±Ο‡ΞµΞΉΟΞΉΟƒΟ„ΞΉΞΊΟ Ξ±Ξ―Ο„Ξ·ΞΌΞ± , Ο€Ξ±ΟΞ±ΞΊΞ±Ξ»Ο ΞµΟ€ΞΉΞ»Ξ­ΞΎΟ„Ξµ Ο„Ξ·Ξ½ ΞµΞ½Ξ­ΟΞ³ΞµΞΉΞ± Ο€ΞΏΟ… ΞΈΞ­Ξ»ΞµΟ„Ξµ,
+ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΟΞ½Ο„Ξ±Ο‚ Ο„Ξ·Ξ½ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® <b>Ξ¥Ο€ΞΏΞ²ΞΏΞ»Ξ® ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½</b> ΟΟ„Ξ±Ξ½ Ο„ΞµΞ»ΞµΞΉΟΟƒΞµΟ„Ξµ.  
+Ξ‘Ξ½Ξ±Ξ»Ο…Ο„ΞΉΞΊΟΟ„ΞµΟΞµΟ‚ ΞΏΞ΄Ξ·Ξ³Ξ―ΞµΟ‚ ΞµΞ―Ξ½Ξ±ΞΉ Ξ΄ΞΉΞ±ΞΈΞ­ΟƒΞΉΞΌΞµΟ‚ <a href="%(detailsurl)s"> ΞµΞ΄Ο </a>.
 
-<p>Μπορείτε ακόμα να <a href="%(summaryurl)s">δείτε μία περίληψη</a> από όλα τα εκκρεμή 
-διαχειριστικά αιτήματα.
+<p>ΞΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ±ΞΊΟΞΌΞ± Ξ½Ξ± <a href="%(summaryurl)s">Ξ΄ΞµΞ―Ο„Ξµ ΞΌΞ―Ξ± Ο€ΞµΟΞ―Ξ»Ξ·ΟΞ·</a> Ξ±Ο€Ο ΟΞ»Ξ± Ο„Ξ± ΞµΞΊΞΊΟΞµΞΌΞ® 
+Ξ΄ΞΉΞ±Ο‡ΞµΞΉΟΞΉΟƒΟ„ΞΉΞΊΞ¬ Ξ±ΞΉΟ„Ξ®ΞΌΞ±Ο„Ξ±.
+</p></p>

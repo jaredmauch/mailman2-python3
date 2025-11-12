@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -32,8 +33,8 @@ def LogStdErr(category, label, manual_reprime=1, tee_to_real_stderr=1):
 
     Returns the MultiLogger if successful, None otherwise.
     """
-    from StampedLogger import StampedLogger
-    from MultiLogger import MultiLogger
+    from .StampedLogger import StampedLogger
+    from .MultiLogger import MultiLogger
     try:
         logger = StampedLogger(category,
                                label=label,
