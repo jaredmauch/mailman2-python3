@@ -208,6 +208,21 @@ class SecurityManager(object):
                         self.password = hash_password(response_str)
                         if save_and_unlock:
                             self.Save()
+                    except (PermissionError, IOError) as e:
+                        # Log permission error but don't fail authentication
+                        # Get uid/euid/gid/egid for debugging
+                        try:
+                            uid = os.getuid()
+                            euid = os.geteuid()
+                            gid = os.getgid()
+                            egid = os.getegid()
+                        except (AttributeError, OSError):
+                            # Fallback if getuid/geteuid not available
+                            uid = euid = gid = egid = 'unknown'
+                        syslog('error',
+                               'Could not auto-upgrade list admin password for %s: %s (uid=%s euid=%s gid=%s egid=%s)',
+                               self.internal_name(), e, uid, euid, gid, egid)
+                        # Continue - authentication still succeeds even if upgrade fails
                     finally:
                         if save_and_unlock:
                             self.Unlock()
@@ -238,6 +253,18 @@ class SecurityManager(object):
                                 self.mod_password = hash_password(response_str)
                                 if save_and_unlock:
                                     self.Save()
+                            except (PermissionError, IOError) as e:
+                                # Log permission error but don't fail authentication
+                                try:
+                                    uid = os.getuid()
+                                    euid = os.geteuid()
+                                    gid = os.getgid()
+                                    egid = os.getegid()
+                                except (AttributeError, OSError):
+                                    uid = euid = gid = egid = 'unknown'
+                                syslog('error',
+                                       'Could not auto-upgrade moderator password for %s: %s (uid=%s euid=%s gid=%s egid=%s)',
+                                       self.internal_name(), e, uid, euid, gid, egid)
                             finally:
                                 if save_and_unlock:
                                     self.Unlock()
@@ -267,6 +294,18 @@ class SecurityManager(object):
                                 self.post_password = hash_password(response_str)
                                 if save_and_unlock:
                                     self.Save()
+                            except (PermissionError, IOError) as e:
+                                # Log permission error but don't fail authentication
+                                try:
+                                    uid = os.getuid()
+                                    euid = os.geteuid()
+                                    gid = os.getgid()
+                                    egid = os.getegid()
+                                except (AttributeError, OSError):
+                                    uid = euid = gid = egid = 'unknown'
+                                syslog('error',
+                                       'Could not auto-upgrade poster password for %s: %s (uid=%s euid=%s gid=%s egid=%s)',
+                                       self.internal_name(), e, uid, euid, gid, egid)
                             finally:
                                 if save_and_unlock:
                                     self.Unlock()

@@ -843,7 +843,24 @@ def check_global_password(response, siteadmin=True, auto_upgrade=False):
     is_valid, needs_upgrade = verify_password(response, challenge)
     # Auto-upgrade if requested and password is valid but in old format
     if is_valid and needs_upgrade and auto_upgrade:
-        set_global_password(response, siteadmin)
+        try:
+            set_global_password(response, siteadmin)
+        except (PermissionError, IOError) as e:
+            # Log permission error but don't fail authentication
+            # Get uid/euid/gid/egid for debugging
+            try:
+                uid = os.getuid()
+                euid = os.geteuid()
+                gid = os.getgid()
+                egid = os.getegid()
+            except (AttributeError, OSError):
+                # Fallback if getuid/geteuid not available
+                uid = euid = gid = egid = 'unknown'
+            pw_type = 'site admin' if siteadmin else 'list creator'
+            syslog('error',
+                   'Could not auto-upgrade %s password: %s (uid=%s euid=%s gid=%s egid=%s)',
+                   pw_type, e, uid, euid, gid, egid)
+            # Continue - authentication still succeeds even if upgrade fails
     return is_valid
 
 
