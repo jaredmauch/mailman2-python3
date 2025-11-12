@@ -27,18 +27,7 @@ This module should be conformant.
 """
 
 import re
-import sys
-import email
-from email.iterators import body_line_iterator
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
-
-from Mailman import mm_cfg
-from Mailman import Utils
-from Mailman.Message import Message
-from Mailman import Errors
-from Mailman import i18n
-from Mailman.Logging.Syslog import syslog
+import email.iterators
 
 # Other (non-standard?) intros have been observed in the wild.
 introtags = [
@@ -53,6 +42,7 @@ introtags = [
 acre = re.compile(r'<(?P<addr>[^>]*)>:')
 
 
+
 def process(msg):
     addrs = []
     # simple state machine
@@ -60,10 +50,7 @@ def process(msg):
     #    1 = intro paragraph seen
     #    2 = recip paragraphs seen
     state = 0
-    for line in body_line_iterator(msg):
-        # Ensure line is a string
-        if isinstance(line, bytes):
-            line = line.decode('ascii', 'replace')
+    for line in email.iterators.body_line_iterator(msg):
         line = line.strip()
         if state == 0:
             for introtag in introtags:

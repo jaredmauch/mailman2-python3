@@ -1,213 +1,152 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
 <!-- $Revision: 6597 $ -->
 <html>
 <head>
-<title>Page d'infos de <mm-list-name></mm-list-name></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="center" bgcolor="#99ccff" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000" size="+1"><mm-list-name> -- <mm-list-description></mm-list-description></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p> </p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#fff0d0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">A propos de <mm-list-name></mm-list-name></font></b>
-</td>
-<td bgcolor="#fff0d0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<mm-lang-form-start><mm-displang-box> <mm-list-langs>
-<mm-form-end>
-</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p><mm-list-info></mm-list-info></p>
-<p> Pour voir tous les messages passés de la liste, 				visitez les <mm-archive>Archives de <mm-list-name>
-</mm-list-name></mm-archive>.
-		<mm-restricted-list-message>
-</mm-restricted-list-message></p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"> <b><font color="#000000">Utilisation de <mm-list-name></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;"> 	  
-	Pour envoyer un message à tous les abonnés de 	  
-	la liste, envoyez un courriel à 	  
-	<a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.  	  
+  <title>Page d'infos de <MM-List-Name></title>
+</head>
+    <body bgcolor="#ffffff">
+      
+<p>       
+<table border="0" cellspacing="4" cellpadding="5">
+ 	<tr>
+ 	  <td colspan="2" width="100%" bgcolor="#99ccff" align="center"> 	    
+		<b><font color="#000000" size="+1"><MM-List-Name> -- <MM-List-Description></font></b>
+ 	  </td>
+ 	</tr>
+ 	<tr>
+ 	    <td colspan="2"> 	      
+      	     <p>&nbsp;</p>
+            </td>
+ 	  </tr>
+ 	  <tr>
+ 	    <td colspan="1" width="100%" bgcolor="#fff0d0"> 	      
+		<b><font color="#000000">A propos de <MM-List-Name></font></b> 	 
+  	    </td>
+            <td colspan="1" width="100%" bgcolor="#fff0d0">            
+  		<MM-lang-form-start><MM-displang-box> <MM-list-langs>               
+		<MM-form-end>
+	    </td>
+ 	  </tr>
+ 	    <tr>
+ 	      <td colspan="2"> 		
+      		<p><MM-List-Info></p>
+ 		<p> Pour voir tous les messages pass&eacute;s de la liste, 				visitez les <MM-Archive>Archives de <MM-List-Name> 
+		</MM-Archive>.
+		<MM-Restricted-List-Message>
+		</p>
+ 	</td>
+       </tr>
+       <tr>
+ 	<td colspan="2" width="100%" bgcolor="#fff0d0"> 	  <b><font
+ color="#000000">Utilisation de <MM-List-Name></font></b> 	
+	</td>
+       </tr>
+       <tr>
+ 	<td colspan="2"> 	  
+	Pour envoyer un message &agrave; tous les abonn&eacute;s de 	  
+	la liste, envoyez un courriel &agrave; 	  
+	<a href="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></a>.  	  
 
-      <p>Vous pouvez vous abonner à la liste ou modifier votre 	 
+      <p>Vous pouvez vous abonner &agrave; la liste ou modifier votre 	 
 	abonnement actuel dans les sections suivantes. 	</p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">S'abonner à <mm-list-name><font></font></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p> 	    
-	Abonnez-vous à <mm-list-name> en remplissant le formulaire 
+      </td>
+       </tr>
+       <tr>
+ 	<td colspan="2" width="100%" bgcolor="#fff0d0"> 	  
+<b><font color="#000000">S'abonner &agrave; <MM-List-Name><font></b>
+ 	</td>
+       </tr>
+       <tr>
+ 	<td colspan="2"> 	  
+      <p> 	    
+	Abonnez-vous &agrave; <MM-List-Name> en remplissant le formulaire 
 	      suivant. 	  
-	<mm-list-subscription-msg>
-<ul>
-<mm-subscribe-form-start>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Votre adresse courriel:</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
-</mm-subscribe-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Votre nom (facultatif):</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td>
-</tr>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">Vous devez entrer un mot de passe 	   	 pour la confidentialité. Ceci ne procure qu'un faible niveau
-	de sécurité mais devrait néanmoins 	    
-	enpêcher que n'importe qui modifie vos abonnements. 	    
+	<MM-List-Subscription-Msg> 	 
+      <ul>    
+     <MM-Subscribe-Form-Start>
+        <table border="0" cellspacing="2" cellpadding="2" width="70%">
+            <tr>
+ 		  <td bgcolor="#dddddd" width="55%">Votre adresse courriel:</td>
+ 		  <td width="33%"><MM-Subscribe-Box>
+	</td>
+ 	<td width="12%">&nbsp;</td>
+            </tr>
+       <tr>
+         <td bgcolor="#dddddd" width="55%">Votre nom (facultatif):</td>
+         <td width="33%"><mm-fullname-box></td>
+ 	<td width="12%">&nbsp;</td>
+            </tr>
+       <tr>
+ 	<td colspan="3"><font size="-1">Vous devez entrer un mot de passe 	   	 pour la confidentialit&eacute;. Ceci ne procure qu'un faible niveau
+	de s&eacute;curit&eacute; mais devrait n&eacute;anmoins 	    
+	enp&ecirc;cher que n'importe qui modifie vos abonnements. 	    
 	<b>N'utilisez pas un mot de passe existant</b> car il 	    
-	arrivera qu'il vous soit renvoyé par courriel en clair.  		   </font>
-<p><font size="-1">Si vous choisissez de ne pas en fournir, un mot de
- 		passe vous sera généré 
-		automatiquement, et il vous sera envoyé une fois que
- 		votre requête d'abonnement aura été 
-		confirmée. Il vous sera toujours possible de vous
+	arrivera qu'il vous soit renvoy&eacute; par courriel en clair.  		   </font>
+              <p><font size="-1">Si vous choisissez de ne pas en fournir, un mot de
+ 		passe vous sera g&eacute;n&eacute;r&eacute; 
+		automatiquement, et il vous sera envoy&eacute; une fois que
+ 		votre requ&ecirc;te d'abonnement aura &eacute;t&eacute; 
+		confirm&eacute;e. Il vous sera toujours possible de vous
  		faire envoyer votre mot de passe par courriel lorsque vous 
 		visualisez vos options personnelles. 	    
-		<mm-reminder></mm-reminder></font></p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Choisissez un mot de passe:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;"> </td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Confirmer le mot de passe:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
-<td style="padding: 8px; border: 1px solid #ccc;">  </td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Dans quelle langue voulez-vous que le 
-	système vous parle?</td>
-<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td>
-<td style="padding: 8px; border: 1px solid #ccc;">  </td>
-</tr>
-<mm-digest-question-start>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;">Souhaitez-vous recevoir les messages de la liste dans
-	un seul courriel quotidien groupé ? 	  
+		<MM-Reminder></font></p>
+              </td>
+       </tr>
+         <tr>
+ 	<td bgcolor="#dddddd">Choisissez un mot de passe:</td>
+ 	<td><MM-New-Password-Box></td>
+ 	<td>&nbsp;</td>
+            </tr>
+       <tr>
+  	<td bgcolor="#dddddd">Confirmer le mot de passe:</td>
+ 	<td><MM-Confirm-Password></td>
+ 	<td>&nbsp; </td>
+            </tr>
+       <tr>
+         <td bgcolor="#dddddd">Dans quelle langue voulez-vous que le 
+	syst&egrave;me vous parle?</td>
+          <td> <MM-list-langs></td>
+         <td>&nbsp; </td>
+            </tr>
+       <mm-digest-question-start>
+       <tr>
+ 	<td>Souhaitez-vous recevoir les messages de la liste dans
+	un seul courriel quotidien group&eacute; ? 	  
 	</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> Non 	    
-	    <mm-digest-radio-button>  Oui 
-	</mm-digest-radio-button></mm-undigest-radio-button></td>
-</tr>
-<mm-digest-question-end>
-<mm-recaptcha-ui>
-<mm-captcha-ui>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-subscribe-button></mm-subscribe-button></center>
-</td>
-</tr>
-</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
-<mm-form-end>
-</mm-form-end></mm-subscribe-form-start></ul>
-<tr>
-<td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<a name="subscribers">
-<b><font color="#000000">Abonnés de 
-	<mm-list-name></mm-list-name></font></b></a>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<mm-roster-form-start>
-<mm-roster-option>
-<mm-form-end>
-<p>
-<mm-options-form-start>
-<mm-editing-options>
-<mm-form-end>
-</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
-</tr>
-</mm-list-subscription-msg></mm-list-name></p></td></tr></table>
-<mm-mailman-footer>
-</mm-mailman-footer></p></body>
+ 	<td><MM-Undigest-Radio-Button> Non 	    
+	    <MM-Digest-Radio-Button>  Oui 
+	</td>
+       </tr>
+	<mm-digest-question-end>
+       <mm-recaptcha-ui>
+       <mm-captcha-ui>
+       <tr>
+ 	<td colspan="3"> 	  
+              <center><MM-Subscribe-Button></center>
+        </td>
+        </tr>
+        </table>
+     <MM-Form-End>    
+      </ul>
+     <tr>
+       <td colspan="2" width="100%" bgcolor="#fff0d0"> 	
+	<a name="subscribers">         
+	<b><font color="#000000">Abonn&eacute;s de 
+	<MM-List-Name></font></b></a>
+       </td>
+     </tr>
+     <tr>
+       <td colspan="2" width="100%"> 	
+	<MM-Roster-Form-Start> 	
+	<MM-Roster-Option>
+ 		<MM-Form-End>
+      	<p> 	
+	<MM-Options-Form-Start> 	
+	<MM-Editing-Options> 		
+		<MM-Form-End> 
+        </td>
+     </tr>
+</table>
+ <MM-Mailman-Footer>
+</body>
 </html>

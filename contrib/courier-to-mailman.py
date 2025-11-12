@@ -54,7 +54,7 @@ MailmanOwner = "postmaster@localhost"; # Postmaster and abuse mail recepient.
 # Note: "preline" is a Courier program which ensures a Unix "From " header
 # is on the message.  Archiving will break without this.
 
-import sys, os, re
+import sys, os, re, string
 
 def main():
         os.nice(5)  # Handle mailing lists at non-interactive priority.
@@ -62,7 +62,7 @@ def main():
         os.chdir(MailmanVar + "/lists")
 
         try:
-                local = str.lower(os.environ["LOCAL"])
+                local = string.lower(os.environ["LOCAL"])
         except:
                 # This might happen if we're not using qmail.
                 sys.stderr.write("LOCAL not set in environment?\n")
@@ -77,12 +77,12 @@ def main():
                         sys.exit(0)
 
         type = "post"
-        listname = str.lower(local)
+        listname = string.lower(local)
         types = (("-admin$", "admin"),
                          ("-bounces$", "bounces"),
-                         (r"-bounces\+.*$", "bounces"),          # for VERP
+                         ("-bounces\+.*$", "bounces"),          # for VERP
                          ("-confirm$", "confirm"),
-                         (r"-confirm\+.*$", "confirm"),
+                         ("-confirm\+.*$", "confirm"),
                          ("-join$", "join"),
                          ("-leave$", "leave"),
                          ("-owner$", "owner"),

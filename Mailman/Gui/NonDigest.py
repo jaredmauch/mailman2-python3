@@ -125,18 +125,15 @@ and footers:
         else:
             extra = ''
 
-        # Ensure headfoot is not None
-        headfoot = headfoot or ''
-
         info.extend([('msg_header', mm_cfg.Text, (10, WIDTH), 0,
              _('Header added to mail sent to regular list members'),
-             str(_('''Text prepended to the top of every immediately-delivery
-             message. ''')) + str(headfoot) + str(extra)),
+             _('''Text prepended to the top of every immediately-delivery
+             message. ''') + headfoot + extra),
 
             ('msg_footer', mm_cfg.Text, (10, WIDTH), 0,
              _('Footer added to mail sent to regular list members'),
-             str(_('''Text appended to the bottom of every immediately-delivery
-             message. ''')) + str(headfoot) + str(extra)),
+             _('''Text appended to the bottom of every immediately-delivery
+             message. ''') + headfoot + extra),
             ])
 
         info.extend([

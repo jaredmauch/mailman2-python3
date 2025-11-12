@@ -39,12 +39,6 @@ class GUIBase:
     def _getValidValue(self, mlist, property, wtype, val):
         # Coerce and validate the new value.
         #
-        # First convert any bytes to strings
-        if isinstance(val, bytes):
-            try:
-                val = val.decode('utf-8')
-            except UnicodeDecodeError:
-                val = val.decode('latin1')
         # Radio buttons and boolean toggles both have integral type
         if wtype in (mm_cfg.Radio, mm_cfg.Toggle):
             # Let ValueErrors propagate
@@ -144,14 +138,8 @@ class GUIBase:
 
     def _setValue(self, mlist, property, val, doc):
         # Set the value, or override to take special action on the property
-        if not property.startswith('_'):
-            if isinstance(val, bytes):
-                try:
-                    val = val.decode('utf-8')
-                except UnicodeDecodeError:
-                    val = val.decode('latin1')
-            if getattr(mlist, property) != val:
-                setattr(mlist, property, val)
+        if not property.startswith('_') and getattr(mlist, property) != val:
+            setattr(mlist, property, val)
 
     def _postValidate(self, mlist, doc):
         # Validate all the attributes for this category
@@ -160,7 +148,7 @@ class GUIBase:
     def handleForm(self, mlist, category, subcat, cgidata, doc):
         for item in self.GetConfigInfo(mlist, category, subcat):
             # Skip descriptions and legacy non-attributes
-            if not isinstance(item, tuple) or len(item) < 5:
+            if not type(item) is tuple or len(item) < 5:
                 continue
             # Unpack the gui item description
             property, wtype, args, deps, desc = item[0:5]
@@ -199,11 +187,6 @@ class GUIBase:
     # Convenience method for handling $-string attributes
     def _convertString(self, mlist, property, alloweds, val, doc):
         # Is the list using $-strings?
-        if isinstance(val, bytes):
-            try:
-                val = val.decode('utf-8')
-            except UnicodeDecodeError:
-                val = val.decode('latin1')
         dollarp = getattr(mlist, 'use_dollar_strings', 0)
         if dollarp:
             ids = Utils.dollar_identifiers(val)
@@ -241,9 +224,3 @@ class GUIBase:
                     """))
                 return fixed
         return val
-
-    def AddItem(self, item):
-        """Add an item to the list of items to be displayed."""
-        if not isinstance(item, tuple) or len(item) < 5:
-            raise ValueError('Item must be a tuple with at least 5 elements')
-        self.items.append(item)

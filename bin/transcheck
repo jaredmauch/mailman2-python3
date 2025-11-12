@@ -34,7 +34,7 @@ from __future__ import print_function
 import sys
 import re
 import os
-import argparse
+import getopt
 
 import paths
 from Mailman.i18n import C_
@@ -42,14 +42,7 @@ from Mailman.i18n import C_
 program = sys.argv[0]
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Check a given Mailman translation.')
-    parser.add_argument('lang', help='Country code (e.g. "it" for Italy)')
-    parser.add_argument('-q', '--quiet', action='store_true',
-                       help='Ask for a brief summary')
-    return parser.parse_args()
-
-
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -61,6 +54,7 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
+
 class TransChecker:
     "check a translation comparing with the original string"
     def __init__(self, regexp, escaped=None):
@@ -126,6 +120,7 @@ class TransChecker:
         self.errs = []
 
 
+
 class POParser:
     "parse a .po file extracting msgids and msgstrs"
     def __init__(self, filename=""):
@@ -281,6 +276,7 @@ class POParser:
 
 
 
+
 def check_file(translatedFile, originalFile, html=0, quiet=0):
     """check a translated template against the original one
        search also <MM-*> tags if html is not zero"""
@@ -327,6 +323,7 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
     return n
 
 
+
 def check_po(file, quiet=0):
     "scan the po file comparing msgids with msgstrs"
     n = 0
@@ -348,56 +345,70 @@ def check_po(file, quiet=0):
     p.close()
     return n
 
+
 def main():
     try:
-        args = parse_args()
-    except SystemExit:
+        opts, args = getopt.getopt(sys.argv[1:], 'qh', ['quiet', 'help'])
+    except getopt.error as msg:
+        usage(1, msg)
+
+    quiet = 0
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-q', '--quiet'):
+            quiet = 1
+
+    if len(args) != 1:
         usage(1)
 
-    lang = args.lang
-    quiet = args.quiet
+    lang = args[0]
 
-    # Check if the language directory exists
-    lang_dir = os.path.join(paths.prefix, 'messages', lang)
-    if not os.path.isdir(lang_dir):
-        usage(1, C_('Language directory %(lang_dir)s does not exist'))
+    isHtml = re.compile("\.html$");
+    isTxt = re.compile("\.txt$");
 
-    # Initialize checkers
-    var_checker = TransChecker(r'%\([^\)]+\)s')
-    tag_checker = TransChecker(r'<[^>]+>', r'&[^;]+;')
+    numerrors = 0
+    numfiles = 0
+    try:
+        files = os.listdir("templates/" + lang + "/")
+    except:
+        print("can't open templates/%s/" % lang)
+    for file in files:
+        fileEN = "templates/en/" + file
+        fileIT = "templates/" + lang + "/" + file
+        errlist = []
+        if isHtml.search(file):
+            if not quiet:
+                print("HTML checking " + fileIT + "... ")
+            n = check_file(fileIT, fileEN, html=1, quiet=quiet)
+            if n:
+                numerrors += n
+                numfiles += 1
+        elif isTxt.search(file):
+            if not quiet:
+                print("TXT  checking " + fileIT + "... ")
+            n = check_file(fileIT, fileEN, html=0, quiet=quiet)
+            if n:
+                numerrors += n
+                numfiles += 1
 
-    # Parse the .po file
-    po_file = os.path.join(lang_dir, 'mailman.po')
-    if not os.path.isfile(po_file):
-        usage(1, C_('PO file %(po_file)s does not exist'))
+        else:
+            continue
 
-    parser = POParser(po_file)
-    while parser.parse():
-        var_checker.checkin(parser.msgid)
-        var_checker.checkout(parser.msgstr)
-        tag_checker.checkin(parser.msgid)
-        tag_checker.checkout(parser.msgstr)
+    file = "messages/" + lang + "/LC_MESSAGES/mailman.po"
+    if not quiet:
+        print("PO   checking " + file + "... ")
+    n = check_po(file, quiet=quiet)
+    if n:
+        numerrors += n
+        numfiles += 1
 
-    # Print results
     if quiet:
-        print("%(lang)s: %(var_status)s %(tag_status)s" % {
-            'lang': lang,
-            'var_status': var_checker.status(),
-            'tag_status': tag_checker.status()
+        print("%(errs)u warnings in %(files)u files" % {
+            'errs':  numerrors,
+            'files': numfiles
         })
-    else:
-        print(C_('Translation check for %(lang)s:'), file=sys.stderr)
-        print(C_('Variables: %(var_status)s'), file=sys.stderr)
-        if var_checker.errs:
-            print(var_checker.errorsAsString(), file=sys.stderr)
-        print(C_('Tags: %(tag_status)s'), file=sys.stderr)
-        if tag_checker.errs:
-            print(tag_checker.errorsAsString(), file=sys.stderr)
 
-    # Exit with error if there are any issues
-    if var_checker.errs or tag_checker.errs:
-        sys.exit(1)
-
-
+
 if __name__ == '__main__':
     main()

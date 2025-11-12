@@ -40,22 +40,14 @@ If run standalone, it prints this help text and exits.
 from __future__ import print_function
 
 import sys
-import argparse
+import getopt
 
 import paths
 from Mailman import mm_cfg
 from Mailman.i18n import C_
 
 
-def parse_args(args):
-    parser = argparse.ArgumentParser(description='Reset a list\'s web_page_url attribute to the default setting.')
-    parser.add_argument('-u', '--urlhost',
-                       help='Look up urlhost in the virtual host table and set the web_page_url and host_name attributes')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                       help='Print what the script is doing')
-    return parser.parse_args(args)
-
-
+
 def usage(code, msg=''):
     print(C_(__doc__.replace('%', '%%')))
     if msg:
@@ -63,28 +55,37 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
+
 def fix_url(mlist, *args):
     try:
-        args = parse_args(args)
-    except SystemExit:
-        usage(1)
+        opts, args = getopt.getopt(args, 'u:v', ['urlhost=', 'verbose'])
+    except getopt.error as msg:
+        usage(1, msg)
+
+    verbose = 0
+    urlhost = mailhost = None
+    for opt, arg in opts:
+        if opt in ('-u', '--urlhost'):
+            urlhost = arg
+        elif opt in ('-v', '--verbose'):
+            verbose = 1
 
     # Make sure list is locked.
     if not mlist.Locked():
-        if args.verbose:
+        if verbose:
             print(C_('Locking list'))
         mlist.Lock()
-    if args.urlhost:
-        web_page_url = mm_cfg.DEFAULT_URL_PATTERN % args.urlhost
-        mailhost = mm_cfg.VIRTUAL_HOSTS.get(args.urlhost.lower(), args.urlhost)
+    if urlhost:
+        web_page_url = mm_cfg.DEFAULT_URL_PATTERN % urlhost
+        mailhost = mm_cfg.VIRTUAL_HOSTS.get(urlhost.lower(), urlhost)
     else:
         web_page_url = mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST
         mailhost = mm_cfg.DEFAULT_EMAIL_HOST
 
-    if args.verbose:
+    if verbose:
         print(C_('Setting web_page_url to: %(web_page_url)s'))
     mlist.web_page_url = web_page_url
-    if args.verbose:
+    if verbose:
         print(C_('Setting host_name to: %(mailhost)s'))
     mlist.host_name = mailhost
     print('Saving list')
@@ -92,5 +93,6 @@ def fix_url(mlist, *args):
     mlist.Unlock()
 
 
+
 if __name__ == '__main__':
     usage(0)

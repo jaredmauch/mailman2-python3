@@ -25,62 +25,30 @@
 #define SCRIPTNAME  SCRIPT
 #define LOG_IDENT   "Mailman cgi-wrapper (" SCRIPT ")"
 
-/* Group name that your web server runs as.  See your web server's
- * documentation for details.
+/* Group name that CGI scripts run as.  See your web server's documentation
+ * for details.
  */
 #define LEGAL_PARENT_GROUP CGI_GROUP
 
-const char* parentgroup = LEGAL_PARENT_GROUP;
 const char* logident = LOG_IDENT;
 char* script = SCRIPTNAME;
+const char* parentgroup = LEGAL_PARENT_GROUP;
 
-/* List of valid CGI scripts */
-const char *VALID_SCRIPTS[] = {
-        "admindb",
-        "admin",
-        "confirm",
-        "create",
-        "edithtml",
-        "listinfo",
-        "options",
-        "private",
-        "rmlist",
-        "roster",
-        "subscribe",
-        NULL                                 /* Sentinel, don't remove */
-};
-
-/* Check if a script name is valid */
-int check_command(char *script)
-{
-        int i = 0;
-        while (VALID_SCRIPTS[i] != NULL) {
-                if (!strcmp(script, VALID_SCRIPTS[i]))
-                        return 1;
-                i++;
-        }
-        return 0;
-}
 
 int
-main(int argc __attribute__((unused)), char** argv __attribute__((unused)), char** env)
+main(int argc, char** argv, char** env)
 {
         int status;
         char* fake_argv[3];
 
         running_as_cgi = 1;
-
-        /* Set global command line variables for --test support */
-        main_argc = argc;
-        main_argv = argv;
-
         check_caller(logident, parentgroup);
 
         /* For these CGI programs, we can ignore argc and argv since they
-         * don't contain anything useful. `script' will always be the driver
+         * don't contain anything useful.  `script' will always be the driver
          * program and argv will always just contain the name of the real
          * script for the driver to import and execute (padded with two dummy
-         * values in argv[0] and argv[1] that are ignored by run_script()).
+         * values in argv[0] and argv[1] that are ignored by run_script().
          */
         fake_argv[0] = NULL;
         fake_argv[1] = NULL;

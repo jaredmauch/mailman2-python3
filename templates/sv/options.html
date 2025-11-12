@@ -1,292 +1,253 @@
 <!-- $Revision: 6052 $ -->
 <html>
 <head>
-<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
-<title>Personlig medlemsida för  <mm-presentable-user> på listan <mm-list-name>
-</mm-list-name></mm-presentable-user></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b><font color="#000000" size="+1">Personlig medlemsida för 
-							<mm-presentable-user>
-							 på listan 
-							<mm-list-name>
-</mm-list-name></mm-presentable-user></font></b></td></tr>
-</table>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title>Personlig medlemsida f&ouml;r&nbsp; <MM-Presentable-User> p&aring; listan <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B><FONT COLOR="#000000" SIZE=+1>Personlig medlemsida f&ouml;r 
+							<MM-Presentable-User>
+							 p&aring; listan 
+							<MM-List-Name>
+						</FONT></B></TD></TR>
+    </TABLE>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
-        Medlemsstatus, lösenord och inställningar för 
-        <b><mm-presentable-user></mm-presentable-user></b>på e-postlistan <mm-list-name>.
-        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
-</tr><tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<mm-case-preserved-user>
-<mm-disabled-notice>
-<p><mm-results>
-</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
-</tr>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        Medlemsstatus, l&ouml;senord och inst&auml;llningar f&ouml;r 
+        <b><MM-Presentable-User></b>p&aring; e-postlistan <MM-List-Name>.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
 </table>
-<mm-form-start>
+
+<MM-Form-Start>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000"><b>Ändra e-postadress på 
-							<mm-list-name>
-</mm-list-name></b></font></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">Du kan ändra den e-postadress som du använde när du anmälde dig till listan, genom att skriva in en annan e-postadress i fälten nedan. Observera att ett e-postbrev med 
-    närmare instruktioner kommer då att skickas till den nya adressen. Ändringarna träder inte i kraft förrän du har bekräftat dem. Du har <mm-pending-days> på dig att bekräfta ändringen.       
-     <p>Du kan även ändra ditt namn på listan (till exempel <em>Sven Svensson</em>).
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2"><FONT COLOR="#000000"><B>&Auml;ndra e-postadress p&aring; 
+							<MM-List-Name>
+						</B></FONT></TD></TR>
+    <tr><td colspan="2">Du kan &auml;ndra den e-postadress som du anv&auml;nde n&auml;r du anm&auml;lde dig till listan, genom att skriva in en annan e-postadress i f&auml;lten nedan. Observera att ett e-postbrev med 
+    n&auml;rmare instruktioner kommer d&aring; att skickas till den nya adressen. &Auml;ndringarna tr&auml;der inte i kraft f&ouml;rr&auml;n du har bekr&auml;ftat dem. Du har <mm-pending-days> p&aring; dig att bekr&auml;fta &auml;ndringen.       
+     <p>Du kan &auml;ven &auml;ndra ditt namn p&aring; listan (till exempel <em>Sven Svensson</em>).
 
-        <p>Om du vill ändra din e-postadress på alla e-postlistor som du är anmäld till på  <mm-host>, kryssa för <em>Ändra alla listor</em>.
+        <p>Om du vill &auml;ndra din e-postadress p&aring; alla e-postlistor som du &auml;r anm&auml;ld till p&aring;  <mm-host>, kryssa f&ouml;r <em>&Auml;ndra alla listor</em>.
 
-        </mm-host></p></p></mm-pending-days></td></tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ny e-postadress:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
-</tr>
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ny e-postadress en gång till:           </div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
-</tr>
-</table></center>
-</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ditt namn
+        </td></tr>
+    <tr>
+				<td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Ny e-postadress:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Ny e-postadress en g&aring;ng till:           </div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Ditt namn
             (valfritt):</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
-</tr>
-</table></center>
-</td>
-</tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;"><center><mm-change-address-button>
-<p><mm-global-change-of-address>Ändra min e-postadress på alla
-         listor som jag är medlem av</mm-global-change-of-address></p></mm-change-address-button></center></td>
-</tr>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+         <p><mm-global-change-of-address>&Auml;ndra min e-postadress p&aring; alla
+         listor som jag &auml;r medlem av</center></td>
+    </tr>
 </table>
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000"><b>Avanmäl dig från 
-							<mm-list-name>
-</mm-list-name></b></font></td>
-<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000"><b>Visa listor som du är medlem av på <mm-host></mm-host></b>
-</font></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;">Kryssa för i kryssrutan och klicka på knappen för att avanmäla dig från denna e-postlista. <strong>OBS!</strong> Du blir då omedelbart avanmäld från listan!
-					<p>
-<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
-<td style="padding: 8px; border: 1px solid #ccc;">Du kan välja att se alla listor som du är anmäld till, så att du kan göra samma ändringar på flera listor på en gång. 
-        <p>
-<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
-</p></td></tr>
-</table>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Ditt lösenord för <mm-list-name></mm-list-name></b>
-</font></td></tr>
-<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%"><a name="reminder">
-<center>
-<h3>Har du glömt ditt lösenord?</h3></center></a>
 
-					Klicka på denna knapp för att få ditt lösenord skickat till dig i ett e-postbrev.
 <p>
-<mm-umbrella-notice>
-<center>
-<mm-email-my-pw>
-</mm-email-my-pw></center>
-</mm-umbrella-notice></p></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="50%"><a name="changepw">
-<center>
-<h3>Ändra lösenord</h3>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">
-<div align="right">
-											Nytt lösenord:</div>
-</td>
-<td style="padding: 8px; border: 1px solid #ccc;">
-<mm-new-pass-box>
-</mm-new-pass-box></td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">
-<div align="right">
-											Nytt lösenord en gång till:</div>
-</td>
-<td style="padding: 8px; border: 1px solid #ccc;">
-<mm-confirm-pass-box>
-</mm-confirm-pass-box></td>
-</tr>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000"><B>Avanm&auml;l dig fr&aring;n 
+							<MM-List-Name>
+						</B></font></td>
+
+	<TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000"><B>Visa listor som du &auml;r medlem av p&aring; <MM-Host></B>
+	</FONT></TD></TR>
+
+    <tr><td>Kryssa f&ouml;r i kryssrutan och klicka p&aring; knappen f&ouml;r att avanm&auml;la dig fr&aring;n denna e-postlista. <strong>OBS!</strong> Du blir d&aring; omedelbart avanm&auml;ld fr&aring;n listan!
+					<p>
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>Du kan v&auml;lja att se alla listor som du &auml;r anm&auml;ld till, s&aring; att du kan g&ouml;ra samma &auml;ndringar p&aring; flera listor p&aring; en g&aring;ng. 
+        <p>
+        <center><MM-Other-Subscriptions-Submit></center>
+	</TD></TR>
 </table>
-<mm-change-pass-button>
-<p>
-<center>
-<mm-global-pw-changes-button>
-								 Ändra lösenordet för alla listor som jag är medlem av på 
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Ditt l&ouml;senord f&ouml;r <MM-List-Name></B>
+	</FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%"><a name=reminder>
+					<center>
+						<h3>Har du gl&ouml;mt ditt l&ouml;senord?</a></h3>
+					</center>
+					Klicka p&aring; denna knapp f&ouml;r att f&aring; ditt l&ouml;senord skickat till dig i ett e-postbrev.</a>
+					<p>
+						<MM-Umbrella-Notice>
+						<center>
+								<MM-Email-My-Pw>
+							</center>
+				</td>
+
+    <td WIDTH="50%"><a name=changepw>
+					<center>
+						<h3>&Auml;ndra l&ouml;senord</h3>
+							<TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+								<TR>
+									<TD BGCOLOR="#dddddd">
+										<div align="right">
+											Nytt l&ouml;senord:</div>
+									</TD>
+									<TD>
+										<MM-New-Pass-Box>
+									</TD>
+								</TR>
+								<TR>
+									<TD BGCOLOR="#dddddd">
+										<div align="right">
+											Nytt l&ouml;senord en g&aring;ng till:</div>
+									</TD>
+									<TD>
+										<MM-Confirm-Pass-Box>
+									</TD>
+								</TR>
+							</table>
+							<MM-Change-Pass-Button>
+						<p>
+						<center>
+								<mm-global-pw-changes-button>
+								 &Auml;ndra l&ouml;senordet f&ouml;r alla listor som jag &auml;r medlem av p&aring; 
 								<mm-host>
 								.
-</mm-host></mm-global-pw-changes-button></center>
-</p></mm-change-pass-button></center>
-</a></td></tr></table>
+</center>
+</center>
+</TABLE>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Dina inställningar för <mm-list-name></mm-list-name></b>
-</font></td></tr>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Dina inst&auml;llningar f&ouml;r <MM-List-Name></B>
+	</FONT></TD></TR>
 </table>
-<p><i><strong>Gällande inställningar är valda.</strong></i>
-<p>Observera att några av inställningarna har ett <em>Använd på alla</em> -val. Kryssar du för detta val, kommer alla listor som du är medlem av på 
-			<mm-host> också få den inställning som du sätter här. Klicka på <em>Visa andra listor som jag är medlem av</em> ovan för att se vilka  andra e-postlistor som du är medlem av.
+
+<p><i><strong>G&auml;llande inst&auml;llningar &auml;r valda.</strong></i>
+		<p>Observera att n&aring;gra av inst&auml;llningarna har ett <em>Anv&auml;nd p&aring; alla</em> -val. Kryssar du f&ouml;r detta val, kommer alla listor som du &auml;r medlem av p&aring; 
+			<mm-host> ocks&aring; f&aring; den inst&auml;llning som du s&auml;tter h&auml;r. Klicka p&aring; <em>Visa andra listor som jag &auml;r medlem av</em> ovan f&ouml;r att se vilka  andra e-postlistor som du &auml;r medlem av.
 			<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;"><a name="disable"><strong>Ta emot meddelanden</strong></a>
-<p>Sätt detta till <em>Ja</em> för att ta emot e-postbrev som skickas till denna lista. Sätt <em>Nej</em> om du under en period inte önskar att ta emot e-postbrev 
-						som skickas till listan, men ändå vill stå kvar som medlem av listan. (Kan vara användbart 
-						till exempel om du åker bort på semester.) Sätter du detta till <em>Nej</em>, måste 
-						du komma íhåg att sätta tillbaka till <i>Ja</i> igen, när du åter vill ta emot e-postbrev.
-					</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-delivery-enable-button> Ja<br/>
-<mm-delivery-disable-button> Nej<p>
-<mm-global-deliver-button>
-<i>Använd på alla</i>
-</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+			<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc"><a name="disable"><strong>Ta emot meddelanden</strong></a>
+						<p>S&auml;tt detta till <em>Ja</em> f&ouml;r att ta emot e-postbrev som skickas till denna lista. S&auml;tt <em>Nej</em> om du under en period inte &ouml;nskar att ta emot e-postbrev 
+						som skickas till listan, men &auml;nd&aring; vill st&aring; kvar som medlem av listan. (Kan vara anv&auml;ndbart 
+						till exempel om du &aring;ker bort p&aring; semester.) S&auml;tter du detta till <em>Nej</em>, m&aring;ste 
+						du komma &iacute;h&aring;g att s&auml;tta tillbaka till <i>Ja</i> igen, n&auml;r du &aring;ter vill ta emot e-postbrev.
+					</td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button> Ja<br>
+        <mm-delivery-disable-button> Nej<p>
+        <mm-global-deliver-button>
+							 <i>Anv&auml;nd p&aring; alla</i>
+        </td></tr>
+
 <!--Start-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Sammandragsversion</strong><p>Sätter du på alternativet sammandragsversion, kommer du att med jämna mellanrum (till exempel en gång om dagen - det beror på hur mycket som skickas till listan) få en samlingsepost som innehåller alla meddelanden som skickas till 
-        listan, istället för att få varje enskilt meddelande. Om du byter från sammandragsversion 
-        till normalversion, kommer du kanske i alla fall att få ett sista e-postbrev med sammandrag, även om du då 
-        redan börjat ta emot enskilda meddelanden till listan.       </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-undigest-radio-button> Av<br/>
-<mm-digest-radio-button> På        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;"><strong>Ta emot sammandrag som ren text eller i MIME-format?</strong>
-<p>Det finns e-postläsare/mejlprogram som inte stöder sammandrag i MIME-format. Att ta emot sammandrag i MIME-format rekommenderas, men får du problem med att läsa e-post i det formatet, kan du välja ren text här.
-					</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-mime-digests-button> MIME<br/>
-<mm-plain-digests-button> Ren text<p>
-<mm-global-mime-button>
-<i> Använd på alla</i>
-</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Sammandragsversion</strong><p>S&auml;tter du p&aring; alternativet sammandragsversion, kommer du att med j&auml;mna mellanrum (till exempel en g&aring;ng om dagen - det beror p&aring; hur mycket som skickas till listan) f&aring; en samlingsepost som inneh&aring;ller alla meddelanden som skickas till 
+        listan, ist&auml;llet f&ouml;r att f&aring; varje enskilt meddelande. Om du byter fr&aring;n sammandragsversion 
+        till normalversion, kommer du kanske i alla fall att f&aring; ett sista e-postbrev med sammandrag, &auml;ven om du d&aring; 
+        redan b&ouml;rjat ta emot enskilda meddelanden till listan.       </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button> Av<br>
+        <MM-Digest-Radio-Button> P&aring;        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc"><strong>Ta emot sammandrag som ren text eller i MIME-format?</strong>
+						<p>Det finns e-postl&auml;sare/mejlprogram som inte st&ouml;der sammandrag i MIME-format. Att ta emot sammandrag i MIME-format rekommenderas, men f&aring;r du problem med att l&auml;sa e-post i det formatet, kan du v&auml;lja ren text h&auml;r.
+					</td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button> MIME<br>
+        <MM-Plain-Digests-Button> Ren text<p>
+							<mm-global-mime-button>
+							<i> Anv&auml;nd p&aring; alla</i>
+        </td></tr>
 <!--End-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;"><strong>Ta emot dina egna meddelanden till listan?</strong>
-<p>Vanligtvis kommer du att få ta emot e-postbrev som du själv skickar till listan. Om du inte vill ta emot dessa, bör du välja   <em>Nej</em> här.
-					</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-receive-own-mail-button> Nej<br/>
-<mm-receive-own-mail-button> Ja        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;"><strong>Ta emot bekräftelse när du skickar e-post till listan?</strong>
-<p>Välj <em>Ja</em> här om du vill få en bekräftelse varje gång du skickar ett e-postbrev till listan.
-					</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-ack-posts-button> Nej<br/>
-<mm-ack-posts-button>  Ja        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Få ditt lösenord skickat till dig med jämna mellanrum?</strong><p>En gång i månaden kan det vara så att du får ett e-postbrev som innehåller lösenord till alla listor som du är medlem av på detta system. Du kan här slå av denna 
-        inställning för den enskilda listan - eller för alla listor.        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-get-password-reminder-button>Nej<br/>
-<mm-get-password-reminder-button> Ja<p>
-<mm-global-remind-button>
-<i>Använd på alla</i>
-</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Vill du visas på listan över medlemmar av listan?</strong><p>När någon går in på webbsidan för att se alla medlemmar av listan kommer vanligtvis din e-postadress att visas. (Men stavad på ett sådant sätt att robotar som plockar upp e-postadresser från hemsidor - och kanske därefter 
-        skickar skräppost och reklam/spam till den - inte kommer att förstå att det är en e-postadress.) 
-        Välj <i>Nej</i> här, om du inte vill att din e-postadress ska visas på listan.        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-hide-subscription-button> Nej<br/>
-<mm-public-subscription-button> Ja        </mm-public-subscription-button></mm-hide-subscription-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;"><strong>Vilket språk föredrar du?</strong>
-<p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-list-langs>
-</mm-list-langs></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;"><strong>Vilka ämnen vill du ta emot?</strong>
-<p>Genom att välja ett eller flera ämnen, kan du filtrera meddelandena som skickas till e-postlistan, så att du bara tar emot sådana e-postbrev som intresserar dig. 
-						<p>Om ett meddelande inte går under något ämne, beror det på inställningen nedan, om du vill ta emot meddelandet eller inte. Om du inte väljer något ämne här, kommer du att få ta emot alla meddelanden som skickas till listan.       </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-topics>
-</mm-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Vill du ta emot meddelanden som inte går in under något ämne?</strong>
-<p>Detta val gäller bara om du valt ett eller flera ämnen ovan. Det avgör om du ska ta mot meddelanden som inte går under något ämne. Väljer du <em>Nej</em> kommer du inte att ta emot dem, väljer du <em>Ja,</em> kommer du att ta emot dem.
-        <p>Om du inte valt några ämnen i inställningen ovan, kommer du att ta emot alla meddelanden som skickas till listan. 
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-suppress-nonmatching-topics> Nej<br/>
-<mm-receive-nonmatching-topics> Ja      </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Undvika att få e-postbrev från listan som även är adresserade direkt till dig?</strong><p>Du kan välja vad som ska hända om det kommer ett e-postbrev till listan som dessutom är adresserat direkt till dig (det vill säga att din e-postadress 
-        står i fältet <tt>To:</tt> eller <tt>Cc:</tt>). Välj <em>Ja</em> för att undvika 
-        att ta emot samma e-postbrev från listan, välj <em>Nej</em> för att i alla fall ta emot e-postbrev från listan. 
-        <p>För särskilt intresserade: Om listan är uppsatt för att personalisera meddelanden som skickas till listan och du väljer att ta emot e-post från listan, så kommer varje kopia att ha fältet <tt>X-Mailman-Copy: yes</tt> i meddelandehuvudet. 
-	</p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-receive-duplicates-button> Nej<br/>
-<mm-dont-receive-duplicates-button> Ja<p>
-<mm-global-nodupes-button>
-<i>Använd på alla</i>
-</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-options-submit-button></mm-options-submit-button></center>
-</td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc"><strong>Ta emot dina egna meddelanden till listan?</strong>
+						<p>Vanligtvis kommer du att f&aring; ta emot e-postbrev som du sj&auml;lv skickar till listan.&nbsp;Om du inte vill ta emot dessa, b&ouml;r du v&auml;lja   <em>Nej</em> h&auml;r.
+					</td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button> Nej<br>
+        <mm-receive-own-mail-button> Ja        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc"><strong>Ta emot bekr&auml;ftelse n&auml;r du skickar e-post till listan?</strong>
+						<p>V&auml;lj <em>Ja</em> h&auml;r om du vill f&aring; en bekr&auml;ftelse varje g&aring;ng du skickar ett e-postbrev till listan.
+					</td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button> Nej<br>
+        <mm-ack-posts-button>  Ja        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>F&aring; ditt l&ouml;senord skickat till dig med j&auml;mna mellanrum?</strong><p>En g&aring;ng i m&aring;naden kan det vara s&aring; att du f&aring;r ett e-postbrev som inneh&aring;ller l&ouml;senord till alla listor som du &auml;r medlem av p&aring; detta system. Du kan h&auml;r sl&aring; av denna 
+        inst&auml;llning f&ouml;r den enskilda listan - eller f&ouml;r alla listor.        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Nej<br>
+        <mm-get-password-reminder-button> Ja<p>
+        <mm-global-remind-button>
+							 <i>Anv&auml;nd p&aring; alla</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Vill du visas p&aring; listan &ouml;ver medlemmar av listan?</strong><p>N&auml;r n&aring;gon g&aring;r in p&aring; webbsidan f&ouml;r att se alla medlemmar av listan kommer vanligtvis din e-postadress att visas. (Men stavad p&aring; ett s&aring;dant s&auml;tt att robotar som plockar upp e-postadresser fr&aring;n hemsidor - och kanske d&auml;refter 
+        skickar skr&auml;ppost och reklam/spam till den - inte kommer att f&ouml;rst&aring; att det &auml;r en e-postadress.) 
+        V&auml;lj <i>Nej</i> h&auml;r, om du inte vill att din e-postadress ska visas p&aring; listan.        </td><td bgcolor="#cccccc">
+        <MM-Hide-Subscription-Button> Nej<br>
+        <MM-Public-Subscription-Button> Ja        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc"><strong>Vilket spr&aring;k f&ouml;redrar du?</strong>
+						<p>
+					</td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc"><strong>Vilka &auml;mnen vill du ta emot?</strong>
+						<p>Genom att v&auml;lja ett eller flera &auml;mnen, kan du filtrera meddelandena som skickas till e-postlistan, s&aring; att du bara tar emot s&aring;dana e-postbrev som intresserar dig. 
+						<p>Om ett meddelande inte g&aring;r under n&aring;got &auml;mne, beror det p&aring; inst&auml;llningen nedan, om du vill ta emot meddelandet eller inte.&nbsp;Om du inte v&auml;ljer n&aring;got &auml;mne h&auml;r, kommer du att f&aring; ta emot alla meddelanden som skickas till listan.       </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Vill du ta emot meddelanden som inte g&aring;r in under n&aring;got &auml;mne?</strong>
+        <p>Detta val g&auml;ller bara om du valt ett eller flera &auml;mnen ovan. Det avg&ouml;r om du ska ta mot meddelanden som inte g&aring;r under n&aring;got &auml;mne.&nbsp;V&auml;ljer du <em>Nej</em> kommer du inte att ta emot dem, v&auml;ljer du <em>Ja,</em> kommer du att ta emot dem.
+        <p>Om du inte valt n&aring;gra &auml;mnen i inst&auml;llningen ovan, kommer du att ta emot alla meddelanden som skickas till listan. 
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics> Nej<br>
+        <mm-receive-nonmatching-topics> Ja      </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Undvika att f&aring; e-postbrev fr&aring;n listan som &auml;ven &auml;r adresserade direkt till dig?</strong><p>Du kan v&auml;lja vad som ska h&auml;nda om det kommer ett e-postbrev till listan som dessutom &auml;r adresserat direkt till dig (det vill s&auml;ga att din e-postadress 
+        st&aring;r i f&auml;ltet <tt>To:</tt> eller <tt>Cc:</tt>). V&auml;lj <em>Ja</em> f&ouml;r att undvika 
+        att ta emot samma e-postbrev fr&aring;n listan, v&auml;lj <em>Nej</em> f&ouml;r att i alla fall ta emot e-postbrev fr&aring;n listan. 
+        <p>F&ouml;r s&auml;rskilt intresserade: Om listan &auml;r uppsatt f&ouml;r att personalisera meddelanden som skickas till listan och du v&auml;ljer att ta emot e-post fr&aring;n listan, s&aring; kommer varje kopia att ha f&auml;ltet <tt>X-Mailman-Copy: yes</tt> i meddelandehuvudet. 
+	</td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button> Nej<br>
+        <mm-dont-receive-duplicates-button> Ja<p>
+        <mm-global-nodupes-button>
+							<i>Anv&auml;nd p&aring; alla</i>
+      </td></tr>
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
 </table>
 <p>
-<mm-form-end>
-<mm-mailman-footer>
-</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+	</body>
 </html>

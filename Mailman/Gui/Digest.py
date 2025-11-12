@@ -65,14 +65,14 @@ class Digest(GUIBase):
 
             ('digest_header', mm_cfg.Text, (4, WIDTH), 0,
              _('Header added to every digest'),
-             str(_("Text attached (as an initial message, before the table"
-               " of contents) to the top of digests. "))
-             + str(Utils.maketext('headfoot.html', raw=1, mlist=mlist))),
+             _("Text attached (as an initial message, before the table"
+               " of contents) to the top of digests. ")
+             + Utils.maketext('headfoot.html', raw=1, mlist=mlist)),
 
             ('digest_footer', mm_cfg.Text, (4, WIDTH), 0,
              _('Footer added to every digest'),
-             str(_("Text attached (as a final message) to the bottom of digests. "))
-             + str(Utils.maketext('headfoot.html', raw=1, mlist=mlist))),
+             _("Text attached (as a final message) to the bottom of digests. ")
+             + Utils.maketext('headfoot.html', raw=1, mlist=mlist)),
 
             ('digest_volume_frequency', mm_cfg.Radio,
              (_('Yearly'), _('Monthly'), _('Quarterly'),

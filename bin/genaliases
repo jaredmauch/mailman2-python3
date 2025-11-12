@@ -34,7 +34,7 @@ Options:
 
 import os
 import sys
-import argparse
+import getopt
 
 import paths                                      # path hacking
 from Mailman import mm_cfg
@@ -42,14 +42,7 @@ from Mailman import Utils
 from Mailman import MailList
 from Mailman.i18n import C_
 
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Regenerate Mailman specific aliases from scratch.')
-    parser.add_argument('-q', '--quiet', action='store_true',
-                       help='Reduce verbosity of MTA output')
-    return parser.parse_args()
-
-
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -61,10 +54,22 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
+
 def main():
+    quiet = False
     try:
-        args = parse_args()
-    except SystemExit:
+        opts, args = getopt.getopt(sys.argv[1:], 'hq',
+                                   ['help', 'quiet'])
+    except getopt.error as msg:
+        usage(1, msg)
+
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-q', '--quiet'):
+            quiet = True
+
+    if args:
         usage(1)
 
     if not mm_cfg.MTA:
@@ -93,13 +98,13 @@ def main():
     try:
         MTA.clear()
         if not mlists:
-            MTA.create(None, nolock=True, quiet=args.quiet)
+            MTA.create(None, nolock=True, quiet=quiet)
         else:
             for hostname, vlists in mlists.items():
                 for mlist in vlists:
-                    MTA.create(mlist, nolock=True, quiet=args.quiet)
+                    MTA.create(mlist, nolock=True, quiet=quiet)
                     # Be verbose for only the first printed list
-                    args.quiet = True
+                    quiet = True
     finally:
         lock.unlock(unconditionally=True)
         # Postfix has not been updating the maps. This call will do it.
@@ -107,5 +112,6 @@ def main():
         os.umask(omask)
 
 
+
 if __name__ == '__main__':
     main()

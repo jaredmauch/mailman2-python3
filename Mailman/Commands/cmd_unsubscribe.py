@@ -43,7 +43,8 @@ def process(res, args):
     password = None
     address = None
     argnum = 0
-    for arg in args:
+    for arg_bytes in args:
+        arg = arg_bytes.decode('utf-8')
         if arg.startswith('address='):
             address = arg[8:]
         elif argnum == 0:

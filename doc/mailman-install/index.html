@@ -1,52 +1,63 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
 <html>
 <head>
-<link href="mailman-install.css" rel="STYLESHEET" type="text/css"/>
-<link href="mailman-install.html" rel="first" title="GNU mailman - installation Manual"/>
-<link href="about.html" rel="last" title="About this document..."/>
-<link href="about.html" rel="help" title="About this document..."/>
-<link href="front.html" rel="next"/>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-<meta content="information" name="aesop"/>
+<link rel="STYLESHEET" href="mailman-install.css" type='text/css' />
+<link rel="first" href="mailman-install.html" title='GNU mailman - installation Manual' />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="next" href="front.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
 <title>GNU Mailman - Installation Manual</title>
 </head>
 <body>
 <div class="navigation">
-<div id="top-navigation-panel" xml:id="top-navigation-panel">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="front.html" rel="next" title="Front Matter"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></td>
+<td class='online-navigation'><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></td>
+<td class='online-navigation'><a rel="next" title="Front Matter"
+  href="front.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - Installation Manual</td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="front.html" rel="next">Front Matter</a>
+<a class="sectref" rel="next" href="front.html">Front Matter</a>
 </div>
-<hr/></div>
+<hr /></div>
 </div>
 <!--End of Navigation Panel-->
+
 <p>
+
 <div class="titlepage">
-<div class="center">
+<div class='center'>
 <h1>GNU Mailman - Installation Manual</h1>
 <p><b><font size="+2">Barry Warsaw</font></b></p>
 <p><span class="email">barry (at) list dot org</span></p>
-<p><strong>Release 2.1</strong><br/>
+<p><strong>Release 2.1</strong><br />
 <strong>January 11, 2020</strong></p>
 <p></p>
 </div>
 </div>
+
 <p>
-<p><br/></p><hr class="online-navigation"/>
-<div class="online-navigation">
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
 <!--Table of Child-Links-->
 <a name="CHILD_LINKS"></a>
+
 <ul class="ChildLinks">
 <li><a href="front.html">Front Matter</a>
 <ul>
@@ -55,12 +66,12 @@
 <ul>
 <li><a href="node4.html">2.1 Add the group and user</a>
 <li><a href="create-install-dir.html">2.2 Create the installation directory</a>
-</li></li></ul>
+</ul>
 <li><a href="building.html">3 Build and install Mailman</a>
 <ul>
 <li><a href="node7.html">3.1 Run <b class="program">configure</b></a>
 <li><a href="node8.html">3.2 Make and install</a>
-</li></li></ul>
+</ul>
 <li><a href="node9.html">4 Check your installation</a>
 <li><a href="node10.html">5 Set up your web server</a>
 <li><a href="mail-server.html">6 Set up your mail server</a>
@@ -69,7 +80,7 @@
 <li><a href="node16.html">6.2 Using the Exim mail server</a>
 <li><a href="node31.html">6.3 Using the Sendmail mail server</a>
 <li><a href="qmail-issues.html">6.4 Using the Qmail mail server</a>
-</li></li></li></li></ul>
+</ul>
 <li><a href="customizing.html">7 Review your site defaults</a>
 <li><a href="site-list.html">8 Create a site-wide mailing list</a>
 <li><a href="node41.html">9 Set up cron</a>
@@ -83,33 +94,42 @@
 <li><a href="node48.html">15.1 GNU/Linux issues</a>
 <li><a href="bsd-issues.html">15.2 BSD issues</a>
 <li><a href="node50.html">15.3 MacOSX issues</a>
-</li></li></li></ul>
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></ul>
+</ul>
+</ul>
 <li><a href="about.html">About this document ...</a>
-</li></li></ul>
+</ul>
 <!--End of Table of Child-Links-->
 </div>
+
 <div class="navigation">
-<div class="online-navigation">
-<p></p><hr/>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="front.html" rel="next" title="Front Matter"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - Installation Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></td>
+<td class='online-navigation'><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></td>
+<td class='online-navigation'><a rel="next" title="Front Matter"
+  href="front.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - Installation Manual</td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="front.html" rel="next">Front Matter</a>
+<a class="sectref" rel="next" href="front.html">Front Matter</a>
 </div>
 </div>
-<hr/>
+<hr />
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-</p></p></body>
+
+</body>
 </html>

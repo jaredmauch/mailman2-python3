@@ -52,7 +52,8 @@ def process(res, args):
     realname = None
     # Parse the args
     argnum = 0
-    for arg in args:
+    for arg_bytes in args:
+        arg = arg_bytes.decode('utf-8')
         if arg.lower().startswith('address='):
             address = arg[8:]
         elif argnum == 0:
@@ -94,11 +95,7 @@ def process(res, args):
         # Watch for encoded names
         try:
             h = make_header(decode_header(realname))
-            # Get the realname from the header
-            try:
-                realname = str(h)
-            except UnicodeError:
-                realname = str(h, 'utf-8', 'replace')
+            realname = h.__str__()
         except UnicodeError:
             realname = u''
         # Coerce to byte string if uh contains only ascii

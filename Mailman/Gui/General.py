@@ -595,4 +595,4 @@ mlist.info.
         if varname != 'subject_prefix':
             return None
         # The subject_prefix may be Unicode
-        return Utils.uncanonstr(mlist.subject_prefix, mlist.preferred_language)
+        return Utils.uncanonstr(mlist.subject_prefix, mlist.preferred_language).decode() # Does this break encodings?

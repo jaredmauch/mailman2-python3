@@ -41,7 +41,7 @@ have more than one named list on the command line.
 from __future__ import print_function
 
 import sys
-import argparse
+import getopt
 
 import paths
 from Mailman import MailList, Utils
@@ -53,6 +53,7 @@ COMMASPACE = ', '
 program = sys.argv[0]
 
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -64,40 +65,39 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
+
 def main():
-    parser = argparse.ArgumentParser(description='List all the owners of a mailing list.')
-    parser.add_argument('listnames', nargs='*', help='Name(s) of the mailing list(s) to print the owners of')
-    parser.add_argument('-v', '--all-vhost',
-                       help='List the owners of all the mailing lists for the given virtual host')
-    parser.add_argument('-a', '--all', action='store_true',
-                       help='List the owners of all the mailing lists on this system')
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hv:a',
+                                   ['help', 'all-vhost=', 'all'])
+    except getopt.error as msg:
+        usage(1, msg)
 
-    args = parser.parse_args()
-
-    listnames = [x.lower() for x in args.listnames]
-    if args.all:
-        listnames = Utils.list_names()
-    elif args.all_vhost:
-        listnames = Utils.list_names()
+    listnames = [x.lower() for x in args]
+    vhost = None
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-a', '--all'):
+            listnames = Utils.list_names()
+        elif opt in ('-v', '--all-vhost'):
+            listnames = Utils.list_names()
+            vhost = arg
 
     for listname in listnames:
-        # Ensure listname is a string
-        if isinstance(listname, bytes):
-            listname = listname.decode('utf-8', 'replace')
-        try:
-            mlist = MailList.MailList(listname, lock=0)
-        except Errors.MMListError:
-            print('No such list: %s' % listname)
-            continue
+       try:
+           mlist = MailList.MailList(listname, lock=0)
+       except Errors.MMListError as e:
+           print(C_('No such list: %(listname)s'))
+           continue
 
-        if args.all_vhost and args.all_vhost != mlist.host_name:
-            continue
+       if vhost and vhost != mlist.host_name:
+           continue
 
-        # Ensure owners are strings
-        owners = [owner.decode('utf-8', 'replace') if isinstance(owner, bytes) else owner for owner in mlist.owner]
-        owners_str = ', '.join(owners)
-        print('List: %s, \tOwners: %s' % (listname, owners_str))
+       owners = COMMASPACE.join(mlist.owner)
+       print(C_('List: %(listname)s, \tOwners: %(owners)s'))
 
 
+
 if __name__ == '__main__':
     main()

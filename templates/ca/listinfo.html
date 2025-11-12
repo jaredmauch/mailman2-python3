@@ -1,204 +1,147 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
 <!-- $Revision: 5865 $ -->
-<html>
-<head>
-<title>Pàgina d'informació de la llista <mm-list-name></mm-list-name></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000" size="+1"><mm-list-name> --
-	<mm-list-description></mm-list-description></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p>
-</p></td>
-</tr>
-<tr>
-<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Quant a la llista <mm-list-name></mm-list-name></font></b>
-</td>
-<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<mm-lang-form-start><mm-displang-box> <mm-list-langs>
-<mm-form-end>
-</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p><mm-list-info></mm-list-info></p>
-<p> Per a veure l'historial d'enviaments, aneu als 
-		  arxius <mm-archive> de la llista <mm-list-name></mm-list-name></mm-archive>.
-	      <mm-restricted-list-message>
-</mm-restricted-list-message></p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Utilització de la llista <mm-list-name></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-	  Per a enviar un missatge a tots els membres de la llista, 
-	  envieu un correu electrònic a <a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.
+<HTML>
+  <HEAD>
+    <TITLE>P&agrave;gina d'informaci&oacute; de la llista <MM-List-Name></TITLE>
 
-	  <p>A les seccions següents us podreu subscriure a
-	    la llista, o canviar la vostra subscripció actual. </p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Com subscriure's a la llista <mm-list-name></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p>
-	    Ompliu el formulari següent per a
-	      subscriure-us a <mm-list-name>.
-	  <mm-list-subscription-msg>
-<ul>
-<mm-subscribe-form-start>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">La vostra adreça electrònica:</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
-</mm-subscribe-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">El vostre nom (opcional):</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">Podeu introduir una contrasenya al quadre següent. Això proporciona només
-	    certa seguretat, però evita que altres puguin canviar la configuració de la
-	    vostra subscripció. Sobretot <b>NO utilitzeu una contrasenya valuosa</b>,
-	    ja que pot ser que a vegades se us re-enviï per correu electrònic en
+  </HEAD>
+  <BODY BGCOLOR="#ffffff">
+
+    <P>
+      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
+	<TR>
+	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
+	<MM-List-Description></FONT></B>
+	  </TD>
+	</TR>
+        <tr>
+	    <td colspan="2">
+	      <p> 
+	    </td>
+	  </tr>
+	  <tr>
+	    <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
+	      <B><FONT COLOR="#000000">Quant a la llista <MM-List-Name></FONT></B>
+	    </TD>
+            <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
+              <MM-lang-form-start><MM-displang-box> <MM-list-langs>
+              <MM-form-end>
+           </TD>
+	  </TR>
+	    <tr>
+	      <td colspan="2">
+		<P><MM-List-Info></P>
+	  <p> Per a veure l'historial d'enviaments, aneu als 
+		  arxius <MM-Archive> de la llista <MM-List-Name></MM-Archive>.
+	      <MM-Restricted-List-Message>
+	  </p>
+	</TD>
+      </TR>
+      <TR>
+	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	  <B><FONT COLOR="#000000">Utilitzaci&oacute; de la llista <MM-List-Name></FONT></B>
+	</TD>
+      </TR>
+      <tr>
+	<td colspan="2">
+	  Per a enviar un missatge a tots els membres de la llista, 
+	  envieu un correu electr&ograve;nic a <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
+
+	  <p>A les seccions seg&uuml;ents us podreu subscriure a
+	    la llista, o canviar la vostra subscripci&oacute; actual. </p>
+	</td>
+      </tr>
+      <TR>
+	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	  <B><FONT COLOR="#000000">Com subscriure's a la llista <MM-List-Name></FONT></B>
+	</TD>
+      </TR>
+      <tr>
+	<td colspan="2">
+	  <P>
+	    Ompliu el formulari seg&uuml;ent per a
+	      subscriure-us a <MM-List-Name>.
+	  <MM-List-Subscription-Msg>
+      <ul>
+    <MM-Subscribe-Form-Start>
+
+	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
+		WIDTH="70%">
+		<TR>
+		  <TD BGCOLOR="#dddddd" WIDTH="55%">La vostra adre&ccedil;a electr&ograve;nica:</TD>
+		  <TD WIDTH="33%"><MM-Subscribe-Box>
+	</TD>
+	<TD WIDTH="12%"> </TD></TR>
+      <tr>
+        <td bgcolor="#dddddd" width="55%">El vostre nom (opcional):</td>
+        <td width="33%"><mm-fullname-box></td>
+	<TD WIDTH="12%"> </TD></TR>
+      <TR>
+	<TD COLSPAN="3"><FONT SIZE=-1>Podeu introduir una contrasenya al quadre seg&uuml;ent. Aix&ograve; proporciona nom&eacute;s
+	    certa seguretat, per&ograve; evita que altres puguin canviar la configuraci&oacute; de la
+	    vostra subscripci&oacute;. Sobretot <b>NO utilitzeu una contrasenya valuosa</b>,
+	    ja que pot ser que a vegades se us re-envi&iuml; per correu electr&ograve;nic en
 	    format de text visible.
 
-            <br/><br/>En cas que no vulgueu introduir cap
-            contrasenya, se us n'assignarà una generada automàticament,
-            la qual rebreu un cop hàgiu confirmat la vostra subscripció. A més,
-            sempre podreu sol·licitar-ne un recordatori quan
+            <br><br>En cas que no vulgueu introduir cap
+            contrasenya, se us n'assignar&agrave; una generada autom&agrave;ticament,
+            la qual rebreu un cop h&agrave;giu confirmat la vostra subscripci&oacute;. A m&eacute;s,
+            sempre podreu sol&middot;licitar-ne un recordatori quan
             editeu les vostres opcions personals. 
-	    <mm-reminder>
-</mm-reminder></font>
-</td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Trieu una contrasenya:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;"> </td></tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Torneu a escriure la contrasenya:</td></tr></table></mm-subscribe-form-start></ul></mm-list-subscription-msg></mm-list-name></p>
-<td><mm-confirm-password></mm-confirm-password></td>
-<td> </td></td></tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">En quina llengua voleu
-que es mostrin els vostres missatges?</td>
-<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td></tr>
-<mm-digest-question-start>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;">Voleu rebre el correu de la llista compilat en un sol missatge enviat a diari?
+	    <MM-Reminder>
+	    </font>
+	</TD>
+      </TR>  
+      <TR>
+	<TD BGCOLOR="#dddddd">Trieu una contrasenya:</TD>
+	<TD><MM-New-Password-Box></TD>
+	<TD> </TD></TR>
+      <TR> 
+	<TD BGCOLOR="#dddddd">Torneu a escriure la contrasenya:</p>
+	<TD><MM-Confirm-Password></TD>
+	<TD>  </TD></TR>
+      <tr>
+        <TD BGCOLOR="#dddddd">En quina llengua voleu
+que es mostrin els vostres missatges?</TD>
+        <TD> <MM-list-langs></TD></TR>
+      <mm-digest-question-start>
+      <tr>
+	<td>Voleu rebre el correu de la llista compilat en un sol missatge enviat a diari?
 	  </td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> No
-	    <mm-digest-radio-button>  Sí
-	</mm-digest-radio-button></mm-undigest-radio-button></td>
-</tr>
-<mm-digest-question-end>
-<mm-recaptcha-ui>
-<mm-captcha-ui>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-subscribe-button></mm-subscribe-button></center>
-</td>
-</tr>
-</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
-<mm-form-end>
-<tr>
-<td bgcolor="#FFF0D0" colspan="2" width="100%">
-<a name="subscribers">
-<b><font color="#000000">Subscriptors de la llista <mm-list-name></mm-list-name></font></b></a>
-</td>
-</tr>
-<tr>
-<td colspan="2" width="100%">
-<mm-roster-form-start>
-<mm-roster-option>
-<mm-form-end>
-<p>
-<mm-options-form-start>
-<mm-editing-options>
-<mm-form-end>
-</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
-</tr>
-<mm-mailman-footer>
-</mm-mailman-footer></mm-form-end></p></body>
-</html>
+	<td><MM-Undigest-Radio-Button> No
+	    <MM-Digest-Radio-Button>  S&iacute;
+	</TD>
+      </tr>
+      <mm-digest-question-end>
+      <mm-recaptcha-ui>
+      <mm-captcha-ui>
+      <tr>
+              <td colspan="3">
+	  <center><MM-Subscribe-Button></center>
+        </td>
+      </tr>
+    </TABLE>
+    <MM-Form-End>
+      </ul>
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+      <a name="subscribers">
+        <B><FONT COLOR="#000000">Subscriptors de la llista <MM-List-Name></FONT></B></a>
+      </TD>
+    </TR>
+    <tr>
+      <TD COLSPAN="2" WIDTH="100%">
+	<MM-Roster-Form-Start>
+	<MM-Roster-Option>
+	    <MM-Form-End>
+	  <p>
+	<MM-Options-Form-Start>
+	<MM-Editing-Options>
+		<MM-Form-End>
+      </td>
+    </tr>
+  </table>
+<MM-Mailman-Footer>
+</BODY>
+</HTML>

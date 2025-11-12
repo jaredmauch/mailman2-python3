@@ -47,25 +47,22 @@ See the variable USE_MAILDIR in Defaults.py.in for enabling this delivery
 mechanism.
 """
 
+# NOTE: Maildir delivery is experimental in Mailman 2.1.
+
 from builtins import str
 import os
 import re
 import errno
-import time
-import traceback
-from io import StringIO
-import email
-from email.utils import getaddresses, parsedate_tz, mktime_tz, parseaddr
-from email.iterators import body_line_iterator
+
+from email.Parser import Parser
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Errors
-from Mailman import i18n
 from Mailman.Message import Message
-from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
+from Mailman.Logging.Syslog import syslog
 
 # We only care about the listname and the subq as in listname@ or
 # listname-request@
@@ -90,48 +87,36 @@ lre = re.compile(r"""
  """, re.VERBOSE | re.IGNORECASE)
 
 
+
 class MaildirRunner(Runner):
     # This class is much different than most runners because it pulls files
     # of a different format than what scripts/post and friends leaves.  The
     # files this runner reads are just single message files as dropped into
     # the directory by the MTA.  This runner will read the file, and enqueue
     # it in the expected qfiles directory for normal processing.
-    QDIR = mm_cfg.MAILDIR_DIR
-
     def __init__(self, slice=None, numslices=1):
-        syslog('debug', 'MaildirRunner: Starting initialization')
-        try:
-            Runner.__init__(self, slice, numslices)
-            self._dir = os.path.join(mm_cfg.MAILDIR_DIR, 'new')
-            self._cur = os.path.join(mm_cfg.MAILDIR_DIR, 'cur')
-            if not os.path.exists(self._dir):
-                os.makedirs(self._dir)
-            if not os.path.exists(self._cur):
-                os.makedirs(self._cur)
-            syslog('debug', 'MaildirRunner: Initialization complete')
-        except Exception as e:
-            syslog('error', 'MaildirRunner: Initialization failed: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-            raise
+        # Don't call the base class constructor, but build enough of the
+        # underlying attributes to use the base class's implementation.
+        self._stop = 0
+        self._dir = os.path.join(mm_cfg.MAILDIR_DIR, 'new')
+        self._cur = os.path.join(mm_cfg.MAILDIR_DIR, 'cur')
+        self._parser = Parser(Message)
 
     def _oneloop(self):
-        """Process one batch of messages from the maildir."""
-        # Refresh this each time through the list
+        # Refresh this each time through the list.  BAW: could be too
+        # expensive.
         listnames = Utils.list_names()
+        # Cruise through all the files currently in the new/ directory
         try:
             files = os.listdir(self._dir)
         except OSError as e:
-            if e.errno != errno.ENOENT:
-                syslog('error', 'Error listing maildir directory: %s', str(e))
-                raise
+            if e.errno != errno.ENOENT: raise
             # Nothing's been delivered yet
             return 0
-
         for file in files:
             srcname = os.path.join(self._dir, file)
             dstname = os.path.join(self._cur, file + ':1,P')
             xdstname = os.path.join(self._cur, file + ':1,X')
-            
             try:
                 os.rename(srcname, dstname)
             except OSError as e:
@@ -140,17 +125,19 @@ class MaildirRunner(Runner):
                     continue
                 syslog('error', 'Could not rename maildir file: %s', srcname)
                 raise
-
+            # Now open, read, parse, and enqueue this message
             try:
-                # Read and parse the message
-                with open(dstname, 'rb') as fp:
-                    msg = email.message_from_binary_file(fp)
-
-                # Figure out which queue of which list this message was destined for
+                fp = open(dstname)
+                try:
+                    msg = self._parser.parse(fp)
+                finally:
+                    fp.close()
+                # Now we need to figure out which queue of which list this
+                # message was destined for.  See verp_bounce() in
+                # BounceRunner.py for why we do things this way.
                 vals = []
                 for header in ('delivered-to', 'envelope-to', 'apparently-to'):
                     vals.extend(msg.get_all(header, []))
-                
                 for field in vals:
                     to = parseaddr(field)[1]
                     if not to:
@@ -164,14 +151,14 @@ class MaildirRunner(Runner):
                         break
                 else:
                     # As far as we can tell, this message isn't destined for
-                    # any list on the system
+                    # any list on the system.  What to do?
                     syslog('error', 'Message apparently not for any list: %s',
                            xdstname)
                     os.rename(dstname, xdstname)
                     continue
-
-                # Determine which queue to use based on the subqueue
+                # BAW: blech, hardcoded
                 msgdata = {'listname': listname}
+                # -admin is deprecated
                 if subq in ('bounces', 'admin'):
                     queue = get_switchboard(mm_cfg.BOUNCEQUEUE_DIR)
                 elif subq == 'confirm':
@@ -200,29 +187,11 @@ class MaildirRunner(Runner):
                     syslog('error', 'Unknown sub-queue: %s', subq)
                     os.rename(dstname, xdstname)
                     continue
-
-                # Enqueue the message and clean up
                 queue.enqueue(msg, msgdata)
                 os.unlink(dstname)
-                syslog('debug', 'Successfully processed maildir message: %s', file)
-
             except Exception as e:
-                syslog('error', 'Error processing maildir file %s: %s\nTraceback:\n%s',
-                       file, str(e), traceback.format_exc())
-                try:
-                    os.rename(dstname, xdstname)
-                except OSError:
-                    pass
-
-        return len(files)
+                os.rename(dstname, xdstname)
+                syslog('error', str(e))
 
     def _cleanup(self):
-        """Clean up resources."""
-        syslog('debug', 'MaildirRunner: Starting cleanup')
-        try:
-            # Call parent cleanup
-            super(MaildirRunner, self)._cleanup()
-        except Exception as e:
-            syslog('error', 'MaildirRunner: Cleanup failed: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-        syslog('debug', 'MaildirRunner: Cleanup complete')
+        pass

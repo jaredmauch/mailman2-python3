@@ -42,7 +42,7 @@ import sys
 import os
 import time
 from stat import *
-import argparse
+import getopt
 
 try:
     import gzip
@@ -66,20 +66,22 @@ VERBOSE = 0
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Re-generate the Pipermail gzip\'d archive flat files.')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                      help='print each file as it\'s being gzip\'d')
-    parser.add_argument('listnames', nargs='*',
-                      help='Optionally, only compress the .txt files for the named lists')
-    return parser.parse_args()
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(_(__doc__) % globals(), file=fd)
+    if msg:
+        print(msg, file=fd)
+    sys.exit(code)
 
 
 
 def compress(txtfile):
     if VERBOSE:
         print("gzip'ing:", txtfile)
-    infp = open(txtfile)
+    infp = open(txtfile, 'rb')
     outfp = gzip.open(txtfile+'.gz', 'wb', 6)
     outfp.write(infp.read())
     outfp.close()
@@ -89,12 +91,21 @@ def compress(txtfile):
 
 def main():
     global VERBOSE
-    args = parse_args()
-    VERBOSE = args.verbose
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'vh', ['verbose', 'help'])
+    except getopt.error as msg:
+        usage(1, msg)
+
+    # defaults
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-v', '--verbose'):
+            VERBOSE = 1
 
     # limit to the specified lists?
-    if args.listnames:
-        listnames = args.listnames
+    if args:
+        listnames = args
     else:
         listnames = Utils.list_names()
 

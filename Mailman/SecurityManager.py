@@ -66,7 +66,7 @@ except ImportError:
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Logging.Syslog import syslog, mailman_log
+from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import md5_new, sha_new
 
 
@@ -97,7 +97,7 @@ class SecurityManager(object):
         if authcontext == mm_cfg.AuthUser:
             if user is None:
                 # A bad system error
-                raise Exception(TypeError, 'No user supplied for AuthUser context')
+                raise TypeError('No user supplied for AuthUser context')
             user = Utils.UnobscureEmail(urllib.parse.unquote(user))
             secret = self.getMemberPassword(user)
             userdata = urllib.parse.quote(Utils.ObscureEmail(user), safe='')
@@ -139,11 +139,7 @@ class SecurityManager(object):
         if not response:
             # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
-        # Log the type and encoding of the response
-        mailman_log('debug', 'Auth response type: %s, encoding: %s', 
-                    type(response), getattr(response, 'encoding', 'N/A'))
-        # python3
-        response = response.encode('UTF-8')
+
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
                 ok = Utils.check_global_password(response, siteadmin=0)
@@ -177,6 +173,9 @@ class SecurityManager(object):
                 key, secret = self.AuthContextInfo(ac)
                 if secret is None:
                     continue
+                if isinstance(response, str):
+                    response = response.encode('utf-8')
+
                 sharesponse = sha_new(response).hexdigest()
                 upgrade = ok = False
                 if sharesponse == secret:
@@ -252,9 +251,7 @@ class SecurityManager(object):
         mac = sha_new(needs_hashing).hexdigest()
         # Create the cookie object.
         c = http.cookies.SimpleCookie()
-        # Ensure cookie value is a string, not bytes
-        cookie_value = binascii.hexlify(marshal.dumps((issued, mac))).decode('ascii')
-        c[key] = cookie_value
+        c[key] = binascii.hexlify(marshal.dumps((issued, mac))).decode()
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
         parsed = urlparse(self.web_page_url)

@@ -1,359 +1,327 @@
 <html>
 <head>
-<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
-<title><mm-presentable-user> ΟΟ…ΞΈΞΌΞ―ΟƒΞµΞΉΟ‚ ΟƒΟ…ΞΌΞΌΞµΟ„ΞΏΟ‡Ξ®Ο‚ ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± Ξ³ΞΉΞ± Ο„ΞΏ ΞΌΞ­Ξ»ΞΏΟ‚ <mm-list-name>
-</mm-list-name></mm-presentable-user></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
-<font color="#000000" size="+1">
-<mm-list-name> ΟΟ…ΞΈΞΌΞ―ΟƒΞµΞΉΟ‚ ΟƒΟ…ΞΌΞΌΞµΟ„ΞΏΟ‡Ξ®Ο‚ ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± Ξ³ΞΉΞ± Ο„ΞΏ ΞΌΞ­Ξ»ΞΏΟ‚
-        <mm-presentable-user>
-</mm-presentable-user></mm-list-name></font></b></td></tr>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> ρυθμίσεις συμμετοχής στη λίστα για το μέλος <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        <MM-List-Name> ρυθμίσεις συμμετοχής στη λίστα για το μέλος
+        <MM-Presentable-User>
+        </FONT></B></TD></TR>
+    </TABLE>
+<p>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b><MM-Presentable-User></b>'s κατάσταση της εγγραφής του μέλους,
+        κωδικός, και επιλογές για τη <MM-List-Name> λίστα.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
 </table>
+
+<MM-Form-Start>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
-<b><mm-presentable-user></mm-presentable-user></b>'s ΞΊΞ±Ο„Ξ¬ΟƒΟ„Ξ±ΟƒΞ· Ο„Ξ·Ο‚ ΞµΞ³Ξ³ΟΞ±Ο†Ξ®Ο‚ Ο„ΞΏΟ… ΞΌΞ­Ξ»ΞΏΟ…Ο‚,
-        ΞΊΟ‰Ξ΄ΞΉΞΊΟΟ‚, ΞΊΞ±ΞΉ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ­Ο‚ Ξ³ΞΉΞ± Ο„Ξ· <mm-list-name> Ξ»Ξ―ΟƒΟ„Ξ±.
-        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
-</tr><tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<mm-case-preserved-user>
-<mm-disabled-notice>
-<p><mm-results>
-</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
-</tr>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Αλλαγή των πληροφοριών εγγραφής για τη λίστα <MM-List-Name> </B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">Μπορείτε να αλλάξετε τη διεύθυνση με την οποία είστε
+        εγγεγραμμένος στη λίστα δίνοντας τη νέα διεύθυνση στα παρακάτω πεδία.  
+		Πρέπει να σημειωθεί ότι ένα μήνυμα επιβεβαίωσης θα σταλεί στη νέα
+        διεύθυνση, και η αλλαγή πρέπει να επιβεβαιωθεί πριν γίνει η 
+		αποδοχή της από το σύστημα.
+
+        <p>Τα αιτήματα επιβεβαίωσης λήγουν μετά από <mm-pending-days>.
+
+        <p>Προαιρετικά επίσης, μπορείτε να ορίσετε ή να αλλάξετε το
+        πραγματικό σας όνομα (π.χ. <em>Μαρία Παπαδοπούλου</em>).
+
+        <p>Αν θέλετε να κάνετε αλλαγές στη συμμετοχή σας για όλες τις λίστες
+        στις οποίες είστε εγγεγραμμένος στο <mm-host>, ενεργοποιήστε την επιλογή
+        <em>Αλλαγή παντού</em>.
+
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">Νέα διεύθυνση:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Ξανά για
+            επιβεβαίωση:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Το όνομά σας
+            (προαιρετικά):</div></td>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Αλλαγή παντού</center></td>
+    </tr>
 </table>
-<mm-form-start>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<font color="#000000">
-<b>Ξ‘Ξ»Ξ»Ξ±Ξ³Ξ® Ο„Ο‰Ξ½ Ο€Ξ»Ξ·ΟΞΏΟ†ΞΏΟΞΉΟΞ½ ΞµΞ³Ξ³ΟΞ±Ο†Ξ®Ο‚ Ξ³ΞΉΞ± Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± <mm-list-name> </mm-list-name></b>
-</font></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">ΞΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ½Ξ± Ξ±Ξ»Ξ»Ξ¬ΞΎΞµΟ„Ξµ Ο„Ξ· Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ· ΞΌΞµ Ο„Ξ·Ξ½ ΞΏΟ€ΞΏΞ―Ξ± ΞµΞ―ΟƒΟ„Ξµ
-        ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚ ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± Ξ΄Ξ―Ξ½ΞΏΞ½Ο„Ξ±Ο‚ Ο„Ξ· Ξ½Ξ­Ξ± Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ· ΟƒΟ„Ξ± Ο€Ξ±ΟΞ±ΞΊΞ¬Ο„Ο‰ Ο€ΞµΞ΄Ξ―Ξ±.  
-		Ξ ΟΞ­Ο€ΞµΞΉ Ξ½Ξ± ΟƒΞ·ΞΌΞµΞΉΟ‰ΞΈΞµΞ― ΟΟ„ΞΉ Ξ­Ξ½Ξ± ΞΌΞ®Ξ½Ο…ΞΌΞ± ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±Ξ―Ο‰ΟƒΞ·Ο‚ ΞΈΞ± ΟƒΟ„Ξ±Ξ»ΞµΞ― ΟƒΟ„Ξ· Ξ½Ξ­Ξ±
-        Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ·, ΞΊΞ±ΞΉ Ξ· Ξ±Ξ»Ξ»Ξ±Ξ³Ξ® Ο€ΟΞ­Ο€ΞµΞΉ Ξ½Ξ± ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±ΞΉΟ‰ΞΈΞµΞ― Ο€ΟΞΉΞ½ Ξ³Ξ―Ξ½ΞµΞΉ Ξ· 
-		Ξ±Ο€ΞΏΞ΄ΞΏΟ‡Ξ® Ο„Ξ·Ο‚ Ξ±Ο€Ο Ο„ΞΏ ΟƒΟΟƒΟ„Ξ·ΞΌΞ±.
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Διαγραφή από τη λίστα <MM-List-Name></B></td>
 
-        <p>Ξ¤Ξ± Ξ±ΞΉΟ„Ξ®ΞΌΞ±Ο„Ξ± ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±Ξ―Ο‰ΟƒΞ·Ο‚ Ξ»Ξ®Ξ³ΞΏΟ…Ξ½ ΞΌΞµΟ„Ξ¬ Ξ±Ο€Ο <mm-pending-days>.
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Οι άλλες σας συμμετοχές στο <MM-Host></B>
+        </FONT></TD></TR>
 
-        <p>Ξ ΟΞΏΞ±ΞΉΟΞµΟ„ΞΉΞΊΞ¬ ΞµΟ€Ξ―ΟƒΞ·Ο‚, ΞΌΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ½Ξ± ΞΏΟΞ―ΟƒΞµΟ„Ξµ Ξ® Ξ½Ξ± Ξ±Ξ»Ξ»Ξ¬ΞΎΞµΟ„Ξµ Ο„ΞΏ
-        Ο€ΟΞ±Ξ³ΞΌΞ±Ο„ΞΉΞΊΟ ΟƒΞ±Ο‚ ΟΞ½ΞΏΞΌΞ± (Ο€.Ο‡. <em>ΞΞ±ΟΞ―Ξ± Ξ Ξ±Ο€Ξ±Ξ΄ΞΏΟ€ΞΏΟΞ»ΞΏΟ…</em>).
-
-        <p>Ξ‘Ξ½ ΞΈΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± ΞΊΞ¬Ξ½ΞµΟ„Ξµ Ξ±Ξ»Ξ»Ξ±Ξ³Ξ­Ο‚ ΟƒΟ„Ξ· ΟƒΟ…ΞΌΞΌΞµΟ„ΞΏΟ‡Ξ® ΟƒΞ±Ο‚ Ξ³ΞΉΞ± ΟΞ»ΞµΟ‚ Ο„ΞΉΟ‚ Ξ»Ξ―ΟƒΟ„ΞµΟ‚
-        ΟƒΟ„ΞΉΟ‚ ΞΏΟ€ΞΏΞ―ΞµΟ‚ ΞµΞ―ΟƒΟ„Ξµ ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚ ΟƒΟ„ΞΏ <mm-host>, ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΟ„Ξµ Ο„Ξ·Ξ½ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ®
-        <em>Ξ‘Ξ»Ξ»Ξ±Ξ³Ξ® Ο€Ξ±Ξ½Ο„ΞΏΟ</em>.
-
-        </mm-host></p></p></mm-pending-days></p></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ΞΞ­Ξ± Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ·:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
-</tr>
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ΞΞ±Ξ½Ξ¬ Ξ³ΞΉΞ±
-            ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±Ξ―Ο‰ΟƒΞ·:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
-</tr>
-</table></center></td></tr></table>
-<td><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Ξ¤ΞΏ ΟΞ½ΞΏΞΌΞ¬ ΟƒΞ±Ο‚
-            (Ο€ΟΞΏΞ±ΞΉΟΞµΟ„ΞΉΞΊΞ¬):</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
-</tr>
-</table></center>
-</td>
-<tr><td colspan="2"><center><mm-change-address-button>
-<p><mm-global-change-of-address>Ξ‘Ξ»Ξ»Ξ±Ξ³Ξ® Ο€Ξ±Ξ½Ο„ΞΏΟ</mm-global-change-of-address></p></mm-change-address-button></center></td>
-</tr>
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
-<b>Ξ”ΞΉΞ±Ξ³ΟΞ±Ο†Ξ® Ξ±Ο€Ο Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± <mm-list-name></mm-list-name></b></font></td>
-<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
-<b>ΞΞΉ Ξ¬Ξ»Ξ»ΞµΟ‚ ΟƒΞ±Ο‚ ΟƒΟ…ΞΌΞΌΞµΟ„ΞΏΟ‡Ξ­Ο‚ ΟƒΟ„ΞΏ <mm-host></mm-host></b>
-</font></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
-        Ξ•Ξ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΟ„Ξµ Ο„ΞΏ checkbox ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±Ξ―Ο‰ΟƒΞ·Ο‚ ΞΊΞ±ΞΉ Ο€Ξ±Ο„Ξ®ΟƒΟ„Ξµ Ξ±Ο…Ο„Ο Ο„ΞΏ
-        ΞΊΞΏΟ…ΞΌΟ€Ξ― Ξ³ΞΉΞ± Ξ½Ξ± Ξ΄ΞΉΞ±Ξ³ΟΞ±Ο†ΞµΞ―Ο„Ξµ Ξ±Ο€Ο Ξ±Ο…Ο„Ξ® Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±.  <strong>Ξ ΟΞΏΞµΞΉΞ΄ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ·:</strong>
-        Ξ‘Ο…Ο„Ξ® Ξ· ΞµΞ½Ξ­ΟΞ³ΞµΞΉΞ± ΞΈΞ± ΞΏΞ»ΞΏΞΊΞ»Ξ·ΟΟ‰ΞΈΞµΞ― Ξ±ΞΌΞ­ΟƒΟ‰Ο‚!
+    <tr><td>
+        Ενεργοποιήστε το checkbox επιβεβαίωσης και πατήστε αυτό το
+        κουμπί για να διαγραφείτε από αυτή τη λίστα.  <strong>Προειδοποίηση:</strong>
+        Αυτή η ενέργεια θα ολοκληρωθεί αμέσως!
         <p>
-<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
-<td style="padding: 8px; border: 1px solid #ccc;">
-        ΞΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ½Ξ± Ξ΄ΞµΞ―Ο„Ξµ ΞΌΞΉΞ± Ξ»Ξ―ΟƒΟ„Ξ± ΞΌΞµ ΟΞ»ΞµΟ‚ Ο„ΞΉΟ‚ Ξ¬Ξ»Ξ»ΞµΟ‚ Ξ»Ξ―ΟƒΟ„ΞµΟ‚ ΟƒΟ„ΞΏ
-        <mm-host> ΟƒΟ„ΞΉΟ‚ ΞΏΟ€ΞΏΞ―ΞµΟ‚ ΞµΞ―ΟƒΟ„Ξµ ΞΌΞ­Ξ»ΞΏΟ‚.  Ξ§ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞ®ΟƒΟ„Ξµ Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® Ξ±Ξ½
-        ΞΈΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± ΞΊΞ¬Ξ½ΞµΟ„Ξµ Ο„ΞΉΟ‚ Ξ―Ξ΄ΞΉΞµΟ‚ Ξ±Ξ»Ξ»Ξ±Ξ³Ξ­Ο‚ ΟƒΟ„Ξ· ΟƒΟ…ΞΌΞΌΞµΟ„ΞΏΟ‡Ξ® ΟƒΞ±Ο‚ ΞΊΞ±ΞΉ
-        ΟƒΟ„ΞΉΟ‚ Ο…Ο€ΟΞ»ΞΏΞΉΟ€ΞµΟ‚ Ξ»Ξ―ΟƒΟ„ΞµΟ‚.
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
+        Μπορείτε να δείτε μια λίστα με όλες τις άλλες λίστες στο
+        <mm-host> στις οποίες είστε μέλος.  Χρησιμοποιήστε αυτή την επιλογή αν
+        θέλετε να κάνετε τις ίδιες αλλαγές στη συμμετοχή σας και
+        στις υπόλοιπες λίστες.
 
         <p>
-<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
-</p></mm-host></td></tr>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
 </table>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Ξ ΞΊΟ‰Ξ΄ΞΉΞΊΟΟ‚ Ο„Ξ·Ο‚ Ξ»Ξ―ΟƒΟ„Ξ±Ο‚ ΟƒΞ±Ο‚ <mm-list-name></mm-list-name></b>
-</font></td></tr>
-<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
-<a name="reminder">
-<center>
-<h3>ΞΞµΟ‡Ξ¬ΟƒΞ±Ο„Ξµ Ξ¤ΞΏΞ½ ΞΟ‰Ξ΄ΞΉΞΊΟ Ξ£Ξ±Ο‚;</h3>
-</center>
-        Ξ Ξ±Ο„Ξ®ΟƒΟ„Ξµ Ξ±Ο…Ο„Ο Ο„ΞΏ ΞΊΞΏΟ…ΞΌΟ€Ξ― Ξ³ΞΉΞ± Ξ½Ξ± ΟƒΞ±Ο‚ Ξ±Ο€ΞΏΟƒΟ„Ξ±Ξ»ΞµΞ― ΞΏ ΞΊΟ‰Ξ΄ΞΉΞΊΟΟ‚ ΟƒΞ±Ο‚ ΞΌΞµ email
-        ΟƒΟ„Ξ· Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ· ΞΌΞµ Ο„Ξ·Ξ½ ΞΏΟ€ΞΏΞ―Ξ± Ξ­Ο‡ΞµΟ„Ξµ ΞµΞ³Ξ³ΟΞ±Ο†ΞµΞ―.
-        <p><mm-umbrella-notice>
-<center>
-<mm-email-my-pw>
-</mm-email-my-pw></center>
-</mm-umbrella-notice></p></a></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
-<a name="changepw">
-<center>
-<h3>Ξ‘Ξ»Ξ»Ξ±Ξ³Ξ® Ξ¤ΞΏΟ… ΞΟ‰Ξ΄ΞΉΞΊΞΏΟ Ξ£Ξ±Ο‚</h3>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ΞΞ­ΞΏΟ‚
-                ΞΊΟ‰Ξ΄ΞΉΞΊΟΟ‚ Ο€ΟΟΟƒΞ²Ξ±ΟƒΞ·Ο‚:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">ΞΞ±Ξ½Ξ¬ Ξ³ΞΉΞ±
-                ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±Ξ―Ο‰ΟƒΞ·:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
-</tr>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Ο κωδικός της λίστας σας <MM-List-Name></B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Ξεχάσατε Τον Κωδικό Σας;</h3>
+        </center>
+        Πατήστε αυτό το κουμπί για να σας αποσταλεί ο κωδικός σας με email
+        στη διεύθυνση με την οποία έχετε εγγραφεί.
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Αλλαγή Του Κωδικού Σας</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">Νέος
+                κωδικός πρόσβασης:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Ξανά για
+                επιβεβαίωση:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Αλλαγή παντού.
+        </center>
+</TABLE>
+
+<p>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Οι επιλογές της εγγραφής σας στη λίστα <MM-List-Name></B>
+        </FONT></TD></TR>
 </table>
-<mm-change-pass-button>
-<p><center><mm-global-pw-changes-button>Ξ‘Ξ»Ξ»Ξ±Ξ³Ξ® Ο€Ξ±Ξ½Ο„ΞΏΟ.
-        </mm-global-pw-changes-button></center>
-</p></mm-change-pass-button></center></a></td></tr></table>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>ΞΞΉ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ­Ο‚ Ο„Ξ·Ο‚ ΞµΞ³Ξ³ΟΞ±Ο†Ξ®Ο‚ ΟƒΞ±Ο‚ ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± <mm-list-name></mm-list-name></b>
-</font></td></tr>
-</table>
+<i><strong>Οι τρέχουσες επιλογές είναι προεπιλεγμένες.</strong></i>
+
+<p>Σημειώστε ότι ορισμένες από τις επιλογές έχουν το πεδίο <em>Ορισμός παντού</em>. 
+Αν επιλέξετε αυτό το πεδίο οι αλλαγές θα γίνουν σε όλες τις λίστες
+στο <mm-host> στις οποίες είστε μέλος.  Πατήστε στο
+<em>Εμφάνιση των άλλων λιστών</em> παραπάνω για να δείτε σε ποιές άλλες
+λίστες είστε εγγεγραμμένος.
 <p>
-<i><strong>ΞΞΉ Ο„ΟΞ­Ο‡ΞΏΟ…ΟƒΞµΟ‚ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ­Ο‚ ΞµΞ―Ξ½Ξ±ΞΉ Ο€ΟΞΏΞµΟ€ΞΉΞ»ΞµΞ³ΞΌΞ­Ξ½ΞµΟ‚.</strong></i>
-<p>Ξ£Ξ·ΞΌΞµΞΉΟΟƒΟ„Ξµ ΟΟ„ΞΉ ΞΏΟΞΉΟƒΞΌΞ­Ξ½ΞµΟ‚ Ξ±Ο€Ο Ο„ΞΉΟ‚ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ­Ο‚ Ξ­Ο‡ΞΏΟ…Ξ½ Ο„ΞΏ Ο€ΞµΞ΄Ξ―ΞΏ <em>ΞΟΞΉΟƒΞΌΟΟ‚ Ο€Ξ±Ξ½Ο„ΞΏΟ</em>. 
-Ξ‘Ξ½ ΞµΟ€ΞΉΞ»Ξ­ΞΎΞµΟ„Ξµ Ξ±Ο…Ο„Ο Ο„ΞΏ Ο€ΞµΞ΄Ξ―ΞΏ ΞΏΞΉ Ξ±Ξ»Ξ»Ξ±Ξ³Ξ­Ο‚ ΞΈΞ± Ξ³Ξ―Ξ½ΞΏΟ…Ξ½ ΟƒΞµ ΟΞ»ΞµΟ‚ Ο„ΞΉΟ‚ Ξ»Ξ―ΟƒΟ„ΞµΟ‚
-ΟƒΟ„ΞΏ <mm-host> ΟƒΟ„ΞΉΟ‚ ΞΏΟ€ΞΏΞ―ΞµΟ‚ ΞµΞ―ΟƒΟ„Ξµ ΞΌΞ­Ξ»ΞΏΟ‚.  Ξ Ξ±Ο„Ξ®ΟƒΟ„Ξµ ΟƒΟ„ΞΏ
-<em>Ξ•ΞΌΟ†Ξ¬Ξ½ΞΉΟƒΞ· Ο„Ο‰Ξ½ Ξ¬Ξ»Ξ»Ο‰Ξ½ Ξ»ΞΉΟƒΟ„ΟΞ½</em> Ο€Ξ±ΟΞ±Ο€Ξ¬Ξ½Ο‰ Ξ³ΞΉΞ± Ξ½Ξ± Ξ΄ΞµΞ―Ο„Ξµ ΟƒΞµ Ο€ΞΏΞΉΞ­Ο‚ Ξ¬Ξ»Ξ»ΞµΟ‚
-Ξ»Ξ―ΟƒΟ„ΞµΟ‚ ΞµΞ―ΟƒΟ„Ξµ ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚.
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<a name="disable">
-<strong>Ξ Ξ±ΟΞ¬Ξ΄ΞΏΟƒΞ· Mail</strong></a><p>
-        ΞΟΞ―ΟƒΟ„Ξµ Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® ΟƒΞµ <em>Ξ•Ξ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½ΞΏ</em> Ξ³ΞΉΞ± Ξ½Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ Ο„Ξ±
-        ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… ΟƒΟ„Ξ­Ξ»Ξ½ΞΏΞ½Ο„Ξ±ΞΉ ΟƒΞµ Ξ±Ο…Ο„Ξ® Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±.  Ξ§ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞ®ΟƒΟ„Ξµ Ο„ΞΏ <em>Ξ‘Ο€ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½ΞΏ</em> Ξ±Ξ½ ΞΈΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± ΞΌΞµΞ―Ξ½ΞµΟ„Ξµ ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚, Ξ±Ξ»Ξ»Ξ¬ Ξ΄ΞµΞ½ ΞΈΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± Ο€Ξ±ΟΞ±Ξ΄Ξ―Ξ΄ΞΏΞ½Ο„Ξ±ΞΉ ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± ΟƒΞµ ΞµΟƒΞ¬Ο‚
-		Ξ³ΞΉΞ± ΞΊΞ¬Ο€ΞΏΞΉΞΏ Ξ΄ΞΉΞ¬ΟƒΟ„Ξ·ΞΌΞ± (Ο€.Ο‡. Ο„ΞΏΞ½ Ξ‘ΟΞ³ΞΏΟ…ΟƒΟ„ΞΏ Ο€ΞΏΟ… Ξ»ΞµΞ―Ο€ΞµΟ„Ξµ Ξ³ΞΉΞ± Ξ΄ΞΉΞ±ΞΊΞΏΟ€Ξ­Ο‚).  Ξ‘Ξ½ Ξ±Ο€ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΞµΟ„Ξµ
-        Ο„Ξ·Ξ½ Ο€Ξ±ΟΞ¬Ξ΄ΞΏΟƒΞ· ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½, ΞΌΞ·Ξ½ ΞΎΞµΟ‡Ξ¬ΟƒΞµΟ„Ξµ Ξ½Ξ± Ο„Ξ·Ξ½ ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΞµΟ„Ξµ Ο€Ξ¬Ξ»ΞΉ ΟΟ„Ξ±Ξ½ ΞµΟ€ΞΉΟƒΟ„ΟΞ­ΟΞµΟ„ΞµΒ· Ξ΄ΞµΞ½
-        ΞΈΞ± ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΈΞµΞ― Ξ±Ο…Ο„ΟΞΌΞ±Ο„Ξ±.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-delivery-enable-button>Ξ•Ξ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½Ξ·<br/>
-<mm-delivery-disable-button>Ξ‘Ο€ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½Ξ·<p>
-<mm-global-deliver-button><i>ΞΟΞΉΟƒΞΌΟΟ‚ Ο€Ξ±Ξ½Ο„ΞΏΟ</i>
-</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Παράδοση Mail</strong></a><p>
+        Ορίστε αυτή την επιλογή σε <em>Ενεργοποιημένο</em> για να λαμβάνετε τα
+        μηνύματα που στέλνονται σε αυτή τη λίστα.  Χρησιμοποιήστε το <em>Απενεργοποιημένο</em> αν θέλετε να μείνετε εγγεγραμμένος, αλλά δεν θέλετε να παραδίδονται μηνύματα σε εσάς
+		για κάποιο διάστημα (π.χ. τον Αύγουστο που λείπετε για διακοπές).  Αν απενεργοποιήσετε
+        την παράδοση μηνυμάτων, μην ξεχάσετε να την ενεργοποιήσετε πάλι όταν επιστρέψετε&#183 δεν
+        θα ενεργοποιηθεί αυτόματα.
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Ενεργοποιημένη<br>
+        <mm-delivery-disable-button>Απενεργοποιημένη<p>
+        <mm-global-deliver-button><i>Ορισμός παντού</i>
+        </td></tr>
+
 <!--Start-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>ΞΟΞΉΟƒΞΌΟΟ‚ Ξ£Ο…Ξ½ΟΟΞµΟ‰Ξ½</strong><p>
-        Ξ‘Ξ½ ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΞµΟ„Ξµ Ο„ΞΉΟ‚ ΟƒΟ…Ξ½ΟΟΞµΞΉΟ‚, Ο„Ξ± ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± ΞΈΞ± ΟƒΞ±Ο‚ ΟƒΟ„Ξ­Ξ»Ξ½ΞΏΞ½Ο„Ξ±ΞΉ 
-        Ο€Ξ±ΞΊΞµΟ„Ξ±ΟΞΉΟƒΞΌΞ­Ξ½Ξ± (ΟƒΟ…Ξ½Ξ®ΞΈΟ‰Ο‚ Ξ­Ξ½Ξ± ΞΊΞ¬ΞΈΞµ Ξ·ΞΌΞ­ΟΞ± Ξ±Ξ»Ξ»Ξ¬ Ο€ΞΉΞΈΞ±Ξ½ΟΞ½ ΟƒΟ…Ο‡Ξ½ΟΟ„ΞµΟΞ± ΟƒΞµ
-		Ξ»Ξ―ΟƒΟ„ΞµΟ‚ ΞΌΞµ ΞΌΞµΞ³Ξ¬Ξ»Ξ· ΞΊΞ―Ξ½Ξ·ΟƒΞ·), Ξ±Ξ½Ο„Ξ― Ξ½Ξ± Ο„Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΞΊΞ±ΞΈΞ­ Ξ­Ξ½Ξ± ΞΎΞµΟ‡Ο‰ΟΞΉΟƒΟ„Ξ¬
-        Ο„Ξ·Ξ½ ΟΟΞ± Ο€ΞΏΟ… ΟƒΟ„Ξ­Ξ»Ξ½ΞΏΞ½Ο„Ξ±ΞΉ.  Ξ‘Ξ½ Ξ±Ο€ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΞµΟ„Ξµ Ο„Ξ·Ξ½ Ξ±Ο€ΞΏΟƒΟ„ΞΏΞ»Ξ® ΟƒΟ…Ξ½ΟΟΞµΟ‰Ξ½,
-		ΞΌΟ€ΞΏΟΞµΞ― Ξ½Ξ± Ξ»Ξ¬Ξ²ΞµΟ„Ξµ ΞΌΞΉΞ± Ο„ΞµΞ»ΞµΟ…Ο„Ξ±Ξ―Ξ± ΟƒΟΞ½ΞΏΟΞ·.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-undigest-radio-button>Off<br/>
-<mm-digest-radio-button>On
-        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>ΞΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΟƒΟ…Ξ½ΟΟΞµΞΉΟ‚ Ξ±Ο€Ξ»ΞΏΟ ΞΊΞµΞΉΞΌΞ­Ξ½ΞΏΟ… Ξ® MIME ΟƒΟ…Ξ½ΟΟΞµΞΉΟ‚;</strong><p>
-        Ξ¤ΞΏ Ο€ΟΟΞ³ΟΞ±ΞΌΞΌΞ± ΟƒΞ±Ο‚ Ξ³ΞΉΞ± Ο„Ξ·Ξ½ Ξ±Ξ½Ξ¬Ξ³Ξ½Ο‰ΟƒΞ· Ο„Ο‰Ξ½ ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½ Ξ·Ξ»ΞµΞΊΟ„ΟΞΏΞ½ΞΉΞΊΞΏΟ
-		Ο„Ξ±Ο‡Ο…Ξ΄ΟΞΏΞΌΞµΞ―ΞΏΟ… ΞΌΟ€ΞΏΟΞµΞ― Ξ½Ξ± Ο…Ο€ΞΏΟƒΟ„Ξ·ΟΞ―Ξ¶ΞµΞΉ MIME ΟƒΟ…Ξ½ΟΟΞµΞΉΟ‚ Ξ® ΟΟ‡ΞΉ.  Ξ•Ξ½'
-        Ξ³Ξ­Ξ½ΞµΞΉ ΞΏΞΉ MIME ΟƒΟ…Ξ½ΟΟΞµΞΉΟ‚ ΞµΞ―Ξ½Ξ±ΞΉ Ο€ΟΞΏΟ„ΞΉΞΌΟΟ„ΞµΟΞµΟ‚, Ξ±Ξ»Ξ»Ξ¬ Ξ±Ξ½ Ξ­Ο‡ΞµΟ„Ξµ 
-		Ο€ΟΟΞ²Ξ»Ξ·ΞΌΞ± ΟƒΟ„Ξ·Ξ½ Ξ±Ξ½Ξ¬Ξ³Ξ½Ο‰ΟƒΞ® Ο„ΞΏΟ…Ο‚, ΞµΟ€ΞΉΞ»Ξ­ΞΎΟ„Ξµ Ξ½Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΟƒΟ…Ξ½ΟΟΞµΞΉΟ‚
-		Ξ±Ο€Ξ»ΞΏΟ ΞΊΞµΞΉΞΌΞ­Ξ½ΞΏΟ….
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-mime-digests-button>MIME<br/>
-<mm-plain-digests-button>Ξ‘Ο€Ξ»Ο ΞΞµΞ―ΞΌΞµΞ½ΞΏ<p>
-<mm-global-mime-button><i>ΞΟΞΉΟƒΞΌΟΟ‚ Ξ Ξ±Ξ½Ο„ΞΏΟ</i>
-</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Ορισμός Συνόψεων</strong><p>
+        Αν ενεργοποιήσετε τις συνόψεις, τα μηνύματα θα σας στέλνονται 
+        πακεταρισμένα (συνήθως ένα κάθε ημέρα αλλά πιθανών συχνότερα σε
+		λίστες με μεγάλη κίνηση), αντί να τα λαμβάνετε καθέ ένα ξεχωριστά
+        την ώρα που στέλνονται.  Αν απενεργοποιήσετε την αποστολή συνόψεων,
+		μπορεί να λάβετε μια τελευταία σύνοψη.
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Off<br>
+        <MM-Digest-Radio-Button>On
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Να λαμβάνετε συνόψεις απλού κειμένου ή MIME συνόψεις;</strong><p>
+        Το πρόγραμμα σας για την ανάγνωση των μηνυμάτων ηλεκτρονικού
+		ταχυδρομείου μπορεί να υποστηρίζει MIME συνόψεις ή όχι.  Εν'
+        γένει οι MIME συνόψεις είναι προτιμότερες, αλλά αν έχετε 
+		πρόβλημα στην ανάγνωσή τους, επιλέξτε να λαμβάνετε συνόψεις
+		απλού κειμένου.
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Απλό Κείμενο<p>
+        <mm-global-mime-button><i>Ορισμός Παντού</i>
+        </td></tr>
 <!--End-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Ξ›Ξ®ΟΞ· Ο„Ο‰Ξ½ Ξ΄ΞΉΞΊΟΞ½ ΟƒΞ±Ο‚ ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½ ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±;</strong><p>
-        ΞΞ±Ξ½ΞΏΞ½ΞΉΞΊΞ¬, ΞΈΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†ΞΏ ΞΊΞ¬ΞΈΞµ ΞΌΞ·Ξ½ΟΞΌΞ±Ο„ΞΏΟ‚ Ο€ΞΏΟ… ΟƒΟ„Ξ­Ξ»Ξ½ΞµΟ„Ξµ 
-		ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±.  Ξ‘Ξ½ Ξ΄Ξµ ΞΈΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ Ξ±Ο…Ο„Ο Ο„ΞΏ Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†ΞΏ, 
-		ΞΏΟΞ―ΟƒΟ„Ξµ Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® ΟƒΞµ <em>ΞΟ‡ΞΉ</em>.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-receive-own-mail-button>No<br/>
-<mm-receive-own-mail-button>Yes
-        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>ΞΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΞµΟ€ΞΉΞ²ΞµΞ²Ξ±Ξ―Ο‰ΟƒΞ· Ξ»Ξ®ΟΞ·Ο‚ Ο„ΞΏΟ… ΞΌΞ·Ξ½ΟΞΌΞ±Ο„ΞΏΟ‚ ΟΟ„Ξ±Ξ½ 
-		ΟƒΟ„Ξ­Ξ»Ξ½ΞµΟ„Ξµ Ξ­Ξ½Ξ± ΞΌΞ®Ξ½Ο…ΞΌΞ± ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±;</strong><p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-ack-posts-button>ΞΟ‡ΞΉ<br/>
-<mm-ack-posts-button>ΞΞ±ΞΉ
-        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>ΞΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ email Ξ³ΞΉΞ± Ο„Ξ·Ξ½ Ο…Ο€ΞµΞ½ΞΈΟΞΌΞΉΟƒΞ· Ο„ΞΏΟ… ΞΊΟ‰Ξ΄ΞΉΞΊΞΏΟ ΟƒΞ±Ο‚
-		Ξ³ΞΉΞ± Ξ±Ο…Ο„Ξ® Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±;</strong><p>
-        ΞΞΉΞ± Ο†ΞΏΟΞ¬ Ο„ΞΏ ΞΌΞ®Ξ½Ξ±, ΞΈΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ Ξ­Ξ½Ξ± email Ο„ΞΏ ΞΏΟ€ΞΏΞ―ΞΏ ΞΈΞ± 
-        Ο€ΞµΟΞΉΞ­Ο‡ΞµΞΉ Ο„ΞΏΞ½ ΞΊΟ‰Ξ΄ΞΉΞΊΟ ΟƒΞ±Ο‚ Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ Ξ»Ξ―ΟƒΟ„Ξ± ΟƒΟ„Ξ·Ξ½ ΞΏΟ€ΞΏΞ―Ξ± ΞµΞ―ΟƒΟ„Ξµ 
-		ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚ ΟƒΞµ Ξ±Ο…Ο„Ο Ο„ΞΏ server.  ΞΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ½Ξ± Ξ±Ο€ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΞµΟ„Ξµ
-		Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® ΟƒΞµ ΞΊΞ¬ΞΈΞµ Ξ»Ξ―ΟƒΟ„Ξ± ΞµΟ€ΞΉΞ»Ξ­Ξ³ΞΏΞ½Ο„Ξ±Ο‚ <em>ΞΟ‡ΞΉ</em> ΟƒΟ„ΞΏ ΟƒΞ·ΞΌΞµΞ―ΞΏ Ξ±Ο…Ο„Ο.  
-		Ξ‘Ξ½ Ξ±Ο€ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ®ΟƒΞµΟ„Ξµ Ο„ΞΉΟ‚ Ο…Ο€ΞµΞ½ΞΈΟ…ΞΌΞ―ΟƒΞµΞΉΟ‚ Ο„Ο‰Ξ½ ΞΊΟ‰Ξ΄ΞΉΞΊΟΞ½ Ξ³ΞΉΞ± ΟΞ»ΞµΟ‚ Ο„ΞΉΟ‚ 
-		Ξ»Ξ―ΟƒΟ„ΞµΟ‚ ΟƒΟ„ΞΉΟ‚ ΞΏΟ€ΞΏΞ―ΞµΟ‚ ΞµΞ―ΟƒΟ„Ξµ ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚, Ξ΄Ξµ ΞΈΞ± ΟƒΞ±Ο‚ ΟƒΟ„Ξ±Ξ»ΞµΞ― ΞΊΞ±Ξ½Ξ­Ξ½Ξ±
-		ΞΌΞ®Ξ½Ο…ΞΌΞ± Ο…Ο€ΞµΞ½ΞΈΟΞΌΞΉΟƒΞ·Ο‚.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-get-password-reminder-button>ΞΟ‡ΞΉ<br/>
-<mm-get-password-reminder-button>ΞΞ±ΞΉ<p>
-<mm-global-remind-button><i>ΞΟΞΉΟƒΞΌΟΟ‚ Ξ Ξ±Ξ½Ο„ΞΏΟ</i>
-</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Ξ‘Ο€ΟΞΊΟΟ…ΟΞ· Ξ±Ο€Ο Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΞΌΞµΞ»ΟΞ½;</strong><p>
-        ΞΟ„Ξ±Ξ½ ΞΊΞ¬Ο€ΞΏΞΉΞΏΟ‚ Ξ²Ξ»Ξ­Ο€ΞµΞΉ Ο„Ξ± ΞΌΞ­Ξ»Ξ· Ο„Ξ·Ο‚ Ξ»Ξ―ΟƒΟ„Ξ±Ο‚, Ξ· Ξ΄ΞΉΞΊΞ® ΟƒΞ±Ο‚ email
-		Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ· Ο†Ξ±Ξ―Ξ½ΞµΟ„Ξ±ΞΉ ΞΊΞ±Ξ½ΞΏΞ½ΞΉΞΊΞ¬ (ΟƒΟ…Ξ³ΞΊΞ±Ξ»Ο…ΞΌΞΌΞ­Ξ½Ξ· ΞΌΞµ Ο„Ξ­Ο„ΞΏΞΉΞΏ Ο„ΟΟΟ€ΞΏ
-		ΟΟƒΟ„Ξµ Ξ½Ξ± ΞµΞΌΟ€ΞΏΞ΄Ξ―Ξ¶ΞΏΞ½Ο„Ξ±ΞΉ ΟΟƒΞΏΞΉ ΞΈΞ± Ξ®ΞΈΞµΞ»Ξ±Ξ½ Ξ½Ξ± Ο€Ξ¬ΟΞΏΟ…Ξ½ Ο„ΞΉΟ‚ Ξ΄ΞΉΞµΟ…ΞΈΟΞ½ΟƒΞµΞΉΟ‚
-		Ξ³ΞΉΞ± Ο„Ξ·Ξ½ Ξ±Ο€ΞΏΟƒΟ„ΞΏΞ»Ξ® spam ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½).  Ξ‘Ξ½ Ξ΄Ξµ ΞΈΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± Ο†Ξ±Ξ―Ξ½ΞµΟ„Ξ±ΞΉ
-        Ξ· email Ξ΄ΞΉΞµΟΞΈΟ…Ξ½ΟƒΞ® ΟƒΞ±Ο‚ ΟƒΞµ Ξ±Ο…Ο„Ο Ο„ΞΏΞ½ ΞΊΞ±Ο„Ξ¬Ξ»ΞΏΞ³ΞΏ ΞΌΞµΞ»ΟΞ½ ΞΊΞ±ΞΈΟΞ»ΞΏΟ…, 
-		ΞµΟ€ΞΉΞ»Ξ­ΞΎΟ„Ξµ <em>ΞΞ±ΞΉ</em> ΟƒΟ„ΞΏ ΟƒΞ·ΞΌΞµΞ―ΞΏ Ξ±Ο…Ο„Ο.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-public-subscription-button>ΞΟ‡ΞΉ<br/>
-<mm-hide-subscription-button>ΞΞ±ΞΉ
-        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Ξ ΞΏΞΉΞ¬ Ξ³Ξ»ΟΟƒΟƒΞ± Ο€ΟΞΏΟ„ΞΉΞΌΞ¬Ο„Ξµ;</strong><p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-list-langs>
-</mm-list-langs></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Ξ£Ξµ Ο€ΞΏΞΉΞ­Ο‚ ΞΊΞ±Ο„Ξ·Ξ³ΞΏΟΞ―ΞµΟ‚ ΞΈΞµΞΌΞ¬Ο„Ο‰Ξ½ ΞΈΞ± ΞΈΞ­Ξ»Ξ±Ο„Ξµ Ξ½Ξ± ΞµΞ³Ξ³ΟΞ±Ο†ΞµΞ―Ο„Ξµ;</strong><p>
-                Ξ•Ο€ΞΉΞ»Ξ­Ξ³ΞΏΞ½Ο„Ξ±Ο‚ Ξ­Ξ½Ξ± Ξ® Ο€ΞµΟΞΉΟƒΟƒΟΟ„ΞµΟΞ± ΞΈΞ­ΞΌΞ±Ο„Ξ±, ΞΌΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ½Ξ± 
-				Ο†ΞΉΞ»Ο„ΟΞ¬ΟΞµΟ„Ξµ Ο„Ξ·Ξ½ ΞΊΞ―Ξ½Ξ·ΟƒΞ· Ο„Ξ·Ο‚ Ξ»Ξ―ΟƒΟ„Ξ±Ο‚, ΟΟƒΟ„Ξµ Ξ½Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ
-				ΞΌΟΞ½ΞΏ Ξ­Ξ½Ξ± Ο…Ο€ΞΏΟƒΟΞ½ΞΏΞ»ΞΏ Ο„Ο‰Ξ½ ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½.  Ξ‘Ξ½ Ξ­Ξ½Ξ± ΞΌΞ®Ξ½Ο…ΞΌΞ±
-				Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞµΞΉ ΟƒΟ„Ξ± ΞµΟ€ΞΉΞ»ΞµΞ³ΞΌΞ­Ξ½Ξ± ΞΈΞ­ΞΌΞ±Ο„Ξ±, Ο„ΟΟ„Ξµ ΞΈΞ± Ο„ΞΏ Ξ»Ξ¬Ξ²ΞµΟ„Ξµ,
-                Ξ΄ΞΉΞ±Ο†ΞΏΟΞµΟ„ΞΉΞΊΞ¬ ΟΟ‡ΞΉ.
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Λήψη των δικών σας μηνυμάτων στη λίστα;</strong><p>
+        Κανονικά, θα λαμβάνετε αντίγραφο κάθε μηνύματος που στέλνετε 
+		στη λίστα.  Αν δε θέλετε να λαμβάνετε αυτό το αντίγραφο, 
+		ορίστε αυτή την επιλογή σε <em>Όχι</em>.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>No<br>
+        <mm-receive-own-mail-button>Yes
+        </td></tr>
 
-                <p>Ξ‘Ξ½ Ξ­Ξ½Ξ± ΞΌΞ®Ξ½Ο…ΞΌΞ± Ξ΄ΞµΞ½ Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞµΞΉ ΟƒΞµ ΞΊΞ±Ξ½Ξ­Ξ½Ξ± ΞΈΞ­ΞΌΞ±, ΞΏ 
-				ΞΊΞ±Ξ½ΟΞ½Ξ±Ο‚ Ο€Ξ±ΟΞ¬Ξ΄ΞΏΟƒΞ·Ο‚ ΞµΞΎΞ±ΟΟ„Ξ¬Ο„Ξ±ΞΉ Ξ±Ο€Ο Ο„ΞΉΟ‚ ΟΟ…ΞΈΞΌΞ―ΟƒΞµΞΉΟ‚ Ο„Ξ·Ο‚ Ο€Ξ±ΟΞ±ΞΊΞ¬Ο„Ο‰ 
-				ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ®Ο‚.  Ξ‘Ξ½ Ξ΄ΞµΞ½ Ξ­Ο‡ΞµΟ„Ξµ ΞµΟ€ΞΉΞ»Ξ­ΞΎΞµΞΉ Ο„Ξ± ΞΈΞ­ΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… ΟƒΞ±Ο‚
-                ΞµΞ½Ξ΄ΞΉΞ±Ο†Ξ­ΟΞΏΟ…Ξ½, ΞΈΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΟΞ»Ξ± Ο„Ξ± ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… ΟƒΟ„Ξ­Ξ»Ξ½ΞΏΞ½Ο„Ξ±ΞΉ
-				ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±.
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-topics>
-</mm-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>ΞΞ­Ξ»ΞµΟ„Ξµ Ξ½Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… Ξ΄ΞµΞ½ Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞΏΟ…Ξ½
-                ΞΌΞµ ΞΊΞ±Ξ½Ξ­Ξ½Ξ± Ξ±Ο€Ο Ο„Ξ± Ο†Ξ―Ξ»Ο„ΟΞ± ΞΈΞ­ΞΌΞ±Ο„ΞΏΟ‚;</strong><p>
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Να λαμβάνετε επιβεβαίωση λήψης του μηνύματος όταν 
+		στέλνετε ένα μήνυμα στη λίστα;</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>Όχι<br>
+        <mm-ack-posts-button>Ναι
+        </td></tr>
 
-                Ξ‘Ο…Ο„Ξ® Ξ· ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ ΞΌΟΞ½ΞΏ Ξ±Ξ½ ΞµΞ―ΟƒΟ„Ξµ ΞµΞ³Ξ³ΞµΞ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏΟ‚
-				ΟƒΞµ Ξ­Ξ½Ξ± Ο„ΞΏΟ…Ξ»Ξ¬Ο‡ΞΉΟƒΟ„ΞΏΞ½ Ξ±Ο€Ο Ο„Ξ± Ο€Ξ±ΟΞ±Ο€Ξ¬Ξ½Ο‰ ΞΈΞ­ΞΌΞ±Ο„Ξ±. Ξ ΞµΟΞΉΞ³ΟΞ¬Ο†ΞµΞΉ
-				Ο€ΞΏΞΉΟΟ‚ ΞµΞ―Ξ½Ξ±ΞΉ ΞΏ Ο€ΟΞΏΞΊΞ±ΞΈΞΏΟΞΉΟƒΞΌΞ­Ξ½ΞΏΟ‚ Ο„ΟΟΟ€ΞΏΟ‚ Ο€Ξ±ΟΞ¬Ξ΄ΞΏΟƒΞ·Ο‚ Ξ³ΞΉΞ± 
-				Ο„Ξ± ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… Ξ΄ΞµΞ½ Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞΏΟ…Ξ½ ΞΌΞµ ΞΊΞ±Ξ½Ξ­Ξ½Ξ± Ξ±Ο€Ο Ο„Ξ± ΞΈΞµΞΌΞ±Ο„ΞΉΞΊΞ¬
-				Ο†Ξ―Ξ»Ο„ΟΞ±. Ξ— ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® <em>ΞΟ‡ΞΉ</em> ΟƒΞ·ΞΌΞ±Ξ―Ξ½ΞµΞΉ ΟΟ„ΞΉ Ξ±Ξ½ Ο„ΞΏ ΞΌΞ®Ξ½Ο…ΞΌΞ±
-				Ξ΄ΞµΞ½ Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞµΞΉ ΞΌΞµ ΞΊΞ±Ξ½Ξ­Ξ½Ξ± Ξ±Ο€Ο Ο„Ξ± Ο†Ξ―Ξ»Ο„ΟΞ±, Ο„ΟΟ„Ξµ Ξ΄ΞµΞ½ ΞΈΞ± Ξ»Ξ¬Ξ²ΞµΟ„Ξµ 
-				Ο„ΞΏ ΞΌΞ®Ξ½Ο…ΞΌΞ±, ΞµΞ½Ο Ξ· ΞµΟ€ΞΉΞ»ΞΏΞ³Ξ® <em>ΞΞ±ΞΉ</em> ΟƒΞ·ΞΌΞ±Ξ―Ξ½ΞµΞΉ ΟΟ„ΞΉ ΞΈΞ± 
-				ΟƒΞ±Ο‚ Ο€Ξ±ΟΞ±Ξ΄ΞΏΞΈΞΏΟΞ½ ΞΊΞ±ΞΉ Ο„Ξ± ΞΌΞ·Ξ½ΟΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… Ξ΄ΞµΞ½ Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞΏΟ…Ξ½ ΞΌΞµ Ο„Ξ±
-				Ο†Ξ―Ξ»Ο„ΟΞ± Ο€ΞΏΟ… Ξ­Ο‡ΞΏΟ…Ξ½ ΞΏΟΞΉΟƒΞΈΞµΞ―.
+    <tr><td bgcolor="#cccccc">
+        <strong>Να λαμβάνετε email για την υπενθύμιση του κωδικού σας
+		για αυτή τη λίστα;</strong><p>
+        Μια φορά το μήνα, θα λαμβάνετε ένα email το οποίο θα 
+        περιέχει τον κωδικό σας για κάθε λίστα στην οποία είστε 
+		εγγεγραμμένος σε αυτό το server.  Μπορείτε να απενεργοποιήσετε
+		αυτή την επιλογή σε κάθε λίστα επιλέγοντας <em>Όχι</em> στο σημείο αυτό.  
+		Αν απενεργοποιήσετε τις υπενθυμίσεις των κωδικών για όλες τις 
+		λίστες στις οποίες είστε εγγεγραμμένος, δε θα σας σταλεί κανένα
+		μήνυμα υπενθύμισης.
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>Όχι<br>
+        <mm-get-password-reminder-button>Ναι<p>
+        <mm-global-remind-button><i>Ορισμός Παντού</i>
+        </td></tr>
 
-                <p>Ξ‘Ξ½ Ξ΄ΞµΞ½ Ξ­Ο‡ΞµΟ„Ξµ ΞµΟ€ΞΉΞ»Ξ­ΞΎΞµΞΉ Ο€Ξ±ΟΞ±Ο€Ξ¬Ξ½Ο‰ ΞΊΞ±Ξ½Ξ­Ξ½Ξ± Ξ±Ο€Ο Ο„Ξ± ΞΈΞ­ΞΌΞ±Ο„Ξ±
-				ΞµΞ½Ξ΄ΞΉΞ±Ο†Ξ­ΟΞΏΞ½Ο„ΞΏΟ‚, Ο„ΟΟ„Ξµ ΞΈΞ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ ΞΊΞ¬ΞΈΞµ ΞΌΞ®Ξ½Ο…ΞΌΞ± Ο€ΞΏΟ… 
-				ΟƒΟ„Ξ­Ξ»Ξ½ΞµΟ„Ξµ ΟƒΟ„Ξ· Ξ»Ξ―ΟƒΟ„Ξ± Ξ·Ξ»ΞµΞΊΟ„ΟΞΏΞ½ΞΉΞΊΞΏΟ Ο„Ξ±Ο‡Ο…Ξ΄ΟΞΏΞΌΞµΞ―ΞΏΟ….
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-suppress-nonmatching-topics>ΞΟ‡ΞΉ<br/>
-<mm-receive-nonmatching-topics>ΞΞ±ΞΉ
-        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>ΞΞ± Ξ±Ο€ΞΏΟ†ΞµΟΞ³ΞΏΞ½Ο„Ξ±ΞΉ Ο„Ξ± Ξ΄ΞΉΟ€Ξ»Ξ¬ Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†Ξ± Ο„Ο‰Ξ½ ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½;</strong><p>
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Απόκρυψη από τη λίστα μελών;</strong><p>
+        Όταν κάποιος βλέπει τα μέλη της λίστας, η δική σας email
+		διεύθυνση φαίνεται κανονικά (συγκαλυμμένη με τέτοιο τρόπο
+		ώστε να εμποδίζονται όσοι θα ήθελαν να πάρουν τις διευθύνσεις
+		για την αποστολή spam μηνυμάτων).  Αν δε θέλετε να φαίνεται
+        η email διεύθυνσή σας σε αυτό τον κατάλογο μελών καθόλου, 
+		επιλέξτε <em>Ναι</em> στο σημείο αυτό.
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>Όχι<br>
+        <MM-Hide-Subscription-Button>Ναι
+        </td></tr>
 
-                ΞΟ„Ξ±Ξ½ Ξ±Ξ½Ξ±Ο†Ξ­ΟΞµΟƒΟ„Ξµ ΟΞ·Ο„Ξ¬ ΟƒΟ„Ξ± <tt>To:</tt> Ξ® 
-                <tt>Cc:</tt> headers ΞµΞ½ΟΟ‚ ΞΌΞ·Ξ½ΟΞΌΞ±Ο„ΞΏΟ‚ Ο„Ξ·Ο‚ Ξ»Ξ―ΟƒΟ„Ξ±Ο‚, ΞΌΟ€ΞΏΟΞµΞ―Ο„Ξµ
-				Ξ½Ξ± ΞµΟ€ΞΉΞ»Ξ­ΞΎΞµΟ„Ξµ Ξ½Ξ± ΞΌΞ·Ξ½ Ξ»Ξ¬Ξ²ΞµΟ„Ξµ Ξ¬Ξ»Ξ»ΞΏ Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†ΞΏ Ξ±Ο…Ο„ΞΏΟ Ο„ΞΏΟ…
-				ΞΌΞ·Ξ½ΟΞΌΞ±Ο„ΞΏΟ‚ Ξ±Ο€Ο Ο„Ξ· Ξ»Ξ―ΟƒΟ„Ξ±. Ξ•Ο€ΞΉΞ»Ξ­ΞΎΟ„Ξµ <em>ΞΞ±ΞΉ</em> Ξ³ΞΉΞ± Ξ½Ξ±
-				Ξ±Ο€ΞΏΟ†ΟΞ³ΞµΟ„Ξµ Ο„Ξ· Ξ»Ξ®ΟΞ· Ξ±Ξ½Ο„ΞΉΞ³ΟΞ¬Ο†ΞΏΟ… Ο„ΞΏΟ… Ξ―Ξ΄ΞΉΞΏΟ… ΞΌΞ·Ξ½ΟΞΌΞ±Ο„ΞΏΟ‚ Ξ±Ο€Ο Ο„Ξ· 
-				Ξ»Ξ―ΟƒΟ„Ξ±. Ξ•Ο€ΞΉΞ»Ξ­ΞΎΟ„Ξµ <em>ΞΟ‡ΞΉ</em> Ξ³ΞΉΞ± Ξ½Ξ± Ξ»Ξ¬Ξ²ΞµΟ„Ξµ Ο„ΞΏ Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†ΞΏ.
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Ποιά γλώσσα προτιμάτε;</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
 
-                <p>Ξ‘Ξ½ Ξ· Ξ»Ξ―ΟƒΟ„Ξ± Ξ­Ο‡ΞµΞΉ ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½Ξ· Ο„Ξ·Ξ½ Ξ΄Ο…Ξ½Ξ±Ο„ΟΟ„Ξ·Ο„Ξ± Ο€ΟΞΏΟƒΟ‰Ο€ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½Ο‰Ξ½
-				ΞΌΞ·Ξ½Ο…ΞΌΞ¬Ο„Ο‰Ξ½ Ο„Ο‰Ξ½ ΞΌΞµΞ»ΟΞ½, ΞΊΞ±ΞΉ ΞµΟ€ΞΉΞ»Ξ­ΞΎΞµΟ„Ξµ Ξ½Ξ± Ξ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞµΟ„Ξµ Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†Ξ±, ΞΊΞ¬ΞΈΞµ
-				Ξ±Ξ½Ο„Ξ―Ξ³ΟΞ±Ο†ΞΏ ΞΈΞ± Ξ­Ο‡ΞµΞΉ Ξ­Ξ½Ξ± <tt>X-Mailman-Copy: yes</tt> header Ο„ΞΏ ΞΏΟ€ΞΏΞ―ΞΏ
-				ΞΈΞ± Ξ­Ο‡ΞµΞΉ Ο€ΟΞΏΟƒΟ„ΞµΞΈΞµΞ― ΟƒΞµ Ξ±Ο…Ο„Ο.
+    <tr><td bgcolor="#cccccc">
+        <strong>Σε ποιές κατηγορίες θεμάτων θα θέλατε να εγγραφείτε;</strong><p>
+                Επιλέγοντας ένα ή περισσότερα θέματα, μπορείτε να 
+				φιλτράρετε την κίνηση της λίστας, ώστε να λαμβάνετε
+				μόνο ένα υποσύνολο των μηνυμάτων.  Αν ένα μήνυμα
+				ταιριάζει στα επιλεγμένα θέματα, τότε θα το λάβετε,
+                διαφορετικά όχι.
 
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-receive-duplicates-button>ΞΟ‡ΞΉ<br/>
-<mm-dont-receive-duplicates-button>ΞΞ±ΞΉ<p>
-<mm-global-nodupes-button><i>ΞΟΞΉΟƒΞΌΟΟ‚ Ξ Ξ±Ξ½Ο„ΞΏΟ</i>
-</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-options-submit-button></mm-options-submit-button></center>
-</td></tr>
+                <p>Αν ένα μήνυμα δεν ταιριάζει σε κανένα θέμα, ο 
+				κανόνας παράδοσης εξαρτάται από τις ρυθμίσεις της παρακάτω 
+				επιλογής.  Αν δεν έχετε επιλέξει τα θέματα που σας
+                ενδιαφέρουν, θα λαμβάνετε όλα τα μηνύματα που στέλνονται
+				στη λίστα.
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Θέλετε να λαμβάνετε μηνύματα που δεν ταιριάζουν
+                με κανένα από τα φίλτρα θέματος;</strong><p>
+
+                Αυτή η επιλογή ενεργοποιείται μόνο αν είστε εγγεγραμμένος
+				σε ένα τουλάχιστον από τα παραπάνω θέματα. Περιγράφει
+				ποιός είναι ο προκαθορισμένος τρόπος παράδοσης για 
+				τα μηνύματα που δεν ταιριάζουν με κανένα από τα θεματικά
+				φίλτρα. Η επιλογή <em>Όχι</em> σημαίνει ότι αν το μήνυμα
+				δεν ταιριάζει με κανένα από τα φίλτρα, τότε δεν θα λάβετε 
+				το μήνυμα, ενώ η επιλογή <em>Ναι</em> σημαίνει ότι θα 
+				σας παραδοθούν και τα μηνύματα που δεν ταιριάζουν με τα
+				φίλτρα που έχουν ορισθεί.
+
+                <p>Αν δεν έχετε επιλέξει παραπάνω κανένα από τα θέματα
+				ενδιαφέροντος, τότε θα λαμβάνετε κάθε μήνυμα που 
+				στέλνετε στη λίστα ηλεκτρονικού ταχυδρομείου.
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>Όχι<br>
+        <mm-receive-nonmatching-topics>Ναι
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Να αποφεύγονται τα διπλά αντίγραφα των μηνυμάτων;</strong><p>
+
+                Όταν αναφέρεστε ρητά στα <tt>To:</tt> ή 
+                <tt>Cc:</tt> headers ενός μηνύματος της λίστας, μπορείτε
+				να επιλέξετε να μην λάβετε άλλο αντίγραφο αυτού του
+				μηνύματος από τη λίστα. Επιλέξτε <em>Ναι</em> για να
+				αποφύγετε τη λήψη αντιγράφου του ίδιου μηνύματος από τη 
+				λίστα. Επιλέξτε <em>Όχι</em> για να λάβετε το αντίγραφο.
+
+                <p>Αν η λίστα έχει ενεργοποιημένη την δυνατότητα προσωποποιημένων
+				μηνυμάτων των μελών, και επιλέξετε να λαμβάνετε αντίγραφα, κάθε
+				αντίγραφο θα έχει ένα <tt>X-Mailman-Copy: yes</tt> header το οποίο
+				θα έχει προστεθεί σε αυτό.
+
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>Όχι<br>
+        <mm-dont-receive-duplicates-button>Ναι<p>
+        <mm-global-nodupes-button><i>Ορισμός Παντού</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
 </table>
+</center>
 <p>
-<mm-form-end>
-<mm-mailman-footer>
-</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
 </html>

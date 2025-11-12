@@ -1,47 +1,58 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
 <html>
 <head>
-<link href="mailman-admin.css" rel="STYLESHEET" type="text/css"/>
-<link href="mailman-admin.html" rel="first" title="GNU mailman - list Administration Manual"/>
-<link href="contents.html" rel="contents" title="Contents"/>
-<link href="about.html" rel="last" title="About this document..."/>
-<link href="about.html" rel="help" title="About this document..."/>
-<link href="sender-filters.html" rel="next"/>
-<link href="node20.html" rel="prev"/>
-<link href="node20.html" rel="parent"/>
-<link href="sender-filters.html" rel="next"/>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-<meta content="information" name="aesop"/>
+<link rel="STYLESHEET" href="mailman-admin.css" type='text/css' />
+<link rel="first" href="mailman-admin.html" title='GNU mailman - list Administration Manual' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="next" href="sender-filters.html" />
+<link rel="prev" href="node20.html" />
+<link rel="parent" href="node20.html" />
+<link rel="next" href="sender-filters.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
 <title>2.7.1 Subscription rules</title>
 </head>
 <body>
 <div class="navigation">
-<div id="top-navigation-panel" xml:id="top-navigation-panel">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node20.html" rel="prev" title="2.7 the Privacy Options"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node20.html" rel="parent" title="2.7 the Privacy Options"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="sender-filters.html" rel="next" title="2.7.2 sender filters"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Administration Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="2.7 the Privacy Options"
+  href="node20.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="2.7 the Privacy Options"
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="2.7.2 sender filters"
+  href="sender-filters.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - List Administration Manual</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="node20.html" rel="prev">2.7 The Privacy Options</a>
+<a class="sectref" rel="prev" href="node20.html">2.7 The Privacy Options</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="node20.html" rel="parent">2.7 The Privacy Options</a>
+<a class="sectref" rel="parent" href="node20.html">2.7 The Privacy Options</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="sender-filters.html" rel="next">2.7.2 Sender filters</a>
+<a class="sectref" rel="next" href="sender-filters.html">2.7.2 Sender filters</a>
 </div>
-<hr/></div>
+<hr /></div>
 </div>
 <!--End of Navigation Panel-->
+
 <h3><a name="SECTION002271000000000000000">
 2.7.1 Subscription rules</a>
 </h3>
+
 <p>
 This subcategory controls the rules for exposing the existence of this
 list, and for what new members must do in order to subscribe to the
@@ -59,13 +70,14 @@ list.
     know!) its name.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>subscribe_policy</strong></dt>
 <dd>This option controls the steps that a new member must take to join
     the list.  The available options may differ based on some defaults
     that the site administrator chooses.  They are:
 
 <p>
+
 <ul>
 <li>None - No verification is done on the subscribing
           member. This is also called <em>open subscriptions</em> and is
@@ -74,7 +86,7 @@ list.
           will not be presented to you.
 
 <p>
-</p></li>
+</li>
 <li>Confirm - An email confirmation step is required before the
           address is added to the list.  When a member requests
           subscription, either via the web page or by sending a
@@ -88,14 +100,14 @@ list.
           user either discard or confirm their request.
 
 <p>
-</p></li>
+</li>
 <li>Require approval - All subscription requests are held for
           approval of the list moderator.  No mail-back confirmation
           is sent, but the list admins will recieve a message
           indicating that approval is pending.
 
 <p>
-</p></li>
+</li>
 <li>Confirm and approve - Here, a mail-back notice must first
           be confirmed by the requester.  Once confirmed, the list
           moderator must then approve the request.  This is the most
@@ -104,10 +116,11 @@ list.
           approve the request.
 
 <p>
-</p></li>
+</li>
 </ul>
+
 <p>
-</p></p></dd>
+</dd>
 <dt><strong>unsubscribe_policy</strong></dt>
 <dd>Specifies whether the list moderator's approval is required for
     unsubscription requests.  <em>No</em> is highly recommended, since
@@ -117,7 +130,7 @@ list.
     employees to unsubscribe from the company newsletter.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>ban_list</strong></dt>
 <dd>This contains a list of addresses (or regular expressions), one
     per line, that are banned from ever subscribing to your mailing
@@ -127,7 +140,7 @@ list.
     troublesome posters to a members-only list.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>private_roster</strong></dt>
 <dd>This specifies who is allowed to view the roster of member
     addresses.  If you choose <em>Anyone</em>, then the list membership
@@ -139,7 +152,7 @@ list.
     password is entered, address field is ignored.
 
 <p>
-</p></dd>
+</dd>
 <dt><strong>obscure_addresses</strong></dt>
 <dd>Controls whether some simple obfuscation of addresses is used when
     member addresses are included on web pages.  This should reduce
@@ -147,32 +160,45 @@ list.
     it probably doesn't eliminate it.
 </dd>
 </dl>
+
 <p>
+
 <div class="navigation">
-<div class="online-navigation">
-<p></p><hr/>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
 <tr>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node20.html" rel="prev" title="2.7 the Privacy Options"><img alt="Previous Page" border="0" height="32" src="previous.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="node20.html" rel="parent" title="2.7 the Privacy Options"><img alt="Up one Level" border="0" height="32" src="up.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="sender-filters.html" rel="next" title="2.7.2 sender filters"><img alt="Next Page" border="0" height="32" src="next.png" width="32"/></a></td>
-<td align="center" style="padding: 8px; border: 1px solid #ccc;" width="100%">GNU Mailman - List Administration Manual</td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><a href="contents.html" rel="contents" title="Table of Contents"><img alt="Contents" border="0" height="32" src="contents.png" width="32"/></a></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
-<td class="online-navigation" style="padding: 8px; border: 1px solid #ccc;"><img alt="" border="0" height="32" src="blank.png" width="32"/></td>
+<td class='online-navigation'><a rel="prev" title="2.7 the Privacy Options"
+  href="node20.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="2.7 the Privacy Options"
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="2.7.2 sender filters"
+  href="sender-filters.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">GNU Mailman - List Administration Manual</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
 </tr></table>
-<div class="online-navigation">
+<div class='online-navigation'>
 <b class="navlabel">Previous:</b>
-<a class="sectref" href="node20.html" rel="prev">2.7 The Privacy Options</a>
+<a class="sectref" rel="prev" href="node20.html">2.7 The Privacy Options</a>
 <b class="navlabel">Up:</b>
-<a class="sectref" href="node20.html" rel="parent">2.7 The Privacy Options</a>
+<a class="sectref" rel="parent" href="node20.html">2.7 The Privacy Options</a>
 <b class="navlabel">Next:</b>
-<a class="sectref" href="sender-filters.html" rel="next">2.7.2 Sender filters</a>
+<a class="sectref" rel="next" href="sender-filters.html">2.7.2 Sender filters</a>
 </div>
 </div>
-<hr/>
+<hr />
 <span class="release-info">Release 2.1, documentation updated on January 11, 2020.</span>
 </div>
 <!--End of Navigation Panel-->
-</p></p></p></body>
+
+</body>
 </html>

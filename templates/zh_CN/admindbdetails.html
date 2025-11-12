@@ -1,66 +1,4 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>管理任务有<a href="%(summaryurl)s">摘要页面</a>和<em>详细资料</em>页
+管理任务有<a href="%(summaryurl)s">摘要页面</a>和<em>详细资料</em>页
 面两种显示方式。摘要页面包括了按发送人邮件地址分组的待决的订阅和退订
 请求，以及被暂存以待您审核的信件。详细资料页面则包括每条消息的消息头
 信息和消息体摘要在内的更详细的内容。
@@ -79,7 +17,8 @@
 	
 <li><b>Discard</b> -- 丢弃原始信息，不发送拒绝通知。对于成员资格申请，
     不通知申请人，并丢弃该请求。该动作往往是针对已知的垃圾邮件。
-</li></li></li></li></ul>
+</ul>
+
 <p>对于暂存的信息，如果你希望给系统管理员一份拷贝，需打开<b>Preserve</b> 
 选项。 对于您想丢弃但是需要保存记录以利于日后检查的辱骂类信息这种方法
 是有效的，
@@ -105,4 +44,3 @@
 该按钮可以提交您对所有管理请求所作出的修改。 
 
 <p><a href="%(summaryurl)s">返回摘要页</a>。
-</p></p></p></p></p></p></p>

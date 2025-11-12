@@ -13,30 +13,3 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
-"""Mailman message handlers.
-
-This package contains the message handlers for Mailman's pipeline architecture.
-Each handler module must define a process() function which takes three arguments:
-    mlist  - The MailList instance
-    msg    - The Message instance
-    msgdata - A dictionary of message metadata
-"""
-
-from __future__ import absolute_import, print_function, unicode_literals
-
-# Define lazy imports to avoid circular dependencies
-def get_handler(name):
-    """Get a handler module by name."""
-    return __import__('Mailman.Handlers.' + name, fromlist=['Mailman.Handlers'])
-
-# Define handler names for reference
-HANDLER_NAMES = [
-    'SpamDetect', 'Approve', 'Replybot', 'Moderate', 'Hold', 'MimeDel', 'Scrubber',
-    'Emergency', 'Tagger', 'CalcRecips', 'AvoidDuplicates', 'Cleanse', 'CleanseDKIM',
-    'CookHeaders', 'ToDigest', 'ToArchive', 'ToUsenet', 'AfterDelivery', 'Acknowledge',
-    'WrapMessage', 'ToOutgoing', 'OwnerRecips'
-]
-
-# Export handler names
-__all__ = HANDLER_NAMES + ['get_handler']

@@ -1,118 +1,58 @@
 <html>
 <head>
-<title>%(realname)s é™å®šå…¬é–‹ä¿å­˜æ›¸åº« èªè¨¼</title>
+    <title>%(realname)s ¸ÂÄê¸ø³«ÊİÂ¸½ñ¸Ë Ç§¾Ú</title>
 <script>function sf(){document.f.username.focus();}</script>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff" onload="sf()">
-<form action="%(action)s" method="POST" name="f">
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
 %(message)s
-  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
-<b><font color="#000000" size="+1">%(realname)s
-	    é™å®šå…¬é–‹ä¿å­˜æ›¸åº« èªè¨¼</font></b>
-</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">é›»å­ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><input name="username" size="30" type="text"/></td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><input name="password" size="30" type="password"/></td>
-</tr>
-<tr>
-<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"><input name="submit" type="SUBMIT" value="èªè¨¼..."/>
-</td>
-</tr>
-</table>
-<p><strong><em>é‡è¦:</em></strong>
-      ã“ã“ã‹ã‚‰å…ˆã¯ãƒ–ãƒ©ã‚¦ã‚¶ã®ã‚¯ãƒƒã‚­ãƒ¼ã‚’æœ‰åŠ¹ã«ã—ã¦ãã ã•ã„ã€‚
-      ã‚¯ãƒƒã‚­ãƒ¼ãŒç„¡åŠ¹ã ã¨æ“ä½œã®ãŸã³ã«èªè¨¼ã‚’è¦æ±‚ã•ã‚Œã¾ã™ã€‚
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">%(realname)s
+	    ¸ÂÄê¸ø³«ÊİÂ¸½ñ¸Ë Ç§¾Ú</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">ÅÅ»Ò¥á¡¼¥ë¥¢¥É¥ì¥¹:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">¥Ñ¥¹¥ï¡¼¥É:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Ç§¾Ú...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>½ÅÍ×:</em></strong>
+      ¤³¤³¤«¤éÀè¤Ï¥Ö¥é¥¦¥¶¤Î¥¯¥Ã¥­¡¼¤òÍ­¸ú¤Ë¤·¤Æ¤¯¤À¤µ¤¤¡£
+      ¥¯¥Ã¥­¡¼¤¬Ìµ¸ú¤À¤ÈÁàºî¤Î¤¿¤Ó¤ËÇ§¾Ú¤òÍ×µá¤µ¤ì¤Ş¤¹¡£
 
-      <p>é™å®šå…¬é–‹ä¿å­˜æ›¸åº«ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã§ã®æ“ä½œã‚’ã™ã‚‹ãŸã³ã«èªè¨¼ãŒè¦æ±‚
-      ã•ã‚Œãªã„ã‚ˆã†ã«ã€ã‚»ãƒƒã‚·ãƒ§ãƒ³ã‚¯ãƒƒã‚­ãƒ¼ã‚’ç™ºè¡Œã—ã¾ã™ã€‚
-      ã“ã®ã‚¯ãƒƒã‚­ãƒ¼ã¯ãƒ–ãƒ©ã‚¦ã‚¶ã®çµ‚äº†æ™‚ã«è‡ªå‹•çš„ã«å¤±åŠ¹ã—ã¾ã™ã€‚
-      ã¾ãŸã€ä¼šå“¡ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã®ãƒšãƒ¼ã‚¸ã«ç§»å‹•ã—ã¦<em>ãƒ­ã‚°ã‚¢ã‚¦ãƒˆ</em>
-      ãƒœã‚¿ãƒ³ã‚’æŠ¼ã™ã“ã¨ã§é™½ã«ã‚¯ãƒƒã‚­ãƒ¼ã‚’ç ´æ£„ã™ã‚‹ã“ã¨ã‚‚ã§ãã¾ã™ã€‚
+      <p>¸ÂÄê¸ø³«ÊİÂ¸½ñ¸Ë¥¤¥ó¥¿¡¼¥Õ¥§¡¼¥¹¤Ç¤ÎÁàºî¤ò¤¹¤ë¤¿¤Ó¤ËÇ§¾Ú¤¬Í×µá
+      ¤µ¤ì¤Ê¤¤¤è¤¦¤Ë¡¢¥»¥Ã¥·¥ç¥ó¥¯¥Ã¥­¡¼¤òÈ¯¹Ô¤·¤Ş¤¹¡£
+      ¤³¤Î¥¯¥Ã¥­¡¼¤Ï¥Ö¥é¥¦¥¶¤Î½ªÎ»»ş¤Ë¼«Æ°Åª¤Ë¼º¸ú¤·¤Ş¤¹¡£
+      ¤Ş¤¿¡¢²ñ°÷¥ª¥×¥·¥ç¥ó¤Î¥Ú¡¼¥¸¤Ë°ÜÆ°¤·¤Æ<em>¥í¥°¥¢¥¦¥È</em>
+      ¥Ü¥¿¥ó¤ò²¡¤¹¤³¤È¤ÇÍÛ¤Ë¥¯¥Ã¥­¡¼¤òÇË´ş¤¹¤ë¤³¤È¤â¤Ç¤­¤Ş¤¹¡£
       <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
-<b><font color="#000000" size="+1">ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰å‚™å¿˜é€šçŸ¥</font></b>
-</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;">ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒã‚ã‹ã‚‰ãªã„ã¨ãã¯ã€ä¸Šã®ãƒ•ã‚©ãƒ¼ãƒ ã«ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å…¥ã‚Œã¦
-          <em>å‚™å¿˜é€šçŸ¥</em>ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ä¸‹ã•ã„ã€‚
-          ãƒ¡ãƒ¼ãƒ«ã§ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’é€ã‚Šã¾ã™ã€‚</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><center><input name="login-remind" type="SUBMIT" value="å‚™å¿˜é€šçŸ¥"/></center></td>
-</tr>
-</table>
-</p></p></p></form>
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">¥Ñ¥¹¥ï¡¼¥ÉÈ÷ËºÄÌÃÎ</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>¥Ñ¥¹¥ï¡¼¥É¤¬¤ï¤«¤é¤Ê¤¤¤È¤­¤Ï¡¢¾å¤Î¥Õ¥©¡¼¥à¤Ë¥á¡¼¥ë¥¢¥É¥ì¥¹¤òÆş¤ì¤Æ
+          <em>È÷ËºÄÌÃÎ</em>¥Ü¥¿¥ó¤ò²¡¤·¤Æ²¼¤µ¤¤¡£
+          ¥á¡¼¥ë¤Ç¥Ñ¥¹¥ï¡¼¥É¤òÁ÷¤ê¤Ş¤¹¡£</td>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="È÷ËºÄÌÃÎ" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
 </body>
 </html>

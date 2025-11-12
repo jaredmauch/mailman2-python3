@@ -36,7 +36,7 @@ Options:
 import os
 import re
 import sys
-import argparse
+import getopt
 
 import paths
 from Mailman import mm_cfg
@@ -46,19 +46,33 @@ from Mailman.i18n import C_
 cre = re.compile(r'heldmsg-(?P<listname>.*)-(?P<id>[0-9]+)\.(pck|txt)$')
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Discard held messages.')
-    parser.add_argument('-q', '--quiet', action='store_true',
-                       help='Don\'t print status messages')
-    parser.add_argument('files', nargs='*',
-                       help='Files containing held messages to discard')
-    return parser.parse_args()
+
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print(C_(__doc__), file=fd)
+    if msg:
+        print(msg, file=fd)
+    sys.exit(code)
 
 
+
 def main():
-    args = parse_args()
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hq', ['help', 'quiet'])
+    except getopt.error as msg:
+        usage(1, msg)
 
-    files = args.files
+    quiet = False
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-q', '--quiet'):
+            quiet = True
+
+    files = args
     if not files:
         print(C_('Nothing to do.'))
 
@@ -88,7 +102,7 @@ def main():
             for id in ids:
                 # No comment, no preserve, no forward, no forwarding address
                 mlist.HandleRequest(id, mm_cfg.DISCARD, '', False, False, '')
-                if not args.quiet:
+                if not quiet:
                     print(C_(
                           'Discarded held msg #%(id)s for list %(listname)s'))
             mlist.Save()
@@ -96,5 +110,6 @@ def main():
             mlist.Unlock()
 
 
+
 if __name__ == '__main__':
     main()

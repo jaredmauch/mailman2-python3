@@ -196,7 +196,7 @@ class Privacy(GUIBase):
 
             <p>In the text boxes below, add one address per line; start the
             line with a ^ character to designate a <a href=
-            "https://docs.python.org/3/library/re.html"
+            "https://docs.python.org/2/library/re.html"
             >Python regular expression</a>.  When entering backslashes, do so
             as if you were using Python raw strings (i.e. you generally just
             use a single backslash).
@@ -649,9 +649,9 @@ class Privacy(GUIBase):
             if deltag in cgidata:
                 continue
             # Get the data for the current box
-            pattern = cgidata.get(reboxtag, [''])[0]
+            pattern = cgidata.getfirst(reboxtag)
             try:
-                action = int(cgidata.get(actiontag, ['0'])[0])
+                action  = int(cgidata.getfirst(actiontag))
                 # We'll get a TypeError when the actiontag is missing and the
                 # .getvalue() call returns None.
             except (ValueError, TypeError):
@@ -690,7 +690,7 @@ class Privacy(GUIBase):
             # Was this an add item?
             if addtag in cgidata:
                 # Where should the new one be added?
-                where = cgidata.get(wheretag, ['after'])[0]
+                where = cgidata.getfirst(wheretag)
                 if where == 'before':
                     # Add a new empty rule box before the current one
                     rules.append(('', mm_cfg.DEFER, True))
@@ -725,20 +725,3 @@ class Privacy(GUIBase):
             self._handleForm(mlist, category, subcat, cgidata, doc)
         # Everything else is dealt with by the base handler
         GUIBase.handleForm(self, mlist, category, subcat, cgidata, doc)
-
-def process_form(mlist, cgidata):
-    # Get the privacy settings from the form
-    pattern = cgidata.get(reboxtag, [''])[0]
-    action = int(cgidata.get(actiontag, ['0'])[0])
-    where = cgidata.get(wheretag, [''])[0]
-    
-    # Process the privacy rule
-    if pattern:
-        if where == 'add':
-            mlist.AddPrivacyRule(pattern, action)
-        elif where == 'change':
-            mlist.ChangePrivacyRule(pattern, action)
-        elif where == 'delete':
-            mlist.DeletePrivacyRule(pattern)
-    
-    mlist.Save()

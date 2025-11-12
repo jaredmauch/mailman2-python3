@@ -1,199 +1,138 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
 <!-- $Revision: 6597 $ -->
 <html>
 <head>
-<title>Informopaĝo de <mm-list-name></mm-list-name></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="center" bgcolor="#99ccff" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000" size="+1"><mm-list-name> -- <mm-list-description></mm-list-description></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p> </p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#fff0d0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Pri la listo <mm-list-name></mm-list-name></font></b>
-</td>
-<td bgcolor="#fff0d0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<mm-lang-form-start><mm-displang-box> <mm-list-langs>
-<mm-form-end>
-</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p><mm-list-info></mm-list-info></p>
-<p> Por vidi ĉiujn antaŭajn mesaĝojn, vizitu la listarĥivon <mm-archive>Arĥivoj de <mm-list-name>
-</mm-list-name></mm-archive>.
-		<mm-restricted-list-message>
-</mm-restricted-list-message></p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"> <b><font color="#000000">Uzo de <mm-list-name></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;"> 	  
+  <title>Informopaĝo de <MM-List-Name></title>
+</head>
+    <body bgcolor="#ffffff">
+      
+<p>       
+<table border="0" cellspacing="4" cellpadding="5">
+ 	<tr>
+ 	  <td colspan="2" width="100%" bgcolor="#99ccff" align="center"> 	    
+		<b><font color="#000000" size="+1"><MM-List-Name> -- <MM-List-Description></font></b>
+ 	  </td>
+ 	</tr>
+ 	<tr>
+ 	    <td colspan="2"> 	      
+      	     <p>&nbsp;</p>
+            </td>
+ 	  </tr>
+ 	  <tr>
+ 	    <td colspan="1" width="100%" bgcolor="#fff0d0"> 	      
+		<b><font color="#000000">Pri la listo <MM-List-Name></font></b> 	 
+  	    </td>
+            <td colspan="1" width="100%" bgcolor="#fff0d0">            
+  		<MM-lang-form-start><MM-displang-box> <MM-list-langs>               
+		<MM-form-end>
+	    </td>
+ 	  </tr>
+ 	    <tr>
+ 	      <td colspan="2"> 		
+      		<p><MM-List-Info></p>
+ 		<p> Por vidi ĉiujn antaŭajn mesaĝojn, vizitu la listarĥivon <MM-Archive>Arĥivoj de <MM-List-Name> 
+		</MM-Archive>.
+		<MM-Restricted-List-Message>
+		</p>
+ 	</td>
+       </tr>
+       <tr>
+ 	<td colspan="2" width="100%" bgcolor="#fff0d0"> 	  <b><font
+ color="#000000">Uzo de <MM-List-Name></font></b> 	
+	</td>
+       </tr>
+       <tr>
+ 	<td colspan="2"> 	  
 	Por sendi retpoŝton al ĉiuj listanoj, sendu ĝin al 	  
-	<a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.  	  
+	<a href="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></a>.  	  
 
       <p>Vi povas aboni la liston aŭ agordi vian abonon per la ĉi-subaj sekcioj. </p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Aboni la liston <mm-list-name><font></font></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p> 	    
-	Abonu la liston <mm-list-name> plenigante la ĉi-suban abonilon. 	  
-	<mm-list-subscription-msg>
-<ul>
-<mm-subscribe-form-start>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Via retpoŝtadreso:</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
-</mm-subscribe-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Via nomo (nedevige):</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td>
-</tr>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">Pro privateco, vi devas enigi pasvorton. Tio ne tute sekurigas vian konton, tamen plej verŝajne malhelpos iun ajn ŝanĝi viajn abonojn. 	    
-	<b>Ne elektu jam uzitan pasvorton</b> ĉar foje ĝi estos malkaŝe resendata al vi.  		   </font>
-<p><font size="-1">Se vi neniun elektos, aŭtomate kreitan pasvorton vi retpoŝte ricevos post konfirmo de via abonpeto. Vi ĉiam povos peti resendon de via pasvorto en via agordo-paĝo.
-		<mm-reminder></mm-reminder></font></p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Enigu pasvorton:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;"> </td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Konfirmu pasvorton:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
-<td style="padding: 8px; border: 1px solid #ccc;">  </td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Kiun lingvon vi preferas?</td>
-<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td>
-<td style="padding: 8px; border: 1px solid #ccc;">  </td>
-</tr>
-<mm-digest-question-start>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;">Ĉu vi deziras ricevi la poŝton de la listo kompilita en ĉiutaga resumo? 	  
+      </td>
+       </tr>
+       <tr>
+ 	<td colspan="2" width="100%" bgcolor="#fff0d0"> 	  
+<b><font color="#000000">Aboni la liston <MM-List-Name><font></b>
+ 	</td>
+       </tr>
+       <tr>
+ 	<td colspan="2"> 	  
+      <p> 	    
+	Abonu la liston <MM-List-Name> plenigante la ĉi-suban abonilon. 	  
+	<MM-List-Subscription-Msg> 	 
+      <ul>    
+     <MM-Subscribe-Form-Start>
+        <table border="0" cellspacing="2" cellpadding="2" width="70%">
+            <tr>
+ 		  <td bgcolor="#dddddd" width="55%">Via retpoŝtadreso:</td>
+ 		  <td width="33%"><MM-Subscribe-Box>
 	</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> Ne 	    
-	    <mm-digest-radio-button>  Jes 
-	</mm-digest-radio-button></mm-undigest-radio-button></td>
-</tr>
-<mm-digest-question-end>
-<mm-recaptcha-ui>
-<mm-captcha-ui>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-subscribe-button></mm-subscribe-button></center>
-</td>
-</tr>
-</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
-<mm-form-end>
-</mm-form-end></mm-subscribe-form-start></ul>
-<tr>
-<td bgcolor="#fff0d0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<a name="subscribers">
-<b><font color="#000000">Abonantoj de 
-	<mm-list-name></mm-list-name></font></b></a>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<mm-roster-form-start>
-<mm-roster-option>
-<mm-form-end>
-<p>
-<mm-options-form-start>
-<mm-editing-options>
-<mm-form-end>
-</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
-</tr>
-</mm-list-subscription-msg></mm-list-name></p></td></tr></table>
-<mm-mailman-footer>
-</mm-mailman-footer></p></body>
+ 	<td width="12%">&nbsp;</td>
+            </tr>
+       <tr>
+         <td bgcolor="#dddddd" width="55%">Via nomo (nedevige):</td>
+         <td width="33%"><mm-fullname-box></td>
+ 	<td width="12%">&nbsp;</td>
+            </tr>
+       <tr>
+ 	<td colspan="3"><font size="-1">Pro privateco, vi devas enigi pasvorton. Tio ne tute sekurigas vian konton, tamen plej verŝajne malhelpos iun ajn ŝanĝi viajn abonojn. 	    
+	<b>Ne elektu jam uzitan pasvorton</b> ĉar foje ĝi estos malkaŝe resendata al vi.  		   </font>
+              <p><font size="-1">Se vi neniun elektos, aŭtomate kreitan pasvorton vi retpoŝte ricevos post konfirmo de via abonpeto. Vi ĉiam povos peti resendon de via pasvorto en via agordo-paĝo.
+		<MM-Reminder></font></p>
+              </td>
+       </tr>
+         <tr>
+ 	<td bgcolor="#dddddd">Enigu pasvorton:</td>
+ 	<td><MM-New-Password-Box></td>
+ 	<td>&nbsp;</td>
+            </tr>
+       <tr>
+  	<td bgcolor="#dddddd">Konfirmu pasvorton:</td>
+ 	<td><MM-Confirm-Password></td>
+ 	<td>&nbsp; </td>
+            </tr>
+       <tr>
+         <td bgcolor="#dddddd">Kiun lingvon vi preferas?</td>
+          <td> <MM-list-langs></td>
+         <td>&nbsp; </td>
+            </tr>
+       <mm-digest-question-start>
+       <tr>
+ 	<td>Ĉu vi deziras ricevi la poŝton de la listo kompilita en ĉiutaga resumo? 	  
+	</td>
+ 	<td><MM-Undigest-Radio-Button> Ne 	    
+	    <MM-Digest-Radio-Button>  Jes 
+	</td>
+       </tr>
+	<mm-digest-question-end>
+       <mm-recaptcha-ui>
+       <mm-captcha-ui>
+       <tr>
+ 	<td colspan="3"> 	  
+              <center><MM-Subscribe-Button></center>
+        </td>
+        </tr>
+        </table>
+     <MM-Form-End>    
+      </ul>
+     <tr>
+       <td colspan="2" width="100%" bgcolor="#fff0d0"> 	
+	<a name="subscribers">         
+	<b><font color="#000000">Abonantoj de 
+	<MM-List-Name></font></b></a>
+       </td>
+     </tr>
+     <tr>
+       <td colspan="2" width="100%"> 	
+	<MM-Roster-Form-Start> 	
+	<MM-Roster-Option>
+ 		<MM-Form-End>
+      	<p> 	
+	<MM-Options-Form-Start> 	
+	<MM-Editing-Options> 		
+		<MM-Form-End> 
+        </td>
+     </tr>
+</table>
+ <MM-Mailman-Footer>
+</body>
 </html>

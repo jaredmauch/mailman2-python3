@@ -26,7 +26,6 @@ import base64
 import codecs
 import datetime
 import optparse
-import pickle
 
 from xml.sax.saxutils import escape
 
@@ -103,8 +102,6 @@ class XMLDumper(object):
             if v is None:
                 v = ''
             else:
-                if isinstance(v, bytes):
-                    v = v.decode('utf-8', 'replace')
                 v = escape(str(v))
             attrs.append('%s="%s"' % (k, v))
         return SPACE.join(attrs)
@@ -149,8 +146,6 @@ class XMLDumper(object):
         if _value is None:
             print('<%s%s/>' % (_name, attrs), file=self._fp)
         else:
-            if isinstance(_value, bytes):
-                _value = _value.decode('utf-8', 'replace')
             value = escape(str(_value))
             print('<%s%s>%s</%s>' % (_name, attrs, value, _name), file=self._fp)
 
@@ -184,13 +179,9 @@ class XMLDumper(object):
             if isinstance(value, list):
                 self._push_element('option', name=varname, type=widget_type)
                 for v in value:
-                    if isinstance(v, bytes):
-                        v = v.decode('utf-8', 'replace')
                     self._element('value', v)
                 self._pop_element('option')
             else:
-                if isinstance(value, bytes):
-                    value = value.decode('utf-8', 'replace')
                 self._element('option', value, name=varname, type=widget_type)
 
     def _dump_list(self, mlist, password_scheme):
@@ -268,29 +259,6 @@ class XMLDumper(object):
         self._pop_element('roster')
         self._pop_element('list')
 
-    def _do_list_archives(self, mlist):
-        # Get the archive directory
-        archive_dir = os.path.join(mlist.archive_dir(), 'private')
-        if not os.path.exists(archive_dir):
-            return
-        # Get all the archive files
-        for filename in os.listdir(archive_dir):
-            if filename.endswith('.mbox'):
-                if isinstance(filename, bytes):
-                    filename = filename.decode('utf-8', 'replace')
-                self._push_element('archive', filename=filename)
-                # Get the archive file's metadata
-                metadata_file = os.path.join(archive_dir, filename + '.metadata')
-                if os.path.exists(metadata_file):
-                    metadata = self.load_metadata(metadata_file)
-                    for key, value in metadata.items():
-                        if isinstance(key, bytes):
-                            key = key.decode('utf-8', 'replace')
-                        if isinstance(value, bytes):
-                            value = value.decode('utf-8', 'replace')
-                        self._element('metadata', str(value), name=key)
-                self._pop_element('archive')
-
     def dump(self, listnames, password_scheme):
         print('<?xml version="1.0" encoding="UTF-8"?>', file=self._fp)
         self._push_element('mailman', **{
@@ -304,23 +272,11 @@ class XMLDumper(object):
                 print(C_('No such list: %(listname)s'), file=sys.stderr)
                 continue
             self._dump_list(mlist, password_scheme)
-            self._do_list_archives(mlist)
         self._pop_element('mailman')
 
     def close(self):
         while self._stack:
             self._pop_element()
-
-    def load_metadata(self, filename):
-        """Load metadata from a pickle file."""
-        try:
-            with open(filename, 'rb') as fp:
-                # Use protocol 2 for Python 2/3 compatibility
-                metadata = pickle.load(fp, fix_imports=True, encoding='latin1')
-            return metadata
-        except Exception as e:
-            print('Error loading metadata from %s: %s' % (filename, e))
-            return None
 
 
 
@@ -333,15 +289,19 @@ def plaintext_password(password):
 
 
 def sha_password(password):
+    if isinstance(password, str):
+        password = password.encode()
     h = Utils.sha_new(password)
-    return '{SHA}' + base64.b64encode(h.digest())
+    return '{SHA}' + base64.b64encode(h.digest()).decode('utf-8')
 
 
 def ssha_password(password):
+    if isinstance(password, str):
+        password = password.encode()
     salt = os.urandom(SALT_LENGTH)
     h = Utils.sha_new(password)
     h.update(salt)
-    return '{SSHA}' + base64.b64encode(h.digest() + salt)
+    return '{SSHA}' + base64.b64encode(h.digest() + salt).decode('utf-8')
 
 
 SCHEMES = {

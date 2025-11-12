@@ -1,122 +1,62 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>Ylläpitäjän pyynnöt kootaan yhdeksi kahdesta eri kohteesta,  <a href="%(summaryurl)s">yhteenvetosivulta</a>,ja <em>details</em>
-yksityiskohtasivulta.  Yhteenvetosivu sisältää vahvistusta odottamassa
-olevat listalle liittymis- ja irtisanoutumispyynnöt, sekä hyväksymistä 
-odottavat postit, jotka on ryhmitelty lähettäjän osoitteen mukaan.  
-Yksityiskohtasivu sisältää tarkemmat tiedot kaikista hyväksymistä 
-odottavista viesteistä, sisältäen viestien otsikot ja osan viestin tekstiä.
+Yll&auml;pit&auml;j&auml;n pyynn&ouml;t kootaan yhdeksi kahdesta eri kohteesta,  <a
+href="%(summaryurl)s">yhteenvetosivulta</a>,ja <em>details</em>
+yksityiskohtasivulta.  Yhteenvetosivu sis&auml;lt&auml;&auml; vahvistusta odottamassa
+olevat listalle liittymis- ja irtisanoutumispyynn&ouml;t, sek&auml; hyv&auml;ksymist&auml; 
+odottavat postit, jotka on ryhmitelty l&auml;hett&auml;j&auml;n osoitteen mukaan.  
+Yksityiskohtasivu sis&auml;lt&auml;&auml; tarkemmat tiedot kaikista hyv&auml;ksymist&auml; 
+odottavista viesteist&auml;, sis&auml;lt&auml;en viestien otsikot ja osan viestin teksti&auml;.
 
 <p>Seuraavat toimenpiteet ovat mahdollisia kaikilla sivuilla:
 
 <ul>
-<li><b>Siirrä</b> -- Siirtää päätöksesi myöhemmäksi. Tälle odottavalle
-    ylläpitäjän vahvistuspyynnölle ei tehdä nyt mitään, paitsi jätetään
-    odottavaksi postiksi, voit silti ohjata viestin eteenpäin 
-    tai säilyttää sen (katso allaolevaa).
+<li><b>Siirr&auml;</b> -- Siirt&auml;&auml; p&auml;&auml;t&ouml;ksesi my&ouml;hemm&auml;ksi. T&auml;lle odottavalle
+    yll&auml;pit&auml;j&auml;n vahvistuspyynn&ouml;lle ei tehd&auml; nyt mit&auml;&auml;n, paitsi j&auml;tet&auml;&auml;n
+    odottavaksi postiksi, voit silti ohjata viestin eteenp&auml;in 
+    tai s&auml;ilytt&auml;&auml; sen (katso allaolevaa).
 
-<li><b>Hyväksy</b> -- Hyväksy viesti lähettämällä se listalle.
-    Jäsenyyspyynnöissä, hyväksyy muutoksen jäsenyystietoihin.
+<li><b>Hyv&auml;ksy</b> -- Hyv&auml;ksy viesti l&auml;hett&auml;m&auml;ll&auml; se listalle.
+    J&auml;senyyspyynn&ouml;iss&auml;, hyv&auml;ksyy muutoksen j&auml;senyystietoihin.
 
-<li><b>Hylkää</b> -- Hylkää viestin, lähettää hylkäysilmoituksen
-    lähettäjälle ja poistaa alkuperäisen viestin. Jäsenyyspyynnöissä
-    hylkää muutoksen jäsenyystietoihin.  Kummassakin tapauksessa,
-    pitää liittää mukaan teksti hylkäyksen syystä.
+<li><b>Hylk&auml;&auml;</b> -- Hylk&auml;&auml; viestin, l&auml;hett&auml;&auml; hylk&auml;ysilmoituksen
+    l&auml;hett&auml;j&auml;lle ja poistaa alkuper&auml;isen viestin. J&auml;senyyspyynn&ouml;iss&auml;
+    hylk&auml;&auml; muutoksen j&auml;senyystietoihin.  Kummassakin tapauksessa,
+    pit&auml;&auml; liitt&auml;&auml; mukaan teksti hylk&auml;yksen syyst&auml;.
 
-<li><b>Poista</b> -- Poista alkuperäinen viesti, ilman että lähetetään
-    hylkäysilmoitusta.  Jäsenyyspyynnöissä pelkästään hävitetään pyyntö
-    eikä ilmoiteta siitä pyynnön esittäjälle.  Toimintoa 
-    käytetään yleensä tunnetulle roska(mainos)postille.
-</li></li></li></li></ul>
-<p>Odottavissa viesteissä aseta päälle <b>Säilytä</b> valinta jos haluat
-säilyttää kopion viestistä ylläpitäjän sivulla.  Toiminto on hyödyllinen
+<li><b>Poista</b> -- Poista alkuper&auml;inen viesti, ilman ett&auml; l&auml;hetet&auml;&auml;n
+    hylk&auml;ysilmoitusta.  J&auml;senyyspyynn&ouml;iss&auml; pelk&auml;st&auml;&auml;n h&auml;vitet&auml;&auml;n pyynt&ouml;
+    eik&auml; ilmoiteta siit&auml; pyynn&ouml;n esitt&auml;j&auml;lle.  Toimintoa 
+    k&auml;ytet&auml;&auml;n yleens&auml; tunnetulle roska(mainos)postille.
+</ul>
+
+<p>Odottavissa viesteiss&auml; aseta p&auml;&auml;lle <b>S&auml;ilyt&auml;</b> valinta jos haluat
+s&auml;ilytt&auml;&auml; kopion viestist&auml; yll&auml;pit&auml;j&auml;n sivulla.  Toiminto on hy&ouml;dyllinen
 loukkaavien postien kohdalla, jotka haluat tuhota, mutta joista sinun
-tarvitsee säilyttää tallennettua tietoa myöhempää tarkastelua varten.
+tarvitsee s&auml;ilytt&auml;&auml; tallennettua tietoa my&ouml;hemp&auml;&auml; tarkastelua varten.
 
-<p>Laita päälle <b>Lähetä eteenpäin</b> valinta, ja täytä vastaanottajan
-osoitekenttä, jos haluat lähettää viestin jolle kulle, joka ei kuulu
-listalle. Muuttaaksesi odottavaa viestiä ennen kuin se lähetetään listalle,
-sinun pitää lähettää sen ensin itsellesi (tai listan omistajille) ja
-hävittää alkuperäinen viesti.  Sitten kun viesti näkyy viestilaatikossasi,
-tee muutoksesi ja lähetä viesti uudelleen listalle, siten että se sisältää 
-<tt>Hyväksytty:</tt> otsikon sekä listan salasanan sen arvona.  Se
-on kunnon netiketti tässä tapauksessa sisällyttää huomautus viestiin siitä
-närkästyksestä, että olet joutunut muuttamaan tekstiä.
+<p>Laita p&auml;&auml;lle <b>L&auml;het&auml; eteenp&auml;in</b> valinta, ja t&auml;yt&auml; vastaanottajan
+osoitekentt&auml;, jos haluat l&auml;hett&auml;&auml; viestin jolle kulle, joka ei kuulu
+listalle. Muuttaaksesi odottavaa viesti&auml; ennen kuin se l&auml;hetet&auml;&auml;n listalle,
+sinun pit&auml;&auml; l&auml;hett&auml;&auml; sen ensin itsellesi (tai listan omistajille) ja
+h&auml;vitt&auml;&auml; alkuper&auml;inen viesti.  Sitten kun viesti n&auml;kyy viestilaatikossasi,
+tee muutoksesi ja l&auml;het&auml; viesti uudelleen listalle, siten ett&auml; se sis&auml;lt&auml;&auml; 
+<tt>Hyv&auml;ksytty:</tt> otsikon sek&auml; listan salasanan sen arvona.  Se
+on kunnon netiketti t&auml;ss&auml; tapauksessa sis&auml;llytt&auml;&auml; huomautus viestiin siit&auml;
+n&auml;rk&auml;styksest&auml;, ett&auml; olet joutunut muuttamaan teksti&auml;.
 
-<p>Yhteenvetosivulla voit myös lisätä sähköpostin osoitteen
-<em>lähettäjä filterointiin</em>.  Lähettäjä filtereitä on selitetty <a href="%(filterurl)s">lähettäjän filterointi yksilöintisivulla</a>, ja arvo
+<p>Yhteenvetosivulla voit my&ouml;s lis&auml;t&auml; s&auml;hk&ouml;postin osoitteen
+<em>l&auml;hett&auml;j&auml; filterointiin</em>.  L&auml;hett&auml;j&auml; filtereit&auml; on selitetty <a
+href="%(filterurl)s">l&auml;hett&auml;j&auml;n filterointi yksil&ouml;intisivulla</a>, ja arvo
 voi olla yksi seuraavista:
-<b>Hyväksy
-automaatisesti</b> (Hyväksytyt), <b> Odottaa automaattisesti</b> 
+<b>Hyv&auml;ksy
+automaatisesti</b> (Hyv&auml;ksytyt), <b> Odottaa automaattisesti</b> 
 (Odottavat),
-<b>Hylätään automaattisesti</b> (Hylätyt), tai <b>Tuhotaan automaattisesti
-</b> (Tuhotut). Tämä arvo ei ole mahdollinen, jos osoite on jo
-yksi lähettäjän filtterointi -osoite.
+<b>Hyl&auml;t&auml;&auml;n automaattisesti</b> (Hyl&auml;tyt), tai <b>Tuhotaan automaattisesti
+</b> (Tuhotut). T&auml;m&auml; arvo ei ole mahdollinen, jos osoite on jo
+yksi l&auml;hett&auml;j&auml;n filtterointi -osoite.
 
 <p>Kun olet saanut kaiken valmiiksi, klikkaa sivun
-ylä- tai alalaidassa sijaitsevaa <em>Hyväksy
-muutokset</em> näppäintä.  Tämä näppäin suorittaa kaikki valitut
-toimenpiteet kaikille ylläpitäjän pyynnöille, joista olet päätöksen tehnyt.
+yl&auml;- tai alalaidassa sijaitsevaa <em>Hyv&auml;ksy
+muutokset</em> n&auml;pp&auml;int&auml;.  T&auml;m&auml; n&auml;pp&auml;in suorittaa kaikki valitut
+toimenpiteet kaikille yll&auml;pit&auml;j&auml;n pyynn&ouml;ille, joista olet p&auml;&auml;t&ouml;ksen tehnyt.
 
 <p><a href="%(summaryurl)s">Paluu yhteenvetosivulle</a>.
-</p></p></p></p></p></p>
