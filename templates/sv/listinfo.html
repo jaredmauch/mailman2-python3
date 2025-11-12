@@ -1,187 +1,127 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
 <!-- $Revision: 6052 $ -->
-<html>
-<head>
-<title><mm-list-name> Infosida</mm-list-name></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000" size="+1"><mm-list-name> --
-	<mm-list-description></mm-list-description></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p> 
-	    </p></td>
-</tr>
-<tr>
-<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Om <mm-list-name></mm-list-name></font></b>
-</td>
-<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<mm-lang-form-start><mm-displang-box> <mm-list-langs>
-<mm-form-end>
-</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p><mm-list-info></mm-list-info></p>
-<p>För att se arkivet över e-postbrev som skickats till denna lista, gå in på arkivet 	       <mm-archive>
-<mm-list-name>
-</mm-list-name></mm-archive>.
-	      <mm-restricted-list-message>
-</mm-restricted-list-message></p>
-</td>
-</tr>
-<tr>
-<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<b><font color="#000000">Hur används e-postlistan <mm-list-name></mm-list-name></font></b>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">För att skicka ett e-postbrev till alla på listan, skicka det till 	  <a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.
+<HTML>
+  <HEAD>
+    <TITLE><MM-List-Name> Infosida</TITLE>
+  
+  </HEAD>
+  <BODY BGCOLOR="#ffffff">
 
-	  <p>Du kan anmäla dig till listan eller ändra inställningarna för ditt medlemskap på listan nedan:	</p></td>
-</tr>
-<tr>
-<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b><font color="#000000">Anmäl dig till 
-							<mm-list-name>
-</mm-list-name></font></b></td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<p>Du kan anmäla dig till <mm-list-name> genom att fylla i nödvändig information nedan. 	  <mm-list-subscription-msg>
-<ul>
-<mm-subscribe-form-start>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Din e-postadress:</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
-</mm-subscribe-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">Namn (valfritt):</td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">Du kan skriva ett lösenord i följande fält. Detta ger dålig säkerhet, men förhindrar att andra får tillgång til dina inställningar. <b>Använd inte något värdefullt lösenord</b> - lösenordet kan nämligen bli skickat till dig i klartext via e-postbrev. </font>
-<p>Om du inte skriver något lösenord, kommer du att automatiskt bli  tilldelad ett lösenord. Det kommer att skickas till dig så snart du har bekräftat din anmälan. Du kan senare begära att få lösenordet skickat till dig eller ändrat. 
-            <mm-reminder>
-</mm-reminder></p></td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Önskat lösenord:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
-<td style="padding: 8px; border: 1px solid #ccc;"> </td></tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Önskat lösenord en gång till:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
-<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Välj språk för meddelanden:</td>
-<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td>
-<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
-<mm-digest-question-start>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">Vill du få sammandragsversioner?</td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> Nej 	    <mm-digest-radio-button> Ja	</mm-digest-radio-button></mm-undigest-radio-button></td>
-</tr>
-<mm-digest-question-end>
-<mm-recaptcha-ui>
-<mm-captcha-ui>
-<tr>
-<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-subscribe-button></mm-subscribe-button></center>
-</td>
-</tr>
-</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
-<mm-form-end>
-</mm-form-end></mm-subscribe-form-start></ul>
-<tr>
-<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<a name="subscribers">
-<b><font color="#000000">Medlemmar av <mm-list-name></mm-list-name></font></b></a>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<mm-roster-form-start>
-<mm-roster-option>
-<mm-form-end>
-<p>
-<mm-options-form-start>
-<mm-editing-options>
-<mm-form-end>
-</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
-</tr>
-</mm-list-subscription-msg></mm-list-name></p></td></tr></table>
-<mm-mailman-footer>
-</mm-mailman-footer></p></body>
-</html>
+    <P>
+      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
+	<TR>
+	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
+	<MM-List-Description></FONT></B>
+	  </TD>
+	</TR>
+	<tr>
+	    <td colspan="2">
+	      <p>&nbsp;
+	    </td>
+	  </tr>
+	  <tr>
+	    <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
+	      <B><FONT COLOR="#000000">Om <MM-List-Name></FONT></B>
+	    </TD>
+            <TD COLSPAN="1" WIDTH="100%" BGCOLOR="#FFF0D0">
+              <MM-lang-form-start><MM-displang-box> <MM-list-langs>
+              <MM-form-end>
+            </TD>
+	  </TR>
+	    <tr>
+	      <td colspan="2">
+		<P><MM-List-Info></P>
+	  <p>F&ouml;r att se arkivet &ouml;ver e-postbrev som skickats till denna lista, g&aring; in p&aring; arkivet 	       <MM-Archive>
+							<MM-List-Name>
+						</MM-Archive>.
+	      <MM-Restricted-List-Message>
+	  </p>
+	</TD>
+      </TR>
+      <TR>
+	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	  <B><FONT COLOR="#000000">Hur anv&auml;nds e-postlistan <MM-List-Name></FONT></B>
+	</TD>
+      </TR>
+      <tr>
+	<td colspan="2">F&ouml;r att skicka ett e-postbrev till alla p&aring; listan, skicka det till 	  <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
+
+	  <p>Du kan anm&auml;la dig till listan eller &auml;ndra inst&auml;llningarna f&ouml;r ditt medlemskap p&aring; listan nedan:	</td>
+      </tr>
+      <TR>
+	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0"><B><FONT COLOR="#000000">Anm&auml;l dig till 
+							<MM-List-Name>
+						</FONT></B></TD>
+      </TR>
+      <tr>
+	<td colspan="2">
+	  <P>Du kan anm&auml;la dig till <MM-List-Name> genom att fylla i n&ouml;dv&auml;ndig information nedan. 	  <MM-List-Subscription-Msg>
+	  <ul>
+    <MM-Subscribe-Form-Start>
+	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
+		WIDTH="70%">
+		<TR>
+		  <TD BGCOLOR="#dddddd" WIDTH="55%">Din e-postadress:</TD>
+		  <TD WIDTH="33%"><MM-Subscribe-Box>
+	</TD>
+        <TD WIDTH="12%">&nbsp;</TD></TR>
+      <tr>
+        <td bgcolor="#dddddd" width="55%">Namn (valfritt):</td>
+        <td width="33%"><mm-fullname-box></td>
+	<TD WIDTH="12%">&nbsp;</TD></TR>
+      <TR>
+	<TD COLSPAN="3"><font size=-1>Du kan skriva ett l&ouml;senord i f&ouml;ljande f&auml;lt. Detta ger d&aring;lig s&auml;kerhet, men f&ouml;rhindrar att andra f&aring;r tillg&aring;ng til dina inst&auml;llningar. <b>Anv&auml;nd inte n&aring;got v&auml;rdefullt l&ouml;senord</b> - l&ouml;senordet kan n&auml;mligen bli skickat till dig i klartext via e-postbrev. </font>
+										<p>Om du inte skriver n&aring;got l&ouml;senord, kommer du att automatiskt bli  tilldelad ett l&ouml;senord. Det kommer att skickas till dig s&aring; snart du har bekr&auml;ftat din anm&auml;lan. Du kan senare beg&auml;ra att f&aring; l&ouml;senordet skickat till dig eller &auml;ndrat.&nbsp;
+            <MM-Reminder>
+        </TD>
+      </TR>  
+      <TR>
+	<TD BGCOLOR="#dddddd">&Ouml;nskat l&ouml;senord:</TD>
+	<TD><MM-New-Password-Box></TD>
+	<TD>&nbsp;</TD></TR>
+      <TR> 
+	<TD BGCOLOR="#dddddd">&Ouml;nskat l&ouml;senord en g&aring;ng till:</TD>
+	<TD><MM-Confirm-Password></TD>
+	<TD>&nbsp; </TD></TR>
+      <tr>
+        <TD BGCOLOR="#dddddd">V&auml;lj spr&aring;k f&ouml;r meddelanden:</TD> 
+        <TD> <MM-list-langs></TD>
+        <TD>&nbsp; </TD></TR>
+      <mm-digest-question-start>
+      <tr>
+	<td BGCOLOR="#dddddd">Vill du f&aring; sammandragsversioner?</td>
+									<td><MM-Undigest-Radio-Button> Nej 	    <MM-Digest-Radio-Button> Ja	</TD>
+								</tr>
+      <mm-digest-question-end>
+      <mm-recaptcha-ui>
+      <mm-captcha-ui>
+      <tr>
+	<td colspan="3">
+	  <center><MM-Subscribe-Button></center>
+    </td>
+    </tr>
+    </TABLE>
+    <MM-Form-End>
+    </ul>
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
+	<a name="subscribers">
+        <B><FONT COLOR="#000000">Medlemmar av <MM-List-Name></FONT></B></a>
+      </TD>
+    </TR>
+    <tr>
+      <TD COLSPAN="2" WIDTH="100%">
+	<MM-Roster-Form-Start>
+	<MM-Roster-Option>
+	    <MM-Form-End>
+	  <p>
+	<MM-Options-Form-Start>
+	<MM-Editing-Options>
+		<MM-Form-End>
+      </td>
+    </tr>
+  </table>
+<MM-Mailman-Footer>
+</BODY>
+</HTML>

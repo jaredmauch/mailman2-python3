@@ -1,91 +1,30 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>Tento text mù¾e obsahovat <a href="https://docs.python.org/3/library/stdtypes.html#string-formatting-operations">formátovací
-pøíkazy Pythonu</a> které se nahrazují odpovídajícími hodnotami, pøi
-generování stránky.  Nejdùle¾itìjší promìnné jsou:
+Tento text m��e obsahovat <a
+href="https://docs.python.org/2/library/stdtypes.html#string-formatting-operations">form&aacute;tovac&iacute;
+p�&iacute;kazy Pythonu</a> kter&eacute; se nahrazuj&iacute; odpov&iacute;daj&iacute;c&iacute;mi hodnotami, p�i
+generov&aacute;n&iacute; str&aacute;nky.  Nejd�le�it�j&scaron;&iacute; prom�nn&eacute; jsou:
 
 <ul>
-<li><b>real_name</b> - `Hezké' jméno konference, 
-    obvykle název, který má zachovánu velikost písmen tak jak je 
-    zadán v konfiguraci.
+    <li><b>real_name</b> - `Hezk&eacute;' jm&eacute;no konference, 
+    obvykle n&aacute;zev, kter&yacute; m&aacute; zachov&aacute;nu velikost p&iacute;smen tak jak je 
+    zad&aacute;n v konfiguraci.
 
-    <li><b>list_name</b> - Jméno konference, tak jak
-    se pou¾ívá v URL, tedy tam kde zále¾í na velikosti písmen (všechna
-    jsou pøevedena na malá).
+    <li><b>list_name</b> - Jm&eacute;no konference, tak jak
+    se pou�&iacute;v&aacute; v URL, tedy tam kde z&aacute;le�&iacute; na velikosti p&iacute;smen (v&scaron;echna
+    jsou p�evedena na mal&aacute;).
 
-    <li><b>host_name</b> - Celé DNS jméno serveru na
-    kterém konference bì¾í.
+    <li><b>host_name</b> - Cel&eacute; DNS jm&eacute;no serveru na
+    kter&eacute;m konference b�&iacute;.
     
-    <li><b>web_page_url</b> - Základní URL pro Mailman.
-    Pokud je následováno napø. tímto pøíkazem:
+    <li><b>web_page_url</b> - Z&aacute;kladn&iacute; URL pro Mailman.
+    Pokud je n&aacute;sledov&aacute;no nap�. t&iacute;mto p�&iacute;kazem:
     <em>listinfo/%(list_name)s</em>
-    vede na stránku s informacemi o konferenci.
+    vede na str&aacute;nku s informacemi o konferenci.
 
-    <li><b>description</b> - Krátký, charakteristický
-    popis konference, tak jak byl zadán pøi konfiguraci.
+    <li><b>description</b> - Kr&aacute;tk&yacute;, charakteristick&yacute;
+    popis konference, tak jak byl zad&aacute;n p�i konfiguraci.
 
-    <li><b>info</b> - Kompletní, dlouhý, popis konference.
+    <li><b>info</b> - Kompletn&iacute;, dlouh&yacute;, popis konference.
 
-    <li><b>cgiext</b> - pøípona pøidávaná k cgi scriptùm.
+    <li><b>cgiext</b> - p�&iacute;pona p�id&aacute;van&aacute; k cgi script�m.
 
-</li></li></li></li></li></li></li></ul>
+</ul>

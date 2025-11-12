@@ -18,19 +18,15 @@
 
 import re
 import email
-from email.iterators import body_line_iterator
-from email.header import decode_header
-
-from Mailman import mm_cfg
-from Mailman import Utils
-from Mailman.Logging.Syslog import syslog
-from Mailman.Handlers.CookHeaders import change_header
+import email.iterators
+from io import StringIO
 
 tcre = re.compile(r'the following recipients did not receive this message:',
                   re.IGNORECASE)
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
+
 def process(msg):
     if msg.get_content_type() != 'multipart/mixed':
         return None
@@ -39,7 +35,7 @@ def process(msg):
     #     1 == tag line seen
     state = 0
     # This format thinks it's a MIME, but it really isn't
-    for line in body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         line = line.strip()
         if state == 0 and tcre.match(line):
             state = 1
@@ -48,16 +44,3 @@ def process(msg):
             if not mo:
                 return None
             return [mo.group('addr')]
-
-    # Now that we have a Message object that meets our criteria, let's extract
-    # the first numlines of body text.
-    lines = []
-    lineno = 0
-    for line in body_line_iterator(msg):
-        # Blank lines don't count
-        if not line.strip():
-            continue
-        lineno += 1
-        lines.append(line)
-        if numlines is not None and lineno >= numlines:
-            break

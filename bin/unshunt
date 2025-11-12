@@ -33,33 +33,46 @@ will result in losing all the messages in that queue.
 """
 
 import sys
-import argparse
+import getopt
 
 import paths
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import C_
 
+PROGRAM = sys.argv[0]
 
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(fd, C_(__doc__, file=fd))
+    print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Move a message from the shunt queue to the original queue.')
-    parser.add_argument('directory', nargs='?', default=mm_cfg.SHUNTQUEUE_DIR,
-                       help='Directory to dequeue from (default: %(default)s)')
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
+    except getopt.error as msg:
+        usage(1, msg)
 
-    args = parser.parse_args()
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
 
-    sb = get_switchboard(args.directory)
+    if len(args) == 0:
+        qdir = mm_cfg.SHUNTQUEUE_DIR
+    elif len(args) == 1:
+        qdir = args[0]
+    else:
+        usage(1)
+
+    sb = get_switchboard(qdir)
     sb.recover_backup_files()
     for filebase in sb.files():
         try:
@@ -70,12 +83,12 @@ def main():
         except Exception as e:
             # If there are any unshunting errors, log them and continue trying
             # other shunted messages.
-            print(C_(
-                'Cannot unshunt message %(filebase)s, skipping:\n%(e)s'), file=sys.stderr)
+            print(C_('Cannot unshunt message %(filebase)s, skipping:\n%(e)s'), file=sys.stderr)
         else:
             # Unlink the .bak file left by dequeue()
             sb.finish(filebase)
 
 
+
 if __name__ == '__main__':
     main()

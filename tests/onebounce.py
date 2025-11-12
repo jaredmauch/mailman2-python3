@@ -36,7 +36,7 @@ from __future__ import print_function
 
 import sys
 import email
-import argparse
+import getopt
 
 import paths
 from Mailman.Bouncers import BouncerAPI
@@ -45,21 +45,32 @@ PROGRAM = sys.argv[0]
 COMMASPACE = ', '
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Test the bounce detection for files containing bounces.')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                       help='Verbose output')
-    parser.add_argument('-a', '--all', action='store_true',
-                       help='Run the message through all the bounce modules')
-    parser.add_argument('files', nargs='+',
-                       help='Files to process')
-    return parser.parse_args()
+
+def usage(code, msg=''):
+    print(__doc__ % globals())
+    if msg:
+        print(msg)
+    sys.exit(code)
 
 
+
 def main():
-    args = parse_args()
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hva',
+                                   ['help', 'verbose', 'all'])
+    except getopt.error as msg:
+        usage(1, msg)
 
-    for file in args.files:
+    all = verbose = 0
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-v', '--verbose'):
+            verbose = 1
+        elif opt in ('-a', '--all'):
+            all = 1
+
+    for file in args:
         fp = open(file)
         msg = email.message_from_file(fp)
         fp.close()
@@ -69,17 +80,18 @@ def main():
             addrs = sys.modules[modname].process(msg)
             if addrs is BouncerAPI.Stop:
                 print(module, 'got a Stop')
-                if not args.all:
+                if not all:
                     break
                 continue
             if not addrs:
-                if args.verbose:
+                if verbose:
                     print(module, 'found no matches')
             else:
                 print(module, 'found', COMMASPACE.join(addrs))
-                if not args.all:
+                if not all:
                     break
 
 
+
 if __name__ == '__main__':
     main()

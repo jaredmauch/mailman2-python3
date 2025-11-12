@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Copyright (C) 1998-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -29,6 +30,7 @@ import errno
 #
 from . import pipermail
 from Mailman import LockFile
+from Mailman import Utils
 
 CACHESIZE = pipermail.CACHESIZE
 
@@ -67,9 +69,20 @@ class DumbBTree(object):
 
     def __sort(self, dirty=None):
         if self.__dirty == 1 or dirty:
-            self.sorted = list(self.dict.keys())
-            self.sorted.sort()
+            self.sorted = self.__fix_for_sort(list(self.dict.keys()))
+            if hasattr(self.sorted, 'sort'):
+                self.sorted.sort()
             self.__dirty = 0
+
+    def __fix_for_sort(self, items):
+        if isinstance(items, bytes):
+            return items.decode()
+        elif isinstance(items, list):
+            return [ self.__fix_for_sort(item) for item in items ]
+        elif isinstance(items, tuple):
+            return tuple( self.__fix_for_sort(item) for item in items )
+        else:
+            return items
 
     def lock(self):
         self.lockfile.lock()
@@ -168,7 +181,7 @@ class DumbBTree(object):
 
     def load(self):
         try:
-            fp = open(self.path)
+            fp = open(self.path, mode='rb')
             try:
                 self.dict = marshal.load(fp)
             finally:
@@ -184,13 +197,14 @@ class DumbBTree(object):
     def close(self):
         omask = os.umask(0o007)
         try:
-            fp = open(self.path, 'w')
+            fp = open(self.path, 'wb')
         finally:
             os.umask(omask)
         fp.write(marshal.dumps(self.dict))
         fp.close()
         self.unlock()
 
+
 # this is lifted straight out of pipermail with
 # the bsddb.btree replaced with above class.
 # didn't use inheritance because of all the
@@ -273,7 +287,7 @@ class HyperDatabase(pipermail.Database):
 
     def hasArticle(self, archive, msgid):
         self.__openIndices(archive)
-        return msgid in self.articleIndex
+        return self.articleIndex.has_key(msgid)
 
     def setThreadKey(self, archive, key, msgid):
         self.__openIndices(archive)
@@ -284,7 +298,7 @@ class HyperDatabase(pipermail.Database):
         if msgid not in self.__cache:
             # get the pickled object out of the DumbBTree
             buf = self.articleIndex[msgid]
-            article = self.__cache[msgid] = pickle.loads(buf, fix_imports=True, encoding='latin1')
+            article = self.__cache[msgid] = Utils.load_pickle(buf)
             # For upgrading older archives
             article.setListIfUnset(self._mlist)
         else:

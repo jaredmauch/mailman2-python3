@@ -24,11 +24,10 @@ been audited for differences between the two.
 from email.iterators import typed_subpart_iterator
 from email.utils import parseaddr
 from io import StringIO
-import re
-import ipaddress
 
 from Mailman.Bouncers.BouncerAPI import Stop
 
+
 def process(msg):
     # Iterate over each message/delivery-status subpart
     addrs = []
@@ -73,48 +72,6 @@ def process(msg):
                     for param in params:
                         if param.startswith('<') and param.endswith('>'):
                             addrs.append(param[1:-1])
-
-    # Extract IP address from Received headers
-    ip = None
-    for header in msg.get_all('Received', []):
-        if isinstance(header, bytes):
-            header = header.decode('us-ascii', errors='replace')
-        # Look for IP addresses in Received headers
-        # Support both IPv4 and IPv6 formats
-        ip_match = re.search(r'\[([0-9a-fA-F:.]+)\]', header, re.IGNORECASE)
-        if ip_match:
-            ip = ip_match.group(1)
-            break
-            
-    if ip:
-        try:
-            if have_ipaddress:
-                ip_obj = ipaddress.ip_address(ip)
-                if isinstance(ip_obj, ipaddress.IPv4Address):
-                    # For IPv4, drop last octet
-                    parts = str(ip_obj).split('.')
-                    ip = '.'.join(parts[:-1])
-                else:
-                    # For IPv6, drop last 16 bits
-                    expanded = ip_obj.exploded.replace(':', '')
-                    ip = expanded[:-4]
-            else:
-                # Fallback for systems without ipaddress module
-                if ':' in ip:
-                    # IPv6 address
-                    parts = ip.split(':')
-                    if len(parts) <= 8:
-                        # Pad with zeros and drop last 16 bits
-                        expanded = ''.join(part.zfill(4) for part in parts)
-                        ip = expanded[:-4]
-                else:
-                    # IPv4 address
-                    parts = ip.split('.')
-                    if len(parts) == 4:
-                        ip = '.'.join(parts[:-1])
-        except (ValueError, IndexError):
-            ip = None
-            
     # Uniquify
     rtnaddrs = {}
     for a in addrs:

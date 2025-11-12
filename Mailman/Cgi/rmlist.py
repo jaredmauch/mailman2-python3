@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import os
-import urllib.parse
+from Mailman.Utils import FieldStorage
 import sys
 import errno
 import shutil
@@ -36,22 +36,15 @@ _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
+
 def main():
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
+    cgidata = FieldStorage()
     try:
-        if os.environ.get('REQUEST_METHOD') == 'POST':
-            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            if content_length > 0:
-                form_data = sys.stdin.buffer.read(content_length).decode('utf-8')
-                cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-            else:
-                cgidata = {}
-        else:
-            query_string = os.environ.get('QUERY_STRING', '')
-            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-    except Exception:
+        cgidata.getfirst('password', '')
+    except TypeError:
         # Someone crafted a POST with a bad Content-Type:.
         doc.AddItem(Header(2, _("Error")))
         doc.AddItem(Bold(_('Invalid options to CGI script.')))
@@ -80,8 +73,8 @@ def main():
     except Errors.MMListError as e:
         # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
-        title = _('No such list <em>{safelistname}</em>')
-        doc.SetTitle(_('No such list {safelistname}'))
+        title = _(f'No such list <em>{safelistname}</em>')
+        doc.SetTitle(_(f'No such list {safelistname}'))
         doc.AddItem(
             Header(3,
                    Bold(FontAttr(title, color='#ff0000', size='+2'))))
@@ -119,10 +112,11 @@ def main():
     print(doc.Format())
 
 
+
 def process_request(doc, cgidata, mlist):
-    password = cgidata.get('password', [''])[0].strip()
+    password = cgidata.getfirst('password', '').strip()
     try:
-        delarchives = int(cgidata.get('delarchives', ['0'])[0])
+        delarchives = int(cgidata.getfirst('delarchives', '0'))
     except ValueError:
         delarchives = 0
 
@@ -186,16 +180,10 @@ def process_request(doc, cgidata, mlist):
 
     title = _('Mailing list deletion results')
     doc.SetTitle(title)
-    table = Table(
-        role="table",
-        aria_label=_("List Deletion Results"),
-        border=0,
-        width='100%'
-    )
+    table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
-                      role="cell")
+                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
     if not problems:
         table.AddRow([_(f'''You have successfully deleted the mailing list
     <b>{listname}</b>.''')])
@@ -215,21 +203,16 @@ def process_request(doc, cgidata, mlist):
     doc.AddItem(MailmanLogo())
 
 
+
 def request_deletion(doc, mlist, errmsg=None):
     realname = mlist.real_name
-    title = _('Permanently remove mailing list <em>{realname}</em>')
-    doc.SetTitle(_('Permanently remove mailing list {realname}'))
+    title = _(f'Permanently remove mailing list <em>{realname}</em>')
+    doc.SetTitle(_(f'Permanently remove mailing list {realname}'))
 
-    table = Table(
-        role="table",
-        aria_label=_("List Deletion Form"),
-        border=0,
-        width='100%'
-    )
+    table = Table(border=0, width='100%')
     table.AddRow([Center(Bold(FontAttr(title, size='+1')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      style=f'background-color: {mm_cfg.WEB_HEADER_COLOR}',
-                      role="cell")
+                      bgcolor=mm_cfg.WEB_HEADER_COLOR)
 
     # Add any error message
     if errmsg:
@@ -255,38 +238,26 @@ def request_deletion(doc, mlist, errmsg=None):
     """)])
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
     form = Form(mlist.GetScriptURL('rmlist'))
-    ftable = Table(
-        role="table",
-        aria_label=_("List Deletion Form Fields"),
-        border=0,
-        cols='2',
-        width='100%',
-        cellspacing=3,
-        cellpadding=4
-    )
+    ftable = Table(border=0, cols='2', width='100%',
+                   cellspacing=3, cellpadding=4)
     
     ftable.AddRow([Label(_('List password:')), PasswordBox('password')])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
-                      style=f'background-color: {GREY}',
-                      role="cell")
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
-                      style=f'background-color: {GREY}',
-                      role="cell")
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
-    ftable.AddRow([Label(_('Delete archives?')),
-                   RadioButtonArray('delarchives',
-                                    (_('No'), _('Yes')),
-                                    checked=0,
-                                    values=(0, 1))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0,
-                      style=f'background-color: {GREY}',
-                      role="cell")
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1,
-                      style=f'background-color: {GREY}',
-                      role="cell")
+    ftable.AddRow([Label(_('Also delete archives?')),
+                   RadioButtonArray('delarchives', (_('No'), _('Yes')),
+                                    checked=0, values=(0, 1))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, bgcolor=GREY)
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 1, bgcolor=GREY)
 
-    ftable.AddRow([Center(SubmitButton('doit', _('Delete List')))])
-    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2, role="cell")
+    ftable.AddRow([Center(Link(
+        mlist.GetScriptURL('admin'),
+        _('<b>Cancel</b> and return to list administration')))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
+
+    ftable.AddRow([Center(SubmitButton('doit', _('Delete this list')))])
+    ftable.AddCellInfo(ftable.GetCurrentRowIndex(), 0, colspan=2)
     form.AddItem(ftable)
     table.AddRow([form])
     doc.AddItem(table)

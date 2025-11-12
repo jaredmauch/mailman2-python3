@@ -26,7 +26,7 @@ try:
 except ImportError:
     import paths
 
-from Mailman.Message import Message
+from Mailman import Message
 from Mailman import Version
 from Mailman import Errors
 
@@ -38,7 +38,7 @@ class TestSentMessage1(EmailBase):
     def test_user_notification(self):
         eq = self.assertEqual
         unless = self.failUnless
-        msg = Mailman.Message.UserNotification(
+        msg = Message.UserNotification(
             'aperson@dom.ain',
             '_xtest@dom.ain',
             'Your Test List',
@@ -77,7 +77,7 @@ From: nobody@dom.ain
 Subject: and another thing
 
 yadda yadda yadda
-""", Message)
+""", Message.Message)
         self._mlist.BounceMessage(msg, {})
         qmsg = email.message_from_string(self._readmsg())
         unless(qmsg.is_multipart())

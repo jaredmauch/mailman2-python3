@@ -50,12 +50,6 @@ def remove_nonkeepers(msg):
 
 
 def process(mlist, msg, msgdata):
-    """Process the message."""
-    # Remove old message-id if it exists
-    if 'message-id' in msg:
-        del msg['message-id']
-    # Set new message-id
-    msg['Message-ID'] = unique_message_id(mlist)
     # Always remove this header from any outgoing messages.  Be sure to do
     # this after the information on the header is actually used, but before a
     # permanent record of the header is saved.
@@ -83,6 +77,11 @@ def process(mlist, msg, msgdata):
         del msg['x-originating-email']
         # And these can reveal the sender too
         del msg['received']
+        # And so can the message-id so replace it.
+        del msg['message-id']
+        msg['Message-ID'] = unique_message_id(mlist)
+        # And something sets this
+        del msg['x-envelope-from']
         # And now remove all but the keepers.
         remove_nonkeepers(msg)
         i18ndesc = str(uheader(mlist, mlist.description, 'From'))
@@ -98,4 +97,8 @@ def process(mlist, msg, msgdata):
     del msg['x-confirm-reading-to']
     # Pegasus mail uses this one... sigh
     del msg['x-pmrqc']
-    return True
+
+    # Remove any header whose value is not a string.
+    for h, v in list(msg.items()):
+        if not isinstance(v, str):
+            del msg[h]

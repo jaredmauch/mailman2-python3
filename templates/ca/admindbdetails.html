@@ -1,125 +1,63 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>Les sol·licituds d'administració es mostren en una de dues maneres possibles: 
-en una <a href="%(summaryurl)s">pàgina de resum</a>, i en una pàgina de <em>detalls</em>.
-La pàgina de resum conté les sol·licituds de subscripció i de
-cancel·lació pendents, i els missatges retinguts que esperen la vostra
-aprovació, ordenats segons l'adreça del remitent. La pàgina de detalls
-conté una vista més detallada d'aquests missatges retinguts, incloent-ne el títol
+Les sol&middot;licituds d'administraci&oacute; es mostren en una de dues maneres possibles: 
+en una <a href="%(summaryurl)s">p&agrave;gina de resum</a>, i en una p&agrave;gina de <em>detalls</em>.
+La p&agrave;gina de resum cont&eacute; les sol&middot;licituds de subscripci&oacute; i de
+cancel&middot;laci&oacute; pendents, i els missatges retinguts que esperen la vostra
+aprovaci&oacute;, ordenats segons l'adre&ccedil;a del remitent. La p&agrave;gina de detalls
+cont&eacute; una vista m&eacute;s detallada d'aquests missatges retinguts, incloent-ne el t&iacute;tol
 sencer i un extracte
 del cos.
 
-<p>Les accions següents estan disponibles a totes les pàgines:
+<p>Les accions seg&uuml;ents estan disponibles a totes les p&agrave;gines:
 
-<ul> <li><b>Ajorna</b> -- ajornament de la decisió per més endavant. No es
-durà a terme cap acció per a aquesta sol·licitud d'administració. Pel que fa als missatges retinguts, encara es
-podran reenviar o mantenir (vegeu l'acció de sota).
+<ul> <li><b>Ajorna</b> -- ajornament de la decisi&oacute; per m&eacute;s endavant. No es
+dur&agrave; a terme cap acci&oacute; per a aquesta sol&middot;licitud d'administraci&oacute;. Pel que fa als missatges retinguts, encara es
+podran reenviar o mantenir (vegeu l'acci&oacute; de sota).
 
-<li><b>Aprova</b> -- aprovació del missatge i enviament a la
-llista. Si és una sol·licitud de subscripció, s'aprovarà el canvi
-d'estat de la subscripció.
+<li><b>Aprova</b> -- aprovaci&oacute; del missatge i enviament a la
+llista. Si &eacute;s una sol&middot;licitud de subscripci&oacute;, s'aprovar&agrave; el canvi
+d'estat de la subscripci&oacute;.
 
 <li><b>Rebutja</b> -- rebuig del missatge, enviament d'una nota de
-rebuig al remitent i descart del missatge original. Si és una
-sol·licitud de subscripció, es rebutjarà el canvi d'estat de la
-subscripció. En qualsevol cas, és recomanable donar un motiu per a tal
-decisió al quadre de text del costat.
+rebuig al remitent i descart del missatge original. Si &eacute;s una
+sol&middot;licitud de subscripci&oacute;, es rebutjar&agrave; el canvi d'estat de la
+subscripci&oacute;. En qualsevol cas, &eacute;s recomanable donar un motiu per a tal
+decisi&oacute; al quadre de text del costat.
 
-<li><b>Descarta</b> -- supressió del missatge original sense enviar
-una nota de rebuig. Si és una sol·licitud de subscripció, es descartarà
-sense enviar cap notificació al remitent. Aquesta és la manera d'actuar
-davant de l'spam. </li></li></li></li></ul>
-<p>Per als missatges retinguts, activeu l'opció <b>Manté</b> per a desar 
-  una còpia del missatge per a l'administrador del lloc. Això és 
-  molt útil per a missatges abusius que vulgueu descartar, però dels quals en calgui una còpia per a inspeccions posteriors.
+<li><b>Descarta</b> -- supressi&oacute; del missatge original sense enviar
+una nota de rebuig. Si &eacute;s una sol&middot;licitud de subscripci&oacute;, es descartar&agrave;
+sense enviar cap notificaci&oacute; al remitent. Aquesta &eacute;s la manera d'actuar
+davant de l'spam. </ul>
 
-<p>Activeu l'opció <b>Reenvia a</b>, i escriviu l'adreça de
-reenviament si voleu reenviar el missatge a algú que no sigui a la
+<p>Per als missatges retinguts, activeu l'opci&oacute; <b>Mant&eacute;</b> per a desar 
+  una c&ograve;pia del missatge per a l'administrador del lloc. Aix&ograve; &eacute;s 
+  molt &uacute;til per a missatges abusius que vulgueu descartar, per&ograve; dels quals en calgui una c&ograve;pia per a inspeccions posteriors.
+
+<p>Activeu l'opci&oacute; <b>Reenvia a</b>, i escriviu l'adre&ccedil;a de
+reenviament si voleu reenviar el missatge a alg&uacute; que no sigui a la
 llista. Per a modificar un missatge retingut abans d'enviar-lo a la
-llista, us l'haureu d'enviar a vós mateix (o bé al propietari de
-la llista), i descartar l'original. Un cop l'hàgiu rebut a la bústia
+llista, us l'haureu d'enviar a v&oacute;s mateix (o b&eacute; al propietari de
+la llista), i descartar l'original. Un cop l'h&agrave;giu rebut a la b&uacute;stia
 d'entrada, haureu de realitzar-hi els canvis pertinents i reenviar-lo a la
-llista amb una capçalera <tt>Approved:</tt> que inclogui la vostra contrasenya de la llista com a valor. En aquest 
-  casos és recomanable una nota en el missatge 
-  nou amb una explicació de les modificacions del text original.
+llista amb una cap&ccedil;alera <tt>Approved:</tt> que inclogui la vostra contrasenya de la llista com a valor. En aquest 
+  casos &eacute;s recomanable una nota en el missatge 
+  nou amb una explicaci&oacute; de les modificacions del text original.
 
-<p>Opcionalment, si el remitent del missatge original és un membre de la 
-  llista en espera de moderació, podeu suprimir-li el senyalador que així ho especifica. Això és útil 
-  en el cas que la vostra llista estigui configurada per a posar en període de prova 
-  els membres nous, i ja hàgiu decidit que aquest membre concret 
-  és fiable i pot enviar missatges a la llista sense necessitat d'aprovació.
+<p>Opcionalment, si el remitent del missatge original &eacute;s un membre de la 
+  llista en espera de moderaci&oacute;, podeu suprimir-li el senyalador que aix&iacute; ho especifica. Aix&ograve; &eacute;s &uacute;til 
+  en el cas que la vostra llista estigui configurada per a posar en per&iacute;ode de prova 
+  els membres nous, i ja h&agrave;giu decidit que aquest membre concret 
+  &eacute;s fiable i pot enviar missatges a la llista sense necessitat d'aprovaci&oacute;.
 
 <p>En cas que el remitent no sigui un membre de 
-  la llista, podeu afegir la seva adreça electrònica a un <em>filtre de remitents</em>. 
-  Els filtres de remitents es descriuen a la <a href="%(filterurl)s">pàgina de privacitat del filtre de remitents</a>, 
+  la llista, podeu afegir la seva adre&ccedil;a electr&ograve;nica a un <em>filtre de remitents</em>. 
+  Els filtres de remitents es descriuen a la <a href="%(filterurl)s">p&agrave;gina de privacitat del filtre de remitents</a>, 
   i poden ser d'<b>auto-accept</b> (Accepts), d'<b>auto-hold</b> (Holds), d'<b>auto-reject</b> 
-  (Rejects), o d'<b>auto-discard</b> (Discards). Aquesta opció no estarà 
-  disponible si l'adreça ja apareix en un filtre de remitents.
+  (Rejects), o d'<b>auto-discard</b> (Discards). Aquesta opci&oacute; no estar&agrave; 
+  disponible si l'adre&ccedil;a ja apareix en un filtre de remitents.
 
-<p>Un cop hàgiu acabat, feu clic al botó <em>Envia totes les dades</em> 
-  que es troba a l'inici i al final de la pàgina. Aquest botó 
-  enviarà totes les accions seleccionades de totes les sol·licituds d'administració 
-  sobre les quals hàgiu pres una decisió.
+<p>Un cop h&agrave;giu acabat, feu clic al bot&oacute; <em>Envia totes les dades</em> 
+  que es troba a l'inici i al final de la p&agrave;gina. Aquest bot&oacute; 
+  enviar&agrave; totes les accions seleccionades de totes les sol&middot;licituds d'administraci&oacute; 
+  sobre les quals h&agrave;giu pres una decisi&oacute;.
 
-<p><a href="%(summaryurl)s">Torna a la pàgina principal</a>. 
-</p></p></p></p></p></p></p>
+<p><a href="%(summaryurl)s">Torna a la p&agrave;gina principal</a>. 

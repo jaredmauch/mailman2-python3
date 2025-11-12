@@ -1,100 +1,40 @@
 <html>
 <head>
-<title>%(listname)s Ξ ΞΉΟƒΟ„ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ· Ο„ΞΏΟ… %(who)s</title>
-<script>function sf(){document.f.adminpw.focus();}</script>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff" onload="sf()">
-<form action="%(path)s" method="POST" name="f">
+  <title>%(listname)s Πιστοποίηση του %(who)s</title>
+  <script>function sf(){document.f.adminpw.focus();}</script>
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(path)s" name="f">
 %(message)s
-  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
-<b><font color="#000000" size="+1">Ξ ΞΉΟƒΟ„ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ· Ο„ΞΏΟ… %(who)s Ο„Ξ·Ο‚
-	    Ξ»Ξ―ΟƒΟ„Ξ±Ο‚ %(listname)s</font></b>
-</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">ΞΟ‰Ξ΄ΞΉΞΊΟΟ‚ Ο„ΞΏΟ… %(who)s:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><input name="adminpw" size="30" type="password"/></td>
-</tr>
-<tr>
-<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"><input name="admlogin" type="SUBMIT" value="Ξ‘Ο†Ξ®ΟƒΟ„Ξµ ΞΌΞµ Ξ½Ξ± ΟƒΟ…Ξ½Ξ΄ΞµΞΈΟ ..."/>
-</td>
-</tr>
-</table>
-<p><strong><em>Ξ£Ξ·ΞΌΞ±Ξ½Ο„ΞΉΞΊΟ:</em></strong> Ξ‘Ο€Ο Ο„ΞΏ 
-      ΟƒΞ·ΞΌΞµΞ―ΞΏ Ξ±Ο…Ο„Ο ΞΊΞ±ΞΉ Ξ­Ο€ΞµΞΉΟ„Ξ±, ΞΈΞ± Ο€ΟΞ­Ο€ΞµΞΉ Ξ½Ξ± Ξ­Ο‡ΞµΟ„Ξµ ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΌΞ­Ξ½Ξ± Ο„Ξ± cookies ΟƒΟ„ΞΏΞ½ browser. 
-      Ξ£Ξµ Ξ΄ΞΉΞ±Ο†ΞΏΟΞµΟ„ΞΉΞΊΞ® Ο€ΞµΟΞ―Ο€Ο„Ο‰ΟƒΞ· ΞΊΞ±ΞΌΞ―Ξ± Ξ΄ΞΉΞ±Ο‡ΞµΞΉΟΞΉΟƒΟ„ΞΉΞΊΞ® Ξ±Ξ»Ξ»Ξ±Ξ³Ξ® Ξ΄ΞµΞ½ ΞΈΞ± ΞµΞ½ΞµΟΞ³ΞΏΟ€ΞΏΞΉΞ·ΞΈΞµΞ―.
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Πιστοποίηση του %(who)s της
+	    λίστας %(listname)s</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <TD><div ALIGN="Right">Κωδικός του %(who)s:</div></TD>
+      <TD><INPUT TYPE="password" NAME="adminpw" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle><INPUT type="SUBMIT"
+                                        name="admlogin"
+					value="Αφήστε με να συνδεθώ ...">
+      </td>
+    </tr>
+  </TABLE>
+     <p><strong><em>Σημαντικό:</em></strong> Από το 
+      σημείο αυτό και έπειτα, θα πρέπει να έχετε ενεργοποιημένα τα cookies στον browser. 
+      Σε διαφορετική περίπτωση καμία διαχειριστική αλλαγή δεν θα ενεργοποιηθεί.
 
-      <p>Ξ¤Ξ± session cookies Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞΏΟΞ½Ο„Ξ±ΞΉ ΟƒΟ„ΞΏ Ξ΄ΞΉΞ±Ο‡ΞµΞΉΟΞΉΟƒΟ„ΞΉΞΊΟ Ο€ΞµΟΞΉΞ²Ξ¬Ξ»Ξ»ΞΏΞ½ 
-	  Ο„ΞΏΟ… Mailman Ξ­Ο„ΟƒΞΉ ΟΟƒΟ„Ξµ Ξ½Ξ± ΞΌΞ· Ο‡ΟΞµΞΉΞ¬Ξ¶ΞµΟ„Ξ±ΞΉ Ξ½Ξ± Ξ³Ξ―Ξ½ΞµΟ„Ξ±ΞΉ Ο€ΞΉΟƒΟ„ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ· Ο„ΞΏΟ… Ο‡ΟΞ®ΟƒΟ„Ξ·
-	  Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ Ξ΄ΞΉΞ±Ο‡ΞµΞΉΟΞΉΟƒΟ„ΞΉΞΊΞ® Ξ»ΞµΞΉΟ„ΞΏΟ…ΟΞ³Ξ―Ξ±. Ξ‘Ο…Ο„Ο Ο„ΞΏ
-      cookie ΞΈΞ± Ξ»Ξ®ΞΎΞµΞΉ Ξ±Ο…Ο„ΟΞΌΞ±Ο„Ξ± ΟΟ„Ξ±Ξ½ ΞΈΞ± Ξ²Ξ³ΞµΞ―Ο„Ξµ Ξ±Ο€Ο Ο„ΞΏ browser. Ξ•Ξ½Ξ±Ξ»Ξ»Ξ±ΞΊΟ„ΞΉΞΊΞ¬
-      ΞΌΟ€ΞΏΟΞµΞ―Ο„Ξµ Ξ½Ξ± Ο„ΞΏ ΞΊΞ±Ο„Ξ±ΟƒΟ„ΟΞ­ΟΞµΟ„Ξµ ΞΊΞ±ΞΉ ΞµΟƒΞµΞ―Ο‚ Ο€Ξ±Ο„ΟΞ½Ο„Ξ±Ο‚ Ο„ΞΏ ΟƒΟΞ½Ξ΄ΞµΟƒΞΌΞΏ
-      <em>ΞΞΎΞΏΞ΄ΞΏΟ‚</em> ΞΊΞ¬Ο„Ο‰ Ξ±Ο€Ο Ο„ΞΏ <em>'Ξ‘Ξ»Ξ»ΞµΟ‚ Ξ”ΞΉΞ±Ο‡ΞµΞΉΟΞΉΟƒΟ„ΞΉΞΊΞ­Ο‚ 
-	  Ξ›ΞµΞΉΟ„ΞΏΟ…ΟΞ³Ξ―ΞµΟ‚</em> (Ξ΄ΞΉΞ±ΞΈΞ­ΟƒΞΉΞΌΞΏ Ξ±Ο†ΞΏΟ ΟƒΟ…Ξ½Ξ΄ΞµΞΈΞµΞ―Ο„Ξµ ΞµΟ€ΞΉΟ„Ο…Ο‡ΟΟ‚).
-</p></p></form>
+      <p>Τα session cookies χρησιμοποιούνται στο διαχειριστικό περιβάλλον 
+	  του Mailman έτσι ώστε να μη χρειάζεται να γίνεται πιστοποίηση του χρήστη
+	  για κάθε διαχειριστική λειτουργία. Αυτό το
+      cookie θα λήξει αυτόματα όταν θα βγείτε από το browser. Εναλλακτικά
+      μπορείτε να το καταστρέψετε και εσείς πατώντας το σύνδεσμο
+      <em>Έξοδος</em> κάτω από το <em>'Αλλες Διαχειριστικές 
+	  Λειτουργίες</em> (διαθέσιμο αφού συνδεθείτε επιτυχώς).
+</FORM>
 </body>
 </html>

@@ -94,11 +94,11 @@ class EmailAddressError(MailmanError):
     """Base class for email address validation errors."""
     pass
 
-class MMBadEmailError(Exception):
+class MMBadEmailError(EmailAddressError):
     """Email address is invalid (empty string or not fully qualified)."""
     pass
 
-class MMHostileAddress(Exception):
+class MMHostileAddress(EmailAddressError):
     """Email address has potentially hostile characters in it."""
     pass
 
@@ -162,7 +162,7 @@ class RejectMessage(HandlerError):
     def notice(self):
         return self.__notice
 
-
+
 # Additional exceptions
 class HostileSubscriptionError(MailmanError):
     """A cross-subscription attempt was made."""

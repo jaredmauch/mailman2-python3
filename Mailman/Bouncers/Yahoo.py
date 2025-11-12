@@ -19,14 +19,8 @@
 
 import re
 import email
-from email.iterators import body_line_iterator
-from email.header import decode_header
+import email.iterators
 from email.utils import parseaddr
-
-from Mailman import mm_cfg
-from Mailman import Utils
-from Mailman.Logging.Syslog import syslog
-from Mailman.Handlers.CookHeaders import change_header
 
 tcre = (re.compile(r'message\s+from\s+yahoo\.\S+', re.IGNORECASE),
         re.compile(r'Sorry, we were unable to deliver your message to '
@@ -39,6 +33,7 @@ ecre = (re.compile(r'--- Original message follows'),
         )
 
 
+
 def process(msg):
     # Yahoo! bounces seem to have a known subject value and something called
     # an x-uidl: header, the value of which seems unimportant.
@@ -51,7 +46,7 @@ def process(msg):
     #     1 == tag line seen
     #     2 == end line seen
     state = 0
-    for line in body_line_iterator(msg):
+    for line in email.iterators.body_line_iterator(msg):
         line = line.strip()
         if state == 0:
             for cre in tcre:

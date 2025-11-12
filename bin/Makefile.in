@@ -30,8 +30,6 @@ DESTDIR=
 CC=		@CC@
 CHMOD=  	@CHMOD@
 INSTALL=	@INSTALL@
-PYTHON=		@PYTHON@
-SED=		@SED@
 
 DEFS=   	@DEFS@
 
@@ -63,22 +61,12 @@ EXEMODE=	755
 FILEMODE=	644
 INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 
-# Path substitution rules
-SUBSTITUTIONS = -e 's,@PYTHON@,$(PYTHON),g' \
-                -e 's,@prefix@,$(prefix),g' \
-                -e 's,@exec_prefix@,$(exec_prefix),g' \
-                -e 's,@bindir@,$(bindir),g'
 
 # Rules
 
-all: $(SCRIPTS)
+all:
 
-$(SCRIPTS): %: $(srcdir)/%
-	@mkdir -p $(BUILDDIR)
-	$(SED) $(SUBSTITUTIONS) $< > $(BUILDDIR)/$@
-	chmod +x $(BUILDDIR)/$@
-
-install: $(SCRIPTS)
+install:
 	for f in $(SCRIPTS); \
 	do \
 	    $(INSTALL) -m $(EXEMODE) $(BUILDDIR)/$$f $(DESTDIR)$(SCRIPTSDIR); \
@@ -87,8 +75,6 @@ install: $(SCRIPTS)
 finish:
 
 clean:
-	rm -f $(BUILDDIR)/*
 
 distclean:
 	-rm Makefile
-	-rm -rf $(BUILDDIR)
