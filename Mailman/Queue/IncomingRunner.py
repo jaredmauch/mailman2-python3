@@ -139,17 +139,38 @@ class IncomingRunner(Runner):
     def _get_pipeline(self, mlist, msg, msgdata):
         # We must return a copy of the list, otherwise, the first message that
         # flows through the pipeline will empty it out!
+        # Priority order (as per comment in _dispose):
+        # 1. msgdata['pipeline'] (for requeued messages with retry pipeline)
+        # 2. mlist.pipeline (list-specific pipeline override)
+        # 3. mm_cfg.GLOBAL_PIPELINE (default fallback)
         pipeline = msgdata.get('pipeline')
         if pipeline is None:
-            pipeline = getattr(mlist, 'pipeline', None)
-        else:
-            # Use the already-imported mm_cfg directly
+            # Check if mlist actually has a pipeline attribute (not just __getattr__ default)
+            # MailList.__getattr__ returns 0 for missing attributes, so we need to check
+            # if it's actually a list before using it
+            if hasattr(mlist, '__dict__') and 'pipeline' in mlist.__dict__:
+                pipeline = mlist.pipeline
+            else:
+                # Try getattr, but validate the result since __getattr__ might return 0
+                pipeline = getattr(mlist, 'pipeline', None)
+                # If __getattr__ returned 0 (or other non-list), treat as missing
+                if not isinstance(pipeline, list):
+                    pipeline = None
+        # If pipeline is still None, use the global pipeline
+        if pipeline is None:
             pipeline = mm_cfg.GLOBAL_PIPELINE
         
         # Ensure pipeline is a list that can be sliced
         if not isinstance(pipeline, list):
-            syslog('error', 'pipeline is not a list: %s (type: %s)', 
-                   pipeline, type(pipeline).__name__)
+            # Log where the invalid pipeline came from for debugging
+            if 'pipeline' in msgdata:
+                source = 'msgdata'
+            elif hasattr(mlist, '__dict__') and 'pipeline' in mlist.__dict__:
+                source = 'mlist.pipeline (list: %s)' % mlist.internal_name()
+            else:
+                source = 'unknown'
+            syslog('error', 'pipeline is not a list: %s (type: %s) from %s', 
+                   pipeline, type(pipeline).__name__, source)
             # Fallback to a basic pipeline
             pipeline = mm_cfg.GLOBAL_PIPELINE
         
