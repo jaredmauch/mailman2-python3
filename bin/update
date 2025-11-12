@@ -722,7 +722,8 @@ def check_and_notify_password_upgrades(dry_run=False):
             needs_upgrade = True
         
         if needs_upgrade:
-            lists_needing_upgrade.append(mlist)
+            # Store both the listname and mlist so we can display the correct name
+            lists_needing_upgrade.append((listname, mlist))
     
     # Check global passwords
     global_passwords_old = []
@@ -745,14 +746,16 @@ def check_and_notify_password_upgrades(dry_run=False):
         if dry_run:
             print(C_('DRY-RUN: Would send password upgrade notifications to %(count)d list(s).') % {
                 'count': len(lists_needing_upgrade)})
-            for mlist in lists_needing_upgrade:
-                # Use real_name for display, fallback to internal_name if real_name is not set
-                display_name = mlist.real_name or mlist.internal_name()
+            for listname, mlist in lists_needing_upgrade:
+                # Use the list email address as the display name to ensure uniqueness
+                listaddr = mlist.GetListEmail()
+                # Extract listname part from email for display (everything before @)
+                display_name = listaddr.split('@')[0] if '@' in listaddr else listname
                 print(C_('  - Would notify owners of %(listname)s (%(listaddr)s)') % {
                     'listname': display_name,
-                    'listaddr': mlist.GetListEmail()})
+                    'listaddr': listaddr})
         else:
-            for mlist in lists_needing_upgrade:
+            for listname, mlist in lists_needing_upgrade:
                 send_password_upgrade_notification(mlist)
         
         # Note about global passwords
@@ -823,7 +826,9 @@ Thank you for your attention to this important security upgrade.
             'listname': listname
         }
         
-        # Send to all list owners
+        # Send to list administrators via the -owner address
+        # OwnerNotification sends to mlist.owner addresses and sets To: header
+        # to the -owner address (e.g., listname-owner@domain.com)
         msg = Message.OwnerNotification(
             mlist, subject, text, tomoderators=0)
         msg.send(mlist)
