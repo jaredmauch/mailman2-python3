@@ -683,6 +683,7 @@ def check_and_notify_password_upgrades(dry_run=False):
     
     print('Checking for lists with old password formats...')
     lists_needing_upgrade = []
+    seen_lists = {}  # Track by internal name to avoid duplicates
     
     # Check all lists for old password formats
     listnames = Utils.list_names()
@@ -693,6 +694,13 @@ def check_and_notify_password_upgrades(dry_run=False):
             print(C_('Warning: Could not check list %(listname)s: %(e)s') % {
             'listname': listname, 'e': e})
             continue
+        
+        # Use internal_name() as key to avoid processing the same list twice
+        internal_name = mlist.internal_name()
+        if internal_name in seen_lists:
+            # Already processed this list, skip
+            continue
+        seen_lists[internal_name] = True
         
         needs_upgrade = False
         # Check list admin password
