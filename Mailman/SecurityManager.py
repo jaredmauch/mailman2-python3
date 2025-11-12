@@ -201,13 +201,23 @@ class SecurityManager(object):
             elif ac == mm_cfg.AuthListModerator:
                 # The list moderator password must be sha'd
                 key, secret = self.AuthContextInfo(ac)
-                if secret and sha_new(response).hexdigest() == secret:
-                    return ac
+                if secret:
+                    if isinstance(response, str):
+                        response_bytes = response.encode('utf-8')
+                    else:
+                        response_bytes = response
+                    if sha_new(response_bytes).hexdigest() == secret:
+                        return ac
             elif ac == mm_cfg.AuthListPoster:
                 # The list poster password must be sha'd
                 key, secret = self.AuthContextInfo(ac)
-                if secret and sha_new(response).hexdigest() == secret:
-                    return ac
+                if secret:
+                    if isinstance(response, str):
+                        response_bytes = response.encode('utf-8')
+                    else:
+                        response_bytes = response
+                    if sha_new(response_bytes).hexdigest() == secret:
+                        return ac
             elif ac == mm_cfg.AuthUser:
                 if user is not None:
                     try:
