@@ -63,7 +63,7 @@ Options:
 
 import sys
 import time
-import getopt
+import argparse
 
 import paths
 # mm_cfg must be imported before the other modules, due to the side-effect of
@@ -86,59 +86,48 @@ signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 PROGRAM = sys.argv[0]
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process disabled members, recommended once per day.')
+    parser.add_argument('-o', '--byadmin', action='store_true',
+                       help='Also send notifications to any member disabled by the list owner/administrator')
+    parser.add_argument('-m', '--byuser', action='store_true',
+                       help='Also send notifications to any member disabled by themselves')
+    parser.add_argument('-u', '--unknown', action='store_true',
+                       help='Also send notifications to any member disabled for unknown reasons')
+    parser.add_argument('-b', '--notbybounce', action='store_true',
+                       help='Don\'t send notifications to members disabled because of bounces')
+    parser.add_argument('-a', '--all', action='store_true',
+                       help='Send notifications to all disabled members')
+    parser.add_argument('-f', '--force', action='store_true',
+                       help='Send notifications to disabled members even if they\'re not due a new notification yet')
+    parser.add_argument('-l', '--listname', action='append',
+                       help='Process only the given list, otherwise do all lists')
+    return parser.parse_args()
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'hl:omubaf',
-            ['byadmin', 'byuser', 'unknown', 'notbybounce', 'all',
-             'listname=', 'help', 'force'])
-    except getopt.error as msg:
-        usage(1, msg)
+    args = parse_args()
 
-    if args:
-        usage(1)
-
-    force = 0
-    listnames = []
     who = [MemberAdaptor.BYBOUNCE]
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-l', '--list'):
-            listnames.append(arg)
-        elif opt in ('-o', '--byadmin'):
-            who.append(MemberAdaptor.BYADMIN)
-        elif opt in ('-m', '--byuser'):
-            who.append(MemberAdaptor.BYUSER)
-        elif opt in ('-u', '--unknown'):
-            who.append(MemberAdaptor.UNKNOWN)
-        elif opt in ('-b', '--notbybounce'):
-            try:
-                who.remove(MemberAdaptor.BYBOUNCE)
-            except ValueError:
-                # Already removed
-                pass
-        elif opt in ('-a', '--all'):
-            who = [MemberAdaptor.BYBOUNCE, MemberAdaptor.BYADMIN,
-                   MemberAdaptor.BYUSER, MemberAdaptor.UNKNOWN]
-        elif opt in ('-f', '--force'):
-            force = 1
+    if args.byadmin:
+        who.append(MemberAdaptor.BYADMIN)
+    if args.byuser:
+        who.append(MemberAdaptor.BYUSER)
+    if args.unknown:
+        who.append(MemberAdaptor.UNKNOWN)
+    if args.notbybounce:
+        try:
+            who.remove(MemberAdaptor.BYBOUNCE)
+        except ValueError:
+            # Already removed
+            pass
+    if args.all:
+        who = [MemberAdaptor.BYBOUNCE, MemberAdaptor.BYADMIN,
+               MemberAdaptor.BYUSER, MemberAdaptor.UNKNOWN]
 
     who = tuple(who)
 
+    listnames = args.listname
     if not listnames:
         listnames = Utils.list_names()
 
@@ -158,7 +147,7 @@ def main():
             # from the member.
             disables = []
             for member in mlist.getBouncingMembers():
-                if mlist.getDeliveryStatus(member) <> MemberAdaptor.ENABLED:
+                if mlist.getDeliveryStatus(member) != MemberAdaptor.ENABLED:
                     continue
                 info = mlist.getBounceInfo(member)
                 if (Utils.midnight(info.date) + mlist.bounce_info_stale_after
@@ -196,7 +185,7 @@ def main():
                         member, 0, today,
                         mlist.bounce_you_are_disabled_warnings)
                 lastnotice = time.mktime(info.lastnotice + (0,) * 6)
-                if force or today >= lastnotice + interval:
+                if args.force or today >= lastnotice + interval:
                     notify.append(member)
                 # Get a fresh re-enable cookie and set it.
                 info.cookie = mlist.pend_new(Pending.RE_ENABLE,
@@ -222,6 +211,5 @@ def main():
             mlist.Unlock()
 
 
-
 if __name__ == '__main__':
     main()

@@ -1,319 +1,349 @@
 <html>
 <head>
-    <link rel="SHORTCUT ICON" href="<mm-favicon>">
-    <title>Configuraci&oacute; de la subscripci&oacute; de <MM-Presentable-User> per a la llista <MM-List-Name>
-    </title>
-</head>
-<BODY BGCOLOR="#ffffff">
-    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
-        <FONT COLOR="#000000" SIZE=+1>
-	Configuraci&oacute; de la subscripci&oacute; de <MM-Presentable-User> per a la llista
-	<MM-List-Name>
-        </FONT></B></TD></TR>
-    </TABLE>
-<p>
-<table width="100%" border="0" cellspacing="5" cellpadding="5">
-    <tr><td>
-        Configuraci&oacute; de l'estat de la subscripci&oacute;,
-        contrasenya i opcions per a <b><MM-Presentable-User></b> a la llista de correu <MM-List-Name>.
-        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
-    </tr><tr>
-        <td colspan="2">
-        <MM-Case-Preserved-User>
-
-        <MM-Disabled-Notice>
-
-        <p><mm-results>
-        </td>
-    </tr>
+<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
+<title>Configuració de la subscripció de <mm-presentable-user> per a la llista <mm-list-name>
+</mm-list-name></mm-presentable-user></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
+<font color="#000000" size="+1">
+	Configuració de la subscripció de <mm-presentable-user> per a la llista
+	<mm-list-name>
+</mm-list-name></mm-presentable-user></font></b></td></tr>
 </table>
-
-<MM-Form-Start>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
-        <FONT COLOR="#000000">
-        <B>Com canviar la vostra informaci&oacute; de subscripci&oacute; per a la llista <MM-List-Name></B>
-        </FONT></TD></TR>
-    <tr><td colspan="2">Podeu canviar l'adre&ccedil;a electr&ograve;nica
-        amb la qual esteu subscrit a la llista de correu si introdu&iuml;u l'adre&ccedil;a
-        nova en els quadres de text de m&eacute;s avall. Tingueu en
-        compte que s'enviar&agrave; un correu a l'adre&ccedil;a nova, i el canvi s'haur&agrave;
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+        Configuració de l'estat de la subscripció,
+        contrasenya i opcions per a <b><mm-presentable-user></mm-presentable-user></b> a la llista de correu <mm-list-name>.
+        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
+</tr><tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<mm-case-preserved-user>
+<mm-disabled-notice>
+<p><mm-results>
+</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
+</tr>
+</table>
+<mm-form-start>
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<font color="#000000">
+<b>Com canviar la vostra informació de subscripció per a la llista <mm-list-name></mm-list-name></b>
+</font></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">Podeu canviar l'adreça electrònica
+        amb la qual esteu subscrit a la llista de correu si introduïu l'adreça
+        nova en els quadres de text de més avall. Tingueu en
+        compte que s'enviarà un correu a l'adreça nova, i el canvi s'haurà
         de confirmar abans de processar-lo.
 
         <p>Les confirmacions expiren al cap de <mm-pending-days>.
 
-        <p>De manera opcional, tamb&eacute; podeu afegir o canviar el
+        <p>De manera opcional, també podeu afegir o canviar el
         vostre nom real (per exemple <em>Jordi Roure</em>).
 
-        <p>Si voleu que els canvis que feu a la vostra configuraci&oacute;
+        <p>Si voleu que els canvis que feu a la vostra configuració
         s'apliquin a totes les llistes a les quals esteu subscrit/a,
-        seleccioneu la casella de verificaci&oacute; <em>Canvi global.</em> </p>
-
-        </td></tr>
-    <tr><td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-        <tr><td bgcolor="#dddddd"><div align="right">Adre&ccedil;a nova:</div>
-            <td><mm-new-address-box></td>
-            </tr>
-        <tr><td bgcolor="#dddddd"><div align="right">Confirmeu-
-            la:</div></td> 
-            <td><mm-confirm-address-box></td>
-            </tr>
-        </tr></table></center>
-      </td>
-      <td><center>
-        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
-            <tr><td bgcolor="#dddddd"><div align="right">El vostre nom 
+        seleccioneu la casella de verificació <em>Canvi global.</em> </p>
+</p></mm-pending-days></p></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Adreça nova:</div>
+<td><mm-new-address-box></mm-new-address-box></td>
+</td></tr>
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Confirmeu-
+            la:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
+</tr>
+</table></center></td></tr></table>
+<td><center>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">El vostre nom 
             (opcional):</div></td>
-            <td><mm-fullname-box></td>
-            </tr>
-        </table></center>
-        </td>
-        </tr>
-    <tr><td colspan="2"><center><mm-change-address-button>
-        <p><mm-global-change-of-address>Canvi global</center></td>
-    </tr>
-</table>
-
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
+</tr>
+</table></center>
+</td>
+<tr><td colspan="2"><center><mm-change-address-button>
+<p><mm-global-change-of-address>Canvi global</mm-global-change-of-address></p></mm-change-address-button></center></td>
+</tr>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
-    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Cancel&middot;laci&oacute; de la subscripci&oacute; a <MM-List-Name></B></td>
-
-        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Les vostres altres subscripcions a <MM-Host>.</B>
-        </FONT></TD></TR>
-
-    <tr><td>
-        Activeu la casella de confirmaci&oacute; i premeu aquest
-        bot&oacute; per a donar-vos de baixa d'aquesta llista de correu. <strong>Av&iacute;s:</strong>
-        aquesta acci&oacute; s'executar&agrave; immediatament!
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>Cancel·lació de la subscripció a <mm-list-name></mm-list-name></b></font></td>
+<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
+<b>Les vostres altres subscripcions a <mm-host>.</mm-host></b>
+</font></td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ccc;">
+        Activeu la casella de confirmació i premeu aquest
+        botó per a donar-vos de baixa d'aquesta llista de correu. <strong>Avís:</strong>
+        aquesta acció s'executarà immediatament!
         <p>
-        <center><MM-Unsubscribe-Button></center></td>
-    <td>
+<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
+<td style="padding: 8px; border: 1px solid #ccc;">
         Podeu veure una llista de les altres llistes de correu
-        on tamb&eacute; esteu subscrit/a. Feu servir aix&ograve; si voleu aplicar els
+        on també esteu subscrit/a. Feu servir això si voleu aplicar els
         mateixos canvis d'opcions a les altres subscripcions.
 
         <p>
-        <center><MM-Other-Subscriptions-Submit></center>
-        </TD></TR>
+<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
+</p></td></tr>
 </table>
-
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>La vostra contrasenya de <MM-List-Name></B>
-        </FONT></TD></TR>
-
-    <tr valign="TOP"><td WIDTH="50%">
-        <a name=reminder>
-        <center>
-        <h3>Heu oblidat la contrasenya?</h3>
-        </center>
-        Premeu aquest bot&oacute; per a rebre
-        un correu a la vostra adre&ccedil;a electr&ograve;nica amb la vostra contrasenya.
-        <p><MM-Umbrella-Notice>
-        <center>
-        <MM-Email-My-Pw>
-        </center>
-        </td>
-
-    <td WIDTH="50%">
-        <a name=changepw>
-        <center>
-        <h3>Canvi de la vostra contrasenya</h3>
-        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
-            <TR><TD BGCOLOR="#dddddd"><div align="right">Contrasenya nova:</div></TD>
-                <TD><MM-New-Pass-Box></TD>
-                </TR>
-            <TR>
-                <TD BGCOLOR="#dddddd"><div align="right">Confirmeu-
-                la:</div></TD>
-                <TD><MM-Confirm-Pass-Box></TD>
-            </TR>
-        </table>
-
-        <MM-Change-Pass-Button>
-        <p><center><mm-global-pw-changes-button>Canvi global.
-        </center>
-</TABLE>
-
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>La vostra contrasenya de <mm-list-name></mm-list-name></b>
+</font></td></tr>
+<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="reminder">
+<center>
+<h3>Heu oblidat la contrasenya?</h3>
+</center>
+        Premeu aquest botó per a rebre
+        un correu a la vostra adreça electrònica amb la vostra contrasenya.
+        <p><mm-umbrella-notice>
+<center>
+<mm-email-my-pw>
+</mm-email-my-pw></center>
+</mm-umbrella-notice></p></a></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
+<a name="changepw">
+<center>
+<h3>Canvi de la vostra contrasenya</h3>
+<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Contrasenya nova:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Confirmeu-
+                la:</div></td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
+</tr>
+</table>
+<mm-change-pass-button>
+<p><center><mm-global-pw-changes-button>Canvi global.
+        </mm-global-pw-changes-button></center>
+</p></mm-change-pass-button></center></a></td></tr></table>
 <p>
-<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
-    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
-        <B>Les vostres opcions de subscripci&oacute; a la llista <MM-List-Name></B>
-        </FONT></TD></TR>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
+<b>Les vostres opcions de subscripció a la llista <mm-list-name></mm-list-name></b>
+</font></td></tr>
 </table>
-
-<p> 
+<p>
 <i><strong>Els valors actuals estan marcats.</strong></i>
-
-<p>Fixeu-vos que algunes de les opcions tenen una casella de verificaci&oacute; anomenada <em>Canvi
+<p>Fixeu-vos que algunes de les opcions tenen una casella de verificació anomenada <em>Canvi
 global</em>. Si activeu aquesta casella s'aplicaran els
 canvis a totes les llistes de correu de les quals sigueu membre. Feu
 clic a <em>Llista les meves altres subscripcions</em>
 per a veure a quines altres llistes de correu esteu subscrit/a. </p>
 <p>
-<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
-    <tr><TD BGCOLOR="#cccccc">
-        <a name="disable">
-        <strong>Entrega de correu</strong></a><p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<a name="disable">
+<strong>Entrega de correu</strong></a><p>
         Seleccioneu <em>Habilitat</em> per tal de
         rebre els missatges enviats a aquesta llista de correu. Seleccioneu <em>Inhabilitat</em>
-        si voleu romandre subscrit/a per&ograve; no voleu rebre cap correu durant un
+        si voleu romandre subscrit/a però no voleu rebre cap correu durant un
         temps
         (per exemple en el cas que marxeu de vacances). En cas que inhabiliteu
-        aquesta opci&oacute;, recordeu-vos d'habilitar-la de nou en tornar, ja que
-        aix&ograve; no succeeix de manera autom&agrave;tica.
-      </td><td bgcolor="#cccccc">
-        <mm-delivery-enable-button>Habilitat<br>
-        <mm-delivery-disable-button>Inhabilitat<p>
-        <mm-global-deliver-button><i>Canvi global</i></p>
-        </td></tr>
-
+        aquesta opció, recordeu-vos d'habilitar-la de nou en tornar, ja que
+        això no succeeix de manera automàtica.
+      </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-delivery-enable-button>Habilitat<br/>
+<mm-delivery-disable-button>Inhabilitat<p>
+<mm-global-deliver-button><i>Canvi global</i></mm-global-deliver-button></p>
+</mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
 <!--Start-Digests-Delete-->
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Activaci&oacute; del mode de compilaci&oacute;</strong><p> 
-        Si activeu el mode de compilaci&oacute;, rebreu tots els
-        missatges agrupats en un sol correu (normalment un per dia, per&ograve;
-        probablement m&eacute;s d'un en llistes amb molta activitat), en lloc
-        de rebre'ls un per un en el moment en qu&egrave; s'envien. Si canvieu el mode de compilaci&oacute; d'Activat a Desactivat
-        &eacute;s possible que rebeu una &uacute;ltima compilaci&oacute; abans de comen&ccedil;ar
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Activació del mode de compilació</strong><p> 
+        Si activeu el mode de compilació, rebreu tots els
+        missatges agrupats en un sol correu (normalment un per dia, però
+        probablement més d'un en llistes amb molta activitat), en lloc
+        de rebre'ls un per un en el moment en què s'envien. Si canvieu el mode de compilació d'Activat a Desactivat
+        és possible que rebeu una última compilació abans de començar
         a rebre'ls un per un.
-        </td><td bgcolor="#cccccc">
-        <MM-Undigest-Radio-Button>Desactivat<br>
-        <MM-Digest-Radio-Button>Activat</td>
-        </td></tr>
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Preferiu compilacions MIME o de text pla?</strong><p>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-undigest-radio-button>Desactivat<br/>
+<mm-digest-radio-button>Activat</mm-digest-radio-button></mm-undigest-radio-button></td>
+</tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Preferiu compilacions MIME o de text pla?</strong><p>
         Pot ser que el vostre lector de correu no sigui
         compatible amb les compilacions MIME. Normalment es prefereixen
-        aquestes, per&ograve; si teniu problemes a l'hora de llegir-les, seleccioneu
+        aquestes, però si teniu problemes a l'hora de llegir-les, seleccioneu
         les compilacions de text pla.
-        </td><td bgcolor="#cccccc">
-        <MM-Mime-Digests-Button>MIME<br>
-        <MM-Plain-Digests-Button>Text pla<p>
-        <mm-global-mime-button><i>Canvi global</i>
-        </td></tr>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-mime-digests-button>MIME<br/>
+<mm-plain-digests-button>Text pla<p>
+<mm-global-mime-button><i>Canvi global</i>
+</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
 <!--End-Digests-Delete-->
-        
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Voleu rebre els vostres propis missatges a la llista?</strong><p>
-        Normalment, rebreu una c&ograve;pia de cada missatge que
-        envieu a la llista. Si no voleu rebre aquesta c&ograve;pia, seleccioneu <em>No</em>.
-        </td><td bgcolor="#cccccc">
-        <mm-dont-receive-own-mail-button>No<br>
-        <mm-receive-own-mail-button>S&iacute;
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Voleu rebre un correu de confirmaci&oacute; en enviar un missatge a la llista?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-ack-posts-button>No<br>
-        <mm-ack-posts-button>S&iacute;
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>Voleu rebre un correu de recordatori de la contrasenya per a la llista?</strong><p>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Voleu rebre els vostres propis missatges a la llista?</strong><p>
+        Normalment, rebreu una còpia de cada missatge que
+        envieu a la llista. Si no voleu rebre aquesta còpia, seleccioneu <em>No</em>.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-receive-own-mail-button>No<br/>
+<mm-receive-own-mail-button>Sí
+        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Voleu rebre un correu de confirmació en enviar un missatge a la llista?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-ack-posts-button>No<br/>
+<mm-ack-posts-button>Sí
+        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Voleu rebre un correu de recordatori de la contrasenya per a la llista?</strong><p>
         Un cop al mes, rebreu un mail de recordatori amb les
         vostres contrasenyes per a cadascuna de les llistes a les quals
-        estigueu subscrit/a. Podeu cancel&middot;lar aquesta opci&oacute; si seleccioneu <em>No</em>,
+        estigueu subscrit/a. Podeu cancel·lar aquesta opció si seleccioneu <em>No</em>,
         amb la qual cosa no rebreu cap correu de recordatori. </p>
-        </td><td bgcolor="#cccccc">
-        <mm-dont-get-password-reminder-button>No<br>
-        <mm-get-password-reminder-button>S&iacute;<p>
-        <mm-global-remind-button><i>Canvi global</i>
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Voleu que se us oculti de la llista de subscriptors?</strong><p>
-        Quan alg&uacute; visualitza la llista de subscriptors, hi
-        apareix normalment la vostra adre&ccedil;a
-        electr&ograve;nica (de manera obfuscada per tal d'enganyar els
-        recollidors d'spam). Si no voleu que la vostra adre&ccedil;a
-        aparegui a la llista de subscriptors, seleccioneu <em>S&iacute;
-      </em>per aquesta opci&oacute;.
-        </td><td bgcolor="#cccccc">
-        <MM-Public-Subscription-Button>No<br>
-        <MM-Hide-Subscription-Button>S&iacute;
-        </td></tr>
-
-    <tr><TD BGCOLOR="#cccccc">
-        <strong>Quina llengua preferiu?</strong><p>
-        </td><td bgcolor="#cccccc">
-        <MM-list-langs>
-        </td></tr>
-
-    <tr><td bgcolor="#cccccc">
-        <strong>A quines categories de temes us voleu 
+</td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-dont-get-password-reminder-button>No<br/>
+<mm-get-password-reminder-button>Sí<p>
+<mm-global-remind-button><i>Canvi global</i>
+</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Voleu que se us oculti de la llista de subscriptors?</strong><p>
+        Quan algú visualitza la llista de subscriptors, hi
+        apareix normalment la vostra adreça
+        electrònica (de manera obfuscada per tal d'enganyar els
+        recollidors d'spam). Si no voleu que la vostra adreça
+        aparegui a la llista de subscriptors, seleccioneu <em>Sí
+      </em>per aquesta opció.
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-public-subscription-button>No<br/>
+<mm-hide-subscription-button>Sí
+        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Quina llengua preferiu?</strong><p>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-list-langs>
+</mm-list-langs></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>A quines categories de temes us voleu 
                 subscriure?</strong><p>
-                Si seleccioneu un o m&eacute;s temes, podreu filtrar el tr&agrave;fic
-                de la llista de correu, de manera que rebeu nom&eacute;s una part de tots els
+                Si seleccioneu un o més temes, podreu filtrar el tràfic
+                de la llista de correu, de manera que rebeu només una part de tots els
                 missatges.
-                Si un missatge coincideix amb alg&uacute;n dels temes que h&agrave;giu seleccionat,
+                Si un missatge coincideix amb algún dels temes que hàgiu seleccionat,
                 el rebreu; en cas contrari no el rebreu.
 
                 <p>Si un missatge no coincideix amb cap tema, la
-                regla d'entrega dependr&agrave; de la configuraci&oacute; de l'opci&oacute; de sota.
-                Si no trieu cap tema d'inter&egrave;s,
+                regla d'entrega dependrà de la configuració de l'opció de sota.
+                Si no trieu cap tema d'interès,
                 rebreu tots els missatges de la llista de correu. </p>
-        </td><td bgcolor="#cccccc">
-        <mm-topics>
-        </td></tr>
+</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-topics>
+</mm-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Voleu rebre els missatges que no coincideixin amb cap filtre de temes d'interès?</strong><p>
 
-    <tr><td bgcolor="#cccccc">
-        <strong>Voleu rebre els missatges que no coincideixin amb cap filtre de temes d'inter&egrave;s?</strong><p>
-
-                Aquesta opci&oacute; nom&eacute;s us afecta en cas que estigueu
-                subscrit/a a almenys una categoria de temes d'inter&egrave;s de l'opci&oacute;
+                Aquesta opció només us afecta en cas que estigueu
+                subscrit/a a almenys una categoria de temes d'interès de l'opció
                 anterior. Descriu quina ha de ser la regla d'entrega per a aquells
                 missatges que no coincideixin amb cap categoria de temes.
                 Si escolliu <em> No</em>, no rebreu els missatges
-                que no coincideixin amb cap filtre de temes; si escolliu <em>S&iacute;</em>,
+                que no coincideixin amb cap filtre de temes; si escolliu <em>Sí</em>,
                 sempre rebreu aquest tipus de missatges. </p>
-
-                <p>Si no heu seleccionat cap tema d'inter&egrave;s a l'opci&oacute;
+<p>Si no heu seleccionat cap tema d'interès a l'opció
                 anterior, rebreu tots els missatges que s'enviin a la llista
                 de correu.
-        </td><td bgcolor="#cccccc">
-        <mm-suppress-nonmatching-topics>No<br>
-        <mm-receive-nonmatching-topics>S&iacute;
-        </td></tr>
+        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-suppress-nonmatching-topics>No<br/>
+<mm-receive-nonmatching-topics>Sí
+        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
+<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<strong>Voleu evitar les còpies duplicades dels missatges?</strong><p>
 
-    <tr><td bgcolor="#cccccc">
-        <strong>Voleu evitar les c&ograve;pies duplicades dels missatges?</strong><p>
-
-                Si apareixeu de manera expl&iacute;cita a les cap&ccedil;aleres <tt>Per
+                Si apareixeu de manera explícita a les capçaleres <tt>Per
                 a:</tt> o<tt> Cc:</tt>
-                d'un missatge, podeu optar a no rebre'n una altra c&ograve;pia de la llista de
-                correu. Seleccioneu <em>S&iacute;</em> per a no rebre m&eacute;s c&ograve;pies
+                d'un missatge, podeu optar a no rebre'n una altra còpia de la llista de
+                correu. Seleccioneu <em>Sí</em> per a no rebre més còpies
                 de la llista de correu, o seleccioneu <em>No</em> si voleu
                 rebre-les.
 
-                <p>Si la llista t&eacute; l'opci&oacute; de missatges
+                <p>Si la llista té l'opció de missatges
                 personalitzats per als subscriptors habilitada,
-                i escolliu rebre les c&ograve;pies,
-                s'afegir&agrave; la cap&ccedil;alera <tt>'X-Mailman-Copy: yes'</tt>
-                a cadascuna d'aquestes c&ograve;pies.
+                i escolliu rebre les còpies,
+                s'afegirà la capçalera <tt>'X-Mailman-Copy: yes'</tt>
+                a cadascuna d'aquestes còpies.
 
-        </td><td bgcolor="#cccccc">
-        <mm-receive-duplicates-button>No<br>
-        <mm-dont-receive-duplicates-button>S&iacute;<p>
-        <mm-global-nodupes-button><i>Canvi global</i>
-        </td></tr>
-
-    <tr><TD colspan="2">
-        <center><MM-options-Submit-button></center>
-        </td></tr>
-
+        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
+<mm-receive-duplicates-button>No<br/>
+<mm-dont-receive-duplicates-button>Sí<p>
+<mm-global-nodupes-button><i>Canvi global</i>
+</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
+<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-options-submit-button></mm-options-submit-button></center>
+</td></tr>
 </table>
-</center>
 <p>
-<MM-Form-End>
-
-<MM-Mailman-Footer>
-</body>
+<mm-form-end>
+<mm-mailman-footer>
+</mm-mailman-footer></mm-form-end></p></p></p></p></p></p></mm-form-start></p></body>
 </html>

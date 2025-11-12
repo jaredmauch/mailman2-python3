@@ -52,21 +52,21 @@ class MMCookieError(MMAuthenticationError): pass
 class MMExpiredCookieError(MMCookieError): pass
 class MMInvalidCookieError(MMCookieError): pass
 
-class MMMustDigestError(object): pass
-class MMCantDigestError(object): pass
-class MMNeedApproval(object):
+class MMMustDigestError(Exception): pass
+class MMCantDigestError(Exception): pass
+class MMNeedApproval(Exception):
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMSubscribeNeedsConfirmation(object): pass
-class MMBadConfirmation(object):
+class MMSubscribeNeedsConfirmation(Exception): pass
+class MMBadConfirmation(Exception):
     def __init__(self, message=None):
         self.message = message
     def __str__(self):
         return self.message or ''
-class MMAlreadyDigested(object): pass
-class MMAlreadyUndigested(object): pass
+class MMAlreadyDigested(Exception): pass
+class MMAlreadyUndigested(Exception): pass
 
 MODERATED_LIST_MSG    = "Moderated list"
 IMPLICIT_DEST_MSG     = "Implicit destination"
@@ -94,11 +94,11 @@ class EmailAddressError(MailmanError):
     """Base class for email address validation errors."""
     pass
 
-class MMBadEmailError(EmailAddressError):
+class MMBadEmailError(Exception):
     """Email address is invalid (empty string or not fully qualified)."""
     pass
 
-class MMHostileAddress(EmailAddressError):
+class MMHostileAddress(Exception):
     """Email address has potentially hostile characters in it."""
     pass
 
@@ -162,7 +162,7 @@ class RejectMessage(HandlerError):
     def notice(self):
         return self.__notice
 
-
+
 # Additional exceptions
 class HostileSubscriptionError(MailmanError):
     """A cross-subscription attempt was made."""

@@ -68,10 +68,12 @@ msgid "<P>Currently, there are no archives. </P>"
 msgstr "<P>Une honetan ez dago fitxategirik</P>"
 
 #: Mailman/Archiver/HyperArch.py:821
+#, fuzzy
 msgid "Gzip'd Text%(sz)s"
 msgstr "Gzip-kin komprimitutako testu %(sz)s"
 
 #: Mailman/Archiver/HyperArch.py:826
+#, fuzzy
 msgid "Text%(sz)s"
 msgstr "%(sz)s testua"
 
@@ -144,18 +146,22 @@ msgid "Third"
 msgstr "Hirugarren"
 
 #: Mailman/Archiver/HyperArch.py:938
+#, fuzzy
 msgid "%(ord)s quarter %(year)i"
 msgstr "%(year)i. urteko %(ord)s lauhilebetekoa"
 
 #: Mailman/Archiver/HyperArch.py:945
+#, fuzzy
 msgid "%(month)s %(year)i"
 msgstr "%(year)i-ko %(month)s"
 
 #: Mailman/Archiver/HyperArch.py:950
+#, fuzzy
 msgid "The Week Of Monday %(day)i %(month)s %(year)i"
 msgstr "%(year)i-ko %(month)s-ren  %(day)i astearen astelhenean"
 
 #: Mailman/Archiver/HyperArch.py:954
+#, fuzzy
 msgid "%(day)i %(month)s %(year)i"
 msgstr "%(year)i-ko %(month)s-ren  %(day)i"
 
@@ -164,10 +170,12 @@ msgid "Computing threaded index\n"
 msgstr "Harien araberako aurkibidea kalkulatzen\n"
 
 #: Mailman/Archiver/HyperArch.py:1319
+#, fuzzy
 msgid "Updating HTML for article %(seq)s"
 msgstr " %(seq)s artikuluaren HTML kodea eguneratzen"
 
 #: Mailman/Archiver/HyperArch.py:1326
+#, fuzzy
 msgid "article file %(filename)s is missing!"
 msgstr "artikuluari lotutako %(filename)s fitxategia ezin da aurkitu!"
 
@@ -184,6 +192,7 @@ msgid "Pickling archive state into "
 msgstr "Ftxagiaren egoera prestatzen "
 
 #: Mailman/Archiver/pipermail.py:453
+#, fuzzy
 msgid "Updating index files for archive [%(archive)s]"
 msgstr "[%(archive)s] artxiboko fitxategiko indizeak eguneratzen"
 
@@ -192,6 +201,7 @@ msgid "  Thread"
 msgstr "  Haria"
 
 #: Mailman/Archiver/pipermail.py:597
+#, fuzzy
 msgid "#%(counter)05d %(msgid)s"
 msgstr "#%(counter)05d %(msgid)s"
 
@@ -229,6 +239,7 @@ msgid "disabled address"
 msgstr "ezgaitua"
 
 #: Mailman/Bouncer.py:304
+#, fuzzy
 msgid " The last bounce received from you was dated %(date)s"
 msgstr " Zugandik jasotako azken errebotea %(date)s-datakoa zen."
 
@@ -256,6 +267,7 @@ msgstr "Kudeatzailearen"
 #: Mailman/Cgi/options.py:101 Mailman/Cgi/private.py:108
 #: Mailman/Cgi/rmlist.py:75 Mailman/Cgi/roster.py:59
 #: Mailman/Cgi/subscribe.py:67
+#, fuzzy
 msgid "No such list <em>%(safelistname)s</em>"
 msgstr "<em>%(safelistname)s</em> zerrendarik ez dago"
 
@@ -329,6 +341,7 @@ msgstr ""
 "mezurik jasoko.%(rm)r"
 
 #: Mailman/Cgi/admin.py:268
+#, fuzzy
 msgid "%(hostname)s mailing lists - Admin Links"
 msgstr "%(hostname)s Zerbitzariko Posta Zerrendak - Kudeaketarako Loturak"
 
@@ -341,6 +354,7 @@ msgid "Mailman"
 msgstr "Mailman"
 
 #: Mailman/Cgi/admin.py:310
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised %(mailmanlink)s\n"
 "            mailing lists on %(hostname)s."
@@ -349,6 +363,7 @@ msgstr ""
 "            %(mailmanlink)s posta zerrendarik. "
 
 #: Mailman/Cgi/admin.py:316
+#, fuzzy
 msgid ""
 "<p>Below is the collection of publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s.  Click on a list\n"
@@ -364,6 +379,7 @@ msgid "right "
 msgstr "zuzena"
 
 #: Mailman/Cgi/admin.py:325
+#, fuzzy
 msgid ""
 "To visit the administrators configuration page for an\n"
 "        unadvertised list, open a URL similar to this one, but with a '/' "
@@ -408,6 +424,7 @@ msgid "No valid variable name found."
 msgstr "Ez da aldagai izen zuzenik aurkitu"
 
 #: Mailman/Cgi/admin.py:395
+#, fuzzy
 msgid ""
 "%(realname)s Mailing list Configuration Help\n"
 "    <br><em>%(varname)s</em> Option"
@@ -416,6 +433,7 @@ msgstr ""
 "    <br><em>%(varname)s</em> Aukera"
 
 #: Mailman/Cgi/admin.py:402
+#, fuzzy
 msgid "Mailman %(varname)s List Option Help"
 msgstr "%(varname)s Aukerarako Mailmanen Laguntza"
 
@@ -434,14 +452,17 @@ msgstr ""
 "    "
 
 #: Mailman/Cgi/admin.py:431
+#, fuzzy
 msgid "return to the %(categoryname)s options page."
 msgstr "%(categoryname)s Aukera orrira itzuli"
 
 #: Mailman/Cgi/admin.py:446
+#, fuzzy
 msgid "%(realname)s Administration (%(label)s)"
 msgstr "%(realname)s (%(label)s) Kudeaketa"
 
 #: Mailman/Cgi/admin.py:447
+#, fuzzy
 msgid "%(realname)s mailing list administration<br>%(label)s Section"
 msgstr "%(realname)s Zerrendaren Kudeaketa<br>%(label)s Atala"
 
@@ -523,6 +544,7 @@ msgid "Value"
 msgstr "Balioa"
 
 #: Mailman/Cgi/admin.py:668
+#, fuzzy
 msgid ""
 "Badly formed options entry:\n"
 " %(record)s"
@@ -623,10 +645,12 @@ msgid "Move rule down"
 msgstr "Erregela jeitsi"
 
 #: Mailman/Cgi/admin.py:870
+#, fuzzy
 msgid "<br>(Edit <b>%(varname)s</b>)"
 msgstr "<br>(<b>%(varname)s</b> editatu)"
 
 #: Mailman/Cgi/admin.py:872
+#, fuzzy
 msgid "<br>(Details for <b>%(varname)s</b>)"
 msgstr "<br>(<b>%(varname)s</b> aldagaiaren xehetasunak)"
 
@@ -666,6 +690,7 @@ msgid "(help)"
 msgstr "(laguntza)"
 
 #: Mailman/Cgi/admin.py:930
+#, fuzzy
 msgid "Find member %(link)s:"
 msgstr "Bilatu partaidearen %(link)s:"
 
@@ -678,10 +703,12 @@ msgid "Bad regular expression: "
 msgstr "Espresio erregularr okerra: "
 
 #: Mailman/Cgi/admin.py:1013
+#, fuzzy
 msgid "%(allcnt)s members total, %(membercnt)s shown"
 msgstr "Guztira %(allcnt)s zerrendakide, %(membercnt)s bistan"
 
 #: Mailman/Cgi/admin.py:1016
+#, fuzzy
 msgid "%(allcnt)s members total"
 msgstr "Guztira %(allcnt)s zerrendakide"
 
@@ -871,6 +898,7 @@ msgstr ""
 "        zerrendan:</em>"
 
 #: Mailman/Cgi/admin.py:1221
+#, fuzzy
 msgid "from %(start)s to %(end)s"
 msgstr "%(start)s(e)tik %(end)s(e)ra"
 
@@ -1010,6 +1038,7 @@ msgid "Change list ownership passwords"
 msgstr "Zerrendako arduradunen pasahitzak aldatu"
 
 #: Mailman/Cgi/admin.py:1364
+#, fuzzy
 msgid ""
 "The <em>list administrators</em> are the people who have ultimate control "
 "over\n"
@@ -1127,6 +1156,7 @@ msgstr "Gaizkieratutako helbidea (karakterrak okerrak)"
 
 #: Mailman/Cgi/admin.py:1529 Mailman/Cgi/admin.py:1703 bin/add_members:175
 #: bin/clone_member:136 bin/sync_members:268
+#, fuzzy
 msgid "Banned address (matched %(pattern)s)"
 msgstr "Blokeatutako helbidea (matched %(pattern)s)"
 
@@ -1183,6 +1213,7 @@ msgid "%(schange_to)s is already a member"
 msgstr "%(schange_to)s dagoeneko harpideduna da"
 
 #: Mailman/Cgi/admin.py:1620
+#, fuzzy
 msgid "%(schange_to)s matches banned pattern %(spat)s"
 msgstr ""
 "%(schange_to)s helbideak debekatutako  eredu honekin bat egiten du: %(spat)s"
@@ -1224,6 +1255,7 @@ msgid "Not subscribed"
 msgstr "Harpidetu gabea"
 
 #: Mailman/Cgi/admin.py:1773
+#, fuzzy
 msgid "Ignoring changes to deleted member: %(user)s"
 msgstr "Ezabatutako harpidearen aldaketei jaramonik ez: %(user)s"
 
@@ -1236,10 +1268,12 @@ msgid "Error Unsubscribing:"
 msgstr "Zerrenda uztean errorea:"
 
 #: Mailman/Cgi/admindb.py:235 Mailman/Cgi/admindb.py:248
+#, fuzzy
 msgid "%(realname)s Administrative Database"
 msgstr "%(realname)s Kudeatzeko Datu-basea"
 
 #: Mailman/Cgi/admindb.py:238
+#, fuzzy
 msgid "%(realname)s Administrative Database Results"
 msgstr "%(realname)s Kudeatzeko Datu-basearen Emaitzak"
 
@@ -1268,6 +1302,7 @@ msgid "Discard all messages marked <em>Defer</em>"
 msgstr "<em>Atzeratu</em> marka duten mezu guztiak baztertu"
 
 #: Mailman/Cgi/admindb.py:298
+#, fuzzy
 msgid "all of %(esender)s's held messages."
 msgstr "%(esender)s zerrendakidearen atxikitako mezu guztiak."
 
@@ -1288,6 +1323,7 @@ msgid "list of available mailing lists."
 msgstr "Posta zerrenda eskuragarrien zerrenda"
 
 #: Mailman/Cgi/admindb.py:362
+#, fuzzy
 msgid "You must specify a list name.  Here is the %(link)s"
 msgstr ""
 "Zerrenda izen bat aukeratu adierazi behar duzu. Hemen daude %(link)s-ak"
@@ -1370,6 +1406,7 @@ msgid "<em>The sender is now a member of this list</em>"
 msgstr "<em>Bidaltzailea orain zerrendako partaidea da</em>"
 
 #: Mailman/Cgi/admindb.py:568
+#, fuzzy
 msgid "Add <b>%(esender)s</b> to one of these sender filters:"
 msgstr "<b>%(esender)s</b> gehitu hauetako hartzaile iragazki batetara:"
 
@@ -1390,6 +1427,7 @@ msgid "Rejects"
 msgstr "Ez onartu"
 
 #: Mailman/Cgi/admindb.py:584
+#, fuzzy
 msgid ""
 "Ban <b>%(esender)s</b> from ever subscribing to this\n"
 "                    mailing list"
@@ -1406,6 +1444,7 @@ msgstr ""
 "            ikusteko, edo bestela,  "
 
 #: Mailman/Cgi/admindb.py:591
+#, fuzzy
 msgid "view all messages from %(esender)s"
 msgstr "%(esender)s -ren mezu guztiak ikusi"
 
@@ -1484,6 +1523,7 @@ msgid " is already a member"
 msgstr "dagoeneko harpidedun"
 
 #: Mailman/Cgi/admindb.py:973
+#, fuzzy
 msgid "%(addr)s is banned (matched: %(patt)s)"
 msgstr "%(addr)s blokeatutako helbidea da (%(patt)s -rekin bat egiten du)"
 
@@ -1492,6 +1532,7 @@ msgid "Confirmation string was empty."
 msgstr "Berrespen katea hutsik zegoen."
 
 #: Mailman/Cgi/confirm.py:108
+#, fuzzy
 msgid ""
 "<b>Invalid confirmation string:</b>\n"
 "    %(safecookie)s.\n"
@@ -1535,6 +1576,7 @@ msgstr ""
 "                    ezeztatu egin da."
 
 #: Mailman/Cgi/confirm.py:178
+#, fuzzy
 msgid "System error, bad content: %(content)s"
 msgstr "Sistemaren errorea; eduki okerra: %(content)s"
 
@@ -1572,6 +1614,7 @@ msgid "Confirm subscription request"
 msgstr "Harpidetza eskariaberretsi."
 
 #: Mailman/Cgi/confirm.py:259
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    subscription request to the mailing list <em>%(listname)s</em>.  Your\n"
@@ -1604,6 +1647,7 @@ msgstr ""
 "    botoia."
 
 #: Mailman/Cgi/confirm.py:275
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to continue with\n"
 "        the subscription request to the mailing list <em>%(listname)s</em>.\n"
@@ -1655,6 +1699,7 @@ msgid "Preferred language:"
 msgstr "Lehentsitako hizkuntza:"
 
 #: Mailman/Cgi/confirm.py:317
+#, fuzzy
 msgid "Subscribe to list %(listname)s"
 msgstr "%(listname)s zerrendara harpidetza egin."
 
@@ -1671,6 +1716,7 @@ msgid "Awaiting moderator approval"
 msgstr "Moderatzailearen onespenaren zai."
 
 #: Mailman/Cgi/confirm.py:386
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request to "
 "the\n"
@@ -1702,6 +1748,7 @@ msgid "You are already a member of this mailing list!"
 msgstr "Dagoeneko bazara zerrenda honetako harpidedun!"
 
 #: Mailman/Cgi/confirm.py:400
+#, fuzzy
 msgid ""
 "You are currently banned from subscribing to\n"
 "            this list.  If you think this restriction is erroneous, please\n"
@@ -1726,6 +1773,7 @@ msgid "Subscription request confirmed"
 msgstr "Harpidetza-eskaera baieztatuta"
 
 #: Mailman/Cgi/confirm.py:418
+#, fuzzy
 msgid ""
 "            You have successfully confirmed your subscription request for\n"
 "            \"%(addr)s\" to the %(listname)s mailing list.  A separate\n"
@@ -1754,6 +1802,7 @@ msgid "Unsubscription request confirmed"
 msgstr "Zerrenda uzteko eskaera baieztatu egin duzu"
 
 #: Mailman/Cgi/confirm.py:469
+#, fuzzy
 msgid ""
 "            You have successfully unsubscribed from the %(listname)s "
 "mailing\n"
@@ -1775,6 +1824,7 @@ msgid "<em>Not available</em>"
 msgstr "<em>Ez dago eskuragarri</em>"
 
 #: Mailman/Cgi/confirm.py:498
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    unsubscription request from the mailing list <em>%(listname)s</em>.  "
@@ -1819,6 +1869,7 @@ msgid "You have canceled your change of address request."
 msgstr "Helbidea aldatzeko eskaera ezereztatu egin duzu."
 
 #: Mailman/Cgi/confirm.py:555
+#, fuzzy
 msgid ""
 "%(newaddr)s is banned from subscribing to the\n"
 "            %(realname)s list.  If you think this restriction is erroneous,\n"
@@ -1829,6 +1880,7 @@ msgstr ""
 "        uste baduzu, idatzi zerrenda jabeari %(owneraddr)s helbidera."
 
 #: Mailman/Cgi/confirm.py:560
+#, fuzzy
 msgid ""
 "%(newaddr)s is already a member of\n"
 "            the %(realname)s list.  It is possible that you are attempting\n"
@@ -1844,6 +1896,7 @@ msgid "Change of address request confirmed"
 msgstr "Helbidea aldatzeko eskaera baieztaturik"
 
 #: Mailman/Cgi/confirm.py:571
+#, fuzzy
 msgid ""
 "            You have successfully changed your address on the %(listname)s\n"
 "            mailing list from <b>%(oldaddr)s</b> to <b>%(newaddr)s</b>.  "
@@ -1866,6 +1919,7 @@ msgid "globally"
 msgstr "orokorrean"
 
 #: Mailman/Cgi/confirm.py:605
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to complete the\n"
 "    change of address request for the mailing list <em>%(listname)s</em>.  "
@@ -1927,6 +1981,7 @@ msgid "Sender discarded message via web."
 msgstr "Bidaltzaileak web gunearen bidez mezua ezereztatu egin du."
 
 #: Mailman/Cgi/confirm.py:674
+#, fuzzy
 msgid ""
 "The held message with the Subject:\n"
 "            header <em>%(subject)s</em> could not be found.  The most "
@@ -1946,6 +2001,7 @@ msgid "Posted message canceled"
 msgstr "Mezua ezereztatu egin da"
 
 #: Mailman/Cgi/confirm.py:685
+#, fuzzy
 msgid ""
 "            You have successfully canceled the posting of your message with\n"
 "            the Subject: header <em>%(subject)s</em> to the mailing list\n"
@@ -1968,6 +2024,7 @@ msgstr ""
 "        esku dago."
 
 #: Mailman/Cgi/confirm.py:735
+#, fuzzy
 msgid ""
 "Your confirmation is required in order to cancel the\n"
 "    posting of your message to the mailing list <em>%(listname)s</em>:\n"
@@ -2017,6 +2074,7 @@ msgid "Membership re-enabled."
 msgstr "Harpidetza gaitu egin dugu berriro."
 
 #: Mailman/Cgi/confirm.py:798
+#, fuzzy
 msgid ""
 "            You have successfully re-enabled your membership in the\n"
 "            %(listname)s mailing list.  You can now <a\n"
@@ -2033,6 +2091,7 @@ msgid "Re-enable mailing list membership"
 msgstr "Posta zerrendako harpidetza berriro gaitu"
 
 #: Mailman/Cgi/confirm.py:827
+#, fuzzy
 msgid ""
 "We're sorry, but you have already been unsubscribed\n"
 "        from this mailing list.  To re-subscribe, please visit the\n"
@@ -2047,6 +2106,7 @@ msgid "<em>not available</em>"
 msgstr "<em>ez dago eskuragarri</em>"
 
 #: Mailman/Cgi/confirm.py:846
+#, fuzzy
 msgid ""
 "Your membership in the %(realname)s mailing list is\n"
 "    currently disabled due to excessive bounces.  Your confirmation is\n"
@@ -2114,10 +2174,12 @@ msgid "administrative list overview"
 msgstr "kudeaketarako zerrenda orokorra"
 
 #: Mailman/Cgi/create.py:115
+#, fuzzy
 msgid "List name must not include \"@\": %(safelistname)s"
 msgstr "Zerrenda izenak ezin du \"@\" ikurrik izan: %(safelistname)s "
 
 #: Mailman/Cgi/create.py:122
+#, fuzzy
 msgid "List already exists: %(safelistname)s"
 msgstr "Zerrenda hori dagoeneko badago: %(safelistname)s"
 
@@ -2152,18 +2214,22 @@ msgid "You are not authorized to create new mailing lists"
 msgstr "Ez duzu zerrenda berriak sortzeko baimenik"
 
 #: Mailman/Cgi/create.py:182
+#, fuzzy
 msgid "Unknown virtual host: %(safehostname)s"
 msgstr "Zerbitzari birtual ezezaguna: %(safehostname)s"
 
 #: Mailman/Cgi/create.py:218 bin/newlist:219
+#, fuzzy
 msgid "Bad owner email address: %(s)s"
 msgstr "Jabearen ePosta helbidea okerra da: %(s)s"
 
 #: Mailman/Cgi/create.py:223 bin/newlist:182 bin/newlist:223
+#, fuzzy
 msgid "List already exists: %(listname)s"
 msgstr "Zerrenda hori dagoeneko badago: %(listname)s"
 
 #: Mailman/Cgi/create.py:231 bin/newlist:217
+#, fuzzy
 msgid "Illegal list name: %(s)s"
 msgstr "Zerrenda izen okerra: %(s)s"
 
@@ -2176,6 +2242,7 @@ msgstr ""
 "                Mesedez, jarri harremanetan gunearen kudeatzailearekin."
 
 #: Mailman/Cgi/create.py:273 bin/newlist:265
+#, fuzzy
 msgid "Your new mailing list: %(listname)s"
 msgstr "Zure posta zerrenda berria: %(listname)s"
 
@@ -2184,6 +2251,7 @@ msgid "Mailing list creation results"
 msgstr "Posta zerrendaren sormenaren emaitza"
 
 #: Mailman/Cgi/create.py:288
+#, fuzzy
 msgid ""
 "You have successfully created the mailing list\n"
 "    <b>%(listname)s</b> and notification has been sent to the list owner\n"
@@ -2206,6 +2274,7 @@ msgid "Create another list"
 msgstr "Beste zerrenda bat sortu"
 
 #: Mailman/Cgi/create.py:312
+#, fuzzy
 msgid "Create a %(hostname)s Mailing List"
 msgstr "%(hostname)s Zerbitzarian Posta Zerrenda Bat Sortu"
 
@@ -2304,6 +2373,7 @@ msgstr ""
 "    berrien mezuak moderatzaileak gainbegiratzea nahi baduzu."
 
 #: Mailman/Cgi/create.py:432
+#, fuzzy
 msgid ""
 "Initial list of supported languages.  <p>Note that if you do not\n"
 "        select at least one initial language, the list will use the server\n"
@@ -2402,6 +2472,7 @@ msgid "List name is required."
 msgstr "Zerrenda izena beharrezkoa da"
 
 #: Mailman/Cgi/edithtml.py:154
+#, fuzzy
 msgid "%(realname)s -- Edit html for %(template_info)s"
 msgstr "%(realname)s -- %(template_info)s-ren html-a editatu"
 
@@ -2410,10 +2481,12 @@ msgid "Edit HTML : Error"
 msgstr "HTML editatu : Errorea"
 
 #: Mailman/Cgi/edithtml.py:161
+#, fuzzy
 msgid "%(safetemplatename)s: Invalid template"
 msgstr "%(safetemplatename)s txantiloi okerra"
 
 #: Mailman/Cgi/edithtml.py:166 Mailman/Cgi/edithtml.py:167
+#, fuzzy
 msgid "%(realname)s -- HTML Page Editing"
 msgstr "%(realname)s -- HTML Orrien Edizioa"
 
@@ -2477,10 +2550,12 @@ msgid "HTML successfully updated."
 msgstr "HTML kodea behar bezala aldatu da."
 
 #: Mailman/Cgi/listinfo.py:89
+#, fuzzy
 msgid "%(hostname)s Mailing Lists"
 msgstr "%(hostname)s >erbitzariko ePosta zerrendak"
 
 #: Mailman/Cgi/listinfo.py:127
+#, fuzzy
 msgid ""
 "<p>There currently are no publicly-advertised\n"
 "            %(mailmanlink)s mailing lists on %(hostname)s."
@@ -2489,6 +2564,7 @@ msgstr ""
 "             %(hostname)s zerbitzarian."
 
 #: Mailman/Cgi/listinfo.py:131
+#, fuzzy
 msgid ""
 "<p>Below is a listing of all the public mailing lists on\n"
 "            %(hostname)s.  Click on a list name to get more information "
@@ -2508,6 +2584,7 @@ msgid "right"
 msgstr "zuzena"
 
 #: Mailman/Cgi/listinfo.py:140
+#, fuzzy
 msgid ""
 " To visit the general information page for an unadvertised list,\n"
 "        open a URL similar to this one, but with a '/' and the %(adj)s\n"
@@ -2557,6 +2634,7 @@ msgid "CGI script error"
 msgstr "CGI scriptaren errorea"
 
 #: Mailman/Cgi/options.py:71
+#, fuzzy
 msgid "Invalid request method: %(method)s"
 msgstr "Eskaera metodo okerra: %(method)s"
 
@@ -2570,6 +2648,7 @@ msgstr "ePosta helbide okerra"
 
 #: Mailman/Cgi/options.py:183 Mailman/Cgi/options.py:240
 #: Mailman/Cgi/options.py:264
+#, fuzzy
 msgid "No such member: %(safeuser)s."
 msgstr "Harpidedun ezezaguna: %(safeuser)s."
 
@@ -2621,6 +2700,7 @@ msgid "Note: "
 msgstr "Oharra: "
 
 #: Mailman/Cgi/options.py:378
+#, fuzzy
 msgid "List subscriptions for %(safeuser)s on %(hostname)s"
 msgstr ""
 "%(hostname)s zerbitzariko posta zerrendetako %(safeuser)s-ren hapidetza "
@@ -2653,6 +2733,7 @@ msgid "You are already using that email address"
 msgstr "Dagoeneko ePosta helbide hori darabizu"
 
 #: Mailman/Cgi/options.py:459
+#, fuzzy
 msgid ""
 "The new address you requested %(newaddr)s is already a member of the\n"
 "%(listname)s mailing list, however you have also requested a global change "
@@ -2666,6 +2747,7 @@ msgstr ""
 "zerrenda guztiak ere aldatu egingo dira."
 
 #: Mailman/Cgi/options.py:468
+#, fuzzy
 msgid "The new address is already a member: %(newaddr)s"
 msgstr "Helbide berria zerrendakide da dagoeneko: %(newaddr)s"
 
@@ -2674,6 +2756,7 @@ msgid "Addresses may not be blank"
 msgstr "Helbideak ezin dira hutsik egon"
 
 #: Mailman/Cgi/options.py:488
+#, fuzzy
 msgid "A confirmation message has been sent to %(newaddr)s. "
 msgstr "Egiaztapen mezu bat bidali da %(newaddr)s helbidera. "
 
@@ -2686,10 +2769,12 @@ msgid "Illegal email address provided"
 msgstr "Emandako ePosta helbidea okerra da."
 
 #: Mailman/Cgi/options.py:501
+#, fuzzy
 msgid "%(newaddr)s is already a member of the list."
 msgstr "%(newaddr)s dagoeneko zerrendako partaide da."
 
 #: Mailman/Cgi/options.py:504
+#, fuzzy
 msgid ""
 "%(newaddr)s is banned from this list.  If you\n"
 "                      think this restriction is erroneous, please contact\n"
@@ -2767,6 +2852,7 @@ msgstr ""
 "           zein den."
 
 #: Mailman/Cgi/options.py:623
+#, fuzzy
 msgid ""
 "You have been successfully unsubscribed from the\n"
 "            mailing list %(fqdn_listname)s.  If you were receiving digest\n"
@@ -2860,6 +2946,7 @@ msgid "day"
 msgstr "egun"
 
 #: Mailman/Cgi/options.py:900
+#, fuzzy
 msgid "%(days)d %(units)s"
 msgstr "%(days)d %(units)s"
 
@@ -2872,6 +2959,7 @@ msgid "<em>No topics defined</em>"
 msgstr "<em>Gaiak ez dira zehaztu</em>"
 
 #: Mailman/Cgi/options.py:940
+#, fuzzy
 msgid ""
 "\n"
 "You are subscribed to this list with the case-preserved address\n"
@@ -2882,6 +2970,7 @@ msgstr ""
 "eta txikiak errespetatuta) <em>%(cpuser)s</em>"
 
 #: Mailman/Cgi/options.py:956
+#, fuzzy
 msgid "%(realname)s list: member options login page"
 msgstr "%(realname)s zerrenda: erabiltzailearen aukeren sarrera orria"
 
@@ -2890,10 +2979,12 @@ msgid "email address and "
 msgstr "ePosta helbidea eta "
 
 #: Mailman/Cgi/options.py:960
+#, fuzzy
 msgid "%(realname)s list: member options for user %(safeuser)s"
 msgstr "%(realname)s zerrenda: %(safeuser)s erabiltzailearen aukerak"
 
 #: Mailman/Cgi/options.py:986
+#, fuzzy
 msgid ""
 "In order to change your membership option, you must\n"
 "    first log in by giving your %(extra)smembership password in the section\n"
@@ -2972,6 +3063,7 @@ msgid "<missing>"
 msgstr "<galduta>"
 
 #: Mailman/Cgi/options.py:1140
+#, fuzzy
 msgid "Requested topic is not valid: %(topicname)s"
 msgstr "Eskatuta gaia ez da zuzena: %(topicname)s"
 
@@ -3000,6 +3092,7 @@ msgid "Private archive - \"./\" and \"../\" not allowed in URL."
 msgstr "Artxibo pribatuak  (\"./\" eta \"../\") ez dira onartzen URLan."
 
 #: Mailman/Cgi/private.py:109
+#, fuzzy
 msgid "Private Archive Error - %(msg)s"
 msgstr "Errorea Artxibo Pribatuan - %(msg)s"
 
@@ -3020,6 +3113,7 @@ msgid "Private archive file not found"
 msgstr "Artxibo Pribatua ez da aurkitu"
 
 #: Mailman/Cgi/rmlist.py:76
+#, fuzzy
 msgid "No such list %(safelistname)s"
 msgstr "Zerrenda hau ez dago: %(safelistname)s"
 
@@ -3036,6 +3130,7 @@ msgid "Mailing list deletion results"
 msgstr "Eposta zerrenda ezabatze emaitzak"
 
 #: Mailman/Cgi/rmlist.py:187
+#, fuzzy
 msgid ""
 "You have successfully deleted the mailing list\n"
 "    <b>%(listname)s</b>."
@@ -3044,6 +3139,7 @@ msgstr ""
 "    ezabatu duzu."
 
 #: Mailman/Cgi/rmlist.py:191
+#, fuzzy
 msgid ""
 "There were some problems deleting the mailing list\n"
 "        <b>%(listname)s</b>.  Contact your site administrator at "
@@ -3055,10 +3151,12 @@ msgstr ""
 "        honetara: %(sitelist)s."
 
 #: Mailman/Cgi/rmlist.py:208
+#, fuzzy
 msgid "Permanently remove mailing list <em>%(realname)s</em>"
 msgstr "<em>%(realname)s</em> Eposta zerrenda betirako ezabatu"
 
 #: Mailman/Cgi/rmlist.py:209
+#, fuzzy
 msgid "Permanently remove mailing list %(realname)s"
 msgstr "%(realname)s posta zerrenda betirako ezabatu"
 
@@ -3125,6 +3223,7 @@ msgid "Invalid options to CGI script"
 msgstr "CGI skripterako aukera okerra"
 
 #: Mailman/Cgi/roster.py:118
+#, fuzzy
 msgid "%(realname)s roster authentication failed."
 msgstr "%(realname)s zerrendaren egiaztapenak huts egin du."
 
@@ -3196,6 +3295,7 @@ msgstr ""
 "."
 
 #: Mailman/Cgi/subscribe.py:262
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this\n"
 "        mailing list.  If you think this restriction is erroneous, please\n"
@@ -3222,6 +3322,7 @@ msgstr ""
 "delako ziurra."
 
 #: Mailman/Cgi/subscribe.py:278
+#, fuzzy
 msgid ""
 "Confirmation from your email address is required, to prevent anyone from\n"
 "subscribing you without permission.  Instructions are being sent to you at\n"
@@ -3235,6 +3336,7 @@ msgstr ""
 "berretsi arte."
 
 #: Mailman/Cgi/subscribe.py:290
+#, fuzzy
 msgid ""
 "Your subscription request was deferred because %(x)s.  Your request has "
 "been\n"
@@ -3256,6 +3358,7 @@ msgid "Mailman privacy alert"
 msgstr "Mailmanen Pribazitate Abisua"
 
 #: Mailman/Cgi/subscribe.py:316
+#, fuzzy
 msgid ""
 "An attempt was made to subscribe your address to the mailing list\n"
 "%(listaddr)s.  You are already subscribed to this mailing list.\n"
@@ -3301,6 +3404,7 @@ msgid "This list only supports digest delivery."
 msgstr "Zerrendak mezuak bildumetan jasotzeko aukera bakarrik ematen du."
 
 #: Mailman/Cgi/subscribe.py:344
+#, fuzzy
 msgid "You have been successfully subscribed to the %(realname)s mailing list."
 msgstr "%(realname)s posta zerrendako harpidedun egin zara."
 
@@ -3324,6 +3428,7 @@ msgid "Usage:"
 msgstr "Erabilera:"
 
 #: Mailman/Commands/cmd_confirm.py:50
+#, fuzzy
 msgid ""
 "Invalid confirmation string.  Note that confirmation strings expire\n"
 "approximately %(days)s days after the initial request.  They also expire if\n"
@@ -3350,6 +3455,7 @@ msgstr ""
 "edo helbidea aldatu?"
 
 #: Mailman/Commands/cmd_confirm.py:69
+#, fuzzy
 msgid ""
 "You are currently banned from subscribing to this list.  If you think this\n"
 "restriction is erroneous, please contact the list owners at\n"
@@ -3433,26 +3539,32 @@ msgid "n/a"
 msgstr "ez dagokio"
 
 #: Mailman/Commands/cmd_info.py:44
+#, fuzzy
 msgid "List name:    %(listname)s"
 msgstr "Zerrendaren izena:    %(listname)s"
 
 #: Mailman/Commands/cmd_info.py:45
+#, fuzzy
 msgid "Description:  %(description)s"
 msgstr "Azalpena: %(description)s"
 
 #: Mailman/Commands/cmd_info.py:46
+#, fuzzy
 msgid "Postings to:  %(postaddr)s"
 msgstr "Mezuak hona:  %(postaddr)s"
 
 #: Mailman/Commands/cmd_info.py:47
+#, fuzzy
 msgid "List Helpbot: %(requestaddr)s"
 msgstr "Zerrendaren laguntza robota: %(requestaddr)s"
 
 #: Mailman/Commands/cmd_info.py:48
+#, fuzzy
 msgid "List Owners:  %(owneraddr)s"
 msgstr "Zerrenda-jabeak: %(owneraddr)s"
 
 #: Mailman/Commands/cmd_info.py:49
+#, fuzzy
 msgid "More information: %(listurl)s"
 msgstr "Argibide gehiago: %(listurl)s"
 
@@ -3476,18 +3588,22 @@ msgstr ""
 "ikusi.\n"
 
 #: Mailman/Commands/cmd_lists.py:44
+#, fuzzy
 msgid "Public mailing lists at %(hostname)s:"
 msgstr "%(hostname)s guneko posta zerrenda irekiak hauexek dira:"
 
 #: Mailman/Commands/cmd_lists.py:66
+#, fuzzy
 msgid "%(i)3d. List name:   %(realname)s"
 msgstr "%(i)3d. Zerremda izena:   %(realname)s"
 
 #: Mailman/Commands/cmd_lists.py:67
+#, fuzzy
 msgid "     Description: %(description)s"
 msgstr "     Azalpena: %(description)s"
 
 #: Mailman/Commands/cmd_lists.py:68
+#, fuzzy
 msgid "     Requests to: %(requestaddr)s"
 msgstr "     Eskaerak hona egin: %(requestaddr)s"
 
@@ -3525,12 +3641,14 @@ msgstr ""
 "\n"
 
 #: Mailman/Commands/cmd_password.py:51 Mailman/Commands/cmd_password.py:66
+#, fuzzy
 msgid "Your password is: %(password)s"
 msgstr "Zure pasahitza hau da: %(password)s"
 
 #: Mailman/Commands/cmd_password.py:57 Mailman/Commands/cmd_password.py:72
 #: Mailman/Commands/cmd_password.py:95 Mailman/Commands/cmd_password.py:121
 #: Mailman/Commands/cmd_set.py:149 Mailman/Commands/cmd_set.py:219
+#, fuzzy
 msgid "You are not a member of the %(listname)s mailing list"
 msgstr "Zu ez zara %(listname)s ePosta zerrendako harpidedun"
 
@@ -3728,6 +3846,7 @@ msgstr ""
 "        desgaitu nahi baduzu zerrenda honetarako.\n"
 
 #: Mailman/Commands/cmd_set.py:122
+#, fuzzy
 msgid "Bad set command: %(subcmd)s"
 msgstr "Set agindu okerra: %(subcmd)s"
 
@@ -3748,6 +3867,7 @@ msgid "on"
 msgstr "aktibatu"
 
 #: Mailman/Commands/cmd_set.py:154
+#, fuzzy
 msgid "    ack %(onoff)s"
 msgstr "    ack %(onoff)s"
 
@@ -3785,22 +3905,27 @@ msgid "due to bounces"
 msgstr "erreboteak direla eta"
 
 #: Mailman/Commands/cmd_set.py:186
+#, fuzzy
 msgid "    %(status)s (%(how)s on %(date)s)"
 msgstr "    %(status)s (%(how)s  %(date)s-(e)an)"
 
 #: Mailman/Commands/cmd_set.py:192
+#, fuzzy
 msgid "    myposts %(onoff)s"
 msgstr "    nire mezuak %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:195
+#, fuzzy
 msgid "    hide %(onoff)s"
 msgstr "    ezkutuan %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:199
+#, fuzzy
 msgid "    duplicates %(onoff)s"
 msgstr "    duplikatuak %(onoff)s"
 
 #: Mailman/Commands/cmd_set.py:203
+#, fuzzy
 msgid "    reminders %(onoff)s"
 msgstr "    hileroko gogorarazpenak %(onoff)s"
 
@@ -3809,6 +3934,7 @@ msgid "You did not give the correct password"
 msgstr "Ez duzu pasahitz zuzena idatzi"
 
 #: Mailman/Commands/cmd_set.py:236 Mailman/Commands/cmd_set.py:283
+#, fuzzy
 msgid "Bad argument: %(arg)s"
 msgstr "Argumentu okerra: %(arg)s"
 
@@ -3887,6 +4013,7 @@ msgstr ""
 "        markarik gabe).\n"
 
 #: Mailman/Commands/cmd_subscribe.py:62
+#, fuzzy
 msgid "Bad digest specifier: %(arg)s"
 msgstr "Bildumak gaizki zehaztuta: %(arg)s"
 
@@ -3895,6 +4022,7 @@ msgid "No valid address found to subscribe"
 msgstr "Ez da helbide egokirik aurkitu harpidetzeko"
 
 #: Mailman/Commands/cmd_subscribe.py:113
+#, fuzzy
 msgid ""
 "The email address you supplied is banned from this mailing list.\n"
 "If you think this restriction is erroneous, please contact the list\n"
@@ -3934,6 +4062,7 @@ msgid "This list only supports digest subscriptions!"
 msgstr "Zerrenda honek bilduma harpidetzak bakarrik onartzen ditu!"
 
 #: Mailman/Commands/cmd_subscribe.py:146
+#, fuzzy
 msgid ""
 "Your subscription request has been forwarded to the list administrator\n"
 "at %(listowner)s for review."
@@ -3971,6 +4100,7 @@ msgstr ""
 "        \n"
 
 #: Mailman/Commands/cmd_unsubscribe.py:62
+#, fuzzy
 msgid "%(address)s is not a member of the %(listname)s mailing list"
 msgstr "%(address)s ez da %(listname)s ePosta zerrendako partaide"
 
@@ -4224,6 +4354,7 @@ msgid "Chinese (Taiwan)"
 msgstr "Txinera (Taiwan)"
 
 #: Mailman/Deliverer.py:53
+#, fuzzy
 msgid ""
 "Note: Since this is a list of mailing lists, administrative\n"
 "notices like the password reminder will be sent to\n"
@@ -4238,14 +4369,17 @@ msgid " (Digest mode)"
 msgstr " (Mezu-Bilduma)"
 
 #: Mailman/Deliverer.py:79
+#, fuzzy
 msgid "Welcome to the \"%(realname)s\" mailing list%(digmode)s"
 msgstr "Ongi etorri \"%(realname)s\" %(digmode)s posta zerrendara"
 
 #: Mailman/Deliverer.py:89
+#, fuzzy
 msgid "You have been unsubscribed from the %(realname)s mailing list"
 msgstr "Ondoko zerrenda hau utzi egin duzu: %(realname)s "
 
 #: Mailman/Deliverer.py:116
+#, fuzzy
 msgid "%(listfullname)s mailing list reminder"
 msgstr "%(listfullname)s posta zerrendaren gogorarazpena"
 
@@ -4258,6 +4392,7 @@ msgid "Hostile subscription attempt detected"
 msgstr "Harpidetza gaizto baten saiakera igerri da"
 
 #: Mailman/Deliverer.py:169
+#, fuzzy
 msgid ""
 "%(address)s was invited to a different mailing\n"
 "list, but in a deliberate malicious attempt they tried to confirm the\n"
@@ -4270,6 +4405,7 @@ msgstr ""
 "dugu. Ez da zure aldetik akziorik espero."
 
 #: Mailman/Deliverer.py:188
+#, fuzzy
 msgid ""
 "You invited %(address)s to your list, but in a\n"
 "deliberate malicious attempt, they tried to confirm the invitation to a\n"
@@ -4284,6 +4420,7 @@ msgstr ""
 "dugu. Ez da zure aldetik akziorik espero."
 
 #: Mailman/Deliverer.py:221
+#, fuzzy
 msgid "%(listname)s mailing list probe message"
 msgstr "%(listname)s posta zerrendaren gogorarazpena"
 
@@ -4491,8 +4628,8 @@ msgid ""
 "            membership.\n"
 "\n"
 "            <p>You can control both the\n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">number\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">number\n"
 "            of reminders</a> the member will receive and the\n"
 "            <a href=\"?VARHELP=bounce/"
 "bounce_you_are_disabled_warnings_interval\"\n"
@@ -4547,8 +4684,8 @@ msgstr ""
 "\n"
 "            <p>Aldagai bi hauek kontrola ditzakezu:\n"
 "            harpidedunak jasoko dituen\n"
-"            <a href=\"?VARHELP=bounce/bounce_you_are_disabled_warnings"
-"\">jakinarazpen mezuen\n"
+"            <a href=\"?VARHELP=bounce/"
+"bounce_you_are_disabled_warnings\">jakinarazpen mezuen\n"
 "            kopurua</a>\n"
 "            eta mezuak bidaltzeko\n"
 "            <a href=\"?VARHELP=bounce/"
@@ -4710,8 +4847,8 @@ msgid ""
 "             <em>No</em> those messages too will get discarded.  You may "
 "want\n"
 "             to set up an\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">autoresponse\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">autoresponse\n"
 "             message</a> for email to the -owner and -admin address."
 msgstr ""
 "Mailmanek erreboteak ezagutzeko duen sistema oso sendoa den arren\n"
@@ -4739,8 +4876,8 @@ msgstr ""
 "             <em>Ez</em> aukeratu bada, mezu horiek ezabatu egingo dira. "
 "Nahi baduzu,\n"
 "             -owner eta -admin helbideetan jasotako mezuentzat\n"
-"             <a href=\"?VARHELP=autoreply/autoresponse_admin_text"
-"\">erantzun\n"
+"             <a href=\"?VARHELP=autoreply/"
+"autoresponse_admin_text\">erantzun\n"
 "             automatikoa</a> konfigura dezakezu."
 
 #: Mailman/Gui/Bounce.py:147
@@ -4809,6 +4946,7 @@ msgstr ""
 "             Harpidedunari abisatzeko saiakera bai egingo da."
 
 #: Mailman/Gui/Bounce.py:194
+#, fuzzy
 msgid ""
 "Bad value for <a href=\"?VARHELP=bounce/%(property)s\"\n"
 "                >%(property)s</a>: %(val)s"
@@ -4873,8 +5011,8 @@ msgstr ""
 "bat\n"
 "            jasotzen den bakoitzean, edukien iragazpena gaitu baduzu,\n"
 "            artxibo erantsiak\n"
-"            <a href=\"?VARHELP=contentfilter/filter_mime_types"
-"\">iragazitako\n"
+"            <a href=\"?VARHELP=contentfilter/"
+"filter_mime_types\">iragazitako\n"
 "            eduki-motekin</a> erkatzen dira. Erantsi mota iragazkiak "
 "lehenetsitakoekin bat badator,\n"
 "            baztertu egiten da.\n"
@@ -4964,8 +5102,8 @@ msgid ""
 "Use this option to remove each message attachment that does\n"
 "             not have a matching content type.  Requirements and formats "
 "are\n"
-"             exactly like <a href=\"?VARHELP=contentfilter/filter_mime_types"
-"\"\n"
+"             exactly like <a href=\"?VARHELP=contentfilter/"
+"filter_mime_types\"\n"
 "             >filter_mime_types</a>.\n"
 "\n"
 "             <p><b>Note:</b> if you add entries to this list but don't add\n"
@@ -5082,6 +5220,7 @@ msgstr ""
 "             behar izaten du."
 
 #: Mailman/Gui/ContentFilter.py:171
+#, fuzzy
 msgid "Bad MIME type ignored: %(spectype)s"
 msgstr "MIME okerrari jaramonik ez: %(spectype)s"
 
@@ -5189,6 +5328,7 @@ msgid ""
 msgstr "Mezu-bilduma orain bidali behar al da (hutsik egon ezean)?"
 
 #: Mailman/Gui/Digest.py:145
+#, fuzzy
 msgid ""
 "The next digest will be sent as volume\n"
 "            %(volume)s, number %(number)s"
@@ -5205,14 +5345,17 @@ msgid "There was no digest to send."
 msgstr "Ez zegoen mezu-bildumarik bidaltzeko."
 
 #: Mailman/Gui/GUIBase.py:173
+#, fuzzy
 msgid "Invalid value for variable: %(property)s"
 msgstr "Aldagai honentzat balio okerra: %(property)s"
 
 #: Mailman/Gui/GUIBase.py:178
+#, fuzzy
 msgid "Bad email address for option %(property)s: %(error)s"
 msgstr "%(property)s ezaugarriarentzat helbide okerra: %(error)s"
 
 #: Mailman/Gui/GUIBase.py:204
+#, fuzzy
 msgid ""
 "The following illegal substitution variables were\n"
 "                found in the <code>%(property)s</code> string:\n"
@@ -5228,6 +5371,7 @@ msgstr ""
 "izatea."
 
 #: Mailman/Gui/GUIBase.py:218
+#, fuzzy
 msgid ""
 "Your <code>%(property)s</code> string appeared to\n"
 "                    have some correctable problems in its new value.\n"
@@ -5331,8 +5475,8 @@ msgid ""
 "             <p>In order to split the list ownership duties into\n"
 "             administrators and moderators, you must\n"
 "             <a href=\"passwords\">set a separate moderator password</a>,\n"
-"             and also provide the <a href=\"?VARHELP=general/moderator"
-"\">email\n"
+"             and also provide the <a href=\"?VARHELP=general/"
+"moderator\">email\n"
 "             addresses of the list moderators</a>.  Note that the field you\n"
 "             are changing here specifies the list administrators."
 msgstr ""
@@ -5671,13 +5815,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5717,12 +5861,12 @@ msgstr ""
 "              dute erantzunak emateko. Bestalde, <tt>Reply-To:</tt> "
 "eraldatuz,\n"
 "             zailagoa izango da erantzun pribatuak ematea.  Ikus <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> webgunea gai honi buruzko\n"
 "             datu gehiago izateko. Edo bestela <a\n"
-"             ref=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">`Reply-To'\n"
+"             ref=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">`Reply-To'\n"
 "             Munging Considered Useful</a>.\n"
 "\n"
 "             <p>Posta zerrenda batzuetan mugatuta dago mezuak bidaltzeko "
@@ -5746,8 +5890,8 @@ msgstr "<tt>Reply-To:</tt> goiburu esplizitua."
 msgid ""
 "This is the address set in the <tt>Reply-To:</tt> header\n"
 "             when the <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             option is set to <em>Explicit address</em>.\n"
 "\n"
 "             <p>There are many reasons not to introduce or override the\n"
@@ -5755,13 +5899,13 @@ msgid ""
 "             their own <tt>Reply-To:</tt> settings to convey their valid\n"
 "             return address.  Another is that modifying <tt>Reply-To:</tt>\n"
 "             makes it much more difficult to send private replies.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> for a general discussion of "
 "this\n"
 "             issue.  See <a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-useful.html"
-"\">\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-useful."
+"html\">\n"
 "             Reply-To Munging Considered Useful</a> for a dissenting "
 "opinion.\n"
 "\n"
@@ -5784,8 +5928,8 @@ msgid ""
 msgstr ""
 "Hauxe da <tt>Reply-To:</tt> goiburuan helbidea sartzeko aukera.\n"
 "             Sartu helbidea <a\n"
-"             href=\"?VARHELP=general/reply_goes_to_list"
-"\">reply_goes_to_list</a>\n"
+"             href=\"?VARHELP=general/"
+"reply_goes_to_list\">reply_goes_to_list</a>\n"
 "             aukeran <em>Helbide esplizitua</em> hautatu duzunean.\n"
 "\n"
 "             <p>Arrazoi asko dago <tt>Reply-To:</tt> goiburua ez ezabatzeko\n"
@@ -5796,8 +5940,8 @@ msgstr ""
 "              dute erantzunak emateko. Bestalde, <tt>Reply-To:</tt> "
 "eraldatuz,\n"
 "             zailagoa izango da erantzun pribatuak ematea.  Ikus<a\n"
-"             href=\"http://marc.merlins.org/netrants/reply-to-harmful.html"
-"\">`Reply-To'\n"
+"             href=\"http://marc.merlins.org/netrants/reply-to-harmful."
+"html\">`Reply-To'\n"
 "             Munging Considered Harmful</a> webgunea gai honi buruzko\n"
 "             datu gehiago izateko. Edo bestela <a\n"
 "        href=\"http://marc.merlins.org/netrants/reply-to-useful.html\">Reply-"
@@ -5869,8 +6013,8 @@ msgid ""
 "             member list addresses, but rather to the owner of those member\n"
 "             lists.  In that case, the value of this setting is appended to\n"
 "             the member's account name for such notices.  `-owner' is the\n"
-"             typical choice.  This setting has no effect when \"umbrella_list"
-"\"\n"
+"             typical choice.  This setting has no effect when "
+"\"umbrella_list\"\n"
 "             is \"No\"."
 msgstr ""
 "\"umbrella_list\" aktibatuta dagoenean, esan nahi du enbor-zerrenda honek\n"
@@ -6488,8 +6632,8 @@ msgstr ""
 "Mezu arruntak ere personalizatu behar al ditu Mailmanek?\n"
 "                 Erabilgarria izaten da iragarkiak bidaltzen dituzten "
 "zerrendetan.\n"
-"                 Irakurri <a href=\"?VARHELP=nondigest/personalize"
-"\">xehetasunak</a>\n"
+"                 Irakurri <a href=\"?VARHELP=nondigest/"
+"personalize\">xehetasunak</a>\n"
 "                 atala gai garrantzitsuak aztertzen dituelako."
 
 #: Mailman/Gui/NonDigest.py:61
@@ -6851,6 +6995,7 @@ msgstr ""
 "                           betiere harpidedunaren onerako."
 
 #: Mailman/Gui/Privacy.py:104
+#, fuzzy
 msgid ""
 "This section allows you to configure subscription and\n"
 "            membership exposure policy.  You can also control whether this\n"
@@ -7052,13 +7197,13 @@ msgid ""
 "            either individually or as a group.  Any\n"
 "            posting from a non-member who is not explicitly accepted,\n"
 "            rejected, or discarded, will have their posting filtered by the\n"
-"            <a href=\"?VARHELP=privacy/sender/generic_nonmember_action"
-"\">general\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"generic_nonmember_action\">general\n"
 "            non-member rules</a>.\n"
 "\n"
 "            <p>In the text boxes below, add one address per line; start the\n"
 "            line with a ^ character to designate a <a href=\n"
-"            \"https://docs.python.org/2/library/re.html\"\n"
+"            \"https://docs.python.org/3/library/re.html\"\n"
 "            >Python regular expression</a>.  When entering backslashes, do "
 "so\n"
 "            as if you were using Python raw strings (i.e. you generally "
@@ -7082,8 +7227,8 @@ msgstr ""
 "            <p>Zerrendakide ez diren mezuen kasuan, aukerak hauexek dira:\n"
 "            <a href=\"?VARHELP=privacy/sender/accept_these_nonmembers\"\n"
 "            >onartu</a>,\n"
-"            <a href=\"?VARHELP=privacy/sender/hold_these_nonmembers"
-"\">moderatzeko\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"hold_these_nonmembers\">moderatzeko\n"
 "            atxiki</a>,\n"
 "            <a href=\"?VARHELP=privacy/sender/reject_these_nonmembers\"\n"
 "            >ez onartu</a> (errebotea bidali), edo\n"
@@ -7091,15 +7236,15 @@ msgstr ""
 "            >baztertu</a>,\n"
 "            bai banaka, bai denak batera.  Zerrendakide ez diren\n"
 "            mezuak ez badira moderatzen (onartu, ez onartu, baztertu),\n"
-"            <a href=\"?VARHELP=privacy/sender/generic_nonmember_action"
-"\">zerrendakide\n"
+"            <a href=\"?VARHELP=privacy/sender/"
+"generic_nonmember_action\">zerrendakide\n"
 "            ez direnen arau orokorrak</a>\n"
 "            jarraituz iragaziko dira.\n"
 "\n"
 "            <p>Beheko testu-kutxetan, gehitu helbide bat lerroko; lerroa "
 "hasi\n"
 "            ^ karakterearekin, <a href=\n"
-"            \"https://docs.python.org/2/library/re.html\"\n"
+"            \"https://docs.python.org/3/library/re.html\"\n"
 "            >Python adierazpen erregularren</a> kasuan.  '\\' ikurrak "
 "sartzean,\n"
 "            Python lerro gordinak erabiltzen ari bazina bezala egin ezazu "
@@ -7118,6 +7263,7 @@ msgid "By default, should new list member postings be moderated?"
 msgstr "Zerrendakide berrien mezuak, hasiera batean moderatu egin behar dira?"
 
 #: Mailman/Gui/Privacy.py:218
+#, fuzzy
 msgid ""
 "Each list member has a <em>moderation flag</em> which says\n"
 "             whether messages from the list member can be posted directly "
@@ -7173,8 +7319,8 @@ msgid ""
 "If a member posts this many times, within a period of time\n"
 "               the member is automatically moderated.  Use 0 to disable.  "
 "See\n"
-"               <a href=\"?VARHELP=privacy/sender/member_verbosity_interval"
-"\"\n"
+"               <a href=\"?VARHELP=privacy/sender/"
+"member_verbosity_interval\"\n"
 "               >member_verbosity_interval</a> for details on the time "
 "period.\n"
 "\n"
@@ -7263,6 +7409,7 @@ msgstr ""
 "             >oharra</a>."
 
 #: Mailman/Gui/Privacy.py:290
+#, fuzzy
 msgid ""
 "Action to take when anyone posts to the\n"
 "             list from a domain with a DMARC Reject%(quarantine)s Policy."
@@ -7366,6 +7513,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Gui/Privacy.py:353
+#, fuzzy
 msgid ""
 "Text to include in any\n"
 "             <a href=\"?VARHELP=privacy/sender/dmarc_moderation_action\"\n"
@@ -7630,8 +7778,8 @@ msgstr ""
 "Harpidedun ez den baten mezua jasotzen denean, helbidea automatikoki\n"
 "             <a href=\"?VARHELP=privacy/sender/accept_these_nonmembers\"\n"
 "             >onartuen</a>,\n"
-"             <a href=\"?VARHELP=privacy/sender/hold_these_nonmembers"
-"\">moderatuen</a>,\n"
+"             <a href=\"?VARHELP=privacy/sender/"
+"hold_these_nonmembers\">moderatuen</a>,\n"
 "             <a href=\"?VARHELP=privacy/sender/reject_these_nonmembers\"\n"
 "             >ez onartuen</a> eta\n"
 "             <a href=\"?VARHELP=privacy/sender/discard_these_nonmembers\"\n"
@@ -7888,6 +8036,7 @@ msgstr ""
 "                Zerbait falta zaien definizioak ez dira onartuko."
 
 #: Mailman/Gui/Privacy.py:693
+#, fuzzy
 msgid ""
 "The header filter rule pattern\n"
 "                '%(safepattern)s' is not a legal regular expression.  This\n"
@@ -7920,7 +8069,7 @@ msgstr "Gaien iragazkiak gaituta ala ezgaituta beharko luke?"
 msgid ""
 "The topic filter categorizes each incoming email message\n"
 "             according to <a\n"
-"            href=\"https://docs.python.org/2/library/re.html\">regular\n"
+"            href=\"https://docs.python.org/3/library/re.html\">regular\n"
 "             expression filters</a> you specify below.  If the message's\n"
 "             <code>Subject:</code> or <code>Keywords:</code> header contains "
 "a\n"
@@ -7938,12 +8087,12 @@ msgid ""
 "             <p>The body of the message can also be optionally scanned for\n"
 "             <code>Subject:</code> and <code>Keywords:</code> headers, as\n"
 "             specified by the <a\n"
-"       href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a>\n"
+"       href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a>\n"
 "             configuration variable."
 msgstr ""
 "Gaien iragazkiak, heltzen diren mezu guztiak sailkatu egiten ditu\n"
-"             behean adierazitako <a href=\"https://docs.python.org/2/library/"
+"             behean adierazitako <a href=\"https://docs.python.org/3/library/"
 "re.html\">adierazpen\n"
 "             erregularren iragazkiaren</a> arabera.\n"
 "             <code>Subject:</code> (gaia) edo <code>Keywords</code> (gako-"
@@ -7963,8 +8112,8 @@ msgstr ""
 "             <code>Subject:</code> eta <code>Keyword:</code> bezalako "
 "goiburuak\n"
 "             bilatzeko,\n"
-"             <a href=\"?VARHELP=topics/topics_bodylines_limit"
-"\">topics_bodylines_limit</a>\n"
+"             <a href=\"?VARHELP=topics/"
+"topics_bodylines_limit\">topics_bodylines_limit</a>\n"
 "             aldagaian zehazten den moduan."
 
 #: Mailman/Gui/Topics.py:72
@@ -8036,6 +8185,7 @@ msgstr ""
 "                Zerbait falta zaien definizioak ez dira onartuko."
 
 #: Mailman/Gui/Topics.py:135
+#, fuzzy
 msgid ""
 "The topic pattern '%(safepattern)s' is not a\n"
 "                legal regular expression.  It will be discarded."
@@ -8247,6 +8397,7 @@ msgid "%(listinfo_link)s list run by %(owner_link)s"
 msgstr "%(listinfo_link)s zerrendako kudeatzailea %(owner_link)s da"
 
 #: Mailman/HTMLFormatter.py:57
+#, fuzzy
 msgid "%(realname)s administrative interface"
 msgstr "%(realname)s kudeatzeko interfazea"
 
@@ -8255,6 +8406,7 @@ msgid " (requires authorization)"
 msgstr " (baimena beharrezkoa)"
 
 #: Mailman/HTMLFormatter.py:61
+#, fuzzy
 msgid "Overview of all %(hostname)s mailing lists"
 msgstr ""
 "%(hostname)s zerbitzariko posta zerrendak gainbegiratzeko egin klik hemen"
@@ -8276,6 +8428,7 @@ msgid "; it was disabled by the list administrator"
 msgstr "; kudeatzaileak ezgaitu du"
 
 #: Mailman/HTMLFormatter.py:146
+#, fuzzy
 msgid ""
 "; it was disabled due to excessive bounces.  The\n"
 "            last bounce was received on %(date)s"
@@ -8288,6 +8441,7 @@ msgid "; it was disabled for unknown reasons"
 msgstr "; arrazoi ezezagunegatik ezgaiturik dago hau."
 
 #: Mailman/HTMLFormatter.py:151
+#, fuzzy
 msgid "Note: your list delivery is currently disabled%(reason)s."
 msgstr "Oharra: une honetan mezuen banaketa ezgaituta duzu %(reason)s."
 
@@ -8300,6 +8454,7 @@ msgid "the list administrator"
 msgstr "zerrenda kudeatzailea"
 
 #: Mailman/HTMLFormatter.py:157
+#, fuzzy
 msgid ""
 "<p>%(note)s\n"
 "\n"
@@ -8319,6 +8474,7 @@ msgstr ""
 "            laguntzarik behar baduzu, idatzi %(mailto)s helbidera."
 
 #: Mailman/HTMLFormatter.py:169
+#, fuzzy
 msgid ""
 "<p>We have received some recent bounces from your\n"
 "            address.  Your current <em>bounce score</em> is %(score)s out of "
@@ -8339,6 +8495,7 @@ msgstr ""
 "            jarriko da."
 
 #: Mailman/HTMLFormatter.py:181
+#, fuzzy
 msgid ""
 "(Note - you are subscribing to a list of mailing lists, so the %(type)s "
 "notice will be sent to the admin address for your membership, %(addr)s.)<p>"
@@ -8387,6 +8544,7 @@ msgstr ""
 "zaizu."
 
 #: Mailman/HTMLFormatter.py:208
+#, fuzzy
 msgid ""
 "This is %(also)sa private list, which means that the\n"
 "            list of members is not available to non-members."
@@ -8395,6 +8553,7 @@ msgstr ""
 "            harpidedun ez direnentzat kontsultagai."
 
 #: Mailman/HTMLFormatter.py:211
+#, fuzzy
 msgid ""
 "This is %(also)sa hidden list, which means that the\n"
 "            list of members is available only to the list administrator."
@@ -8403,6 +8562,7 @@ msgstr ""
 "            kudeatzaileak bakarrik ikus ditzake."
 
 #: Mailman/HTMLFormatter.py:214
+#, fuzzy
 msgid ""
 "This is %(also)sa public list, which means that the\n"
 "            list of members list is available to everyone."
@@ -8419,6 +8579,7 @@ msgstr ""
 "                sahiesteko)."
 
 #: Mailman/HTMLFormatter.py:222
+#, fuzzy
 msgid ""
 "<p>(Note that this is an umbrella list, intended to\n"
 "            have only other mailing lists as members.  Among other things,\n"
@@ -8435,6 +8596,7 @@ msgid "<b><i>either</i></b> "
 msgstr "<b><i>ezta</i></b> "
 
 #: Mailman/HTMLFormatter.py:256
+#, fuzzy
 msgid ""
 "To unsubscribe from %(realname)s, get a password reminder,\n"
 "        or change your subscription options %(either)senter your "
@@ -8468,6 +8630,7 @@ msgstr ""
 "        eskatuko zaizu."
 
 #: Mailman/HTMLFormatter.py:277
+#, fuzzy
 msgid ""
 "(<i>%(which)s is only available to the list\n"
 "                members.</i>)"
@@ -8476,6 +8639,7 @@ msgstr ""
 "                 ikus dezakete.</i>)"
 
 #: Mailman/HTMLFormatter.py:281
+#, fuzzy
 msgid ""
 "(<i>%(which)s is only available to the list\n"
 "            administrator.</i>)"
@@ -8534,6 +8698,7 @@ msgid "The current archive"
 msgstr "Oraingo fitxategia"
 
 #: Mailman/Handlers/Acknowledge.py:59
+#, fuzzy
 msgid "%(realname)s post acknowledgement"
 msgstr "%(realname)s posta zerrendara idatzi izanaren konfirmazioa"
 
@@ -8546,6 +8711,7 @@ msgid ""
 msgstr ""
 
 #: Mailman/Handlers/CalcRecips.py:79
+#, fuzzy
 msgid ""
 "Your urgent message to the %(realname)s mailing list was not authorized for\n"
 "delivery.  The original message as received by Mailman is attached.\n"
@@ -8554,6 +8720,7 @@ msgstr ""
 "Jatorrizko mezua erantsita, Mailmanek jaso zuen moduan.\n"
 
 #: Mailman/Handlers/CookHeaders.py:180
+#, fuzzy
 msgid "%(realname)s via %(lrn)s"
 msgstr "%(realname)s , %(lrn)s-en bidez"
 
@@ -8624,6 +8791,7 @@ msgid "Message may contain administrivia"
 msgstr "Mezu honek eskaera administratiboak izan ditzake."
 
 #: Mailman/Handlers/Hold.py:84
+#, fuzzy
 msgid ""
 "Please do *not* post administrative requests to the mailing\n"
 "list.  If you wish to subscribe, visit %(listurl)s or send a message with "
@@ -8662,12 +8830,14 @@ msgid "Posting to a moderated newsgroup"
 msgstr "Moderatutako berri-talde baterako mezua."
 
 #: Mailman/Handlers/Hold.py:252
+#, fuzzy
 msgid "Your message to %(listname)s awaits moderator approval"
 msgstr ""
 "%(listname)s zerrendara bidali duzun mezua moderatzaileak noiz onartuko zain "
 "dago"
 
 #: Mailman/Handlers/Hold.py:271
+#, fuzzy
 msgid "%(listname)s post from %(sender)s requires approval"
 msgstr ""
 "%(sender)s zerrendakideak %(listname)s zerrendara bidalitako\n"
@@ -8710,6 +8880,7 @@ msgid "After content filtering, the message was empty"
 msgstr "Edukia iragazi ondoren mezua hutsik dago"
 
 #: Mailman/Handlers/MimeDel.py:269
+#, fuzzy
 msgid ""
 "The attached message matched the %(listname)s mailing list's content "
 "filtering\n"
@@ -8729,6 +8900,7 @@ msgid "Content filtered message notification"
 msgstr "Edukiarengatik iragazitako mezuaren jakinarazpena"
 
 #: Mailman/Handlers/Moderate.py:145
+#, fuzzy
 msgid ""
 "Your message has been rejected, probably because you are not subscribed to "
 "the\n"
@@ -8752,6 +8924,7 @@ msgid "The attached message has been automatically discarded."
 msgstr "Erantsitako mezua automatikoki baztertu da."
 
 #: Mailman/Handlers/Replybot.py:75
+#, fuzzy
 msgid "Auto-response for your message to the \"%(realname)s\" mailing list"
 msgstr "Zure \"%(realname)s\"-rabidalitako mezuaren auto-erantzuna"
 
@@ -8760,6 +8933,7 @@ msgid "The Mailman Replybot"
 msgstr "Mailmanen Erantzun-Robota"
 
 #: Mailman/Handlers/Scrubber.py:208
+#, fuzzy
 msgid ""
 "An embedded and charset-unspecified text was scrubbed...\n"
 "Name: %(filename)s\n"
@@ -8774,6 +8948,7 @@ msgid "HTML attachment scrubbed and removed"
 msgstr "Erantsitako HTML dokumentua ezabatuta"
 
 #: Mailman/Handlers/Scrubber.py:234 Mailman/Handlers/Scrubber.py:259
+#, fuzzy
 msgid ""
 "An HTML attachment was scrubbed...\n"
 "URL: %(url)s\n"
@@ -8794,6 +8969,7 @@ msgid "unknown sender"
 msgstr "bidaltzaile ezezaguna"
 
 #: Mailman/Handlers/Scrubber.py:276
+#, fuzzy
 msgid ""
 "An embedded message was scrubbed...\n"
 "From: %(who)s\n"
@@ -8810,6 +8986,7 @@ msgstr ""
 "URL: %(url)s\n"
 
 #: Mailman/Handlers/Scrubber.py:308
+#, fuzzy
 msgid ""
 "A non-text attachment was scrubbed...\n"
 "Name: %(filename)s\n"
@@ -8826,6 +9003,7 @@ msgstr ""
 "URL : %(url)s\n"
 
 #: Mailman/Handlers/Scrubber.py:347
+#, fuzzy
 msgid "Skipped content of type %(partctype)s\n"
 msgstr "%(partctype)s eduki mota ez da eraldatu\n"
 
@@ -8839,6 +9017,7 @@ msgid "Header matched regexp: %(pattern)s"
 msgstr "Blokeatutako helbidea (matched %(pattern)s)"
 
 #: Mailman/Handlers/SpamDetect.py:127
+#, fuzzy
 msgid ""
 "You are not allowed to post to this mailing list From: a domain which\n"
 "publishes a DMARC policy of reject or quarantine, and your message has been\n"
@@ -8856,6 +9035,7 @@ msgid "Message rejected by filter rule match"
 msgstr "Iragazki erregela batekin bat egiteagatik atzera botatako mezua"
 
 #: Mailman/Handlers/ToDigest.py:173
+#, fuzzy
 msgid "%(realname)s Digest, Vol %(volume)d, Issue %(issue)d"
 msgstr "%(realname)s Mezu-Bilduma, %(volume)d bilduma, %(issue)d. zenbakia"
 
@@ -8892,6 +9072,7 @@ msgid "End of "
 msgstr "Bilduma honen bukaera: "
 
 #: Mailman/ListAdmin.py:309
+#, fuzzy
 msgid "Posting of your message titled \"%(subject)s\""
 msgstr "Bidalitako mezuaren gaia: \"%(subject)s\""
 
@@ -8904,6 +9085,7 @@ msgid "Forward of moderated message"
 msgstr "Mezu moderatua birbidali egin da"
 
 #: Mailman/ListAdmin.py:405
+#, fuzzy
 msgid "New subscription request to list %(realname)s from %(addr)s"
 msgstr "Harpidetza eskaera berria %(realname)s zerrendatik. Nork: %(addr)s"
 
@@ -8917,6 +9099,7 @@ msgid "via admin approval"
 msgstr "Onespenaren zai jarraitu"
 
 #: Mailman/ListAdmin.py:466
+#, fuzzy
 msgid "New unsubscription request from %(realname)s by %(addr)s"
 msgstr ""
 "Zerrenda uzteko eskaera berria %(realname)s zerrendatik. Nork: %(addr)s"
@@ -8930,10 +9113,12 @@ msgid "Original Message"
 msgstr "Jatorrizko Mezua"
 
 #: Mailman/ListAdmin.py:526
+#, fuzzy
 msgid "Request to mailing list %(realname)s rejected"
 msgstr "%(realname)s posta zerrendara egindako eskaera ez da onartu"
 
 #: Mailman/MTA/Manual.py:66
+#, fuzzy
 msgid ""
 "The mailing list `%(listname)s' has been created via the through-the-web\n"
 "interface.  In order to complete the activation of this mailing list, the\n"
@@ -8959,14 +9144,17 @@ msgstr ""
 "egin behar da, Normalean 'newaliases' programa ere abiarazi beharko duzu\n"
 
 #: Mailman/MTA/Manual.py:82
+#, fuzzy
 msgid "## %(listname)s mailing list"
 msgstr "## %(listname)s-ren posta zerrenda."
 
 #: Mailman/MTA/Manual.py:99
+#, fuzzy
 msgid "Mailing list creation request for list %(listname)s"
 msgstr "%(listname)s posta zerrenda sortzeko eskaera"
 
 #: Mailman/MTA/Manual.py:113
+#, fuzzy
 msgid ""
 "The mailing list `%(listname)s' has been removed via the through-the-web\n"
 "interface.  In order to complete the de-activation of this mailing list, "
@@ -8983,6 +9171,7 @@ msgstr ""
 "Hemen /etc/aliase fitxategitik ezabatu behar diren lerroak:\n"
 
 #: Mailman/MTA/Manual.py:123
+#, fuzzy
 msgid ""
 "\n"
 "To finish removing your mailing list, you must edit your /etc/aliases (or\n"
@@ -8999,14 +9188,17 @@ msgstr ""
 "## %(listname)s posta zerrenda"
 
 #: Mailman/MTA/Manual.py:142
+#, fuzzy
 msgid "Mailing list removal request for list %(listname)s"
 msgstr "%(listname)s izenez posta zerrenda ezabatze eskakizuna"
 
 #: Mailman/MTA/Postfix.py:442
+#, fuzzy
 msgid "checking permissions on %(file)s"
 msgstr "%(file)s-etako baimenak aztertzen"
 
 #: Mailman/MTA/Postfix.py:452
+#, fuzzy
 msgid "%(file)s permissions must be 0664 (got %(octmode)s)"
 msgstr "%(file)s baimena 0664 izan behar du (got %(octmode)s)"
 
@@ -9020,34 +9212,42 @@ msgid "(fixing)"
 msgstr "(zuzentzen)"
 
 #: Mailman/MTA/Postfix.py:470
+#, fuzzy
 msgid "checking ownership of %(dbfile)s"
 msgstr "%(dbfile)s fitxategiaren jabetza egiaztatzen"
 
 #: Mailman/MTA/Postfix.py:478
+#, fuzzy
 msgid "%(dbfile)s owned by %(owner)s (must be owned by %(user)s"
 msgstr "%(dbfile)s jabea %(owner)s da, ( %(user)s izan beharko litzateke)"
 
 #: Mailman/MTA/Postfix.py:491
+#, fuzzy
 msgid "%(dbfile)s permissions must be 0664 (got %(octmode)s)"
 msgstr "%(dbfile)s baimena 0664 izan behar du (got %(octmode)s)"
 
 #: Mailman/MailList.py:219
+#, fuzzy
 msgid "Your confirmation is required to join the %(listname)s mailing list"
 msgstr "%(listname)s : harpidetzeko zure konfirmazioa behar dugu"
 
 #: Mailman/MailList.py:230
+#, fuzzy
 msgid "Your confirmation is required to leave the %(listname)s mailing list"
 msgstr "%(listname)s : harpidetza uzteko zure konfirmazioa behar dugu"
 
 #: Mailman/MailList.py:999 Mailman/MailList.py:1492
+#, fuzzy
 msgid " from %(remote)s"
 msgstr " %(remote)s-(e)tik"
 
 #: Mailman/MailList.py:1043
+#, fuzzy
 msgid "subscriptions to %(realname)s require moderator approval"
 msgstr "%(realname)s zerrendan harpidetzeko moderatzailearen onespena behar da"
 
 #: Mailman/MailList.py:1125 bin/add_members:299
+#, fuzzy
 msgid "%(realname)s subscription notification"
 msgstr "%(realname)s harpidetza jakinarazpena"
 
@@ -9056,10 +9256,12 @@ msgid "unsubscriptions require moderator approval"
 msgstr "zerrenda uzteko moderatzailearen onespena behar da"
 
 #: Mailman/MailList.py:1166
+#, fuzzy
 msgid "%(realname)s unsubscribe notification"
 msgstr "%(realname)s zerrenda utzi izanaren jakinarazpena"
 
 #: Mailman/MailList.py:1328
+#, fuzzy
 msgid "%(realname)s address change notification"
 msgstr "%(realname)s helbidea aldatu izanaren jakinarazpena"
 
@@ -9074,6 +9276,7 @@ msgid "via web confirmation"
 msgstr "Berrespen kate okerra"
 
 #: Mailman/MailList.py:1396
+#, fuzzy
 msgid "subscriptions to %(name)s require administrator approval"
 msgstr "%(name)s zerrendako kide izateko, kudeatzailearen onespena behar da"
 
@@ -9092,6 +9295,7 @@ msgid "Last autoresponse notification for today"
 msgstr "Gaurko azkenengo jakinarazpen automatikoa"
 
 #: Mailman/Queue/BounceRunner.py:360
+#, fuzzy
 msgid ""
 "The attached message was received as a bounce, but either the bounce format\n"
 "was not recognized, or no member addresses could be extracted from it.  "
@@ -9180,6 +9384,7 @@ msgid "Original message suppressed by Mailman site configuration\n"
 msgstr "Mezuaren gorputza Mailmanen gune konfigurazioak ezabatu du\n"
 
 #: Mailman/htmlformat.py:675
+#, fuzzy
 msgid "Delivered by Mailman<br>version %(version)s"
 msgstr "Mailmanen<br>%(version)s bertsioak banatuta"
 
@@ -9268,6 +9473,7 @@ msgid "Server Local Time"
 msgstr "Zerbitzariaren Bertako Ordua"
 
 #: Mailman/i18n.py:180
+#, fuzzy
 msgid ""
 "%(wday)s %(mon)s %(day)2i %(hh)02i:%(mm)02i:%(ss)02i %(tzname)s %(year)04i"
 msgstr ""
@@ -9390,6 +9596,7 @@ msgstr ""
 "bat izan behar da`-'\n"
 
 #: bin/add_members:162 bin/add_members:172
+#, fuzzy
 msgid "Already a member: %(member)s"
 msgstr "Dagoeneko harpidedun: %(member)s"
 
@@ -9398,10 +9605,12 @@ msgid "Bad/Invalid email address: blank line"
 msgstr "Eposta hebide okerra/baliogabea: errezkada txuria"
 
 #: bin/add_members:180
+#, fuzzy
 msgid "Bad/Invalid email address: %(member)s"
 msgstr "Eposta hebide okerra/baliogabea: %(member)s"
 
 #: bin/add_members:182
+#, fuzzy
 msgid "Hostile address (illegal characters): %(member)s"
 msgstr "Helbide okerra (karaktere debekatuak): %(member)s"
 
@@ -9411,14 +9620,17 @@ msgid "Invited: %(member)s"
 msgstr "Harpideduna: %(member)s"
 
 #: bin/add_members:187
+#, fuzzy
 msgid "Subscribed: %(member)s"
 msgstr "Harpideduna: %(member)s"
 
 #: bin/add_members:237
+#, fuzzy
 msgid "Bad argument to -w/--welcome-msg: %(arg)s"
 msgstr "-w/--welcome-msg, argumentu okerra: %(arg)s"
 
 #: bin/add_members:244
+#, fuzzy
 msgid "Bad argument to -a/--admin-notify: %(arg)s"
 msgstr "-a/--admin-notify, argumentu okerra: %(arg)s"
 
@@ -9435,6 +9647,7 @@ msgstr ""
 #: bin/add_members:261 bin/config_list:110 bin/export.py:271 bin/find_member:97
 #: bin/inject:91 bin/list_admins:90 bin/list_members:252 bin/sync_members:222
 #: cron/bumpdigests:86
+#, fuzzy
 msgid "No such list: %(listname)s"
 msgstr "Zerrenda hau ez dago: %(listname)s"
 
@@ -9445,6 +9658,7 @@ msgid "Nothing to do."
 msgstr "Ez dago ezer egiterik."
 
 #: bin/arch:19
+#, fuzzy
 msgid ""
 "Rebuild a list's archive.\n"
 "\n"
@@ -9539,6 +9753,7 @@ msgid "listname is required"
 msgstr "zerrendaren izena beharrezkoa da"
 
 #: bin/arch:143 bin/change_pw:107 bin/config_list:257
+#, fuzzy
 msgid ""
 "No such list \"%(listname)s\"\n"
 "%(e)s"
@@ -9547,6 +9762,7 @@ msgstr ""
 "%(e)s"
 
 #: bin/arch:168
+#, fuzzy
 msgid "Cannot open mbox file %(mbox)s: %(msg)s"
 msgstr "%(mbox)s mbox fitxategia ezin da zabaldu: %(msg)s"
 
@@ -9628,6 +9844,7 @@ msgid ""
 msgstr ""
 
 #: bin/change_pw:145
+#, fuzzy
 msgid "Bad arguments: %(strargs)s"
 msgstr "Argumentu okerra: %(strargs)s"
 
@@ -9636,14 +9853,17 @@ msgid "Empty list passwords are not allowed"
 msgstr "Zerrenda pasahitza ezin da hutsik egon"
 
 #: bin/change_pw:181
+#, fuzzy
 msgid "New %(listname)s password: %(notifypassword)s"
 msgstr "Pasahitz berria %(listname)s zerrendarako: %(notifypassword)s"
 
 #: bin/change_pw:190
+#, fuzzy
 msgid "Your new %(listname)s list password"
 msgstr "Zure pasahitz berria %(listname)s zerrendarako"
 
 #: bin/change_pw:191
+#, fuzzy
 msgid ""
 "The site administrator at %(hostname)s has changed the password for your\n"
 "mailing list %(listname)s.  It is now\n"
@@ -9671,6 +9891,7 @@ msgstr ""
 "    %(adminurl)s\n"
 
 #: bin/check_db:19
+#, fuzzy
 msgid ""
 "Check a list's config database file for integrity.\n"
 "\n"
@@ -9739,10 +9960,12 @@ msgid "List:"
 msgstr "Zerrenda:"
 
 #: bin/check_db:148
+#, fuzzy
 msgid "   %(file)s: okay"
 msgstr "   %(file)s: ondo"
 
 #: bin/check_perms:20
+#, fuzzy
 msgid ""
 "Check the permissions for the Mailman installation.\n"
 "\n"
@@ -9762,44 +9985,54 @@ msgstr ""
 "informazio luzea emango du (verbose).\n"
 
 #: bin/check_perms:110
+#, fuzzy
 msgid "    checking gid and mode for %(path)s"
 msgstr "    gid-a eta modua egiaztatzen: %(path)s"
 
 #: bin/check_perms:122
+#, fuzzy
 msgid "%(path)s bad group (has: %(groupname)s, expected %(MAILMAN_GROUP)s)"
 msgstr ""
 "Talde okerra aurkitu da hemen: %(path)s. Duena %(groupname)s da, eta espero "
 "zena %(MAILMAN_GROUP)s)"
 
 #: bin/check_perms:151
+#, fuzzy
 msgid "directory permissions must be %(octperms)s: %(path)s"
 msgstr "Karpeta baimenak %(octperms)s: %(path)s izan behar dute."
 
 #: bin/check_perms:160
+#, fuzzy
 msgid "source perms must be %(octperms)s: %(path)s"
 msgstr "Jatorriaren baimenak %(octperms)s: %(path)s izan behar dute"
 
 #: bin/check_perms:171
+#, fuzzy
 msgid "article db files must be %(octperms)s: %(path)s"
 msgstr "db fitxategien baimenak %(octperms)s izan behar dira: %(path)s"
 
 #: bin/check_perms:183
+#, fuzzy
 msgid "checking mode for %(prefix)s"
 msgstr "%(prefix)s aldagaiaren egoera gainbegiratzen"
 
 #: bin/check_perms:193
+#, fuzzy
 msgid "WARNING: directory does not exist: %(d)s"
 msgstr "KONTUZ: karpeta ez da existitzen:%(d)s"
 
 #: bin/check_perms:197
+#, fuzzy
 msgid "directory must be at least 02775: %(d)s"
 msgstr "karpetak behintzat 02775 izan behar du: %(d)s"
 
 #: bin/check_perms:209
+#, fuzzy
 msgid "checking perms on %(private)s"
 msgstr "hemengo baimenak egiaztatzen: %(private)s"
 
 #: bin/check_perms:214
+#, fuzzy
 msgid "%(private)s must not be other-readable"
 msgstr "%(private)s ezingo du beste batek irakurri"
 
@@ -9817,6 +10050,7 @@ msgid "mbox file must be at least 0660:"
 msgstr "mbox fitxategia 0660 baimenak izan behar ditu gutxienez:"
 
 #: bin/check_perms:263
+#, fuzzy
 msgid "%(dbdir)s \"other\" perms must be 000"
 msgstr "\"besteak\" kasuan, %(dbdir)s 000 izan behar da"
 
@@ -9825,26 +10059,32 @@ msgid "checking cgi-bin permissions"
 msgstr "cgi-bin-en baimenak egiaztatzen"
 
 #: bin/check_perms:278
+#, fuzzy
 msgid "    checking set-gid for %(path)s"
 msgstr "    %(path)s aldagaiaren set-gida gainbegiratzen"
 
 #: bin/check_perms:282
+#, fuzzy
 msgid "%(path)s must be set-gid"
 msgstr "%(path)s aldagaia set-gid izan beharko da"
 
 #: bin/check_perms:292
+#, fuzzy
 msgid "checking set-gid for %(wrapper)s"
 msgstr "%(wrapper)s aldagaiaren set-gida gainbegiratzen"
 
 #: bin/check_perms:296
+#, fuzzy
 msgid "%(wrapper)s must be set-gid"
 msgstr "%(wrapper)s aldagaia set-gid izan beharko da"
 
 #: bin/check_perms:306
+#, fuzzy
 msgid "checking permissions on %(pwfile)s"
 msgstr "%(pwfile)s fitxategiko baimenak egiaztatzen"
 
 #: bin/check_perms:315
+#, fuzzy
 msgid "%(pwfile)s permissions must be exactly 0640 (got %(octmode)s)"
 msgstr ""
 "%(pwfile)s fitxategiaren baimenek 0640 izan behar dute (%(octmode)s daude)"
@@ -9854,10 +10094,12 @@ msgid "checking permissions on list data"
 msgstr "zerrendako datuen baimenak egiaztatzen"
 
 #: bin/check_perms:348
+#, fuzzy
 msgid "    checking permissions on: %(path)s"
 msgstr "    %(path)s fitxategiko baimenak egiaztatzen"
 
 #: bin/check_perms:356
+#, fuzzy
 msgid "file permissions must be at least 660: %(path)s"
 msgstr "Fitxategi baimenak behintzat 660 izan behar du: %(path)s"
 
@@ -9913,6 +10155,7 @@ msgid "Unix-From line changed: %(lineno)d"
 msgstr "Unix-From lerroa aldaturik: %(lineno)d"
 
 #: bin/cleanarch:111
+#, fuzzy
 msgid "Bad status number: %(arg)s"
 msgstr "Egoera zenbaki okerra: %(arg)s"
 
@@ -10062,10 +10305,12 @@ msgid "    original address removed:"
 msgstr "    helbide zaharra ezabatuta:"
 
 #: bin/clone_member:202
+#, fuzzy
 msgid "Not a valid email address: %(toaddr)s"
 msgstr "Ez da helbide zuzena: %(toaddr)s"
 
 #: bin/clone_member:215
+#, fuzzy
 msgid ""
 "Error opening list \"%(listname)s\", skipping.\n"
 "%(e)s"
@@ -10128,6 +10373,7 @@ msgid ""
 msgstr ""
 
 #: bin/config_list:118
+#, fuzzy
 msgid ""
 "# -*- python -*-\n"
 "# -*- coding: %(charset)s -*-\n"
@@ -10148,22 +10394,27 @@ msgid "legal values are:"
 msgstr "balio zuzenak hauek dira:"
 
 #: bin/config_list:270
+#, fuzzy
 msgid "attribute \"%(k)s\" ignored"
 msgstr "\"%(k)s\" atributua ez da aintzakotzat hartu"
 
 #: bin/config_list:273
+#, fuzzy
 msgid "attribute \"%(k)s\" changed"
 msgstr "\"%(k)s\" atributua aldatuta"
 
 #: bin/config_list:279
+#, fuzzy
 msgid "Non-standard property restored: %(k)s"
 msgstr "Ezaugarri ez-estandarrak leheneratuta: %(k)s"
 
 #: bin/config_list:288
+#, fuzzy
 msgid "Invalid value for property: %(k)s"
 msgstr "Balio okerra ezaugarri honendako: %(k)s"
 
 #: bin/config_list:291
+#, fuzzy
 msgid "Bad email address for option %(k)s: %(v)s"
 msgstr "%(k)s aukerarentzat helbide okerra: %(v)s"
 
@@ -10212,14 +10463,17 @@ msgid ""
 msgstr ""
 
 #: bin/discard:94
+#, fuzzy
 msgid "Ignoring non-held message: %(f)s"
 msgstr "Atxikitu gabeko mezua utzita: %(f)s"
 
 #: bin/discard:100
+#, fuzzy
 msgid "Ignoring held msg w/bad id: %(f)s"
 msgstr "Atxikitutako mezua utzita id okerragatik: %(f)s"
 
 #: bin/discard:112
+#, fuzzy
 msgid "Discarded held msg #%(id)s for list %(listname)s"
 msgstr "Ezetsi dugu atxikitutako mezua #%(id)s %(listname)s zerrendarako."
 
@@ -10265,6 +10519,7 @@ msgid "No filename given."
 msgstr "Ez dago fitxategi izenik"
 
 #: bin/dumpdb:108
+#, fuzzy
 msgid "Bad arguments: %(pargs)s"
 msgstr "Argumentu okerra: %(pargs)s"
 
@@ -10273,14 +10528,17 @@ msgid "Please specify either -p or -m."
 msgstr "Mesedez, aukeratu -p edo -m"
 
 #: bin/dumpdb:133
+#, fuzzy
 msgid "[----- start %(typename)s file -----]"
 msgstr "[----- %(typename)s artxiboaren hasiera -----]"
 
 #: bin/dumpdb:139
+#, fuzzy
 msgid "[----- end %(typename)s file -----]"
 msgstr "[----- %(typename)s artxiboaren bukaera -----]"
 
 #: bin/dumpdb:142
+#, fuzzy
 msgid "<----- start object %(cnt)s ----->"
 msgstr "<-----  %(cnt)s objektu hasiera ----->"
 
@@ -10374,7 +10632,7 @@ msgid ""
 "Complete\n"
 "specifications are at:\n"
 "\n"
-"https://docs.python.org/2/library/re.html\n"
+"https://docs.python.org/3/library/re.html\n"
 "\n"
 "Address matches are case-insensitive, but case-preserved addresses are\n"
 "displayed.\n"
@@ -10432,6 +10690,7 @@ msgid "Setting web_page_url to: %(web_page_url)s"
 msgstr "Web orriaren url-a: %(web_page_url)s ezartzen"
 
 #: bin/fix_url.py:88
+#, fuzzy
 msgid "Setting host_name to: %(mailhost)s"
 msgstr "Serbitzari_izena ezartzen %(mailhost)s-erako"
 
@@ -10487,6 +10746,7 @@ msgid ""
 msgstr ""
 
 #: bin/inject:84
+#, fuzzy
 msgid "Bad queue directory: %(qdir)s"
 msgstr "Ilara karpeta okerra: %(qdir)s"
 
@@ -10495,6 +10755,7 @@ msgid "A list name is required"
 msgstr "Zerrenda baten izena behar da"
 
 #: bin/list_admins:20
+#, fuzzy
 msgid ""
 "List all the owners of a mailing list.\n"
 "\n"
@@ -10541,6 +10802,7 @@ msgstr ""
 "zerrenda izen bat baino gehiago izan dezakezu.\n"
 
 #: bin/list_admins:97
+#, fuzzy
 msgid "List: %(listname)s, \tOwners: %(owners)s"
 msgstr "Zerrenda: %(listname)s, \tJabea: %(owners)s"
 
@@ -10671,10 +10933,12 @@ msgid ""
 msgstr ""
 
 #: bin/list_members:198
+#, fuzzy
 msgid "Bad --nomail option: %(why)s"
 msgstr "--nomail aukera okerra: %(why)s"
 
 #: bin/list_members:209
+#, fuzzy
 msgid "Bad --digest option: %(kind)s"
 msgstr "--digest aukera okerra: %(kind)s"
 
@@ -10688,6 +10952,7 @@ msgid "Could not open file for writing:"
 msgstr "Fitxategia ezin da idazkera moduan ireki"
 
 #: bin/list_owners:20
+#, fuzzy
 msgid ""
 "List the owners of a mailing list, or all mailing lists.\n"
 "\n"
@@ -10838,6 +11103,7 @@ msgid ""
 msgstr ""
 
 #: bin/mailmanctl:152
+#, fuzzy
 msgid "PID unreadable in: %(pidfile)s"
 msgstr "PID irakurezina : %(pidfile)s"
 
@@ -10846,6 +11112,7 @@ msgid "Is qrunner even running?"
 msgstr "qruner abiarazita al dago?"
 
 #: bin/mailmanctl:160
+#, fuzzy
 msgid "No child with pid: %(pid)s"
 msgstr "Pid hau duen semerik ez: %(pid)s"
 
@@ -10875,6 +11142,7 @@ msgstr ""
 "saiatu.\n"
 
 #: bin/mailmanctl:233
+#, fuzzy
 msgid ""
 "The master qrunner lock could not be acquired, because it appears as if "
 "some\n"
@@ -10899,10 +11167,12 @@ msgstr ""
 "Uzten."
 
 #: bin/mailmanctl:280 cron/mailpasswds:119
+#, fuzzy
 msgid "Site list is missing: %(sitelistname)s"
 msgstr "Gunearen zerrenda ez da agertzen: %(sitelistname)s"
 
 #: bin/mailmanctl:305
+#, fuzzy
 msgid "Run this program as root or as the %(name)s user, or use -u."
 msgstr ""
 "Programa hau root gisa exekutatau, %(name)s erabiltzaile gisa, edo -u aukera "
@@ -10913,6 +11183,7 @@ msgid "No command given."
 msgstr "Ez da agindurik eman."
 
 #: bin/mailmanctl:339
+#, fuzzy
 msgid "Bad command: %(command)s"
 msgstr "Okerreko komandoa: %(command)s"
 
@@ -10937,6 +11208,7 @@ msgid "Starting Mailman's master qrunner."
 msgstr "Mailman qrunner nagusia abiarazten."
 
 #: bin/mmsitepass:19
+#, fuzzy
 msgid ""
 "Set the site password, prompting from the terminal.\n"
 "\n"
@@ -10991,6 +11263,7 @@ msgid "list creator"
 msgstr "zerrenda sortzailea"
 
 #: bin/mmsitepass:86
+#, fuzzy
 msgid "New %(pwdesc)s password: "
 msgstr "%(pwdesc)s pasahitz berria:"
 
@@ -11207,6 +11480,7 @@ msgstr ""
 "Observe que los nombres de las listas se convierten a  minúsculas.\n"
 
 #: bin/newlist:162
+#, fuzzy
 msgid "Unknown language: %(lang)s"
 msgstr "Hizkuntza ezezaguna: %(lang)s"
 
@@ -11219,6 +11493,7 @@ msgid "Enter the email of the person running the list: "
 msgstr "Zerrenda abiarazita duen pertsonaren helbidea sartu:"
 
 #: bin/newlist:193
+#, fuzzy
 msgid "Initial %(listname)s password: "
 msgstr "%(listname)s zerrendaren hasierako pasahitza: "
 
@@ -11228,13 +11503,14 @@ msgstr "Zerrendaren pasahitza ezin da hutsik egon"
 
 #: bin/newlist:220
 msgid ""
-" - owner addresses need to be fully-qualified names like \"owner@example.com"
-"\", not just \"owner\"."
+" - owner addresses need to be fully-qualified names like \"owner@example."
+"com\", not just \"owner\"."
 msgstr ""
 " - jabearen helbideak helbide osoa izan behar du, \"jabea@adibidea.eus\" "
 "bezala, eta ez \"jabea\" bakarrik."
 
 #: bin/newlist:244
+#, fuzzy
 msgid "Hit enter to notify %(listname)s owner..."
 msgstr "Sakatu intro %(listname)s zerrendako jabeari jakinarazteko..."
 
@@ -11306,6 +11582,7 @@ msgid ""
 msgstr ""
 
 #: bin/qrunner:179
+#, fuzzy
 msgid "%(name)s runs the %(runnername)s qrunner"
 msgstr "%(name)s-ek %(runnername)s qrunner-a exekutatzen du"
 
@@ -11438,18 +11715,22 @@ msgstr ""
 "\n"
 
 #: bin/remove_members:156
+#, fuzzy
 msgid "Could not open file for reading: %(filename)s."
 msgstr "Fitxategi hau ezin izan da zabaldu: %(filename)s."
 
 #: bin/remove_members:163
+#, fuzzy
 msgid "Error opening list %(listname)s... skipping."
 msgstr "%(listname)s zerrenda zabaltzean errorea... saltatzen."
 
 #: bin/remove_members:173
+#, fuzzy
 msgid "No such member: %(addr)s"
 msgstr "Zerrendakide ezezaguna: %(addr)s"
 
 #: bin/remove_members:178
+#, fuzzy
 msgid "User `%(addr)s' removed from list: %(listname)s."
 msgstr "`%(addr)s' erabiltzailea zerrenda honetatik kenduta: %(listname)s."
 
@@ -11474,10 +11755,12 @@ msgid ""
 msgstr ""
 
 #: bin/reset_pw.py:77
+#, fuzzy
 msgid "Changing passwords for list: %(listname)s"
 msgstr "%(listname)s zerrendaren pasahitzak aldatzen."
 
 #: bin/reset_pw.py:83
+#, fuzzy
 msgid "New password for member %(member)40s: %(randompw)s"
 msgstr "Pasahitz berria %(member)40s erabiltzailearentzat: %(randompw)s"
 
@@ -11524,18 +11807,22 @@ msgstr ""
 "\n"
 
 #: bin/rmlist:73 bin/rmlist:76
+#, fuzzy
 msgid "Removing %(msg)s"
 msgstr "%(msg)s ezabatzen"
 
 #: bin/rmlist:81
+#, fuzzy
 msgid "%(listname)s %(msg)s not found as %(filename)s"
 msgstr "%(listname)s-ko %(msg)s ez da %(filename)s bezala aurkitu"
 
 #: bin/rmlist:105
+#, fuzzy
 msgid "No such list (or list already deleted): %(listname)s"
 msgstr "Zerrenda ezezaguna (beharbada ezabatuta): %(listname)s"
 
 #: bin/rmlist:108
+#, fuzzy
 msgid "No such list: %(listname)s.  Removing its residual archives."
 msgstr "Zerrenda hau ez dago: %(listname)s. Hondar-fitxategiak ezabatzen."
 
@@ -11650,6 +11937,7 @@ msgid ""
 msgstr ""
 
 #: bin/sync_members:115
+#, fuzzy
 msgid "Bad choice: %(yesno)s"
 msgstr "Aukera okerra: %(yesno)s"
 
@@ -11666,6 +11954,7 @@ msgid "No argument to -f given"
 msgstr "-f aukerak ez du argumenturik"
 
 #: bin/sync_members:172
+#, fuzzy
 msgid "Illegal option: %(opt)s"
 msgstr "Ezinezko aukera: %(opt)s"
 
@@ -11678,6 +11967,7 @@ msgid "Must have a listname and a filename"
 msgstr "Zerrendaren eta artxiboaren izena beharrezkoak dira"
 
 #: bin/sync_members:191
+#, fuzzy
 msgid "Cannot read address file: %(filename)s: %(msg)s"
 msgstr "Helbideen fitxategia ezin da irakurri: %(filename)s: %(msg)s"
 
@@ -11694,10 +11984,12 @@ msgid "You must fix the preceding invalid addresses first."
 msgstr "Lehenengo eta behin, helbide okerra zuzendu behar da."
 
 #: bin/sync_members:264
+#, fuzzy
 msgid "Added  : %(s)s"
 msgstr "Gehituta  : %(s)s"
 
 #: bin/sync_members:289
+#, fuzzy
 msgid "Removed: %(s)s"
 msgstr "Kenduta: %(s)s"
 
@@ -11768,6 +12060,7 @@ msgid "scan the po file comparing msgids with msgstrs"
 msgstr "po fitxategiko msgids eta msgstrs parekatuaz arakatu"
 
 #: bin/unshunt:20
+#, fuzzy
 msgid ""
 "Move a message from the shunt queue to the original queue.\n"
 "\n"
@@ -11798,6 +12091,7 @@ msgstr ""
 "dauden mezu guztiak galduko dira. \n"
 
 #: bin/unshunt:85
+#, fuzzy
 msgid ""
 "Cannot unshunt message %(filebase)s, skipping:\n"
 "%(e)s"
@@ -11806,6 +12100,7 @@ msgstr ""
 "%(e)s"
 
 #: bin/update:20
+#, fuzzy
 msgid ""
 "Perform all necessary upgrades.\n"
 "\n"
@@ -11841,14 +12136,17 @@ msgstr ""
 "Bertsio zaharrekin ere egin dezake lana; 1.0b4 (?) bertsiora arte.\n"
 
 #: bin/update:107
+#, fuzzy
 msgid "Fixing language templates: %(listname)s"
 msgstr "Hizkuntza txantilloiak ezartzen: %(listname)s"
 
 #: bin/update:196 bin/update:711
+#, fuzzy
 msgid "WARNING: could not acquire lock for list: %(listname)s"
 msgstr "KONTUZ:  %(listname)s zerrenda ezin izan da blokeatu"
 
 #: bin/update:215
+#, fuzzy
 msgid "Resetting %(n)s BYBOUNCEs disabled addrs with no bounce info"
 msgstr ""
 "Errebote informazio gabe berrrarazten errebote gegigatik ezabatutako %(n)s "
@@ -11868,6 +12166,7 @@ msgstr ""
 "prozesatzen."
 
 #: bin/update:255
+#, fuzzy
 msgid ""
 "\n"
 "%(listname)s has both public and private mbox archives.  Since this list\n"
@@ -11922,6 +12221,7 @@ msgid "- updating old private mbox file"
 msgstr "- mbox fitxategi pribatu zaharra eguneratzen"
 
 #: bin/update:295
+#, fuzzy
 msgid ""
 "    unknown file in the way, moving\n"
 "        %(o_pri_mbox_file)s\n"
@@ -11938,6 +12238,7 @@ msgid "- updating old public mbox file"
 msgstr "- mbox fitxategi publiko zaharra eguneratzen"
 
 #: bin/update:317
+#, fuzzy
 msgid ""
 "    unknown file in the way, moving\n"
 "        %(o_pub_mbox_file)s\n"
@@ -11966,18 +12267,22 @@ msgid "- %(o_tmpl)s doesn't exist, leaving untouched"
 msgstr "- %(o_tmpl)s ez dago, ez da ikutu"
 
 #: bin/update:396
+#, fuzzy
 msgid "removing directory %(src)s and everything underneath"
 msgstr "%(src)s direktorioa eta bere azpiko guztia ezabatzen"
 
 #: bin/update:399
+#, fuzzy
 msgid "removing %(src)s"
 msgstr "%(src)s ezabatzen"
 
 #: bin/update:403
+#, fuzzy
 msgid "Warning: couldn't remove %(src)s -- %(rest)s"
 msgstr "Kontuz: %(src)s -- %(rest)s ezin ezabatu"
 
 #: bin/update:408
+#, fuzzy
 msgid "couldn't remove old file %(pyc)s -- %(rest)s"
 msgstr "%(pyc)s -- %(rest)s fitxategi zaharra ezin ezabatu"
 
@@ -11986,14 +12291,17 @@ msgid "updating old qfiles"
 msgstr "qfile zaharrak eguneratzen"
 
 #: bin/update:455
+#, fuzzy
 msgid "Warning!  Not a directory: %(dirpath)s"
 msgstr "Ilara karpeta okerra: %(dirpath)s"
 
 #: bin/update:530
+#, fuzzy
 msgid "message is unparsable: %(filebase)s"
 msgstr "Mezua ezin izan da arakatu:  %(filebase)s"
 
 #: bin/update:544
+#, fuzzy
 msgid "Warning!  Deleting empty .pck file: %(pckfile)s"
 msgstr "Kontuz! empty.pck fitxategia ezabatzen: %(pckfile)s"
 
@@ -12006,10 +12314,12 @@ msgid "Updating Mailman 2.1.4 pending.pck database"
 msgstr "Mailman 2.14 pending.pck datubasea eguneratzen"
 
 #: bin/update:598
+#, fuzzy
 msgid "Ignoring bad pended data: %(key)s: %(val)s"
 msgstr "Oker utzitako datuei ez diegu jaramonik egingo:  %(key)s: %(val)s"
 
 #: bin/update:614
+#, fuzzy
 msgid "WARNING: Ignoring duplicate pending ID: %(id)s."
 msgstr "KONTUZ: falta ziren ID: %(id)s duplikatuei ez diegu jaramonik egingo."
 
@@ -12034,6 +12344,7 @@ msgid "done"
 msgstr "eginda"
 
 #: bin/update:691
+#, fuzzy
 msgid "Updating mailing list: %(listname)s"
 msgstr "Posta zerrenda eguneratzen: %(listname)s"
 
@@ -12096,6 +12407,7 @@ msgid "No updates are necessary."
 msgstr "Ez da eguneraketarik behar."
 
 #: bin/update:796
+#, fuzzy
 msgid ""
 "Downgrade detected, from version %(hexlversion)s to version %(hextversion)s\n"
 "This is probably not safe.\n"
@@ -12107,10 +12419,12 @@ msgstr ""
 "Irtetzen."
 
 #: bin/update:801
+#, fuzzy
 msgid "Upgrading from version %(hexlversion)s to %(hextversion)s"
 msgstr "%(hexlversion)s bertsioa %(hextversion)s bertsiora eguneratzen"
 
 #: bin/update:810
+#, fuzzy
 msgid ""
 "\n"
 "ERROR:\n"
@@ -12282,6 +12596,7 @@ msgstr ""
 "    "
 
 #: bin/withlist:175
+#, fuzzy
 msgid "Unlocking (but not saving) list: %(listname)s"
 msgstr "Zerrenda desblokeatzen (baina ez gordetzen): %(listname)s"
 
@@ -12290,6 +12605,7 @@ msgid "Finalizing"
 msgstr "Amaitzen"
 
 #: bin/withlist:188
+#, fuzzy
 msgid "Loading list %(listname)s"
 msgstr "%(listname)s zerrenda kargatzen"
 
@@ -12302,6 +12618,7 @@ msgid "(unlocked)"
 msgstr "(irekia)"
 
 #: bin/withlist:197
+#, fuzzy
 msgid "Unknown list: %(listname)s"
 msgstr "Zerrenda ezezaguna: %(listname)s"
 
@@ -12314,18 +12631,22 @@ msgid "--all requires --run"
 msgstr "--eskakizun guztiak --abiarazi"
 
 #: bin/withlist:266
+#, fuzzy
 msgid "Importing %(module)s..."
 msgstr "%(module)s inportatzen..."
 
 #: bin/withlist:270
+#, fuzzy
 msgid "Running %(module)s.%(callable)s()..."
 msgstr "%(module)s.%(callable)s() abiarazten..."
 
 #: bin/withlist:291
+#, fuzzy
 msgid "The variable `m' is the %(listname)s MailList instance"
 msgstr "'m' aldagaia izango da %(listname)s Posta Zerrenda instantzia"
 
 #: cron/bumpdigests:19
+#, fuzzy
 msgid ""
 "Increment the digest volume number and reset the digest number to one.\n"
 "\n"
@@ -12354,6 +12675,7 @@ msgstr ""
 "aipatzen, denei aplikatzen zaie.\n"
 
 #: cron/checkdbs:20
+#, fuzzy
 msgid ""
 "Check for pending admin requests and mail the list owners if necessary.\n"
 "\n"
@@ -12379,10 +12701,12 @@ msgid ""
 msgstr "Oharra: %(discarded)d eskaera zahar automatikoki iraungi da/dira.\n"
 
 #: cron/checkdbs:121
+#, fuzzy
 msgid "%(count)d %(realname)s moderator request(s) waiting"
 msgstr "%(realname)s zerrendako %(count)d moderatzaileak noiz onartuko zain"
 
 #: cron/checkdbs:124
+#, fuzzy
 msgid "%(realname)s moderator request check result"
 msgstr "%(realname)s moderatzailearen eskaera frogaren emaitza"
 
@@ -12403,6 +12727,7 @@ msgstr ""
 "Zain dauden mezuak:"
 
 #: cron/checkdbs:169
+#, fuzzy
 msgid ""
 "From: %(sender)s on %(date)s\n"
 "Subject: %(subject)s\n"
@@ -12513,6 +12838,7 @@ msgstr ""
 "\n"
 
 #: cron/mailpasswds:19
+#, fuzzy
 msgid ""
 "Send password reminders for all lists to all users.\n"
 "\n"
@@ -12566,10 +12892,12 @@ msgid "Password // URL"
 msgstr "Pasahitza // URL"
 
 #: cron/mailpasswds:222
+#, fuzzy
 msgid "%(host)s mailing list memberships reminder"
 msgstr "%(host)s posta zerrendetako partaidetza gogorarazpenak"
 
 #: cron/nightly_gzip:19
+#, fuzzy
 msgid ""
 "Re-generate the Pipermail gzip'd archive flat files.\n"
 "\n"
@@ -12672,8 +13000,8 @@ msgstr ""
 #~ "Posta zerrenda honetara mezuak bidaltzen\n"
 #~ "             dituzten moderatutako harpidedunei euren mezua baztertzean "
 #~ "bidaltzen zaien\n"
-#~ "             <a href=\"?VARHELP/privacy/sender/member_moderation_action"
-#~ "\"\n"
+#~ "             <a href=\"?VARHELP/privacy/sender/"
+#~ "member_moderation_action\"\n"
 #~ "             >oharra</a>."
 
 #~ msgid ""

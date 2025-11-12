@@ -1,140 +1,200 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<HTML>
-  <HEAD>
-    <TITLE><MM-List-Name> 信息页</TITLE>
-  
-  </HEAD>
-  <BODY BGCOLOR="#ffffff">
 
-    <P>
-      <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="5">
-	<TR>
-	  <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#99CCFF" ALIGN="CENTER">
-	    <B><FONT COLOR="#000000" SIZE="+1"><MM-List-Name> --
-	<MM-List-Description></FONT></B>
-	  </TD>
-	</TR>
-	<tr>
-	    <td colspan="2">
-	      <p>&nbsp;
-	    </td>
-	  </tr>
-	  <tr>
-	    <TD COLSPAN="1" WIDTH="70%" BGCOLOR="#FFF0D0">
-	      <B><FONT COLOR="#000000">关于 <MM-List-Name> 邮件列表</FONT></B>
-	    </TD>
-            <TD COLSPAN="1" WIDTH="30%" BGCOLOR="#FFF0D0">
-              <MM-lang-form-start><MM-displang-box> <MM-list-langs>
-              <MM-form-end>
-            </TD>
-	  </TR>
-	    <tr>
-	      <td colspan="2">
-		<P><MM-List-Info></P>
-	  <p>要查看本列表收藏的旧信,
-	      请访问<MM-Archive><MM-List-Name>
-		  的邮件归档</MM-Archive>.
-	      <MM-Restricted-List-Message>
-	  </p>
-	</TD>
-      </TR>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">如何使用 <MM-List-Name> 邮件列表</FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
+<html>
+<head>
+<title><mm-list-name> 信息页</mm-list-name></title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<p>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000" size="+1"><mm-list-name> --
+	<mm-list-description></mm-list-description></mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p> 
+	    </p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="70%">
+<b><font color="#000000">关于 <mm-list-name> 邮件列表</mm-list-name></font></b>
+</td>
+<td bgcolor="#FFF0D0" colspan="1" style="padding: 8px; border: 1px solid #ccc;" width="30%">
+<mm-lang-form-start><mm-displang-box> <mm-list-langs>
+<mm-form-end>
+</mm-form-end></mm-list-langs></mm-displang-box></mm-lang-form-start></td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p><mm-list-info></mm-list-info></p>
+<p>要查看本列表收藏的旧信,
+	      请访问<mm-archive><mm-list-name>
+		  的邮件归档</mm-list-name></mm-archive>.
+	      <mm-restricted-list-message>
+</mm-restricted-list-message></p>
+</td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">如何使用 <mm-list-name> 邮件列表</mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
 	 要同时给所有的成员发信,可以直接发信到
-	  <A HREF="mailto:<MM-Posting-Addr>"><MM-Posting-Addr></A>.
+	  <a href="mailto:&lt;MM-Posting-Addr&gt;"><mm-posting-addr></mm-posting-addr></a>.
 
 	  <p>在下面的小节中,您可以订阅本列表的信件,或者改变您的已有订阅。
-	</td>
-      </tr>
-      <TR>
-	<TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	  <B><FONT COLOR="#000000">如何订阅 <MM-List-Name> 邮件列表</FONT></B>
-	</TD>
-      </TR>
-      <tr>
-	<td colspan="2">
-	  <P>
-	   要订阅 <MM-List-Name> 邮件列表，请填写如下资料：
-	  <MM-List-Subscription-Msg>
-	  <ul>
-    <MM-Subscribe-Form-Start>
-	      <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2"
-		WIDTH="70%">
-		<TR>
-		  <TD BGCOLOR="#dddddd" WIDTH="55%">您的email地址：</TD>
-		  <TD WIDTH="33%"><MM-Subscribe-Box>
-	</TD>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <tr>
-        <td bgcolor="#dddddd" width="55%">您的姓名(可选)：</td>
-        <td width="33%"><mm-fullname-box></td>
-	<TD WIDTH="12%">&nbsp;</TD></TR>
-      <TR>
-	<TD COLSPAN="3"><FONT SIZE=-1>请在下面输入您的口令。 
+	</p></td>
+</tr>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<b><font color="#000000">如何订阅 <mm-list-name> 邮件列表</mm-list-name></font></b>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
+<p>
+	   要订阅 <mm-list-name> 邮件列表，请填写如下资料：
+	  <mm-list-subscription-msg>
+<ul>
+<mm-subscribe-form-start>
+<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">您的email地址：</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-subscribe-box>
+</mm-subscribe-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;" width="55%">您的姓名(可选)：</td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="33%"><mm-fullname-box></mm-fullname-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;" width="12%"> </td></tr>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;"><font size="-1">请在下面输入您的口令。 
         这仅提供适度的安全，但足以保护您不受他人的干扰。<b>但请您不
 		要使用重要的口令</b>。因为我们可能将此口令以明文形式发给您。
 
-            <br><br>如果您不填写密码,我们将会自动给您生成一个。当您确认订阅后，
+            <br/><br/>如果您不填写密码,我们将会自动给您生成一个。当您确认订阅后，
 			会将它发送到您的邮箱。当您编辑个人选项时，总是可以随时要求将
 			您的口令发送到您的邮箱。
-	    <MM-Reminder>
-	    </font>
-	</TD>
-      </TR>  
-      <TR>
-	<TD BGCOLOR="#dddddd">输入密码:</TD>
-	<TD><MM-New-Password-Box></TD>
-	<TD>&nbsp;</TD></TR>
-      <TR> 
-	<TD BGCOLOR="#dddddd">再输入一次:</TD>
-	<TD><MM-Confirm-Password></TD>
-	<TD>&nbsp; </TD></TR>
-      <tr>
-        <TD BGCOLOR="#dddddd">您希望以什么语言显示您的消息?</TD> 
-        <TD> <MM-list-langs></TD>
-        <TD>&nbsp; </TD></TR>
-      <mm-digest-question-start>
-      <tr>
-	<td>您希望每天收到信件摘要吗??
+	    <mm-reminder>
+</mm-reminder></font>
+</td>
+</tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">输入密码:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-password-box></mm-new-password-box></td>
+<td style="padding: 8px; border: 1px solid #ccc;"> </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">再输入一次:</td>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-password></mm-confirm-password></td>
+<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
+<tr>
+<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;">您希望以什么语言显示您的消息?</td>
+<td style="padding: 8px; border: 1px solid #ccc;"> <mm-list-langs></mm-list-langs></td>
+<td style="padding: 8px; border: 1px solid #ccc;">  </td></tr>
+<mm-digest-question-start>
+<tr>
+<td style="padding: 8px; border: 1px solid #ccc;">您希望每天收到信件摘要吗??
 	  </td>
-	<td><MM-Undigest-Radio-Button> 否
-	    <MM-Digest-Radio-Button> 是
-	</TD>
-      </tr>
-      <mm-digest-question-end>
-      <mm-recaptcha-ui>
-      <mm-captcha-ui>
-      <tr>
-	<td colspan="3">
-	  <center><MM-Subscribe-Button></center>
-    </td>
-    </tr>
-    </TABLE>
-    <MM-Form-End>
-    </ul>
-    <TR>
-      <TD COLSPAN="2" WIDTH="100%" BGCOLOR="#FFF0D0">
-	<a name="subscribers">
-        <B><FONT COLOR="#000000"><MM-List-Name> 订阅者</FONT></B></a>
-      </TD>
-    </TR>
-    <tr>
-      <TD COLSPAN="2" WIDTH="100%">
-	<MM-Roster-Form-Start>
-	<MM-Roster-Option>
-	    <MM-Form-End>
-	  <p>
-	<MM-Options-Form-Start>
-	<MM-Editing-Options>
-		<MM-Form-End>
-      </td>
-    </tr>
-  </table>
-<MM-Mailman-Footer>
-</BODY>
-</HTML>
+<td style="padding: 8px; border: 1px solid #ccc;"><mm-undigest-radio-button> 否
+	    <mm-digest-radio-button> 是
+	</mm-digest-radio-button></mm-undigest-radio-button></td>
+</tr>
+<mm-digest-question-end>
+<mm-recaptcha-ui>
+<mm-captcha-ui>
+<tr>
+<td colspan="3" style="padding: 8px; border: 1px solid #ccc;">
+<center><mm-subscribe-button></mm-subscribe-button></center>
+</td>
+</tr>
+</mm-captcha-ui></mm-recaptcha-ui></mm-digest-question-end></mm-digest-question-start></table>
+<mm-form-end>
+</mm-form-end></mm-subscribe-form-start></ul>
+<tr>
+<td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<a name="subscribers">
+<b><font color="#000000"><mm-list-name> 订阅者</mm-list-name></font></b></a>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
+<mm-roster-form-start>
+<mm-roster-option>
+<mm-form-end>
+<p>
+<mm-options-form-start>
+<mm-editing-options>
+<mm-form-end>
+</mm-form-end></mm-editing-options></mm-options-form-start></p></mm-form-end></mm-roster-option></mm-roster-form-start></td>
+</tr>
+</mm-list-subscription-msg></mm-list-name></p></td></tr></table>
+<mm-mailman-footer>
+</mm-mailman-footer></p></body>
+</html>

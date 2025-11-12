@@ -1,12 +1,75 @@
-¤³¤Î¥Ú¡¼¥¸¤Ï¡¢
-<a href="%(adminurl)s"><em>%(listname)s</em>¥á¡¼¥ê¥ó¥°¥ê¥¹¥È</a>
-¤Ë´Ø¤¹¤ë¾µÇ§ÂÔ¤Á´ÉÍı¿½ÀÁ¤ÎÍ×Ìó¤òÉ½¼¨¤·¤Ş¤¹¡£
-ºÇ½é¤Ë¡¢¾µÇ§ÂÔ¤Á¤ÎÆş²ñ¡¦Âà²ñ¿½ÀÁ¤¬¤¢¤ì¤Ğ¡¢¤½¤ì¤é¤Î¿½ÀÁ¤òÉ½¼¨¤·¤Ş¤¹¡£
-¤½¤Î¼¡¤Ë¡¢¾µÇ§¤ò¼õ¤±¤ë¤¿¤á¤ËÊİÎ±¤µ¤ì¤Æ¤¤¤ëÅê¹Æ¤òÉ½¼¨¤·¤Ş¤¹¡£
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>ã“ã®ãƒšãƒ¼ã‚¸ã¯ã€
+<a href="%(adminurl)s"><em>%(listname)s</em>ãƒ¡ãƒ¼ãƒªãƒ³ã‚°ãƒªã‚¹ãƒˆ</a>
+ã«é–¢ã™ã‚‹æ‰¿èªå¾…ã¡ç®¡ç†ç”³è«‹ã®è¦ç´„ã‚’è¡¨ç¤ºã—ã¾ã™ã€‚
+æœ€åˆã«ã€æ‰¿èªå¾…ã¡ã®å…¥ä¼šãƒ»é€€ä¼šç”³è«‹ãŒã‚ã‚Œã°ã€ãã‚Œã‚‰ã®ç”³è«‹ã‚’è¡¨ç¤ºã—ã¾ã™ã€‚
+ãã®æ¬¡ã«ã€æ‰¿èªã‚’å—ã‘ã‚‹ãŸã‚ã«ä¿ç•™ã•ã‚Œã¦ã„ã‚‹æŠ•ç¨¿ã‚’è¡¨ç¤ºã—ã¾ã™ã€‚
 
-<p>¤½¤ì¤¾¤ì¤Î´ÉÍı¿½ÀÁ¤ËÂĞ¤¹¤ë½èÍı¤òÁªÂò¤·¤Æ¤¯¤À¤µ¤¤¡£
-ÁªÂò¸å¤Ë¡¢<b>Á´ÉôÁ÷¿®</b> ¥Ü¥¿¥ó¤ò¥¯¥ê¥Ã¥¯¤·¤Æ¤¯¤À¤µ¤¤¡£
-<a href="%(detailsurl)s">¾Ü¤·¤¤ÀâÌÀ</a> ¤â¤¢¤ê¤Ş¤¹¡£
+<p>ãã‚Œãã‚Œã®ç®¡ç†ç”³è«‹ã«å¯¾ã™ã‚‹å‡¦ç†ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚
+é¸æŠå¾Œã«ã€<b>å…¨éƒ¨é€ä¿¡</b> ãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦ãã ã•ã„ã€‚
+<a href="%(detailsurl)s">è©³ã—ã„èª¬æ˜</a> ã‚‚ã‚ã‚Šã¾ã™ã€‚
 
-<p>¤Ş¤¿¡¢ÊİÎ±Åê¹Æ¤Î <a href="%(viewallurl)s">¾ÜºÙ¤ò¸«¤ë</a>
-¤³¤È¤â¤Ç¤­¤Ş¤¹¡£
+<p>ã¾ãŸã€ä¿ç•™æŠ•ç¨¿ã® <a href="%(viewallurl)s">è©³ç´°ã‚’è¦‹ã‚‹</a>
+ã“ã¨ã‚‚ã§ãã¾ã™ã€‚
+</p></p>

@@ -1,4 +1,3 @@
-from __future__ import division
 # Copyright (C) 2001-2018 by the Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or
@@ -21,7 +20,6 @@ from Mailman.mm_cfg import days
 from Mailman.Gui.GUIBase import GUIBase
 
 
-
 class Bounce(GUIBase):
     def GetConfigCategory(self):
         return 'bounce', _('Bounce processing')

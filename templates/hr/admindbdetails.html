@@ -1,58 +1,118 @@
-Administrativni zahtjevi su prikazani na jedan od dva naèina, na <a
-href="%(summaryurl)s">stranici sa¾etak</a> i na stranici <em>detalji</em>.
- Stranica sa¾etak sadr¾i zahtjeve za pretplatom i odjavom koji su na 
-èekanju, kao i poruke koje èekaju va&scaron;e odobrenje, grupirane po e-mail adresi 
-po&scaron;iljatelja. Stranica detalji sadr¾i detaljan prikaz svake zadr¾ane poruke, 
-ukljuèujuæi sva zaglavlja poruke i izvadak tijela poruke.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Administrativni zahtjevi su prikazani na jedan od dva naÃ¨ina, na <a href="%(summaryurl)s">stranici saÂ¾etak</a> i na stranici <em>detalji</em>.
+ Stranica saÂ¾etak sadrÂ¾i zahtjeve za pretplatom i odjavom koji su na 
+Ã¨ekanju, kao i poruke koje Ã¨ekaju vaÅ¡e odobrenje, grupirane po e-mail adresi 
+poÅ¡iljatelja. Stranica detalji sadrÂ¾i detaljan prikaz svake zadrÂ¾ane poruke, 
+ukljuÃ¨ujuÃ¦i sva zaglavlja poruke i izvadak tijela poruke.
 
-<p>Sljedeæe akcije dostupne su na svim stranicama:
+<p>SljedeÃ¦e akcije dostupne su na svim stranicama:
 
 <ul>
 <li><b>Odgodi</b> -- Odgodite odluku za kasnije. Nikakva akcija 
-    nije poduzeta za ovaj administrativni zahtjev na èekanju, ali &scaron;to  
-    se tièe zadr¾anih poruka, njih mo¾ete i dalje proslijediti (pogledajte ni¾e).
+    nije poduzeta za ovaj administrativni zahtjev na Ã¨ekanju, ali Å¡to  
+    se tiÃ¨e zadrÂ¾anih poruka, njih moÂ¾ete i dalje proslijediti (pogledajte niÂ¾e).
 
-<li><b>Odobri</b> -- Odobri poruku &scaron;aljuæi je na listu.
-    Kod zahtjeva za èlanstvom odobri promjenu u statusu èlanstva.
+<li><b>Odobri</b> -- Odobri poruku Å¡aljuÃ¦i je na listu.
+    Kod zahtjeva za Ã¨lanstvom odobri promjenu u statusu Ã¨lanstva.
 
-<li><b>Odbaci</b> -- Odbaci poruku &scaron;aljuæi poruku o odbacivanju 
-    po&scaron;iljatelju i napusti izvornu poruku.  Kod zahtjeva za èlanstvom 
-    odbaci promjenu u statusu èlanstva. U bilo kojem sluèaju 
-    trebali biste napisati razlog odbacivanja u prateæem polju za tekst.
+<li><b>Odbaci</b> -- Odbaci poruku Å¡aljuÃ¦i poruku o odbacivanju 
+    poÅ¡iljatelju i napusti izvornu poruku.  Kod zahtjeva za Ã¨lanstvom 
+    odbaci promjenu u statusu Ã¨lanstva. U bilo kojem sluÃ¨aju 
+    trebali biste napisati razlog odbacivanja u prateÃ¦em polju za tekst.
 
 <li><b>Napusti</b> -- Odbaci izvornu poruku bez slanja poruke o odbacivanju. 
-    Kod zahtjeva za èlanstvom, ovo jednostavno napu&scaron;ta zahtjev bez ikakve poruke 
-    osobi koja je uputila zahtjev. To je obièno akcija koju ¾elite poduzeti za poznate spam
+    Kod zahtjeva za Ã¨lanstvom, ovo jednostavno napuÅ¡ta zahtjev bez ikakve poruke 
+    osobi koja je uputila zahtjev. To je obiÃ¨no akcija koju Â¾elite poduzeti za poznate spam
 		poruke.
-</ul>
-
-<p>Za zadr¾ane poruke, ukljuèite opciju <b>Saèuvaj</b> ako ¾elite 
+</li></li></li></li></ul>
+<p>Za zadrÂ¾ane poruke, ukljuÃ¨ite opciju <b>SaÃ¨uvaj</b> ako Â¾elite 
 pohraniti kopiju poruke za administratora. Ovo je korisno za 
-zloupotrebljene poruke koje ¾elite odbaciti, ali ¾elite saèuvati 
+zloupotrebljene poruke koje Â¾elite odbaciti, ali Â¾elite saÃ¨uvati 
 podatak za kasnju provjeru.
 
-<p>Ukljuèite opciju <b>Proslijedi</b> i upi&scaron;ite adresu na koju ¾elite proslijediti poruku 
-ako je prosljeðujete nekome tko nije na listi. Da biste uredili zadr¾anu poruku 
-prije nego &scaron;to je ona poslana na listu, trebali biste je proslijediti sebi (ili vlasnicima liste) 
-i napustiti izvornu poruku. Nakon pojavljivanja poruke u Va&scaron;em po&scaron;tanskom pretincu, 
-napravite izmjene i ponovno po&scaron;aljite poruku na listu, ukljuèujuæi <tt>Odobreno:</tt> 
-zaglavlje koje sadr¾i lozinku liste. U ovom sluèaju nije preporuèljivo pisati komentar o promjeni
+<p>UkljuÃ¨ite opciju <b>Proslijedi</b> i upiÅ¡ite adresu na koju Â¾elite proslijediti poruku 
+ako je prosljeÃ°ujete nekome tko nije na listi. Da biste uredili zadrÂ¾anu poruku 
+prije nego Å¡to je ona poslana na listu, trebali biste je proslijediti sebi (ili vlasnicima liste) 
+i napustiti izvornu poruku. Nakon pojavljivanja poruke u VaÅ¡em poÅ¡tanskom pretincu, 
+napravite izmjene i ponovno poÅ¡aljite poruku na listu, ukljuÃ¨ujuÃ¦i <tt>Odobreno:</tt> 
+zaglavlje koje sadrÂ¾i lozinku liste. U ovom sluÃ¨aju nije preporuÃ¨ljivo pisati komentar o promjeni
 teksta poruke.
 
-<p>Ako je po&scaron;iljatelj èlan liste koja je moderirana, opcionalno mo¾ete obrisati njegovu 
-moderacijsku oznaku. Ovo je korisno kada je Va&scaron;a lista konfigurirana tako da stavlja 
-nove èlanove na probno kori&scaron;tenje, a Vi ste odluèili da se tome èlanu mo¾e vjerovati 
+<p>Ako je poÅ¡iljatelj Ã¨lan liste koja je moderirana, opcionalno moÂ¾ete obrisati njegovu 
+moderacijsku oznaku. Ovo je korisno kada je VaÅ¡a lista konfigurirana tako da stavlja 
+nove Ã¨lanove na probno koriÅ¡tenje, a Vi ste odluÃ¨ili da se tome Ã¨lanu moÂ¾e vjerovati 
 kod slanja novih poruka bez odobravanja istih.
 
-<p>Ako po&scaron;iljatelj nije èlan liste, mo¾ete dodati e-mail adresu u 
-<em>po&scaron;iljateljev filter</em>.  Po&scaron;iljateljevi filteri su opisani na <a
-href="%(filterurl)s">stranici privatnost po&scaron;iljateljevi filteri</a> i mogu biti:  
-<b>auto-prihvati</b> (Prihvaæeni), <b>auto-zadr¾i</b> (Zadr¾ani),
-<b>auto-odbaci</b> (Odbaèeni), ili <b>auto-napusti</b> (Napu&scaron;teni).  Ova 
-opcija neæe biti omoguæena ako je adresa veæ na jednom od po&scaron;iljateljevih filtera.
+<p>Ako poÅ¡iljatelj nije Ã¨lan liste, moÂ¾ete dodati e-mail adresu u 
+<em>poÅ¡iljateljev filter</em>.  PoÅ¡iljateljevi filteri su opisani na <a href="%(filterurl)s">stranici privatnost poÅ¡iljateljevi filteri</a> i mogu biti:  
+<b>auto-prihvati</b> (PrihvaÃ¦eni), <b>auto-zadrÂ¾i</b> (ZadrÂ¾ani),
+<b>auto-odbaci</b> (OdbaÃ¨eni), ili <b>auto-napusti</b> (NapuÅ¡teni).  Ova 
+opcija neÃ¦e biti omoguÃ¦ena ako je adresa veÃ¦ na jednom od poÅ¡iljateljevih filtera.
 
-<p>Kada ste zavr&scaron;ili, kliknite na gumb <em>Po&scaron;alji Sve Podatke</em>
-na vrhu ili na dnu stranice. Ovo æe poslati sve odabrane akcije za sve administrativne 
-zahtjeve za koje ste se odluèili.
+<p>Kada ste zavrÅ¡ili, kliknite na gumb <em>PoÅ¡alji Sve Podatke</em>
+na vrhu ili na dnu stranice. Ovo Ã¦e poslati sve odabrane akcije za sve administrativne 
+zahtjeve za koje ste se odluÃ¨ili.
 
-<p><a href="%(summaryurl)s">Povratak na stranicu sa¾etak</a>.
+<p><a href="%(summaryurl)s">Povratak na stranicu saÂ¾etak</a>.
+</p></p></p></p></p></p></p>

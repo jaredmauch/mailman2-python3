@@ -23,33 +23,67 @@ recipient should just be placed in the out queue directly.
 
 from Mailman import mm_cfg
 from Mailman.Queue.sbcache import get_switchboard
+import traceback
+from Mailman.Logging.Syslog import mailman_log
 
-
-
 def process(mlist, msg, msgdata):
-    interval = mm_cfg.VERP_DELIVERY_INTERVAL
-    # Should we VERP this message?  If personalization is enabled for this
-    # list and VERP_PERSONALIZED_DELIVERIES is true, then yes we VERP it.
-    # Also, if personalization is /not/ enabled, but VERP_DELIVERY_INTERVAL is
-    # set (and we've hit this interval), then again, this message should be
-    # VERPed. Otherwise, no.
-    #
-    # Note that the verp flag may already be set, e.g. by mailpasswds using
-    # VERP_PASSWORD_REMINDERS.  Preserve any existing verp flag.
-    if 'verp' in msgdata:
-        pass
-    elif mlist.personalize:
-        if mm_cfg.VERP_PERSONALIZED_DELIVERIES:
-            msgdata['verp'] = 1
-    elif interval == 0:
-        # Never VERP
-        pass
-    elif interval == 1:
-        # VERP every time
-        msgdata['verp'] = 1
-    else:
-        # VERP every `inteval' number of times
-        msgdata['verp'] = not int(mlist.post_id) % interval
-    # And now drop the message in qfiles/out
-    outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
-    outq.enqueue(msg, msgdata, listname=mlist.internal_name())
+    """Process the message by moving it to the outgoing queue."""
+    msgid = msg.get('message-id', 'n/a')
+    
+    # Log the start of processing with enhanced details
+    mailman_log('debug', 'ToOutgoing: Starting to process message %s for list %s',
+               msgid, mlist.internal_name())
+    mailman_log('debug', 'ToOutgoing: Message details:')
+    mailman_log('debug', '  Message ID: %s', msgid)
+    mailman_log('debug', '  From: %s', msg.get('from', 'unknown'))
+    mailman_log('debug', '  To: %s', msg.get('to', 'unknown'))
+    mailman_log('debug', '  Subject: %s', msg.get('subject', '(no subject)'))
+    mailman_log('debug', '  Message type: %s', type(msg).__name__)
+    mailman_log('debug', '  Message data: %s', str(msgdata))
+    mailman_log('debug', '  Pipeline: %s', msgdata.get('pipeline', 'No pipeline'))
+    
+    # Get the outgoing queue
+    try:
+        mailman_log('debug', 'ToOutgoing: Getting outgoing queue for message %s', msgid)
+        outgoingq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        mailman_log('debug', 'ToOutgoing: Successfully got outgoing queue for message %s', msgid)
+    except Exception as e:
+        mailman_log('error', 'ToOutgoing: Failed to get outgoing queue for message %s: %s', msgid, str(e))
+        mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
+        raise
+    
+    # Get recipients from msgdata first, then fall back to message headers
+    recips = msgdata.get('recips', [])
+    if not recips:
+        # Try to get from message headers
+        recips = msg.get_all('to', []) + msg.get_all('cc', [])
+        if not recips:
+            # If still no recipients, get from list membership
+            recips = [mlist.GetMemberEmail() for member in mlist.GetMemberCPAddresses()]
+            mailman_log('debug', 'ToOutgoing: No recipients found in msgdata or headers, using list members for message %s', msgid)
+    
+    # Ensure we have at least one recipient
+    if not recips:
+        mailman_log('error', 'ToOutgoing: No recipients found for message %s', msgid)
+        raise ValueError('No recipients found for message')
+    
+    # Add the message to the outgoing queue
+    try:
+        mailman_log('debug', 'ToOutgoing: Attempting to enqueue message %s for list %s',
+                   msgid, mlist.internal_name())
+        # Ensure recipients are preserved in msgdata
+        msgdata['recips'] = recips
+        msgdata['recipient'] = recips[0] if recips else None
+        
+        # Log the full msgdata before enqueueing
+        mailman_log('debug', 'ToOutgoing: Full msgdata before enqueue:\n%s', str(msgdata))
+        
+        outgoingq.enqueue(msg, msgdata, 
+                         listname=mlist.internal_name())
+        mailman_log('debug', 'ToOutgoing: Successfully queued message %s for list %s',
+                   msgid, mlist.internal_name())
+        mailman_log('debug', 'ToOutgoing: Message %s is now in outgoing queue', msgid)
+    except Exception as e:
+        mailman_log('error', 'ToOutgoing: Failed to enqueue message %s: %s', msgid, str(e))
+        mailman_log('error', 'ToOutgoing: Traceback:\n%s', traceback.format_exc())
+        raise

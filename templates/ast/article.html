@@ -1,50 +1,110 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<HTML>
- <HEAD>
-   <TITLE> %(title)s
-   </TITLE>
-   <link rel="Index" href="index.html">
-   <link rel="made" href="mailto:%(email_url)s?Subject=%(subject_url)s&amp;In-Reply-To=%(in_reply_to_url)s">
-   <META NAME="robots" CONTENT="index,nofollow">
+
+<html>
+<head>
+<title> %(title)s
+   </title>
+<link href="index.html" rel="Index"/>
+<link href="mailto:%(email_url)s?Subject=%(subject_url)s&amp;In-Reply-To=%(in_reply_to_url)s" rel="made"/>
+<meta content="index,nofollow" name="robots"/>
    %(encoding)s
    %(prev)s
    %(next)s
- </HEAD>
- <BODY BGCOLOR="#ffffff">
-   <h1>%(subject_html)s </h1>
-    <b>%(author_html)s</b> 
-    <a href="mailto:%(email_url)s?Subject=%(subject_url)s&amp;In-Reply-To=%(in_reply_to_url)s" 
-		title="%(subject_html)s">%(email_html)s
-       </a><br>
-    <i>%(datestr_html)s</i>
-    <p><ul>
+ <meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head>
+<body bgcolor="#ffffff">
+<h1>%(subject_html)s </h1>
+<b>%(author_html)s</b>
+<a href="mailto:%(email_url)s?Subject=%(subject_url)s&amp;In-Reply-To=%(in_reply_to_url)s" title="%(subject_html)s">%(email_html)s
+       </a><br/>
+<i>%(datestr_html)s</i>
+<p><ul>
         %(prev_wsubj)s
         %(next_wsubj)s
-         <li> <b>Mensaxes axeitaos por:</b> 
-              <a href="date.html#%(sequence)s">[ data ]</a>
-              <a href="thread.html#%(sequence)s">[ filu ]</a>
-              <a href="subject.html#%(sequence)s">[ asuntu ]</a>
-              <a href="author.html#%(sequence)s">[ autor ]</a>
-         </li>
-       </ul>
-    <hr>  
+         <li> <b>Mensaxes axeitaos por:</b>
+<a href="date.html#%(sequence)s">[ data ]</a>
+<a href="thread.html#%(sequence)s">[ filu ]</a>
+<a href="subject.html#%(sequence)s">[ asuntu ]</a>
+<a href="author.html#%(sequence)s">[ autor ]</a>
+</li>
+</ul>
+<hr/>
 <!--beginarticle-->
 %(body)s
 <!--endarticle-->
-    <hr>
-    <p><ul>
-        <!--threads-->
+<hr/>
+<p><ul>
+<!--threads-->
 	%(prev_wsubj)s
 	%(next_wsubj)s
-         <li> <b>Mensaxes axeitaos por:</b> 
-              <a href="date.html#%(sequence)s">[ data ]</a>
-              <a href="thread.html#%(sequence)s">[ filu ]</a>
-              <a href="subject.html#%(sequence)s">[ asuntu ]</a>
-              <a href="author.html#%(sequence)s">[ autor ]</a>
-         </li>
-       </ul>
-
-<hr>
-<a href="%(listurl)s">M&aacute;s informaci&oacute;n sobro la llista de distribuci&oacute;n %(listname)s </a><br>
-
-</body></html>
+         <li> <b>Mensaxes axeitaos por:</b>
+<a href="date.html#%(sequence)s">[ data ]</a>
+<a href="thread.html#%(sequence)s">[ filu ]</a>
+<a href="subject.html#%(sequence)s">[ asuntu ]</a>
+<a href="author.html#%(sequence)s">[ autor ]</a>
+</li>
+</ul>
+<hr/>
+<a href="%(listurl)s">Más información sobro la llista de distribución %(listname)s </a><br/>
+</p></p></body></html>

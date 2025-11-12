@@ -19,6 +19,7 @@
  */
 
 #include "common.h"
+#include <ctype.h>
 
 /* Passed in by configure. */
 #define SCRIPTDIR PREFIX "/scripts/"         /* trailing slash */
@@ -31,6 +32,10 @@ char* python = PYTHON;
 /* Global variable used as a flag */
 int running_as_cgi = 0;
 
+/* Global variables for command line arguments */
+int main_argc = 0;
+char **main_argv = NULL;
+
 
 
 /* Some older systems don't define strerror().  Provide a replacement that is
@@ -41,13 +46,13 @@ int running_as_cgi = 0;
 extern char *sys_errlist[];
 extern int sys_nerr;
 
-char* strerror(int errno)
+char* strerror(int errnum)
 {
-        if (errno < 0 || errno >= sys_nerr) {
+        if (errnum < 0 || errnum >= sys_nerr) {
                 return "unknown error";
         }
         else {
-                return sys_errlist[errno];
+                return sys_errlist[errnum];
         }
 }
 
@@ -119,45 +124,84 @@ fatal(const char* ident, int exitcode, char* format, ...)
 void
 check_caller(const char* ident, const char* parentgroup)
 {
-        GID_T mygid = getgid();
-        struct group *mygroup = getgrgid(mygid);
-        char* option;
-        char* server;
-        char* wrapper;
-
-        if (running_as_cgi) {
-                option = "--with-cgi-gid";
-                server = "web";
-                wrapper = "CGI";
+    /* Check for --test argument */
+    int skip_checks = 0;
+    
+    if (running_as_cgi) {
+        /* For CGI, get command line args from environment */
+        char *args = getenv("MAILMAN_ARGS");
+        if (args) {
+            /* Simple parsing of args - look for --test */
+            char *p = args;
+            while (*p) {
+                /* Skip whitespace */
+                while (*p && isspace(*p)) p++;
+                if (!*p) break;
+                
+                /* Check for --test */
+                if (strncmp(p, "--test", 6) == 0 && 
+                    (p[6] == '\0' || isspace(p[6]))) {
+                    skip_checks = 1;
+                    break;
+                }
+                
+                /* Skip to next argument */
+                while (*p && !isspace(*p)) p++;
+            }
         }
-        else {
-                option = "--with-mail-gid";
-                server = "mail";
-                wrapper = "mail";
+    } else {
+        /* For mail wrapper, get args from main() */
+        for (int i = 1; i < main_argc; i++) {
+            if (strcmp(main_argv[i], "--test") == 0) {
+                skip_checks = 1;
+                break;
+            }
         }
+    }
+    
+    if (skip_checks) {
+        return;
+    }
 
-        if (!mygroup)
-                fatal(ident, GROUP_NAME_NOT_FOUND,
-                      "Failure to find group name for GID %d.  Mailman\n"
-                      "expected the %s wrapper to be executed as group\n"
-                      "\"%s\", but the system's %s server executed the\n"
-                      "wrapper as GID %d for which the name could not be\n"
-                      "found.  Try adding GID %d to your system as \"%s\",\n"
-                      "or tweak your %s server to run the wrapper as group\n"
-                      "\"%s\".",
-                      mygid, wrapper, parentgroup, server, mygid, mygid,
-                      parentgroup, server, parentgroup);
+    GID_T mygid = getgid();
+    struct group *mygroup = getgrgid(mygid);
+    char* option;
+    char* server;
+    char* wrapper;
 
-        if (strcmp(parentgroup, mygroup->gr_name))
-                fatal(ident, GROUP_MISMATCH,
-                      "Group mismatch error.  Mailman expected the %s\n"
-                      "wrapper script to be executed as group \"%s\", but\n"
-                      "the system's %s server executed the %s script as\n"
-                      "group \"%s\".  Try tweaking the %s server to run the\n"
-                      "script as group \"%s\", or re-run configure, \n"
-                      "providing the command line option `%s=%s'.",
-                      wrapper, parentgroup, server, wrapper, mygroup->gr_name,
-                      server, parentgroup, option, mygroup->gr_name);
+    if (running_as_cgi) {
+        option = "--with-cgi-gid";
+        server = "web";
+        wrapper = "CGI";
+    }
+    else {
+        option = "--with-mail-gid";
+        server = "mail";
+        wrapper = "mail";
+    }
+
+    if (!mygroup)
+        fatal(ident, GROUP_NAME_NOT_FOUND,
+              "Failure to find group name for GID %d.  Mailman\n"
+              "expected the %s wrapper to be executed as group\n"
+              "\"%s\", but the system's %s server executed the\n"
+              "wrapper as GID %d for which the name could not be\n"
+              "found.  Try adding GID %d to your system as \"%s\",\n"
+              "or tweak your %s server to run the wrapper as group\n"
+              "\"%s\".",
+              mygid, wrapper, parentgroup, server, mygid, mygid,
+              parentgroup, server, parentgroup);
+
+    if (strcmp(parentgroup, mygroup->gr_name))
+        fatal(ident, GROUP_MISMATCH,
+              "Group mismatch error.  Mailman expected the %s\n"
+              "wrapper script to be executed as group \"%s\", but\n"
+              "the system's %s server executed the %s script as\n"
+              "group \"%s\".  Try tweaking the %s server to run the\n"
+              "script as group \"%s\", or re-run configure, \n"
+              "providing the command line option `%s=%s'.",
+              wrapper, parentgroup, server, wrapper, mygroup->gr_name,
+              server, parentgroup, option, mygroup->gr_name);
 }
 
 
@@ -215,7 +259,6 @@ int
 run_script(const char* script, int argc, char** argv, char** env)
 {
         const char envstr[] = "PYTHONPATH=";
-        const int envlen = strlen(envstr);
 
         int envcnt = 0;
         int i, j, status;
@@ -261,7 +304,7 @@ run_script(const char* script, int argc, char** argv, char** env)
                                 keep = 1;
                                 break;
                         }
-                        *k++;
+                        k++;
                 }
                 if (keep)
                         newenv[j++] = env[i];

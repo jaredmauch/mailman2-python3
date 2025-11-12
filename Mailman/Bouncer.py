@@ -20,13 +20,21 @@
 from builtins import object
 import sys
 import time
+import os
+import email
+import errno
+import pickle
+import email.message
+from email.message import Message
 
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 
+import Mailman
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman import Message
+from Mailman import Errors
+from Mailman.Message import Message
 from Mailman import MemberAdaptor
 from Mailman import Pending
 from Mailman.Errors import MMUnknownListError
@@ -246,7 +254,7 @@ class Bouncer(object):
              'owneraddr': siteowner,
              }, mlist=self)
         subject = _('Bounce action notification')
-        umsg = Message.UserNotification(self.GetOwnerEmail(),
+        umsg = Mailman.Message.UserNotification(self.GetOwnerEmail(),
                                         siteowner, subject,
                                         lang=self.preferred_language)
         # BAW: Be sure you set the type before trying to attach, or you'll get
@@ -315,11 +323,11 @@ class Bouncer(object):
              'owneraddr'  : self.GetOwnerEmail(),
              'reason'     : txtreason,
              }, lang=lang, mlist=self)
-        msg = Message.UserNotification(member, reqaddr, text=text, lang=lang)
+        msg = Mailman.Message.UserNotification(member, reqaddr, text=text, lang=lang)
         # BAW: See the comment in MailList.py ChangeMemberAddress() for why we
         # set the Subject this way.
         del msg['subject']
-        msg['Subject'] = 'confirm ' + info.cookie
+        msg['Subject'] = _('confirm %(cookie)s') % {'cookie': info.cookie}
         # Send without Precedence: bulk.  Bug #808821.
         msg.send(self, noprecedence=True)
         info.noticesleft -= 1
@@ -340,7 +348,7 @@ class Bouncer(object):
         else:
             notice = _(e.notice())
         # Currently we always craft bounces as MIME messages.
-        bmsg = Message.UserNotification(msg.get_sender(),
+        bmsg = Mailman.Message.UserNotification(msg.get_sender(),
                                         self.GetOwnerEmail(),
                                         subject,
                                         lang=self.preferred_language)

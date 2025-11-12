@@ -25,11 +25,14 @@ This is the adaptor used by default in Mailman 2.1.
 """
 
 import time
+import re
+import fnmatch
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman import MemberAdaptor
+from Mailman import Autoresponder
 
 ISREGULAR = 1
 ISDIGEST = 2
@@ -41,10 +44,90 @@ ISDIGEST = 2
 # Actually, fix /all/ errors
 
 
-
-class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
+class OldStyleMemberships(MemberAdaptor.MemberAdaptor, Autoresponder.Autoresponder):
     def __init__(self, mlist):
         self.__mlist = mlist
+        self.archive = mm_cfg.DEFAULT_ARCHIVE  # Initialize archive attribute
+        self.digest_send_periodic = mm_cfg.DEFAULT_DIGEST_SEND_PERIODIC  # Initialize digest_send_periodic attribute
+        self.archive_private = mm_cfg.DEFAULT_ARCHIVE_PRIVATE  # Initialize archive_private attribute
+        self.bounce_you_are_disabled_warnings_interval = mm_cfg.DEFAULT_BOUNCE_YOU_ARE_DISABLED_WARNINGS_INTERVAL  # Initialize bounce warning interval
+        self.digest_members = {}  # Initialize digest_members dictionary
+        self.digest_is_default = mm_cfg.DEFAULT_DIGEST_IS_DEFAULT  # Initialize digest_is_default attribute
+        self.mime_is_default_digest = mm_cfg.DEFAULT_MIME_IS_DEFAULT_DIGEST  # Initialize mime_is_default_digest attribute
+        self._pending = {}  # Initialize _pending dictionary for pending operations
+        # Initialize Autoresponder attributes
+        self.InitVars()
+
+    def HasAutoApprovedSender(self, email):
+        """Check if the sender's email address is in the auto-approve list.
+        
+        Args:
+            email: The email address to check
+            
+        Returns:
+            bool: True if the sender is auto-approved, False otherwise
+        """
+        # Check if the email is in the accept_these_nonmembers list
+        if email.lower() in [addr.lower() for addr in self.__mlist.accept_these_nonmembers]:
+            return True
+            
+        # Check if the email matches any patterns in accept_these_nonmembers
+        for pattern in self.__mlist.accept_these_nonmembers:
+            if pattern.startswith('^') or pattern.endswith('$'):
+                # This is a regex pattern
+                try:
+                    if re.match(pattern, email, re.IGNORECASE):
+                        return True
+                except re.error:
+                    # Invalid regex pattern, skip it
+                    continue
+            elif '*' in pattern or '?' in pattern:
+                # This is a glob pattern
+                if fnmatch.fnmatch(email.lower(), pattern.lower()):
+                    return True
+                    
+        return False
+
+    def GetMailmanHeader(self):
+        """Return the standard Mailman header HTML for this list."""
+        return self.__mlist.GetMailmanHeader()
+
+    def CheckValues(self):
+        """Check that all member values are valid.
+        
+        This method is called by the admin interface to ensure that all member
+        values are valid before displaying them. It should return True if all
+        values are valid, False otherwise.
+        """
+        try:
+            # Check that all members have valid email addresses
+            for member in self.getMembers():
+                if not Utils.ValidateEmail(member):
+                    return False
+            
+            # Check that all members have valid passwords
+            for member in self.getMembers():
+                if not self.getMemberPassword(member):
+                    return False
+            
+            # Check that all members have valid languages
+            for member in self.getMembers():
+                lang = self.getMemberLanguage(member)
+                if lang not in self.__mlist.available_languages:
+                    return False
+            
+            # Check that all members have valid delivery status
+            for member in self.getMembers():
+                status = self.getDeliveryStatus(member)
+                if status not in (MemberAdaptor.ENABLED, MemberAdaptor.UNKNOWN,
+                                MemberAdaptor.BYUSER, MemberAdaptor.BYADMIN,
+                                MemberAdaptor.BYBOUNCE):
+                    return False
+            
+            return True
+        except Exception as e:
+            mailman_log('error', 'Error checking member values: %s', str(e))
+            return False
 
     #
     # Read interface
@@ -59,17 +142,20 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         return list(self.__mlist.digest_members.keys())
 
     def __get_cp_member(self, member):
+        # Handle both string and tuple inputs
+        if isinstance(member, tuple):
+            _, member = member  # Extract email address from tuple
         lcmember = member.lower()
         missing = []
         val = self.__mlist.members.get(lcmember, missing)
         if val is not missing:
-            if type(val) == str:
+            if isinstance(val, str):
                 return val, ISREGULAR
             else:
                 return lcmember, ISREGULAR
         val = self.__mlist.digest_members.get(lcmember, missing)
         if val is not missing:
-            if type(val) == str:
+            if isinstance(val, str):
                 return val, ISDIGEST
             else:
                 return lcmember, ISDIGEST
@@ -84,14 +170,32 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberKey(self, member):
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return member.lower()
 
     def getMemberCPAddress(self, member):
+        """Get the canonical address of a member.
+        
+        Args:
+            member: The member's email address
+            
+        Returns:
+            str: The member's canonical address
+            
+        Raises:
+            NotAMemberError: If the member is not found
+        """
         cpaddr, where = self.__get_cp_member(member)
         if cpaddr is None:
-            raise Exception(Errors.NotAMemberError, member)
-        return cpaddr
+            raise Errors.NotAMemberError(member)
+        if isinstance(cpaddr, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                cpaddr = cpaddr.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                cpaddr = cpaddr.decode('utf-8', 'replace')
+        return str(cpaddr)
 
     def getMemberCPAddresses(self, members):
         return [self.__get_cp_member(member)[0] for member in members]
@@ -99,7 +203,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def getMemberPassword(self, member):
         secret = self.__mlist.passwords.get(member.lower())
         if secret is None:
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
         return secret
 
     def authenticateMember(self, member, response):
@@ -110,12 +214,12 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
 
     def __assertIsMember(self, member):
         if not self.isMember(member):
-            raise Exception(Errors.NotAMemberError, member)
+            raise Errors.NotAMemberError(member)
 
     def getMemberLanguage(self, member):
         lang = self.__mlist.language.get(
             member.lower(), self.__mlist.preferred_language)
-        if lang in self.__mlist.GetAvailableLanguages():
+        if lang in self.__mlist.available_languages:
             return lang
         return self.__mlist.preferred_language
 
@@ -128,8 +232,26 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         return not not (option & flag)
 
     def getMemberName(self, member):
-        self.__assertIsMember(member)
-        return self.__mlist.usernames.get(member.lower())
+        """Get the member's real name.
+
+        Args:
+            member: The member's email address
+
+        Returns:
+            The member's real name, or None if not found
+        """
+        try:
+            fullname = self.__mlist.usernames[member]
+            if isinstance(fullname, bytes):
+                try:
+                    # Try Latin-1 first since that's what we're seeing in the data
+                    fullname = fullname.decode('latin-1', 'replace')
+                except UnicodeDecodeError:
+                    # Fall back to UTF-8 if Latin-1 fails
+                    fullname = fullname.decode('utf-8', 'replace')
+            return fullname
+        except KeyError:
+            return None
 
     def getMemberTopics(self, member):
         self.__assertIsMember(member)
@@ -172,7 +294,7 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
         assert self.__mlist.Locked()
         # Make sure this address isn't already a member
         if self.isMember(member):
-            raise Exception(Errors.MMAlreadyAMember, member)
+            raise Errors.MMAlreadyAMember(member)
         # Parse the keywords
         digest = 0
         password = Utils.MakeRandomPassword()
@@ -329,9 +451,23 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
             del self.__mlist.user_options[memberkey]
 
     def setMemberName(self, member, realname):
-        assert self.__mlist.Locked()
+        """Set the real name of a member.
+        
+        Args:
+            member: The member's email address
+            realname: The member's real name
+        """
         self.__assertIsMember(member)
-        self.__mlist.usernames[member.lower()] = realname
+        if realname is None:
+            realname = ''
+        if isinstance(realname, bytes):
+            try:
+                # Try Latin-1 first since that's what we're seeing in the data
+                realname = realname.decode('latin-1', 'replace')
+            except UnicodeDecodeError:
+                # Fall back to UTF-8 if Latin-1 fails
+                realname = realname.decode('utf-8', 'replace')
+        self.__mlist.usernames[member.lower()] = str(realname)
 
     def setMemberTopics(self, member, topics):
         assert self.__mlist.Locked()
@@ -359,11 +495,184 @@ class OldStyleMemberships(MemberAdaptor.MemberAdaptor):
     def setBounceInfo(self, member, info):
         assert self.__mlist.Locked()
         self.__assertIsMember(member)
-        member = member.lower()
-        if info is None:
-            if member in self.__mlist.bounce_info:
-                del self.__mlist.bounce_info[member]
-            if member in self.__mlist.delivery_status:
-                del self.__mlist.delivery_status[member]
+        self.__mlist.bounce_info[member.lower()] = info
+
+    def ProcessConfirmation(self, cookie, msg):
+        """Process a confirmation request.
+        
+        Args:
+            cookie: The confirmation cookie string
+            msg: The message containing the confirmation request
+            
+        Returns:
+            A tuple of (action_type, action_data) where action_type is one of:
+            - Pending.SUBSCRIPTION
+            - Pending.UNSUBSCRIPTION
+            - Pending.HELD_MESSAGE
+            And action_data contains the relevant data for that action type.
+            
+        Raises:
+            Errors.MMBadConfirmation: If the confirmation string is invalid
+            Errors.MMNeedApproval: If the request needs moderator approval
+            Errors.MMAlreadyAMember: If the user is already a member
+            Errors.NotAMemberError: If the user is not a member
+            Errors.MembershipIsBanned: If the user is banned
+            Errors.HostileSubscriptionError: If the subscription is hostile
+            Errors.MMBadPasswordError: If the approval password is bad
+        """
+        from Mailman import Pending
+        from Mailman import Utils
+        from Mailman import Errors
+        
+        # Get the pending request
+        try:
+            action, data = Pending.unpickle(cookie)
+        except Exception as e:
+            raise Errors.MMBadConfirmation(str(e))
+            
+        # Check if the request has expired
+        if time.time() > data.get('expiration', 0):
+            raise Errors.MMBadConfirmation('Confirmation expired')
+            
+        # Process based on action type
+        if action == Pending.SUBSCRIPTION:
+            # Extract userdesc and remote from data
+            userdesc, remote = data
+            
+            # Check if already a member
+            if self.isMember(userdesc.address):
+                raise Errors.MMAlreadyAMember(userdesc.address)
+                
+            # Check if banned
+            if self.__mlist.isBanned(userdesc.address):
+                raise Errors.MembershipIsBanned(userdesc.address)
+                
+            # Add the member
+            self.addNewMember(
+                userdesc.address,
+                digest=userdesc.digest,
+                password=userdesc.password,
+                language=userdesc.language,
+                realname=userdesc.fullname
+            )
+            
+        elif action == Pending.UNSUBSCRIPTION:
+            # Check if member
+            if not self.isMember(data['email']):
+                raise Errors.NotAMemberError(data['email'])
+                
+            # Remove the member
+            self.removeMember(data['email'])
+            
+        elif action == Pending.HELD_MESSAGE:
+            # Process held message
+            if data.get('approval_password'):
+                if data['approval_password'] != self.__mlist.mod_password:
+                    raise Errors.MMBadPasswordError()
+                    
+            # Forward to moderator if needed
+            if data.get('need_approval'):
+                self.__mlist.HoldMessage(msg)
+                raise Errors.MMNeedApproval()
+                
+            # Process the message
+            if data.get('action') == 'approve':
+                self.__mlist.ApproveMessage(msg)
+            else:
+                self.__mlist.DiscardMessage(msg)
+                
         else:
-            self.__mlist.bounce_info[member] = info
+            raise Errors.MMBadConfirmation('Unknown action type')
+            
+        # Remove the pending request
+        Pending.remove(cookie)
+        
+        return action, data
+
+    @property
+    def digestable(self):
+        """Return whether the list supports digest mode.
+        
+        This is the inverse of nondigestable.
+        """
+        return not self.__mlist.nondigestable
+
+    @property
+    def digest_is_default(self):
+        """Return whether digest delivery is the default for new members."""
+        return self.__mlist.digest_is_default
+
+    @digest_is_default.setter
+    def digest_is_default(self, value):
+        """Set whether digest delivery is the default for new members."""
+        self.__mlist.digest_is_default = value
+
+    @property
+    def mime_is_default_digest(self):
+        """Return whether MIME format is the default for digests."""
+        return self.__mlist.mime_is_default_digest
+
+    @mime_is_default_digest.setter
+    def mime_is_default_digest(self, value):
+        """Set whether MIME format is the default for digests."""
+        self.__mlist.mime_is_default_digest = value
+
+    @property
+    def digest_size_threshhold(self):
+        """Return the size threshold for digests in KB."""
+        return self.__mlist.digest_size_threshhold
+
+    @digest_size_threshhold.setter
+    def digest_size_threshhold(self, value):
+        """Set the size threshold for digests in KB."""
+        self.__mlist.digest_size_threshhold = value
+
+    @property
+    def digest_send_periodic(self):
+        """Return whether digests are sent periodically."""
+        return self.__mlist.digest_send_periodic
+
+    @digest_send_periodic.setter
+    def digest_send_periodic(self, value):
+        """Set whether digests are sent periodically."""
+        self.__mlist.digest_send_periodic = value
+
+    @property
+    def digest_volume(self):
+        """Return the current digest volume number."""
+        return self.__mlist.volume
+
+    @digest_volume.setter
+    def digest_volume(self, value):
+        """Set the current digest volume number."""
+        self.__mlist.volume = value
+
+    @property
+    def digest_issue(self):
+        """Return the current digest issue number."""
+        return self.__mlist.next_digest_number
+
+    @digest_issue.setter
+    def digest_issue(self, value):
+        """Set the current digest issue number."""
+        self.__mlist.next_digest_number = value
+
+    @property
+    def digest_last_sent_at(self):
+        """Return the timestamp of when the last digest was sent."""
+        return self.__mlist.digest_last_sent_at
+
+    @digest_last_sent_at.setter
+    def digest_last_sent_at(self, value):
+        """Set the timestamp of when the last digest was sent."""
+        self.__mlist.digest_last_sent_at = value
+
+    @property
+    def digest_next_due_at(self):
+        """Return the timestamp of when the next digest is due."""
+        return self.__mlist.digest_next_due_at
+
+    @digest_next_due_at.setter
+    def digest_next_due_at(self, value):
+        """Set the timestamp of when the next digest is due."""
+        self.__mlist.digest_next_due_at = value

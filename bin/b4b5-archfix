@@ -39,7 +39,7 @@ from __future__ import print_function
 
 import os
 import sys
-import getopt
+import argparse
 import marshal
 import pickle
 
@@ -50,31 +50,17 @@ from Mailman.i18n import C_
 PROGRAM = sys.argv[0]
 
 
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__), file=fd)
-    if msg:
-        print(msg, file=fd)
-    sys.exit(code)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Fix the MM2.1b4 archives.')
+    parser.add_argument('files', nargs='+',
+                       help='Files to process')
+    return parser.parse_args()
 
 
-
 def main():
-    # get command line arguments
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error as msg:
-        usage(1, msg)
+    args = parse_args()
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-
-    for filename in args:
+    for filename in args.files:
         print(('processing:', filename))
         fp = open(filename, 'rb')
         d = marshal.load(fp)
@@ -82,7 +68,7 @@ def main():
         newd = {}
         for key, pckstr in d.items():
             article = pickle.loads(pckstr, fix_imports=True, encoding='latin1')
-            newd[key] = pickle.dumps(article)
+            newd[key] = pickle.dumps(article, protocol=4, fix_imports=True)
         fp = open(filename + '.tmp', 'wb')
         marshal.dump(newd, fp)
         fp.close()
@@ -92,6 +78,5 @@ def main():
     print('You should now run "bin/check_perms -f"')
 
 
-
 if __name__ == '__main__':
     main()

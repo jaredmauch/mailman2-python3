@@ -60,120 +60,79 @@ Options:
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
-from Mailman import MailList
+from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman import MailList
 from Mailman import Errors
-from Mailman.i18n import C_
+from Mailman import i18n
 
-
+_ = i18n._
+
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print(C_(__doc__), file=fd)
+    print(_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
-
-def ReadFile(filename):
-    lines = []
-    if filename == "-":
-        fp = sys.stdin
-        closep = False
-    else:
-        fp = open(filename)
-        closep = True
-    lines = filter(None, [line.strip() for line in fp.readlines()])
-    if closep:
-        fp.close()
-    return lines
-
-
-
 def main():
+    parser = argparse.ArgumentParser(description='Remove members from a mailing list.')
+    parser.add_argument('listname', help='Name of the mailing list')
+    parser.add_argument('-a', '--admin-notify', action='store_true',
+                       help='Send admin notification')
+    parser.add_argument('-f', '--file', help='File containing member addresses')
+    parser.add_argument('-n', '--no-admin-notify', action='store_true',
+                       help='Do not send admin notification')
+    parser.add_argument('-N', '--no-userack', action='store_true',
+                       help='Do not send user acknowledgment')
+    parser.add_argument('-w', '--welcome-msg', action='store_true',
+                       help='Send welcome message')
+
+    args = parser.parse_args()
+
     try:
-        opts, args = getopt.getopt(
-            sys.argv[1:], 'naf:hN',
-            ['all', 'fromall', 'file=', 'help', 'nouserack', 'noadminack'])
-    except getopt.error as msg:
-        usage(1, msg)
+        mlist = MailList.MailList(args.listname, lock=1)
+    except Errors.MMUnknownListError:
+        usage(1, _('No such list "%(listname)s"'))
 
-    filename = None
-    all = False
-    alllists = False
-    # None means use list default
-    userack = None
-    admin_notif = None
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-f', '--file'):
-            filename = arg
-        elif opt in ('-a', '--all'):
-            all = True
-        elif opt == '--fromall':
-            alllists = True
-        elif opt in ('-n', '--nouserack'):
-            userack = False
-        elif opt in ('-N', '--noadminack'):
-            admin_notif = False
-
-    if len(args) < 1 and not (filename and alllists):
-        usage(1)
-
-    # You probably don't want to delete all the users of all the lists -- Marc
-    if all and alllists:
-       usage(1)
-
-    if alllists:
-       addresses = args
-    else:
-       listname = args[0].lower().strip()
-       addresses = args[1:]
-
-    if alllists:
-        listnames = Utils.list_names()
-    else:
-        listnames = [listname]
-
-    if filename:
+    if args.file:
         try:
-            addresses = addresses + ReadFile(filename)
+            fp = open(args.file)
         except IOError:
-            print(C_('Could not open file for reading: %(filename)s.'))
+            usage(1, _('Cannot open file: %(file)s'))
+        addrs = []
+        for line in fp:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                addrs.append(line)
+        fp.close()
+    else:
+        addrs = sys.stdin.read().splitlines()
 
-    for listname in listnames:
-       try:
-           # open locked
-           mlist = MailList.MailList(listname)
-       except Errors.MMListError:
-           print(C_('Error opening list %(listname)s... skipping.'))
-           continue
+    if not addrs:
+        usage(1, _('No addresses to remove'))
 
-       if all:
-           addresses = mlist.getMembers()
+    # Process each address
+    for addr in addrs:
+        addr = addr.strip()
+        if not addr or addr.startswith('#'):
+            continue
+        try:
+            mlist.DeleteMember(addr, admin_notif=not args.no_admin_notify,
+                             userack=not args.no_userack)
+        except Errors.NotAMemberError:
+            print(_('%(addr)s is not a member of %(listname)s'))
+        except Errors.MMListError as e:
+            print(_('%(addr)s: %(error)s'))
 
-       try:
-           for addr in addresses:
-               if not mlist.isMember(addr):
-                   if not alllists:
-                       print(C_('No such member: %(addr)s'))
-                   continue
-               mlist.ApprovedDeleteMember(addr, 'bin/remove_members',
-                                          admin_notif, userack)
-               if alllists:
-                   print(C_("User `%(addr)s' removed from list: %(listname)s."))
-           mlist.Save()
-       finally:
-           mlist.Unlock()
+    mlist.Save()
+    mlist.Unlock()
 
-
-
 if __name__ == '__main__':
     main()

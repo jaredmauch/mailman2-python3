@@ -20,7 +20,7 @@
 import re
 import email
 import email.errors
-import email.iterators
+from email.iterators import body_line_iterator
 import email.parser
 
 from email.header import decode_header
@@ -35,7 +35,6 @@ EMPTYSTRING = ''
 NLTAB = '\n\t'
 
 
-
 def process(mlist, msg, msgdata):
     if not mlist.topics_enabled:
         return
@@ -76,7 +75,6 @@ def process(mlist, msg, msgdata):
                       mlist, msg, msgdata, delete=False)
 
 
-
 def scanbody(msg, numlines=None):
     # We only scan the body of the message if it is of MIME type text/plain,
     # or if the outer type is multipart/alternative and there is a text/plain
@@ -97,7 +95,7 @@ def scanbody(msg, numlines=None):
     # the first numlines of body text.
     lines = []
     lineno = 0
-    reader = list(email.Iterators.body_line_iterator(msg, decode=True))
+    reader = list(body_line_iterator(msg, decode=True))
     while numlines is None or lineno < numlines:
         try:
             line = reader.pop(0)
@@ -115,7 +113,6 @@ def scanbody(msg, numlines=None):
     return msg.get_all('subject', []) + msg.get_all('keywords', [])
 
 
-
 class _ForgivingParser(email.parser.HeaderParser):
     # Be a little more forgiving about non-header/continuation lines, since
     # we'll just read as much as we can from "header-like" lines in the body.

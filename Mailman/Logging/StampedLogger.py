@@ -49,7 +49,10 @@ class StampedLogger(Logger):
         self.__manual_reprime = manual_reprime
         self.__primed = 1
         self.__bol = 1
+        # Initialize the parent class first
         Logger.__init__(self, category, nofail, immediate)
+        # Ensure _fp is initialized
+        self._fp = None
 
     def reprime(self):
         """Reset so timestamp will be included with next write."""
@@ -87,3 +90,11 @@ class StampedLogger(Logger):
                     Logger.write(self, ' ' + l)
                 else:
                     Logger.write(self, l)
+
+    def close(self):
+        """Override close to ensure proper cleanup"""
+        try:
+            if self._fp is not None:
+                Logger.close(self)
+        except:
+            pass

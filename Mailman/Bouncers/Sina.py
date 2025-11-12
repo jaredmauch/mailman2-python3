@@ -18,12 +18,13 @@
 from __future__ import print_function
 
 import re
-from email import Iterators
+import email
+from email.iterators import body_line_iterator
+from email.header import decode_header
 
 acre = re.compile(r'<(?P<addr>[^>]*)>')
 
 
-
 def process(msg):
     if msg.get('from', '').lower() != 'mailer-daemon@sina.com':
         print('out 1')
@@ -41,7 +42,7 @@ def process(msg):
         print('out 3')
         return []
     addrs = {}
-    for line in Iterators.body_line_iterator(part):
+    for line in body_line_iterator(part):
         mo = acre.match(line)
         if mo:
             addrs[mo.group('addr')] = 1

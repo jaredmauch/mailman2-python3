@@ -66,7 +66,7 @@ except ImportError:
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import syslog, mailman_log
 from Mailman.Utils import md5_new, sha_new
 
 
@@ -139,6 +139,9 @@ class SecurityManager(object):
         if not response:
             # Don't authenticate null passwords
             return mm_cfg.UnAuthorized
+        # Log the type and encoding of the response
+        mailman_log('debug', 'Auth response type: %s, encoding: %s', 
+                    type(response), getattr(response, 'encoding', 'N/A'))
         # python3
         response = response.encode('UTF-8')
         for ac in authcontexts:
@@ -249,7 +252,9 @@ class SecurityManager(object):
         mac = sha_new(needs_hashing).hexdigest()
         # Create the cookie object.
         c = http.cookies.SimpleCookie()
-        c[key] = binascii.hexlify(marshal.dumps((issued, mac)))
+        # Ensure cookie value is a string, not bytes
+        cookie_value = binascii.hexlify(marshal.dumps((issued, mac))).decode('ascii')
+        c[key] = cookie_value
         # The path to all Mailman stuff, minus the scheme and host,
         # i.e. usually the string `/mailman'
         parsed = urlparse(self.web_page_url)
@@ -365,7 +370,7 @@ class SecurityManager(object):
 
 
 
-splitter = re.compile(';\s*')
+splitter = re.compile(r';\s*')
 
 def parsecookie(s):
     c = {}

@@ -33,7 +33,7 @@ will result in losing all the messages in that queue.
 """
 
 import sys
-import getopt
+import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -41,7 +41,6 @@ from Mailman.Queue.sbcache import get_switchboard
 from Mailman.i18n import C_
 
 
-
 def usage(code, msg=''):
     if code:
         fd = sys.stderr
@@ -53,25 +52,14 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h', ['help'])
-    except getopt.error as msg:
-        usage(1, msg)
+    parser = argparse.ArgumentParser(description='Move a message from the shunt queue to the original queue.')
+    parser.add_argument('directory', nargs='?', default=mm_cfg.SHUNTQUEUE_DIR,
+                       help='Directory to dequeue from (default: %(default)s)')
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
+    args = parser.parse_args()
 
-    if len(args) == 0:
-        qdir = mm_cfg.SHUNTQUEUE_DIR
-    elif len(args) == 1:
-        qdir = args[0]
-    else:
-        usage(1)
-
-    sb = get_switchboard(qdir)
+    sb = get_switchboard(args.directory)
     sb.recover_backup_files()
     for filebase in sb.files():
         try:
@@ -89,6 +77,5 @@ def main():
             sb.finish(filebase)
 
 
-
 if __name__ == '__main__':
     main()

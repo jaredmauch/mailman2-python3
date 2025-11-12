@@ -30,34 +30,41 @@ Options:
     -h/--help
         Print this text and exit.
 
+    -l/--lowercase
+        Convert all member email addresses to lowercase.
+
 Use this script to help you update to the latest release of Mailman from
 some previous version.  It knows about versions back to 1.0b4 (?).
 """
+
+from __future__ import print_function, absolute_import, division, unicode_literals
 
 import os
 import sys
 import time
 import errno
-import getopt
+import argparse
 import shutil
 import pickle
 import marshal
 
 import paths
-import email
 import email.errors
+from Mailman.Message import Message
 
 sys.path.append("@VAR_PREFIX@/Mailman")
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import MailList
-from Mailman import Message
 from Mailman import Pending
-from Mailman.LockFile import TimeOutError
+from Mailman.LockFile import TimeOutError, AlreadyLockedError
 from Mailman.i18n import C_
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.OldStyleMemberships import OldStyleMemberships
 from Mailman.MemberAdaptor import BYBOUNCE, ENABLED
+from Mailman.Bouncer import _BounceInfo
+from Mailman.MemberAdaptor import UNKNOWN
+from Mailman.Logging.Syslog import syslog
 
 FRESH = 0
 NOTFRESH = -1
@@ -66,7 +73,17 @@ LMVFILE = os.path.join(mm_cfg.DATA_DIR, 'last_mailman_version')
 PROGRAM = sys.argv[0]
 
 
-
+def parse_args():
+    parser = argparse.ArgumentParser(description='Perform all necessary upgrades.')
+    parser.add_argument('-f', '--force', action='store_true',
+                       help='Force running the upgrade procedures')
+    parser.add_argument('-l', '--lowercase', action='store_true',
+                       help='Convert all member email addresses to lowercase')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Enable verbose output')
+    return parser.parse_args()
+
+
 def calcversions():
     # Returns a tuple of (lastversion, thisversion).  If the last version
     # could not be determined, lastversion will be FRESH or NOTFRESH,
@@ -81,6 +98,9 @@ def calcversions():
         fp = open(LMVFILE, 'rb')
         data = fp.read()
         fp.close()
+        # Ensure data is a string
+        if isinstance(data, bytes):
+            data = data.decode('utf-8', 'replace')
         lastversion = int(data, 16)
     except (IOError, ValueError):
         pass
@@ -96,17 +116,19 @@ def calcversions():
     return (lastversion, thisversion)
 
 
-
 def makeabs(relpath):
     return os.path.join(mm_cfg.PREFIX, relpath)
 
 def make_varabs(relpath):
     return os.path.join(mm_cfg.VAR_PREFIX, relpath)
 
-
+
 def move_language_templates(mlist):
     listname = mlist.internal_name()
-    print(C_('Fixing language templates: %(listname)s'))
+    # Ensure listname is a string
+    if isinstance(listname, bytes):
+        listname = listname.decode('utf-8', 'replace')
+    print('Fixing language templates: %s' % listname)
     # Mailman 2.1 has a new cascading search for its templates, defined and
     # described in Utils.py:maketext().  Putting templates in the top level
     # templates/ subdir or the lists/<listname> subdir is deprecated and no
@@ -188,9 +210,13 @@ def move_language_templates(mlist):
                                        gtemplate + '.prev'))
 
 
-
 def dolist(listname):
     errors = 0
+    # Ensure listname is a string and convert to lowercase
+    if isinstance(listname, bytes):
+        listname = listname.decode('utf-8', 'replace')
+    listname = listname.lower()
+    print('Updating mailing list: %s' % listname)
     mlist = MailList.MailList(listname, lock=0)
     try:
         mlist.Lock(0.5)
@@ -198,6 +224,11 @@ def dolist(listname):
         print(C_('WARNING: could not acquire lock for list: '
                                 '%(listname)s'), file=sys.stderr)
         return 1
+
+    # Convert member addresses to lowercase if requested
+    if args.lowercase:
+        print('Converting member addresses to lowercase: %s' % listname)
+        mlist.convert_member_addresses_to_lowercase()
 
     # Sanity check the invariant that every BYBOUNCE disabled member must have
     # bounce information.  Some earlier betas broke this.  BAW: we're
@@ -265,7 +296,7 @@ to
 
 You can integrate that into the archives if you want by using the 'arch'
 script.
-""") % (mlist._internal_name, o_pri_mbox_file, o_pub_mbox_file,
+""") % (listname, o_pri_mbox_file, o_pub_mbox_file,
         o_pub_mbox_file))
             os.rename(o_pub_mbox_file, "%s.preb6" % (o_pub_mbox_file))
         else:
@@ -279,7 +310,7 @@ archive file (%s) as the active one, and renaming
 
 You can integrate that into the archives if you want by using the 'arch'
 script.
-""") % (mlist._internal_name, o_pub_mbox_file, o_pri_mbox_file,
+""") % (listname, o_pub_mbox_file, o_pri_mbox_file,
         o_pri_mbox_file))
             os.rename(o_pri_mbox_file, "%s.preb6" % (o_pri_mbox_file))
     #
@@ -377,7 +408,6 @@ script.
     return 0
 
 
-
 def archive_path_fixer(unused_arg, dir, files):
     # Passed to os.path.walk to fix the perms on old html archives.
     for f in files:
@@ -409,7 +439,7 @@ def remove_old_sources(module):
         except os.error as rest:
             print(C_("couldn't remove old file %(pyc)s -- %(rest)s"))
 
-
+
 def update_qfiles():
     print('updating old qfiles')
     prefix = str(time.time()) + '+'
@@ -457,7 +487,6 @@ def update_qfiles():
             print(C_('Warning!  Not a directory: %(dirpath)s'))
 
 
-
 # Implementations taken from the pre-2.1.5 Switchboard
 def ext_read(filename):
     fp = open(filename, 'rb')
@@ -465,6 +494,27 @@ def ext_read(filename):
     # Update from version 2 files
     if d.get('version', 0) == 2:
         del d['filebase']
+    
+    # Convert any bytes in the loaded data to strings
+    for key, value in list(d.items()):
+        if isinstance(key, bytes):
+            del d[key]
+            key = key.decode('utf-8', 'replace')
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
+        elif isinstance(value, list):
+            value = [v.decode('utf-8', 'replace') if isinstance(v, bytes) else v for v in value]
+        elif isinstance(value, dict):
+            new_dict = {}
+            for k, v in value.items():
+                if isinstance(k, bytes):
+                    k = k.decode('utf-8', 'replace')
+                if isinstance(v, bytes):
+                    v = v.decode('utf-8', 'replace')
+                new_dict[k] = v
+            value = new_dict
+        d[key] = value
+    
     # Do the reverse conversion (repr -> float)
     for attr in ['received_time']:
         try:
@@ -485,12 +535,6 @@ def dequeue(filebase):
     msgfile = os.path.join(filebase + '.msg')
     pckfile = os.path.join(filebase + '.pck')
     dbfile = os.path.join(filebase + '.db')
-    # Now we are going to read the message and metadata for the given
-    # filebase.  We want to read things in this order: first, the metadata
-    # file to find out whether the message is stored as a pickle or as
-    # plain text.  Second, the actual message file.  However, we want to
-    # first unlink the message file and then the .db file, because the
-    # qrunner only cues off of the .db file
     msg = None
     try:
         data = ext_read(dbfile)
@@ -498,12 +542,22 @@ def dequeue(filebase):
     except EnvironmentError as e:
         if e.errno != errno.ENOENT: raise
         data = {}
-    # Between 2.1b4 and 2.1b5, the `rejection-notice' key in the metadata
-    # was renamed to `rejection_notice', since dashes in the keys are not
-    # supported in METAFMT_ASCII.
+    
+    # Convert any bytes in the data dict to strings
+    for key, value in list(data.items()):
+        if isinstance(key, bytes):
+            del data[key]
+            key = key.decode('utf-8', 'replace')
+        if isinstance(value, bytes):
+            value = value.decode('utf-8', 'replace')
+        data[key] = value
+    
+    # Between 2.1b4 and 2.1b5, the `rejection-notice` key in the metadata
+    # was renamed to `rejection_notice`
     if data.get('rejection-notice', None) is not None:
         data['rejection_notice'] = data['rejection-notice']
         del data['rejection-notice']
+    
     msgfp = None
     try:
         try:
@@ -513,6 +567,15 @@ def dequeue(filebase):
                 # There was no .db file. Is this a post 2.1.5 .pck?
                 try:
                     data = pickle.load(msgfp, fix_imports=True, encoding='latin1')
+                    # Convert any bytes in the loaded data to strings
+                    if isinstance(data, dict):
+                        for key, value in list(data.items()):
+                            if isinstance(key, bytes):
+                                del data[key]
+                                key = key.decode('utf-8', 'replace')
+                            if isinstance(value, bytes):
+                                value = value.decode('utf-8', 'replace')
+                            data[key] = value
                 except EOFError:
                     pass
             os.unlink(pckfile)
@@ -521,20 +584,15 @@ def dequeue(filebase):
             msgfp = None
             try:
                 msgfp = open(msgfile, 'rb')
-                msg = email.message_from_file(msgfp, Message.Message)
+                msg = Message_from_file(msgfp)
                 os.unlink(msgfile)
             except EnvironmentError as e:
                 if e.errno != errno.ENOENT: raise
             except (email.errors.MessageParseError, ValueError) as e:
-                # This message was unparsable, most likely because its
-                # MIME encapsulation was broken.  For now, there's not
-                # much we can do about it.
                 print(C_('message is unparsable: %(filebase)s'))
                 msgfp.close()
                 msgfp = None
                 if mm_cfg.QRUNNER_SAVE_BAD_MESSAGES:
-                    # Cheapo way to ensure the directory exists w/ the
-                    # proper permissions.
                     sb = Switchboard(mm_cfg.BADQUEUE_DIR)
                     os.rename(msgfile, os.path.join(
                         mm_cfg.BADQUEUE_DIR, filebase + '.txt'))
@@ -542,7 +600,6 @@ def dequeue(filebase):
                     os.unlink(msgfile)
                 msg = data = None
         except EOFError:
-            # For some reason the pckfile was empty.  Just delete it.
             print(C_('Warning!  Deleting empty .pck file: %(pckfile)s'))
             os.unlink(pckfile)
     finally:
@@ -551,7 +608,6 @@ def dequeue(filebase):
     return msg, data
 
 
-
 def update_pending():
     file20 = os.path.join(mm_cfg.DATA_DIR, 'pending_subscriptions.db')
     file214 = os.path.join(mm_cfg.DATA_DIR, 'pending.pck')
@@ -566,6 +622,21 @@ def update_pending():
         db = marshal.load(fp)
         # Convert to the pre-Mailman 2.1.5 format
         db = Pending._update(db)
+        # Convert any bytes to strings
+        if isinstance(db, dict):
+            new_db = {}
+            for key, value in db.items():
+                if isinstance(key, bytes):
+                    key = key.decode('utf-8', 'replace')
+                if isinstance(value, bytes):
+                    value = value.decode('utf-8', 'replace')
+                elif isinstance(value, (list, tuple)):
+                    value = list(value)  # Convert tuple to list for modification
+                    for i, v in enumerate(value):
+                        if isinstance(v, bytes):
+                            value[i] = v.decode('utf-8', 'replace')
+                new_db[key] = value
+            db = new_db
     if db is None:
         # Try to load the Mailman 2.1.x where x < 5, file
         try:
@@ -575,6 +646,21 @@ def update_pending():
         else:
             print('Updating Mailman 2.1.4 pending.pck database')
             db = pickle.load(fp, fix_imports=True, encoding='latin1')
+            # Convert any bytes to strings
+            if isinstance(db, dict):
+                new_db = {}
+                for key, value in db.items():
+                    if isinstance(key, bytes):
+                        key = key.decode('utf-8', 'replace')
+                    if isinstance(value, bytes):
+                        value = value.decode('utf-8', 'replace')
+                    elif isinstance(value, (list, tuple)):
+                        value = list(value)  # Convert tuple to list for modification
+                        for i, v in enumerate(value):
+                            if isinstance(v, bytes):
+                                value[i] = v.decode('utf-8', 'replace')
+                    new_db[key] = value
+                db = new_db
     if db is None:
         print('Nothing to do.')
         return
@@ -662,162 +748,455 @@ def update_pending():
         if e.errno != errno.ENOENT: raise
 
 
-
-def main():
-    errors = 0
-    # get rid of old stuff
-    print('getting rid of old source files')
-    for mod in ('Mailman/Archiver.py', 'Mailman/HyperArch.py',
-                'Mailman/HyperDatabase.py', 'Mailman/pipermail.py',
-                'Mailman/smtplib.py', 'Mailman/Cookie.py',
-                'bin/update_to_10b6', 'scripts/mailcmd',
-                'scripts/mailowner', 'mail/wrapper', 'Mailman/pythonlib',
-                'cgi-bin/archives', 'Mailman/MailCommandHandler'):
-        remove_old_sources(mod)
-    listnames = Utils.list_names()
-    if not listnames:
-        print('no lists == nothing to do, exiting')
-        return
-    #
-    # for people with web archiving, make sure the directories
-    # in the archiving are set with proper perms for b6.
-    #
-    if os.path.isdir("%s/public_html/archives" % mm_cfg.PREFIX):
-        print(C_("""\
-fixing all the perms on your old html archives to work with b6
-If your archives are big, this could take a minute or two..."""))
-        os.path.walk("%s/public_html/archives" % mm_cfg.PREFIX,
-                     archive_path_fixer, "")
-        print('done')
-    for listname in listnames:
-        print(C_('Updating mailing list: %(listname)s'))
-        errors = errors + dolist(listname)
-        print
-    print('Updating Usenet watermarks')
-    wmfile = os.path.join(mm_cfg.DATA_DIR, 'gate_watermarks')
-    try:
-        fp = open(wmfile, 'rb')
-    except IOError:
-        print('- nothing to update here')
-    else:
-        d = marshal.load(fp)
-        fp.close()
-        for listname in d.keys():
-            if listname not in listnames:
-                # this list no longer exists
-                continue
-            mlist = MailList.MailList(listname, lock=0)
+def domsort(addr):
+    # Sort email addresses by domain name
+    return addr.split('@')[-1]
+
+
+def init_digest_vars(mlist):
+    """Initialize missing digest-related variables with default values."""
+    # List of digest variables and their default values
+    digest_vars = {
+        'digestable': True,
+        'nondigestable': mm_cfg.DEFAULT_NONDIGESTABLE,
+        'digest_volume': 1,
+        'digest_issue': 1,
+        'digest_last_sent_at': 0,
+        'digest_next_due_at': 0,
+        'digest_volume_frequency': mm_cfg.DEFAULT_DIGEST_VOLUME_FREQUENCY,
+        'digest_members': {},
+        'members': {},  # Regular members dictionary
+        'user_options': {},  # User preferences
+        'language': {},  # User language preferences
+        'usernames': {},  # Username mappings
+        'passwords': {},  # Password storage
+        'bounce_info': {},  # Bounce information
+        'delivery_status': {},  # Delivery status information
+        'new_member_options': mm_cfg.DEFAULT_NEW_MEMBER_OPTIONS,
+        'respond_to_post_requests': mm_cfg.DEFAULT_RESPOND_TO_POST_REQUESTS,
+        'advertised': mm_cfg.DEFAULT_LIST_ADVERTISED,
+        'max_num_recipients': mm_cfg.DEFAULT_MAX_NUM_RECIPIENTS,
+        'max_message_size': mm_cfg.DEFAULT_MAX_MESSAGE_SIZE,
+        'host_name': mm_cfg.DEFAULT_HOST_NAME or mm_cfg.DEFAULT_EMAIL_HOST,
+        'web_page_url': mm_cfg.DEFAULT_URL_PATTERN % mm_cfg.DEFAULT_URL_HOST,
+        'owner': [],  # List owners
+        'moderator': [],  # List moderators
+        'reply_goes_to_list': mm_cfg.DEFAULT_REPLY_GOES_TO_LIST,
+        'reply_to_address': '',
+        'first_strip_reply_to': mm_cfg.DEFAULT_FIRST_STRIP_REPLY_TO,
+        'admin_immed_notify': mm_cfg.DEFAULT_ADMIN_IMMED_NOTIFY,
+        'admin_notify_mchanges': mm_cfg.DEFAULT_ADMIN_NOTIFY_MCHANGES,
+        'require_explicit_destination': mm_cfg.DEFAULT_REQUIRE_EXPLICIT_DESTINATION,
+        'acceptable_aliases': mm_cfg.DEFAULT_ACCEPTABLE_ALIASES,
+        'umbrella_list': mm_cfg.DEFAULT_UMBRELLA_LIST,
+        'umbrella_member_suffix': mm_cfg.DEFAULT_UMBRELLA_MEMBER_ADMIN_SUFFIX,
+        'regular_exclude_lists': mm_cfg.DEFAULT_REGULAR_EXCLUDE_LISTS,
+        'regular_exclude_ignore': mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE,
+        'regular_include_lists': mm_cfg.DEFAULT_REGULAR_INCLUDE_LISTS,
+        'send_reminders': mm_cfg.DEFAULT_SEND_REMINDERS,
+        'send_welcome_msg': mm_cfg.DEFAULT_SEND_WELCOME_MSG,
+        'send_goodbye_msg': mm_cfg.DEFAULT_SEND_GOODBYE_MSG,
+        'bounce_matching_headers': mm_cfg.DEFAULT_BOUNCE_MATCHING_HEADERS,
+        'header_filter_rules': [],
+        'from_is_list': mm_cfg.DEFAULT_FROM_IS_LIST,
+        'anonymous_list': mm_cfg.DEFAULT_ANONYMOUS_LIST,
+        'real_name': mlist.internal_name()[0].upper() + mlist.internal_name()[1:],
+        'description': '',
+        'info': '',
+        'welcome_msg': '',
+        'goodbye_msg': '',
+        'subscribe_policy': mm_cfg.DEFAULT_SUBSCRIBE_POLICY,
+        'subscribe_auto_approval': mm_cfg.DEFAULT_SUBSCRIBE_AUTO_APPROVAL,
+        'unsubscribe_policy': mm_cfg.DEFAULT_UNSUBSCRIBE_POLICY,
+        'private_roster': mm_cfg.DEFAULT_PRIVATE_ROSTER,
+        'obscure_addresses': mm_cfg.DEFAULT_OBSCURE_ADDRESSES,
+        'admin_member_chunksize': mm_cfg.DEFAULT_ADMIN_MEMBER_CHUNKSIZE,
+        'administrivia': mm_cfg.DEFAULT_ADMINISTRIVIA,
+        'drop_cc': mm_cfg.DEFAULT_DROP_CC,
+        'preferred_language': mm_cfg.DEFAULT_SERVER_LANGUAGE,
+        'available_languages': [],
+        'include_rfc2369_headers': 1,
+        'include_list_post_header': 1,
+        'include_sender_header': 1,
+        'filter_mime_types': mm_cfg.DEFAULT_FILTER_MIME_TYPES,
+        'pass_mime_types': mm_cfg.DEFAULT_PASS_MIME_TYPES,
+        'filter_filename_extensions': mm_cfg.DEFAULT_FILTER_FILENAME_EXTENSIONS,
+        'pass_filename_extensions': mm_cfg.DEFAULT_PASS_FILENAME_EXTENSIONS,
+        'filter_content': mm_cfg.DEFAULT_FILTER_CONTENT,
+        'collapse_alternatives': mm_cfg.DEFAULT_COLLAPSE_ALTERNATIVES,
+        'convert_html_to_plaintext': mm_cfg.DEFAULT_CONVERT_HTML_TO_PLAINTEXT,
+        'filter_action': mm_cfg.DEFAULT_FILTER_ACTION,
+        'personalize': 0,
+        'default_member_moderation': mm_cfg.DEFAULT_DEFAULT_MEMBER_MODERATION,
+        'emergency': 0,
+        'member_verbosity_threshold': mm_cfg.DEFAULT_MEMBER_VERBOSITY_THRESHOLD,
+        'member_verbosity_interval': mm_cfg.DEFAULT_MEMBER_VERBOSITY_INTERVAL,
+        'member_moderation_action': 0,
+        'member_moderation_notice': '',
+        'dmarc_moderation_action': mm_cfg.DEFAULT_DMARC_MODERATION_ACTION,
+        'dmarc_quarantine_moderation_action': mm_cfg.DEFAULT_DMARC_QUARANTINE_MODERATION_ACTION,
+        'dmarc_none_moderation_action': mm_cfg.DEFAULT_DMARC_NONE_MODERATION_ACTION,
+        'dmarc_moderation_notice': '',
+        'dmarc_moderation_addresses': [],
+        'dmarc_wrapped_message_text': mm_cfg.DEFAULT_DMARC_WRAPPED_MESSAGE_TEXT,
+        'equivalent_domains': mm_cfg.DEFAULT_EQUIVALENT_DOMAINS,
+        'accept_these_nonmembers': [],
+        'hold_these_nonmembers': [],
+        'reject_these_nonmembers': [],
+        'discard_these_nonmembers': [],
+        'forward_auto_discards': mm_cfg.DEFAULT_FORWARD_AUTO_DISCARDS
+    }
+    
+    # Initialize any missing variables
+    for var, default in digest_vars.items():
+        if not hasattr(mlist, var):
             try:
-                mlist.Lock(0.5)
-            except TimeOutError:
-                print(C_(
-                    'WARNING: could not acquire lock for list: %(listname)s', file=sys.stderr))
-                errors = errors + 1
-            else:
-                # Pre 1.0b7 stored 0 in the gate_watermarks file to indicate
-                # that no gating had been done yet.  Without coercing this to
-                # None, the list could now suddenly get flooded.
-                mlist.usenet_watermark = d[listname] or None
-                mlist.Save()
-                mlist.Unlock()
-        os.unlink(wmfile)
-        print('- usenet watermarks updated and gate_watermarks removed')
-    # In Mailman 2.1, the pending database format and file name changed, but
-    # in Mailman 2.1.5 it changed again.  This should update all existing
-    # files to the 2.1.5 format.
-    update_pending()
-    # In Mailman 2.1, the qfiles directory has a different structure and a
-    # different content.  Also, in Mailman 2.1.5 we collapsed the message
-    # files from separate .msg (pickled Message objects) and .db (marshalled
-    # dictionaries) to a shared .pck file containing two pickles.
-    update_qfiles()
-    # This warning was necessary for the upgrade from 1.0b9 to 1.0b10.
-    # There's no good way of figuring this out for releases prior to 2.0beta2
-    # :(
-    if lastversion == NOTFRESH:
-        print("""
+                # If default is a call to mm_cfg, try to get the attribute
+                if isinstance(default, str) and 'mm_cfg.' in default:
+                    try:
+                        default = eval(default)
+                    except AttributeError:
+                        print(C_('Warning: mm_cfg attribute %(attr)s not found, using empty value') % {
+                            'attr': default.split('mm_cfg.')[1]
+                        })
+                        default = None
+                
+                print(C_('Initializing missing variable %(var)s for list %(listname)s') % {
+                    'var': var,
+                    'listname': mlist.internal_name()
+                })
+                setattr(mlist, var, default)
+            except Exception as e:
+                print(C_('Warning: Could not initialize %(var)s: %(error)s') % {
+                    'var': var,
+                    'error': str(e)
+                })
 
-NOTE NOTE NOTE NOTE NOTE
-
-    You are upgrading an existing Mailman installation, but I can't tell what
-    version you were previously running.
-
-    If you are upgrading from Mailman 1.0b9 or earlier you will need to
-    manually update your mailing lists.  For each mailing list you need to
-    copy the file templates/options.html lists/<listname>/options.html.
-
-    However, if you have edited this file via the Web interface, you will have
-    to merge your changes into this file, otherwise you will lose your
-    changes.
-
-NOTE NOTE NOTE NOTE NOTE
-
-""")
-    return errors
-
-
-
-def usage(code, msg=''):
-    if code:
-        fd = sys.stderr
-    else:
-        fd = sys.stdout
-    print(C_(__doc__) % globals(), file=fd)
-    if msg:
-        print(msg, file=sys.stderr)
-    sys.exit(code)
-
-
-
-if __name__ == '__main__':
+def upgrade(mlist):
+    """Upgrade the list to the current version."""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf',
-                                   ['help', 'force'])
-    except getopt.error as msg:
-        usage(1, msg)
+        # Print pickle protocol version when loading
+        try:
+            config_path = os.path.join(mlist._full_path, 'config.pck')
+            if os.path.exists(config_path):
+                with open(config_path, 'rb') as fp:
+                    # Try loading with UTF-8 first, then fall back to latin1
+                    try:
+                        fp.seek(0)
+                        data = pickle.load(fp, fix_imports=True, encoding='utf-8')
+                        if hasattr(data, '_protocol'):
+                            protocol = data._protocol
+                            print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
+                                'listname': mlist.internal_name(),
+                                'protocol': protocol
+                            })
+                        else:
+                            print(C_('List %(listname)s config.pck protocol version not stored in data') % {
+                                'listname': mlist.internal_name()
+                            })
+                    except UnicodeDecodeError:
+                        fp.seek(0)
+                        data = pickle.load(fp, fix_imports=True, encoding='latin1')
+                        if hasattr(data, '_protocol'):
+                            protocol = data._protocol
+                            print(C_('List %(listname)s config.pck uses pickle protocol %(protocol)d') % {
+                                'listname': mlist.internal_name(),
+                                'protocol': protocol
+                            })
+                        else:
+                            print(C_('List %(listname)s config.pck protocol version not stored in data') % {
+                                'listname': mlist.internal_name()
+                            })
+        except Exception as e:
+            print(C_('Warning: Could not determine pickle protocol version: %(error)s') % {
+                'error': str(e)
+            })
 
-    if args:
-        usage(1, 'Unexpected arguments: %s' % args)
+        # Initialize any missing digest variables
+        init_digest_vars(mlist)
+        
+        # Convert all email addresses to lowercase
+        for addr in list(mlist.members):
+            if addr != addr.lower():
+                mlist.members[addr.lower()] = mlist.members[addr]
+                del mlist.members[addr]
+                
+        for addr in list(mlist.digest_members):
+            if addr != addr.lower():
+                mlist.digest_members[addr.lower()] = mlist.digest_members[addr]
+                del mlist.digest_members[addr]
+                
+        # Handle owner list differently since it's a list, not a dict
+        if hasattr(mlist, 'owner') and isinstance(mlist.owner, list):
+            new_owners = []
+            for addr in mlist.owner:
+                if isinstance(addr, str) and addr != addr.lower():
+                    new_owners.append(addr.lower())
+                else:
+                    new_owners.append(addr)
+            mlist.owner = new_owners
+        else:
+            for addr in list(mlist.owner):
+                if addr != addr.lower():
+                    mlist.owner[addr.lower()] = mlist.owner[addr]
+                    del mlist.owner[addr]
+                
+        # Handle moderator list differently since it's a list, not a dict
+        if hasattr(mlist, 'moderator') and isinstance(mlist.moderator, list):
+            new_moderators = []
+            for addr in mlist.moderator:
+                if isinstance(addr, str) and addr != addr.lower():
+                    new_moderators.append(addr.lower())
+                else:
+                    new_moderators.append(addr)
+            mlist.moderator = new_moderators
+        else:
+            for addr in list(mlist.moderator):
+                if addr != addr.lower():
+                    mlist.moderator[addr.lower()] = mlist.moderator[addr]
+                    del mlist.moderator[addr]
+                
+        for addr in list(mlist.bounce_info):
+            if addr != addr.lower():
+                mlist.bounce_info[addr.lower()] = mlist.bounce_info[addr]
+                del mlist.bounce_info[addr]
+                
+        for addr in list(mlist.delivery_status):
+            if addr != addr.lower():
+                mlist.delivery_status[addr.lower()] = mlist.delivery_status[addr]
+                del mlist.delivery_status[addr]
+                
+        for addr in list(mlist.user_options):
+            if addr != addr.lower():
+                mlist.user_options[addr.lower()] = mlist.user_options[addr]
+                del mlist.user_options[addr]
+                
+        # Don't convert passwords to lowercase
+        # for addr in list(mlist.passwords):
+        #     if addr != addr.lower():
+        #         mlist.passwords[addr.lower()] = mlist.passwords[addr]
+        #         del mlist.passwords[addr]
+                
+        for addr in list(mlist.language):
+            if addr != addr.lower():
+                mlist.language[addr.lower()] = mlist.language[addr]
+                del mlist.language[addr]
+                
+        for addr in list(mlist.usernames):
+            if addr != addr.lower():
+                mlist.usernames[addr.lower()] = mlist.usernames[addr]
+                del mlist.usernames[addr]
 
-    force = 0
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage(0)
-        elif opt in ('-f', '--force'):
-            force = 1
+        # Ensure the list directory exists
+        list_dir = os.path.dirname(mlist._full_path)
+        if not os.path.exists(list_dir):
+            print(C_('Creating list directory: %(dir)s') % {'dir': list_dir})
+            os.makedirs(list_dir, mode=0o2775)
+            # Set group ownership if possible
+            try:
+                import grp
+                mailman_gid = grp.getgrnam('mailman').gr_gid
+                os.chown(list_dir, -1, mailman_gid)
+            except (ImportError, KeyError):
+                pass
 
-    # calculate the versions
+        # Save the list configuration
+        try:
+            print(C_('Saving list %(listname)s with pickle protocol 4') % {
+                'listname': mlist.internal_name()
+            })
+            mlist.Save()
+        except (IOError, OSError) as e:
+            print(C_('Error saving list configuration: %(error)s') % {'error': str(e)})
+            # Try to save to a backup location
+            backup_path = os.path.join(list_dir, 'config.pck.bak')
+            try:
+                with open(backup_path, 'wb') as fp:
+                    pickle.dump(mlist.__dict__, fp, protocol=4, fix_imports=True)
+                print(C_('Saved backup configuration to %(path)s') % {'path': backup_path})
+            except Exception as e:
+                print(C_('Failed to save backup configuration: %(error)s') % {'error': str(e)})
+            raise
+    except Exception as e:
+        print(C_('Error during upgrade: %(error)s') % {'error': str(e)})
+        raise
+
+
+def main():
+    try:
+        args = parse_args()
+    except SystemExit as e:
+        if e.code == 2:  # Invalid arguments
+            usage(1)
+        raise
+
+    # Calculate the versions
     lastversion, thisversion = calcversions()
-    hexlversion = hex(lastversion)
-    hextversion = hex(thisversion)
-    if lastversion == thisversion and not force:
-        # nothing to do
-        print ('No updates are necessary.')
+
+    # If this is a fresh install, we don't need to do anything
+    if lastversion == FRESH:
+        print(C_('This appears to be a fresh installation.'))
+        print(C_('No upgrade is necessary.'))
+        # Early check: try to load all lists and print a summary
+        list_names = Utils.list_names()
+        ok = 0
+        fail = 0
+        for listname in list_names:
+            try:
+                if isinstance(listname, bytes):
+                    listname = listname.decode('utf-8', 'replace')
+                listname = listname.lower()
+                mlist = MailList.MailList(listname, lock=0)
+                ok += 1
+            except Exception as e:
+                fail += 1
+                print('  [WARN] Could not load list "%s": %s' % (listname, str(e)))
+        if fail == 0:
+            print('All %d lists loaded successfully, no upgrade necessary.' % ok)
+        else:
+            print('%d lists loaded successfully, %d lists had errors. No upgrade necessary.' % (ok, fail))
         sys.exit(0)
-    if lastversion > thisversion and not force:
+
+    # If this is not a fresh install, but we can't determine the last version,
+    # we need to force the upgrade
+    if lastversion == NOTFRESH:
+        if not args.force:
+            print(C_("""\
+This appears to be an existing installation, but I cannot determine the
+version number.  You must use the -f flag to force the upgrade."""))
+            sys.exit(1)
+        lastversion = 0x2000000  # 2.0.0
+
+    # If the versions match, we don't need to do anything
+    if lastversion == thisversion and not args.force:
+        print(C_('No upgrade is necessary.'))
+        # Early check: try to load all lists and print a summary
+        list_names = Utils.list_names()
+        ok = 0
+        fail = 0
+        for listname in list_names:
+            try:
+                if isinstance(listname, bytes):
+                    listname = listname.decode('utf-8', 'replace')
+                listname = listname.lower()
+                mlist = MailList.MailList(listname, lock=0)
+                ok += 1
+            except Exception as e:
+                fail += 1
+                print('  [WARN] Could not load list "%s": %s' % (listname, str(e)))
+        if fail == 0:
+            print('All %d lists loaded successfully, no upgrade necessary.' % ok)
+        else:
+            print('%d lists loaded successfully, %d lists had errors. No upgrade necessary.' % (ok, fail))
+        sys.exit(0)
+
+    # If this is a downgrade, we need to force it
+    if lastversion > thisversion and not args.force:
         print(C_("""\
-Downgrade detected, from version %(hexlversion)s to version %(hextversion)s
-This is probably not safe.
-Exiting."""))
+This appears to be a downgrade.  You must use the -f flag to force the
+downgrade."""))
         sys.exit(1)
-    print(C_('Upgrading from version %(hexlversion)s to %(hextversion)s'))
-    errors = main()
-    if not errors:
-        # Record the version we just upgraded to
+
+    # Process all mailing lists
+    list_names = Utils.list_names()
+    print("Found %d lists to process" % len(list_names))
+    print("List names type: %s" % type(list_names))
+    
+    for listname in list_names:
+        mlist = None
+        try:
+            print("\nProcessing list: %s (type: %s)" % (listname, type(listname)))
+            # Ensure listname is a string, not bytes
+            if isinstance(listname, bytes):
+                print("Converting bytes listname to string")
+                listname = listname.decode('utf-8', 'replace')
+            listname = listname.lower()
+            print("Listname after conversion: %s (type: %s)" % (listname, type(listname)))
+            
+            print("Creating MailList object...")
+            # Create the MailList object without lock first
+            mlist = MailList.MailList(listname, lock=0)
+            print("MailList object created successfully")
+            
+            print("Attempting to acquire lock...")
+            try:
+                # First try to acquire the lock normally
+                try:
+                    mlist.Lock(0.5)
+                except AlreadyLockedError:
+                    # If we get AlreadyLockedError, try to force unlock if the lock is stale
+                    print("Lock appears to be set, checking if it's stale...")
+                    try:
+                        # Try to force unlock if the lock is stale
+                        if hasattr(mlist, '__lock') and hasattr(mlist.__lock, 'force_unlock'):
+                            mlist.__lock.force_unlock()
+                            print("Stale lock removed, retrying lock acquisition...")
+                            mlist.Lock(0.5)
+                        else:
+                            print("WARNING: Lock object does not have force_unlock capability")
+                            continue
+                    except Exception as e:
+                        print(C_('WARNING: Could not remove stale lock: %(error)s') % {
+                            'error': str(e)
+                        }, file=sys.stderr)
+                        continue
+                
+                print("Lock acquired, starting upgrade...")
+                
+                # Do the upgrade
+                upgrade(mlist)
+                print("Upgrade completed, saving...")
+                mlist.Save()
+                print("Save completed")
+                
+            except TimeOutError:
+                print(C_('WARNING: could not acquire lock for list: %(listname)s') % {
+                    'listname': listname
+                }, file=sys.stderr)
+                continue
+            finally:
+                if mlist is not None:
+                    try:
+                        print("Unlocking list...")
+                        mlist.Unlock()
+                    except Exception as e:
+                        print(C_('WARNING: Error unlocking list %(listname)s: %(error)s') % {
+                            'listname': listname,
+                            'error': str(e)
+                        }, file=sys.stderr)
+            
+        except Exception as e:
+            print("\nDetailed error information:")
+            print("List name: %s" % listname)
+            print("List name type: %s" % type(listname))
+            print("Error type: %s" % type(e))
+            print("Error message: %s" % str(e))
+            import traceback
+            print("Traceback:")
+            traceback.print_exc()
+            print(C_('Error processing list %(listname)s: %(error)s') % {
+                'listname': listname,
+                'error': str(e)
+            }, file=sys.stderr)
+
+    # Save the new version
+    try:
         fp = open(LMVFILE, 'w')
-        fp.write(hex(mm_cfg.HEX_VERSION) + '\n')
+        print('%x' % thisversion, file=fp)
         fp.close()
-    else:
-        lockdir = mm_cfg.LOCK_DIR
-        print('''\
+    except IOError as e:
+        print(C_('Could not save version number: %(error)s') % {'error': str(e)}, file=sys.stderr)
+        sys.exit(1)
 
-ERROR:
+    print(C_('Upgrade complete.'))
 
-The locks for some lists could not be acquired.  This means that either
-Mailman was still active when you upgraded, or there were stale locks in the
-%(lockdir)s directory.
 
-You must put Mailman into a quiescent state and remove all stale locks, then
-re-run "make update" manually.  See the INSTALL and UPGRADE files for details.
-''')
+def usage(exitcode=0):
+    """Print usage information and exit with the given exit code."""
+    print(__doc__ % {'PROGRAM': PROGRAM})
+    sys.exit(exitcode)
+
+
+if __name__ == '__main__':
+    main()
 

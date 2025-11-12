@@ -1,18 +1,81 @@
-Prehľad požiadaviek pre konferenciu <a href=\"%(adminurl)s\"><em>%(listname)s</em></a>.
+<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+                margin-top: 1.5em;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            input[type="text"], input[type="password"], textarea {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            input[type="submit"], button {
+                background-color: #3498db;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            input[type="submit"]:hover, button:hover {
+                background-color: #2980b9;
+            }
+            .error {
+                color: #e74c3c;
+                margin: 10px 0;
+            }
+            .success {
+                color: #27ae60;
+                margin: 10px 0;
+            }
+        </style></head></html>Prehľad požiadaviek pre konferenciu <a href='\"%(adminurl)s\"'><em>%(listname)s</em></a>.
 
-T&aacute;to str&aacute;nka obsahuje prehľad v&scaron;tk&yacute;ch požiadaviek pre administr&aacute;tora
-zoraden&yacute; tak, že požiadavky od jedn&eacute;ho &uacute;častn&iacute;ka s&uacute; zl&uacute;čen&eacute; dokopy
-a m&ocirc;že o nich byť rozhodnut&eacute; naraz.
+Táto stránka obsahuje prehľad vštkých požiadaviek pre administrátora
+zoradený tak, že požiadavky od jedného účastníka sú zlúčené dokopy
+a môže o nich byť rozhodnuté naraz.
 
-Žiadosti o prihl&aacute;senie a odhl&aacute;senie s&uacute; raden&eacute; ako prv&eacute; a za nimi
-pr&iacute;padn&eacute; pr&iacute;spevky, ktor&eacute; čakaj&uacute; na schv&aacute;lenie moder&aacute;torom.
+Žiadosti o prihlásenie a odhlásenie sú radené ako prvé a za nimi
+prípadné príspevky, ktoré čakajú na schválenie moderátorom.
 
-<p>Pri každej administrat&iacute;vnej požiadavke mus&iacute;te vybrať činnosť, ktor&aacute; sa
-s ňou m&aacute; previesť a nakoniec vybran&eacute; činnosti uskutočn&iacute;te kliknut&iacute;m na 
-<b>Potvrdiť v&scaron;etky zmeny</b>. Podrobnej&scaron;ie inform&aacute;ce o tom, ako
-zaobch&aacute;dzať s administrat&iacute;vnym rozhran&iacute;m n&aacute;jdete 
-<a href="%(detailsurl)s">pod t&yacute;mto odkazom</a>.
+<p>Pri každej administratívnej požiadavke musíte vybrať činnosť, ktorá sa
+s ňou má previesť a nakoniec vybrané činnosti uskutočníte kliknutím na 
+<b>Potvrdiť všetky zmeny</b>. Podrobnejšie informáce o tom, ako
+zaobchádzať s administratívnym rozhraním nájdete 
+<a href="%(detailsurl)s">pod týmto odkazom</a>.
 
-<p>Tiež si m&ocirc;žete prezrieť detailn&yacute; prehľad v&scaron;etk&yacute;ch
-<a href="%(viewallurl)s">čakaj&uacute;cich požiadaviek</a> kde je každ&yacute;
-pr&iacute;spovek zobrazovan&yacute; samostatne.
+<p>Tiež si môžete prezrieť detailný prehľad všetkých
+<a href="%(viewallurl)s">čakajúcich požiadaviek</a> kde je každý
+príspovek zobrazovaný samostatne.
+</p></p>
