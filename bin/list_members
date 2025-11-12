@@ -77,7 +77,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
-import argparse
 
 import paths
 from Mailman import mm_cfg
@@ -106,14 +105,21 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    # Ensure PROGRAM is a string, not bytes
-    if isinstance(PROGRAM, bytes):
-        PROGRAM = PROGRAM.decode('utf-8', 'replace')
     print(C_(__doc__), file=fd)
     if msg:
         print(msg, file=fd)
     sys.exit(code)
 
+
+
+def safe(s):
+    if not s:
+        return ''
+    if isinstance(s, str):
+        return s
+    elif isinstance(s, bytes):
+        return s.decode(ENC, 'replace')
+    return str(s)
 
 def isinvalid(addr):
     try:
@@ -126,6 +132,7 @@ def isunicode(addr):
     return isinstance(addr, str)
 
 
+
 def whymatches(mlist, addr, why):
     # Return true if the `why' matches the reason the address is enabled, or
     # in the case of why is None, that they are disabled for any reason
@@ -136,37 +143,108 @@ def whymatches(mlist, addr, why):
     return status == WHYCHOICES[why]
 
 
+
 def main():
-    parser = argparse.ArgumentParser(description='List all the members of a mailing list.')
-    parser.add_argument('listname', help='Name of the mailing list')
-    parser.add_argument('-o', '--output', help='Write output to specified file instead of standard out')
-    parser.add_argument('-r', '--regular', action='store_true', help='Print just the regular (non-digest) members')
-    parser.add_argument('-d', '--digest', choices=['mime', 'plain'], nargs='?', const=True, help='Print just the digest members')
-    parser.add_argument('-n', '--nomail', choices=list(WHYCHOICES.keys()), nargs='?', const=True, help='Print members with delivery disabled')
-    parser.add_argument('-f', '--fullnames', action='store_true', help='Include the full names in the output')
-    parser.add_argument('-p', '--preserve', action='store_true', help='Output member addresses case preserved')
-    parser.add_argument('-m', '--moderated', action='store_true', help='Print just the moderated members')
-    parser.add_argument('-M', '--non-moderated', action='store_true', help='Print just the non-moderated members')
-    parser.add_argument('-i', '--invalid', action='store_true', help='Print only invalid addresses')
-    parser.add_argument('-u', '--unicode', action='store_true', help='Print addresses stored as Unicode objects')
+    # Because of the optional arguments, we can't use getopt. :(
+    outfile = None
+    regular = None
+    digest = None
+    preserve = None
+    nomail = None
+    why = None
+    kind = None
+    fullnames = False
+    invalidonly = False
+    unicodeonly = False
+    moderatedonly = False
+    nonmoderatedonly = False
 
-    args = parser.parse_args()
+    # Throw away the first (program) argument
+    args = sys.argv[1:]
+    if not args:
+        usage(0)
 
-    # Validate mutually exclusive options
-    if sum([args.moderated, args.non_moderated, args.invalid, args.unicode]) > 1:
-        parser.error('Only one of -m, -M, -i or -u may be specified.')
-
-    if args.output:
+    while True:
         try:
-            fp = open(args.output, 'w')
+            opt = args.pop(0)
+        except IndexError:
+            usage(1)
+        if opt in ('-h', '--help'):
+            usage(0)
+        elif opt in ('-f', '--fullnames'):
+            fullnames = True
+        elif opt in ('-p', '--preserve'):
+            preserve = True
+        elif opt in ('-r', '--regular'):
+            regular = True
+        elif opt in ('-o', '--output'):
+            try:
+                outfile = args.pop(0)
+            except IndexError:
+                usage(1)
+        elif opt == '-n':
+            nomail = True
+            if args and args[0] in list(WHYCHOICES.keys()):
+                why = args.pop(0)
+        elif opt.startswith('--nomail'):
+            nomail = True
+            i = opt.find('=')
+            if i >= 0:
+                why = opt[i+1:]
+                if why not in list(WHYCHOICES.keys()):
+                    usage(1, C_('Bad --nomail option: %(why)s'))
+        elif opt == '-d':
+            digest = True
+            if args and args[0] in ('mime', 'plain'):
+                kind = args.pop(0)
+        elif opt.startswith('--digest'):
+            digest = True
+            i = opt.find('=')
+            if i >= 0:
+                kind = opt[i+1:]
+                if kind not in ('mime', 'plain'):
+                    usage(1, C_('Bad --digest option: %(kind)s'))
+        elif opt in ('-m', '--moderated'):
+            moderatedonly = True
+            if nonmoderatedonly or invalidonly or unicodeonly:
+                usage(1, C_('Only one of -m, -M, -i or -u may be specified.'))
+        elif opt in ('-M', '--non-moderated'):
+            nonmoderatedonly = True
+            if moderatedonly or invalidonly or unicodeonly:
+                usage(1, C_('Only one of -m, -M, -i or -u may be specified.'))
+        elif opt in ('-i', '--invalid'):
+            invalidonly = True
+            if moderatedonly or nonmoderatedonly or unicodeonly:
+                usage(1, C_('Only one of -m, -M, -i or -u may be specified.'))
+        elif opt in ('-u', '--unicode'):
+            unicodeonly = True
+            if moderatedonly or nonmoderatedonly or invalidonly:
+                usage(1, C_('Only one of -m, -M, -i or -u may be specified.'))
+        else:
+            # No more options left, push the last one back on the list
+            args.insert(0, opt)
+            break
+
+    if len(args) != 1:
+        usage(1)
+
+    listname = args[0].lower().strip()
+
+    if regular is None and digest is None:
+        regular = digest = True
+
+    if outfile:
+        try:
+            fp = open(outfile, 'w')
         except IOError:
-            print(C_('Could not open file for writing:'), args.output, file=sys.stderr)
+            print(C_(
+                                 'Could not open file for writing:'), outfile, file=sys.stderr)
             sys.exit(1)
     else:
         fp = sys.stdout
 
     try:
-        mlist = MailList.MailList(args.listname.lower().strip(), lock=False)
+        mlist = MailList.MailList(listname, lock=False)
     except Errors.MMListError as e:
         print(C_('No such list: %(listname)s'), file=sys.stderr)
         sys.exit(1)
@@ -175,56 +253,56 @@ def main():
     rmembers = mlist.getRegularMemberKeys()
     dmembers = mlist.getDigestMemberKeys()
 
-    if args.preserve:
+    if preserve:
         # Convert to the case preserved addresses
         rmembers = mlist.getMemberCPAddresses(rmembers)
         dmembers = mlist.getMemberCPAddresses(dmembers)
 
-    if args.invalid or args.unicode or args.moderated or args.non_moderated:
+    if invalidonly or unicodeonly or moderatedonly or nonmoderatedonly:
         all = rmembers + dmembers
         all.sort()
         for addr in all:
-            name = args.fullnames and mlist.getMemberName(addr) or ''
+            name = fullnames and mlist.getMemberName(addr) or ''
             showit = False
-            if args.invalid and isinvalid(addr):
+            if invalidonly and isinvalid(addr):
                 showit = True
-            if args.unicode and isunicode(addr):
+            if unicodeonly and isunicode(addr):
                 showit = True
-            if args.moderated and mlist.getMemberOption(addr, mm_cfg.Moderate):
+            if moderatedonly and mlist.getMemberOption(addr, mm_cfg.Moderate):
                 showit = True
-            if args.non_moderated and not mlist.getMemberOption(addr, mm_cfg.Moderate):
+            if nonmoderatedonly and not mlist.getMemberOption(addr,
+                                                             mm_cfg.Moderate):
                 showit = True
             if showit:
-                print(formataddr((name, addr)), file=fp)
+                print(formataddr((safe(name), addr)), file=fp)
         return
-
-    if args.regular or not args.digest:
+    if regular:
         rmembers.sort()
         for addr in rmembers:
-            name = args.fullnames and mlist.getMemberName(addr) or ''
+            name = fullnames and mlist.getMemberName(addr) or ''
             # Filter out nomails
-            if args.nomail and not whymatches(mlist, addr, args.nomail):
+            if nomail and not whymatches(mlist, addr, why):
                 continue
-            print(formataddr((name, addr)), file=fp)
-
-    if args.digest or not args.regular:
+            print(formataddr((safe(name), addr)), file=fp)
+    if digest:
         dmembers.sort()
         for addr in dmembers:
-            name = args.fullnames and mlist.getMemberName(addr) or ''
+            name = fullnames and mlist.getMemberName(addr) or ''
             # Filter out nomails
-            if args.nomail and not whymatches(mlist, addr, args.nomail):
+            if nomail and not whymatches(mlist, addr, why):
                 continue
             # Filter out digest kinds
             if mlist.getMemberOption(addr, mm_cfg.DisableMime):
                 # They're getting plain text digests
-                if args.digest == 'mime':
+                if kind == 'mime':
                     continue
             else:
                 # They're getting MIME digests
-                if args.digest == 'plain':
+                if kind == 'plain':
                     continue
-            print(formataddr((name, addr)), file=fp)
+            print(formataddr((safe(name), addr)), file=fp)
 
 
+
 if __name__ == '__main__':
     main()

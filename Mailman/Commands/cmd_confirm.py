@@ -43,6 +43,8 @@ def process(res, args):
         res.results.append(gethelp(mlist))
         return STOP
     cookie = args[0]
+    if isinstance(cookie, bytes):
+        cookie = cookie.decode()
     try:
         results = mlist.ProcessConfirmation(cookie, res.msg)
     except Errors.MMBadConfirmation as e:
@@ -53,29 +55,29 @@ Invalid confirmation string.  Note that confirmation strings expire
 approximately %(days)s days after the initial request.  They also expire if
 the request has already been handled in some way.  If your confirmation has
 expired, please try to re-submit your original request or message."""))
-    except Errors.MMNeedApproval:
+    except Errors.MMNeedApproval as e:
         res.results.append(_("""\
 Your request has been forwarded to the list moderator for approval."""))
-    except Errors.MMAlreadyAMember:
+    except Errors.MMAlreadyAMember as e:
         # Some other subscription request for this address has
         # already succeeded.
         res.results.append(_('You are already subscribed.'))
-    except Errors.NotAMemberError:
+    except Errors.NotAMemberError as e:
         # They've already been unsubscribed
         res.results.append(_("""\
 You are not currently a member.  Have you already unsubscribed or changed
 your email address?"""))
-    except Errors.MembershipIsBanned:
+    except Errors.MembershipIsBanned as e:
         owneraddr = mlist.GetOwnerEmail()
         res.results.append(_("""\
 You are currently banned from subscribing to this list.  If you think this
 restriction is erroneous, please contact the list owners at
 %(owneraddr)s."""))
-    except Errors.HostileSubscriptionError:
+    except Errors.HostileSubscriptionError as e:
         res.results.append(_("""\
 You were not invited to this mailing list.  The invitation has been discarded,
 and both list administrators have been alerted."""))
-    except Errors.MMBadPasswordError:
+    except Errors.MMBadPasswordError as e:
         res.results.append(_("""\
 Bad approval password given.  Held message is still being held."""))
     else:

@@ -20,18 +20,19 @@
 def cmp(a, b):
     return (a > b) - (a < b)
 
+#from future.builtins import cmp
 import sys
 import os
 import re
-import urllib.parse
+from Mailman.Utils import FieldStorage
+import urllib.request, urllib.parse, urllib.error
 import signal
-import traceback
 
 from email.utils import unquote, parseaddr, formataddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
-from Mailman.Message import Message
+from Mailman import Message
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import MemberAdaptor
@@ -39,7 +40,7 @@ from Mailman import i18n
 from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
 from Mailman.Cgi import Auth
-from Mailman.Logging.Syslog import mailman_log
+from Mailman.Logging.Syslog import syslog
 from Mailman.Utils import sha_new
 from Mailman.CSRFcheck import csrf_check
 
@@ -54,260 +55,203 @@ OPTCOLUMNS = 11
 
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
-def validate_listname(listname):
-    """Validate and sanitize a listname to prevent path traversal.
-    
-    Args:
-        listname: The listname to validate
-        
-    Returns:
-        tuple: (is_valid, sanitized_name, error_message)
-    """
-    if not listname:
-        return False, None, _('List name is required')
-        
-    # Convert to lowercase and strip whitespace
-    listname = listname.lower().strip()
-    
-    # Basic validation
-    if not Utils.ValidateListName(listname):
-        return False, None, _('Invalid list name')
-        
-    # Check for path traversal attempts
-    if '..' in listname or '/' in listname or '\\' in listname:
-        return False, None, _('Invalid list name')
-        
-    return True, listname, None
 
-def handle_no_list():
-    """Handle the case when no list is specified."""
-    doc = Document()
-    doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-    doc.SetTitle(_('CGI script error'))
-    doc.AddItem(Header(2, _('CGI script error')))
-    doc.addError(_('Invalid options to CGI script.'))
-    doc.AddItem('<hr>')
-    doc.AddItem(MailmanLogo())
-    print('Status: 400 Bad Request')
-    return doc
-
+
 def main():
+    # Try to find out which list is being administered
+    parts = Utils.GetPathPieces()
+    if not parts:
+        # None, so just do the admin overview and be done with it
+        admin_overview()
+        return
+    # Get the list object
+    listname = parts[0].lower()
     try:
-        # Log page load
-        mailman_log('info', 'admin: Page load started')
-        
-        # Initialize document early
-        doc = Document()
-        doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
-        
-        # Parse form data first since we need it for authentication
-        try:
-            if os.environ.get('REQUEST_METHOD') == 'POST':
-                content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-                if content_length > 0:
-                    form_data = sys.stdin.read(content_length)
-                    cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-                else:
-                    cgidata = {}
-            else:
-                query_string = os.environ.get('QUERY_STRING', '')
-                cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-        except Exception as e:
-            mailman_log('error', 'admin: Invalid form data: %s\n%s', str(e), traceback.format_exc())
-            doc.AddItem(Header(2, _("Error")))
-            doc.AddItem(Bold(_('Invalid request')))
-            print('Status: 400 Bad Request')
-            print(doc.Format())
-            return
-
-        # Get the list name
-        parts = Utils.GetPathPieces()
-        if not parts:
-            doc = handle_no_list()
-            print(doc.Format())
-            return
-
-        # Validate listname
-        is_valid, listname, error_msg = validate_listname(parts[0])
-        if not is_valid:
-            doc.SetTitle(_('CGI script error'))
-            doc.AddItem(Header(2, _('CGI script error')))
-            doc.addError(error_msg)
-            doc.AddItem('<hr>')
-            doc.AddItem(MailmanLogo())
-            print('Status: 400 Bad Request')
-            print(doc.Format())
-            return
-
-        mailman_log('info', 'admin: Processing list "%s"', listname)
-
-        try:
-            mlist = MailList.MailList(listname, lock=0)
-        except Errors.MMListError as e:
-            # Avoid cross-site scripting attacks and information disclosure
-            safelistname = Utils.websafe(listname)
-            doc.SetTitle(_('CGI script error'))
-            doc.AddItem(Header(2, _('CGI script error')))
-            doc.addError(_('No such list <em>{safelistname}</em>'))
-            doc.AddItem('<hr>')
-            doc.AddItem(MailmanLogo())
-            print('Status: 404 Not Found')
-            print(doc.Format())
-            mailman_log('error', 'admin: No such list "%s"', listname)
-            return
-        except Exception as e:
-            # Log the full error but don't expose it to the user
-            mailman_log('error', 'admin: Unexpected error for list "%s": %s', listname, str(e))
-            doc.SetTitle(_('CGI script error'))
-            doc.AddItem(Header(2, _('CGI script error')))
-            doc.addError(_('An error occurred processing your request'))
-            doc.AddItem('<hr>')
-            doc.AddItem(MailmanLogo())
-            print('Status: 500 Internal Server Error')
-            print(doc.Format())
-            return
-
-        i18n.set_language(mlist.preferred_language)
-        # If the user is not authenticated, we're done.
-        try:
-            # CSRF check
-            safe_params = ['VARHELP', 'adminpw', 'admlogin',
-                          'letter', 'chunk', 'findmember',
-                          'legend']
-            params = list(cgidata.keys())
-            if set(params) - set(safe_params):
-                csrf_checked = csrf_check(mlist, cgidata.get('csrf_token', [''])[0],
-                                        'admin')
-            else:
-                csrf_checked = True
-            if cgidata.get('adminpw', [''])[0]:
-                os.environ['HTTP_COOKIE'] = ''
-                csrf_checked = True
-            auth_result = mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
-                                      mm_cfg.AuthSiteAdmin),
-                                     cgidata.get('adminpw', [''])[0])
-            if not auth_result:
-                for context in (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin):
-                    mailman_log('debug', 'Checking context %s: %s', 
-                               context, str(mlist.AuthContextInfo(context)))
-        except Exception as e:
-            mailman_log('error', 'admin: Exception during WebAuthenticate: %s\n%s', str(e), traceback.format_exc())
-            raise
-        if not auth_result:
-            if 'adminpw' in cgidata:
-                msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
-                remote = os.environ.get('HTTP_FORWARDED_FOR',
-                         os.environ.get('HTTP_X_FORWARDED_FOR',
-                         os.environ.get('REMOTE_ADDR',
-                                        'unidentified origin')))
-                mailman_log('security',
-                          'Authorization failed (admin): list=%s: remote=%s\n%s',
-                          listname, remote, traceback.format_exc())
-            else:
-                msg = ''
-            Auth.loginpage(mlist, 'admin', msg=msg)
-            return
-
-        # Which subcategory was requested?  Default is `general'
-        if len(parts) == 1:
-            category = 'general'
-            subcat = None
-        elif len(parts) == 2:
-            category = parts[1]
-            subcat = None
-        else:
-            category = parts[1]
-            subcat = parts[2]
-
-        # Sanity check - validate category against available categories
-        if category not in list(mlist.GetConfigCategories().keys()):
-            category = 'general'
-
-        # Is the request for variable details?
-        varhelp = None
-        qsenviron = os.environ.get('QUERY_STRING')
-        parsedqs = None
-        if qsenviron:
-            parsedqs = urllib.parse.parse_qs(qsenviron)
-        if 'VARHELP' in cgidata:
-            varhelp = cgidata['VARHELP'][0]
-        elif parsedqs:
-            # POST methods, even if their actions have a query string, don't get
-            # put into FieldStorage's keys :-(
-            qs = parsedqs.get('VARHELP')
-            if qs and isinstance(qs, list):
-                varhelp = qs[0]
-        if varhelp:
-            option_help(mlist, varhelp)
-            return
-
-        doc = Document()
-        doc.set_language(mlist.preferred_language)
-        form = Form(mlist=mlist, contexts=AUTH_CONTEXTS)
-
-        # From this point on, the MailList object must be locked
-        mlist.Lock()
-        try:
-            # Install the emergency shutdown signal handler
-            def sigterm_handler(signum, frame, mlist=mlist):
-                # Make sure the list gets unlocked...
-                mlist.Unlock()
-                # ...and ensure we exit
-                sys.exit(0)
-            signal.signal(signal.SIGTERM, sigterm_handler)
-
-            if cgidata:
-                if csrf_checked:
-                    # There are options to change
-                    change_options(mlist, category, subcat, cgidata, doc)
-                else:
-                    doc.addError(
-                      _('The form lifetime has expired. (request forgery check)'))
-                # Let the list sanity check the changed values
-                mlist.CheckValues()
-
-            # Additional sanity checks
-            if not mlist.digestable and not mlist.nondigestable:
-                doc.addError(
-                    _(f'''You have turned off delivery of both digest and
-                    non-digest messages.  This is an incompatible state of
-                    affairs.  You must turn on either digest delivery or
-                    non-digest delivery or your mailing list will basically be
-                    unusable.'''), tag=_('Warning: '))
-
-            dm = mlist.getDigestMemberKeys()
-            if not mlist.digestable and dm:
-                doc.addError(
-                    _(f'''You have digest members, but digests are turned
-                    off. Those people will not receive mail.
-                    Affected member(s) %(dm)r.'''),
-                    tag=_('Warning: '))
-            rm = mlist.getRegularMemberKeys()
-            if not mlist.nondigestable and rm:
-                doc.addError(
-                    _(f'''You have regular list members but non-digestified mail is
-                    turned off.  They will receive non-digestified mail until you
-                    fix this problem. Affected member(s) %(rm)r.'''),
-                    tag=_('Warning: '))
-
-            # Show the results page
-            show_results(mlist, doc, category, subcat, cgidata)
-            print(doc.Format())
-            mlist.Save()
-        finally:
-            # Now be sure to unlock the list
-            mlist.Unlock()
-    except Exception as e:
+        mlist = MailList.MailList(listname, lock=0)
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
+        safelistname = Utils.websafe(listname)
+        # Send this with a 404 status.
+        print('Status: 404 Not Found')
+        admin_overview(_(f'No such list <em>{safelistname}</em>'))
+        syslog('error', 'admin: No such list "%s": %s\n',
+               listname, e)
+        return
+    # Now that we know what list has been requested, all subsequent admin
+    # pages are shown in that list's preferred language.
+    i18n.set_language(mlist.preferred_language)
+    # If the user is not authenticated, we're done.
+    cgidata = FieldStorage(keep_blank_values=1)
+    try:
+        cgidata.getfirst('csrf_token', '')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('An unexpected error occurred.')))
-        doc.AddItem(Preformatted(Utils.websafe(str(e))))
-        doc.AddItem(Preformatted(Utils.websafe(traceback.format_exc())))
-        print('Status: 500 Internal Server Error')
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
+        print('Status: 400 Bad Request')
         print(doc.Format())
-        mailman_log('error', 'admin: Unexpected error: %s\n%s', str(e), traceback.format_exc())
+        return
 
+    # CSRF check
+    safe_params = ['VARHELP', 'adminpw', 'admlogin',
+                   'letter', 'chunk', 'findmember',
+                   'legend']
+    params = list(cgidata.keys())
+    if set(params) - set(safe_params):
+        csrf_checked = csrf_check(mlist, cgidata.getfirst('csrf_token'),
+                                  'admin')
+    else:
+        csrf_checked = True
+    # if password is present, void cookie to force password authentication.
+    if cgidata.getfirst('adminpw'):
+        os.environ['HTTP_COOKIE'] = ''
+        csrf_checked = True
+
+    if not mlist.WebAuthenticate((mm_cfg.AuthListAdmin,
+                                  mm_cfg.AuthSiteAdmin),
+                                 cgidata.getfirst('adminpw', '')):
+        if 'adminpw' in cgidata:
+            # This is a re-authorization attempt
+            msg = Bold(FontSize('+1', _('Authorization failed.'))).Format()
+            remote = os.environ.get('HTTP_FORWARDED_FOR',
+                     os.environ.get('HTTP_X_FORWARDED_FOR',
+                     os.environ.get('REMOTE_ADDR',
+                                    'unidentified origin')))
+            syslog('security',
+                   'Authorization failed (admin): list=%s: remote=%s',
+                   listname, remote)
+        else:
+            msg = ''
+        Auth.loginpage(mlist, 'admin', msg=msg)
+        return
+
+    # Which subcategory was requested?  Default is `general'
+    if len(parts) == 1:
+        category = 'general'
+        subcat = None
+    elif len(parts) == 2:
+        category = parts[1]
+        subcat = None
+    else:
+        category = parts[1]
+        subcat = parts[2]
+
+    # Is this a log-out request?
+    if category == 'logout':
+        # site-wide admin should also be able to logout.
+        if mlist.AuthContextInfo(mm_cfg.AuthSiteAdmin)[0] == 'site':
+            print(mlist.ZapCookie(mm_cfg.AuthSiteAdmin))
+        print(mlist.ZapCookie(mm_cfg.AuthListAdmin))
+        Auth.loginpage(mlist, 'admin', frontpage=1)
+        return
+
+    # Sanity check
+    if category not in list(mlist.GetConfigCategories().keys()):
+        category = 'general'
+
+    # Is the request for variable details?
+    varhelp = None
+    qsenviron = os.environ.get('QUERY_STRING')
+    parsedqs = None
+    if qsenviron:
+        parsedqs = urllib.parse.parse_qs(qsenviron)
+    if 'VARHELP' in cgidata:
+        varhelp = cgidata.getfirst('VARHELP')
+    elif parsedqs:
+        # POST methods, even if their actions have a query string, don't get
+        # put into FieldStorage's keys :-(
+        qs = parsedqs.get('VARHELP')
+        if qs and type(qs) is list:
+            varhelp = qs[0]
+    if varhelp:
+        option_help(mlist, varhelp)
+        return
+
+    # The html page document
+    doc = Document()
+    doc.set_language(mlist.preferred_language)
+
+    # From this point on, the MailList object must be locked.  However, we
+    # must release the lock no matter how we exit.  try/finally isn't enough,
+    # because of this scenario: user hits the admin page which may take a long
+    # time to render; user gets bored and hits the browser's STOP button;
+    # browser shuts down socket; server tries to write to broken socket and
+    # gets a SIGPIPE.  Under Apache 1.3/mod_cgi, Apache catches this SIGPIPE
+    # (I presume it is buffering output from the cgi script), then turns
+    # around and SIGTERMs the cgi process.  Apache waits three seconds and
+    # then SIGKILLs the cgi process.  We /must/ catch the SIGTERM and do the
+    # most reasonable thing we can in as short a time period as possible.  If
+    # we get the SIGKILL we're screwed (because it's uncatchable and we'll
+    # have no opportunity to clean up after ourselves).
+    #
+    # This signal handler catches the SIGTERM, unlocks the list, and then
+    # exits the process.  The effect of this is that the changes made to the
+    # MailList object will be aborted, which seems like the only sensible
+    # semantics.
+    #
+    # BAW: This may not be portable to other web servers or cgi execution
+    # models.
+    def sigterm_handler(signum, frame, mlist=mlist):
+        # Make sure the list gets unlocked...
+        mlist.Unlock()
+        # ...and ensure we exit, otherwise race conditions could cause us to
+        # enter MailList.Save() while we're in the unlocked state, and that
+        # could be bad!
+        sys.exit(0)
+
+    mlist.Lock()
+    try:
+        # Install the emergency shutdown signal handler
+        signal.signal(signal.SIGTERM, sigterm_handler)
+
+        if list(cgidata.keys()):
+            if csrf_checked:
+                # There are options to change
+                change_options(mlist, category, subcat, cgidata, doc)
+            else:
+                doc.addError(
+                  _('The form lifetime has expired. (request forgery check)'))
+            # Let the list sanity check the changed values
+            mlist.CheckValues()
+        # Additional sanity checks
+        if not mlist.digestable and not mlist.nondigestable:
+            doc.addError(
+                _(f'''You have turned off delivery of both digest and
+                non-digest messages.  This is an incompatible state of
+                affairs.  You must turn on either digest delivery or
+                non-digest delivery or your mailing list will basically be
+                unusable.'''), tag=_('Warning: '))
+
+        dm = mlist.getDigestMemberKeys()
+        if not mlist.digestable and dm:
+            doc.addError(
+                _(f'''You have digest members, but digests are turned
+                off. Those people will not receive mail.
+                Affected member(s) %(dm)r.'''),
+                tag=_('Warning: '))
+        rm = mlist.getRegularMemberKeys()
+        if not mlist.nondigestable and rm:
+            doc.addError(
+                _(f'''You have regular list members but non-digestified mail is
+                turned off.  They will receive non-digestified mail until you
+                fix this problem. Affected member(s) %(rm)r.'''),
+                tag=_('Warning: '))
+        # Glom up the results page and print it out
+        show_results(mlist, doc, category, subcat, cgidata)
+        print(doc.Format())
+        mlist.Save()
+    finally:
+        # Now be sure to unlock the list.  It's okay if we get a signal here
+        # because essentially, the signal handler will do the same thing.  And
+        # unlocking is unconditional, so it's not an error if we unlock while
+        # we're already unlocked.
+        mlist.Unlock()
+
+
+
 def admin_overview(msg=''):
     # Show the administrative overview page, with the list of all the lists on
     # this host.  msg is an optional error message to display at the top of
@@ -316,11 +260,7 @@ def admin_overview(msg=''):
     # This page should be displayed in the server's default language, which
     # should have already been set.
     hostname = Utils.get_domain()
-    if isinstance(hostname, bytes):
-        hostname = hostname.decode('latin1', 'replace')
-    legend = _('%(hostname)s mailing lists - Admin Links') % {
-        'hostname': hostname
-    }
+    legend = _(f'{hostname} mailing lists - Admin Links')
     # The html `document'
     doc = Document()
     doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
@@ -336,31 +276,21 @@ def admin_overview(msg=''):
     listnames.sort()
 
     for name in listnames:
-        if isinstance(name, bytes):
-            name = name.decode('latin1', 'replace')
         try:
             mlist = MailList.MailList(name, lock=0)
         except Errors.MMUnknownListError:
             # The list could have been deleted by another process.
             continue
         if mlist.advertised:
-            real_name = mlist.real_name
-            if isinstance(real_name, bytes):
-                real_name = real_name.decode('latin1', 'replace')
-            description = mlist.GetDescription()
-            if isinstance(description, bytes):
-                description = description.decode('latin1', 'replace')
             if mm_cfg.VIRTUAL_HOST_OVERVIEW and (
-                   mlist.web_page_url.find('/%(hostname)s/' % {'hostname': hostname}) == -1 and
-                   mlist.web_page_url.find('/%(hostname)s:' % {'hostname': hostname}) == -1):
+                   mlist.web_page_url.find('/%s/' % hostname) == -1 and
+                   mlist.web_page_url.find('/%s:' % hostname) == -1):
                 # List is for different identity of this host - skip it.
                 continue
             else:
                 advertised.append((mlist.GetScriptURL('admin'),
-                                   real_name,
-                                   Utils.websafe(description)))
-        mlist.Unlock()
-
+                                   mlist.real_name,
+                                   Utils.websafe(mlist.GetDescription())))
     # Greeting depends on whether there was an error or not
     if msg:
         greeting = FontAttr(msg, color="ff5060", size="+1")
@@ -372,34 +302,32 @@ def admin_overview(msg=''):
     if not advertised:
         welcome.extend([
             greeting,
-            _('<p>There currently are no publicly-advertised %(mailmanlink)s mailing lists on %(hostname)s.') % {
-                'mailmanlink': mailmanlink,
-                'hostname': hostname
-            },
+            _(f'''<p>There currently are no publicly-advertised {mailmanlink}
+            mailing lists on {hostname}.'''),
             ])
     else:
         welcome.extend([
             greeting,
-            _('<p>Below is the collection of publicly-advertised %(mailmanlink)s mailing lists on %(hostname)s.  Click on a list name to visit the configuration pages for that list.') % {
-                'mailmanlink': mailmanlink,
-                'hostname': hostname
-            },
+            _(f'''<p>Below is the collection of publicly-advertised
+            {mailmanlink} mailing lists on {hostname}.  Click on a list
+            name to visit the configuration pages for that list.'''),
             ])
 
     creatorurl = Utils.ScriptURL('create')
     mailman_owner = Utils.get_site_email()
     extra = msg and _('right ') or ''
     welcome.extend([
-        _('To visit the administrators configuration page for an unadvertised list, open a URL similar to this one, but with a \'/\' and the %(extra)slist name appended.  If you have the proper authority, you can also <a href="%(creatorurl)s">create a new mailing list</a>.') % {
-            'extra': extra,
-            'creatorurl': creatorurl
-        },
-        _('<p>General list information can be found at '),
+        _(f'''To visit the administrators configuration page for an
+        unadvertised list, open a URL similar to this one, but with a '/' and
+        the {extra}list name appended.  If you have the proper authority,
+        you can also <a href="{creatorurl}">create a new mailing list</a>.
+
+        <p>General list information can be found at '''),
         Link(Utils.ScriptURL('listinfo'),
              _('the mailing list overview page')),
         '.',
         _('<p>(Send questions and comments to '),
-        Link('mailto:%(mailman_owner)s' % {'mailman_owner': mailman_owner}, mailman_owner),
+        Link('mailto:%s' % mailman_owner, mailman_owner),
         '.)<p>',
         ])
 
@@ -426,6 +354,8 @@ def admin_overview(msg=''):
     doc.AddItem(MailmanLogo())
     print(doc.Format())
 
+
+
 def option_help(mlist, varhelp):
     # The html page document
     doc = Document()
@@ -434,7 +364,7 @@ def option_help(mlist, varhelp):
     item = None
     reflist = varhelp.split('/')
     if len(reflist) >= 2:
-        category, subcat = None, None
+        category = subcat = None
         if len(reflist) == 2:
             category, varname = reflist
         elif len(reflist) == 3:
@@ -498,159 +428,166 @@ def option_help(mlist, varhelp):
     doc.AddItem(mlist.GetMailmanFooter())
     print(doc.Format())
 
-def add_standard_headers(doc, mlist, title, category, subcat):
-    """Add standard headers to admin pages.
-    
-    Args:
-        doc: The Document object
-        mlist: The MailList object
-        title: The page title
-        category: Optional category name
-        subcat: Optional subcategory name
-    """
-    # Set the page title
-    doc.SetTitle(title)
-    
-    # Add the main header
-    doc.AddItem(Header(2, title))
-    
-    # Add navigation breadcrumbs if category/subcat provided
-    breadcrumbs = []
-    breadcrumbs.append(Link(mlist.GetScriptURL('admin'), _('%(realname)s administrative interface')))
-    if category:
-        breadcrumbs.append(Link(mlist.GetScriptURL('admin') + '/' + category, _(category)))
-    if subcat:
-        breadcrumbs.append(Link(mlist.GetScriptURL('admin') + '/' + category + '/' + subcat, _(subcat)))
-    # Convert each breadcrumb item to a string before joining
-    breadcrumbs = [str(item) for item in breadcrumbs]
-    doc.AddItem(Center(' > '.join(breadcrumbs)))
-    
-    # Add horizontal rule
-    doc.AddItem('<hr>')
 
+
 def show_results(mlist, doc, category, subcat, cgidata):
     # Produce the results page
     adminurl = mlist.GetScriptURL('admin')
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
-    if isinstance(label, bytes):
-        label = label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-        
-    # Add standard headers
-    title = _('%(realname)s Administration (%(label)s)') % {
-        'realname': mlist.real_name,
-        'label': label
-    }
-    add_standard_headers(doc, mlist, title, category, subcat)
-    
-    # Create a table for configuration categories
-    cat_table = Table(border=0, width='100%')
-    cat_table.AddRow([Center(Header(2, _('Configuration Categories')))])
-    cat_table.AddCellInfo(cat_table.GetCurrentRowIndex(), 0, colspan=2,
-                         bgcolor=mm_cfg.WEB_HEADER_COLOR)
-    
-    # Add category links
-    for cat in categories.keys():
-        cat_label = _(categories[cat][0])
-        if isinstance(cat_label, bytes):
-            cat_label = cat_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-        url = '%s/%s' % (adminurl, cat)
-        
-        # Get subcategories if they exist
-        subcats = mlist.GetConfigSubCategories(cat)
-        if subcats:
-            # Create a container for the category and its subcategories
-            container = Container()
-            if cat == category:
-                container.AddItem(Bold(Link(url, cat_label)))
-            else:
-                container.AddItem(Link(url, cat_label))
-            
-            # Add subcategory links
-            subcat_list = UnorderedList()
-            for subcat_name, subcat_label in subcats:
-                subcat_url = '%s/%s/%s' % (adminurl, cat, subcat_name)
-                if isinstance(subcat_label, bytes):
-                    subcat_label = subcat_label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-                if cat == category and subcat_name == subcat:
-                    subcat_list.AddItem(Bold(Link(subcat_url, subcat_label)))
-                else:
-                    subcat_list.AddItem(Link(subcat_url, subcat_label))
-            container.AddItem(subcat_list)
-            cat_table.AddRow([container])
-        else:
-            # No subcategories, just add the category link
-            if cat == category:
-                cat_table.AddRow([Bold(Link(url, cat_label))])
-            else:
-                cat_table.AddRow([Link(url, cat_label)])
-    
-    doc.AddItem(cat_table)
+
+    # Set up the document's headers
+    realname = mlist.real_name
+    doc.SetTitle(_(f'{realname} Administration ({label})'))
+    doc.AddItem(Center(Header(2, _(
+        f'{realname} mailing list administration<br>{label} Section'))))
     doc.AddItem('<hr>')
-    
-    # Use ParseTags for the main content
-    replacements = {
-        'realname': mlist.real_name,
-        'label': label,
-        'adminurl': adminurl,
-        'admindburl': mlist.GetScriptURL('admindb'),
-        'listinfourl': mlist.GetScriptURL('listinfo'),
-        'edithtmlurl': mlist.GetScriptURL('edithtml'),
-        'archiveurl': mlist.GetBaseArchiveURL(),
-        'rmlisturl': mlist.GetScriptURL('rmlist') if mm_cfg.OWNERS_CAN_DELETE_THEIR_OWN_LISTS and mlist.internal_name() != mm_cfg.MAILMAN_SITE_LIST else None
-    }
-    
-    # Ensure all replacements are properly encoded for the list's language
-    for key, value in replacements.items():
-        if isinstance(value, bytes):
-            replacements[key] = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-    
-    output = mlist.ParseTags('admin_results.html', replacements, mlist.preferred_language)
-    doc.AddItem(output)
-    
-    # Now we need to craft the form that will be submitted
+    # Now we need to craft the form that will be submitted, which will contain
+    # all the variable settings, etc.  This is a bit of a kludge because we
+    # know that the autoreply and members categories supports file uploads.
     encoding = None
     if category in ('autoreply', 'members'):
         encoding = 'multipart/form-data'
     if subcat:
-        form = Form('%(adminurl)s/%(category)s/%(subcat)s' % {
-            'adminurl': adminurl,
-            'category': category,
-            'subcat': subcat
-        }, encoding=encoding, mlist=mlist, contexts=AUTH_CONTEXTS)
+        form = Form('%s/%s/%s' % (adminurl, category, subcat),
+                    encoding=encoding, mlist=mlist, contexts=AUTH_CONTEXTS)
     else:
-        form = Form('%(adminurl)s/%(category)s' % {
-            'adminurl': adminurl,
-            'category': category
-        }, encoding=encoding, mlist=mlist, contexts=AUTH_CONTEXTS)
-        
-    # Add the form content based on category
+        form = Form('%s/%s' % (adminurl, category),
+                    encoding=encoding, mlist=mlist, contexts=AUTH_CONTEXTS)
+    # This holds the two columns of links
+    linktable = Table(valign='top', width='100%')
+    linktable.AddRow([Center(Bold(_("Configuration Categories"))),
+                      Center(Bold(_("Other Administrative Activities")))])
+    # The `other links' are stuff in the right column.
+    otherlinks = UnorderedList()
+    otherlinks.AddItem(Link(mlist.GetScriptURL('admindb'),
+                            _('Tend to pending moderator requests')))
+    otherlinks.AddItem(Link(mlist.GetScriptURL('listinfo'),
+                            _('Go to the general list information page')))
+    otherlinks.AddItem(Link(mlist.GetScriptURL('edithtml'),
+                            _('Edit the public HTML pages and text files')))
+    otherlinks.AddItem(Link(mlist.GetBaseArchiveURL(),
+                            _('Go to list archives')).Format() +
+                       '<br>&nbsp;<br>')
+    # We do not allow through-the-web deletion of the site list!
+    if mm_cfg.OWNERS_CAN_DELETE_THEIR_OWN_LISTS and \
+           mlist.internal_name() != mm_cfg.MAILMAN_SITE_LIST:
+        otherlinks.AddItem(Link(mlist.GetScriptURL('rmlist'),
+                                _('Delete this mailing list')).Format() +
+                           _(' (requires confirmation)<br>&nbsp;<br>'))
+    otherlinks.AddItem(Link('%s/logout' % adminurl,
+                            # BAW: What I really want is a blank line, but
+                            # adding an &nbsp; won't do it because of the
+                            # bullet added to the list item.
+                            '<FONT SIZE="+2"><b>%s</b></FONT>' %
+                            _('Logout')))
+    # These are links to other categories and live in the left column
+    categorylinks_1 = categorylinks = UnorderedList()
+    categorylinks_2 = ''
+    categorykeys = list(categories.keys())
+    half = len(categorykeys) / 2
+    counter = 0
+    subcat = None
+    for k in categorykeys:
+        label = _(categories[k][0])
+        url = '%s/%s' % (adminurl, k)
+        if k == category:
+            # Handle subcategories
+            subcats = mlist.GetConfigSubCategories(k)
+            if subcats:
+                subcat = Utils.GetPathPieces()[-1]
+                for k, v in subcats:
+                    if k == subcat:
+                        break
+                else:
+                    # The first subcategory in the list is the default
+                    subcat = subcats[0][0]
+                subcat_items = []
+                for sub, text in subcats:
+                    if sub == subcat:
+                        text = Bold('[%s]' % text).Format()
+                    subcat_items.append(Link(url + '/' + sub, text))
+                categorylinks.AddItem(
+                    Bold(label).Format() +
+                    UnorderedList(*subcat_items).Format())
+            else:
+                categorylinks.AddItem(Link(url, Bold('[%s]' % label)))
+        else:
+            categorylinks.AddItem(Link(url, label))
+        counter += 1
+        if counter >= half:
+            categorylinks_2 = categorylinks = UnorderedList()
+            counter = -len(categorykeys)
+    # Make the emergency stop switch a rude solo light
+    etable = Table()
+    # Add all the links to the links table...
+    etable.AddRow([categorylinks_1, categorylinks_2])
+    etable.AddRowInfo(etable.GetCurrentRowIndex(), valign='top')
+    if mlist.emergency:
+        label = _('Emergency moderation of all list traffic is enabled')
+        etable.AddRow([Center(
+            Link('?VARHELP=general/emergency', Bold(label)))])
+        color = mm_cfg.WEB_ERROR_COLOR
+        etable.AddCellInfo(etable.GetCurrentRowIndex(), 0,
+                           colspan=2, bgcolor=color)
+    linktable.AddRow([etable, otherlinks])
+    # ...and add the links table to the document.
+    form.AddItem(linktable)
+    form.AddItem('<hr>')
+    form.AddItem(
+        _(f'''Make your changes in the following section, then submit them
+        using the <em>Submit Your Changes</em> button below.''')
+        + '<p>')
+
+    # The members and passwords categories are special in that they aren't
+    # defined in terms of gui elements.  Create those pages here.
     if category == 'members':
+        # Figure out which subcategory we should display
+        subcat = Utils.GetPathPieces()[-1]
+        if subcat not in ('list', 'add', 'remove', 'change', 'sync'):
+            subcat = 'list'
+        # Add member category specific tables
         form.AddItem(membership_options(mlist, subcat, cgidata, doc, form))
         form.AddItem(Center(submit_button('setmemberopts_btn')))
+        # In "list" subcategory, we can also search for members
+        if subcat == 'list':
+            form.AddItem('<hr>\n')
+            table = Table(width='100%')
+            table.AddRow([Center(Header(2, _('Additional Member Tasks')))])
+            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
+                              bgcolor=mm_cfg.WEB_HEADER_COLOR)
+            # Add a blank separator row
+            table.AddRow(['&nbsp;', '&nbsp;'])
+            # Add a section to set the moderation bit for all members
+            table.AddRow([_(f"""<li>Set everyone's moderation bit, including
+            those members not currently visible""")])
+            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
+            table.AddRow([RadioButtonArray('allmodbit_val',
+                                           (_('Off'), _('On')),
+                                           mlist.default_member_moderation),
+                          SubmitButton('allmodbit_btn', _('Set'))])
+            form.AddItem(table)
     elif category == 'passwords':
         form.AddItem(Center(password_inputs(mlist)))
         form.AddItem(Center(submit_button()))
     else:
         form.AddItem(show_variables(mlist, category, subcat, cgidata, doc))
         form.AddItem(Center(submit_button()))
-        
-    # Add the form to the document
+    # And add the form
     doc.AddItem(form)
     doc.AddItem(mlist.GetMailmanFooter())
 
+
+
 def show_variables(mlist, category, subcat, cgidata, doc):
-    # Get the configuration info
     options = mlist.GetConfigInfo(category, subcat)
-    
+
     # The table containing the results
     table = Table(cellspacing=3, cellpadding=4, width='100%')
 
     # Get and portray the text label for the category.
     categories = mlist.GetConfigCategories()
     label = _(categories[category][0])
-    if isinstance(label, bytes):
-        label = label.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
 
     table.AddRow([Center(Header(2, label))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2,
@@ -659,9 +596,7 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     # The very first item in the config info will be treated as a general
     # description if it is a string
     description = options[0]
-    if isinstance(description, bytes):
-        description = description.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-    if isinstance(description, str):
+    if type(description) is str:
         table.AddRow([description])
         table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         options = options[1:]
@@ -678,14 +613,10 @@ def show_variables(mlist, category, subcat, cgidata, doc):
                       width='85%')
 
     for item in options:
-        if isinstance(item, str):
+        if type(item) == str:
             # The very first banner option (string in an options list) is
             # treated as a general description, while any others are
             # treated as section headers - centered and italicized...
-            if isinstance(item, bytes):
-                item = item.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-            formatted_text = '[%s]' % item
-            item = Bold(formatted_text).Format()
             table.AddRow([Center(Italic(item))])
             table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         else:
@@ -694,21 +625,25 @@ def show_variables(mlist, category, subcat, cgidata, doc):
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
     return table
 
+
+
 def add_options_table_item(mlist, category, subcat, table, item, detailsp=1):
     # Add a row to an options table with the item description and value.
     varname, kind, params, extra, descr, elaboration = \
              get_item_characteristics(item)
+    if elaboration is None:
+        elaboration = descr
     descr = get_item_gui_description(mlist, category, subcat,
                                      varname, descr, elaboration, detailsp)
     val = get_item_gui_value(mlist, category, kind, varname, params, extra)
     table.AddRow([descr, val])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0,
-                      style=f'background-color: {mm_cfg.WEB_ADMINITEM_COLOR}',
-                      role='cell')
+                      bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
     table.AddCellInfo(table.GetCurrentRowIndex(), 1,
-                      style=f'background-color: {mm_cfg.WEB_ADMINITEM_COLOR}',
-                      role='cell')
+                      bgcolor=mm_cfg.WEB_ADMINITEM_COLOR)
 
+
+
 def get_item_characteristics(record):
     # Break out the components of an item description from its description
     # record:
@@ -728,13 +663,13 @@ def get_item_characteristics(record):
         raise ValueError(f'Badly formed options entry:\n {record}')
     return varname, kind, params, dependancies, descr, elaboration
 
+
+
 def get_item_gui_value(mlist, category, kind, varname, params, extra):
     """Return a representation of an item's settings."""
     # Give the category a chance to return the value for the variable
     value = None
-    category_data = mlist.GetConfigCategories()[category]
-    if isinstance(category_data, tuple):
-        gui = category_data[1]
+    label, gui = mlist.GetConfigCategories()[category]
     if hasattr(gui, 'getValue'):
         value = gui.getValue(mlist, kind, varname, params)
     # Filter out None, and volatile attributes
@@ -762,27 +697,18 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         return RadioButtonArray(varname, params, checked, not extra)
     elif (kind == mm_cfg.String or kind == mm_cfg.Email or
           kind == mm_cfg.Host or kind == mm_cfg.Number):
-        # Ensure value is a string, decoding bytes if necessary
-        if isinstance(value, bytes):
-            value = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         return TextBox(varname, value, params)
     elif kind == mm_cfg.Text:
         if params:
             r, c = params
         else:
             r, c = None, None
-        # Ensure value is a string, decoding bytes if necessary
-        if isinstance(value, bytes):
-            value = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         return TextArea(varname, value or '', r, c)
     elif kind in (mm_cfg.EmailList, mm_cfg.EmailListEx):
         if params:
             r, c = params
         else:
             r, c = None, None
-        # Ensure value is a string, decoding bytes if necessary
-        if isinstance(value, bytes):
-            value = value.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
         res = NL.join(value)
         return TextArea(varname, res, r, c, wrap='off')
     elif kind == mm_cfg.FileUpload:
@@ -801,8 +727,8 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
         if params:
            values, legend, selected = params
         else:
-           values = mlist.available_languages
-           legend = [Utils.GetLanguageDescr(lang) for lang in values]
+           values = mlist.GetAvailableLanguages()
+           legend = list(map(_, list(map(Utils.GetLanguageDescr, values))))
            selected = values.index(mlist.preferred_language)
         return SelectOptions(varname, values, legend, selected)
     elif kind == mm_cfg.Topics:
@@ -820,13 +746,11 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             addtag   = 'topic_add_%02d' % i
             newtag   = 'topic_new_%02d' % i
             if empty:
-                topic_text = _('Topic %(i)d') % {'i': i}
-                table.AddRow([Center(Bold(topic_text)),
-                            Hidden(newtag)])
+                table.AddRow([Center(Bold(_('Topic %(i)d'))),
+                              Hidden(newtag)])
             else:
-                topic_text = _('Topic %(i)d') % {'i': i}
-                table.AddRow([Center(Bold(topic_text)),
-                            SubmitButton(deltag, _('Delete'))])
+                table.AddRow([Center(Bold(_('Topic %(i)d'))),
+                              SubmitButton(deltag, _('Delete'))])
             table.AddRow([Label(_('Topic name:')),
                           TextBox(boxtag, value=name, size=30)])
             table.AddRow([Label(_('Regexp:')),
@@ -843,17 +767,11 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
                                             selected=1),
                               ])
             table.AddRow(['<hr>'])
-            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2, role='cell')
+            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         # Now for each element in the existing data, create a widget
         i = 1
         data = getattr(mlist, varname)
         for name, pattern, desc, empty in data:
-            if isinstance(name, bytes):
-                name = name.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-            if isinstance(pattern, bytes):
-                pattern = pattern.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
-            if isinstance(desc, bytes):
-                desc = desc.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             makebox(i, name, pattern, desc, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -878,36 +796,46 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
             uptag     = 'hdrfilter_up_%02d' % i
             downtag   = 'hdrfilter_down_%02d' % i
             if empty:
-                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d') % {'i': i})),
+                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d'))),
                               Hidden(newtag)])
             else:
-                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d') % {'i': i})),
+                table.AddRow([Center(Bold(_('Spam Filter Rule %(i)d'))),
                               SubmitButton(deltag, _('Delete'))])
             table.AddRow([Label(_('Spam Filter Regexp:')),
                           TextArea(reboxtag, text=pattern,
                                    rows=4, cols=30, wrap='off')])
             values = [mm_cfg.DEFER, mm_cfg.HOLD, mm_cfg.REJECT,
                       mm_cfg.DISCARD, mm_cfg.ACCEPT]
-            legends = [_('Defer'), _('Hold'), _('Reject'),
-                       _('Discard'), _('Accept')]
-            table.AddRow([Label(_('Action:')),
-                          SelectOptions(actiontag, values, legends,
-                                       selected=values.index(action))])
+            try:
+                checked = values.index(action)
+            except ValueError:
+                checked = 0
+            radio = RadioButtonArray(
+                actiontag,
+                (_('Defer'), _('Hold'), _('Reject'),
+                 _('Discard'), _('Accept')),
+                values=values,
+                checked=checked).Format()
+            table.AddRow([Label(_('Action:')), radio])
             if not empty:
-                table.AddRow([SubmitButton(addtag, _('Add new rule...')),
+                table.AddRow([SubmitButton(addtag, _('Add new item...')),
                               SelectOptions(wheretag, ('before', 'after'),
                                             (_('...before this one.'),
                                              _('...after this one.')),
                                             selected=1),
                               ])
+                # BAW: IWBNI we could disable the up and down buttons for the
+                # first and last item respectively, but it's not easy to know
+                # which is the last item, so let's not worry about that for
+                # now.
+                table.AddRow([SubmitButton(uptag, _('Move rule up')),
+                              SubmitButton(downtag, _('Move rule down'))])
             table.AddRow(['<hr>'])
-            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2, role='cell')
+            table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
         # Now for each element in the existing data, create a widget
         i = 1
         data = getattr(mlist, varname)
         for pattern, action, empty in data:
-            if isinstance(pattern, bytes):
-                pattern = pattern.decode(Utils.GetCharSet(mlist.preferred_language), 'replace')
             makebox(i, pattern, action, empty)
             i += 1
         # Add one more non-deleteable widget as the first blank entry, but
@@ -920,96 +848,99 @@ def get_item_gui_value(mlist, category, kind, varname, params, extra):
     else:
         assert 0, 'Bad gui widget type: %s' % kind
 
+
+
 def get_item_gui_description(mlist, category, subcat,
                              varname, descr, elaboration, detailsp):
     # Return the item's description, with link to details.
+    #
+    # Details are not included if this is a VARHELP page, because that /is/
+    # the details page!
     if detailsp:
         if subcat:
-            varhelp = '/?VARHELP=%(category)s/%(subcat)s/%(varname)s' % {
-                'category': category,
-                'subcat': subcat,
-                'varname': varname
-            }
+            varhelp = '/?VARHELP=%s/%s/%s' % (category, subcat, varname)
         else:
-            varhelp = '/?VARHELP=%(category)s/%(varname)s' % {
-                'category': category,
-                'varname': varname
-            }
+            varhelp = '/?VARHELP=%s/%s' % (category, varname)
         if descr == elaboration:
-            linktext = _('<br>(Edit <b>%(varname)s</b>)') % {
-                'varname': varname
-            }
+            linktext = _(f'<br>(Edit <b>{varname}</b>)')
         else:
-            linktext = _('<br>(Details for <b>%(varname)s</b>)') % {
-                'varname': varname
-            }
+            linktext = _(f'<br>(Details for <b>{varname}</b>)')
         link = Link(mlist.GetScriptURL('admin') + varhelp,
                     linktext).Format()
-        text = Label('%(descr)s %(link)s' % {
-            'descr': descr,
-            'link': link
-        }).Format()
+        text = Label('%s %s' % (descr, link)).Format()
     else:
         text = Label(descr).Format()
     if varname[0] == '_':
-        text += Label(_('<br><em><strong>Note:</strong> setting this value performs an immediate action but does not modify permanent state.</em>')).Format()
+        text += Label(_(f'''<br><em><strong>Note:</strong>
+        setting this value performs an immediate action but does not modify
+        permanent state.</em>''')).Format()
     return text
 
+
+
 def membership_options(mlist, subcat, cgidata, doc, form):
     # Show the main stuff
     adminurl = mlist.GetScriptURL('admin', absolute=1)
     container = Container()
     header = Table(width="100%")
-    
-    # Add standard headers based on subcat
+    # If we're in the list subcategory, show the membership list
     if subcat == 'add':
-        title = _('Mass Subscriptions')
-    elif subcat == 'remove':
-        title = _('Mass Removals')
-    elif subcat == 'change':
-        title = _('Address Change')
-    elif subcat == 'sync':
-        title = _('Sync Membership List')
-    else:
-        title = _('Membership List')
-        
-    add_standard_headers(doc, mlist, title, 'members', subcat)
-    
+        header.AddRow([Center(Header(2, _('Mass Subscriptions')))])
+        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
+                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
+        container.AddItem(header)
+        mass_subscribe(mlist, container)
+        return container
+    if subcat == 'remove':
+        header.AddRow([Center(Header(2, _('Mass Removals')))])
+        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
+                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
+        container.AddItem(header)
+        mass_remove(mlist, container)
+        return container
+    if subcat == 'change':
+        header.AddRow([Center(Header(2, _('Address Change')))])
+        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
+                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
+        container.AddItem(header)
+        address_change(mlist, container)
+        return container
+    if subcat == 'sync':
+        header.AddRow([Center(Header(2, _('Sync Membership List')))])
+        header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
+                           bgcolor=mm_cfg.WEB_HEADER_COLOR)
+        container.AddItem(header)
+        mass_sync(mlist, container)
+        return container
+    # Otherwise...
+    header.AddRow([Center(Header(2, _('Membership List')))])
+    header.AddCellInfo(header.GetCurrentRowIndex(), 0, colspan=2,
+                       bgcolor=mm_cfg.WEB_HEADER_COLOR)
+    container.AddItem(header)
     # Add a "search for member" button
     table = Table(width='100%')
-    link = Link('https://docs.python.org/3/library/re.html'
+    link = Link('https://docs.python.org/2/library/re.html'
                 '#regular-expression-syntax',
                 _('(help)')).Format()
-    table.AddRow([Label(_('Find member %(link)s:') % {'link': link}),
+    table.AddRow([Label(_(f'Find member {link}:')),
                   TextBox('findmember',
-                          value=cgidata.get('findmember', [''])[0]),
+                          value=cgidata.getfirst('findmember', '')),
                   SubmitButton('findmember_btn', _('Search...'))])
     container.AddItem(table)
     container.AddItem('<hr><p>')
     usertable = Table(width="90%", border='2')
+    # If there are more members than allowed by chunksize, then we split the
+    # membership up alphabetically.  Otherwise just display them all.
+    chunksz = mlist.admin_member_chunksize
     # The email addresses had /better/ be ASCII, but might be encoded in the
     # database as Unicodes.
-    all = []
-    for _m in mlist.getMembers():
-        try:
-            # Verify the member still exists
-            mlist.getMemberName(_m)
-            # Decode the email address as latin-1
-            if isinstance(_m, bytes):
-                _m = _m.decode('latin-1')
-            all.append(_m)
-        except Errors.NotAMemberError:
-            # Skip addresses that are no longer members
-            continue
-    all.sort(key=lambda x: x.lower())
+    all = mlist.getMembers()
+    all.sort()
     # See if the query has a regular expression
-    regexp = cgidata.get('findmember', [''])[0]
-    if isinstance(regexp, bytes):
-        regexp = regexp.decode('latin1', 'replace')
-    regexp = regexp.strip()
+    regexp = cgidata.getfirst('findmember', '').strip()
     try:
-        if isinstance(regexp, bytes):
-            regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
+        regexp = regexp.encode()
+        regexp = regexp.decode(Utils.GetCharSet(mlist.preferred_language))
     except UnicodeDecodeError:
         # This is probably a non-ascii character and an English language
         # (ascii) list.  Even if we didn't throw the UnicodeDecodeError,
@@ -1021,27 +952,16 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         try:
             cre = re.compile(regexp, re.IGNORECASE)
         except re.error:
-            doc.addError(_('Bad regular expression: %(regexp)s') % {'regexp': regexp})
+            doc.addError(_('Bad regular expression: ') + regexp)
         else:
             # BAW: There's got to be a more efficient way of doing this!
-            names = []
-            valid_members = []
-            for addr in all:
-                try:
-                    name = mlist.getMemberName(addr) or ''
-                    if isinstance(name, bytes):
-                        name = name.decode('latin-1', 'replace')
-                    names.append(name)
-                    valid_members.append(addr)
-                except Errors.NotAMemberError:
-                    # Skip addresses that are no longer members
-                    continue
-            all = [a for n, a in zip(names, valid_members)
+            names = [mlist.getMemberName(s) or '' for s in all]
+            all = [a for n, a in zip(names, all)
                    if cre.search(n) or cre.search(a)]
     chunkindex = None
     bucket = None
     actionurl = None
-    if len(all) < mlist.admin_member_chunksize:
+    if len(all) < chunksz:
         members = all
     else:
         # Split them up alphabetically, and then split the alphabetical
@@ -1064,14 +984,11 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         if not bucket or bucket not in buckets:
             bucket = keys[0]
         members = buckets[bucket]
-        action = '%(adminurl)s/members?letter=%(bucket)s' % {
-            'adminurl': adminurl,
-            'bucket': bucket
-        }
-        if len(members) <= mlist.admin_member_chunksize:
+        action = adminurl + '/members?letter=%s' % bucket
+        if len(members) <= chunksz:
             form.set_action(action)
         else:
-            i, r = divmod(len(members), mlist.admin_member_chunksize)
+            i, r = divmod(len(members), chunksz)
             numchunks = i + (not not r * 1)
             # Now chunk them up
             chunkindex = 0
@@ -1082,23 +999,17 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                     chunkindex = 0
                 if chunkindex < 0 or chunkindex > numchunks:
                     chunkindex = 0
-            members = members[chunkindex*mlist.admin_member_chunksize:(chunkindex+1)*mlist.admin_member_chunksize]
+            members = members[chunkindex*chunksz:(chunkindex+1)*chunksz]
             # And set the action URL
-            form.set_action('%(action)s&chunk=%(chunkindex)s' % {
-                'action': action,
-                'chunkindex': chunkindex
-            })
+            form.set_action(action + '&chunk=%s' % chunkindex)
     # So now members holds all the addresses we're going to display
     allcnt = len(all)
     if bucket:
         membercnt = len(members)
-        count_text = _('%(allcnt)d members total, %(membercnt)d shown') % {
-            'allcnt': len(all), 'membercnt': len(members)}
-        usertable.AddRow([Center(Italic(count_text))])
+        usertable.AddRow([Center(Italic(_(
+            f'{allcnt} members total, {membercnt} shown')))])
     else:
-        usertable.AddRow([Center(Italic(_('%(allcnt)d members total') % {
-            'allcnt': len(all)
-        }))])
+        usertable.AddRow([Center(Italic(_(f'{allcnt} members total')))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
                           usertable.GetCurrentCellIndex(),
                           colspan=OPTCOLUMNS,
@@ -1110,23 +1021,12 @@ def membership_options(mlist, subcat, cgidata, doc, form):
             findfrag = ''
             if regexp:
                 findfrag = '&findmember=' + urllib.parse.quote(regexp)
-            url = '%(adminurl)s/members?letter=%(letter)s%(findfrag)s' % {
-                'adminurl': adminurl,
-                'letter': letter,
-                'findfrag': findfrag
-            }
-            if isinstance(url, str):
-                url = url.encode(Utils.GetCharSet(mlist.preferred_language),
-                                 errors='ignore')
+            url = adminurl + '/members?letter=' + letter + findfrag
             if letter == bucket:
-                # Do this in two steps to get it to work properly with the
-                # translatable title.
-                formatted_text = '[%s]' % letter.upper()
-                text = Bold(formatted_text).Format()
+                show = Bold('[%s]' % letter.upper()).Format()
             else:
-                formatted_label = '[%s]' % letter.upper()
-                text = Link(url, Bold(formatted_label)).Format()
-            cells.append(text)
+                show = letter.upper()
+            cells.append(Link(url, show).Format())
         joiner = '&nbsp;'*2 + '\n'
         usertable.AddRow([Center(joiner.join(cells))])
     usertable.AddCellInfo(usertable.GetCurrentRowIndex(),
@@ -1147,20 +1047,9 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # Find the longest name in the list
     longest = 0
     if members:
-        names = []
-        for addr in members:
-            try:
-                name = mlist.getMemberName(addr) or ''
-                if isinstance(name, bytes):
-                    name = name.decode('latin-1', 'replace')
-                if name:
-                    names.append(name)
-            except Errors.NotAMemberError:
-                # Skip addresses that are no longer members
-                continue
+        names = [_f for _f in [mlist.getMemberName(s) for s in members] if _f]
         # Make the name field at least as long as the longest email address
-        if names:
-            longest = max([len(s) for s in names + members])
+        longest = max([len(s) for s in names + members])
     # Abbreviations for delivery status details
     ds_abbrevs = {MemberAdaptor.UNKNOWN : _('?'),
                   MemberAdaptor.BYUSER  : _('U'),
@@ -1169,47 +1058,18 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                   }
     # Now populate the rows
     for addr in members:
-        try:
-            if isinstance(addr, bytes):
-                addr = addr.decode('latin-1')
-            qaddr = urllib.parse.quote(addr)
-            link = Link(mlist.GetOptionsURL(addr, obscure=1),
-                        mlist.getMemberCPAddress(addr))
-            fullname = mlist.getMemberName(addr)
-            if isinstance(fullname, bytes):
-                try:
-                    # Try Latin-1 first since that's what we're seeing in the data
-                    fullname = fullname.decode('latin-1', 'replace')
-                except UnicodeDecodeError:
-                    # Fall back to UTF-8 if Latin-1 fails
-                    fullname = fullname.decode('utf-8', 'replace')
-            # Remove any b'...' prefix if it exists
-            if fullname.startswith("b'") and fullname.endswith("'"):
-                fullname = fullname[2:-1]
-            fullname = Utils.uncanonstr(fullname, mlist.preferred_language)
-            name = TextBox('%(qaddr)s_realname' % {'qaddr': qaddr}, fullname, size=longest).Format()
-            cells = [Center(CheckBox('%(qaddr)s_unsub' % {'qaddr': qaddr}, 'off', 0).Format()
+        qaddr = urllib.parse.quote(addr)
+        link = Link(mlist.GetOptionsURL(addr, obscure=1),
+                    mlist.getMemberCPAddress(addr))
+        fullname = Utils.uncanonstr(mlist.getMemberName(addr),
+                                    mlist.preferred_language)
+        name = TextBox(qaddr + '_realname', fullname, size=longest).Format()
+        cells = [Center(CheckBox(qaddr + '_unsub', 'off', 0).Format()
                         + '<div class="hidden">' + _('unsub') + '</div>'),
-                    link.Format() + '<br>' +
-                    name +
-                    Hidden('user', qaddr).Format(),
-                    ]
-        except Errors.NotAMemberError:
-            # Skip addresses that are no longer members
-            continue
-
-        digest_name = '%(qaddr)s_digest' % {'qaddr': qaddr}
-        if addr not in mlist.getRegularMemberKeys():
-            cells.append(Center(CheckBox(digest_name, 'off', 0).Format()))
-        else:
-            cells.append(Center(CheckBox(digest_name, 'on', 1).Format()))
-
-        language_name = '%(qaddr)s_language' % {'qaddr': qaddr}
-        languages = mlist.available_languages
-        legends = [Utils.GetLanguageDescr(lang) for lang in languages]
-        cells.append(Center(SelectOptions(language_name, languages, legends,
-                                        selected=mlist.getMemberLanguage(addr)).Format()))
-
+                 link.Format() + '<br>' +
+                 name +
+                 Hidden('user', qaddr).Format(),
+                 ]
         # Do the `mod' option
         if mlist.getMemberOption(addr, mm_cfg.Moderate):
             value = 'on'
@@ -1217,7 +1077,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
         else:
             value = 'off'
             checked = 0
-        box = CheckBox('%(qaddr)s_mod' % {'qaddr': qaddr}, value, checked)
+        box = CheckBox('%s_mod' % qaddr, value, checked)
         cells.append(Center(box.Format()
             + '<div class="hidden">' + _('mod') + '</div>'))
         # Kluge, get these translated.
@@ -1232,29 +1092,59 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 else:
                     value = 'on'
                     checked = 1
-                    extra = '[%(abbrev)s]' % {'abbrev': ds_abbrevs[status]} + extra
+                    extra = '[%s]' % ds_abbrevs[status] + extra
             elif mlist.getMemberOption(addr, mm_cfg.OPTINFO[opt]):
                 value = 'on'
                 checked = 1
             else:
                 value = 'off'
                 checked = 0
-            box = CheckBox('%(qaddr)s_%(opt)s' % {'qaddr': qaddr, 'opt': opt}, value, checked)
+            box = CheckBox('%s_%s' % (qaddr, opt), value, checked)
             cells.append(Center(box.Format() + extra))
+        # This code is less efficient than the original which did a has_key on
+        # the underlying dictionary attribute.  This version is slower and
+        # less memory efficient.  It points to a new MemberAdaptor interface
+        # method.
+        extra = '<div class="hidden">' + _('digest') + '</div>'
+        if addr in mlist.getRegularMemberKeys():
+            cells.append(Center(CheckBox(qaddr + '_digest', 'off', 0).Format()
+                                + extra))
+        else:
+            cells.append(Center(CheckBox(qaddr + '_digest', 'on', 1).Format()
+                                + extra))
+        if mlist.getMemberOption(addr, mm_cfg.OPTINFO['plain']):
+            value = 'on'
+            checked = 1
+        else:
+            value = 'off'
+            checked = 0
+        cells.append(Center(CheckBox(
+                            '%s_plain' % qaddr, value, checked).Format()
+                            + '<div class="hidden">' + _('plain') + '</div>'))
+        # User's preferred language
+        langpref = mlist.getMemberLanguage(addr)
+        langs = mlist.GetAvailableLanguages()
+        langdescs = [_(Utils.GetLanguageDescr(lang)) for lang in langs]
+        try:
+            selected = langs.index(langpref)
+        except ValueError:
+            selected = 0
+        cells.append(Center(SelectOptions(qaddr + '_language', langs,
+                                          langdescs, selected)).Format())
         usertable.AddRow(cells)
     # Add the usertable and a legend
     legend = UnorderedList()
     legend.AddItem(
         _('<b>unsub</b> -- Click on this to unsubscribe the member.'))
     legend.AddItem(
-        _('''<b>mod</b> -- The user's personal moderation flag.  If this is
+        _(f"""<b>mod</b> -- The user's personal moderation flag.  If this is
         set, postings from them will be moderated, otherwise they will be
-        approved.'''))
+        approved."""))
     legend.AddItem(
-        _('''<b>hide</b> -- Is the member's address concealed on
-        the list of subscribers?'''))
+        _(f"""<b>hide</b> -- Is the member's address concealed on
+        the list of subscribers?"""))
     legend.AddItem(_(
-        '''<b>nomail</b> -- Is delivery to the member disabled?  If so, an
+        """<b>nomail</b> -- Is delivery to the member disabled?  If so, an
         abbreviation will be given describing the reason for the disabled
         delivery:
             <ul><li><b>U</b> -- Delivery was disabled by the user via their
@@ -1266,21 +1156,21 @@ def membership_options(mlist, subcat, cgidata, doc, form):
                 <li><b>?</b> -- The reason for disabled delivery isn't known.
                     This is the case for all memberships which were disabled
                     in older versions of Mailman.
-            </ul>'''))
+            </ul>"""))
     legend.AddItem(
-        _('''<b>ack</b> -- Does the member get acknowledgements of their
+        _(f'''<b>ack</b> -- Does the member get acknowledgements of their
         posts?'''))
     legend.AddItem(
-        _('''<b>not metoo</b> -- Does the member want to avoid copies of their
+        _(f'''<b>not metoo</b> -- Does the member want to avoid copies of their
         own postings?'''))
     legend.AddItem(
-        _('''<b>nodupes</b> -- Does the member want to avoid duplicates of the
+        _(f'''<b>nodupes</b> -- Does the member want to avoid duplicates of the
         same message?'''))
     legend.AddItem(
-        _('''<b>digest</b> -- Does the member get messages in digests?
+        _(f'''<b>digest</b> -- Does the member get messages in digests?
         (otherwise, individual messages)'''))
     legend.AddItem(
-        _('''<b>plain</b> -- If getting digests, does the member get plain
+        _(f'''<b>plain</b> -- If getting digests, does the member get plain
         text digests?  (otherwise, MIME)'''))
     legend.AddItem(_("<b>language</b> -- Language preferred by the user"))
     addlegend = ''
@@ -1288,7 +1178,7 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     qsenviron = os.environ.get('QUERY_STRING')
     if qsenviron:
         qs = urllib.parse.parse_qs(qsenviron).get('legend')
-        if qs and isinstance(qs, list):
+        if qs and type(qs) is list:
             qs = qs[0]
         if qs == 'yes':
             addlegend = 'legend=yes&'
@@ -1306,38 +1196,25 @@ def membership_options(mlist, subcat, cgidata, doc, form):
     # There may be additional chunks
     if chunkindex is not None:
         buttons = []
-        url = '%(adminurl)s/members?%(addlegend)sletter=%(bucket)s&' % {
-            'adminurl': adminurl,
-            'addlegend': addlegend,
-            'bucket': bucket
-        }
-        footer = _('''<p><em>To view more members, click on the appropriate
+        url = adminurl + '/members?%sletter=%s&' % (addlegend, bucket)
+        footer = _(f'''<p><em>To view more members, click on the appropriate
         range listed below:</em>''')
         chunkmembers = buckets[bucket]
         last = len(chunkmembers)
         for i in range(numchunks):
             if i == chunkindex:
                 continue
-            start = chunkmembers[i*mlist.admin_member_chunksize]
-            end = chunkmembers[min((i+1)*mlist.admin_member_chunksize, last)-1]
-            thisurl = '%(url)schunk=%(i)d%(findfrag)s' % {
-                'url': url,
-                'i': i,
-                'findfrag': findfrag
-            }
-            if isinstance(thisurl, str):
-                thisurl = thisurl.encode(
-                                 Utils.GetCharSet(mlist.preferred_language),
-                                 errors='ignore')
-            link = Link(thisurl, _('from %(start)s to %(end)s') % {
-                'start': start,
-                'end': end
-            })
+            start = chunkmembers[i*chunksz]
+            end = chunkmembers[min((i+1)*chunksz, last)-1]
+            thisurl = url + 'chunk=%d' % i + findfrag
+            link = Link(thisurl, _(f'from {start} to {end}'))
             buttons.append(link)
         buttons = UnorderedList(*buttons)
         container.AddItem(footer + buttons.Format() + '<p>')
     return container
 
+
+
 def mass_subscribe(mlist, container):
     # MASS SUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1365,7 +1242,7 @@ def mass_subscribe(mlist, container):
         RadioButtonArray('send_notifications_to_list_owner',
                          (_('No'), _('Yes')),
                          mlist.admin_notify_mchanges,
-                         values=(0, 1))
+                         values=(0,1))
         ])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, bgcolor=GREY)
     table.AddCellInfo(table.GetCurrentRowIndex(), 1, bgcolor=GREY)
@@ -1387,6 +1264,8 @@ def mass_subscribe(mlist, container):
                                   rows=10, cols='70%', wrap=None))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, colspan=2)
 
+
+
 def mass_remove(mlist, container):
     # MASS UNSUBSCRIBE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1417,6 +1296,8 @@ def mass_remove(mlist, container):
                   FileUpload('unsubscribees_upload', cols='50')])
     container.AddItem(Center(table))
 
+
+
 def address_change(mlist, container):
     # ADDRESS CHANGE
     GREY = mm_cfg.WEB_ADMINITEM_COLOR
@@ -1447,6 +1328,8 @@ def address_change(mlist, container):
     table.AddCellInfo(table.GetCurrentRowIndex(), 2, bgcolor=GREY)
     container.AddItem(Center(table))
 
+
+
 def mass_sync(mlist, container):
     # MASS SYNC
     table = Table(width='90%')
@@ -1459,6 +1342,8 @@ def mass_sync(mlist, container):
                   FileUpload('memberlist_upload', cols='50')])
     container.AddItem(Center(table))
 
+
+
 def password_inputs(mlist):
     adminurl = mlist.GetScriptURL('admin', absolute=1)
     table = Table(cellspacing=3, cellpadding=4)
@@ -1515,63 +1400,418 @@ no other.""")])
     table.AddRow([ptable])
     return table
 
+
+
 def submit_button(name='submit'):
     table = Table(border=0, cellspacing=0, cellpadding=2)
     table.AddRow([Bold(SubmitButton(name, _('Submit Your Changes')))])
     table.AddCellInfo(table.GetCurrentRowIndex(), 0, align='middle')
     return table
 
+
+
 def change_options(mlist, category, subcat, cgidata, doc):
-    """Change the list's options."""
-    try:
-        # Get the configuration categories
-        config_categories = mlist.GetConfigCategories()
-        
-        # Validate category exists
-        if category not in config_categories:
-            mailman_log('error', 'Invalid configuration category: %s', category)
-            doc.AddItem(mlist.ParseTags('adminerror.html',
-                                      {'error': 'Invalid configuration category'},
-                                      mlist.preferred_language))
-            return
-            
-        # Get the category object and validate it
-        category_obj = config_categories[category]
-        
-        if not hasattr(category_obj, 'items'):
-            mailman_log('error', 'Configuration category %s is invalid: %s', 
-                   category, str(type(category_obj)))
-            doc.AddItem(mlist.ParseTags('adminerror.html',
-                                      {'error': 'Invalid configuration category structure'},
-                                      mlist.preferred_language))
-            return
-            
-        # Process each item in the category
-        for item in category_obj.items:
+    global _
+    def safeint(formvar, defaultval=None):
+        try:
+            return int(cgidata.getfirst(formvar))
+        except (ValueError, TypeError):
+            return defaultval
+    confirmed = 0
+    # Handle changes to the list moderator password.  Do this before checking
+    # the new admin password, since the latter will force a reauthentication.
+    new = cgidata.getfirst('newmodpw', '').strip()
+    confirm = cgidata.getfirst('confirmmodpw', '').strip()
+    if new or confirm:
+        if new == confirm:
+            mlist.mod_password = sha_new(new.encode()).hexdigest()
+            # No re-authentication necessary because the moderator's
+            # password doesn't get you into these pages.
+        else:
+            doc.addError(_('Moderator passwords did not match'))
+    # Handle changes to the list poster password.  Do this before checking
+    # the new admin password, since the latter will force a reauthentication.
+    new = cgidata.getfirst('newpostpw', '').strip()
+    confirm = cgidata.getfirst('confirmpostpw', '').strip()
+    if new or confirm:
+        if new == confirm:
+            mlist.post_password = sha_new(new.encode()).hexdigest()
+            # No re-authentication necessary because the poster's
+            # password doesn't get you into these pages.
+        else:
+            doc.addError(_('Poster passwords did not match'))
+    # Handle changes to the list administrator password
+    new = cgidata.getfirst('newpw', '').strip()
+    confirm = cgidata.getfirst('confirmpw', '').strip()
+    if new or confirm:
+        if new == confirm:
+            mlist.password = sha_new(new.encode()).hexdigest()
+            # Set new cookie
+            print(mlist.MakeCookie(mm_cfg.AuthListAdmin))
+        else:
+            doc.addError(_('Administrator passwords did not match'))
+    # Give the individual gui item a chance to process the form data
+    categories = mlist.GetConfigCategories()
+    label, gui = categories[category]
+    # BAW: We handle the membership page special... for now.
+    if category != 'members':
+        gui.handleForm(mlist, category, subcat, cgidata, doc)
+    # mass subscription, removal processing for members category
+    subscribers = ''
+    subscribers += str(cgidata.getfirst('subscribees', ''))
+    sub_uploads = cgidata.getfirst('subscribees_upload', '')
+    if isinstance(sub_uploads, bytes):
+        sub_uploads = sub_uploads.decode()
+    subscribers += sub_uploads
+    if subscribers:
+        entries = [_f for _f in [n.strip() for n in subscribers.splitlines()] if _f]
+        send_welcome_msg = safeint('send_welcome_msg_to_this_batch',
+                                   mlist.send_welcome_msg)
+        send_admin_notif = safeint('send_notifications_to_list_owner',
+                                   mlist.admin_notify_mchanges)
+        # Default is to subscribe
+        subscribe_or_invite = safeint('subscribe_or_invite', 0)
+        invitation = cgidata.getfirst('invitation', '')
+        digest = mlist.digest_is_default
+        if not mlist.digestable:
+            digest = 0
+        if not mlist.nondigestable:
+            digest = 1
+        subscribe_errors = []
+        subscribe_success = []
+        # Now cruise through all the subscribees and do the deed.  BAW: we
+        # should limit the number of "Successfully subscribed" status messages
+        # we display.  Try uploading a file with 10k names -- it takes a while
+        # to render the status page.
+        for entry in entries:
+            safeentry = Utils.websafe(entry)
+            fullname, address = parseaddr(entry)
+            # Canonicalize the full name
+            fullname = Utils.canonstr(fullname, mlist.preferred_language)
+            userdesc = UserDesc(address, fullname,
+                                Utils.MakeRandomPassword(),
+                                digest, mlist.preferred_language)
             try:
-                # Get the item's value from the form data
-                value = cgidata.get(item.name, None)
-                if value is None:
-                    continue
-                    
-                # Set the item's value
-                item.set(mlist, value)
-                
-            except Exception as e:
-                mailman_log('error', 'Error setting %s.%s: %s', 
-                       category, item.name, str(e))
-                doc.AddItem(mlist.ParseTags('adminerror.html',
-                                          {'error': 'Error setting %s: %s' % 
-                                                   (item.name, str(e))},
-                                          mlist.preferred_language))
-                return
-                
-        # Save the changes
-        mlist.Save()
-        
-    except Exception as e:
-        mailman_log('error', 'Error in change_options: %s\n%s', 
-               str(e), traceback.format_exc())
-        doc.AddItem(mlist.ParseTags('adminerror.html',
-                                  {'error': 'Internal error: %s' % str(e)},
-                                  mlist.preferred_language))
+                if subscribe_or_invite:
+                    if mlist.isMember(address):
+                        raise Errors.MMAlreadyAMember
+                    else:
+                        mlist.InviteNewMember(userdesc, invitation)
+                else:
+                    _ = D_
+                    whence = _('admin mass sub')
+                    _ = i18n._
+                    mlist.ApprovedAddMember(userdesc, send_welcome_msg,
+                                            send_admin_notif, invitation,
+                                            whence=whence)
+            except Errors.MMAlreadyAMember:
+                subscribe_errors.append((safeentry, _('Already a member')))
+            except Errors.MMBadEmailError:
+                if userdesc.address == '':
+                    subscribe_errors.append((_('&lt;blank line&gt;'),
+                                             _('Bad/Invalid email address')))
+                else:
+                    subscribe_errors.append((safeentry,
+                                             _('Bad/Invalid email address')))
+            except Errors.MMHostileAddress:
+                subscribe_errors.append(
+                    (safeentry, _('Hostile address (illegal characters)')))
+            except Errors.MembershipIsBanned as pattern:
+                subscribe_errors.append(
+                    (safeentry, _(f'Banned address (matched {pattern})')))
+            else:
+                member = Utils.uncanonstr(formataddr((fullname, address)))
+                subscribe_success.append(Utils.websafe(member))
+        if subscribe_success:
+            if subscribe_or_invite:
+                doc.AddItem(Header(5, _('Successfully invited:')))
+            else:
+                doc.AddItem(Header(5, _('Successfully subscribed:')))
+            doc.AddItem(UnorderedList(*subscribe_success))
+            doc.AddItem('<p>')
+        if subscribe_errors:
+            if subscribe_or_invite:
+                doc.AddItem(Header(5, _('Error inviting:')))
+            else:
+                doc.AddItem(Header(5, _('Error subscribing:')))
+            items = ['%s -- %s' % (x0, x1) for x0, x1 in subscribe_errors]
+            doc.AddItem(UnorderedList(*items))
+            doc.AddItem('<p>')
+    # Unsubscriptions
+    removals = ''
+    if 'unsubscribees' in cgidata:
+        removals += cgidata['unsubscribees'].value
+    if 'unsubscribees_upload' in cgidata and \
+           cgidata['unsubscribees_upload'].value:
+        unsub_upload = cgidata['unsubscribees_upload'].value
+        if isinstance(unsub_upload, bytes):
+            unsub_upload = unsub_upload.decode()
+        removals += unsub_upload
+    if removals:
+        names = [_f for _f in [n.strip() for n in removals.splitlines()] if _f]
+        send_unsub_notifications = safeint(
+            'send_unsub_notifications_to_list_owner',
+            mlist.admin_notify_mchanges)
+        userack = safeint(
+            'send_unsub_ack_to_this_batch',
+            mlist.send_goodbye_msg)
+        unsubscribe_errors = []
+        unsubscribe_success = []
+        for addr in names:
+            try:
+                _ = D_
+                whence = _('admin mass unsub')
+                _ = i18n._
+                mlist.ApprovedDeleteMember(
+                    addr, whence=whence,
+                    admin_notif=send_unsub_notifications,
+                    userack=userack)
+                unsubscribe_success.append(Utils.websafe(addr))
+            except Errors.NotAMemberError:
+                unsubscribe_errors.append(Utils.websafe(addr))
+        if unsubscribe_success:
+            doc.AddItem(Header(5, _('Successfully Unsubscribed:')))
+            doc.AddItem(UnorderedList(*unsubscribe_success))
+            doc.AddItem('<p>')
+        if unsubscribe_errors:
+            doc.AddItem(Header(3, Bold(FontAttr(
+                _('Cannot unsubscribe non-members:'),
+                color='#ff0000', size='+2')).Format()))
+            doc.AddItem(UnorderedList(*unsubscribe_errors))
+            doc.AddItem('<p>')
+    # Address Changes
+    if 'change_from' in cgidata:
+        change_from = cgidata.getfirst('change_from', '')
+        change_to = cgidata.getfirst('change_to', '')
+        schange_from = Utils.websafe(change_from)
+        schange_to = Utils.websafe(change_to)
+        success = False
+        msg = None
+        if not (change_from and change_to):
+            msg = _('You must provide both current and new addresses.')
+        elif change_from == change_to:
+            msg = _('Current and new addresses must be different.')
+        elif mlist.isMember(change_to):
+            # ApprovedChangeMemberAddress will just delete the old address
+            # and we don't want that here.
+            msg = _(f'{schange_to} is already a list member.')
+        else:
+            try:
+                Utils.ValidateEmail(change_to)
+            except (Errors.MMBadEmailError, Errors.MMHostileAddress):
+                msg = _(f'{schange_to} is not a valid email address.')
+        if msg:
+            doc.AddItem(Header(3, msg))
+            doc.AddItem('<p>')
+            return
+        try:
+            mlist.ApprovedChangeMemberAddress(change_from, change_to, False)
+        except Errors.NotAMemberError:
+            msg = _(f'{schange_from} is not a member')
+        except Errors.MMAlreadyAMember:
+            msg = _(f'{schange_to} is already a member')
+        except Errors.MembershipIsBanned as pat:
+            spat = Utils.websafe(str(pat))
+            msg = _(f'{schange_to} matches banned pattern {spat}')
+        else:
+            msg = _(f'Address {schange_from} changed to {schange_to}')
+            success = True
+        doc.AddItem(Header(3, msg))
+        lang = mlist.getMemberLanguage(change_to)
+        otrans = i18n.get_translation()
+        i18n.set_language(lang)
+        list_name = mlist.getListAddress()
+        text = Utils.wrap(_(f"""The member address {change_from} on the
+{list_name} list has been changed to {change_to}.
+"""))
+        subject = _(f'{list_name} address change notice.')
+        i18n.set_translation(otrans)
+        if success and cgidata.getfirst('notice_old', '') == 'yes':
+            # Send notice to old address.
+            msg = Message.UserNotification(change_from,
+                mlist.GetOwnerEmail(),
+                text=text,
+                subject=subject,
+                lang=lang
+                )
+            msg.send(mlist)
+            doc.AddItem(Header(3, _(f'Notification sent to {schange_from}.')))
+        if success and cgidata.getfirst('notice_new', '') == 'yes':
+            # Send notice to new address.
+            msg = Message.UserNotification(change_to,
+                mlist.GetOwnerEmail(),
+                text=text,
+                subject=subject,
+                lang=lang
+                )
+            msg.send(mlist)
+            doc.AddItem(Header(3, _(f'Notification sent to {schange_to}.')))
+        doc.AddItem('<p>')
+
+    # sync operation
+    memberlist = ''
+    memberlist += cgidata.getvalue('memberlist', '')
+    upload = cgidata.getvalue('memberlist_upload', '')
+    if isinstance(upload, bytes):
+        upload = upload.decode()
+    memberlist += upload
+    if memberlist:
+        # Browsers will convert special characters in the text box to HTML
+        # entities. We need to fix those.
+        def i_to_c(mo):
+            # Convert a matched string of digits to the corresponding unicode.
+            return chr(int(mo.group(1)))
+        def clean_input(x):
+            # Strip leading/trailing whitespace and convert numeric HTML
+            # entities.
+            return re.sub(r'&#(\d+);', i_to_c, x.strip())
+        entries = [_f for _f in [clean_input(n) for n in memberlist.splitlines()] if _f]
+        lc_addresses = [parseaddr(x)[1].lower() for x in entries
+                        if parseaddr(x)[1]]
+        subscribe_errors = []
+        subscribe_success = []
+        # First we add all the addresses that should be added to the list.
+        for entry in entries:
+            safeentry = Utils.websafe(entry)
+            fullname, address = parseaddr(entry)
+            if mlist.isMember(address):
+                continue
+            # Canonicalize the full name.
+            fullname = Utils.canonstr(fullname, mlist.preferred_language)
+            userdesc = UserDesc(address, fullname,
+                                Utils.MakeRandomPassword(),
+                                0, mlist.preferred_language)
+            try:
+                # Add a member if not yet member.
+                    mlist.ApprovedAddMember(userdesc, 0, 0, 0,
+                                            whence='admin sync members')
+            except Errors.MMBadEmailError:
+                if userdesc.address == '':
+                    subscribe_errors.append((_('&lt;blank line&gt;'),
+                                             _('Bad/Invalid email address')))
+                else:
+                    subscribe_errors.append((safeentry,
+                                             _('Bad/Invalid email address')))
+            except Errors.MMHostileAddress:
+                subscribe_errors.append(
+                    (safeentry, _('Hostile address (illegal characters)')))
+            except Errors.MembershipIsBanned as pattern:
+                subscribe_errors.append(
+                    (safeentry, _(f'Banned address (matched {pattern})')))
+            else:
+                member = Utils.uncanonstr(formataddr((fullname, address)))
+                subscribe_success.append(Utils.websafe(member))
+
+        # Then we remove the addresses not in our list.
+        unsubscribe_errors = []
+        unsubscribe_success = []
+
+        for entry in mlist.getMembers():
+            # If an entry is not found in the uploaded "entries" list, then
+            # remove the member.
+            if not(entry in lc_addresses):
+                try:
+                    mlist.ApprovedDeleteMember(entry, 0, 0)
+                except Errors.NotAMemberError:
+                    # This can happen if the address is illegal (i.e. can't be
+                    # parsed by email.utils.parseaddr()) but for legacy
+                    # reasons is in the database.  Use a lower level remove to
+                    # get rid of this member's entry
+                    mlist.removeMember(entry)
+                else:
+                    unsubscribe_success.append(Utils.websafe(entry))
+
+        if subscribe_success:
+            doc.AddItem(Header(5, _('Successfully subscribed:')))
+            doc.AddItem(UnorderedList(*subscribe_success))
+            doc.AddItem('<p>')
+        if subscribe_errors:
+            doc.AddItem(Header(5, _('Error subscribing:')))
+            items = ['%s -- %s' % (x0, x1) for x0, x1 in subscribe_errors]
+            doc.AddItem(UnorderedList(*items))
+            doc.AddItem('<p>')
+        if unsubscribe_success:
+            doc.AddItem(Header(5, _('Successfully Unsubscribed:')))
+            doc.AddItem(UnorderedList(*unsubscribe_success))
+            doc.AddItem('<p>')
+
+    # See if this was a moderation bit operation
+    if 'allmodbit_btn' in cgidata:
+        val = safeint('allmodbit_val')
+        if val not in (0, 1):
+            doc.addError(_('Bad moderation flag value'))
+        else:
+            for member in mlist.getMembers():
+                mlist.setMemberOption(member, mm_cfg.Moderate, val)
+    # do the user options for members category
+    if 'setmemberopts_btn' in cgidata and 'user' in cgidata:
+        user = cgidata['user']
+        if type(user) is list:
+            users = []
+            for ui in range(len(user)):
+                users.append(urllib.parse.unquote(user[ui].value))
+        else:
+            users = [urllib.parse.unquote(user.value)]
+        errors = []
+        removes = []
+        for user in users:
+            quser = urllib.parse.quote(user)
+            if '%s_unsub' % quser in cgidata:
+                try:
+                    _ = D_
+                    whence=_('member mgt page')
+                    _ = i18n._
+                    mlist.ApprovedDeleteMember(user, whence=whence)
+                    removes.append(user)
+                except Errors.NotAMemberError:
+                    errors.append((user, _('Not subscribed')))
+                continue
+            if not mlist.isMember(user):
+                doc.addError(_(f'Ignoring changes to deleted member: {user}'),
+                             tag=_('Warning: '))
+                continue
+            value = '%s_digest' % quser in cgidata
+            try:
+                mlist.setMemberOption(user, mm_cfg.Digests, value)
+            except (Errors.AlreadyReceivingDigests,
+                    Errors.AlreadyReceivingRegularDeliveries,
+                    Errors.CantDigestError,
+                    Errors.MustDigestError):
+                # BAW: Hmm...
+                pass
+
+            newname = cgidata.getfirst(quser+'_realname', '')
+            newname = Utils.canonstr(newname, mlist.preferred_language)
+            mlist.setMemberName(user, newname)
+
+            newlang = cgidata.getfirst(quser+'_language')
+            oldlang = mlist.getMemberLanguage(user)
+            if Utils.IsLanguage(newlang) and newlang != oldlang:
+                mlist.setMemberLanguage(user, newlang)
+
+            moderate = not not cgidata.getfirst(quser+'_mod')
+            mlist.setMemberOption(user, mm_cfg.Moderate, moderate)
+
+            # Set the `nomail' flag, but only if the user isn't already
+            # disabled (otherwise we might change BYUSER into BYADMIN).
+            if '%s_nomail' % quser in cgidata:
+                if mlist.getDeliveryStatus(user) == MemberAdaptor.ENABLED:
+                    mlist.setDeliveryStatus(user, MemberAdaptor.BYADMIN)
+            else:
+                mlist.setDeliveryStatus(user, MemberAdaptor.ENABLED)
+            for opt in ('hide', 'ack', 'notmetoo', 'nodupes', 'plain'):
+                opt_code = mm_cfg.OPTINFO[opt]
+                if '%s_%s' % (quser, opt) in cgidata:
+                    mlist.setMemberOption(user, opt_code, 1)
+                else:
+                    mlist.setMemberOption(user, opt_code, 0)
+        # Give some feedback on who's been removed
+        if removes:
+            doc.AddItem(Header(5, _('Successfully Removed:')))
+            doc.AddItem(UnorderedList(*removes))
+            doc.AddItem('<p>')
+        if errors:
+            doc.AddItem(Header(5, _("Error Unsubscribing:")))
+            items = ['%s -- %s' % (x[0], x[1]) for x in errors]
+            doc.AddItem(UnorderedList(*tuple((items))))
+            doc.AddItem("<p>")

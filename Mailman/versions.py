@@ -36,16 +36,17 @@ run again until another version change is detected.
 from builtins import str
 from builtins import range
 import email
-from Mailman.Message import Message
 
 
 from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman import Message
 from Mailman.Bouncer import _BounceInfo
 from Mailman.MemberAdaptor import UNKNOWN
 from Mailman.Logging.Syslog import syslog
 
 
+
 def Update(l, stored_state):
     "Dispose of old vars and user options, mapping to new ones when suitable."
     ZapOldVars(l)
@@ -56,6 +57,7 @@ def Update(l, stored_state):
     NewRequestsDatabase(l)
 
 
+
 def ZapOldVars(mlist):
     for name in ('num_spawns', 'filter_prog', 'clobber_date',
                  'public_archive_file_dir', 'private_archive_file_dir',
@@ -70,6 +72,7 @@ def ZapOldVars(mlist):
             delattr(mlist, name)
 
 
+
 uniqueval = []
 def UpdateOldVars(l, stored_state):
     """Transform old variable values into new ones, deleting old ones.
@@ -346,12 +349,12 @@ def UpdateOldVars(l, stored_state):
     # transfer the list data type for holding members and digest members
     # to the dict data type starting file format version 11
     #
-    if isinstance(l.members, list):
+    if type(l.members) is list:
         members = {}
         for m in l.members:
             members[m] = 1
         l.members = members
-    if isinstance(l.digest_members, list):
+    if type(l.digest_members) is list:
         dmembers = {}
         for dm in l.digest_members:
             dmembers[dm] = 1
@@ -371,7 +374,7 @@ def UpdateOldVars(l, stored_state):
         if k.lower() != k:
             l.members[k.lower()] = Utils.LCDomain(k)
             del l.members[k]
-        elif isinstance(l.members[k], str) and k == l.members[k].lower():
+        elif type(l.members[k]) == str and k == l.members[k].lower():
             # already converted
             pass
         else:
@@ -380,7 +383,7 @@ def UpdateOldVars(l, stored_state):
         if k.lower() != k:
             l.digest_members[k.lower()] = Utils.LCDomain(k)
             del l.digest_members[k]
-        elif isinstance(l.digest_members[k], str) and \
+        elif type(l.digest_members[k]) == str and \
                  k == l.digest_members[k].lower():
             # already converted
             pass
@@ -413,6 +416,7 @@ def UpdateOldVars(l, stored_state):
                  mm_cfg.DEFAULT_FROM_IS_LIST)
 
 
+
 def NewVars(l):
     """Add defaults for these new variables if they don't exist."""
     def add_only_if_missing(attr, initval, l=l):
@@ -539,6 +543,7 @@ def NewVars(l):
                         mm_cfg.DEFAULT_REGULAR_EXCLUDE_IGNORE)
 
 
+
 def UpdateOldUsers(mlist):
     """Transform sense of changed user options."""
     # pre-1.0b11 to 1.0b11.  Force all keys in l.passwords to be lowercase
@@ -555,6 +560,7 @@ def UpdateOldUsers(mlist):
             del mlist.bounce_info[m]
 
 
+
 def CanonicalizeUserOptions(l):
     """Fix up the user options."""
     # I want to put a flag in the list database which tells this routine to
@@ -590,6 +596,7 @@ def CanonicalizeUserOptions(l):
     l.useropts_version = 1
 
 
+
 def NewRequestsDatabase(l):
     """With version 1.2, we use a new pending request database schema."""
     r = getattr(l, 'requests', {})
@@ -613,7 +620,7 @@ def NewRequestsDatabase(l):
             for p in v:
                 author, text = p[2]
                 reason = p[3]
-                msg = email.message_from_string(text, Message)
+                msg = email.message_from_string(text, Message.Message)
                 l.HoldMessage(msg, reason)
             del r[k]
         elif k == 'add_member':

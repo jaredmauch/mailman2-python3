@@ -1,101 +1,42 @@
 <html>
 <head>
-<link href="&lt;mm-favicon&gt;" rel="SHORTCUT ICON"/>
-<title><mm-presentable-user> membership configuration for <mm-list-name>
-</mm-list-name></mm-presentable-user></title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff">
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#99CCFF" style="padding: 8px; border: 1px solid #ccc;" width="100%"><b>
-<font color="#000000" size="+1">
-<mm-list-name> mailing list membership configuration for
-        <mm-presentable-user>
-</mm-presentable-user></mm-list-name></font></b></td></tr>
-</table>
+    <link rel="SHORTCUT ICON" href="<mm-favicon>">
+    <title><MM-Presentable-User> membership configuration for <MM-List-Name>
+    </title>
+</head>
+<BODY BGCOLOR="#ffffff">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#99CCFF"><B>
+        <FONT COLOR="#000000" SIZE=+1>
+        <MM-List-Name> mailing list membership configuration for
+        <MM-Presentable-User>
+        </FONT></B></TD></TR>
+    </TABLE>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
-<b><mm-presentable-user></mm-presentable-user></b>'s subscription status,
-        password, and options for the <mm-list-name> mailing list.
-        </mm-list-name></td><td style="padding: 8px; border: 1px solid #ccc;"><mm-form-start><mm-logout-button><mm-form-end></mm-form-end></mm-logout-button></mm-form-start></td>
-</tr><tr>
-<td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<mm-case-preserved-user>
-<mm-disabled-notice>
-<p><mm-results>
-</mm-results></p></mm-disabled-notice></mm-case-preserved-user></td>
-</tr>
+<table width="100%" border="0" cellspacing="5" cellpadding="5">
+    <tr><td>
+        <b><MM-Presentable-User></b>'s subscription status,
+        password, and options for the <MM-List-Name> mailing list.
+        </td><td><MM-Form-Start><mm-logout-button><MM-Form-End></td>
+    </tr><tr>
+        <td colspan="2">
+        <MM-Case-Preserved-User>
+
+        <MM-Disabled-Notice>
+
+        <p><mm-results>
+        </td>
+    </tr>
 </table>
-<mm-form-start>
+
+<MM-Form-Start>
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%">
-<font color="#000000">
-<b>Changing your <mm-list-name> membership information</mm-list-name></b>
-</font></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">You can change the address that you are subscribed
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0" colspan="2">
+        <FONT COLOR="#000000">
+        <B>Changing your <MM-List-Name> membership information</B>
+        </FONT></TD></TR>
+    <tr><td colspan="2">You can change the address that you are subscribed
         to the mailing list with by entering the new address in the
         fields below.  Note that a confirmation email will be sent to
         the new address, and the change must be confirmed before it is
@@ -110,183 +51,204 @@
         lists that you are subscribed to at <mm-host>, turn on the
         <em>Change globally</em> check box.
 
-        </mm-host></p></p></mm-pending-days></p></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;"><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">New address:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-address-box></mm-new-address-box></td>
-</tr>
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Again to
-            confirm:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-address-box></mm-confirm-address-box></td>
-</tr>
-</table></center></td></tr></table>
-<td><center>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Your name
+        </td></tr>
+    <tr><td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+        <tr><td bgcolor="#dddddd"><div align="right">New address:</div></td>
+            <td><mm-new-address-box></td>
+            </tr>
+        <tr><td bgcolor="#dddddd"><div align="right">Again to
+            confirm:</div></td> 
+            <td><mm-confirm-address-box></td>
+            </tr>
+        </tr></table></center>
+        </td>
+        <td><center>
+        <table border="0" cellspacing="2" cellpadding="2" width="80%" cols="2">
+            <tr><td bgcolor="#dddddd"><div align="right">Your name
             (optional):</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-fullname-box></mm-fullname-box></td>
-</tr>
-</table></center>
-</td>
-<tr><td colspan="2"><center><mm-change-address-button>
-<p><mm-global-change-of-address>Change globally</mm-global-change-of-address></p></mm-change-address-button></center></td>
-</tr>
+            <td><mm-fullname-box></td>
+            </tr>
+        </table></center>
+        </td>
+        </tr>
+    <tr><td colspan="2"><center><mm-change-address-button>
+        <p><mm-global-change-of-address>Change globally</center></td>
+    </tr>
+</table>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
-<b>Unsubscribing from <mm-list-name></mm-list-name></b></font></td>
-<td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="50%"><font color="#000000">
-<b>Your other <mm-host> subscriptions</mm-host></b>
-</font></td></tr>
-<tr><td style="padding: 8px; border: 1px solid #ccc;">
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="5" CELLPADDING="5">
+    <TR><TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Unsubscribing from <MM-List-Name></B></td>
+
+        <TD WIDTH="50%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Your other <MM-Host> subscriptions</B>
+        </FONT></TD></TR>
+
+    <tr><td>
         Turn on the confirmation checkbox and hit this button to
         unsubscribe from this mailing list.  <strong>Warning:</strong>
         This action will be taken immediately!
         <p>
-<center><mm-unsubscribe-button></mm-unsubscribe-button></center></p></td>
-<td style="padding: 8px; border: 1px solid #ccc;">
+        <center><MM-Unsubscribe-Button></center></td>
+    <td>
         You can view a list of all the other mailing lists at
         <mm-host> for which you are a member.  Use this if you want to
         make the same membership option changes to this other
         subscriptions.
 
         <p>
-<center><mm-other-subscriptions-submit></mm-other-subscriptions-submit></center>
-</p></mm-host></td></tr>
+        <center><MM-Other-Subscriptions-Submit></center>
+        </TD></TR>
 </table>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Your <mm-list-name> Password</mm-list-name></b>
-</font></td></tr>
-<tr valign="TOP"><td style="padding: 8px; border: 1px solid #ccc;" width="50%">
-<a name="reminder">
-<center>
-<h3>Forgotten Your Password?</h3>
-</center>
+
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD COLSPAN=2 WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Your <MM-List-Name> Password</B>
+        </FONT></TD></TR>
+
+    <tr valign="TOP"><td WIDTH="50%">
+        <a name=reminder>
+        <center>
+        <h3>Forgotten Your Password?</h3>
+        </center>
         Click this button to have your password emailed to your
         membership address.
-        <p><mm-umbrella-notice>
-<center>
-<mm-email-my-pw>
-</mm-email-my-pw></center>
-</mm-umbrella-notice></p></a></td>
-<td style="padding: 8px; border: 1px solid #ccc;" width="50%">
-<a name="changepw">
-<center>
-<h3>Change Your Password</h3>
-<table aria-label="Table" cols="2" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">New
-                password:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-new-pass-box></mm-new-pass-box></td>
-</tr>
-<tr>
-<td bgcolor="#dddddd" style="padding: 8px; border: 1px solid #ccc;"><div align="right">Again to
-                confirm:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><mm-confirm-pass-box></mm-confirm-pass-box></td>
-</tr>
-</table>
-<mm-change-pass-button>
-<p><center><mm-global-pw-changes-button>Change globally.
-        </mm-global-pw-changes-button></center>
-</p></mm-change-pass-button></center></a></td></tr></table>
+        <p><MM-Umbrella-Notice>
+        <center>
+        <MM-Email-My-Pw>
+        </center>
+        </td>
+
+    <td WIDTH="50%">
+        <a name=changepw>
+        <center>
+        <h3>Change Your Password</h3>
+        <TABLE BORDER="0" CELLSPACING="2" CELLPADDING="2" WIDTH="70%" COLS=2>
+            <TR><TD BGCOLOR="#dddddd"><div align="right">New
+                password:</div></TD>
+                <TD><MM-New-Pass-Box></TD>
+                </TR>
+            <TR>
+                <TD BGCOLOR="#dddddd"><div align="right">Again to
+                confirm:</div></TD>
+                <TD><MM-Confirm-Pass-Box></TD>
+            </TR>
+        </table>
+
+        <MM-Change-Pass-Button>
+        <p><center><mm-global-pw-changes-button>Change globally.
+        </center>
+</TABLE>
+
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#FFF0D0" style="padding: 8px; border: 1px solid #ccc;" width="100%"><font color="#000000">
-<b>Your <mm-list-name> Subscription Options</mm-list-name></b>
-</font></td></tr>
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="5">
+    <TR><TD WIDTH="100%" BGCOLOR="#FFF0D0"><FONT COLOR="#000000">
+        <B>Your <MM-List-Name> Subscription Options</B>
+        </FONT></TD></TR>
 </table>
+
 <p>
 <i><strong>Current values are checked.</strong></i>
+
 <p>Note that some of the options have a <em>Set globally</em>
 checkbox.  Checking this field will cause the changes to be made to
 every mailing list that you are a member of on <mm-host>.  Click on
 <em>List my other subscriptions</em> above to see which other mailing
 lists you are subscribed to.
 <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<a name="disable">
-<strong>Mail delivery</strong></a><p>
+<TABLE BORDER="0" CELLSPACING="3" CELLPADDING="4" WIDTH="100%">
+    <tr><TD BGCOLOR="#cccccc">
+        <a name="disable">
+        <strong>Mail delivery</strong></a><p>
         Set this option to <em>Enabled</em> to receive messages posted
         to this mailing list.  Set it to <em>Disabled</em> if you want
         to stay subscribed, but don't want mail delivered to you for a
         while (e.g. you're going on vacation).  If you disable mail
         delivery, don't forget to re-enable it when you come back; it
         will not be automatically re-enabled.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-delivery-enable-button>Enabled<br/>
-<mm-delivery-disable-button>Disabled<p>
-<mm-global-deliver-button><i>Set globally</i>
-</mm-global-deliver-button></p></mm-delivery-disable-button></mm-delivery-enable-button></td></tr>
+        </td><td bgcolor="#cccccc">
+        <mm-delivery-enable-button>Enabled<br>
+        <mm-delivery-disable-button>Disabled<p>
+        <mm-global-deliver-button><i>Set globally</i>
+        </td></tr>
+
 <!--Start-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Set Digest Mode</strong><p>
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Set Digest Mode</strong><p>
         If you turn digest mode on, you'll get posts bundled together
         (usually one per day but possibly more on busy lists), instead
         of singly when they're sent.  If digest mode is changed from
         on to off, you may receive one last digest.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-undigest-radio-button>Off<br/>
-<mm-digest-radio-button>On
-        </mm-digest-radio-button></mm-undigest-radio-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Get MIME or Plain Text Digests?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-Undigest-Radio-Button>Off<br>
+        <MM-Digest-Radio-Button>On
+        </td></tr>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Get MIME or Plain Text Digests?</strong><p>
         Your mail reader may or may not support MIME digests.  In
         general MIME digests are preferred, but if you have a problem
         reading them, select plain text digests.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-mime-digests-button>MIME<br/>
-<mm-plain-digests-button>Plain Text<p>
-<mm-global-mime-button><i>Set globally</i>
-</mm-global-mime-button></p></mm-plain-digests-button></mm-mime-digests-button></td></tr>
+        </td><td bgcolor="#cccccc">
+        <MM-Mime-Digests-Button>MIME<br>
+        <MM-Plain-Digests-Button>Plain Text<p>
+        <mm-global-mime-button><i>Set globally</i>
+        </td></tr>
 <!--End-Digests-Delete-->
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Receive your own posts to the list?</strong><p>
+        
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Receive your own posts to the list?</strong><p>
         Ordinarily, you will get a copy of every message you post to
         the list.  If you don't want to receive this copy, set this
         option to <em>No</em>.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-receive-own-mail-button>No<br/>
-<mm-receive-own-mail-button>Yes
-        </mm-receive-own-mail-button></mm-dont-receive-own-mail-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Receive acknowledgement mail when you send mail to
+        </td><td bgcolor="#cccccc">
+        <mm-dont-receive-own-mail-button>No<br>
+        <mm-receive-own-mail-button>Yes
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Receive acknowledgement mail when you send mail to
         the list?</strong><p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-ack-posts-button>No<br/>
-<mm-ack-posts-button>Yes
-        </mm-ack-posts-button></mm-dont-ack-posts-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Get password reminder email for this list?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-ack-posts-button>No<br>
+        <mm-ack-posts-button>Yes
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Get password reminder email for this list?</strong><p>
         Once a month, you will get an email containing a password
         reminder for every list at this host to which you are
         subscribed.  You can turn this off on a per-list basis by
         selecting <em>No</em> for this option.  If you turn off
         password reminders for all the lists you are subscribed to, no
         reminder email will be sent to you.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-dont-get-password-reminder-button>No<br/>
-<mm-get-password-reminder-button>Yes<p>
-<mm-global-remind-button><i>Set globally</i>
-</mm-global-remind-button></p></mm-get-password-reminder-button></mm-dont-get-password-reminder-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Conceal yourself from subscriber list?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-dont-get-password-reminder-button>No<br>
+        <mm-get-password-reminder-button>Yes<p>
+        <mm-global-remind-button><i>Set globally</i>
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>Conceal yourself from subscriber list?</strong><p>
         When someone views the list membership, your email address is
         normally shown (in an obscured fashion to thwart spam
         harvesters).  If you do not want your email address to show up
         on this membership roster at all, select <em>Yes</em> for this option.
-        </p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-public-subscription-button>No<br/>
-<mm-hide-subscription-button>Yes
-        </mm-hide-subscription-button></mm-public-subscription-button></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>What language do you prefer?</strong><p>
-</p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-list-langs>
-</mm-list-langs></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Which topic categories would you like to subscribe
+        </td><td bgcolor="#cccccc">
+        <MM-Public-Subscription-Button>No<br>
+        <MM-Hide-Subscription-Button>Yes
+        </td></tr>
+
+    <tr><TD BGCOLOR="#cccccc">
+        <strong>What language do you prefer?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <MM-list-langs>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Which topic categories would you like to subscribe
                 to?</strong><p>
                 By selecting one or more topics, you can filter the
                 traffic on the mailing list, so as to receive only a
@@ -298,11 +260,12 @@ lists you are subscribed to.
                 rule depends on the setting of the option below.  If
                 you do not select any topics of interest, you will get
                 all the messages sent to the mailing list.
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-topics>
-</mm-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Do you want to receive messages that do not match any
+        </td><td bgcolor="#cccccc">
+        <mm-topics>
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Do you want to receive messages that do not match any
                 topic filter?</strong><p>
 
                 This option only takes effect if you've subscribed to
@@ -316,12 +279,13 @@ lists you are subscribed to.
                 <p>If no topics of interest are selected above, then
                 you will receive every message sent to the mailing
                 list.
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-suppress-nonmatching-topics>No<br/>
-<mm-receive-nonmatching-topics>Yes
-        </mm-receive-nonmatching-topics></mm-suppress-nonmatching-topics></td></tr>
-<tr><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<strong>Avoid duplicate copies of messages?</strong><p>
+        </td><td bgcolor="#cccccc">
+        <mm-suppress-nonmatching-topics>No<br>
+        <mm-receive-nonmatching-topics>Yes
+        </td></tr>
+
+    <tr><td bgcolor="#cccccc">
+        <strong>Avoid duplicate copies of messages?</strong><p>
 
                 When you are listed explicitly in the <tt>To:</tt> or
                 <tt>Cc:</tt> headers of a list message, you can opt to
@@ -334,17 +298,21 @@ lists you are subscribed to.
                 will have a <tt>X-Mailman-Copy: yes</tt> header added
                 to it.
 
-        </p></p></td><td bgcolor="#cccccc" style="padding: 8px; border: 1px solid #ccc;">
-<mm-receive-duplicates-button>No<br/>
-<mm-dont-receive-duplicates-button>Yes<p>
-<mm-global-nodupes-button><i>Set globally</i>
-</mm-global-nodupes-button></p></mm-dont-receive-duplicates-button></mm-receive-duplicates-button></td></tr>
-<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">
-<center><mm-options-submit-button></mm-options-submit-button></center>
-</td></tr>
+        </td><td bgcolor="#cccccc">
+        <mm-receive-duplicates-button>No<br>
+        <mm-dont-receive-duplicates-button>Yes<p>
+        <mm-global-nodupes-button><i>Set globally</i>
+        </td></tr>
+
+    <tr><TD colspan="2">
+        <center><MM-options-Submit-button></center>
+        </td></tr>
+
 </table>
+</center>
 <p>
-<mm-form-end>
-<mm-mailman-footer>
-</mm-mailman-footer></mm-form-end></p></p></mm-host></p></p></p></p></p></mm-form-start></p></body>
+<MM-Form-End>
+
+<MM-Mailman-Footer>
+</body>
 </html>

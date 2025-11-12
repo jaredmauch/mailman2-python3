@@ -1,145 +1,83 @@
-<html><head><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head></html>As solicitudes administrativas amósanse dun dos dous xeitos,
+As solicitudes administrativas am&oacute;sanse dun dos dous xeitos,
 como
 unha
-<a href="%(summaryurl)s">páxina cun resumo</a> ou como unha páxina
-<em>detallada</em>.   A páxina co sumario contén solicitudes de
-alta ou de baixa pendentes, envíos á rolda que se remitiron para
+<a href="%(summaryurl)s">p&aacute;xina cun resumo</a> ou como unha p&aacute;xina
+<em>detallada</em>.   A p&aacute;xina co sumario cont&eacute;n solicitudes de
+alta ou de baixa pendentes, env&iacute;os &aacute; rolda que se remitiron para
 que
 os
-aprobe, agrupados polo enderezo do remitinte. A páxina cos detalles
-contén unha vista máis detallada de cada unha das mensaxes,
+aprobe, agrupados polo enderezo do remitinte. A p&aacute;xina cos detalles
+cont&eacute;n unha vista m&aacute;is detallada de cada unha das mensaxes,
 xunto coas cabeceiras da mensaxe e un extracto do seu corpo.
 
-<p>En calquera destas páxinas están dispoñíbeis as seguintes accións:
+<p>En calquera destas p&aacute;xinas est&aacute;n dispo&ntilde;&iacute;beis as seguintes acci&oacute;ns:
 
 <ul>
-<li><b>Diferir</b>: pospón a súa decisión para máis tarde.
+<li><b>Diferir</b>: posp&oacute;n a s&uacute;a decisi&oacute;n para m&aacute;is tarde.
    Non se aplica ningunha
-acción para esta solicitude administrativa pendente mais aínda así pode
+acci&oacute;n para esta solicitude administrativa pendente mais a&iacute;nda as&iacute; pode
 reenviar
-ou conservar a mensaxe (vexa máis abaixo).
+ou conservar a mensaxe (vexa m&aacute;is abaixo).
 
-<li><b>Aprobar</b>: aprobar a mensaxe e enviala á rolda. Para as
-solicitudes de subscrición, estas apróbanse.
+<li><b>Aprobar</b>: aprobar a mensaxe e enviala &aacute; rolda. Para as
+solicitudes de subscrici&oacute;n, estas apr&oacute;banse.
 
 <li><b>Rexeitar</b>: rexeitar a mensaxe e enviarlle unha mensaxe de rexeitamento
   ao remitinte en que se rexeita a mensaxe orixinal. Para as solicitudes de
-subscrición, estas rexéitanse. En calquera caso, debería pór o motivo
+subscrici&oacute;n, estas rex&eacute;itanse. En calquera caso, deber&iacute;a p&oacute;r o motivo
 polo 
 que se rexeita no cadro de texto.
 
 <li><b>Descartar</b>: eliminar a mensaxe orixinal sen enviar unha mensaxe de
-rexeitamento. Para as solicitudes de subscrición, isto simplemente elimina a
-solicitude sen avisar á persoa que a solicitou.  Esta opción
-úsase
+rexeitamento. Para as solicitudes de subscrici&oacute;n, isto simplemente elimina a
+solicitude sen avisar &aacute; persoa que a solicitou.  Esta opci&oacute;n
+&uacute;sase
 normalmente co correo non solicitado ou co correo lixo.
-</li></li></li></li></ul>
-<p>Para as mensaxes retidas, active a opción <b>Preservar</b> se quere
-gardar unha copia das mensaxes para o administrador do servidor.  Isto
-  é útil para aquelas mensaxes abusivas que queira rexeitar mais
-  que precise
-gardar un rexistro para botarlle un ollada máis tarde.
+</ul>
 
-<p>Active a opción <b>Redirixir a</b> e volva cubrir o enderezo correspondente
+<p>Para as mensaxes retidas, active a opci&oacute;n <b>Preservar</b> se quere
+gardar unha copia das mensaxes para o administrador do servidor.  Isto
+  &eacute; &uacute;til para aquelas mensaxes abusivas que queira rexeitar mais
+  que precise
+gardar un rexistro para botarlle un ollada m&aacute;is tarde.
+
+<p>Active a opci&oacute;n <b>Redirixir a</b> e volva cubrir o enderezo correspondente
   se
-quere reenviar a mensaxe a alguén que non estea na rolda.   Para editar
+quere reenviar a mensaxe a algu&eacute;n que non estea na rolda.   Para editar
 unha
-mensaxe retida antes de que se envíe á rolda, pode reenviala a si mesmo
-(ou ao propietario da rolda) e rexeitar a mensaxe orixinal.   Entón,
-cando a mensaxe se amosar na sú caixa de entrada, faga as súas coreccións
+mensaxe retida antes de que se env&iacute;e &aacute; rolda, pode reenviala a si mesmo
+(ou ao propietario da rolda) e rexeitar a mensaxe orixinal.   Ent&oacute;n,
+cando a mensaxe se amosar na s&uacute; caixa de entrada, faga as s&uacute;as corecci&oacute;ns
 e
-reenvíea á rolda, onde deberá incluír unha cabeceira <tt>Approved:</tt> co
-contrasinal da rolda como o seu valor. É de bo costume neste caso
-incluír
+reenv&iacute;ea &aacute; rolda, onde deber&aacute; inclu&iacute;r unha cabeceira <tt>Approved:</tt> co
+contrasinal da rolda como o seu valor. &Eacute; de bo costume neste caso
+inclu&iacute;r
 unha nota
 na
 mensaxe en que explique que modificou o texto.
 
-<p>Se o remitinte é un subscritor que está a ser moderado, pode limpar
-opcionalmente a súa marca de moderación.  Isto é útil cando
-a súa rolda
-está
-configurada para pór os novos subscritores en corentena e decidir que
-se pode confiar neste subscritor á hora de mandar mensaxes á rolda sen
-aprobación.
+<p>Se o remitinte &eacute; un subscritor que est&aacute; a ser moderado, pode limpar
+opcionalmente a s&uacute;a marca de moderaci&oacute;n.  Isto &eacute; &uacute;til cando
+a s&uacute;a rolda
+est&aacute;
+configurada para p&oacute;r os novos subscritores en corentena e decidir que
+se pode confiar neste subscritor &aacute; hora de mandar mensaxes &aacute; rolda sen
+aprobaci&oacute;n.
 
-<p>Se o remitinte non é un subscritor da rolda, pode engadir este enderezo
-  de correo electrónico ao <em>filtrado de remitintes</em>.  O filtrado
+<p>Se o remitinte non &eacute; un subscritor da rolda, pode engadir este enderezo
+  de correo electr&oacute;nico ao <em>filtrado de remitintes</em>.  O filtrado
   de
-remitintes  descríbese na <a href="%(filterurl)s">páxina de fitros
+remitintes  descr&iacute;bese na <a href="%(filterurl)s">p&aacute;xina de fitros
 de
 privacidade</a> e pode ser <b>aceptar automaticamente</b>, <b>reter
 automaticamente</b>, <b>rexeitar automaticamente</b> ou <b>descartar
-automaticamente</b>.  Esta opción non estará dispoñíbel se o enderezo
-xa está nun
+automaticamente</b>.  Esta opci&oacute;n non estar&aacute; dispo&ntilde;&iacute;bel se o enderezo
+xa est&aacute; nun
 dos filtros de remitinte.
 
-<p>Ao rematar, prema o botón <em>Enviar todos os
-datos</em> do final da páxina.  Este botón entregará todas as accións
+<p>Ao rematar, prema o bot&oacute;n <em>Enviar todos os
+datos</em> do final da p&aacute;xina.  Este bot&oacute;n entregar&aacute; todas as acci&oacute;ns
 seleccionadas para todas as solicitudes administrativas para as que se fixo
-algunha selección.
+algunha selecci&oacute;n.
 
-<p><a href="%(summaryurl)s">Volver á páxina cos sumarios</a>.
-</p></p></p></p></p></p></p>
+<p><a href="%(summaryurl)s">Volver &aacute; p&aacute;xina cos sumarios</a>.

@@ -15,176 +15,130 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-"""Bounce queue runner.
+"""Bounce queue runner."""
 
-This module is responsible for processing bounce messages.  It's a separate
-queue from the virgin queue because bounces need different handling.
-"""
-
-from builtins import object, str
+from builtins import object
 import os
 import re
 import time
 import pickle
-import email
-from email.utils import getaddresses, parseaddr
-from email.iterators import body_line_iterator
+
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
-import traceback
-from io import StringIO
-import sys
+from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import LockFile
-from Mailman import Errors
-from Mailman import i18n
 from Mailman.Errors import NotAMemberError
+from Mailman.Message import UserNotification
 from Mailman.Bouncer import _BounceInfo
 from Mailman.Bouncers import BouncerAPI
 from Mailman.Queue.Runner import Runner
 from Mailman.Queue.sbcache import get_switchboard
 from Mailman.Logging.Syslog import syslog
 from Mailman.i18n import _
-import Mailman.Message as Message
-
-# Lazy import to avoid circular dependency
-def get_mail_list():
-    import Mailman.MailList as MailList
-    return MailList.MailList
 
 COMMASPACE = ', '
 
+
 class BounceMixin:
     def __init__(self):
-        """Initialize the bounce mixin."""
+        # Registering a bounce means acquiring the list lock, and it would be
+        # too expensive to do this for each message.  Instead, each bounce
+        # runner maintains an event log which is essentially a file with
+        # multiple pickles.  Each bounce we receive gets appended to this file
+        # as a 4-tuple record: (listname, addr, today, msg)
+        #
+        # today is itself a 3-tuple of (year, month, day)
+        #
+        # Every once in a while (see _doperiodic()), the bounce runner cracks
+        # open the file, reads all the records and registers all the bounces.
+        # Then it truncates the file and continues on.  We don't need to lock
+        # the bounce event file because bounce qrunners are single threaded
+        # and each creates a uniquely named file to contain the events.
+        #
+        # XXX When Python 2.3 is minimal require, we can use the new
+        # tempfile.TemporaryFile() function.
+        #
+        # XXX We used to classify bounces to the site list as bounce events
+        # for every list, but this caused severe problems.  Here's the
+        # scenario: aperson@example.com is a member of 4 lists, and a list
+        # owner of the foo list.  example.com has an aggressive spam filter
+        # which rejects any message that is spam or contains spam as an
+        # attachment.  Now, a spambot sends a piece of spam to the foo list,
+        # but since that spambot is not a member, the list holds the message
+        # for approval, and sends a notification to aperson@example.com as
+        # list owner.  That notification contains a copy of the spam.  Now
+        # example.com rejects the message, causing a bounce to be sent to the
+        # site list's bounce address.  The bounce runner would then dutifully
+        # register a bounce for all 4 lists that aperson@example.com was a
+        # member of, and eventually that person would get disabled on all
+        # their lists.  So now we ignore site list bounces.  Ce La Vie for
+        # password reminder bounces.
+        self._bounce_events_file = os.path.join(
+            mm_cfg.DATA_DIR, 'bounce-events-%05d.pck' % os.getpid())
+        self._bounce_events_fp = None
         self._bouncecnt = 0
-        # Set initial next action time to 1 hour in the future
-        self._next_action = time.time() + 3600
-        syslog('debug', 'BounceMixin: Initialized with next action time: %s',
-               time.ctime(self._next_action))
-
-    def _process_bounces(self):
-        """Process pending bounces."""
-        try:
-            syslog('debug', 'BounceMixin._process_bounces: Starting bounce processing')
-            
-            # Get all lists
-            listnames = Utils.list_names()
-            for listname in listnames:
-                try:
-                    mlist = get_mail_list()(listname, lock=0)
-                    try:
-                        # Process bounces for this list
-                        self._process_list_bounces(mlist)
-                    finally:
-                        mlist.Unlock()
-                except Exception as e:
-                    syslog('error', 'BounceMixin._process_bounces: Error processing list %s: %s',
-                           listname, str(e))
-                    continue
-            
-            syslog('debug', 'BounceMixin._process_bounces: Completed bounce processing')
-            
-        except Exception as e:
-            syslog('error', 'BounceMixin._process_bounces: Error during bounce processing: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-
-    def _process_list_bounces(self, mlist):
-        """Process bounces for a specific list."""
-        try:
-            syslog('debug', 'BounceMixin._process_list_bounces: Processing bounces for list %s',
-                   mlist.internal_name())
-            
-            # Get all bouncing members
-            bouncing_members = mlist.getBouncingMembers()
-            for member in bouncing_members:
-                try:
-                    # Get bounce info for this member
-                    info = mlist.getBounceInfo(member)
-                    if not info:
-                        continue
-                        
-                    # Check if member should be disabled
-                    if info.score >= mlist.bounce_score_threshold:
-                        syslog('debug', 'BounceMixin._process_list_bounces: Disabling member %s due to bounce score %f',
-                               member, info.score)
-                        mlist.disableBouncingMember(member, info)
-                        
-                except Exception as e:
-                    syslog('error', 'BounceMixin._process_list_bounces: Error processing member %s: %s',
-                           member, str(e))
-                    continue
-                    
-            syslog('debug', 'BounceMixin._process_list_bounces: Completed processing bounces for list %s',
-                   mlist.internal_name())
-            
-        except Exception as e:
-            syslog('error', 'BounceMixin._process_list_bounces: Error processing list %s: %s\nTraceback:\n%s',
-                   mlist.internal_name(), str(e), traceback.format_exc())
-
-    def _register_bounces(self, mlist, bounces):
-        """Register bounce information for a list."""
-        try:
-            for address, info in bounces.items():
-                syslog('debug', 'BounceMixin._register_bounces: Registering bounce for list %s, address %s',
-                       mlist.internal_name(), address)
-                
-                # Write bounce data to file
-                filename = os.path.join(mlist.bounce_dir, address)
-                try:
-                    with open(filename, 'w') as fp:
-                        fp.write(str(info))
-                    syslog('debug', 'BounceMixin._register_bounces: Successfully wrote bounce data to %s', filename)
-                except Exception as e:
-                    syslog('error', 'BounceMixin._register_bounces: Failed to write bounce data to %s: %s\nTraceback:\n%s',
-                           filename, str(e), traceback.format_exc())
-                    continue
-                
-        except Exception as e:
-            syslog('error', 'BounceMixin._register_bounces: Error registering bounce: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-
-    def _cleanup(self):
-        """Clean up bounce processing."""
-        try:
-            syslog('debug', 'BounceMixin._cleanup: Processing %d pending bounces', self._bouncecnt)
-            # ... cleanup logic ...
-        except Exception as e:
-            syslog('error', 'BounceMixin._cleanup: Error during cleanup: %s', str(e))
-
-    def _doperiodic(self):
-        """Do periodic bounce processing."""
-        try:
-            now = time.time()
-            if now >= self._next_action:
-                syslog('debug', 'BounceMixin._doperiodic: Processing bounces, next action scheduled for %s',
-                       time.ctime(self._next_action))
-                # Process bounces
-                self._process_bounces()
-                # Update next action time to 1 hour from now
-                self._next_action = now + 3600
-                syslog('debug', 'BounceMixin._doperiodic: Next action scheduled for %s',
-                       time.ctime(self._next_action))
-        except Exception as e:
-            syslog('error', 'BounceMixin._doperiodic: Error during periodic processing: %s', str(e))
+        self._nextaction = time.time() + mm_cfg.REGISTER_BOUNCES_EVERY
 
     def _queue_bounces(self, listname, addrs, msg):
         today = time.localtime()[:3]
         if self._bounce_events_fp is None:
             omask = os.umask(0o006)
             try:
-                self._bounce_events_fp = open(self._bounce_events_file, 'ab')
+                self._bounce_events_fp = open(self._bounce_events_file, 'a+b')
             finally:
                 os.umask(omask)
         for addr in addrs:
-            # Use protocol 4 for Python 3 compatibility and fix_imports for Python 2/3 compatibility
             pickle.dump((listname, addr, today, msg),
-                       self._bounce_events_fp, protocol=4, fix_imports=True)
+                         self._bounce_events_fp, 1)
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
         self._bouncecnt += len(addrs)
+
+    def _register_bounces(self):
+        syslog('bounce', '%s processing %s queued bounces',
+               self, self._bouncecnt)
+        # Read all the records from the bounce file, then unlink it.  Sort the
+        # records by listname for more efficient processing.
+        events = {}
+        self._bounce_events_fp.seek(0)
+        while True:
+            try:
+                listname, addr, day, msg = pickle.load(self._bounce_events_fp, fix_imports=True, encoding='latin1')
+            except ValueError as e:
+                syslog('bounce', 'Error reading bounce events: %s', e)
+            except EOFError:
+                break
+            events.setdefault(listname, []).append((addr, day, msg))
+        # Now register all events sorted by list
+        for listname in list(events.keys()):
+            mlist = self._open_list(listname)
+            mlist.Lock()
+            try:
+                for addr, day, msg in events[listname]:
+                    mlist.registerBounce(addr, msg, day=day)
+                mlist.Save()
+            finally:
+                mlist.Unlock()
+        # Reset and free all the cached memory
+        self._bounce_events_fp.close()
+        self._bounce_events_fp = None
+        os.unlink(self._bounce_events_file)
+        self._bouncecnt = 0
+
+    def _cleanup(self):
+        if self._bouncecnt > 0:
+            self._register_bounces()
+
+    def _doperiodic(self):
+        now = time.time()
+        if self._nextaction > now or self._bouncecnt == 0:
+            return
+        # Let's go ahead and register the bounces we've got stored up
+        self._nextaction = now + mm_cfg.REGISTER_BOUNCES_EVERY
+        self._register_bounces()
 
     def _probe_bounce(self, mlist, token):
         locked = mlist.Locked()
@@ -217,168 +171,145 @@ class BounceMixin:
                 mlist.Unlock()
 
 
+
 class BounceRunner(Runner, BounceMixin):
     QDIR = mm_cfg.BOUNCEQUEUE_DIR
 
-    # Enable message tracking for bounce messages
-    _track_messages = True
-    _max_processed_messages = 10000
-    _max_retry_times = 10000
-    
-    # Retry configuration
-    MIN_RETRY_DELAY = 300  # 5 minutes minimum delay between retries
-    MAX_RETRIES = 5  # Maximum number of retry attempts
-    _retry_times = {}  # Track last retry time for each message
-    
-    # Cleanup configuration
-    _cleanup_interval = 3600  # Clean up every hour
-    _last_cleanup = 0  # Last cleanup time
-
     def __init__(self, slice=None, numslices=1):
-        syslog('debug', 'BounceRunner: Starting initialization')
-        try:
-            Runner.__init__(self, slice, numslices)
-            BounceMixin.__init__(self)
-            
-            # Initialize bounce events file
-            self._bounce_events_file = os.path.join(mm_cfg.DATA_DIR, 'bounce_events')
-            self._bounce_events_fp = None
-            
-            # Initialize processed messages tracking
-            self._processed_messages = set()
-            self._last_cleanup = time.time()
-            
-            syslog('debug', 'BounceRunner: Initialization complete')
-        except Exception as e:
-            syslog('error', 'BounceRunner: Initialization failed: %s\nTraceback:\n%s',
-                   str(e), traceback.format_exc())
-            raise
+        Runner.__init__(self, slice, numslices)
+        BounceMixin.__init__(self)
 
     def _dispose(self, mlist, msg, msgdata):
-        """Process a bounce message."""
-        try:
-            # Get the message ID
-            msgid = msg.get('message-id', 'n/a')
-            filebase = msgdata.get('_filebase', 'unknown')
-            
-            # Ensure we have a MailList object
-            if isinstance(mlist, str):
-                try:
-                    mlist = get_mail_list()(mlist, lock=0)
-                    should_unlock = True
-                except Errors.MMUnknownListError:
-                    syslog('error', 'BounceRunner: Unknown list %s', mlist)
-                    self._shunt.enqueue(msg, msgdata)
-                    return True
-            else:
-                should_unlock = False
-            
-            try:
-                syslog('debug', 'BounceRunner._dispose: Starting to process bounce message %s (file: %s) for list %s',
-                       msgid, filebase, mlist.internal_name())
-                
-                # Check retry delay
-                if not self._check_retry_delay(msgid, filebase):
-                    syslog('debug', 'BounceRunner._dispose: Message %s failed retry delay check, skipping', msgid)
-                    return True
-                
-                # Process the bounce
-                # ... bounce processing logic ...
-                
-                return False
-                
-            finally:
-                if should_unlock:
-                    mlist.Unlock()
-                
-        except Exception as e:
-            syslog('error', 'BounceRunner._dispose: Error processing bounce message %s: %s\nTraceback:\n%s',
-                   msgid, str(e), traceback.format_exc())
-            return True
-
-    def _extract_bounce_info(self, msg):
-        """Extract bounce information from a message."""
-        try:
-            # Log the message structure for debugging
-            syslog('debug', 'BounceRunner._extract_bounce_info: Message structure:')
-            syslog('debug', '  Headers: %s', dict(msg.items()))
-            syslog('debug', '  Content-Type: %s', msg.get('content-type', 'unknown'))
-            syslog('debug', '  Is multipart: %s', msg.is_multipart())
-
-            # Extract bounce information based on message structure
-            bounce_info = {}
-            
-            # Try to get recipient from various headers
-            for header in ['X-Failed-Recipients', 'X-Original-To', 'To']:
-                if msg.get(header):
-                    bounce_info['recipient'] = msg[header]
-                    syslog('debug', 'BounceRunner._extract_bounce_info: Found recipient in %s header: %s',
-                              header, bounce_info['recipient'])
-                    break
-
-            # Try to get error information
-            if msg.is_multipart():
-                for part in msg.get_payload():
-                    if part.get_content_type() == 'message/delivery-status':
-                        bounce_info['error'] = part.get_payload()
-                        syslog('debug', 'BounceRunner._extract_bounce_info: Found delivery status in multipart message')
-                        break
-
-            if not bounce_info.get('recipient'):
-                syslog('error', 'BounceRunner._extract_bounce_info: Could not find recipient in bounce message')
-                return None
-
-            return bounce_info
-
-        except Exception as e:
-            syslog('error', 'BounceRunner._extract_bounce_info: Error extracting bounce information: %s\nTraceback:\n%s',
-                       str(e), traceback.format_exc())
-            return None
-
-    def _cleanup(self):
-        """Clean up resources."""
-        syslog('debug', 'BounceRunner: Starting cleanup')
-        try:
-            BounceMixin._cleanup(self)
-            Runner._cleanup(self)
-        except Exception as e:
-            syslog('error', 'BounceRunner: Cleanup failed: %s\nTraceback:\n%s',
-                       str(e), traceback.format_exc())
-        syslog('debug', 'BounceRunner: Cleanup complete')
+        # Make sure we have the most up-to-date state
+        mlist.Load()
+        outq = get_switchboard(mm_cfg.OUTQUEUE_DIR)
+        # There are a few possibilities here:
+        #
+        # - the message could have been VERP'd in which case, we know exactly
+        #   who the message was destined for.  That make our job easy.
+        # - the message could have been originally destined for a list owner,
+        #   but a list owner address itself bounced.  That's bad, and for now
+        #   we'll simply attempt to deliver the message to the site list
+        #   owner.
+        #   Note that this means that automated bounce processing doesn't work
+        #   for the site list.  Because we can't reliably tell to what address
+        #   a non-VERP'd bounce was originally sent, we have to treat all
+        #   bounces sent to the site list as potential list owner bounces.
+        # - the list owner could have set list-bounces (or list-admin) as the
+        #   owner address.  That's really bad as it results in a loop of ever
+        #   growing unrecognized bounce messages.  We detect this based on the
+        #   fact that this message itself will be from the site bounces
+        #   address.  We then send this to the site list owner instead.
+        # Notices to list-owner have their envelope sender and From: set to
+        # the site-bounces address.  Check if this is this a bounce for a
+        # message to a list owner, coming to site-bounces, or a looping
+        # message sent directly to the -bounces address.  We have to do these
+        # cases separately, because sending to site-owner will reset the
+        # envelope sender.
+        # Is this a site list bounce?
+        if (mlist.internal_name().lower() ==
+                mm_cfg.MAILMAN_SITE_LIST.lower()):
+            # Send it on to the site owners, but craft the envelope sender to
+            # be the -loop detection address, so if /they/ bounce, we won't
+            # get stuck in a bounce loop.
+            outq.enqueue(msg, msgdata,
+                         recips=mlist.owner,
+                         envsender=Utils.get_site_email(extra='loop'),
+                         nodecorate=1,
+                         )
+            return
+        # Is this a possible looping message sent directly to a list-bounces
+        # address other than the site list?
+        # Check From: because unix_from might be VERP'd.
+        # Also, check the From: that Message.OwnerNotification uses.
+        if (msg.get('from') ==
+                Utils.get_site_email(mlist.host_name, 'bounces')):
+            # Just send it to the sitelist-owner address.  If that bounces
+            # we'll handle it above.
+            outq.enqueue(msg, msgdata,
+                         recips=[Utils.get_site_email(extra='owner')],
+                         envsender=Utils.get_site_email(extra='loop'),
+                         nodecorate=1,
+                         )
+            return
+        # List isn't doing bounce processing?
+        if not mlist.bounce_processing:
+            return
+        # Try VERP detection first, since it's quick and easy
+        addrs = verp_bounce(mlist, msg)
+        if addrs:
+            # We have an address, but check if the message is non-fatal.
+            if BouncerAPI.ScanMessages(mlist, msg) is BouncerAPI.Stop:
+                return
+        else:
+            # See if this was a probe message.
+            token = verp_probe(mlist, msg)
+            if token:
+                self._probe_bounce(mlist, token)
+                return
+            # That didn't give us anything useful, so try the old fashion
+            # bounce matching modules.
+            addrs = BouncerAPI.ScanMessages(mlist, msg)
+            if addrs is BouncerAPI.Stop:
+                # This is a recognized, non-fatal notice. Ignore it.
+                return
+        # If that still didn't return us any useful addresses, then send it on
+        # or discard it.
+        addrs = [_f for _f in addrs if _f]
+        if not addrs:
+            syslog('bounce',
+                   '%s: bounce message w/no discernable addresses: %s',
+                   mlist.internal_name(),
+                   msg.get('message-id', 'n/a'))
+            maybe_forward(mlist, msg)
+            return
+        # BAW: It's possible that there are None's in the list of addresses,
+        # although I'm unsure how that could happen.  Possibly ScanMessages()
+        # can let None's sneak through.  In any event, this will kill them.
+        # addrs = filter(None, addrs)
+        # MAS above filter moved up so we don't try to queue an empty list.
+        self._queue_bounces(mlist.internal_name(), addrs, msg)
 
     _doperiodic = BounceMixin._doperiodic
 
+    def _cleanup(self):
+        BounceMixin._cleanup(self)
+        Runner._cleanup(self)
 
+
+
 def verp_bounce(mlist, msg):
-    try:
-        bmailbox, bdomain = Utils.ParseEmail(mlist.GetBouncesEmail())
-        vals = []
-        for header in ('to', 'delivered-to', 'envelope-to', 'apparently-to'):
-            vals.extend(msg.get_all(header, []))
-        for field in vals:
-            to = parseaddr(field)[1]
-            if not to:
-                continue
-            try:
-                mo = re.search(mm_cfg.VERP_REGEXP, to, re.IGNORECASE)
-                if not mo:
-                    continue
-                if bmailbox != mo.group('bounces'):
-                    continue
-                addr = '%s@%s' % mo.group('mailbox', 'host')
-                return [addr]
-            except IndexError:
-                syslog('error', "VERP_REGEXP doesn't yield the right match groups: %s",
-                           mm_cfg.VERP_REGEXP)
-                continue
-            except Exception as e:
-                syslog('error', "Error processing VERP bounce: %s", str(e))
-                continue
-    except Exception as e:
-        syslog('error', "Error in verp_bounce: %s", str(e))
-    return []
+    bmailbox, bdomain = Utils.ParseEmail(mlist.GetBouncesEmail())
+    # Sadly not every MTA bounces VERP messages correctly, or consistently.
+    # Fall back to Delivered-To: (Postfix), Envelope-To: (Exim) and
+    # Apparently-To:, and then short-circuit if we still don't have anything
+    # to work with.  Note that there can be multiple Delivered-To: headers so
+    # we need to search them all (and we don't worry about false positives for
+    # forwarded email, because only one should match VERP_REGEXP).
+    vals = []
+    for header in ('to', 'delivered-to', 'envelope-to', 'apparently-to'):
+        vals.extend(msg.get_all(header, []))
+    for field in vals:
+        to = parseaddr(field)[1]
+        if not to:
+            continue                          # empty header
+        mo = re.search(mm_cfg.VERP_REGEXP, to)
+        if not mo:
+            continue                          # no match of regexp
+        try:
+            if bmailbox != mo.group('bounces'):
+                continue                      # not a bounce to our list
+            # All is good
+            addr = '%s@%s' % mo.group('mailbox', 'host')
+        except IndexError:
+            syslog('error',
+                   "VERP_REGEXP doesn't yield the right match groups: %s",
+                   mm_cfg.VERP_REGEXP)
+            return []
+        return [addr]
 
 
+
 def verp_probe(mlist, msg):
     bmailbox, bdomain = Utils.ParseEmail(mlist.GetBouncesEmail())
     # Sadly not every MTA bounces VERP messages correctly, or consistently.
@@ -394,7 +325,7 @@ def verp_probe(mlist, msg):
         to = parseaddr(field)[1]
         if not to:
             continue                          # empty header
-        mo = re.search(mm_cfg.VERP_PROBE_REGEXP, to, re.IGNORECASE)
+        mo = re.search(mm_cfg.VERP_PROBE_REGEXP, to)
         if not mo:
             continue                          # no match of regexp
         try:
@@ -413,6 +344,7 @@ def verp_probe(mlist, msg):
     return None
 
 
+
 def maybe_forward(mlist, msg):
     # Does the list owner want to get non-matching bounce messages?
     # If not, simply discard it.
@@ -428,7 +360,7 @@ the list administrator(s).
 For more information see:
 %(adminurl)s
 
-""") % {'adminurl': adminurl},
+"""),
                              subject=_('Uncaught bounce notification'),
                              tomoderators=0)
         syslog('bounce',

@@ -1,120 +1,60 @@
 <!-- $Revision: 7647 $ -->
 <html>
 <head>
-<title>%(realname)s Private Archives Authentication</title>
+    <title>%(realname)s Private Archives Authentication</title>
 <script>function sf(){document.f.username.focus();}</script>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
-<body bgcolor="#ffffff" onload="sf()">
-<form action="%(action)s" method="POST" name="f">
+</head>
+<body bgcolor="#ffffff" onLoad="sf()">
+<FORM METHOD=POST ACTION="%(action)s" name="f">
 %(message)s
-  <table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
-<b><font color="#000000" size="+1">Sisäänkirjautuminen
+  <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Sis&auml;&auml;nkirjautuminen
             yksityiseen arkistoon %(realname)s
-	    </font></b>
-</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">Sähköpostiosoite:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><input name="username" size="30" type="text"/></td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><div align="Right">Salasana:</div></td>
-<td style="padding: 8px; border: 1px solid #ccc;"><input name="password" size="30" type="password"/></td>
-</tr>
-<tr>
-<td align="middle" colspan="2" style="padding: 8px; border: 1px solid #ccc;"><input name="submit" type="SUBMIT" value="Sisään..."/>
-</td>
-</tr>
-</table>
-<p><strong><em>Tärkeää:</em></strong> Tästä eteenpäin sinulla
-      pitää olla evästeet valittuina aktiiviseksi selaimessasi. Muuten
-	mitkään ylläpitäjän toimet eivät tule suoritetuiksi.
+	    </FONT></B>
+      </TD>
+    </TR>
+    <tr>
+        <TD><div ALIGN="Right">S&auml;hk&ouml;postiosoite:</div></TD>
+        <TD><INPUT TYPE="text" NAME="username" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <TD><div ALIGN="Right">Salasana:</div></TD>
+      <TD><INPUT TYPE="password" NAME="password" SIZE="30"></TD>
+    </tr>
+    <tr>
+      <td colspan=2 align="middle"><INPUT type="SUBMIT"
+                                          name="submit"
+					  value="Sis&auml;&auml;n...">
+      </td>
+    </tr>
+  </TABLE>
+      <p><strong><em>T&auml;rke&auml;&auml;:</em></strong> T&auml;st&auml; eteenp&auml;in sinulla
+      pit&auml;&auml; olla ev&auml;steet valittuina aktiiviseksi selaimessasi. Muuten
+	mitk&auml;&auml;n yll&auml;pit&auml;j&auml;n toimet eiv&auml;t tule suoritetuiksi.
 
-      <p>Istuntokohtaiset evästeet ovat aktiivisina Mailmanin ylläpitäjän ympäristössä/oikeuksissa, 
-      joten sinun ei tarvitse uudelleenkirjautua jokaisen ylläpitäjän toimen suorittamiseksi. Tämä
-      eväste katoaa automaattisesti kun suljet selaimen tai voit nimenomaan sulkea evästeen painamalla
-	<em>Muut ylläpitäjän toimet</em> otsikon alla olevaa <em>Kirjaudu ulos</em> -valintaa.
-      (jonka näet, kun olet onnistuneesti kirjautunut sisään).
+      <p>Istuntokohtaiset ev&auml;steet ovat aktiivisina Mailmanin yll&auml;pit&auml;j&auml;n ymp&auml;rist&ouml;ss&auml;/oikeuksissa, 
+      joten sinun ei tarvitse uudelleenkirjautua jokaisen yll&auml;pit&auml;j&auml;n toimen suorittamiseksi. T&auml;m&auml;
+      ev&auml;ste katoaa automaattisesti kun suljet selaimen tai voit nimenomaan sulkea ev&auml;steen painamalla
+	<em>Muut yll&auml;pit&auml;j&auml;n toimet</em> otsikon alla olevaa <em>Kirjaudu ulos</em> -valintaa.
+      (jonka n&auml;et, kun olet onnistuneesti kirjautunut sis&auml;&auml;n).
       <p>
-<table aria-label="Table" role="table" style="border: 1px solid #ccc; border-collapse: collapse; width: 100%;">
-<tr>
-<td align="CENTER" bgcolor="#99CCFF" colspan="2" style="padding: 8px; border: 1px solid #ccc;" width="100%%">
-<b><font color="#000000" size="+1">Password Reminder</font></b>
-</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;">If you don't remember your password, enter your email address
+    <TABLE WIDTH="100%%" BORDER="0" CELLSPACING="4" CELLPADDING="5">
+    <TR>
+      <TD COLSPAN="2" WIDTH="100%%" BGCOLOR="#99CCFF" ALIGN="CENTER">
+	<B><FONT COLOR="#000000" SIZE="+1">Password Reminder</FONT></B>
+      </TD>
+    </TR>
+    <tr>
+      <td>If you don't remember your password, enter your email address
           above and click the <em>Remind</em> button and your
           password will be emailed to you.</td>
-</tr>
-<tr>
-<td style="padding: 8px; border: 1px solid #ccc;"><center><input name="login-remind" type="SUBMIT" value="Remind"/></center></td>
-</tr>
-</table>
-</p></p></p></form>
+    </tr>
+    <tr>
+      <td><center><INPUT name="login-remind" type="SUBMIT" value="Remind" ></center></td>
+    </tr>
+  </TABLE>
+</FORM>
 </body>
 </html>

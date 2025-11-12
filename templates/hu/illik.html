@@ -1,1410 +1,1385 @@
-<html><head><title="magyar netikett"=""></title="magyar><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2, h3 {
-                color: #2c3e50;
-                margin-top: 1.5em;
-            }
-            a {
-                color: #3498db;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1em 0;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-            th {
-                background-color: #f5f5f5;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            input[type="text"], input[type="password"], textarea {
-                width: 100%;
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-            input[type="submit"], button {
-                background-color: #3498db;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover, button:hover {
-                background-color: #2980b9;
-            }
-            .error {
-                color: #e74c3c;
-                margin: 10px 0;
-            }
-            .success {
-                color: #27ae60;
-                margin: 10px 0;
-            }
-        </style></head>
+<html><head><title="Magyar Netikett"></head>
 <body>
 <h1>
 Magyar Netikett
 </h1>
-<h3>
-Az emlékeztetô státusa
-</h3>
-<p>
-Ez a dokumentum az Internet közösség
-tájékoztatására szolgál. Ez a
-dokumentum nem határoz meg semmilyen szabványt. A
-terjesztést nem korlátozza semmi.
 
 <h3>
-Összefoglaló
+Az eml&eacute;keztet&ocirc; st&aacute;tusa
 </h3>
 <p>
-Ez a dokumentum a Hálózati Etikett (Netiquette) egy
-minimális halmazát határozza meg. A
-különbözô szervezetek  szabadon
-módosíthatják; saját, hasonló
-szabályzatuk alapjául szolgálhat. Ezért a
-dokumentum pontosan meghatározott részekre van bontva,
-hogy az egyes részeket könnye(bbe)n
-találhassák meg. Magánszemélyek,
-akár felhasználók, akár
-adminisztrátorok szintén felhasználhatják
-minimális irányelvekként. Ez a feljegyzés
-az IETF Felelôs Hálózati Használat
-csoportjának munkája.
+Ez a dokumentum az Internet k&ouml;z&ouml;ss&eacute;g
+t&aacute;j&eacute;koztat&aacute;s&aacute;ra szolg&aacute;l. Ez a
+dokumentum nem hat&aacute;roz meg semmilyen szabv&aacute;nyt. A
+terjeszt&eacute;st nem korl&aacute;tozza semmi.
 
 <h3>
-A fordításról
+&Ouml;sszefoglal&oacute;
+</h3>
+<p>
+Ez a dokumentum a H&aacute;l&oacute;zati Etikett (Netiquette) egy
+minim&aacute;lis halmaz&aacute;t hat&aacute;rozza meg. A
+k&uuml;l&ouml;nb&ouml;z&ocirc; szervezetek  szabadon
+m&oacute;dos&iacute;thatj&aacute;k; saj&aacute;t, hasonl&oacute;
+szab&aacute;lyzatuk alapj&aacute;ul szolg&aacute;lhat. Ez&eacute;rt a
+dokumentum pontosan meghat&aacute;rozott r&eacute;szekre van bontva,
+hogy az egyes r&eacute;szeket k&ouml;nnye(bbe)n
+tal&aacute;lhass&aacute;k meg. Mag&aacute;nszem&eacute;lyek,
+ak&aacute;r felhaszn&aacute;l&oacute;k, ak&aacute;r
+adminisztr&aacute;torok szint&eacute;n felhaszn&aacute;lhatj&aacute;k
+minim&aacute;lis ir&aacute;nyelvekk&eacute;nt. Ez a feljegyz&eacute;s
+az IETF Felel&ocirc;s H&aacute;l&oacute;zati Haszn&aacute;lat
+csoportj&aacute;nak munk&aacute;ja.
+
+<h3>
+A ford&iacute;t&aacute;sr&oacute;l
 </h3>
 <p>
 
-Ez a dokumentum az RFC 1855 fordítása.
-Néhány helyen kiegészítettem az eredeti
-szöveget, igyekezvén ezt annak szellemében tenni.
-Mindenfajta javítást örömmel fogadok.  A
-címem a dokumentum végén
-található. Sok mondat végére kéne
-felkiáltójel, ez elmaradt.
+Ez a dokumentum az RFC 1855 ford&iacute;t&aacute;sa.
+N&eacute;h&aacute;ny helyen kieg&eacute;sz&iacute;tettem az eredeti
+sz&ouml;veget, igyekezv&eacute;n ezt annak szellem&eacute;ben tenni.
+Mindenfajta jav&iacute;t&aacute;st &ouml;r&ouml;mmel fogadok.  A
+c&iacute;mem a dokumentum v&eacute;g&eacute;n
+tal&aacute;lhat&oacute;. Sok mondat v&eacute;g&eacute;re k&eacute;ne
+felki&aacute;lt&oacute;jel, ez elmaradt.
 <p>
-A szöveg nem feltétlenül tükrözi a
-véleményemet, sem bármelyik
-munkaadómét. Semmilyen felelôsséget nem
-vállalok a dokumentum használatából vagy
-nem használatából eredô
-következményekért.
+A sz&ouml;veg nem felt&eacute;tlen&uuml;l t&uuml;kr&ouml;zi a
+v&eacute;lem&eacute;nyemet, sem b&aacute;rmelyik
+munkaad&oacute;m&eacute;t. Semmilyen felel&ocirc;ss&eacute;get nem
+v&aacute;llalok a dokumentum haszn&aacute;lat&aacute;b&oacute;l vagy
+nem haszn&aacute;lat&aacute;b&oacute;l ered&ocirc;
+k&ouml;vetkezm&eacute;nyek&eacute;rt.
 
 <h2>
-Tartalomjegyzék
+Tartalomjegyz&eacute;k
 </h2>
+
 <ol>
-<li><a href="#1.0">Bemutatkozás</a>
-<li><a href="#2.0">Egy-egynek kommunikáció</a>
-<li><a href="#3.0">Egy-sokaknak kommunikáció</a>
-<li><a href="#4.0">Információs
-szolgáltatások</a>
-<li><a href="#5.0">Válogatott bibliográfia</a>
-<li><a href="#6.0">Biztonsági kérdések</a>
-<li><a href="#7.0">A készítô címe</a>
-</li></li></li></li></li></li></li></ol>
-<h2>
-<a name="1.0">1.0 Bemutatkozás
-</a></h2>
-<p>
-A múltban a népesség Internet
-használó része az Internettel "nôtt" fel,
-mûszaki tudással bírt, és megértette
-a protokollok és a szállítás
-természetét. Manapság az Internet
-felhasználók közösségében
-egyre többen vannak olyanok, akik újak ebben a
-környezetben. Ezeknek a "Newbie"-knak ismeretlen ez a
-kultúra és nincs szükségük a
-protokollok és az átvitel mûszaki részleteire.
-Hogy ezek az új felhasználókat gyorsan az
-Internet közösség részéve
-válhassanak, ez az írás a magatartási
-szabályok minimális halmazát ismerteti. Ezeket
-aztán a különbözô szervezetek és
-magánszemélyek a saját céljaiknak
-megfelelôen módosíthatják. Mindenkinek
-tisztában kell lennie azzal, hogy bárki is
-szolgáltassa neki az Internet elérést -- legyen az
-egy ISP (Internet Szolgáltató), az egyetem, vagy a
-cége -- annak a szervezetnek megvan a maga szabályzata
-a levelek és az állományok
-tulajdonjogáról; arról, hogy mit helyes
-postázni és küldeni, és hogy
-miképpen prezentáljuk magunkat.
-Feltétlenül ismerd meg ezeket,
-érdeklôdjél a helyi illetékes(ek)nél.
-<p>
-Ezt az anyagot három fô részre bontottuk:
-egy-egynek kommunikáció, amibe a levelezés
-és a talk (beszélgetés) foglaltatik benne;
-egy-sokaknak kommunikáció, amely alatt a Usenet-et
-és a levelezési listákat értjük;
-és az információs szolgáltatások:
-ftp, WWW, gopher, MUD, MOO, IRC. Végül egy
-válogatott bibliográfiát találhatnak,
-referencia célokra.
+<li><a href="#1.0">Bemutatkoz&aacute;s</a>
+<li><a href="#2.0">Egy-egynek kommunik&aacute;ci&oacute;</a>
+<li><a href="#3.0">Egy-sokaknak kommunik&aacute;ci&oacute;</a>
+<li><a href="#4.0">Inform&aacute;ci&oacute;s
+szolg&aacute;ltat&aacute;sok</a>
+<li><a href="#5.0">V&aacute;logatott bibliogr&aacute;fia</a>
+<li><a href="#6.0">Biztons&aacute;gi k&eacute;rd&eacute;sek</a>
+<li><a href="#7.0">A k&eacute;sz&iacute;t&ocirc; c&iacute;me</a>
+</ol>
 
 <h2>
-<a name="2.0">2.0 Egy-egynek kommunikáció
-(elektronikus levél, beszélgetés (talk))
-</a></h2>
+<a name="1.0">1.0 Bemutatkoz&aacute;s
+</h2>
 <p>
-Az egy-egy kommunikációt úgy
-definiáljuk, amiben egy ember kommunikál egy
-másikkal, mintha szemtôl-szembe állnának:
-egy dialógus. Általában, az emberekkel
-való társalgás normál
-illemszabályai az érvényesek, csak ez az
-Interneten még fontosabb, mert hiányzik többek
-között a metakommunikáció és a
-hangszín.
+A m&uacute;ltban a n&eacute;pess&eacute;g Internet
+haszn&aacute;l&oacute; r&eacute;sze az Internettel "n&ocirc;tt" fel,
+m&ucirc;szaki tud&aacute;ssal b&iacute;rt, &eacute;s meg&eacute;rtette
+a protokollok &eacute;s a sz&aacute;ll&iacute;t&aacute;s
+term&eacute;szet&eacute;t. Manaps&aacute;g az Internet
+felhaszn&aacute;l&oacute;k k&ouml;z&ouml;ss&eacute;g&eacute;ben
+egyre t&ouml;bben vannak olyanok, akik &uacute;jak ebben a
+k&ouml;rnyezetben. Ezeknek a "Newbie"-knak ismeretlen ez a
+kult&uacute;ra &eacute;s nincs sz&uuml;ks&eacute;g&uuml;k a
+protokollok &eacute;s az &aacute;tvitel m&ucirc;szaki r&eacute;szleteire.
+Hogy ezek az &uacute;j felhaszn&aacute;l&oacute;kat gyorsan az
+Internet k&ouml;z&ouml;ss&eacute;g r&eacute;sz&eacute;ve
+v&aacute;lhassanak, ez az &iacute;r&aacute;s a magatart&aacute;si
+szab&aacute;lyok minim&aacute;lis halmaz&aacute;t ismerteti. Ezeket
+azt&aacute;n a k&uuml;l&ouml;nb&ouml;z&ocirc; szervezetek &eacute;s
+mag&aacute;nszem&eacute;lyek a saj&aacute;t c&eacute;ljaiknak
+megfelel&ocirc;en m&oacute;dos&iacute;thatj&aacute;k. Mindenkinek
+tiszt&aacute;ban kell lennie azzal, hogy b&aacute;rki is
+szolg&aacute;ltassa neki az Internet el&eacute;r&eacute;st -- legyen az
+egy ISP (Internet Szolg&aacute;ltat&oacute;), az egyetem, vagy a
+c&eacute;ge -- annak a szervezetnek megvan a maga szab&aacute;lyzata
+a levelek &eacute;s az &aacute;llom&aacute;nyok
+tulajdonjog&aacute;r&oacute;l; arr&oacute;l, hogy mit helyes
+post&aacute;zni &eacute;s k&uuml;ldeni, &eacute;s hogy
+mik&eacute;ppen prezent&aacute;ljuk magunkat.
+Felt&eacute;tlen&uuml;l ismerd meg ezeket,
+&eacute;rdekl&ocirc;dj&eacute;l a helyi illet&eacute;kes(ek)n&eacute;l.
+<p>
+Ezt az anyagot h&aacute;rom f&ocirc; r&eacute;szre bontottuk:
+egy-egynek kommunik&aacute;ci&oacute;, amibe a levelez&eacute;s
+&eacute;s a talk (besz&eacute;lget&eacute;s) foglaltatik benne;
+egy-sokaknak kommunik&aacute;ci&oacute;, amely alatt a Usenet-et
+&eacute;s a levelez&eacute;si list&aacute;kat &eacute;rtj&uuml;k;
+&eacute;s az inform&aacute;ci&oacute;s szolg&aacute;ltat&aacute;sok:
+ftp, WWW, gopher, MUD, MOO, IRC. V&eacute;g&uuml;l egy
+v&aacute;logatott bibliogr&aacute;fi&aacute;t tal&aacute;lhatnak,
+referencia c&eacute;lokra.
+
+<h2>
+<a name="2.0">2.0 Egy-egynek kommunik&aacute;ci&oacute;
+(elektronikus lev&eacute;l, besz&eacute;lget&eacute;s (talk))
+</h2>
+<p>
+Az egy-egy kommunik&aacute;ci&oacute;t &uacute;gy
+defini&aacute;ljuk, amiben egy ember kommunik&aacute;l egy
+m&aacute;sikkal, mintha szemt&ocirc;l-szembe &aacute;lln&aacute;nak:
+egy dial&oacute;gus. &Aacute;ltal&aacute;ban, az emberekkel
+val&oacute; t&aacute;rsalg&aacute;s norm&aacute;l
+illemszab&aacute;lyai az &eacute;rv&eacute;nyesek, csak ez az
+Interneten m&eacute;g fontosabb, mert hi&aacute;nyzik t&ouml;bbek
+k&ouml;z&ouml;tt a metakommunik&aacute;ci&oacute; &eacute;s a
+hangsz&iacute;n.
 
 <h3>
-2.1 Iránymutató felhasználóknak
+2.1 Ir&aacute;nymutat&oacute; felhaszn&aacute;l&oacute;knak
 </h3>
 <h4>
-2.1.1 Levelezéshez
+2.1.1 Levelez&eacute;shez
 </h4>
 <ul>
-<li>Ha nem egy Internet Szolgáltatón kerülsz
+
+<li>Ha nem egy Internet Szolg&aacute;ltat&oacute;n ker&uuml;lsz
 kapcsolatba az Internettel, akkor fontos ismerned a
-munkáltatód szabályait az elektronikus levelek
-tulajdonjogáról; ezek mindenütt mások.
+munk&aacute;ltat&oacute;d szab&aacute;lyait az elektronikus levelek
+tulajdonjog&aacute;r&oacute;l; ezek minden&uuml;tt m&aacute;sok.
 
-<li>Fel kell tételezned hogy az Interneten
-történô levelezés nem biztonságos,
-kivéve ha valamilyen rejtjelezô eszközt (akár
-szoftvert, akár hardvert) használsz. Ne írjál
-semmi olyasmit egy elektronikus levélbe, amit nem
-küldenél el levelezôlapon.
+<li>Fel kell t&eacute;telezned hogy az Interneten
+t&ouml;rt&eacute;n&ocirc; levelez&eacute;s nem biztons&aacute;gos,
+kiv&eacute;ve ha valamilyen rejtjelez&ocirc; eszk&ouml;zt (ak&aacute;r
+szoftvert, ak&aacute;r hardvert) haszn&aacute;lsz. Ne &iacute;rj&aacute;l
+semmi olyasmit egy elektronikus lev&eacute;lbe, amit nem
+k&uuml;lden&eacute;l el levelez&ocirc;lapon.
 
-<li>Tiszteld a szerzô jogait avval az anyaggal kapcsolatban, amit
-másolsz. Majdnem minden országban vannak a
-szerzôk jogait védô törvények.
+<li>Tiszteld a szerz&ocirc; jogait avval az anyaggal kapcsolatban, amit
+m&aacute;solsz. Majdnem minden orsz&aacute;gban vannak a
+szerz&ocirc;k jogait v&eacute;d&ocirc; t&ouml;rv&eacute;nyek.
 
-<li>Ha továbbküldesz (forward) vagy
-újrapostázol egy üzenetet, akkor ne
-változtasd meg annak a szóhasználatát. Ha
-ez egy neked írt személyes üzenet volt, és
-egy csoportnak kívánod továbbadni, akkor
-kérjél elôször engedélyt a
-feladótól.
+<li>Ha tov&aacute;bbk&uuml;ldesz (forward) vagy
+&uacute;jrapost&aacute;zol egy &uuml;zenetet, akkor ne
+v&aacute;ltoztasd meg annak a sz&oacute;haszn&aacute;lat&aacute;t. Ha
+ez egy neked &iacute;rt szem&eacute;lyes &uuml;zenet volt, &eacute;s
+egy csoportnak k&iacute;v&aacute;nod tov&aacute;bbadni, akkor
+k&eacute;rj&eacute;l el&ocirc;sz&ouml;r enged&eacute;lyt a
+felad&oacute;t&oacute;l.
 
-<li>Soha ne küldj "lánc" levelet elektronikusan, Ezek
-tiltottak az Interneten. Ha mégis ilyet küldesz, az
-valószínûleg a hálózati jogaid
-csorbításával fog járni. Ha ilyesmit
-kapnál akkor értesítsd a helyi
-rendszeradminisztrátort.
+<li>Soha ne k&uuml;ldj "l&aacute;nc" levelet elektronikusan, Ezek
+tiltottak az Interneten. Ha m&eacute;gis ilyet k&uuml;ldesz, az
+val&oacute;sz&iacute;n&ucirc;leg a h&aacute;l&oacute;zati jogaid
+csorb&iacute;t&aacute;s&aacute;val fog j&aacute;rni. Ha ilyesmit
+kapn&aacute;l akkor &eacute;rtes&iacute;tsd a helyi
+rendszeradminisztr&aacute;tort.
 
-<li>Egy jó ökölszabály: légy
-konzervatív a küldésben és légy
-liberális a fogadásban. Nem szabad indulatos leveleket
-küldened (ezeket "flame"-nek nevezzük) még akkor
-sem, ha provokálnak. Másik oldalról viszont, ne
-legyél meglepve, ha ilyet levelet kapsz, és okosan teszed,
-ha nem válaszolsz ezekre.
+<li>Egy j&oacute; &ouml;k&ouml;lszab&aacute;ly: l&eacute;gy
+konzervat&iacute;v a k&uuml;ld&eacute;sben &eacute;s l&eacute;gy
+liber&aacute;lis a fogad&aacute;sban. Nem szabad indulatos leveleket
+k&uuml;ldened (ezeket "flame"-nek nevezz&uuml;k) m&eacute;g akkor
+sem, ha provok&aacute;lnak. M&aacute;sik oldalr&oacute;l viszont, ne
+legy&eacute;l meglepve, ha ilyet levelet kapsz, &eacute;s okosan teszed,
+ha nem v&aacute;laszolsz ezekre.
 
-<li>Általában jó, ha ellenôrzöd a
-leveleid subject-jét mielôtt válaszolsz egy
-levélre. Van úgy, hogy az, aki korábban
-segítséget (vagy felvilágosítást)
-kért tôled, már írt egy levelet, aminek az a
-lényege, hogy "Tárgytalan". Szintén
-célszerû meggyôzôdni, hogy a levél,
-amire válaszolsz, az neked volt-e címezve. Lehet hogy
-csak másolatot kaptál (cc:) az eredeti helyett.
+<li>&Aacute;ltal&aacute;ban j&oacute;, ha ellen&ocirc;rz&ouml;d a
+leveleid subject-j&eacute;t miel&ocirc;tt v&aacute;laszolsz egy
+lev&eacute;lre. Van &uacute;gy, hogy az, aki kor&aacute;bban
+seg&iacute;ts&eacute;get (vagy felvil&aacute;gos&iacute;t&aacute;st)
+k&eacute;rt t&ocirc;led, m&aacute;r &iacute;rt egy levelet, aminek az a
+l&eacute;nyege, hogy "T&aacute;rgytalan". Szint&eacute;n
+c&eacute;lszer&ucirc; meggy&ocirc;z&ocirc;dni, hogy a lev&eacute;l,
+amire v&aacute;laszolsz, az neked volt-e c&iacute;mezve. Lehet hogy
+csak m&aacute;solatot kapt&aacute;l (cc:) az eredeti helyett.
 
-<li>Könnyítsd meg a címzett dolgát. Sok
-levelezôprogram levágja a
-fejlécinformációkat amelyek a
-válaszcímedet tartalmazzák. Hogy biztos
-lehessél abban, hogy a többi ember tudja ki vagy,
-írjál az üzeneted végére egy, esetleg
-két sort arról, hogy miképpen érhetnek el.
-Ezt a file-t már jóelôre elkészítheted,
-és az üzeneteid végére teheted aztán.
-(Néhány program ezt automatikusan megteszi.) Az
-Internetes szóhasználatban ezt "sig" vagy "signature"
-file-nak nevezik. A névjegykártya helyét veszi
-át a sig file. (És akár
-többféléd is lehet, a többféle
-szituációnak megfelelôen.)
+<li>K&ouml;nny&iacute;tsd meg a c&iacute;mzett dolg&aacute;t. Sok
+levelez&ocirc;program lev&aacute;gja a
+fejl&eacute;cinform&aacute;ci&oacute;kat amelyek a
+v&aacute;laszc&iacute;medet tartalmazz&aacute;k. Hogy biztos
+lehess&eacute;l abban, hogy a t&ouml;bbi ember tudja ki vagy,
+&iacute;rj&aacute;l az &uuml;zeneted v&eacute;g&eacute;re egy, esetleg
+k&eacute;t sort arr&oacute;l, hogy mik&eacute;ppen &eacute;rhetnek el.
+Ezt a file-t m&aacute;r j&oacute;el&ocirc;re elk&eacute;sz&iacute;theted,
+&eacute;s az &uuml;zeneteid v&eacute;g&eacute;re teheted azt&aacute;n.
+(N&eacute;h&aacute;ny program ezt automatikusan megteszi.) Az
+Internetes sz&oacute;haszn&aacute;latban ezt "sig" vagy "signature"
+file-nak nevezik. A n&eacute;vjegyk&aacute;rtya hely&eacute;t veszi
+&aacute;t a sig file. (&Eacute;s ak&aacute;r
+t&ouml;bbf&eacute;l&eacute;d is lehet, a t&ouml;bbf&eacute;le
+szitu&aacute;ci&oacute;nak megfelel&ocirc;en.)
 
-<li>Légy óvatos a címzéssel. Vannak
-címek, amelyek egy csoportot jelentek, a cím
-mégis úgy néz ki, mintha egyetlen ember lenne.
-Légy tisztában azzal, hogy kinek írsz.
+<li>L&eacute;gy &oacute;vatos a c&iacute;mz&eacute;ssel. Vannak
+c&iacute;mek, amelyek egy csoportot jelentek, a c&iacute;m
+m&eacute;gis &uacute;gy n&eacute;z ki, mintha egyetlen ember lenne.
+L&eacute;gy tiszt&aacute;ban azzal, hogy kinek &iacute;rsz.
 
-<li>Figyelj a cc:-kre a válaszoláskor. Amikor már
-csak két ember között folyik a
-kommunikáció, akkor ne küldd el ezeket a leveleket
-másoknak.
+<li>Figyelj a cc:-kre a v&aacute;laszol&aacute;skor. Amikor m&aacute;r
+csak k&eacute;t ember k&ouml;z&ouml;tt folyik a
+kommunik&aacute;ci&oacute;, akkor ne k&uuml;ldd el ezeket a leveleket
+m&aacute;soknak.
 
-<li>Általában egy Internetet használó
-embernek nincs ideje az Internet ill. annak belsô
-mûködésére vonatkozó
-kérdésekre válaszolni. Ne küldjél
-kéretlen információkérô leveleket
-olyan embereknek, akinek címét egy levelezési
-listában vagy egy RFC-ben láthattad. (A
-fordító megjegyzése: erre a célra is
-találsz természetesen megfelelô fórumokat.)
+<li>&Aacute;ltal&aacute;ban egy Internetet haszn&aacute;l&oacute;
+embernek nincs ideje az Internet ill. annak bels&ocirc;
+m&ucirc;k&ouml;d&eacute;s&eacute;re vonatkoz&oacute;
+k&eacute;rd&eacute;sekre v&aacute;laszolni. Ne k&uuml;ldj&eacute;l
+k&eacute;retlen inform&aacute;ci&oacute;k&eacute;r&ocirc; leveleket
+olyan embereknek, akinek c&iacute;m&eacute;t egy levelez&eacute;si
+list&aacute;ban vagy egy RFC-ben l&aacute;thattad. (A
+ford&iacute;t&oacute; megjegyz&eacute;se: erre a c&eacute;lra is
+tal&aacute;lsz term&eacute;szetesen megfelel&ocirc; f&oacute;rumokat.)
 
-<li>Ne felejtsd el, hogy azok az emberek akikkel kommunikálsz,
-az egész világon vannak szétszórva. Lehet,
-hogy annak a levélnek, amire azonnali választ
-vársz, a címzettje éppen alszik. Add meg neki a
-lehetôséget, hogy felébredjen, munkába
-menjen és belépjen, mielôtt úgy
-döntesz, hogy a levél nem érkezett meg, vagy a
-címzett nem törôdik vele.
+<li>Ne felejtsd el, hogy azok az emberek akikkel kommunik&aacute;lsz,
+az eg&eacute;sz vil&aacute;gon vannak sz&eacute;tsz&oacute;rva. Lehet,
+hogy annak a lev&eacute;lnek, amire azonnali v&aacute;laszt
+v&aacute;rsz, a c&iacute;mzettje &eacute;ppen alszik. Add meg neki a
+lehet&ocirc;s&eacute;get, hogy fel&eacute;bredjen, munk&aacute;ba
+menjen &eacute;s bel&eacute;pjen, miel&ocirc;tt &uacute;gy
+d&ouml;ntesz, hogy a lev&eacute;l nem &eacute;rkezett meg, vagy a
+c&iacute;mzett nem t&ouml;r&ocirc;dik vele.
 
-<li>Mielôtt hosszú, vagy személyes
-eszmecserét kezdeményezel, ellenôrizd a
-címet. Szintén helyes gyakorlat "Long" szót
-írni a hosszú üzeneteknek a subject-jébe,
-mert így a címzett tudhatja, hogy idôt kell
-szánnia az elolvasására. 100 sor felett
-számít hosszúnak egy üzenet.
+<li>Miel&ocirc;tt hossz&uacute;, vagy szem&eacute;lyes
+eszmecser&eacute;t kezdem&eacute;nyezel, ellen&ocirc;rizd a
+c&iacute;met. Szint&eacute;n helyes gyakorlat "Long" sz&oacute;t
+&iacute;rni a hossz&uacute; &uuml;zeneteknek a subject-j&eacute;be,
+mert &iacute;gy a c&iacute;mzett tudhatja, hogy id&ocirc;t kell
+sz&aacute;nnia az elolvas&aacute;s&aacute;ra. 100 sor felett
+sz&aacute;m&iacute;t hossz&uacute;nak egy &uuml;zenet.
 
-<li>Légy tisztában azzal, hogy kihez kell
-segítségért fordulnod. Általában
-nem kell messzire menned. Keressél helyben olyan embereket,
-akik szoftver- és rendszerproblémák
-elhárításban segédkezhetnek.
-Szintén jó, ha tudod, hogy kit kell keresned, ha
-valamilyen megkérdôjelezhetô vagy illegális
-anyagot kapsz. A legtöbb helyen a "postmaster" címre
-írhatsz segítségkérô levelet, mert ezt
-a címet legtöbbször megfelelô tudással
-bíró ember olvassa.
+<li>L&eacute;gy tiszt&aacute;ban azzal, hogy kihez kell
+seg&iacute;ts&eacute;g&eacute;rt fordulnod. &Aacute;ltal&aacute;ban
+nem kell messzire menned. Keress&eacute;l helyben olyan embereket,
+akik szoftver- &eacute;s rendszerprobl&eacute;m&aacute;k
+elh&aacute;r&iacute;t&aacute;sban seg&eacute;dkezhetnek.
+Szint&eacute;n j&oacute;, ha tudod, hogy kit kell keresned, ha
+valamilyen megk&eacute;rd&ocirc;jelezhet&ocirc; vagy illeg&aacute;lis
+anyagot kapsz. A legt&ouml;bb helyen a "postmaster" c&iacute;mre
+&iacute;rhatsz seg&iacute;ts&eacute;gk&eacute;r&ocirc; levelet, mert ezt
+a c&iacute;met legt&ouml;bbsz&ouml;r megfelel&ocirc; tud&aacute;ssal
+b&iacute;r&oacute; ember olvassa.
 
-<li>Soha ne feledd, hogy a címzett is emberi lény,
-méghozzá olyan, akinek kultúrája, nyelve,
-humora egészen más is lehet, mint a tiéd.
-Dátumformátumok,
-mértékegységek, idiómák sem
-mindenütt ugyanazok.
+<li>Soha ne feledd, hogy a c&iacute;mzett is emberi l&eacute;ny,
+m&eacute;ghozz&aacute; olyan, akinek kult&uacute;r&aacute;ja, nyelve,
+humora eg&eacute;szen m&aacute;s is lehet, mint a ti&eacute;d.
+D&aacute;tumform&aacute;tumok,
+m&eacute;rt&eacute;kegys&eacute;gek, idi&oacute;m&aacute;k sem
+minden&uuml;tt ugyanazok.
 
-<li>Használj vegyesen kis- és nagybetût,
-akárcsak a közönséges
-íráskor. A CSUPA NAGYBETÛ OLYAN,
-MINTHA ORDÍTANÁL!
+<li>Haszn&aacute;lj vegyesen kis- &eacute;s nagybet&ucirc;t,
+ak&aacute;rcsak a k&ouml;z&ouml;ns&eacute;ges
+&iacute;r&aacute;skor. A CSUPA NAGYBET&Ucirc; OLYAN,
+MINTHA ORD&Iacute;TAN&Aacute;L!
 
-<li>Használj szimbólumokat
-hangsúlyozásra. *Erre* gondoltam. Használj
-aláhúzásjeleket aláhúzásra.
-A kedvenc könyvem a _Háború és
-béke_.
+<li>Haszn&aacute;lj szimb&oacute;lumokat
+hangs&uacute;lyoz&aacute;sra. *Erre* gondoltam. Haszn&aacute;lj
+al&aacute;h&uacute;z&aacute;sjeleket al&aacute;h&uacute;z&aacute;sra.
+A kedvenc k&ouml;nyvem a _H&aacute;bor&uacute; &eacute;s
+b&eacute;ke_.
 
-<li>Használj "mosolygókat" (smiley) a hangszín
-jelzésére, de bánj velünk
-takarékosan. :-) példa ilyen "mosolygóra"
-(döntsd oldalra a fejed és nézzd meg úgy.)
-Azonban ne feltételezd, hogy egy "mosolygó"
-szerepeltetése rögtön eléri, hogy a
-címzett egyetértsen veled, vagy hogy egy
-egyébként bántó megjegyzés
-élét elvegye.
+<li>Haszn&aacute;lj "mosolyg&oacute;kat" (smiley) a hangsz&iacute;n
+jelz&eacute;s&eacute;re, de b&aacute;nj vel&uuml;nk
+takar&eacute;kosan. :-) p&eacute;lda ilyen "mosolyg&oacute;ra"
+(d&ouml;ntsd oldalra a fejed &eacute;s n&eacute;zzd meg &uacute;gy.)
+Azonban ne felt&eacute;telezd, hogy egy "mosolyg&oacute;"
+szerepeltet&eacute;se r&ouml;gt&ouml;n el&eacute;ri, hogy a
+c&iacute;mzett egyet&eacute;rtsen veled, vagy hogy egy
+egy&eacute;bk&eacute;nt b&aacute;nt&oacute; megjegyz&eacute;s
+&eacute;l&eacute;t elvegye.
 
-<li>Aludj egyet, mielôtt érzelmektôl
-fûtött választ küldenél egy
-üzenetre. Ha biztosan erôs érzéseid vannak
-egy tárgyról, akkor helyezd azt FLAME ON/OFF jelek
-közé:
+<li>Aludj egyet, miel&ocirc;tt &eacute;rzelmekt&ocirc;l
+f&ucirc;t&ouml;tt v&aacute;laszt k&uuml;lden&eacute;l egy
+&uuml;zenetre. Ha biztosan er&ocirc;s &eacute;rz&eacute;seid vannak
+egy t&aacute;rgyr&oacute;l, akkor helyezd azt FLAME ON/OFF jelek
+k&ouml;z&eacute;:
 
-FLAME ON: Ez a fajta vita nem méltó arra a
-sávszélességre, ami a
-továbbításához kell. Teljességgel
-illogikus és érvekkel alá nem támasztott.
-A világ többi része is egyetért velem.
+FLAME ON: Ez a fajta vita nem m&eacute;lt&oacute; arra a
+s&aacute;vsz&eacute;less&eacute;gre, ami a
+tov&aacute;bb&iacute;t&aacute;s&aacute;hoz kell. Teljess&eacute;ggel
+illogikus &eacute;s &eacute;rvekkel al&aacute; nem t&aacute;masztott.
+A vil&aacute;g t&ouml;bbi r&eacute;sze is egyet&eacute;rt velem.
 
 FLAME OFF
 
-<li>Ne írjál vezérlô karaktereket vagy
-nem-ASCII karaktereket, kivéve ha a programod elkódolja
-ezeket, vagy MIME attachment formájában
-küldöd. Ha elkódolva küldesz valamit, akkor
-próbálj megbizonyosodni arról, hogy a
-címzett vissza tudja majd kódolni azt.
+<li>Ne &iacute;rj&aacute;l vez&eacute;rl&ocirc; karaktereket vagy
+nem-ASCII karaktereket, kiv&eacute;ve ha a programod elk&oacute;dolja
+ezeket, vagy MIME attachment form&aacute;j&aacute;ban
+k&uuml;ld&ouml;d. Ha elk&oacute;dolva k&uuml;ldesz valamit, akkor
+pr&oacute;b&aacute;lj megbizonyosodni arr&oacute;l, hogy a
+c&iacute;mzett vissza tudja majd k&oacute;dolni azt.
 
-<li>Légy tömör anélkül, hogy
-túlságon lényegretörô lennél.
-Amikor egy levélre válaszolsz, csak annyit idézz
-az eredeti anyagból, hogy érthetô legyen a
-válaszod és ne többet. Rendkívül
-rossz szokás az egész levelet idézni a
-válaszban - töröld ki a felesleget.
+<li>L&eacute;gy t&ouml;m&ouml;r an&eacute;lk&uuml;l, hogy
+t&uacute;ls&aacute;gon l&eacute;nyegret&ouml;r&ocirc; lenn&eacute;l.
+Amikor egy lev&eacute;lre v&aacute;laszolsz, csak annyit id&eacute;zz
+az eredeti anyagb&oacute;l, hogy &eacute;rthet&ocirc; legyen a
+v&aacute;laszod &eacute;s ne t&ouml;bbet. Rendk&iacute;v&uuml;l
+rossz szok&aacute;s az eg&eacute;sz levelet id&eacute;zni a
+v&aacute;laszban - t&ouml;r&ouml;ld ki a felesleget.
 
-<li>65 karakter széles, kocsivissza karakterrel lezárt
-sorokat írjál. (Fordító megjegyzése:
-e dokumentumtól eltérôen 72-76 karaktert is
-szoktak ajánlani.)
+<li>65 karakter sz&eacute;les, kocsivissza karakterrel lez&aacute;rt
+sorokat &iacute;rj&aacute;l. (Ford&iacute;t&oacute; megjegyz&eacute;se:
+e dokumentumt&oacute;l elt&eacute;r&ocirc;en 72-76 karaktert is
+szoktak aj&aacute;nlani.)
 
-<li>A levél fejlécében kell, hogy legyen egy
-subject sor, ami visszatükrözi a levél
-tartalmát.
+<li>A lev&eacute;l fejl&eacute;c&eacute;ben kell, hogy legyen egy
+subject sor, ami visszat&uuml;kr&ouml;zi a lev&eacute;l
+tartalm&aacute;t.
 
-<li>Ha signature-t illesztesz a leveledbe, akkor azt fogd rövidre.
-Ökölszabály: 4 sornál ne legyen hosszabb.
-Sok ember a kapcsolatért percenként fizet, és
-minél hosszabb az üzeneted, annál többet
+<li>Ha signature-t illesztesz a leveledbe, akkor azt fogd r&ouml;vidre.
+&Ouml;k&ouml;lszab&aacute;ly: 4 sorn&aacute;l ne legyen hosszabb.
+Sok ember a kapcsolat&eacute;rt percenk&eacute;nt fizet, &eacute;s
+min&eacute;l hosszabb az &uuml;zeneted, ann&aacute;l t&ouml;bbet
 fizetnek.
 
-<li>Ahogy egy levél (ma) nem lehet privát, úgy
-a levél (és a news) is (ma még)
-hamisítható, megváltoztatható. A
-változtatásokat nem mindig lehet felismerni
-(könnyen), így célszerû a józan
-ész alapján ellenôrizni egy üzenet
-valódiságát, mielôtt elhisszük azt.
+<li>Ahogy egy lev&eacute;l (ma) nem lehet priv&aacute;t, &uacute;gy
+a lev&eacute;l (&eacute;s a news) is (ma m&eacute;g)
+hamis&iacute;that&oacute;, megv&aacute;ltoztathat&oacute;. A
+v&aacute;ltoztat&aacute;sokat nem mindig lehet felismerni
+(k&ouml;nnyen), &iacute;gy c&eacute;lszer&ucirc; a j&oacute;zan
+&eacute;sz alapj&aacute;n ellen&ocirc;rizni egy &uuml;zenet
+val&oacute;dis&aacute;g&aacute;t, miel&ocirc;tt elhissz&uuml;k azt.
 
-<li>Küldj egy rövid választ a feladónak,
-hogy megkaptad a levelét, ha úgy gondolod, hogy a
-levél fontossága szükségessé teszi
-ezt. Tedd meg ezt akkor is, ha részletesen válaszolni csak
-késôbb lesz idôd.
+<li>K&uuml;ldj egy r&ouml;vid v&aacute;laszt a felad&oacute;nak,
+hogy megkaptad a level&eacute;t, ha &uacute;gy gondolod, hogy a
+lev&eacute;l fontoss&aacute;ga sz&uuml;ks&eacute;gess&eacute; teszi
+ezt. Tedd meg ezt akkor is, ha r&eacute;szletesen v&aacute;laszolni csak
+k&eacute;s&ocirc;bb lesz id&ocirc;d.
 
-<li>Az, hogy egy adott beszélgetésbôl ki mennyit
-ért meg, az erôsen függ az adott
-szituációtól. Egy adott e-mail környezetben
-megtanult normák nem feltétlenül vonatkoznak
-általában az Internetet használó
-emberekkel vonatkozó kommunikációra.
-Légy óvatos a helyi szlenggel és a helyi
-rövidítésekkel.
+<li>Az, hogy egy adott besz&eacute;lget&eacute;sb&ocirc;l ki mennyit
+&eacute;rt meg, az er&ocirc;sen f&uuml;gg az adott
+szitu&aacute;ci&oacute;t&oacute;l. Egy adott e-mail k&ouml;rnyezetben
+megtanult norm&aacute;k nem felt&eacute;tlen&uuml;l vonatkoznak
+&aacute;ltal&aacute;ban az Internetet haszn&aacute;l&oacute;
+emberekkel vonatkoz&oacute; kommunik&aacute;ci&oacute;ra.
+L&eacute;gy &oacute;vatos a helyi szlenggel &eacute;s a helyi
+r&ouml;vid&iacute;t&eacute;sekkel.
 
-<li>Egy e-mail üzenet szállítási
-költsége nagyjából egyenlô a
-feladónál és a címzettnél (vagy
-szervezeteinél). Ez alapvetôen eltér a
-hagyományos levéltôl, a telefontól, a
-rádiótól, és a TV-tôl. Egy
-levél elküldése konkrétan
-hálózati szélességbe, diszk helybe,
-és CPU idôbe is kerülhet. Ez az alapvetô
-gazdasági oka, amiért nem illik kéretlen
-hirdetést küldeni e-mail-ben. (Ez ráadásul
+<li>Egy e-mail &uuml;zenet sz&aacute;ll&iacute;t&aacute;si
+k&ouml;lts&eacute;ge nagyj&aacute;b&oacute;l egyenl&ocirc; a
+felad&oacute;n&aacute;l &eacute;s a c&iacute;mzettn&eacute;l (vagy
+szervezetein&eacute;l). Ez alapvet&ocirc;en elt&eacute;r a
+hagyom&aacute;nyos lev&eacute;lt&ocirc;l, a telefont&oacute;l, a
+r&aacute;di&oacute;t&oacute;l, &eacute;s a TV-t&ocirc;l. Egy
+lev&eacute;l elk&uuml;ld&eacute;se konkr&eacute;tan
+h&aacute;l&oacute;zati sz&eacute;less&eacute;gbe, diszk helybe,
+&eacute;s CPU id&ocirc;be is ker&uuml;lhet. Ez az alapvet&ocirc;
+gazdas&aacute;gi oka, ami&eacute;rt nem illik k&eacute;retlen
+hirdet&eacute;st k&uuml;ldeni e-mail-ben. (Ez r&aacute;ad&aacute;sul
 tilos is sok helyen.)
 
-<li>Ne küldj nagytömegû kéretlen
-információt az embereknek.
+<li>Ne k&uuml;ldj nagyt&ouml;meg&ucirc; k&eacute;retlen
+inform&aacute;ci&oacute;t az embereknek.
 
-<li>Ha a levelezôrendszered képes automatikus
-továbbküldésre, akkor vigyázz, hogy ne
-lépjen fel a rettegett "továbbítóhurok". Ez
-úgy jöhet létre, ha sok gépen
-állítod be az automata továbbítást,
-úgy, hogy egy neked küldött üzenet az egyik
-géptôl a másikig utazik, majd a
-következôre és így tovább
-egészen addig, amig visszaérkezik az elsô
-címre a levél... (Fordító
-megjegyzése: ennek elkerülésére nem
-mindenütt lehet automatikusan továbbküldött
-levelet továbbküldeni.)
+<li>Ha a levelez&ocirc;rendszered k&eacute;pes automatikus
+tov&aacute;bbk&uuml;ld&eacute;sre, akkor vigy&aacute;zz, hogy ne
+l&eacute;pjen fel a rettegett "tov&aacute;bb&iacute;t&oacute;hurok". Ez
+&uacute;gy j&ouml;het l&eacute;tre, ha sok g&eacute;pen
+&aacute;ll&iacute;tod be az automata tov&aacute;bb&iacute;t&aacute;st,
+&uacute;gy, hogy egy neked k&uuml;ld&ouml;tt &uuml;zenet az egyik
+g&eacute;pt&ocirc;l a m&aacute;sikig utazik, majd a
+k&ouml;vetkez&ocirc;re &eacute;s &iacute;gy tov&aacute;bb
+eg&eacute;szen addig, amig vissza&eacute;rkezik az els&ocirc;
+c&iacute;mre a lev&eacute;l... (Ford&iacute;t&oacute;
+megjegyz&eacute;se: ennek elker&uuml;l&eacute;s&eacute;re nem
+minden&uuml;tt lehet automatikusan tov&aacute;bbk&uuml;ld&ouml;tt
+levelet tov&aacute;bbk&uuml;ldeni.)
 
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></ul>
+</ul>
+
 <h4>
 2.1.2 A talk
 </h4>
 
-A talk olyan protokollok gyûjteménye, amelyek
-lehetôvé teszik két ember interaktív
-párbeszédét
-számítógépen keresztül.
+A talk olyan protokollok gy&ucirc;jtem&eacute;nye, amelyek
+lehet&ocirc;v&eacute; teszik k&eacute;t ember interakt&iacute;v
+p&aacute;rbesz&eacute;d&eacute;t
+sz&aacute;m&iacute;t&oacute;g&eacute;pen kereszt&uuml;l.
 
 <ul>
-<li>Használj vegyesen kis- és nagybetût, mintha
-egy levelet vagy egy e-mail-t írnál.
 
-<li>Ne hagyd, hogy az irományod kifusson a
-képernyô széléig és ott a
-terminálod törjön sort: használj egy
-Kocsivissza (CR) jelet a sor lezárására. Nem
-tételezheted fel azt sem, hogy a te képernyôd
-mérete azonos bárki máséval.
-Ökölszabály: max. 70 karaktert és max. 12
-sort írjál.
+<li>Haszn&aacute;lj vegyesen kis- &eacute;s nagybet&ucirc;t, mintha
+egy levelet vagy egy e-mail-t &iacute;rn&aacute;l.
 
-<li>Hagyjál margókat, ne írjál a
-képernyô szélére.
+<li>Ne hagyd, hogy az irom&aacute;nyod kifusson a
+k&eacute;perny&ocirc; sz&eacute;l&eacute;ig &eacute;s ott a
+termin&aacute;lod t&ouml;rj&ouml;n sort: haszn&aacute;lj egy
+Kocsivissza (CR) jelet a sor lez&aacute;r&aacute;s&aacute;ra. Nem
+t&eacute;telezheted fel azt sem, hogy a te k&eacute;perny&ocirc;d
+m&eacute;rete azonos b&aacute;rki m&aacute;s&eacute;val.
+&Ouml;k&ouml;lszab&aacute;ly: max. 70 karaktert &eacute;s max. 12
+sort &iacute;rj&aacute;l.
 
-<li>Ha befejezted a mondandódat, akkor Üssél
-két CR-t (egy üres sort), jelezve, hogy a másik
-következik.
+<li>Hagyj&aacute;l marg&oacute;kat, ne &iacute;rj&aacute;l a
+k&eacute;perny&ocirc; sz&eacute;l&eacute;re.
 
-<li>Mindig írjál egy "viszontlátásra"-t
-vagy más elköszönést és várd
-meg a másik oldal köszönését is.
-Különösen fontos ez, ha egy távoli valakivel
-kommunikálsz. Ne felejtsd el, hogy a
-kommunikációtok sebessége egyrészt a
-rendelkezésre álló
-sávszélességtôl (a csô
-átmérôje) és a hálózat
-késéseitôl (a fény sebessége) is
-függ.
+<li>Ha befejezted a mondand&oacute;dat, akkor &Uuml;ss&eacute;l
+k&eacute;t CR-t (egy &uuml;res sort), jelezve, hogy a m&aacute;sik
+k&ouml;vetkezik.
 
-<li>Tisztában kell lenned azzal, hogy a talk megzavarja a
-másik embert. Csak a rendeltetésének
-megfelelôen használd. Soha ne talk-olj idegenre!
+<li>Mindig &iacute;rj&aacute;l egy "viszontl&aacute;t&aacute;sra"-t
+vagy m&aacute;s elk&ouml;sz&ouml;n&eacute;st &eacute;s v&aacute;rd
+meg a m&aacute;sik oldal k&ouml;sz&ouml;n&eacute;s&eacute;t is.
+K&uuml;l&ouml;n&ouml;sen fontos ez, ha egy t&aacute;voli valakivel
+kommunik&aacute;lsz. Ne felejtsd el, hogy a
+kommunik&aacute;ci&oacute;tok sebess&eacute;ge egyr&eacute;szt a
+rendelkez&eacute;sre &aacute;ll&oacute;
+s&aacute;vsz&eacute;less&eacute;gt&ocirc;l (a cs&ocirc;
+&aacute;tm&eacute;r&ocirc;je) &eacute;s a h&aacute;l&oacute;zat
+k&eacute;s&eacute;seit&ocirc;l (a f&eacute;ny sebess&eacute;ge) is
+f&uuml;gg.
 
-<li>Sok oka lehet annak, ha nem kapsz választ.
-Elôször is, nem biztos, hogy minden mûködik.
-Másodszor is, nem minden talk verzió kompatibilis.
-Harmadrészt, a címzett letilthatja a talk-ot. Ezt
-általában te is megteheted, szokás szerint
-érdeklôdjél a helyi rendszergazdánál
-a konkrét részletekrôl.
+<li>Tiszt&aacute;ban kell lenned azzal, hogy a talk megzavarja a
+m&aacute;sik embert. Csak a rendeltet&eacute;s&eacute;nek
+megfelel&ocirc;en haszn&aacute;ld. Soha ne talk-olj idegenre!
 
-<li>Bizonyos talk verziók újracsengetik a
-címzettet ha magára hagyják. Hagyd
-egy-kétszer csengetni, utána állítsd le (kill)
+<li>Sok oka lehet annak, ha nem kapsz v&aacute;laszt.
+El&ocirc;sz&ouml;r is, nem biztos, hogy minden m&ucirc;k&ouml;dik.
+M&aacute;sodszor is, nem minden talk verzi&oacute; kompatibilis.
+Harmadr&eacute;szt, a c&iacute;mzett letilthatja a talk-ot. Ezt
+&aacute;ltal&aacute;ban te is megteheted, szok&aacute;s szerint
+&eacute;rdekl&ocirc;dj&eacute;l a helyi rendszergazd&aacute;n&aacute;l
+a konkr&eacute;t r&eacute;szletekr&ocirc;l.
+
+<li>Bizonyos talk verzi&oacute;k &uacute;jracsengetik a
+c&iacute;mzettet ha mag&aacute;ra hagyj&aacute;k. Hagyd
+egy-k&eacute;tszer csengetni, ut&aacute;na &aacute;ll&iacute;tsd le (kill)
 a programot.
 
-<li>Ha valaki nem válaszol, akkor
-megpróbálkozhatsz egy másik tty-vel.
-Használd a finger parancsot, hogy látsd, hogy melyikekre
-van belépve. Ha a másik fél még mindig
-nem válaszol, ne erôltesd tovább.
-(Fordító megjegyzése: néhol a finger le
-van tiltva, ne lepôdj meg tehát, ha nem
-mûködik. Megjegyzés kettô: Ez igen Unix
+<li>Ha valaki nem v&aacute;laszol, akkor
+megpr&oacute;b&aacute;lkozhatsz egy m&aacute;sik tty-vel.
+Haszn&aacute;ld a finger parancsot, hogy l&aacute;tsd, hogy melyikekre
+van bel&eacute;pve. Ha a m&aacute;sik f&eacute;l m&eacute;g mindig
+nem v&aacute;laszol, ne er&ocirc;ltesd tov&aacute;bb.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: n&eacute;hol a finger le
+van tiltva, ne lep&ocirc;dj meg teh&aacute;t, ha nem
+m&ucirc;k&ouml;dik. Megjegyz&eacute;s kett&ocirc;: Ez igen Unix
 specifikus pont, viszont a Unix a legelterjedtebb Internetes szerver
-operációs rendszer.).
+oper&aacute;ci&oacute;s rendszer.).
 
-<li>A beszélgetés (talk) alatt megmutatkozik a
-gépelési tudásod. Ha lassan és sok
-hibával gépelsz (fordító
-megjegyezése: ne keseredj el) akkor legtöbbször nem
-éri meg visszamenni kijavítani ôket. A
-másik ember úgyis rájön, hogy mit akarsz
+<li>A besz&eacute;lget&eacute;s (talk) alatt megmutatkozik a
+g&eacute;pel&eacute;si tud&aacute;sod. Ha lassan &eacute;s sok
+hib&aacute;val g&eacute;pelsz (ford&iacute;t&oacute;
+megjegyez&eacute;se: ne keseredj el) akkor legt&ouml;bbsz&ouml;r nem
+&eacute;ri meg visszamenni kijav&iacute;tani &ocirc;ket. A
+m&aacute;sik ember &uacute;gyis r&aacute;j&ouml;n, hogy mit akarsz
 mondani.
 
-<li>Légy nagyon óvatos, ha egyszerre több talk-od
-is fut! (Fordító megjegyzése: Komoly
-esélyed van rá, hogy elôbb-utóbb
-összekevered,
-hogy melyik talknál kivel és mirôl
-beszélgetsz. Kérdéseidet és
-válaszaidat rossz helyre küldve komikus és/vagy
-kínos helyzetet teremthetsz.)
+<li>L&eacute;gy nagyon &oacute;vatos, ha egyszerre t&ouml;bb talk-od
+is fut! (Ford&iacute;t&oacute; megjegyz&eacute;se: Komoly
+es&eacute;lyed van r&aacute;, hogy el&ocirc;bb-ut&oacute;bb
+&ouml;sszekevered,
+hogy melyik talkn&aacute;l kivel &eacute;s mir&ocirc;l
+besz&eacute;lgetsz. K&eacute;rd&eacute;seidet &eacute;s
+v&aacute;laszaidat rossz helyre k&uuml;ldve komikus &eacute;s/vagy
+k&iacute;nos helyzetet teremthetsz.)
 
-</li></li></li></li></li></li></li></li></li></li></li></ul>
+</ul>
+
 <h3>
-2.2 Iránymutató Adminisztrátoroknak
+2.2 Ir&aacute;nymutat&oacute; Adminisztr&aacute;toroknak
 </h3>
+
 <ul>
-<li>Feltétlenül rögzítsd
-írásban a szabályokat;
-különösen az illegális, hamisított
-és az elôírásokat megsértô
-forgalomra vonatkozókat.
 
-<li>Idôben - lehetôleg a következô munkanapig
-- válaszold meg a felmerülô
-kérdéseket.
+<li>Felt&eacute;tlen&uuml;l r&ouml;gz&iacute;tsd
+&iacute;r&aacute;sban a szab&aacute;lyokat;
+k&uuml;l&ouml;n&ouml;sen az illeg&aacute;lis, hamis&iacute;tott
+&eacute;s az el&ocirc;&iacute;r&aacute;sokat megs&eacute;rt&ocirc;
+forgalomra vonatkoz&oacute;kat.
 
-<li>Az illegális és elôírásokat
-sértô kérdéseket sorold elôre. A
-"lánc" levelek azonnali intézkedést
-kívánnak meg.
+<li>Id&ocirc;ben - lehet&ocirc;leg a k&ouml;vetkez&ocirc; munkanapig
+- v&aacute;laszold meg a felmer&uuml;l&ocirc;
+k&eacute;rd&eacute;seket.
 
-<li>Magyarázd meg a szabályokat - mint
-például a disk quota-kat - a
-felhasználóidnak. Értesd meg velük a
-mail-en át történô file kérés
-következményeit: magas telefonszámlák,
-betelô lemezek, más levelek késése stb.
+<li>Az illeg&aacute;lis &eacute;s el&ocirc;&iacute;r&aacute;sokat
+s&eacute;rt&ocirc; k&eacute;rd&eacute;seket sorold el&ocirc;re. A
+"l&aacute;nc" levelek azonnali int&eacute;zked&eacute;st
+k&iacute;v&aacute;nnak meg.
 
-<li>Legyen egy alias a "Postmaster" és a "Root" címeken.
-Feltétlenül olvassa el valaki ezeket a leveleket!
-(Fordító megjegyzése: mint többször
-írtuk már, ezeknek nem olvasása, hanem
-megválaszolása is igen fontos!)
+<li>Magyar&aacute;zd meg a szab&aacute;lyokat - mint
+p&eacute;ld&aacute;ul a disk quota-kat - a
+felhaszn&aacute;l&oacute;idnak. &Eacute;rtesd meg vel&uuml;k a
+mail-en &aacute;t t&ouml;rt&eacute;n&ocirc; file k&eacute;r&eacute;s
+k&ouml;vetkezm&eacute;nyeit: magas telefonsz&aacute;ml&aacute;k,
+betel&ocirc; lemezek, m&aacute;s levelek k&eacute;s&eacute;se stb.
 
-<li>Nyitottan vizsgáld meg a felhasználóidat
-érintô panaszokat. A címek sajnos
-hamisíthatóak, a levelek megpiszkálhatóak.
+<li>Legyen egy alias a "Postmaster" &eacute;s a "Root" c&iacute;meken.
+Felt&eacute;tlen&uuml;l olvassa el valaki ezeket a leveleket!
+(Ford&iacute;t&oacute; megjegyz&eacute;se: mint t&ouml;bbsz&ouml;r
+&iacute;rtuk m&aacute;r, ezeknek nem olvas&aacute;sa, hanem
+megv&aacute;laszol&aacute;sa is igen fontos!)
 
-</li></li></li></li></li></li></ul>
+<li>Nyitottan vizsg&aacute;ld meg a felhaszn&aacute;l&oacute;idat
+&eacute;rint&ocirc; panaszokat. A c&iacute;mek sajnos
+hamis&iacute;that&oacute;ak, a levelek megpiszk&aacute;lhat&oacute;ak.
+
+</ul>
+
 <h2>
-<a name="3.0">3.0 Egy-sokaknak kommunikáció
-(Levelezési listák, Usenet)
-</a></h2>
+<a name="3.0">3.0 Egy-sokaknak kommunik&aacute;ci&oacute;
+(Levelez&eacute;si list&aacute;k, Usenet)
+</h2>
 <p>
-Amikor sok emberrel kommunikálsz egyszerre, akkor a mail-re
-vonatkozó szabályok is érvényesek.
-Végülis nincs nagy különbség a
-között, hogy egy embernek írsz egy levelet vagy sok
-emberrel kommunikálsz egy cikken keresztül - legfeljebb
-annyi, hogy így sokkal több embert van
-lehetôséged megbántani. Így aztán
-különösen fontos, hogy minél többet
-tudjál a közönségedrôl.
+Amikor sok emberrel kommunik&aacute;lsz egyszerre, akkor a mail-re
+vonatkoz&oacute; szab&aacute;lyok is &eacute;rv&eacute;nyesek.
+V&eacute;g&uuml;lis nincs nagy k&uuml;l&ouml;nbs&eacute;g a
+k&ouml;z&ouml;tt, hogy egy embernek &iacute;rsz egy levelet vagy sok
+emberrel kommunik&aacute;lsz egy cikken kereszt&uuml;l - legfeljebb
+annyi, hogy &iacute;gy sokkal t&ouml;bb embert van
+lehet&ocirc;s&eacute;ged megb&aacute;ntani. &Iacute;gy azt&aacute;n
+k&uuml;l&ouml;n&ouml;sen fontos, hogy min&eacute;l t&ouml;bbet
+tudj&aacute;l a k&ouml;z&ouml;ns&eacute;gedr&ocirc;l.
 
 <h3>
-3.1 Iránymutató Felhasználóknak
+3.1 Ir&aacute;nymutat&oacute; Felhaszn&aacute;l&oacute;knak
 </h3>
+
 <h4>
-3.1.1 Általános útmutató a
-levelezési listákhoz és a Usenet-hoz
+3.1.1 &Aacute;ltal&aacute;nos &uacute;tmutat&oacute; a
+levelez&eacute;si list&aacute;khoz &eacute;s a Usenet-hoz
 </h4>
 <ul>
-<li>Legalább egy, de inkább két hónapig
-olvasd az adott levelezési listát ill. hírcsoportot
-mielôtt postázol valamit. Ez hozzásegít az
-adott csoport kultúrjának megismeréséhez.
-(Fordító megjegyzése: ez a tanulás
-idô jelentôsen csökkenthetô a lista/csoport
-archívum és a megfelelô FAQ
-tanulmányozásával. Ez utóbbit
-mindenképpen olvasd el, mielôtt postáznál
-bármit is!)
+<li>Legal&aacute;bb egy, de ink&aacute;bb k&eacute;t h&oacute;napig
+olvasd az adott levelez&eacute;si list&aacute;t ill. h&iacute;rcsoportot
+miel&ocirc;tt post&aacute;zol valamit. Ez hozz&aacute;seg&iacute;t az
+adott csoport kult&uacute;rj&aacute;nak megismer&eacute;s&eacute;hez.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: ez a tanul&aacute;s
+id&ocirc; jelent&ocirc;sen cs&ouml;kkenthet&ocirc; a lista/csoport
+arch&iacute;vum &eacute;s a megfelel&ocirc; FAQ
+tanulm&aacute;nyoz&aacute;s&aacute;val. Ez ut&oacute;bbit
+mindenk&eacute;ppen olvasd el, miel&ocirc;tt post&aacute;zn&aacute;l
+b&aacute;rmit is!)
 
-<li>Ne hibáztasd a rendszeradminisztrátort az adott
-rendszer felhasználóinak viselkedése miatt.
+<li>Ne hib&aacute;ztasd a rendszeradminisztr&aacute;tort az adott
+rendszer felhaszn&aacute;l&oacute;inak viselked&eacute;se miatt.
 
-<li>Vésd jól az eszedbe, hogy amit írsz, azt
-széles közönség olvashatja. Ebben
-éppenséggel a jelenlegi vagy a jövôbeli
-fônököd is benne lehet. Vigyázz tehát
-arra, hogy mit írsz. Jusson eszedbe az is, hogy a csoportokat
-és különösen a levelezési
-listákat archiválni is szokták, olyan helyen, amihez
-sokan férnek hozzá. Így a szavaidat hosszú
-idôn át olvashatja szinte bárki.
+<li>V&eacute;sd j&oacute;l az eszedbe, hogy amit &iacute;rsz, azt
+sz&eacute;les k&ouml;z&ouml;ns&eacute;g olvashatja. Ebben
+&eacute;ppens&eacute;ggel a jelenlegi vagy a j&ouml;v&ocirc;beli
+f&ocirc;n&ouml;k&ouml;d is benne lehet. Vigy&aacute;zz teh&aacute;t
+arra, hogy mit &iacute;rsz. Jusson eszedbe az is, hogy a csoportokat
+&eacute;s k&uuml;l&ouml;n&ouml;sen a levelez&eacute;si
+list&aacute;kat archiv&aacute;lni is szokt&aacute;k, olyan helyen, amihez
+sokan f&eacute;rnek hozz&aacute;. &Iacute;gy a szavaidat hossz&uacute;
+id&ocirc;n &aacute;t olvashatja szinte b&aacute;rki.
 
-<li>Fel kell tételezned, hogy minden egyes ember saját
-maga nevében ír, és nincs köze a
-szervezetéhez, kivéve ha kifejezetten ezt
-állítja.
+<li>Fel kell t&eacute;telezned, hogy minden egyes ember saj&aacute;t
+maga nev&eacute;ben &iacute;r, &eacute;s nincs k&ouml;ze a
+szervezet&eacute;hez, kiv&eacute;ve ha kifejezetten ezt
+&aacute;ll&iacute;tja.
 
-<li>Tudnod kell azt is, hogy akárcsak a levél, a news is
-erôforrásigényes. Ismerned kell tehát a
-szervezeted speciális szabályzatát erre
-vonatkozólag.
+<li>Tudnod kell azt is, hogy ak&aacute;rcsak a lev&eacute;l, a news is
+er&ocirc;forr&aacute;sig&eacute;nyes. Ismerned kell teh&aacute;t a
+szervezeted speci&aacute;lis szab&aacute;lyzat&aacute;t erre
+vonatkoz&oacute;lag.
 
-<li>Az üzenetek és a cikkek jó, ha rövidek
-és célratörôek. Ne kószálj el
-a témától, ne beszélj össze-vissza,
-és soha, de soha ne írj olyan levelet, ami csak valaki
-gépelési vagy helyesírási hibáira
-mutat rá. Ez utóbbi azonnal megmutatja, hogy milyen
-szörnyen kezdô vagy.
+<li>Az &uuml;zenetek &eacute;s a cikkek j&oacute;, ha r&ouml;videk
+&eacute;s c&eacute;lrat&ouml;r&ocirc;ek. Ne k&oacute;sz&aacute;lj el
+a t&eacute;m&aacute;t&oacute;l, ne besz&eacute;lj &ouml;ssze-vissza,
+&eacute;s soha, de soha ne &iacute;rj olyan levelet, ami csak valaki
+g&eacute;pel&eacute;si vagy helyes&iacute;r&aacute;si hib&aacute;ira
+mutat r&aacute;. Ez ut&oacute;bbi azonnal megmutatja, hogy milyen
+sz&ouml;rnyen kezd&ocirc; vagy.
 
-<li>A subject sorok az adott csoport konvenciót kell
-kövessék. (Fordító megjegyzése:
-Látni fogod, hogy sok helyen a subject sor valamilyen
-osztályozó információt hordoz, és
-ha ez hiányzik, akkor valószínûleg pont
-azokhoz az emberekhez nem jut el az írásod, akiknek
-szántad.)
+<li>A subject sorok az adott csoport konvenci&oacute;t kell
+k&ouml;vess&eacute;k. (Ford&iacute;t&oacute; megjegyz&eacute;se:
+L&aacute;tni fogod, hogy sok helyen a subject sor valamilyen
+oszt&aacute;lyoz&oacute; inform&aacute;ci&oacute;t hordoz, &eacute;s
+ha ez hi&aacute;nyzik, akkor val&oacute;sz&iacute;n&ucirc;leg pont
+azokhoz az emberekhez nem jut el az &iacute;r&aacute;sod, akiknek
+sz&aacute;ntad.)
 
-<li>Bár lehet, hogy lehetôség nyílik
-rá, de a hamisítás, a levelek tartalmához
-vagy fejlécéhez való
-hozzápiszkálás általában nem
+<li>B&aacute;r lehet, hogy lehet&ocirc;s&eacute;g ny&iacute;lik
+r&aacute;, de a hamis&iacute;t&aacute;s, a levelek tartalm&aacute;hoz
+vagy fejl&eacute;c&eacute;hez val&oacute;
+hozz&aacute;piszk&aacute;l&aacute;s &aacute;ltal&aacute;ban nem
 elfogadott.
 
-<li>Hirdetni csak és kizárólag az arra hivatott
-csoportokban és levelezési listákban szabad! Ez
-is egy példája annak, hogy célszerû
-ismerned azt a közönséget, aki majd
-írásodat olvassa. A kéretlen hirdetés - ami
-nem tartozik egy adott csoport/lista témakörébe -
-valószínû következménye: rengeteg
-durva válaszlevél. (Fordító
-megjegyzése: semmiképpen se nyilvánosan
-válaszoljál, hiszen már ez is reklám.
-Hatékonyabb, ha a feladó
-rendszergazdáinál panaszkodsz.)
+<li>Hirdetni csak &eacute;s kiz&aacute;r&oacute;lag az arra hivatott
+csoportokban &eacute;s levelez&eacute;si list&aacute;kban szabad! Ez
+is egy p&eacute;ld&aacute;ja annak, hogy c&eacute;lszer&ucirc;
+ismerned azt a k&ouml;z&ouml;ns&eacute;get, aki majd
+&iacute;r&aacute;sodat olvassa. A k&eacute;retlen hirdet&eacute;s - ami
+nem tartozik egy adott csoport/lista t&eacute;mak&ouml;r&eacute;be -
+val&oacute;sz&iacute;n&ucirc; k&ouml;vetkezm&eacute;nye: rengeteg
+durva v&aacute;laszlev&eacute;l. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: semmik&eacute;ppen se nyilv&aacute;nosan
+v&aacute;laszolj&aacute;l, hiszen m&aacute;r ez is rekl&aacute;m.
+Hat&eacute;konyabb, ha a felad&oacute;
+rendszergazd&aacute;in&aacute;l panaszkodsz.)
 
-<li>Ha válaszüzenetet írsz, akkor
-mindenképpen foglald össze vagy idézz annyit az
-eredetibôl, hogy érthetô legyen a válaszod.
-Különösen a Usenet esetében lényeges
-ez, mivel ott olyan az üzenetek elosztása, hogy
-elôfordulhat, hogy valaki a válaszodat olvassa elôbb,
-mint az eredetit. Így tehát jó, ha képbe
-helyezed olvasóidat - viszont ne idézd az egészet!
+<li>Ha v&aacute;lasz&uuml;zenetet &iacute;rsz, akkor
+mindenk&eacute;ppen foglald &ouml;ssze vagy id&eacute;zz annyit az
+eredetib&ocirc;l, hogy &eacute;rthet&ocirc; legyen a v&aacute;laszod.
+K&uuml;l&ouml;n&ouml;sen a Usenet eset&eacute;ben l&eacute;nyeges
+ez, mivel ott olyan az &uuml;zenetek eloszt&aacute;sa, hogy
+el&ocirc;fordulhat, hogy valaki a v&aacute;laszodat olvassa el&ocirc;bb,
+mint az eredetit. &Iacute;gy teh&aacute;t j&oacute;, ha k&eacute;pbe
+helyezed olvas&oacute;idat - viszont ne id&eacute;zd az eg&eacute;szet!
 
-<li>Újra hangsúlyozzuk, hogy igen célszerû,
-ha van egy signature file-od, amit az üzeneteidhez csatolhatsz.
-Csak és kizárólag így tudod
-biztosítani azt, hogy bármilyen program is
-nyirbálja meg a fejlécinformációkat, az
-olvasóid még mindig rád találhassanak.
+<li>&Uacute;jra hangs&uacute;lyozzuk, hogy igen c&eacute;lszer&ucirc;,
+ha van egy signature file-od, amit az &uuml;zeneteidhez csatolhatsz.
+Csak &eacute;s kiz&aacute;r&oacute;lag &iacute;gy tudod
+biztos&iacute;tani azt, hogy b&aacute;rmilyen program is
+nyirb&aacute;lja meg a fejl&eacute;cinform&aacute;ci&oacute;kat, az
+olvas&oacute;id m&eacute;g mindig r&aacute;d tal&aacute;lhassanak.
 
-<li>Légy óvatos, amikor egy üzenetre vagy cikkre
-válaszolsz. Gyakran a válasz a lista vagy a csoport
-címére megy a feladó helyett.
-Tévedésbôl személyes üzenetet
-küldhetsz egy helyett sok embernek, amivel csak mindenkit
-zavarba hozol. A legjobb az, ha válaszadásnál
-begépeled a címet az automata "reply" helyett.
-(Fordító megjegyzése: Kellô
-óvatossággal ez utóbbitól el lehet
-térni.)
+<li>L&eacute;gy &oacute;vatos, amikor egy &uuml;zenetre vagy cikkre
+v&aacute;laszolsz. Gyakran a v&aacute;lasz a lista vagy a csoport
+c&iacute;m&eacute;re megy a felad&oacute; helyett.
+T&eacute;ved&eacute;sb&ocirc;l szem&eacute;lyes &uuml;zenetet
+k&uuml;ldhetsz egy helyett sok embernek, amivel csak mindenkit
+zavarba hozol. A legjobb az, ha v&aacute;laszad&aacute;sn&aacute;l
+beg&eacute;peled a c&iacute;met az automata "reply" helyett.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: Kell&ocirc;
+&oacute;vatoss&aacute;ggal ez ut&oacute;bbit&oacute;l el lehet
+t&eacute;rni.)
 
-<li>(Fordító megjegyzése: Ezt a pontot
-jelentôsen lerövidítettem. A lényeg az, hogy
-ne küldjünk automata (vacation, non-delivery stb.)
-üzeneteket levelezési listákra)
+<li>(Ford&iacute;t&oacute; megjegyz&eacute;se: Ezt a pontot
+jelent&ocirc;sen ler&ouml;vid&iacute;tettem. A l&eacute;nyeg az, hogy
+ne k&uuml;ldj&uuml;nk automata (vacation, non-delivery stb.)
+&uuml;zeneteket levelez&eacute;si list&aacute;kra)
 
-<li>Ha véletlenül személyes üzenetet
-küldtél egy listára vagy csoportba, akkor
-küldj egy bocsánatkérô üzenetet az
-eredeti címzettnek és a listának ill. csoportnak is.
+<li>Ha v&eacute;letlen&uuml;l szem&eacute;lyes &uuml;zenetet
+k&uuml;ldt&eacute;l egy list&aacute;ra vagy csoportba, akkor
+k&uuml;ldj egy bocs&aacute;natk&eacute;r&ocirc; &uuml;zenetet az
+eredeti c&iacute;mzettnek &eacute;s a list&aacute;nak ill. csoportnak is.
 
-<li>Ha valakivel nem értesz egyet, akkor célszerûbb
-személyes üzenetekben rendezni a dolgot, mint vitát
-folytatni egy listán. Ha olyasmin vitáztok, ami
-érdekelheti a lista olvasóit, akkor érdemes a
-vitátok eredményét összefoglalni és
-elküldeni a listára.
+<li>Ha valakivel nem &eacute;rtesz egyet, akkor c&eacute;lszer&ucirc;bb
+szem&eacute;lyes &uuml;zenetekben rendezni a dolgot, mint vit&aacute;t
+folytatni egy list&aacute;n. Ha olyasmin vit&aacute;ztok, ami
+&eacute;rdekelheti a lista olvas&oacute;it, akkor &eacute;rdemes a
+vit&aacute;tok eredm&eacute;ny&eacute;t &ouml;sszefoglalni &eacute;s
+elk&uuml;ldeni a list&aacute;ra.
 
-<li>Ne keveredj flame war-ba! Ne írjál heves leveleket
-és ne válaszoljál ilyenekre.
+<li>Ne keveredj flame war-ba! Ne &iacute;rj&aacute;l heves leveleket
+&eacute;s ne v&aacute;laszolj&aacute;l ilyenekre.
 
-<li>Ne küldjél olyan válaszokat, amelyek csak
-gratulálnak egy másik válaszhoz.
-(Fordító megyjezése: Ezt személyes
-levélben teheted meg, ha úgy érzed,
-tényleg fontos)
+<li>Ne k&uuml;ldj&eacute;l olyan v&aacute;laszokat, amelyek csak
+gratul&aacute;lnak egy m&aacute;sik v&aacute;laszhoz.
+(Ford&iacute;t&oacute; megyjez&eacute;se: Ezt szem&eacute;lyes
+lev&eacute;lben teheted meg, ha &uacute;gy &eacute;rzed,
+t&eacute;nyleg fontos)
 
-<li>Légy óvatos a fixpontos betûkkel és a
-rajzokkal. Ezeket egy másik rendszer - vagy akár
-ugyanazon rendszer egy másik programja -
-másképpen jelenítheti meg, mint a te szoftvered.
+<li>L&eacute;gy &oacute;vatos a fixpontos bet&ucirc;kkel &eacute;s a
+rajzokkal. Ezeket egy m&aacute;sik rendszer - vagy ak&aacute;r
+ugyanazon rendszer egy m&aacute;sik programja -
+m&aacute;sk&eacute;ppen jelen&iacute;theti meg, mint a te szoftvered.
 
-<li>Vannak olyan hírcsoportok és levelezési
-listák, melyek témája igen széles
-érdeklôdési kört fed le. Ez gyakran olyan
-olvasókat jelenthet, akik életstílusban,
-vallásban, és kultúrában is jelentôsen
-eltérhetnek. Ne küldjél olyan üzeneteket egy
-listára/csoportba - ha annak nézôpontja
-valamiért nem egyezik a tiéddel - ami csak annyit
-közöl, hogy az ô álláspontjukat
-bántónak érzed. Szexuális vagy faji
-zaklatásnak jogi következménye is lehet. Az
-általad megkérdôjelezhetônek érzett
-üzenetek kiszûrésére (filter) vannak
+<li>Vannak olyan h&iacute;rcsoportok &eacute;s levelez&eacute;si
+list&aacute;k, melyek t&eacute;m&aacute;ja igen sz&eacute;les
+&eacute;rdekl&ocirc;d&eacute;si k&ouml;rt fed le. Ez gyakran olyan
+olvas&oacute;kat jelenthet, akik &eacute;letst&iacute;lusban,
+vall&aacute;sban, &eacute;s kult&uacute;r&aacute;ban is jelent&ocirc;sen
+elt&eacute;rhetnek. Ne k&uuml;ldj&eacute;l olyan &uuml;zeneteket egy
+list&aacute;ra/csoportba - ha annak n&eacute;z&ocirc;pontja
+valami&eacute;rt nem egyezik a ti&eacute;ddel - ami csak annyit
+k&ouml;z&ouml;l, hogy az &ocirc; &aacute;ll&aacute;spontjukat
+b&aacute;nt&oacute;nak &eacute;rzed. Szexu&aacute;lis vagy faji
+zaklat&aacute;snak jogi k&ouml;vetkezm&eacute;nye is lehet. Az
+&aacute;ltalad megk&eacute;rd&ocirc;jelezhet&ocirc;nek &eacute;rzett
+&uuml;zenetek kisz&ucirc;r&eacute;s&eacute;re (filter) vannak
 programok.
 
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></ul>
+</ul>
+
 <h4>
-3.1.2 Iránymutató levelezési listákhoz
+3.1.2 Ir&aacute;nymutat&oacute; levelez&eacute;si list&aacute;khoz
 </h4>
 <p>
-A létezô levelezési listákról
-és a hozzájuk való csatlakozásról
-sokféleképpen találhatsz
-információkat a Net-en. Természetesen ezen
-információ mellett szükséged lesz a
-helyiekre is; milyen szabályok vonatkoznak a levelezési
-listákhoz való csatlakozásra és a
-postázásra. Általában jobb, ha
-elôször a szûkebb környezetben kutatsz
-információ után és csak utána
+A l&eacute;tez&ocirc; levelez&eacute;si list&aacute;kr&oacute;l
+&eacute;s a hozz&aacute;juk val&oacute; csatlakoz&aacute;sr&oacute;l
+sokf&eacute;lek&eacute;ppen tal&aacute;lhatsz
+inform&aacute;ci&oacute;kat a Net-en. Term&eacute;szetesen ezen
+inform&aacute;ci&oacute; mellett sz&uuml;ks&eacute;ged lesz a
+helyiekre is; milyen szab&aacute;lyok vonatkoznak a levelez&eacute;si
+list&aacute;khoz val&oacute; csatlakoz&aacute;sra &eacute;s a
+post&aacute;z&aacute;sra. &Aacute;ltal&aacute;ban jobb, ha
+el&ocirc;sz&ouml;r a sz&ucirc;kebb k&ouml;rnyezetben kutatsz
+inform&aacute;ci&oacute; ut&aacute;n &eacute;s csak ut&aacute;na
 kezdesz az Interneten kutatni. Mindenesetre a
-<code>news.answers</code> hírcsoportban rendszeresen
-megjelenik egy lista a levelezési listákról
-és a csatlakozásról. Bármilyen
-témában keresel levelezési listát, ez egy
-felbecsülhetetlen értékû anyag. A
-válogatott bibliográfiánkban a [9,13,15]-ös
-anyagokból is tájékozódhatsz.
+<code>news.answers</code> h&iacute;rcsoportban rendszeresen
+megjelenik egy lista a levelez&eacute;si list&aacute;kr&oacute;l
+&eacute;s a csatlakoz&aacute;sr&oacute;l. B&aacute;rmilyen
+t&eacute;m&aacute;ban keresel levelez&eacute;si list&aacute;t, ez egy
+felbecs&uuml;lhetetlen &eacute;rt&eacute;k&ucirc; anyag. A
+v&aacute;logatott bibliogr&aacute;fi&aacute;nkban a [9,13,15]-&ouml;s
+anyagokb&oacute;l is t&aacute;j&eacute;koz&oacute;dhatsz.
 
 <ul>
-<li>A fel- és leiratkozó (subscribe - unsubscribe)
-üzeneteket a megfelelô címre küldjed.
-Néhány szoftver ugyan megkísérli
-kiszûrni a listára küldött ilyen
-típusú üzeneteket, de ezek sem
-mindenhatóak. A te felelôsséged megtanulni a
-levelezési listák mûködését
-és a megfelelô levelet a megfelelô címre
-küldeni. Nagyon sok lista mûködtet egy "-request"
-alias-t a fel-le iratkozó üzeneteknek, de nem mindegyik.
-(Fordító megjegyzése: ezt a mondatot csak akkor
-fogod megérteni, ha már elkezdted megtanulni a fent
-emlegetett mûködést) Mindig légy
-tisztában annak a listának a szabályaival, amire
-elôfizetsz.
 
-<li>Mentsd el a feliratkozásra kapott választ. Ez
-legtöbbször tartalmazza a leiratkozáshoz
-szükséges információkat.
+<li>A fel- &eacute;s leiratkoz&oacute; (subscribe - unsubscribe)
+&uuml;zeneteket a megfelel&ocirc; c&iacute;mre k&uuml;ldjed.
+N&eacute;h&aacute;ny szoftver ugyan megk&iacute;s&eacute;rli
+kisz&ucirc;rni a list&aacute;ra k&uuml;ld&ouml;tt ilyen
+t&iacute;pus&uacute; &uuml;zeneteket, de ezek sem
+mindenhat&oacute;ak. A te felel&ocirc;ss&eacute;ged megtanulni a
+levelez&eacute;si list&aacute;k m&ucirc;k&ouml;d&eacute;s&eacute;t
+&eacute;s a megfelel&ocirc; levelet a megfelel&ocirc; c&iacute;mre
+k&uuml;ldeni. Nagyon sok lista m&ucirc;k&ouml;dtet egy "-request"
+alias-t a fel-le iratkoz&oacute; &uuml;zeneteknek, de nem mindegyik.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: ezt a mondatot csak akkor
+fogod meg&eacute;rteni, ha m&aacute;r elkezdted megtanulni a fent
+emlegetett m&ucirc;k&ouml;d&eacute;st) Mindig l&eacute;gy
+tiszt&aacute;ban annak a list&aacute;nak a szab&aacute;lyaival, amire
+el&ocirc;fizetsz.
 
-<li>Általában nem lehet visszavonni egy
-elküldött levelet. A rendszergazdád sem
-képes erre. Ez azt jelenti, hogy csak akkor szabad
-elküldened az üzenetedet, ha már bizonyos vagy
-benne, hogy azt szeretnéd, hogy megjelenjen.
+<li>Mentsd el a feliratkoz&aacute;sra kapott v&aacute;laszt. Ez
+legt&ouml;bbsz&ouml;r tartalmazza a leiratkoz&aacute;shoz
+sz&uuml;ks&eacute;ges inform&aacute;ci&oacute;kat.
 
-<li>Igen sok levelezô program rendelkezik reply
-funkcióval. Ez kényelmes
-magánlevelezéskor, de igen bosszantó lehet
-levelezési listáknál. Amikor listán
-jött üzenetre válaszolsz, akkor vizsgáld meg
-a Reply-To: mezôt. Az gyakorta a lista címe, azaz a
-válaszod a lista összes tagjának megy.
+<li>&Aacute;ltal&aacute;ban nem lehet visszavonni egy
+elk&uuml;ld&ouml;tt levelet. A rendszergazd&aacute;d sem
+k&eacute;pes erre. Ez azt jelenti, hogy csak akkor szabad
+elk&uuml;ldened az &uuml;zenetedet, ha m&aacute;r bizonyos vagy
+benne, hogy azt szeretn&eacute;d, hogy megjelenjen.
 
-<li>Felesleges, és ezért helytelen nagy file-okat
-küldeni egy listára, ha egy Uniform Resource Locator
-(URL) vagy egy ftp-zhetô verzió címe is
-elég. Ha sok kis részletben szeretnéd
-elküldeni, akkor az adott lista erre vonatkozó
-szabályait kell követned. Ha ezeket nem ismered, akkor
-kérdezd meg!
+<li>Igen sok levelez&ocirc; program rendelkezik reply
+funkci&oacute;val. Ez k&eacute;nyelmes
+mag&aacute;nlevelez&eacute;skor, de igen bosszant&oacute; lehet
+levelez&eacute;si list&aacute;kn&aacute;l. Amikor list&aacute;n
+j&ouml;tt &uuml;zenetre v&aacute;laszolsz, akkor vizsg&aacute;ld meg
+a Reply-To: mez&ocirc;t. Az gyakorta a lista c&iacute;me, azaz a
+v&aacute;laszod a lista &ouml;sszes tagj&aacute;nak megy.
 
-<li>Fontold meg a leiratkozást vagy a "nomail" opció
-bekapcsolását (ahol lehet) ha hosszabb ideig nem tudod
-megnézni a leveleidet. (Fordító
-megjegyzése: A leglanyhább lista is robbanhat hirtelen,
-tehát ezt minden egyes listával meg kell tegyed hosszabb
-távollét elôtt!)
+<li>Felesleges, &eacute;s ez&eacute;rt helytelen nagy file-okat
+k&uuml;ldeni egy list&aacute;ra, ha egy Uniform Resource Locator
+(URL) vagy egy ftp-zhet&ocirc; verzi&oacute; c&iacute;me is
+el&eacute;g. Ha sok kis r&eacute;szletben szeretn&eacute;d
+elk&uuml;ldeni, akkor az adott lista erre vonatkoz&oacute;
+szab&aacute;lyait kell k&ouml;vetned. Ha ezeket nem ismered, akkor
+k&eacute;rdezd meg!
 
-<li>Ha egy üzenetet netán több listára
-küldenél, különösen akkor, ha azok
-közel azonos témájúak, akkor kérj
-elnézést a cross-posting miatt.
+<li>Fontold meg a leiratkoz&aacute;st vagy a "nomail" opci&oacute;
+bekapcsol&aacute;s&aacute;t (ahol lehet) ha hosszabb ideig nem tudod
+megn&eacute;zni a leveleidet. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: A leglanyh&aacute;bb lista is robbanhat hirtelen,
+teh&aacute;t ezt minden egyes list&aacute;val meg kell tegyed hosszabb
+t&aacute;voll&eacute;t el&ocirc;tt!)
 
-<li>Ha felteszel egy kérdést, akkor a
-válaszokból készíts egy
-összegzést és azt küldd el a listára.
-Ez semmi esetre se az összes válasz egyszerû
-egymásutánja legyen, hanem egy gondos
-összegzés. (Fordító megjegyzése:
-Felmerülhet a kérdés, hogy mégis
-miért tedd ezt meg. A válasz az Internet
-alapfilozófiája maga: segíts másokon,
-és rajtad is segítenek. Ha valakik
-megválaszolták egy kérdésedet, akkor
-megtehetsz annyit viszonzásképp, hogy az így
-megszerzett tudást megosztod másokkal)
+<li>Ha egy &uuml;zenetet net&aacute;n t&ouml;bb list&aacute;ra
+k&uuml;lden&eacute;l, k&uuml;l&ouml;n&ouml;sen akkor, ha azok
+k&ouml;zel azonos t&eacute;m&aacute;j&uacute;ak, akkor k&eacute;rj
+eln&eacute;z&eacute;st a cross-posting miatt.
 
-<li>Vannak privát levelezési listák. Ha nem
-hívtak meg, akkor ne küldj ide üzeneteket. Az ilyen
-listák üzeneteit ne add tovább egy szélesebb
-közönségnek.
+<li>Ha felteszel egy k&eacute;rd&eacute;st, akkor a
+v&aacute;laszokb&oacute;l k&eacute;sz&iacute;ts egy
+&ouml;sszegz&eacute;st &eacute;s azt k&uuml;ldd el a list&aacute;ra.
+Ez semmi esetre se az &ouml;sszes v&aacute;lasz egyszer&ucirc;
+egym&aacute;sut&aacute;nja legyen, hanem egy gondos
+&ouml;sszegz&eacute;s. (Ford&iacute;t&oacute; megjegyz&eacute;se:
+Felmer&uuml;lhet a k&eacute;rd&eacute;s, hogy m&eacute;gis
+mi&eacute;rt tedd ezt meg. A v&aacute;lasz az Internet
+alapfiloz&oacute;fi&aacute;ja maga: seg&iacute;ts m&aacute;sokon,
+&eacute;s rajtad is seg&iacute;tenek. Ha valakik
+megv&aacute;laszolt&aacute;k egy k&eacute;rd&eacute;sedet, akkor
+megtehetsz annyit viszonz&aacute;sk&eacute;pp, hogy az &iacute;gy
+megszerzett tud&aacute;st megosztod m&aacute;sokkal)
 
-<li>Ha vitába keveredsz, akkor a megbeszélést az
-adott témáról illik folytatni, nem pedig az adott
-személyekrôl.
+<li>Vannak priv&aacute;t levelez&eacute;si list&aacute;k. Ha nem
+h&iacute;vtak meg, akkor ne k&uuml;ldj ide &uuml;zeneteket. Az ilyen
+list&aacute;k &uuml;zeneteit ne add tov&aacute;bb egy sz&eacute;lesebb
+k&ouml;z&ouml;ns&eacute;gnek.
 
-</li></li></li></li></li></li></li></li></li></li></ul>
+<li>Ha vit&aacute;ba keveredsz, akkor a megbesz&eacute;l&eacute;st az
+adott t&eacute;m&aacute;r&oacute;l illik folytatni, nem pedig az adott
+szem&eacute;lyekr&ocirc;l.
+
+</ul>
+
 <h4>
-3.1.3 Iránymutató a Usenet-hoz
+3.1.3 Ir&aacute;nymutat&oacute; a Usenet-hoz
 </h4>
 <p>
-A Usenet egy világméretû elosztott rendszer, ami
-a legkülönfélébb témákban
-való kommunikációra ad lehetôséget.
-A rendszer hierarchikus, a legfelsôbb szinten a
-következô témák vannak: sci -
-tudományos; comp - számítógépes;
-news - magáról a Usenetról; rec -
-szórakozás, hobbi; soc - szociális; talk - bô
-lére eresztett, soha véget nem érô
-beszélgetések (pl. politika); biz - üzleti; alt -
-bármi egyéb. Az alt fôcsoportba tartozó
-csoportok olyan értelemben is alternatívok, hogy a
-létrehozásuk nem megy keresztül ugyanazon a
-lépéseken, mint a többi fôcsoportbeliek.
-Vannak még helyi fôcsoportok, széles körben
-terjesztett egyebek, mint a bionet, és a saját
-szervezetednek is lehetnek saját, belsô csoportjai.
-Nemrégiben egy "humanities" fôcsoport is
-létrejött, és várhatóak
-továbbiak is. A bibliográfiánk [2,8,22,23]-as
-anyagait érdemes a témában elolvasni.
+A Usenet egy vil&aacute;gm&eacute;ret&ucirc; elosztott rendszer, ami
+a legk&uuml;l&ouml;nf&eacute;l&eacute;bb t&eacute;m&aacute;kban
+val&oacute; kommunik&aacute;ci&oacute;ra ad lehet&ocirc;s&eacute;get.
+A rendszer hierarchikus, a legfels&ocirc;bb szinten a
+k&ouml;vetkez&ocirc; t&eacute;m&aacute;k vannak: sci -
+tudom&aacute;nyos; comp - sz&aacute;m&iacute;t&oacute;g&eacute;pes;
+news - mag&aacute;r&oacute;l a Usenetr&oacute;l; rec -
+sz&oacute;rakoz&aacute;s, hobbi; soc - szoci&aacute;lis; talk - b&ocirc;
+l&eacute;re eresztett, soha v&eacute;get nem &eacute;r&ocirc;
+besz&eacute;lget&eacute;sek (pl. politika); biz - &uuml;zleti; alt -
+b&aacute;rmi egy&eacute;b. Az alt f&ocirc;csoportba tartoz&oacute;
+csoportok olyan &eacute;rtelemben is alternat&iacute;vok, hogy a
+l&eacute;trehoz&aacute;suk nem megy kereszt&uuml;l ugyanazon a
+l&eacute;p&eacute;seken, mint a t&ouml;bbi f&ocirc;csoportbeliek.
+Vannak m&eacute;g helyi f&ocirc;csoportok, sz&eacute;les k&ouml;rben
+terjesztett egyebek, mint a bionet, &eacute;s a saj&aacute;t
+szervezetednek is lehetnek saj&aacute;t, bels&ocirc; csoportjai.
+Nemr&eacute;giben egy "humanities" f&ocirc;csoport is
+l&eacute;trej&ouml;tt, &eacute;s v&aacute;rhat&oacute;ak
+tov&aacute;bbiak is. A bibliogr&aacute;fi&aacute;nk [2,8,22,23]-as
+anyagait &eacute;rdemes a t&eacute;m&aacute;ban elolvasni.
 
 <ul>
-<li>A Usenet szójárásában a "Posting"
-(postázás) egy új vagy válasz cikk
-postázását jelenti egy csoportba. A
-"Cross-posting" kifejezést arra használják, ha
-valaki egy cikket több csoportba küldött el. Ha ezt
-vagy a Followup-To: mezôt is használjuk, akkor ezt
-feltétlenül említsük meg a cikkünkben.
-Az olvasók általában azt feltételezik, hogy
-egy üzenet egy csoportba lett postázva, és a
-"follow-up" ebbe a csoportba kerül. A fejléc
-említett mezôje megváltoztathatja ezt. (A
-fordító megjegyzése: A "follow-up" a
-válaszcikk neve, a válaszként írt
-magánlevelet "Reply" néven emlegetik. A Followup-To:
-azt a csoportot adja meg, ahová a válaszcikkek
-kerülnek.)
 
-<li>Mielôtt elküldenél egy témában
-egy cikket, olvasd el abban a témában írott
-cikkeket. (Ezt thread-nek nevezzük) Ne küldjél
-"Egyetértek" vagy hasonló üzeneteket, amelyek
-tartalma pusztán arra korlátozódik, hogy
-egyetértesz valamely korábbi cikkel. Egy follow-up
-cikknek mindig hosszabbnak kell lennie az elôzô
-levelekbôl vett idézeteknél. (Fordító
-megjegyzése: Apró pontosítás: Egy cikk
-és rá adott válaszcikkek
-összességét nevezünk thread-nek.)
+<li>A Usenet sz&oacute;j&aacute;r&aacute;s&aacute;ban a "Posting"
+(post&aacute;z&aacute;s) egy &uacute;j vagy v&aacute;lasz cikk
+post&aacute;z&aacute;s&aacute;t jelenti egy csoportba. A
+"Cross-posting" kifejez&eacute;st arra haszn&aacute;lj&aacute;k, ha
+valaki egy cikket t&ouml;bb csoportba k&uuml;ld&ouml;tt el. Ha ezt
+vagy a Followup-To: mez&ocirc;t is haszn&aacute;ljuk, akkor ezt
+felt&eacute;tlen&uuml;l eml&iacute;ts&uuml;k meg a cikk&uuml;nkben.
+Az olvas&oacute;k &aacute;ltal&aacute;ban azt felt&eacute;telezik, hogy
+egy &uuml;zenet egy csoportba lett post&aacute;zva, &eacute;s a
+"follow-up" ebbe a csoportba ker&uuml;l. A fejl&eacute;c
+eml&iacute;tett mez&ocirc;je megv&aacute;ltoztathatja ezt. (A
+ford&iacute;t&oacute; megjegyz&eacute;se: A "follow-up" a
+v&aacute;laszcikk neve, a v&aacute;laszk&eacute;nt &iacute;rt
+mag&aacute;nlevelet "Reply" n&eacute;ven emlegetik. A Followup-To:
+azt a csoportot adja meg, ahov&aacute; a v&aacute;laszcikkek
+ker&uuml;lnek.)
 
-<li>Levélben (reply) írd meg válaszod, ha csak
-egy embernek szánod azt. Légy a tudatában annak,
-hogy a News-t a világon mindenütt olvashatják,
-és a legtöbb embert NEM érdekel egy privát
-válasz. Ugyanakkor ne habozzál postázni, ha
-olyasmi mondandód van, ami az Internet széles
-olvasóközönségét érdekelheti.
-(Fordító megjegyzése: tipikus, és nagyon
-bosszantó viselkedés pl. egy bolhapiac csoportban
-nyilvánosan válaszolni a hirdetésekre.)
+<li>Miel&ocirc;tt elk&uuml;lden&eacute;l egy t&eacute;m&aacute;ban
+egy cikket, olvasd el abban a t&eacute;m&aacute;ban &iacute;rott
+cikkeket. (Ezt thread-nek nevezz&uuml;k) Ne k&uuml;ldj&eacute;l
+"Egyet&eacute;rtek" vagy hasonl&oacute; &uuml;zeneteket, amelyek
+tartalma puszt&aacute;n arra korl&aacute;toz&oacute;dik, hogy
+egyet&eacute;rtesz valamely kor&aacute;bbi cikkel. Egy follow-up
+cikknek mindig hosszabbnak kell lennie az el&ocirc;z&ocirc;
+levelekb&ocirc;l vett id&eacute;zetekn&eacute;l. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: Apr&oacute; pontos&iacute;t&aacute;s: Egy cikk
+&eacute;s r&aacute; adott v&aacute;laszcikkek
+&ouml;sszess&eacute;g&eacute;t nevez&uuml;nk thread-nek.)
 
-<li>Ellenôrizd le a fejléc Distribution:
-mezôjét, de ne bízz benne. A News
-meglehetôsen bonyolult szállítása
-módja miatt a Distribution: mezô megbízhatatlan.
-Ha olyasvalamit írsz, ami csak kisszámú embert
-érdekelhet, akkor használj egy megfelelô
-Distribution: mezôt; ezzel megkísérled az
-elosztást ezekre az emberekre korlátozni.
-(Fordító megjegyzése: Például
-állítsd be "hun"-ra ezt a mezôt, ha csak magyarokat
-érdeklô cikket postázol.)
+<li>Lev&eacute;lben (reply) &iacute;rd meg v&aacute;laszod, ha csak
+egy embernek sz&aacute;nod azt. L&eacute;gy a tudat&aacute;ban annak,
+hogy a News-t a vil&aacute;gon minden&uuml;tt olvashatj&aacute;k,
+&eacute;s a legt&ouml;bb embert NEM &eacute;rdekel egy priv&aacute;t
+v&aacute;lasz. Ugyanakkor ne habozz&aacute;l post&aacute;zni, ha
+olyasmi mondand&oacute;d van, ami az Internet sz&eacute;les
+olvas&oacute;k&ouml;z&ouml;ns&eacute;g&eacute;t &eacute;rdekelheti.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: tipikus, &eacute;s nagyon
+bosszant&oacute; viselked&eacute;s pl. egy bolhapiac csoportban
+nyilv&aacute;nosan v&aacute;laszolni a hirdet&eacute;sekre.)
 
-<li>Ha úgy érzed, hogy egy cikk több
-hírcsoportba való, akkor mindenképpen
-CROSSPOST-tal küldd el a cikkedet ahelyett, hogy
-különálló üzenetekben
-küldenéd el. Biztos lehetsz abban, hogy
-általában csak 5-6 csoportnak lesz eléggé
-hasonló témája. (Fordító
-megjegyzése: Ez a pont ritkán alkalmazandó!!
-RENDKÍVÜL nyomós okodnak kell lennie ahhoz,
-hogy akár két csoportba is postázzál!!)
+<li>Ellen&ocirc;rizd le a fejl&eacute;c Distribution:
+mez&ocirc;j&eacute;t, de ne b&iacute;zz benne. A News
+meglehet&ocirc;sen bonyolult sz&aacute;ll&iacute;t&aacute;sa
+m&oacute;dja miatt a Distribution: mez&ocirc; megb&iacute;zhatatlan.
+Ha olyasvalamit &iacute;rsz, ami csak kissz&aacute;m&uacute; embert
+&eacute;rdekelhet, akkor haszn&aacute;lj egy megfelel&ocirc;
+Distribution: mez&ocirc;t; ezzel megk&iacute;s&eacute;rled az
+eloszt&aacute;st ezekre az emberekre korl&aacute;tozni.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: P&eacute;ld&aacute;ul
+&aacute;ll&iacute;tsd be "hun"-ra ezt a mez&ocirc;t, ha csak magyarokat
+&eacute;rdekl&ocirc; cikket post&aacute;zol.)
 
-<li>Kísérelj meg elôször a
-hagyományos ismeretforrásokból
-(Kézikönyvek, újságok, help file-ok)
-meríteni, mielôtt egy kérdést
-postáznál. Ha ezekben megtalálható
-kérdést teszel fel, akkor mogorva RTFM (Read the fine
-manual - noha az f betû egy sokkal durvább szót
-jelölt eredetileg) üzeneteket kapsz csak
-viszonzásképpen. (Fordító
-megjegyzése: Ez is csak a józan ész
-határáig érvényes. Tényleg olvasd
-el a kézikönyvet, de ne áldozz éveket
-valaminek a kutatására - végülis az Internet
-egyik haszna, hogy olyanok, akik ezt megtették,
-megosztják veled tudásodat.)
+<li>Ha &uacute;gy &eacute;rzed, hogy egy cikk t&ouml;bb
+h&iacute;rcsoportba val&oacute;, akkor mindenk&eacute;ppen
+CROSSPOST-tal k&uuml;ldd el a cikkedet ahelyett, hogy
+k&uuml;l&ouml;n&aacute;ll&oacute; &uuml;zenetekben
+k&uuml;lden&eacute;d el. Biztos lehetsz abban, hogy
+&aacute;ltal&aacute;ban csak 5-6 csoportnak lesz el&eacute;gg&eacute;
+hasonl&oacute; t&eacute;m&aacute;ja. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: Ez a pont ritk&aacute;n alkalmazand&oacute;!!
+RENDK&Iacute;V&Uuml;L nyom&oacute;s okodnak kell lennie ahhoz,
+hogy ak&aacute;r k&eacute;t csoportba is post&aacute;zz&aacute;l!!)
 
-<li>Bár van néhány hírcsoport, amik
-kifejezetten hirdetésre vannak kitalálva, a
-témától eltérô (off-topic)
-hirdetések egészen egyszerûen
-bûnözésnek számítanak a
-legtöbb csoportban. Ha egy hirdetést minden egyes
-hírcsoportba elküldesz, akkor szinte biztosan
-búcsút mondhatsz a hálózati
-elérésednek.
+<li>K&iacute;s&eacute;relj meg el&ocirc;sz&ouml;r a
+hagyom&aacute;nyos ismeretforr&aacute;sokb&oacute;l
+(K&eacute;zik&ouml;nyvek, &uacute;js&aacute;gok, help file-ok)
+mer&iacute;teni, miel&ocirc;tt egy k&eacute;rd&eacute;st
+post&aacute;zn&aacute;l. Ha ezekben megtal&aacute;lhat&oacute;
+k&eacute;rd&eacute;st teszel fel, akkor mogorva RTFM (Read the fine
+manual - noha az f bet&ucirc; egy sokkal durv&aacute;bb sz&oacute;t
+jel&ouml;lt eredetileg) &uuml;zeneteket kapsz csak
+viszonz&aacute;sk&eacute;ppen. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: Ez is csak a j&oacute;zan &eacute;sz
+hat&aacute;r&aacute;ig &eacute;rv&eacute;nyes. T&eacute;nyleg olvasd
+el a k&eacute;zik&ouml;nyvet, de ne &aacute;ldozz &eacute;veket
+valaminek a kutat&aacute;s&aacute;ra - v&eacute;g&uuml;lis az Internet
+egyik haszna, hogy olyanok, akik ezt megtett&eacute;k,
+megosztj&aacute;k veled tud&aacute;sodat.)
 
-<li>Ha felfedezel egy hibát a cikkedben, akkor
-kíséreld meg minél hamarabb törölni
-(cancel) azt.  (Fordító megjegyzése: A
-törlés is csak egy üzenet, mint minden más.
-Nem bízhatsz igazán abban, hogy senki sem fogja a
-cikkedet olvasni. Célszerû egy második, helyes
-cikket is küldeni, amelyben elnézést is kérsz
-az elôzô hibájáért. A józan
-észt itt is célszerû bevetni: a hiba alatt nem
-nyelvtani, gépelési stb. - vagyis apró,
-lényegtelen - hibát, hanem a lényeget
-érintô hibára gondolunk.)
+<li>B&aacute;r van n&eacute;h&aacute;ny h&iacute;rcsoport, amik
+kifejezetten hirdet&eacute;sre vannak kital&aacute;lva, a
+t&eacute;m&aacute;t&oacute;l elt&eacute;r&ocirc; (off-topic)
+hirdet&eacute;sek eg&eacute;szen egyszer&ucirc;en
+b&ucirc;n&ouml;z&eacute;snek sz&aacute;m&iacute;tanak a
+legt&ouml;bb csoportban. Ha egy hirdet&eacute;st minden egyes
+h&iacute;rcsoportba elk&uuml;ldesz, akkor szinte biztosan
+b&uacute;cs&uacute;t mondhatsz a h&aacute;l&oacute;zati
+el&eacute;r&eacute;sednek.
 
-<li>MEG SE próbáld más cikkét
-törölni (cancel). Lépj kapcsolatba
-rendszergazdáddal, ha nem tudod, hogy hogyan kell saját
-cikkedet törölni vagy ha valamilyen más
-postázás (pl. lánc levél)
-törlést kíván.
+<li>Ha felfedezel egy hib&aacute;t a cikkedben, akkor
+k&iacute;s&eacute;reld meg min&eacute;l hamarabb t&ouml;r&ouml;lni
+(cancel) azt.  (Ford&iacute;t&oacute; megjegyz&eacute;se: A
+t&ouml;rl&eacute;s is csak egy &uuml;zenet, mint minden m&aacute;s.
+Nem b&iacute;zhatsz igaz&aacute;n abban, hogy senki sem fogja a
+cikkedet olvasni. C&eacute;lszer&ucirc; egy m&aacute;sodik, helyes
+cikket is k&uuml;ldeni, amelyben eln&eacute;z&eacute;st is k&eacute;rsz
+az el&ocirc;z&ocirc; hib&aacute;j&aacute;&eacute;rt. A j&oacute;zan
+&eacute;szt itt is c&eacute;lszer&ucirc; bevetni: a hiba alatt nem
+nyelvtani, g&eacute;pel&eacute;si stb. - vagyis apr&oacute;,
+l&eacute;nyegtelen - hib&aacute;t, hanem a l&eacute;nyeget
+&eacute;rint&ocirc; hib&aacute;ra gondolunk.)
 
-<li>Ha postáztál valamit, és nem látod
-viszont azonnal, akkor ne hidd rögtön azt, hogy valami nem
-mûködött és ne postázd azonnal
-újra.
+<li>MEG SE pr&oacute;b&aacute;ld m&aacute;s cikk&eacute;t
+t&ouml;r&ouml;lni (cancel). L&eacute;pj kapcsolatba
+rendszergazd&aacute;ddal, ha nem tudod, hogy hogyan kell saj&aacute;t
+cikkedet t&ouml;r&ouml;lni vagy ha valamilyen m&aacute;s
+post&aacute;z&aacute;s (pl. l&aacute;nc lev&eacute;l)
+t&ouml;rl&eacute;st k&iacute;v&aacute;n.
 
-<li>Néhány csoport megengedi (néhány
-pedig ezért van), hogy olyan cikkek is felkerüljenek, amik
-erôsen megkérdôjelezhetôek. Ugyanakkor
-semmilyen garancia nincs arra, hogy a csoport többi
-olvasója is ugyanúgy elfogadja az anyagot, mint te.
-Használd a Rot13 szoftvert, ami 13 karakterrel eltol minden egyes
-karaktert, hogy ne bántsál meg senkit.
-(Fordító megjegyzése: Ez sok szoftverbe be van
-építve)
+<li>Ha post&aacute;zt&aacute;l valamit, &eacute;s nem l&aacute;tod
+viszont azonnal, akkor ne hidd r&ouml;gt&ouml;n azt, hogy valami nem
+m&ucirc;k&ouml;d&ouml;tt &eacute;s ne post&aacute;zd azonnal
+&uacute;jra.
 
-<li>Ha olyan üzenetet írsz egy könyveket vagy
-filmeket tárgyaló csoportba, ami lényeges titkot
-tár fel, akkor célszerû "Spoiler" szót tenni
-a Subject: sorba. Üthetsz egy pár Enter-t a cikk
-elejére, hogy eltüntesd szem elöl a cikket, vagy
-használhatod az elôbb említett Rot13
-módszert. (Fordító megjegyzése: A
-számítógépes játékok is ez
-a kategória. Esetleg tarthatunk attól, hogy nem mindenki
-tudja a Rot13-at dekódolni, és az üres sorok mellett
-döntünk. Ilyenkor érdemes nemcsak a Subject sorba
-beírni, hogy Spoiler, hanem a cikk elsô sorába is
-beírni ezt, hogy aki ránéz a cikkre az ne csak
-üres sorokat lásson)
+<li>N&eacute;h&aacute;ny csoport megengedi (n&eacute;h&aacute;ny
+pedig ez&eacute;rt van), hogy olyan cikkek is felker&uuml;ljenek, amik
+er&ocirc;sen megk&eacute;rd&ocirc;jelezhet&ocirc;ek. Ugyanakkor
+semmilyen garancia nincs arra, hogy a csoport t&ouml;bbi
+olvas&oacute;ja is ugyan&uacute;gy elfogadja az anyagot, mint te.
+Haszn&aacute;ld a Rot13 szoftvert, ami 13 karakterrel eltol minden egyes
+karaktert, hogy ne b&aacute;nts&aacute;l meg senkit.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: Ez sok szoftverbe be van
+&eacute;p&iacute;tve)
 
-<li>Ugyan a cikkek illetéktelen megpiszkálása,
-megváltoztatása a szabályokkal ellentétes,
-mégis megtörténik. Ez ellen megfelelô
-szoftverrel - mint például a PGP -
-védekezhetünk.
+<li>Ha olyan &uuml;zenetet &iacute;rsz egy k&ouml;nyveket vagy
+filmeket t&aacute;rgyal&oacute; csoportba, ami l&eacute;nyeges titkot
+t&aacute;r fel, akkor c&eacute;lszer&ucirc; "Spoiler" sz&oacute;t tenni
+a Subject: sorba. &Uuml;thetsz egy p&aacute;r Enter-t a cikk
+elej&eacute;re, hogy elt&uuml;ntesd szem el&ouml;l a cikket, vagy
+haszn&aacute;lhatod az el&ocirc;bb eml&iacute;tett Rot13
+m&oacute;dszert. (Ford&iacute;t&oacute; megjegyz&eacute;se: A
+sz&aacute;m&iacute;t&oacute;g&eacute;pes j&aacute;t&eacute;kok is ez
+a kateg&oacute;ria. Esetleg tarthatunk att&oacute;l, hogy nem mindenki
+tudja a Rot13-at dek&oacute;dolni, &eacute;s az &uuml;res sorok mellett
+d&ouml;nt&uuml;nk. Ilyenkor &eacute;rdemes nemcsak a Subject sorba
+be&iacute;rni, hogy Spoiler, hanem a cikk els&ocirc; sor&aacute;ba is
+be&iacute;rni ezt, hogy aki r&aacute;n&eacute;z a cikkre az ne csak
+&uuml;res sorokat l&aacute;sson)
 
-<li>Az anonim postázás bizonyos csoportokban
-elfogadott, másokban nem. Ha egy cikk nem felel meg a
-szabályoknak, ha rajta van a nevünk, akkor sem fog, ha
-nincs rajta. (Fordító megjegyzése: Azaz az
-anonimitást legtöbbször olyankor használjuk,
-ha elfogadható, de személyünkre valamiért
-hátrányos cikket szeretnénk
-közzétenni.)
+<li>Ugyan a cikkek illet&eacute;ktelen megpiszk&aacute;l&aacute;sa,
+megv&aacute;ltoztat&aacute;sa a szab&aacute;lyokkal ellent&eacute;tes,
+m&eacute;gis megt&ouml;rt&eacute;nik. Ez ellen megfelel&ocirc;
+szoftverrel - mint p&eacute;ld&aacute;ul a PGP -
+v&eacute;dekezhet&uuml;nk.
 
-<li>Ha moderált csoportba postázol, akkor
-számolnod kell egy kis késedelemmel. A
-moderátor meg is változtathatja a Subject sorodat, hogy
+<li>Az anonim post&aacute;z&aacute;s bizonyos csoportokban
+elfogadott, m&aacute;sokban nem. Ha egy cikk nem felel meg a
+szab&aacute;lyoknak, ha rajta van a nev&uuml;nk, akkor sem fog, ha
+nincs rajta. (Ford&iacute;t&oacute; megjegyz&eacute;se: Azaz az
+anonimit&aacute;st legt&ouml;bbsz&ouml;r olyankor haszn&aacute;ljuk,
+ha elfogadhat&oacute;, de szem&eacute;ly&uuml;nkre valami&eacute;rt
+h&aacute;tr&aacute;nyos cikket szeretn&eacute;nk
+k&ouml;zz&eacute;tenni.)
+
+<li>Ha moder&aacute;lt csoportba post&aacute;zol, akkor
+sz&aacute;molnod kell egy kis k&eacute;sedelemmel. A
+moder&aacute;tor meg is v&aacute;ltoztathatja a Subject sorodat, hogy
 valamelyik thread-be illeszkedjen.
 
-<li>Ne keveredj flame war-ba! Ne írjál heves leveleket
-és ne válaszoljál ilyenekre.
+<li>Ne keveredj flame war-ba! Ne &iacute;rj&aacute;l heves leveleket
+&eacute;s ne v&aacute;laszolj&aacute;l ilyenekre.
 
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></ul>
+</ul>
+
 <h3>
-3.2 Iránymutató Adminisztrátoroknak
+3.2 Ir&aacute;nymutat&oacute; Adminisztr&aacute;toroknak
 </h3>
 <h4>
-3.2.1 Általános témák
+3.2.1 &Aacute;ltal&aacute;nos t&eacute;m&aacute;k
 </h4>
 <ul>
-<li>Legyenek tiszták a feliratkozás szabályai a
-levelezési listákra és a Usenet csoportokra.
 
-<li>Legyenek tiszták a postázás szabályai
-- a disclaimer-ek .sig-beli szerepeltetését is
-beleértve - a levelezési listákba és a
+<li>Legyenek tiszt&aacute;k a feliratkoz&aacute;s szab&aacute;lyai a
+levelez&eacute;si list&aacute;kra &eacute;s a Usenet csoportokra.
+
+<li>Legyenek tiszt&aacute;k a post&aacute;z&aacute;s szab&aacute;lyai
+- a disclaimer-ek .sig-beli szerepeltet&eacute;s&eacute;t is
+bele&eacute;rtve - a levelez&eacute;si list&aacute;kba &eacute;s a
 Usenet csoportokba.
 
-<li>Legyenek tiszták és széles körben
-ismertek az archiválásra vonatkozó
-szabályaid. (Mennyi ideig tárolod a cikkeket?)
+<li>Legyenek tiszt&aacute;k &eacute;s sz&eacute;les k&ouml;rben
+ismertek az archiv&aacute;l&aacute;sra vonatkoz&oacute;
+szab&aacute;lyaid. (Mennyi ideig t&aacute;rolod a cikkeket?)
 
-<li>Nyitottan, de azonnal vizsgáld meg a
-felhasználóidat érintô panaszokat.
+<li>Nyitottan, de azonnal vizsg&aacute;ld meg a
+felhaszn&aacute;l&oacute;idat &eacute;rint&ocirc; panaszokat.
 
-<li>Ügyelj rendszered egészségére!
+<li>&Uuml;gyelj rendszered eg&eacute;szs&eacute;g&eacute;re!
 
-<li>Gondold át, hogy milyen hosszan ôrzôd meg a
-rendszer naplófile-jait, és a döntésed
-eredményét tedd közzé.
+<li>Gondold &aacute;t, hogy milyen hosszan &ocirc;rz&ocirc;d meg a
+rendszer napl&oacute;file-jait, &eacute;s a d&ouml;nt&eacute;sed
+eredm&eacute;ny&eacute;t tedd k&ouml;zz&eacute;.
 
-</li></li></li></li></li></li></ul>
+</ul>
+
 <h4>
-3.2.2 Levelezési listák
+3.2.2 Levelez&eacute;si list&aacute;k
 </h4>
+
 <ul>
-<li>A levelezési listák legyenek naprakészek,
-hogy elkerüld a "bouncing mail" problémát.
-(Fordító megjegyzése: Ha nem
-létezô címek is szerepelnek a listában, akkor
-a hibaüzenet is kimehet (szoftvertôl függôen) a
-listára, újabb hibát generálva. Ez
-így mehet egészen addig, amíg valaki ki nem
-törli ezt a címet.)
 
-<li>Segíts a listatulajdonosoknak a problémák
-megoldásában
+<li>A levelez&eacute;si list&aacute;k legyenek naprak&eacute;szek,
+hogy elker&uuml;ld a "bouncing mail" probl&eacute;m&aacute;t.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: Ha nem
+l&eacute;tez&ocirc; c&iacute;mek is szerepelnek a list&aacute;ban, akkor
+a hiba&uuml;zenet is kimehet (szoftvert&ocirc;l f&uuml;gg&ocirc;en) a
+list&aacute;ra, &uacute;jabb hib&aacute;t gener&aacute;lva. Ez
+&iacute;gy mehet eg&eacute;szen addig, am&iacute;g valaki ki nem
+t&ouml;rli ezt a c&iacute;met.)
 
-<li>Informáld a listatulajdonosokat a tervezett
-rendszerkarbantartásokról és
-leállásokról.
+<li>Seg&iacute;ts a listatulajdonosoknak a probl&eacute;m&aacute;k
+megold&aacute;s&aacute;ban
 
-<li>Legyen minden listához "-request" alias az iratkozási
-és adminisztrációs levelekhez.
+<li>Inform&aacute;ld a listatulajdonosokat a tervezett
+rendszerkarbantart&aacute;sokr&oacute;l &eacute;s
+le&aacute;ll&aacute;sokr&oacute;l.
 
-<li>A mail gateway-eid mûködjenek simán.
-</li></li></li></li></li></ul>
+<li>Legyen minden list&aacute;hoz "-request" alias az iratkoz&aacute;si
+&eacute;s adminisztr&aacute;ci&oacute;s levelekhez.
+
+<li>A mail gateway-eid m&ucirc;k&ouml;djenek sim&aacute;n.
+</ul>
+
 <h4>
 3.2.3 Usenet
 </h4>
+
 <ul>
-<li>Tedd közzé, hogy milyen feed-et kapsz. Ha ez nem
-teljes, lehet, hogy lesz, aki tudni szeretné, hogy miért
+<li>Tedd k&ouml;zz&eacute;, hogy milyen feed-et kapsz. Ha ez nem
+teljes, lehet, hogy lesz, aki tudni szeretn&eacute;, hogy mi&eacute;rt
 nem.
 
-<li>Rengeteg féle hírolvasó szoftver van,
-és ezek hibájáért lehet, hogy a News
-Server-t fogják hibáztatni.
+<li>Rengeteg f&eacute;le h&iacute;rolvas&oacute; szoftver van,
+&eacute;s ezek hib&aacute;j&aacute;&eacute;rt lehet, hogy a News
+Server-t fogj&aacute;k hib&aacute;ztatni.
 
-<li>Tiszteld és teljesítsd azonnal a
-felhasználóid saját cikkük vagy más
-helytelen (pl. lánclevél) törlésére
-vonatkozó kérését. (Fordító
-megjegyzése: Hallgass a józan észre. Nem arra
-gondolunk, hogy egyes embereket zavaró cikkeket
-törölj ki, hanem a széles körben elfogadott
-szabályokkal ellentétesekre, amelyek leggyakoribb esetei
-a sok csoportra kiterjedô hirdetések és a
-lánc levelek.)
+<li>Tiszteld &eacute;s teljes&iacute;tsd azonnal a
+felhaszn&aacute;l&oacute;id saj&aacute;t cikk&uuml;k vagy m&aacute;s
+helytelen (pl. l&aacute;nclev&eacute;l) t&ouml;rl&eacute;s&eacute;re
+vonatkoz&oacute; k&eacute;r&eacute;s&eacute;t. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: Hallgass a j&oacute;zan &eacute;szre. Nem arra
+gondolunk, hogy egyes embereket zavar&oacute; cikkeket
+t&ouml;r&ouml;lj ki, hanem a sz&eacute;les k&ouml;rben elfogadott
+szab&aacute;lyokkal ellent&eacute;tesekre, amelyek leggyakoribb esetei
+a sok csoportra kiterjed&ocirc; hirdet&eacute;sek &eacute;s a
+l&aacute;nc levelek.)
 
-<li>Legyenek "Usenet", "Netnews", "News" alias-aid, és
-gondoskodj arról, hogy valaki olvassa az ide érkezô
+<li>Legyenek "Usenet", "Netnews", "News" alias-aid, &eacute;s
+gondoskodj arr&oacute;l, hogy valaki olvassa az ide &eacute;rkez&ocirc;
 leveleket.
-</li></li></li></li></ul>
+</ul>
+
 <h3>
-3.3 Iránymutató moderátoroknak
+3.3 Ir&aacute;nymutat&oacute; moder&aacute;toroknak
 </h3>
+
 <h4>
-3.3.1 Általános útmutató
+3.3.1 &Aacute;ltal&aacute;nos &uacute;tmutat&oacute;
 </h4>
+
 <ul>
-<li>Gondoskodj arról, hogy a Gyakran Ismételt
-Kérdések válaszai (GYIK ill. FAQ) rendszeres
-idôközönként postázásra
-kerüljenek. Szerepeljen ebben egy útmutató a
-cikkekrôl/üzenetekrôl. Ha nem te vagy a GYIK
-fenntartója, akkor gondoskodj arról, hogy ô(k)
-belevegyé(k) ezeket abba.
+<li>Gondoskodj arr&oacute;l, hogy a Gyakran Ism&eacute;telt
+K&eacute;rd&eacute;sek v&aacute;laszai (GYIK ill. FAQ) rendszeres
+id&ocirc;k&ouml;z&ouml;nk&eacute;nt post&aacute;z&aacute;sra
+ker&uuml;ljenek. Szerepeljen ebben egy &uacute;tmutat&oacute; a
+cikkekr&ocirc;l/&uuml;zenetekr&ocirc;l. Ha nem te vagy a GYIK
+fenntart&oacute;ja, akkor gondoskodj arr&oacute;l, hogy &ocirc;(k)
+belevegy&eacute;(k) ezeket abba.
 
-<li>Legyen egy jó üdvözlô (welcome) file-od,
-amiben információk vannak a
-fel/leiratkozásról. (Fordító
-megjegyzése: És ezt persze küldd is el minden
-feliratkozó felhasználónak. Ez a pont csak
-levelezési listákra érvényes.)
+<li>Legyen egy j&oacute; &uuml;dv&ouml;zl&ocirc; (welcome) file-od,
+amiben inform&aacute;ci&oacute;k vannak a
+fel/leiratkoz&aacute;sr&oacute;l. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: &Eacute;s ezt persze k&uuml;ldd is el minden
+feliratkoz&oacute; felhaszn&aacute;l&oacute;nak. Ez a pont csak
+levelez&eacute;si list&aacute;kra &eacute;rv&eacute;nyes.)
 
-<li>A hírcsoportok célját (charter)
-iránymutatásait rendszeresen kell postázni.
+<li>A h&iacute;rcsoportok c&eacute;lj&aacute;t (charter)
+ir&aacute;nymutat&aacute;sait rendszeresen kell post&aacute;zni.
 
-<li>A hírcsoportok/levelezési listák legyenek
-naprakészek. Alakíts ki egy menetrendet az
-üzenetek postázására. Legyen helyettesed,
-ha szabadságra mégy vagy más egyéb
+<li>A h&iacute;rcsoportok/levelez&eacute;si list&aacute;k legyenek
+naprak&eacute;szek. Alak&iacute;ts ki egy menetrendet az
+&uuml;zenetek post&aacute;z&aacute;s&aacute;ra. Legyen helyettesed,
+ha szabads&aacute;gra m&eacute;gy vagy m&aacute;s egy&eacute;b
 miatt nem tudsz Net-hez jutni.
 
 <h2>
-<a name="4.0">4.0 Információs
-szolgáltatások (Gopher, Wais, WWW, ftp, telnet)
-</a></h2>
+<a name="4.0">4.0 Inform&aacute;ci&oacute;s
+szolg&aacute;ltat&aacute;sok (Gopher, Wais, WWW, ftp, telnet)
+</h2>
 <p>
-Az elmúlt években robbanásszerûen
-nôtt a Hálózat néhány új
-szolgáltatás nyomán. Gopher, Wais, World Wide
-Web (WWW), Multi User Dimensions (MUD), ez utóbbi
-objektumorientált verziója (MOO) a legfontosabbak. Noha
-az információlelés lehetôsége
-robbanásszerûen terjed, a "Vevô védd magad"
-(Caveat Emptor) elv érvényben marad. Ezekrôl
-részletesebben a válogatott bibliográfiánk
-[14,28]-as számú anyagaiban olvashatsz.
-(Fordító megjegyzése: Érdekes lehet
-még az IRC is. Ez a Caveat Emptor arra akart vonatkozni, hogy
-nem muszáj mindenbe
-pénzt/erôfeszítést stb. beleölni, ami
-elsôre szépnek látszik.)
+Az elm&uacute;lt &eacute;vekben robban&aacute;sszer&ucirc;en
+n&ocirc;tt a H&aacute;l&oacute;zat n&eacute;h&aacute;ny &uacute;j
+szolg&aacute;ltat&aacute;s nyom&aacute;n. Gopher, Wais, World Wide
+Web (WWW), Multi User Dimensions (MUD), ez ut&oacute;bbi
+objektumorient&aacute;lt verzi&oacute;ja (MOO) a legfontosabbak. Noha
+az inform&aacute;ci&oacute;lel&eacute;s lehet&ocirc;s&eacute;ge
+robban&aacute;sszer&ucirc;en terjed, a "Vev&ocirc; v&eacute;dd magad"
+(Caveat Emptor) elv &eacute;rv&eacute;nyben marad. Ezekr&ocirc;l
+r&eacute;szletesebben a v&aacute;logatott bibliogr&aacute;fi&aacute;nk
+[14,28]-as sz&aacute;m&uacute; anyagaiban olvashatsz.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: &Eacute;rdekes lehet
+m&eacute;g az IRC is. Ez a Caveat Emptor arra akart vonatkozni, hogy
+nem musz&aacute;j mindenbe
+p&eacute;nzt/er&ocirc;fesz&iacute;t&eacute;st stb. bele&ouml;lni, ami
+els&ocirc;re sz&eacute;pnek l&aacute;tszik.)
 
 <h3>
-4.1 Iránymutató felhasználóknak
+4.1 Ir&aacute;nymutat&oacute; felhaszn&aacute;l&oacute;knak
 </h3>
+
 <h4>
-4.1.1 Általános útmutató
+4.1.1 &Aacute;ltal&aacute;nos &uacute;tmutat&oacute;
 </h4>
+
 <ul>
-<li>Ne feledd, hogy minden szolgáltatás valakié.
-Aki fizeti a számlát, az szabja meg az adott
-szolgáltatásra vonatkozó szabályokat is. Az
-információ lehet ingyen, de az is lehet, hogy nem
-ingyenes - ennek jó, ha utánanézel.
+<li>Ne feledd, hogy minden szolg&aacute;ltat&aacute;s valaki&eacute;.
+Aki fizeti a sz&aacute;ml&aacute;t, az szabja meg az adott
+szolg&aacute;ltat&aacute;sra vonatkoz&oacute; szab&aacute;lyokat is. Az
+inform&aacute;ci&oacute; lehet ingyen, de az is lehet, hogy nem
+ingyenes - ennek j&oacute;, ha ut&aacute;nan&eacute;zel.
 
-<li>Ha egy szolgáltatással probléma akad, akkor
-elôször mindig a saját portádon kell
-körülnézni. Ellenôrizd (vagy
-ellenôriztesd) a file-, szoftver-, és hálózati
-beállításokat stb. Mindenképpen tedd ezt
-meg, mielôtt arra gondolsz, hogy a szolgáltató
-oldalán van a hiba és/vagy a szolgáltatót
-hibáztatnád érte.
+<li>Ha egy szolg&aacute;ltat&aacute;ssal probl&eacute;ma akad, akkor
+el&ocirc;sz&ouml;r mindig a saj&aacute;t port&aacute;don kell
+k&ouml;r&uuml;ln&eacute;zni. Ellen&ocirc;rizd (vagy
+ellen&ocirc;riztesd) a file-, szoftver-, &eacute;s h&aacute;l&oacute;zati
+be&aacute;ll&iacute;t&aacute;sokat stb. Mindenk&eacute;ppen tedd ezt
+meg, miel&ocirc;tt arra gondolsz, hogy a szolg&aacute;ltat&oacute;
+oldal&aacute;n van a hiba &eacute;s/vagy a szolg&aacute;ltat&oacute;t
+hib&aacute;ztatn&aacute;d &eacute;rte.
 
-<li>Vannak ugyan konvenciók a használt
-filetípusokra, de ne építs arra, hogy ezeket mindig
-betartják. Például egy ".doc" file nem
-feltétlenül Word file.
+<li>Vannak ugyan konvenci&oacute;k a haszn&aacute;lt
+filet&iacute;pusokra, de ne &eacute;p&iacute;ts arra, hogy ezeket mindig
+betartj&aacute;k. P&eacute;ld&aacute;ul egy ".doc" file nem
+felt&eacute;tlen&uuml;l Word file.
 
-<li>Maguk a szolgáltatások is követnek bizonyos
-konvenciókat, mint a www.xyz.com. Miközben ezek
-ismerete hasznos, de megint csak nem bölcs erre
-építeni.
+<li>Maguk a szolg&aacute;ltat&aacute;sok is k&ouml;vetnek bizonyos
+konvenci&oacute;kat, mint a www.xyz.com. Mik&ouml;zben ezek
+ismerete hasznos, de megint csak nem b&ouml;lcs erre
+&eacute;p&iacute;teni.
 
-<li>Ismerd a saját rendszeredben a file nevek
-használatát.
+<li>Ismerd a saj&aacute;t rendszeredben a file nevek
+haszn&aacute;lat&aacute;t.
 
-<li>Ismerned kell egy-egy szolgáltatás speciális
-információközlô konvencióit. Az FTP
-site-ok legtöbbjén találsz valahol a hierarchia
-tetején egy README file-t, ami a rendelkezésre
-álló file-okról szól. Viszont nem
-feltételezheted azt, hogy ezek pontosak és/vagy
-naprakészek.
+<li>Ismerned kell egy-egy szolg&aacute;ltat&aacute;s speci&aacute;lis
+inform&aacute;ci&oacute;k&ouml;zl&ocirc; konvenci&oacute;it. Az FTP
+site-ok legt&ouml;bbj&eacute;n tal&aacute;lsz valahol a hierarchia
+tetej&eacute;n egy README file-t, ami a rendelkez&eacute;sre
+&aacute;ll&oacute; file-okr&oacute;l sz&oacute;l. Viszont nem
+felt&eacute;telezheted azt, hogy ezek pontosak &eacute;s/vagy
+naprak&eacute;szek.
 
-<li>Egyáltalán, SEMMILYEN
-információról NE tételezd fel hogy pontos
-vagy naprakész. Az új technológiák
-lehetôvé teszik bárkinek, hogy publikáljon,
-de az ezzel járó felelôsséget még
+<li>Egy&aacute;ltal&aacute;n, SEMMILYEN
+inform&aacute;ci&oacute;r&oacute;l NE t&eacute;telezd fel hogy pontos
+vagy naprak&eacute;sz. Az &uacute;j technol&oacute;gi&aacute;k
+lehet&ocirc;v&eacute; teszik b&aacute;rkinek, hogy publik&aacute;ljon,
+de az ezzel j&aacute;r&oacute; felel&ocirc;ss&eacute;get m&eacute;g
 nem tanulta meg mindenki.
 
-<li>Tudod már, de fontossága miatt
-megismételjük: hacsak nem használsz
-titkosító és eredetiséget
-biztosító programokat, bármilyen
-információ amit az Interneten továbbítasz
+<li>Tudod m&aacute;r, de fontoss&aacute;ga miatt
+megism&eacute;telj&uuml;k: hacsak nem haszn&aacute;lsz
+titkos&iacute;t&oacute; &eacute;s eredetis&eacute;get
+biztos&iacute;t&oacute; programokat, b&aacute;rmilyen
+inform&aacute;ci&oacute; amit az Interneten tov&aacute;bb&iacute;tasz
 "kint van a hidegen". Aki akarja, megszerezheti, vagy
-megváltoztathatja.
+megv&aacute;ltoztathatja.
 
-<li>Minthogy az Internet világméretû,
-találhatsz olyan információs
-szolgáltatást, amely gyökeresen eltérô
-kultúr- és szokáskörbôl ered. Amit te
-bántónak érzel, az abban a
-kultúrkörben teljesen elfogadott lehet. Maradj nyílt
-a világ felé.
+<li>Minthogy az Internet vil&aacute;gm&eacute;ret&ucirc;,
+tal&aacute;lhatsz olyan inform&aacute;ci&oacute;s
+szolg&aacute;ltat&aacute;st, amely gy&ouml;keresen elt&eacute;r&ocirc;
+kult&uacute;r- &eacute;s szok&aacute;sk&ouml;rb&ocirc;l ered. Amit te
+b&aacute;nt&oacute;nak &eacute;rzel, az abban a
+kult&uacute;rk&ouml;rben teljesen elfogadott lehet. Maradj ny&iacute;lt
+a vil&aacute;g fel&eacute;.
 
-<li>Ha egy népszerû site-ról szeretnél
-információt, akkor nézzd meg, nincs-e egy lista
-a mirror site-okról. Ha van ilyen, és ott van
-hozzád közelebbi mirror, használd azt.
+<li>Ha egy n&eacute;pszer&ucirc; site-r&oacute;l szeretn&eacute;l
+inform&aacute;ci&oacute;t, akkor n&eacute;zzd meg, nincs-e egy lista
+a mirror site-okr&oacute;l. Ha van ilyen, &eacute;s ott van
+hozz&aacute;d k&ouml;zelebbi mirror, haszn&aacute;ld azt.
 
-<li>Ne használd más FTP site-ját arra, hogy egy
-(konkrét) harmadik személynek szánt file-t helyezz
-el ott. Ezt egyszerûen szemetelésnek tartják,
-és általában nem elfogadott
-viselkedésforma.
+<li>Ne haszn&aacute;ld m&aacute;s FTP site-j&aacute;t arra, hogy egy
+(konkr&eacute;t) harmadik szem&eacute;lynek sz&aacute;nt file-t helyezz
+el ott. Ezt egyszer&ucirc;en szemetel&eacute;snek tartj&aacute;k,
+&eacute;s &aacute;ltal&aacute;ban nem elfogadott
+viselked&eacute;sforma.
 
-<li>Ha problémád támad egy site-al, és
-oda fordulsz segítségért, minél több
-információt adjál meg a probléma
-körülményeirôl. Ezzel nekik is segítesz,
-hogy lokalizálhassák a hibát.
+<li>Ha probl&eacute;m&aacute;d t&aacute;mad egy site-al, &eacute;s
+oda fordulsz seg&iacute;ts&eacute;g&eacute;rt, min&eacute;l t&ouml;bb
+inform&aacute;ci&oacute;t adj&aacute;l meg a probl&eacute;ma
+k&ouml;r&uuml;lm&eacute;nyeir&ocirc;l. Ezzel nekik is seg&iacute;tesz,
+hogy lokaliz&aacute;lhass&aacute;k a hib&aacute;t.
 
-<li>Ha te magad is szeretnél valamilyen
-információs szolgáltatást indítani,
-mint például egy homepage, akkor szokás szerint
-fordulj a helyi rendszergazdához, hogy megismerd az
-idevonatkozó helyi szabályokat.
+<li>Ha te magad is szeretn&eacute;l valamilyen
+inform&aacute;ci&oacute;s szolg&aacute;ltat&aacute;st ind&iacute;tani,
+mint p&eacute;ld&aacute;ul egy homepage, akkor szok&aacute;s szerint
+fordulj a helyi rendszergazd&aacute;hoz, hogy megismerd az
+idevonatkoz&oacute; helyi szab&aacute;lyokat.
 
-<li>Ha van rá módod, akkor kíméld a
-népszerû site-okat, segítsd elosztani a
-terhelést, és csúcsidôn kívül
-lépjél be. (Fordító megjegyzése: A
-világhálón valahol mindig csúcsidô
+<li>Ha van r&aacute; m&oacute;dod, akkor k&iacute;m&eacute;ld a
+n&eacute;pszer&ucirc; site-okat, seg&iacute;tsd elosztani a
+terhel&eacute;st, &eacute;s cs&uacute;csid&ocirc;n k&iacute;v&uuml;l
+l&eacute;pj&eacute;l be. (Ford&iacute;t&oacute; megjegyz&eacute;se: A
+vil&aacute;gh&aacute;l&oacute;n valahol mindig cs&uacute;csid&ocirc;
 van...)
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></ul>
+</ul>
+
 <h4>
-4.1.2 Útmutató Valósidejû Interaktív
-Szolgáltatásokhoz (MUD-ok, MOO-k, IRC)
+4.1.2 &Uacute;tmutat&oacute; Val&oacute;sidej&ucirc; Interakt&iacute;v
+Szolg&aacute;ltat&aacute;sokhoz (MUD-ok, MOO-k, IRC)
 </h4>
+
 <ul>
-<li>Akárcsak más rendszereknél, itt is bölcs
+<li>Ak&aacute;rcsak m&aacute;s rendszerekn&eacute;l, itt is b&ouml;lcs
 dolog csak figyelni egy kicsit, hogy a csoport
-kultúrájához szokhassál.
+kult&uacute;r&aacute;j&aacute;hoz szokhass&aacute;l.
 
-<li>Egyáltalán nem szükséges mindenkit
-személyesen üdvözölni egy csatornán
-ill. szobában. Egy szimpla Hello vagy hasonló
-köszöntés bôven elég. NEM elfogadott
-viselkedés, ha a szoftvered automatikáját arra
-használod, hogy mindenkit üdvözöljön.
+<li>Egy&aacute;ltal&aacute;n nem sz&uuml;ks&eacute;ges mindenkit
+szem&eacute;lyesen &uuml;dv&ouml;z&ouml;lni egy csatorn&aacute;n
+ill. szob&aacute;ban. Egy szimpla Hello vagy hasonl&oacute;
+k&ouml;sz&ouml;nt&eacute;s b&ocirc;ven el&eacute;g. NEM elfogadott
+viselked&eacute;s, ha a szoftvered automatik&aacute;j&aacute;t arra
+haszn&aacute;lod, hogy mindenkit &uuml;dv&ouml;z&ouml;lj&ouml;n.
 
-<li>Figyelmeztesd a résztvevôket ha nagyobb
-mennyiségû információt szeretnél
-velük megosztani. Ha mindenki egyetért vele, akkor mehet.
-E nélkül azonban súlyos udvariatlanság
-ilyesmit csinálni - akárcsak levélben.
+<li>Figyelmeztesd a r&eacute;sztvev&ocirc;ket ha nagyobb
+mennyis&eacute;g&ucirc; inform&aacute;ci&oacute;t szeretn&eacute;l
+vel&uuml;k megosztani. Ha mindenki egyet&eacute;rt vele, akkor mehet.
+E n&eacute;lk&uuml;l azonban s&uacute;lyos udvariatlans&aacute;g
+ilyesmit csin&aacute;lni - ak&aacute;rcsak lev&eacute;lben.
 
-<li>Ne tételezd fel, hogy ismeretlen emberek beszélni
-akarnak veled. Ha kényszerítve érzed magad arra,
-hogy személyes üzenetet küldjél egy
-ismeretlennek, akkor készülj fel arra, hogy éppen
-elfoglalt lehet vagy egészen egyszerûen nem akar veled
-beszélgetni.
+<li>Ne t&eacute;telezd fel, hogy ismeretlen emberek besz&eacute;lni
+akarnak veled. Ha k&eacute;nyszer&iacute;tve &eacute;rzed magad arra,
+hogy szem&eacute;lyes &uuml;zenetet k&uuml;ldj&eacute;l egy
+ismeretlennek, akkor k&eacute;sz&uuml;lj fel arra, hogy &eacute;ppen
+elfoglalt lehet vagy eg&eacute;szen egyszer&ucirc;en nem akar veled
+besz&eacute;lgetni.
 
-<li>Tiszteld az adott csoport szokásait. Nézz
-körül bemutatkozó anyagokért. Ezek egy ftp
+<li>Tiszteld az adott csoport szok&aacute;sait. N&eacute;zz
+k&ouml;r&uuml;l bemutatkoz&oacute; anyagok&eacute;rt. Ezek egy ftp
 site-on is lehetnek.
 
-<li>Ha valaki becenevet, alias-t, pszeudonevet vagy hasonlót
-használ, akkor tiszteld az anonimitáshoz való
-jogát. Még ha esetleg jóbarátok is vagytok,
-akkor is udvariasabb ezt a becenevet használni.
-Egyáltalán ne használd a valódi
-nevét on-line engedély nélkül.
-</li></li></li></li></li></li></ul>
+<li>Ha valaki becenevet, alias-t, pszeudonevet vagy hasonl&oacute;t
+haszn&aacute;l, akkor tiszteld az anonimit&aacute;shoz val&oacute;
+jog&aacute;t. M&eacute;g ha esetleg j&oacute;bar&aacute;tok is vagytok,
+akkor is udvariasabb ezt a becenevet haszn&aacute;lni.
+Egy&aacute;ltal&aacute;n ne haszn&aacute;ld a val&oacute;di
+nev&eacute;t on-line enged&eacute;ly n&eacute;lk&uuml;l.
+</ul>
+
 <h3>
-4.2 Iránymutató adminisztrátoroknak
+4.2 Ir&aacute;nymutat&oacute; adminisztr&aacute;toroknak
 </h3>
+
 <h4>
-4.2.1 Általános útmutató
+4.2.1 &Aacute;ltal&aacute;nos &uacute;tmutat&oacute;
 </h4>
+
 <ul>
-<li>Legyen tiszta mindenki számára, hogy mi
-másolható és mi nem.
+<li>Legyen tiszta mindenki sz&aacute;m&aacute;ra, hogy mi
+m&aacute;solhat&oacute; &eacute;s mi nem.
 
-<li>Ismertesd, hogy az adott site-on ill. szervezetnél milyen
-anyagok állnak rendelkezésre. Az általános
-irányelvek legyenek világosak.
+<li>Ismertesd, hogy az adott site-on ill. szervezetn&eacute;l milyen
+anyagok &aacute;llnak rendelkez&eacute;sre. Az &aacute;ltal&aacute;nos
+ir&aacute;nyelvek legyenek vil&aacute;gosak.
 
-<li>Az információk, külösen a README-k,
-legyenek naprakészek. A README-ket sima ASCII
-file-ként szolgáltasd. (Fordító
-megjegyzése: Ha a README-k és a FAQ-k nagyon
-elütnek a valóságtól, akkor rengeteg
-egyforma kérdést fogsz kapni, amelyek
-pontosítást várnak. Jobb ezt megelôzni.)
+<li>Az inform&aacute;ci&oacute;k, k&uuml;l&ouml;sen a README-k,
+legyenek naprak&eacute;szek. A README-ket sima ASCII
+file-k&eacute;nt szolg&aacute;ltasd. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: Ha a README-k &eacute;s a FAQ-k nagyon
+el&uuml;tnek a val&oacute;s&aacute;gt&oacute;l, akkor rengeteg
+egyforma k&eacute;rd&eacute;st fogsz kapni, amelyek
+pontos&iacute;t&aacute;st v&aacute;rnak. Jobb ezt megel&ocirc;zni.)
 
-<li>Ha tudsz készíteni egy listát a
-mirror-jaidról, akkor tedd azt közzé.
-Mellékeljél egy mirror-okra vonatkozó
-szerzôi jogi dokumentumot. Ha ismered az update
-menetrendjüket, azt is célszerû
-közzétenni.
+<li>Ha tudsz k&eacute;sz&iacute;teni egy list&aacute;t a
+mirror-jaidr&oacute;l, akkor tedd azt k&ouml;zz&eacute;.
+Mell&eacute;kelj&eacute;l egy mirror-okra vonatkoz&oacute;
+szerz&ocirc;i jogi dokumentumot. Ha ismered az update
+menetrendj&uuml;ket, azt is c&eacute;lszer&ucirc;
+k&ouml;zz&eacute;tenni.
 
-<li>Gondoskodj arról, hogy a népszerû (és
-nagymennyiségû) információnak
-elegendô sávszélesség jusson.
+<li>Gondoskodj arr&oacute;l, hogy a n&eacute;pszer&ucirc; (&eacute;s
+nagymennyis&eacute;g&ucirc;) inform&aacute;ci&oacute;nak
+elegend&ocirc; s&aacute;vsz&eacute;less&eacute;g jusson.
 
-<li>Használd a filenév konvenciókat: .txt ascii
-szövegnek; .html vagy .htm HTML-nek; .ps Postscript-nek; .pdf
+<li>Haszn&aacute;ld a filen&eacute;v konvenci&oacute;kat: .txt ascii
+sz&ouml;vegnek; .html vagy .htm HTML-nek; .ps Postscript-nek; .pdf
 Portable Document Format-nek; .sgml vagy .sgm SGML-nek; .exe
-nem-Unix végrehajtható file-oknak stb.
+nem-Unix v&eacute;grehajthat&oacute; file-oknak stb.
 
-<li>Letöltésre szánt file-ok nevének
-elsô nyolc karakterét próbáld meg
-különbözôvé tenni.
-(Fordító megjegyzése: Lesznek (lehet, nem
-kevesen), akik DOS alól kívánják
-használni rendszeredet. Ez a rendszer csak 8 karaktert
-képes megkülönböztetni a file
-nevében.)
+<li>Let&ouml;lt&eacute;sre sz&aacute;nt file-ok nev&eacute;nek
+els&ocirc; nyolc karakter&eacute;t pr&oacute;b&aacute;ld meg
+k&uuml;l&ouml;nb&ouml;z&ocirc;v&eacute; tenni.
+(Ford&iacute;t&oacute; megjegyz&eacute;se: Lesznek (lehet, nem
+kevesen), akik DOS al&oacute;l k&iacute;v&aacute;nj&aacute;k
+haszn&aacute;lni rendszeredet. Ez a rendszer csak 8 karaktert
+k&eacute;pes megk&uuml;l&ouml;nb&ouml;ztetni a file
+nev&eacute;ben.)
 
-<li>Amikor információt szolgáltatsz, akkor legyen
-abban valami egyedi. Kerüld el az olyan
-szolgáltatás indítását, ami csak
-más szolgáltatókra mutat. (Fordító
-megjegyzése: Olyan homepage-ek amik csak linkekbôl
-állnak, általában értelmetlenek. Ezeket egy
-keresôgép legtöbbször ki tudja váltani.
+<li>Amikor inform&aacute;ci&oacute;t szolg&aacute;ltatsz, akkor legyen
+abban valami egyedi. Ker&uuml;ld el az olyan
+szolg&aacute;ltat&aacute;s ind&iacute;t&aacute;s&aacute;t, ami csak
+m&aacute;s szolg&aacute;ltat&oacute;kra mutat. (Ford&iacute;t&oacute;
+megjegyz&eacute;se: Olyan homepage-ek amik csak linkekb&ocirc;l
+&aacute;llnak, &aacute;ltal&aacute;ban &eacute;rtelmetlenek. Ezeket egy
+keres&ocirc;g&eacute;p legt&ouml;bbsz&ouml;r ki tudja v&aacute;ltani.
 )
 
-<li>Ne mutass más site-okra mielôtt engedélyt
-kérnél. (Fordító megjegyzése: Ez
-mostanra kicsit elavult, de még mindig nem árthat
-informálni a túloldalt)
+<li>Ne mutass m&aacute;s site-okra miel&ocirc;tt enged&eacute;lyt
+k&eacute;rn&eacute;l. (Ford&iacute;t&oacute; megjegyz&eacute;se: Ez
+mostanra kicsit elavult, de m&eacute;g mindig nem &aacute;rthat
+inform&aacute;lni a t&uacute;loldalt)
 
-<li>Vésd jól az eszedbe, hogy egy
-szolgáltatás nemcsak design-t és
-megvalósítás-t jelent. Hanem karbantartást
+<li>V&eacute;sd j&oacute;l az eszedbe, hogy egy
+szolg&aacute;ltat&aacute;s nemcsak design-t &eacute;s
+megval&oacute;s&iacute;t&aacute;s-t jelent. Hanem karbantart&aacute;st
 is.
 
-<li>Az általad szolgáltatott anyagoknak meg kell
-felelniük a támogató szervezet szabályainak.
+<li>Az &aacute;ltalad szolg&aacute;ltatott anyagoknak meg kell
+felelni&uuml;k a t&aacute;mogat&oacute; szervezet szab&aacute;lyainak.
 
-<li>Teszteld alkalmazásaidat a szoftverek minél
-szélesebb skálájával. Nem
-feltételezheted, hogy minden oké, ha csak egy klienssel
-ellenôriztél. Viszont fel kell tételezned, hogy lesz,
-aki egyszerûbb lehetôségekkel és klienssel
-rendelkezik csak - tehát ne tervezd olyanra a
-szolgáltatásodat, hogy csak grafikus
-terminálról (GUI) lehessen használni.
+<li>Teszteld alkalmaz&aacute;saidat a szoftverek min&eacute;l
+sz&eacute;lesebb sk&aacute;l&aacute;j&aacute;val. Nem
+felt&eacute;telezheted, hogy minden ok&eacute;, ha csak egy klienssel
+ellen&ocirc;rizt&eacute;l. Viszont fel kell t&eacute;telezned, hogy lesz,
+aki egyszer&ucirc;bb lehet&ocirc;s&eacute;gekkel &eacute;s klienssel
+rendelkezik csak - teh&aacute;t ne tervezd olyanra a
+szolg&aacute;ltat&aacute;sodat, hogy csak grafikus
+termin&aacute;lr&oacute;l (GUI) lehessen haszn&aacute;lni.
 
-<li>Legyen egységes nézôpontja és
-külleme az információdnak.
+<li>Legyen egys&eacute;ges n&eacute;z&ocirc;pontja &eacute;s
+k&uuml;lleme az inform&aacute;ci&oacute;dnak.
 
-<li>Az exportkorlátozások mások és
-mások minden országban. Ismerned kell ezek
-következményeit is, ha szolgáltatni akarsz.
+<li>Az exportkorl&aacute;toz&aacute;sok m&aacute;sok &eacute;s
+m&aacute;sok minden orsz&aacute;gban. Ismerned kell ezek
+k&ouml;vetkezm&eacute;nyeit is, ha szolg&aacute;ltatni akarsz.
 
-<li>Mondd el a felhasználóidnak, hogy mit akarsz tenni
-a tôlük összegyûjtött
-információval, mint pl. a WWW-rôl adott
-véleményük. Figyelmeztetned kell az embereket, ha
-közzé akarsz tenni ebbôl bármit,
-akárcsak passzívan, a többi
-felhasználó számára
-láthatóan.
+<li>Mondd el a felhaszn&aacute;l&oacute;idnak, hogy mit akarsz tenni
+a t&ocirc;l&uuml;k &ouml;sszegy&ucirc;jt&ouml;tt
+inform&aacute;ci&oacute;val, mint pl. a WWW-r&ocirc;l adott
+v&eacute;lem&eacute;ny&uuml;k. Figyelmeztetned kell az embereket, ha
+k&ouml;zz&eacute; akarsz tenni ebb&ocirc;l b&aacute;rmit,
+ak&aacute;rcsak passz&iacute;van, a t&ouml;bbi
+felhaszn&aacute;l&oacute; sz&aacute;m&aacute;ra
+l&aacute;that&oacute;an.
 
-<li>A felhasználói információ
-szolgáltatásokra (mint pl. egy homepage)
-vonatkozó szabályaid legyenek ismertek!
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></ul>
+<li>A felhaszn&aacute;l&oacute;i inform&aacute;ci&oacute;
+szolg&aacute;ltat&aacute;sokra (mint pl. egy homepage)
+vonatkoz&oacute; szab&aacute;lyaid legyenek ismertek!
+</ul>
+
 <h2>
-<a name="5.0">5.0 Válogatott bibliográfia
-</a></h2>
+<a name="5.0">5.0 V&aacute;logatott bibliogr&aacute;fia
+</h2>
 
-Ez a dokumentum nagyobbrészt ezeken a mûveken alapul.
-Ami konkrétan ezekben a mûvekben nem
-található meg, az az IETF-RUN munkacsoport
-tapasztalatán alapul.
+Ez a dokumentum nagyobbr&eacute;szt ezeken a m&ucirc;veken alapul.
+Ami konkr&eacute;tan ezekben a m&ucirc;vekben nem
+tal&aacute;lhat&oacute; meg, az az IETF-RUN munkacsoport
+tapasztalat&aacute;n alapul.
 
 <ol>
+
 <li>Angell, D., and B. Heslop, "The Elements of E-mail Style", New
 York: Addison-Wesley, 1994.
 
-<li>"Answers to Frequently Asked Questions about Usenet"<br/>
-Original author: jerry@eagle.UUCP (Jerry Schwarz)<br/>
-Maintained by:  netannounce@deshaw.com (Mark Moraes)<br/>
-Archive-name: usenet-faq/part1<br/>
+<li>"Answers to Frequently Asked Questions about Usenet"<br>
+Original author: jerry@eagle.UUCP (Jerry Schwarz)<br>
+Maintained by:  netannounce@deshaw.com (Mark Moraes)<br>
+Archive-name: usenet-faq/part1<br>
+
 <li>Cerf, V., "Guidelines for Conduct on and Use of Internet", 
 <a href="http://www.isoc.org/proceedings/conduct/cerf-Aug-draft.html">
 http://www.isoc.org/proceedings/conduct/cerf-Aug-draft.html</a>
+
 <li>Dern, D., "The Internet Guide for New Users", New
 York:McGraw-Hill, 1994.
 
-<li>"Emily Postnews Answers Your Questions on Netiquette"<br/>
-Original author: brad@looking.on.ca (Brad Templeton)<br/>
-Maintained by:  netannounce@deshaw.com (Mark Moraes)<br/>
-Archive-name: emily-postnews/part1<br/>
+<li>"Emily Postnews Answers Your Questions on Netiquette"<br>
+Original author: brad@looking.on.ca (Brad Templeton)<br>
+Maintained by:  netannounce@deshaw.com (Mark Moraes)<br>
+Archive-name: emily-postnews/part1<br>
+
 <li>Gaffin, A., "Everybody's Guide to the Internet", Cambridge, Mass.,
 MIT Press, 1994.
 
@@ -1412,8 +1387,9 @@ MIT Press, 1994.
 of Representatives gopher, 
 <a href="gopher.house.gov:70/OF-1%3a208%3aInternet %20Etiquette">
 gopher.house.gov:70/OF-1%3a208%3aInternet %20Etiquette</a>
+
 <li>How to find the right place to post (FAQ)by
-buglady@bronze.lcs.mit.edu (Aliza R. Panitz)<br/>
+buglady@bronze.lcs.mit.edu (Aliza R. Panitz)<br>
 Archive-name: finding-groups/general
 
 <li> Hambridge, S., and J. Sedayao, "Horses and Barn Doors: Evolution
@@ -1423,6 +1399,7 @@ November 1-5, 1993, pp. 9-16.
 ftp://ftp.intel.com/pub/papers/horses.ps</a> or 
 <a href="ftp://ftp.intel.com/pub/papers/horses.ascii">
 ftp://ftp.intel.com/pub/papers/horses.ascii</a>
+
 <li> Heslop, B., and D. Angell, "The Instant Internet guide: Hands-on
 Global Networking", Reading, Mass., Addison-Wesley, 1994.
 
@@ -1430,20 +1407,22 @@ Global Networking", Reading, Mass., Addison-Wesley, 1994.
 <li> Horwitz, S., "Internet Etiquette Tips",
 <a href="ftp://ftp.temple.edu/pub/info/help-net/netiquette.infohn">
 ftp://ftp.temple.edu/pub/info/help-net/netiquette.infohn</a>
+
 <li> Internet Activities Board, "Ethics and the Internet", RFC 1087, IAB,
 January 1989.
 <a href="ftp://ds.internic.net/rfc/rfc1087.txt">
 ftp://ds.internic.net/rfc/rfc1087.txt</a>
+
 <li> Kehoe, B., "Zen and the Art of the Internet: A Beginner's Guide",
-a Netikett info található szétszórva a
-mûben. 3rd ed. Englewood Cliffs, NJ., Prentice-Hall, 1994.
+a Netikett info tal&aacute;lhat&oacute; sz&eacute;tsz&oacute;rva a
+m&ucirc;ben. 3rd ed. Englewood Cliffs, NJ., Prentice-Hall, 1994.
 
 <li> Kochmer, J., "Internet Passport: NorthWestNet's Guide to our World
 Online",  4th ed.  Bellevue, Wash., NorthWestNet, Northwest Academic
 Computing Consortium, 1993.
 
 <li> Krol, Ed, "The Whole Internet: User's Guide and Catalog",
-Sebastopol, CA, O'Reilly &amp; Associates, 1992.
+Sebastopol, CA, O'Reilly & Associates, 1992.
 
 <li> Lane, E. and C. Summerhill, "Internet Primer for Information
 Professionals: a basic guide to Internet networking technology",
@@ -1457,35 +1436,42 @@ Westport, CT, Meckler, 1993.
 Intelligence Program, Scan No. 2109.  March, 1993.
 <a href="gopher://gopher.well.sf.ca.us:70/00/Communications/surf-wild">
 gopher://gopher.well.sf.ca.us:70/00/Communications/surf-wild</a>
+
 <li> Martin, J., "There's Gold in them thar Networks! or Searching for
 Treasure in all the Wrong Places", FYI 10, RFC 1402, January 1993. 
 <a href="ftp://ds.internic.net/rfc/rfc1402.txt">
 ftp://ds.internic.net/rfc/rfc1402.txt</a>
+
 <li> Pioch, N., "A Short IRC Primer", Text conversion by Owe
 Rasmussen.  Edition 1.1b, February 28, 1993.
 <a href="http://www.kei.com/irc/IRCprimer1.1.txt">
 http://www.kei.com/irc/IRCprimer1.1.txt</a>
+
 <li> Polly, J., "Surfing the Internet: an Introduction", Version 2.0.3. 
 Revised May 15, 1993.
-<a href="gopher://nysernet.org:70/00/ftp%20archives/pub/resources/guides/
+<a
+href="gopher://nysernet.org:70/00/ftp%20archives/pub/resources/guides/
 surfing.2.0.3.txt">
 gopher://nysernet.org:70/00/ftp%20archives/pub/resources/guides/surfin
 g.2.0.3.txt</a>
 <a href="ftp://ftp.nysernet.org/pub/resources/guides/surfing.2.0.3.txt">
 ftp://ftp.nysernet.org/pub/resources/guides/surfing.2.0.3.txt</a>
-<li> "A Primer on How to Work With the Usenet Community"<br/>
-Original author: chuq@apple.com (Chuq Von Rospach)<br/>
-Maintained by: netannounce@deshaw.com (Mark Moraes)<br/>
+
+<li> "A Primer on How to Work With the Usenet Community"<br>
+Original author: chuq@apple.com (Chuq Von Rospach)<br>
+Maintained by: netannounce@deshaw.com (Mark Moraes)<br>
 Archive-name: usenet-primer/part1
 
 <li> Rinaldi, A., "The Net: User Guidelines and Netiquette", September
 3, 1992.
 <a href="http://www.fau.edu/rinaldi/net/index.htm">
 http://www.fau.edu/rinaldi/net/index.htm</a>
-<li> "Rules for posting to Usenet"<br/>
-Original author: spaf@cs.purdue.edu (Gene Spafford)<br/>
-Maintained by:  netannounce@deshaw.com (Mark Moraes)<br/>
-Archive-name: posting-rules/part1<br/>
+
+<li> "Rules for posting to Usenet"<br>
+Original author: spaf@cs.purdue.edu (Gene Spafford)<br>
+Maintained by:  netannounce@deshaw.com (Mark Moraes)<br>
+Archive-name: posting-rules/part1<br>
+
 <li> Shea, V., "Netiquette", San Francisco: Albion Books, 1994?.
 
 <li> Strangelove, M., with A. Bosley, "How to Advertise on the
@@ -1493,26 +1479,32 @@ Internet", ISSN 1201-0758.
 
 <li> Tenant, R., "Internet Basics", ERIC Clearinghouse of Information
 Resources, EDO-IR-92-7.  September, 1992.
-<a href="gopher://nic.merit.edu:7043/00/introducing.the.internet/internet.ba
+<a
+href="gopher://nic.merit.edu:7043/00/introducing.the.internet/internet.ba
 sics.eric-digest"> 
 gopher://nic.merit.edu:7043/00/introducing.the.internet/internet.basics.er
 ic-digest</a>
-<a href="gopher://vega.lib.ncsu.edu:70/00/library/reference/guides/tennet">
+<a
+href="gopher://vega.lib.ncsu.edu:70/00/library/reference/guides/tennet">
 gopher://vega.lib.ncsu.edu:70/00/library/reference/guides/tennet</a>
+
 <li> Wiggins, R., "The Internet for everyone: a guide for users and
 providers", New York, McGraw-Hill, 1995.
 
-</li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></li></ol>
-<h2>
-<a name="6.0">6.0 Biztonsági meggondolások
-</a></h2>
-<p>
-Ebben a dokumentumban nem tárgyalunk biztonsági
-témákat.
+</ol>
 
 <h2>
-<a name="7.0">7.0 A szerzô címe
-</a></h2>
+<a name="6.0">6.0 Biztons&aacute;gi meggondol&aacute;sok
+</h2>
+
+<p>
+Ebben a dokumentumban nem t&aacute;rgyalunk biztons&aacute;gi
+t&eacute;m&aacute;kat.
+
+<h2>
+<a name="7.0">7.0 A szerz&ocirc; c&iacute;me
+</h2>
+
 <pre>
 Sally Hambridge
 Intel Corporation
@@ -1524,16 +1516,16 @@ Phone: 408-765-2931
 Fax:   408-765-3679
 EMail: sallyh@ludwig.sc.intel.com
 
-A fordító címe:
+A ford&iacute;t&oacute; c&iacute;me:
 
-Ha Magyarországról írsz:
+Ha Magyarorsz&aacute;gr&oacute;l &iacute;rsz:
 
-Négyesi Károly
+N&eacute;gyesi K&aacute;roly
 Budapest
 P.f.503
 1462
 
-Külföldrôl:
+K&uuml;lf&ouml;ldr&ocirc;l:
 
 Charlie Negyesi
 HUNGARY
@@ -1543,8 +1535,8 @@ H-1462
 
 Email: chx@cs.elte.hu
 
-Köszönetet mondok a javításokért
-mindenkinek, de elsôsorban a következôknek: Varga
-Ákos Endre (Hamster), Liling Zoltán, Kiss Gábor,
-Márton Ádám.
-</pre></p></p></li></li></li></li></ul></p></p></p></p></p></p></p></p></p></p></body></html>
+K&ouml;sz&ouml;netet mondok a jav&iacute;t&aacute;sok&eacute;rt
+mindenkinek, de els&ocirc;sorban a k&ouml;vetkez&ocirc;knek: Varga
+&Aacute;kos Endre (Hamster), Liling Zolt&aacute;n, Kiss G&aacute;bor,
+M&aacute;rton &Aacute;d&aacute;m.
+</pre></body></html>

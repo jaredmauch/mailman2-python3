@@ -25,8 +25,6 @@ and it will also give the MTA the opportunity to regenerate valid keys
 originating at the Mailman server for the outgoing message.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 from Mailman import mm_cfg
 
 
@@ -46,19 +44,13 @@ def process(mlist, msg, msgdata):
        ):
         return
     if (mm_cfg.REMOVE_DKIM_HEADERS == 3):
-        # Save original headers before removing them
-        for header in ('domainkey-signature', 'dkim-signature', 'authentication-results'):
-            values = msg.get_all(header, [])
-            if values:
-                # Store original values in X-Mailman-Original-* headers
-                for value in values:
-                    msg.add_header('X-Mailman-Original-' + header.title().replace('-', ''), value)
-                # Remove the original headers
-                while header in msg:
-                    del msg[header]
-    else:
-        # Just remove the headers without saving them
-        for header in ('domainkey-signature', 'dkim-signature', 'authentication-results'):
-            while header in msg:
-                del msg[header]
+        for value in msg.get_all('domainkey-signature', []):
+            msg['X-Mailman-Original-DomainKey-Signature'] = value
+        for value in msg.get_all('dkim-signature', []):
+            msg['X-Mailman-Original-DKIM-Signature'] = value
+        for value in msg.get_all('authentication-results', []):
+            msg['X-Mailman-Original-Authentication-Results'] = value
+    del msg['domainkey-signature']
+    del msg['dkim-signature']
+    del msg['authentication-results']
 

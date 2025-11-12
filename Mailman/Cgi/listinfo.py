@@ -23,11 +23,8 @@ from __future__ import print_function
 
 from builtins import str
 import os
-import urllib.parse
+from Mailman.Utils import FieldStorage
 import time
-import sys
-import ipaddress
-from io import FileNotFoundError
 
 from Mailman import mm_cfg
 from Mailman import Utils
@@ -35,99 +32,54 @@ from Mailman import MailList
 from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
-from Mailman.Logging.Syslog import mailman_log
-from Mailman.Utils import validate_ip_address
+from Mailman.Logging.Syslog import syslog
 
 # Set up i18n
 _ = i18n._
 i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
 
 
-def validate_listname(listname):
-    """Validate and sanitize a listname to prevent path traversal.
-    
-    Args:
-        listname: The listname to validate
-        
-    Returns:
-        tuple: (is_valid, sanitized_name, error_message)
-    """
-    if not listname:
-        return False, None, _('List name is required')
-        
-    # Convert to lowercase and strip whitespace
-    listname = listname.lower().strip()
-    
-    # Basic validation
-    if not Utils.ValidateListName(listname):
-        return False, None, _('Invalid list name')
-        
-    # Check for path traversal attempts
-    if '..' in listname or '/' in listname or '\\' in listname:
-        return False, None, _('Invalid list name')
-        
-    return True, listname, None
-
-
+
 def main():
     parts = Utils.GetPathPieces()
     if not parts:
         listinfo_overview()
         return
 
-    # Validate and sanitize listname
-    is_valid, listname, error_msg = validate_listname(parts[0])
-    if not is_valid:
-        print('Status: 400 Bad Request')
-        listinfo_overview(error_msg)
-        return
-
+    listname = parts[0].lower()
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except (Errors.MMListError, FileNotFoundError) as e:
-        # Avoid cross-site scripting attacks and information disclosure
+    except Errors.MMListError as e:
+        # Avoid cross-site scripting attacks
         safelistname = Utils.websafe(listname)
         # Send this with a 404 status.
         print('Status: 404 Not Found')
         listinfo_overview(_(f'No such list <em>{safelistname}</em>'))
-        mailman_log('error', 'listinfo: No such list "%s"', listname)
-        return
-    except Exception as e:
-        # Log the full error but don't expose it to the user
-        mailman_log('error', 'listinfo: Unexpected error for list "%s": %s', listname, str(e))
-        print('Status: 500 Internal Server Error')
-        listinfo_overview(_('An error occurred processing your request'))
+        syslog('error', 'listinfo: No such list "%s": %s', listname, e)
         return
 
     # See if the user want to see this page in other language
+    cgidata = FieldStorage()
     try:
-        if os.environ.get('REQUEST_METHOD') == 'POST':
-            # Get the content length
-            content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-            # Read the form data
-            form_data = sys.stdin.read(content_length)
-            cgidata = urllib.parse.parse_qs(form_data, keep_blank_values=True)
-        else:
-            query_string = os.environ.get('QUERY_STRING', '')
-            cgidata = urllib.parse.parse_qs(query_string, keep_blank_values=True)
-    except Exception as e:
-        # Log the error but don't expose details
-        mailman_log('error', 'listinfo: Error parsing form data: %s', str(e))
+        language = cgidata.getfirst('language')
+    except TypeError:
+        # Someone crafted a POST with a bad Content-Type:.
         doc = Document()
         doc.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
         doc.AddItem(Header(2, _("Error")))
-        doc.AddItem(Bold(_('Invalid request.')))
+        doc.AddItem(Bold(_('Invalid options to CGI script.')))
+        # Send this with a 400 status.
         print('Status: 400 Bad Request')
         print(doc.Format())
         return
 
-    language = cgidata.get('language', [None])[0]
     if not Utils.IsLanguage(language):
         language = mlist.preferred_language
     i18n.set_language(language)
     list_listinfo(mlist, language)
 
 
+
 def listinfo_overview(msg=''):
     # Present the general listinfo overview
     hostname = Utils.get_domain()
@@ -222,31 +174,27 @@ def listinfo_overview(msg=''):
     print(doc.Format())
 
 
-def list_listinfo(mlist, language):
+
+def list_listinfo(mlist, lang):
     # Generate list specific listinfo
     doc = HeadlessDocument()
-    doc.set_language(language)
+    doc.set_language(lang)
 
-    # First load the template
-    template_content, template_path = Utils.findtext('listinfo.html', lang=language, mlist=mlist)
-    if template_content is None:
-        mailman_log('error', 'Could not load template file: %s', template_path)
-        return
+    replacements = mlist.GetStandardReplacements(lang)
 
-    # Then get replacements
-    replacements = mlist.GetStandardReplacements(language)
-
-    if not mlist.nondigestable:
+    if not mlist.digestable or not mlist.nondigestable:
         replacements['<mm-digest-radio-button>'] = ""
         replacements['<mm-undigest-radio-button>'] = ""
         replacements['<mm-digest-question-start>'] = '<!-- '
         replacements['<mm-digest-question-end>'] = ' -->'
     else:
         replacements['<mm-digest-radio-button>'] = mlist.FormatDigestButton()
-        replacements['<mm-undigest-radio-button>'] = mlist.FormatUndigestButton()
+        replacements['<mm-undigest-radio-button>'] = \
+                                                   mlist.FormatUndigestButton()
         replacements['<mm-digest-question-start>'] = ''
         replacements['<mm-digest-question-end>'] = ''
-    replacements['<mm-plain-digests-button>'] = mlist.FormatPlainDigestsButton()
+    replacements['<mm-plain-digests-button>'] = \
+                                              mlist.FormatPlainDigestsButton()
     replacements['<mm-mime-digests-button>'] = mlist.FormatMimeDigestsButton()
     replacements['<mm-subscribe-box>'] = mlist.FormatBox('email', size=30)
     replacements['<mm-subscribe-button>'] = mlist.FormatButton(
@@ -256,81 +204,78 @@ def list_listinfo(mlist, language):
     replacements['<mm-subscribe-form-start>'] = mlist.FormatFormStart(
         'subscribe')
     if mm_cfg.SUBSCRIBE_FORM_SECRET:
-        # Get and validate IP address
-        ip = os.environ.get('REMOTE_ADDR', '')
-        is_valid, normalized_ip = validate_ip_address(ip)
-        if not is_valid:
-            ip = ''
+        now = str(int(time.time()))
+        remote = os.environ.get('HTTP_FORWARDED_FOR',
+                 os.environ.get('HTTP_X_FORWARDED_FOR',
+                 os.environ.get('REMOTE_ADDR',
+                                'w.x.y.z')))
+        # Try to accept a range in case of load balancers, etc.  (LP: #1447445)
+        if remote.find('.') >= 0:
+            # ipv4 - drop last octet
+            remote = remote.rsplit('.', 1)[0]
         else:
-            ip = normalized_ip
+            # ipv6 - drop last 16 (could end with :: in which case we just
+            #        drop one : resulting in an invalid format, but it's only
+            #        for our hash so it doesn't matter.
+            remote = remote.rsplit(':', 1)[0]
         # render CAPTCHA, if configured
         if isinstance(mm_cfg.CAPTCHAS, dict) and 'en' in mm_cfg.CAPTCHAS:
             (captcha_question, captcha_box, captcha_idx) = \
-                Utils.captcha_display(mlist, language, mm_cfg.CAPTCHAS)
+                Utils.captcha_display(mlist, lang, mm_cfg.CAPTCHAS)
             pre_question = _(
                     """Please answer the following question to prove that
                     you are not a bot:"""
                 )
             replacements['<mm-captcha-ui>'] = (
-                """<tr role="row"><td role="cell" style="background-color: #dddddd">%s<br>%s</td><td role="cell">%s</td></tr>"""
+                """<tr><td BGCOLOR="#dddddd">%s<br>%s</td><td>%s</td></tr>"""
                 % (pre_question, captcha_question, captcha_box))
         else:
             # just to have something to include in the hash below
             captcha_idx = ''
+        secret = mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + now + ":" + captcha_idx + ":" + mlist.internal_name() + ":" + remote
+        hash_secret = Utils.sha_new(secret.encode('utf-8')).hexdigest()
         # fill form
         replacements['<mm-subscribe-form-start>'] += (
                 '<input type="hidden" name="sub_form_token"'
                 ' value="%s:%s:%s">\n'
-                % (time.time(), captcha_idx,
-                          Utils.sha_new((mm_cfg.SUBSCRIBE_FORM_SECRET + ":" +
-                          str(time.time()) + ":" +
-                          captcha_idx + ":" +
-                          mlist.internal_name() + ":" +
-                          ip).encode('utf-8')).hexdigest()
-                    )
-                )
+                % (now, captcha_idx, hash_secret ))
     # Roster form substitutions
     replacements['<mm-roster-form-start>'] = mlist.FormatFormStart('roster')
+    replacements['<mm-roster-option>'] = mlist.FormatRosterOptionForUser(lang)
     # Options form substitutions
     replacements['<mm-options-form-start>'] = mlist.FormatFormStart('options')
-    replacements['<mm-editing-options>'] = mlist.FormatEditingOption(language)
+    replacements['<mm-editing-options>'] = mlist.FormatEditingOption(lang)
     replacements['<mm-info-button>'] = SubmitButton('UserOptions',
                                                     _('Edit Options')).Format()
     # If only one language is enabled for this mailing list, omit the choice
     # buttons.
-    if len(mlist.available_languages) == 1:
-        listlangs = _(Utils.GetLanguageDescr(mlist.preferred_language))
+    if len(mlist.GetAvailableLanguages()) == 1:
+        displang = ''
     else:
-        listlangs = mlist.GetLangSelectBox(language).Format()
-    replacements['<mm-displang-box>'] = listlangs
+        displang = mlist.FormatButton('displang-button',
+                                      text = _("View this page in"))
+    replacements['<mm-displang-box>'] = displang
     replacements['<mm-lang-form-start>'] = mlist.FormatFormStart('listinfo')
     replacements['<mm-fullname-box>'] = mlist.FormatBox('fullname', size=30)
     # If reCAPTCHA is enabled, display its user interface
     if mm_cfg.RECAPTCHA_SITE_KEY:
         noscript = _('This form requires JavaScript.')
         replacements['<mm-recaptcha-ui>'] = (
-            """<tr role="row"><td role="cell">&nbsp;</td><td role="cell">
+            """<tr><td>&nbsp;</td><td>
             <noscript>%s</noscript>
             <script src="https://www.google.com/recaptcha/api.js?hl=%s">
             </script>
             <div class="g-recaptcha" data-sitekey="%s"></div>
             </td></tr>"""
-            % (noscript, language, mm_cfg.RECAPTCHA_SITE_KEY))
+            % (noscript, lang, mm_cfg.RECAPTCHA_SITE_KEY))
     else:
         replacements['<mm-recaptcha-ui>'] = ''
 
-    # Process the template with replacements
-    try:
-        # Use ParseTags for proper template processing
-        output = mlist.ParseTags('listinfo.html', replacements, language)
-        doc.AddItem(output)
-    except Exception as e:
-        mailman_log('error', 'Error processing template: %s', str(e))
-        return
-
-    # Print the formatted document
+    # Do the expansion.
+    doc.AddItem(mlist.ParseTags('listinfo.html', replacements, lang))
     print(doc.Format())
 
 
+
 if __name__ == "__main__":
     main()
