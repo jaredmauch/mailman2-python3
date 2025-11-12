@@ -825,14 +825,25 @@ def get_global_password(siteadmin=True):
     return challenge
 
 
-def check_global_password(response, siteadmin=True):
+def check_global_password(response, siteadmin=True, auto_upgrade=False):
+    """Check a global password and optionally upgrade it if in old format.
+    
+    Args:
+        response: The password to check (str or bytes)
+        siteadmin: If True, check site admin password; if False, check list creator password
+        auto_upgrade: If True, automatically upgrade old format passwords to new format
+    
+    Returns:
+        bool: True if password is valid, False otherwise
+    """
     challenge = get_global_password(siteadmin)
     if challenge is None:
         return None
     # Use verify_password which handles both old SHA1 and new PBKDF2 formats
     is_valid, needs_upgrade = verify_password(response, challenge)
-    # Note: We don't auto-upgrade global passwords here since they're in files
-    # and we'd need to write back to the file. This could be added if needed.
+    # Auto-upgrade if requested and password is valid but in old format
+    if is_valid and needs_upgrade and auto_upgrade:
+        set_global_password(response, siteadmin)
     return is_valid
 
 
