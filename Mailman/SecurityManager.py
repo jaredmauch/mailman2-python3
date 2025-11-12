@@ -142,11 +142,13 @@ class SecurityManager(object):
 
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
-                ok = Utils.check_global_password(response, siteadmin=0)
+                # Auto-upgrade global passwords when used for authentication
+                ok = Utils.check_global_password(response, siteadmin=0, auto_upgrade=True)
                 if ok:
                     return mm_cfg.AuthCreator
             elif ac == mm_cfg.AuthSiteAdmin:
-                ok = Utils.check_global_password(response)
+                # Auto-upgrade global passwords when used for authentication
+                ok = Utils.check_global_password(response, auto_upgrade=True)
                 if ok:
                     return mm_cfg.AuthSiteAdmin
             elif ac == mm_cfg.AuthListAdmin:
