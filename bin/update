@@ -683,11 +683,18 @@ def check_and_notify_password_upgrades(dry_run=False):
     
     print('Checking for lists with old password formats...')
     lists_needing_upgrade = []
-    seen_lists = {}  # Track by internal name to avoid duplicates
+    seen_listnames = set()  # Track by listname to avoid duplicates
+    seen_internal_names = set()  # Track by internal name to avoid duplicates
     
     # Check all lists for old password formats
-    listnames = Utils.list_names()
+    # Deduplicate listnames first to avoid processing the same list multiple times
+    listnames = list(dict.fromkeys(Utils.list_names()))  # Preserves order, removes duplicates
     for listname in listnames:
+        # Skip if we've already seen this listname
+        if listname in seen_listnames:
+            continue
+        seen_listnames.add(listname)
+        
         try:
             mlist = MailList.MailList(listname, lock=0)
         except Exception as e:
@@ -695,12 +702,13 @@ def check_and_notify_password_upgrades(dry_run=False):
             'listname': listname, 'e': e})
             continue
         
-        # Use internal_name() as key to avoid processing the same list twice
+        # Also check by internal_name() to catch cases where different listnames
+        # map to the same internal list
         internal_name = mlist.internal_name()
-        if internal_name in seen_lists:
-            # Already processed this list, skip
+        if internal_name in seen_internal_names:
+            # Already processed this list (by internal name), skip
             continue
-        seen_lists[internal_name] = True
+        seen_internal_names.add(internal_name)
         
         needs_upgrade = False
         # Check list admin password
@@ -738,8 +746,10 @@ def check_and_notify_password_upgrades(dry_run=False):
             print(C_('DRY-RUN: Would send password upgrade notifications to %(count)d list(s).') % {
                 'count': len(lists_needing_upgrade)})
             for mlist in lists_needing_upgrade:
+                # Use real_name for display, fallback to internal_name if real_name is not set
+                display_name = mlist.real_name or mlist.internal_name()
                 print(C_('  - Would notify owners of %(listname)s (%(listaddr)s)') % {
-                    'listname': mlist.internal_name(),
+                    'listname': display_name,
                     'listaddr': mlist.GetListEmail()})
         else:
             for mlist in lists_needing_upgrade:
