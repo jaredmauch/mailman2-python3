@@ -67,7 +67,7 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import md5_new, sha_new
+from Mailman.Utils import md5_new, sha_new, hash_password, verify_password
 
 
 class SecurityManager(object):
@@ -163,34 +163,47 @@ class SecurityManager(object):
                         # know how that can happen (perhaps if a MM2.0 list
                         # with USE_CRYPT = 0 has been updated?  Doubtful.
                         return False
-                # The password for the list admin and list moderator are not
-                # kept as plain text, but instead as an sha hexdigest.  The
-                # response being passed in is plain text, so we need to
-                # digestify it first.  Note however, that for backwards
-                # compatibility reasons, we'll also check the admin response
-                # against the crypted and md5'd passwords, and if they match,
-                # we'll auto-migrate the passwords to sha.
+                # The password for the list admin is stored as a hash.
+                # We support multiple formats for backwards compatibility:
+                # - New format: PBKDF2-SHA256 with $pbkdf2$ prefix
+                # - Old format: SHA1 hexdigest (40 hex chars)
+                # - Legacy: MD5 or crypt() (auto-upgrade to PBKDF2)
                 key, secret = self.AuthContextInfo(ac)
                 if secret is None:
                     continue
                 if isinstance(response, str):
                     response = response.encode('utf-8')
 
-                sharesponse = sha_new(response).hexdigest()
-                upgrade = ok = False
-                if sharesponse == secret:
-                    ok = True
-                elif md5_new(response).digest() == secret:
-                    ok = upgrade = True
-                elif cryptmatchp(response, secret):
-                    ok = upgrade = True
-                if upgrade:
+                # Try new PBKDF2 or old SHA1 format first
+                ok, needs_upgrade = verify_password(response, secret)
+                upgrade = needs_upgrade
+                
+                # If that didn't work, try legacy MD5 and crypt() formats
+                if not ok:
+                    sharesponse = sha_new(response).hexdigest()
+                    if sharesponse == secret:
+                        ok = True
+                        upgrade = True
+                    elif md5_new(response).digest() == secret:
+                        ok = True
+                        upgrade = True
+                    elif cryptmatchp(response, secret):
+                        ok = True
+                        upgrade = True
+                
+                # Upgrade to new PBKDF2 format if needed
+                if upgrade and ok:
                     save_and_unlock = False
                     if not self.Locked():
                         self.Lock()
                         save_and_unlock = True
                     try:
-                        self.password = sharesponse
+                        # Convert response back to string for hash_password
+                        if isinstance(response, bytes):
+                            response_str = response.decode('utf-8')
+                        else:
+                            response_str = response
+                        self.password = hash_password(response_str)
                         if save_and_unlock:
                             self.Save()
                     finally:
@@ -199,24 +212,62 @@ class SecurityManager(object):
                 if ok:
                     return ac
             elif ac == mm_cfg.AuthListModerator:
-                # The list moderator password must be sha'd
+                # The list moderator password is stored as a hash.
+                # Supports both new PBKDF2 and old SHA1 formats with auto-upgrade.
                 key, secret = self.AuthContextInfo(ac)
                 if secret:
                     if isinstance(response, str):
                         response_bytes = response.encode('utf-8')
                     else:
                         response_bytes = response
-                    if sha_new(response_bytes).hexdigest() == secret:
+                    ok, needs_upgrade = verify_password(response_bytes, secret)
+                    if ok:
+                        # Upgrade to new format if needed
+                        if needs_upgrade:
+                            save_and_unlock = False
+                            if not self.Locked():
+                                self.Lock()
+                                save_and_unlock = True
+                            try:
+                                if isinstance(response, str):
+                                    response_str = response
+                                else:
+                                    response_str = response_bytes.decode('utf-8')
+                                self.mod_password = hash_password(response_str)
+                                if save_and_unlock:
+                                    self.Save()
+                            finally:
+                                if save_and_unlock:
+                                    self.Unlock()
                         return ac
             elif ac == mm_cfg.AuthListPoster:
-                # The list poster password must be sha'd
+                # The list poster password is stored as a hash.
+                # Supports both new PBKDF2 and old SHA1 formats with auto-upgrade.
                 key, secret = self.AuthContextInfo(ac)
                 if secret:
                     if isinstance(response, str):
                         response_bytes = response.encode('utf-8')
                     else:
                         response_bytes = response
-                    if sha_new(response_bytes).hexdigest() == secret:
+                    ok, needs_upgrade = verify_password(response_bytes, secret)
+                    if ok:
+                        # Upgrade to new format if needed
+                        if needs_upgrade:
+                            save_and_unlock = False
+                            if not self.Locked():
+                                self.Lock()
+                                save_and_unlock = True
+                            try:
+                                if isinstance(response, str):
+                                    response_str = response
+                                else:
+                                    response_str = response_bytes.decode('utf-8')
+                                self.post_password = hash_password(response_str)
+                                if save_and_unlock:
+                                    self.Save()
+                            finally:
+                                if save_and_unlock:
+                                    self.Unlock()
                         return ac
             elif ac == mm_cfg.AuthUser:
                 if user is not None:
