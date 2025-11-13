@@ -56,9 +56,9 @@ FILEMODE=	644
 
 # Rules
 
-all:
+all: $(PROGRAMS:%=$(BUILDDIR)/%)
 
-install:
+install: all
 	for f in $(FILES); \
 	do \
 	    $(INSTALL) -m $(FILEMODE) $$f $(DESTDIR)$(CRONDIR); \

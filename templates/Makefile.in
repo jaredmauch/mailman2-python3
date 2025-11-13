@@ -59,10 +59,14 @@ INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 
 all: converttemplates
 
-converttemplates: $(wildcard */LC_MESSAGES/*.po) $(wildcard */*.html) $(wildcard */*.txt)
+# Use a stamp file to track conversion, so it only happens once
+.converted.stamp: $(wildcard */LC_MESSAGES/*.po) $(wildcard */*.html) $(wildcard */*.txt)
 	../scripts/convert_to_utf8 -d .
+	touch .converted.stamp
 
-install: all
+converttemplates: .converted.stamp
+
+install: .converted.stamp
 	for d in $(LANGUAGES); \
 	do \
 	    $(srcdir)/../mkinstalldirs $(DESTDIR)$(TEMPLATEDIR)/$$d; \
@@ -75,6 +79,7 @@ install: all
 finish:
 
 clean:
+	-rm -f .converted.stamp
 
-distclean:
+distclean: clean
 	-rm -f Makefile

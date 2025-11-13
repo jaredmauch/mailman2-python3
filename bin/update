@@ -27,6 +27,11 @@ Options:
         of the installed Mailman matches the current version number (or a
         `downgrade' is detected), nothing will be done.
 
+    -n/--dry-run
+        Show what would be done without actually making changes.  When checking
+        for password upgrades, this will show which lists need upgrades but
+        will not send email notifications to list administrators.
+
     -h/--help
         Print this text and exit.
 
@@ -55,6 +60,7 @@ from Mailman import Message
 from Mailman import Pending
 from Mailman.LockFile import TimeOutError
 from Mailman.i18n import C_
+import Mailman.i18n as i18n
 from Mailman.Queue.Switchboard import Switchboard
 from Mailman.OldStyleMemberships import OldStyleMemberships
 from Mailman.MemberAdaptor import BYBOUNCE, ENABLED
@@ -197,7 +203,7 @@ def dolist(listname):
     except TimeOutError:
         print(C_('WARNING: could not acquire lock for list: '
                                 '%(listname)s'), file=sys.stderr)
-        return 1
+        return (1, None)
 
     # Sanity check the invariant that every BYBOUNCE disabled member must have
     # bounce information.  Some earlier betas broke this.  BAW: we're
@@ -372,9 +378,26 @@ script.
     # Mailman 2.1
     #
     move_language_templates(mlist)
+    
+    # Check for old password formats inline
+    from Mailman.Utils import is_old_password_format
+    needs_upgrade = False
+    if mlist.password and is_old_password_format(mlist.password):
+        needs_upgrade = True
+    if mlist.mod_password and is_old_password_format(mlist.mod_password):
+        needs_upgrade = True
+    if mlist.post_password and is_old_password_format(mlist.post_password):
+        needs_upgrade = True
+    
+    upgrade_info = None
+    if needs_upgrade:
+        # Store list info for notification
+        listaddr = mlist.GetListEmail()
+        upgrade_info = (mlist, listaddr)
+    
     # Avoid eating filehandles with the list lockfiles
     mlist.Unlock()
-    return 0
+    return (0, upgrade_info)
 
 
 
@@ -663,7 +686,187 @@ def update_pending():
 
 
 
-def main():
+def check_and_notify_password_upgrades(dry_run=False):
+    """Check for old password formats and notify list admins to login and upgrade.
+    
+    This function identifies lists with old SHA1 password hashes and sends
+    email notifications to list administrators asking them to login, which
+    will trigger automatic password upgrades to the new PBKDF2 format.
+    
+    Args:
+        dry_run: If True, show what would be done but don't send emails
+    """
+    from Mailman.Utils import is_old_password_format
+    
+    print('Checking for lists with old password formats...')
+    lists_needing_upgrade = []
+    seen_listnames = set()  # Track by listname to avoid duplicates
+    seen_internal_names = set()  # Track by internal name to avoid duplicates
+    
+    # Check all lists for old password formats
+    # Deduplicate listnames first to avoid processing the same list multiple times
+    listnames = list(dict.fromkeys(Utils.list_names()))  # Preserves order, removes duplicates
+    for listname in listnames:
+        # Skip if we've already seen this listname
+        if listname in seen_listnames:
+            continue
+        seen_listnames.add(listname)
+        
+        try:
+            mlist = MailList.MailList(listname, lock=0)
+        except Exception as e:
+            print(C_('Warning: Could not check list %(listname)s: %(e)s') % {
+            'listname': listname, 'e': e})
+            continue
+        
+        # Also check by internal_name() to catch cases where different listnames
+        # map to the same internal list
+        internal_name = mlist.internal_name()
+        if internal_name in seen_internal_names:
+            # Already processed this list (by internal name), skip
+            continue
+        seen_internal_names.add(internal_name)
+        
+        needs_upgrade = False
+        # Check list admin password
+        if mlist.password and is_old_password_format(mlist.password):
+            needs_upgrade = True
+        # Check moderator password
+        if mlist.mod_password and is_old_password_format(mlist.mod_password):
+            needs_upgrade = True
+        # Check poster password
+        if mlist.post_password and is_old_password_format(mlist.post_password):
+            needs_upgrade = True
+        
+        if needs_upgrade:
+            # Store the listname, mlist, and email address to ensure correct display
+            # Extract email address now to avoid any variable scoping issues later
+            listaddr = mlist.GetListEmail()
+            lists_needing_upgrade.append((listname, mlist, listaddr))
+    
+    # Check global passwords
+    global_passwords_old = []
+    site_pw = Utils.get_global_password(siteadmin=True)
+    if site_pw and is_old_password_format(site_pw):
+        global_passwords_old.append(('site admin', True))
+    creator_pw = Utils.get_global_password(siteadmin=False)
+    if creator_pw and is_old_password_format(creator_pw):
+        global_passwords_old.append(('list creator', False))
+    
+    # Send notifications if needed
+    if lists_needing_upgrade or global_passwords_old:
+        print(C_('Found %(count)d lists with old password formats that need upgrading.') % {
+            'count': len(lists_needing_upgrade)})
+        if global_passwords_old:
+            print(C_('Also found %(count)d global password(s) with old format.') % {
+                'count': len(global_passwords_old)})
+        
+        # Send emails to list owners (unless dry-run)
+        if dry_run:
+            print(C_('DRY-RUN: Would send password upgrade notifications to %(count)d list(s).') % {
+                'count': len(lists_needing_upgrade)})
+            for listname, mlist, listaddr in lists_needing_upgrade:
+                # Extract the listname part from the email address (everything before @)
+                # This ensures we display the correct list name that matches the email
+                if '@' in listaddr:
+                    # Split on @ and take the first part (the listname)
+                    display_name = listaddr.split('@', 1)[0]
+                else:
+                    # Fallback if email format is unexpected
+                    display_name = mlist.internal_name()
+                print(C_('  - Would notify owners of %(listname)s (%(listaddr)s)') % {
+                    'listname': display_name,
+                    'listaddr': listaddr})
+        else:
+            for listname, mlist, listaddr in lists_needing_upgrade:
+                send_password_upgrade_notification(mlist)
+        
+        # Note about global passwords
+        if global_passwords_old:
+            print(C_('Note: Global passwords will be automatically upgraded when used.'))
+            for pw_type, siteadmin in global_passwords_old:
+                print(C_('  - %(pw_type)s password needs upgrade (will upgrade on next use)') % {
+                    'pw_type': pw_type})
+    else:
+        print('All passwords are already in the new format.')
+
+
+def send_password_upgrade_notification(mlist):
+    """Send an email to list administrators asking them to login to upgrade passwords.
+    
+    Args:
+        mlist: The MailList object for the list needing password upgrade
+    """
+    # Get list owner addresses
+    if not mlist.owner:
+        print(C_('Warning: List %(listname)s has no owners, skipping notification.') % {
+            'listname': mlist.internal_name()})
+        return
+    
+    # Set up i18n for the list's language
+    otrans = i18n.get_translation()
+    i18n.set_language(mlist.preferred_language)
+    
+    try:
+        # Create the notification message
+        admin_url = mlist.GetScriptURL('admin', absolute=1)
+        listname = mlist.real_name
+        listaddr = mlist.GetListEmail()
+        siteowner = Utils.get_site_email(mlist.host_name, 'owner')
+        
+        text = _("""\
+This is an automated message from your Mailman installation.
+
+Your mailing list "%(listname)s" (%(listaddr)s) is using an older password 
+hashing format. For security reasons, we have upgraded Mailman to use a more 
+secure password hashing method (PBKDF2-SHA256 instead of SHA1).
+
+To complete the upgrade, please log in to your list administration page:
+
+    %(admin_url)s
+
+Simply logging in with your current list administrator password will 
+automatically upgrade your password to the new secure format. You don't 
+need to change your password - just log in once and the upgrade will happen 
+automatically.
+
+This is a one-time upgrade. After you log in, your password will be 
+automatically converted to the new format and you won't need to do anything 
+else.
+
+If you have any questions or concerns, please contact the site administrator 
+at %(siteowner)s.
+
+Thank you for your attention to this important security upgrade.
+""") % {
+            'listname': listname,
+            'listaddr': listaddr,
+            'admin_url': admin_url,
+            'siteowner': siteowner,
+        }
+        
+        subject = _('Action Required: Password Upgrade for %(listname)s') % {
+            'listname': listname
+        }
+        
+        # Send to list administrators via the -owner address
+        # OwnerNotification sends to mlist.owner addresses and sets To: header
+        # to the -owner address (e.g., listname-owner@domain.com)
+        msg = Message.OwnerNotification(
+            mlist, subject, text, tomoderators=0)
+        msg.send(mlist)
+        
+        print(C_('Sent password upgrade notification to owners of %(listname)s') % {
+            'listname': mlist.internal_name()})
+    except Exception as e:
+        print(C_('Error sending notification for %(listname)s: %(e)s') % {
+            'listname': mlist.internal_name(), 'e': e})
+    finally:
+        i18n.set_translation(otrans)
+
+
+
+def main(dry_run=False):
     errors = 0
     # get rid of old stuff
     print('getting rid of old source files')
@@ -689,9 +892,26 @@ If your archives are big, this could take a minute or two..."""))
         os.path.walk("%s/public_html/archives" % mm_cfg.PREFIX,
                      archive_path_fixer, "")
         print('done')
+    # Track lists needing password upgrade
+    lists_needing_upgrade = []
+    seen_internal_names = set()  # Track by internal name to avoid duplicates
+    
     for listname in listnames:
         print(C_('Updating mailing list: %(listname)s'))
-        errors = errors + dolist(listname)
+        result = dolist(listname)
+        if isinstance(result, tuple):
+            list_errors, upgrade_info = result
+            errors = errors + list_errors
+            if upgrade_info:
+                mlist, listaddr = upgrade_info
+                # Deduplicate by internal name
+                internal_name = mlist.internal_name()
+                if internal_name not in seen_internal_names:
+                    seen_internal_names.add(internal_name)
+                    lists_needing_upgrade.append((listname, mlist, listaddr))
+        else:
+            # Backward compatibility: if dolist returns just an int
+            errors = errors + result
         print
     print('Updating Usenet watermarks')
     wmfile = os.path.join(mm_cfg.DATA_DIR, 'gate_watermarks')
@@ -731,6 +951,54 @@ If your archives are big, this could take a minute or two..."""))
     # files from separate .msg (pickled Message objects) and .db (marshalled
     # dictionaries) to a shared .pck file containing two pickles.
     update_qfiles()
+    
+    # Check for old password formats and notify list admins
+    # Check global passwords
+    from Mailman.Utils import is_old_password_format
+    global_passwords_old = []
+    site_pw = Utils.get_global_password(siteadmin=True)
+    if site_pw and is_old_password_format(site_pw):
+        global_passwords_old.append(('site admin', True))
+    creator_pw = Utils.get_global_password(siteadmin=False)
+    if creator_pw and is_old_password_format(creator_pw):
+        global_passwords_old.append(('list creator', False))
+    
+    # Send notifications if needed
+    if lists_needing_upgrade or global_passwords_old:
+        print(C_('Found %(count)d lists with old password formats that need upgrading.') % {
+            'count': len(lists_needing_upgrade)})
+        if global_passwords_old:
+            print(C_('Also found %(count)d global password(s) with old format.') % {
+                'count': len(global_passwords_old)})
+        
+        # Send emails to list owners (unless dry-run)
+        if dry_run:
+            print(C_('DRY-RUN: Would send password upgrade notifications to %(count)d list(s).') % {
+                'count': len(lists_needing_upgrade)})
+            for listname, mlist, listaddr in lists_needing_upgrade:
+                # Extract the listname part from the email address (everything before @)
+                # This ensures we display the correct list name that matches the email
+                if '@' in listaddr:
+                    # Split on @ and take the first part (the listname)
+                    display_name = listaddr.split('@', 1)[0]
+                else:
+                    # Fallback if email format is unexpected
+                    display_name = mlist.internal_name()
+                print(C_('  - Would notify owners of %(listname)s (%(listaddr)s)') % {
+                    'listname': display_name,
+                    'listaddr': listaddr})
+        else:
+            for listname, mlist, listaddr in lists_needing_upgrade:
+                send_password_upgrade_notification(mlist)
+        
+        # Note about global passwords
+        if global_passwords_old:
+            print(C_('Note: Global passwords will be automatically upgraded when used.'))
+            for pw_type, siteadmin in global_passwords_old:
+                print(C_('  - %(pw_type)s password needs upgrade (will upgrade on next use)') % {
+                    'pw_type': pw_type})
+    else:
+        print('All passwords are already in the new format.')
     # This warning was necessary for the upgrade from 1.0b9 to 1.0b10.
     # There's no good way of figuring this out for releases prior to 2.0beta2
     # :(
@@ -771,8 +1039,8 @@ def usage(code, msg=''):
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf',
-                                   ['help', 'force'])
+        opts, args = getopt.getopt(sys.argv[1:], 'hfn',
+                                   ['help', 'force', 'dry-run'])
     except getopt.error as msg:
         usage(1, msg)
 
@@ -780,11 +1048,14 @@ if __name__ == '__main__':
         usage(1, 'Unexpected arguments: %s' % args)
 
     force = 0
+    dry_run = 0
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-f', '--force'):
             force = 1
+        elif opt in ('-n', '--dry-run'):
+            dry_run = 1
 
     # calculate the versions
     lastversion, thisversion = calcversions()
@@ -801,7 +1072,9 @@ This is probably not safe.
 Exiting."""))
         sys.exit(1)
     print(C_('Upgrading from version %(hexlversion)s to %(hextversion)s'))
-    errors = main()
+    if dry_run:
+        print(C_('DRY-RUN mode: No changes will be made, emails will not be sent.'))
+    errors = main(dry_run=dry_run)
     if not errors:
         # Record the version we just upgraded to
         fp = open(LMVFILE, 'w')
