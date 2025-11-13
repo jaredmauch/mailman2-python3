@@ -58,16 +58,12 @@ import binascii
 import urllib.request, urllib.parse, urllib.error
 from urllib.parse import urlparse
 
-try:
-    import crypt
-except ImportError:
-    crypt = None
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import md5_new, sha_new, hash_password, verify_password
+from Mailman.Utils import sha_new, hash_password, verify_password
 
 
 class SecurityManager(object):
@@ -152,46 +148,19 @@ class SecurityManager(object):
                 if ok:
                     return mm_cfg.AuthSiteAdmin
             elif ac == mm_cfg.AuthListAdmin:
-                def cryptmatchp(response, secret):
-                    try:
-                        salt = secret[:2]
-                        if crypt and crypt.crypt(response, salt) == secret:
-                            return True
-                        return False
-                    except TypeError:
-                        # BAW: Hard to say why we can get a TypeError here.
-                        # SF bug report #585776 says crypt.crypt() can raise
-                        # this if salt contains null bytes, although I don't
-                        # know how that can happen (perhaps if a MM2.0 list
-                        # with USE_CRYPT = 0 has been updated?  Doubtful.
-                        return False
                 # The password for the list admin is stored as a hash.
                 # We support multiple formats for backwards compatibility:
                 # - New format: PBKDF2-SHA256 with $pbkdf2$ prefix
-                # - Old format: SHA1 hexdigest (40 hex chars)
-                # - Legacy: MD5 or crypt() (auto-upgrade to PBKDF2)
+                # - Old format: SHA1 hexdigest (40 hex chars, auto-upgrade to PBKDF2)
                 key, secret = self.AuthContextInfo(ac)
                 if secret is None:
                     continue
                 if isinstance(response, str):
                     response = response.encode('utf-8')
 
-                # Try new PBKDF2 or old SHA1 format first
+                # Try new PBKDF2 or old SHA1 format (verify_password handles both)
                 ok, needs_upgrade = verify_password(response, secret)
                 upgrade = needs_upgrade
-                
-                # If that didn't work, try legacy MD5 and crypt() formats
-                if not ok:
-                    sharesponse = sha_new(response).hexdigest()
-                    if sharesponse == secret:
-                        ok = True
-                        upgrade = True
-                    elif md5_new(response).digest() == secret:
-                        ok = True
-                        upgrade = True
-                    elif cryptmatchp(response, secret):
-                        ok = True
-                        upgrade = True
                 
                 # Upgrade to new PBKDF2 format if needed
                 if upgrade and ok:

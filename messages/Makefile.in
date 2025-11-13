@@ -88,7 +88,7 @@ check:
 
 install: doinstall
 
-doinstall: mofiles
+doinstall: .converted.stamp mofiles
 	@for d in $(LANGDIRS); \
 	do \
 	    dir=$(DESTDIR)$(prefix)/$$d; \
@@ -114,15 +114,19 @@ doinstall: mofiles
  	    $(INSTALL) -m $(FILEMODE) $$mo $$dir; \
 	done
 
-convertpofiles: $(wildcard */LC_MESSAGES/*.po)
+# Use a stamp file to track conversion, so it only happens once
+.converted.stamp: $(wildcard */LC_MESSAGES/*.po)
 	../scripts/convert_to_utf8 -d .
+	touch .converted.stamp
+
+convertpofiles: .converted.stamp
 
 mofiles: $(MOFILES)
 
 finish:
 
 clean:
-	-rm -f */LC_MESSAGES/mailman.mo
+	-rm -f */LC_MESSAGES/mailman.mo .converted.stamp
 
 fileclean:
 	-rm -f marked.files docstring.files
