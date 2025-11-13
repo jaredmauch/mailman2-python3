@@ -79,6 +79,8 @@ src/roster
 src/subscribe
 src/vsnprintf.o
 templates/Makefile
+templates/.converted.stamp
 tests/Makefile
 tests/bounces/Makefile
 tests/msgs/Makefile
+messages/.converted.stamp
