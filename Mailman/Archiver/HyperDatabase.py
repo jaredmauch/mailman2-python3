@@ -148,6 +148,9 @@ class DumbBTree(object):
     def has_key(self, key):
         return key in self.dict
 
+    def __contains__(self, key):
+        return key in self.dict
+
     def set_location(self, loc):
         index = 0
         self.__sort()

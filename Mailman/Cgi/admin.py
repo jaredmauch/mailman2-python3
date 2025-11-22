@@ -41,7 +41,7 @@ from Mailman.UserDesc import UserDesc
 from Mailman.htmlformat import *
 from Mailman.Cgi import Auth
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new
+from Mailman.Utils import sha_new, hash_password
 from Mailman.CSRFcheck import csrf_check
 
 # Set up i18n
@@ -1424,7 +1424,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
     confirm = cgidata.getfirst('confirmmodpw', '').strip()
     if new or confirm:
         if new == confirm:
-            mlist.mod_password = sha_new(new.encode()).hexdigest()
+            # Use new PBKDF2 hashing for all new passwords
+            mlist.mod_password = hash_password(new)
             # No re-authentication necessary because the moderator's
             # password doesn't get you into these pages.
         else:
@@ -1435,7 +1436,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
     confirm = cgidata.getfirst('confirmpostpw', '').strip()
     if new or confirm:
         if new == confirm:
-            mlist.post_password = sha_new(new.encode()).hexdigest()
+            # Use new PBKDF2 hashing for all new passwords
+            mlist.post_password = hash_password(new)
             # No re-authentication necessary because the poster's
             # password doesn't get you into these pages.
         else:
@@ -1445,7 +1447,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
     confirm = cgidata.getfirst('confirmpw', '').strip()
     if new or confirm:
         if new == confirm:
-            mlist.password = sha_new(new.encode()).hexdigest()
+            # Use new PBKDF2 hashing for all new passwords
+            mlist.password = hash_password(new)
             # Set new cookie
             print(mlist.MakeCookie(mm_cfg.AuthListAdmin))
         else:

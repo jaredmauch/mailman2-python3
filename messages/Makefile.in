@@ -88,7 +88,7 @@ check:
 
 install: doinstall
 
-doinstall: mofiles
+doinstall: .converted.stamp mofiles
 	@for d in $(LANGDIRS); \
 	do \
 	    dir=$(DESTDIR)$(prefix)/$$d; \
@@ -114,15 +114,21 @@ doinstall: mofiles
  	    $(INSTALL) -m $(FILEMODE) $$mo $$dir; \
 	done
 
-convertpofiles:
+# Use a stamp file to track conversion, so it only happens once
+.converted.stamp: $(wildcard */LC_MESSAGES/*.po)
 	@PYTHON@ ../build/scripts/convert_to_utf8 -d .
+	touch .converted.stamp
+
+# Ensure .po files are merged with mailman.pot before conversion
+# This depends on the .po files being up to date with mailman.pot
+convertpofiles: $(POFILES) .converted.stamp
 
 mofiles: $(MOFILES)
 
 finish:
 
 clean:
-	-rm -f */LC_MESSAGES/mailman.mo
+	-rm -f */LC_MESSAGES/mailman.mo .converted.stamp
 
 fileclean:
 	-rm -f marked.files docstring.files
@@ -147,10 +153,11 @@ potfile: marked.files docstring.files
 	(cd ..; $(PROG) -k C_ -p messages -d mailman -D -X messages/marked.files `cat messages/marked.files messages/docstring.files`)
 
 # Update the individual mailman.po files with the new changes to the
-# .pot file
+# .pot file. Make already checks if mailman.pot is newer, but msgmerge -U
+# always updates the file. Use --backup=none to avoid creating backup files.
 %/LC_MESSAGES/mailman.po: mailman.pot
 	@echo "Merging new template file with existing translations"
-	$(MSGMERGE) -U $@ mailman.pot || touch $@
+	@$(MSGMERGE) --update --backup=none $@ mailman.pot || touch $@
 
 
 FORCE:

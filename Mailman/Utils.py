@@ -31,6 +31,7 @@ import time
 import errno
 import base64
 import random
+import secrets
 import urllib
 import urllib.request, urllib.error
 import html.entities
@@ -664,6 +665,134 @@ def GetRandomSeed():
 
 
 
+# Password hashing functions for secure password storage
+# Format: $pbkdf2$<iterations>$<salt>$<hash>
+# Old format (SHA1): 40 hex characters, no prefix
+
+# PBKDF2 iterations - should be high enough to be secure but not too slow
+PBKDF2_ITERATIONS = 100000
+PBKDF2_SALT_LENGTH = 16  # 128 bits
+
+def hash_password(password):
+    """Hash a password using PBKDF2-SHA256.
+    
+    Returns a string in the format: $pbkdf2$<iterations>$<salt>$<hash>
+    where salt and hash are base64-encoded.
+    
+    Args:
+        password: The password to hash (str or bytes)
+    
+    Returns:
+        str: The hashed password with format prefix
+    """
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+    
+    # Generate a random salt
+    salt = secrets.token_bytes(PBKDF2_SALT_LENGTH)
+    
+    # Hash using PBKDF2-SHA256
+    # hashlib.pbkdf2_hmac is available in Python 3.4+
+    dk = hashlib.pbkdf2_hmac('sha256', password, salt, PBKDF2_ITERATIONS)
+    
+    # Encode salt and hash as base64
+    salt_b64 = base64.b64encode(salt).decode('ascii')
+    hash_b64 = base64.b64encode(dk).decode('ascii')
+    
+    return f'$pbkdf2${PBKDF2_ITERATIONS}${salt_b64}${hash_b64}'
+
+
+def verify_password(password, stored_hash):
+    """Verify a password against a stored hash.
+    
+    Supports both old SHA1 format (40 hex chars) and new PBKDF2 format.
+    
+    Args:
+        password: The password to verify (str or bytes)
+        stored_hash: The stored hash to verify against (str)
+    
+    Returns:
+        tuple: (bool, bool) - (is_valid, needs_upgrade)
+            is_valid: True if password matches
+            needs_upgrade: True if password is valid but in old format
+    """
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+    
+    # Check if it's the new format (starts with $pbkdf2$)
+    if stored_hash.startswith('$pbkdf2$'):
+        return _verify_pbkdf2(password, stored_hash), False
+    
+    # Old format: SHA1 hexdigest (40 hex characters)
+    # Check if it looks like a SHA1 hash (40 hex chars)
+    if len(stored_hash) == 40 and all(c in '0123456789abcdef' for c in stored_hash.lower()):
+        sha1_hash = sha_new(password).hexdigest()
+        if sha1_hash == stored_hash:
+            return True, True  # Valid but needs upgrade
+        return False, False
+    
+    # Fallback: try SHA1 comparison for backwards compatibility
+    sha1_hash = sha_new(password).hexdigest()
+    if sha1_hash == stored_hash:
+        return True, True  # Valid but needs upgrade
+    return False, False
+
+
+def _verify_pbkdf2(password, stored_hash):
+    """Verify a password against a PBKDF2 hash.
+    
+    Args:
+        password: The password to verify (bytes)
+        stored_hash: The stored hash in format $pbkdf2$<iterations>$<salt>$<hash>
+    
+    Returns:
+        bool: True if password matches
+    """
+    try:
+        # Parse the hash format: $pbkdf2$<iterations>$<salt>$<hash>
+        parts = stored_hash.split('$')
+        if len(parts) != 5 or parts[1] != 'pbkdf2':
+            return False
+        
+        iterations = int(parts[2])
+        salt_b64 = parts[3]
+        hash_b64 = parts[4]
+        
+        # Decode salt and hash
+        salt = base64.b64decode(salt_b64)
+        stored_dk = base64.b64decode(hash_b64)
+        
+        # Compute hash with same parameters
+        dk = hashlib.pbkdf2_hmac('sha256', password, salt, iterations)
+        
+        # Constant-time comparison to prevent timing attacks
+        return secrets.compare_digest(dk, stored_dk)
+    except (ValueError, TypeError, IndexError):
+        return False
+
+
+def is_old_password_format(stored_hash):
+    """Check if a stored hash is in the old SHA1 format.
+    
+    Args:
+        stored_hash: The stored hash to check (str)
+    
+    Returns:
+        bool: True if the hash is in old format (needs upgrade)
+    """
+    # New format starts with $pbkdf2$
+    if stored_hash.startswith('$pbkdf2$'):
+        return False
+    
+    # Old format: 40 hex characters
+    if len(stored_hash) == 40 and all(c in '0123456789abcdef' for c in stored_hash.lower()):
+        return True
+    
+    # If it doesn't match either format, assume old for backwards compatibility
+    return True
+
+
+
 def set_global_password(pw, siteadmin=True):
     if siteadmin:
         filename = mm_cfg.SITE_PW_FILE
@@ -673,10 +802,8 @@ def set_global_password(pw, siteadmin=True):
     omask = os.umask(0o026)
     try:
         fp = open(filename, 'w')
-        if isinstance(pw, bytes):
-            fp.write(sha_new(pw).hexdigest() + '\n')
-        else:
-            fp.write(sha_new(pw.encode()).hexdigest() + '\n')
+        # Use new PBKDF2 hashing for all new passwords
+        fp.write(hash_password(pw) + '\n')
         fp.close()
     finally:
         os.umask(omask)
@@ -698,14 +825,43 @@ def get_global_password(siteadmin=True):
     return challenge
 
 
-def check_global_password(response, siteadmin=True):
+def check_global_password(response, siteadmin=True, auto_upgrade=False):
+    """Check a global password and optionally upgrade it if in old format.
+    
+    Args:
+        response: The password to check (str or bytes)
+        siteadmin: If True, check site admin password; if False, check list creator password
+        auto_upgrade: If True, automatically upgrade old format passwords to new format
+    
+    Returns:
+        bool: True if password is valid, False otherwise
+    """
     challenge = get_global_password(siteadmin)
     if challenge is None:
         return None
-    if isinstance(response, bytes):
-        return challenge == sha_new(response).hexdigest()
-    else:
-        return challenge == sha_new(response.encode()).hexdigest()
+    # Use verify_password which handles both old SHA1 and new PBKDF2 formats
+    is_valid, needs_upgrade = verify_password(response, challenge)
+    # Auto-upgrade if requested and password is valid but in old format
+    if is_valid and needs_upgrade and auto_upgrade:
+        try:
+            set_global_password(response, siteadmin)
+        except (PermissionError, IOError) as e:
+            # Log permission error but don't fail authentication
+            # Get uid/euid/gid/egid for debugging
+            try:
+                uid = os.getuid()
+                euid = os.geteuid()
+                gid = os.getgid()
+                egid = os.getegid()
+            except (AttributeError, OSError):
+                # Fallback if getuid/geteuid not available
+                uid = euid = gid = egid = 'unknown'
+            pw_type = 'site admin' if siteadmin else 'list creator'
+            syslog('error',
+                   'Could not auto-upgrade %s password: %s (uid=%s euid=%s gid=%s egid=%s)',
+                   pw_type, e, uid, euid, gid, egid)
+            # Continue - authentication still succeeds even if upgrade fails
+    return is_valid
 
 
 

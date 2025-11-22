@@ -64,9 +64,9 @@ INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 
 # Rules
 
-all:
+all: $(SCRIPTS:%=$(BUILDDIR)/%)
 
-install:
+install: all
 	for f in $(SCRIPTS); \
 	do \
 	    $(INSTALL) -m $(EXEMODE) $(BUILDDIR)/$$f $(DESTDIR)$(SCRIPTSDIR); \

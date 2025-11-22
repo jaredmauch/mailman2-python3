@@ -58,16 +58,12 @@ import binascii
 import urllib.request, urllib.parse, urllib.error
 from urllib.parse import urlparse
 
-try:
-    import crypt
-except ImportError:
-    crypt = None
 
 from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import md5_new, sha_new
+from Mailman.Utils import sha_new, hash_password, verify_password
 
 
 class SecurityManager(object):
@@ -142,72 +138,147 @@ class SecurityManager(object):
 
         for ac in authcontexts:
             if ac == mm_cfg.AuthCreator:
-                ok = Utils.check_global_password(response, siteadmin=0)
+                # Auto-upgrade global passwords when used for authentication
+                ok = Utils.check_global_password(response, siteadmin=0, auto_upgrade=True)
                 if ok:
                     return mm_cfg.AuthCreator
             elif ac == mm_cfg.AuthSiteAdmin:
-                ok = Utils.check_global_password(response)
+                # Auto-upgrade global passwords when used for authentication
+                ok = Utils.check_global_password(response, auto_upgrade=True)
                 if ok:
                     return mm_cfg.AuthSiteAdmin
             elif ac == mm_cfg.AuthListAdmin:
-                def cryptmatchp(response, secret):
-                    try:
-                        salt = secret[:2]
-                        if crypt and crypt.crypt(response, salt) == secret:
-                            return True
-                        return False
-                    except TypeError:
-                        # BAW: Hard to say why we can get a TypeError here.
-                        # SF bug report #585776 says crypt.crypt() can raise
-                        # this if salt contains null bytes, although I don't
-                        # know how that can happen (perhaps if a MM2.0 list
-                        # with USE_CRYPT = 0 has been updated?  Doubtful.
-                        return False
-                # The password for the list admin and list moderator are not
-                # kept as plain text, but instead as an sha hexdigest.  The
-                # response being passed in is plain text, so we need to
-                # digestify it first.  Note however, that for backwards
-                # compatibility reasons, we'll also check the admin response
-                # against the crypted and md5'd passwords, and if they match,
-                # we'll auto-migrate the passwords to sha.
+                # The password for the list admin is stored as a hash.
+                # We support multiple formats for backwards compatibility:
+                # - New format: PBKDF2-SHA256 with $pbkdf2$ prefix
+                # - Old format: SHA1 hexdigest (40 hex chars, auto-upgrade to PBKDF2)
                 key, secret = self.AuthContextInfo(ac)
                 if secret is None:
                     continue
                 if isinstance(response, str):
                     response = response.encode('utf-8')
 
-                sharesponse = sha_new(response).hexdigest()
-                upgrade = ok = False
-                if sharesponse == secret:
-                    ok = True
-                elif md5_new(response).digest() == secret:
-                    ok = upgrade = True
-                elif cryptmatchp(response, secret):
-                    ok = upgrade = True
-                if upgrade:
+                # Try new PBKDF2 or old SHA1 format (verify_password handles both)
+                ok, needs_upgrade = verify_password(response, secret)
+                upgrade = needs_upgrade
+                
+                # Upgrade to new PBKDF2 format if needed
+                if upgrade and ok:
                     save_and_unlock = False
                     if not self.Locked():
                         self.Lock()
                         save_and_unlock = True
                     try:
-                        self.password = sharesponse
+                        # Convert response back to string for hash_password
+                        if isinstance(response, bytes):
+                            response_str = response.decode('utf-8')
+                        else:
+                            response_str = response
+                        self.password = hash_password(response_str)
                         if save_and_unlock:
                             self.Save()
+                    except (PermissionError, IOError) as e:
+                        # Log permission error but don't fail authentication
+                        # Get uid/euid/gid/egid for debugging
+                        try:
+                            uid = os.getuid()
+                            euid = os.geteuid()
+                            gid = os.getgid()
+                            egid = os.getegid()
+                        except (AttributeError, OSError):
+                            # Fallback if getuid/geteuid not available
+                            uid = euid = gid = egid = 'unknown'
+                        syslog('error',
+                               'Could not auto-upgrade list admin password for %s: %s (uid=%s euid=%s gid=%s egid=%s)',
+                               self.internal_name(), e, uid, euid, gid, egid)
+                        # Continue - authentication still succeeds even if upgrade fails
                     finally:
                         if save_and_unlock:
                             self.Unlock()
                 if ok:
                     return ac
             elif ac == mm_cfg.AuthListModerator:
-                # The list moderator password must be sha'd
+                # The list moderator password is stored as a hash.
+                # Supports both new PBKDF2 and old SHA1 formats with auto-upgrade.
                 key, secret = self.AuthContextInfo(ac)
-                if secret and sha_new(response).hexdigest() == secret:
-                    return ac
+                if secret:
+                    if isinstance(response, str):
+                        response_bytes = response.encode('utf-8')
+                    else:
+                        response_bytes = response
+                    ok, needs_upgrade = verify_password(response_bytes, secret)
+                    if ok:
+                        # Upgrade to new format if needed
+                        if needs_upgrade:
+                            save_and_unlock = False
+                            if not self.Locked():
+                                self.Lock()
+                                save_and_unlock = True
+                            try:
+                                if isinstance(response, str):
+                                    response_str = response
+                                else:
+                                    response_str = response_bytes.decode('utf-8')
+                                self.mod_password = hash_password(response_str)
+                                if save_and_unlock:
+                                    self.Save()
+                            except (PermissionError, IOError) as e:
+                                # Log permission error but don't fail authentication
+                                try:
+                                    uid = os.getuid()
+                                    euid = os.geteuid()
+                                    gid = os.getgid()
+                                    egid = os.getegid()
+                                except (AttributeError, OSError):
+                                    uid = euid = gid = egid = 'unknown'
+                                syslog('error',
+                                       'Could not auto-upgrade moderator password for %s: %s (uid=%s euid=%s gid=%s egid=%s)',
+                                       self.internal_name(), e, uid, euid, gid, egid)
+                            finally:
+                                if save_and_unlock:
+                                    self.Unlock()
+                        return ac
             elif ac == mm_cfg.AuthListPoster:
-                # The list poster password must be sha'd
+                # The list poster password is stored as a hash.
+                # Supports both new PBKDF2 and old SHA1 formats with auto-upgrade.
                 key, secret = self.AuthContextInfo(ac)
-                if secret and sha_new(response).hexdigest() == secret:
-                    return ac
+                if secret:
+                    if isinstance(response, str):
+                        response_bytes = response.encode('utf-8')
+                    else:
+                        response_bytes = response
+                    ok, needs_upgrade = verify_password(response_bytes, secret)
+                    if ok:
+                        # Upgrade to new format if needed
+                        if needs_upgrade:
+                            save_and_unlock = False
+                            if not self.Locked():
+                                self.Lock()
+                                save_and_unlock = True
+                            try:
+                                if isinstance(response, str):
+                                    response_str = response
+                                else:
+                                    response_str = response_bytes.decode('utf-8')
+                                self.post_password = hash_password(response_str)
+                                if save_and_unlock:
+                                    self.Save()
+                            except (PermissionError, IOError) as e:
+                                # Log permission error but don't fail authentication
+                                try:
+                                    uid = os.getuid()
+                                    euid = os.geteuid()
+                                    gid = os.getgid()
+                                    egid = os.getegid()
+                                except (AttributeError, OSError):
+                                    uid = euid = gid = egid = 'unknown'
+                                syslog('error',
+                                       'Could not auto-upgrade poster password for %s: %s (uid=%s euid=%s gid=%s egid=%s)',
+                                       self.internal_name(), e, uid, euid, gid, egid)
+                            finally:
+                                if save_and_unlock:
+                                    self.Unlock()
+                        return ac
             elif ac == mm_cfg.AuthUser:
                 if user is not None:
                     try:

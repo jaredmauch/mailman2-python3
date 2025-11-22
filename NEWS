@@ -5,6 +5,18 @@ Copyright (C) 1998-2020 by the Free Software Foundation, Inc.
 
 Here is a history of user visible changes to Mailman.
 
+2.1.40 (TBD)
+
+  Bug Fixes and other patches
+
+    - Fixed a bug in IncomingRunner._get_pipeline() where MailList.__getattr__
+      returning 0 for missing pipeline attributes caused "pipeline is not a
+      list: 0 (type: int)" errors in the error log.  The code now properly
+      validates pipeline attributes and correctly prioritizes pipeline sources
+      (msgdata > mlist.pipeline > GLOBAL_PIPELINE).  Error logging has also
+      been improved to indicate the source of invalid pipeline values for
+      easier debugging.
+
 2.1.39 (13-Dec-2021)
 
   Bug Fixes and other patches
