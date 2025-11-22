@@ -68,8 +68,10 @@ def ZapOldVars(mlist):
                  'automatic_bounce_action',
                  'max_posts_between_bounces',
                  ):
-        if hasattr(mlist, name):
+        try:
             delattr(mlist, name)
+        except AttributeError:
+            pass
 
 
 
@@ -90,7 +92,10 @@ def UpdateOldVars(l, stored_state):
         if hasattr(l, oldname):
             if newname not in state:
                 setattr(l, newname, getattr(l, oldname))
-            delattr(l, oldname)
+            try:
+                delattr(l, oldname)
+            except AttributeError:
+                pass
         if not hasattr(l, newname) and newdefault is not uniqueval:
                 setattr(l, newname, newdefault)
 
@@ -174,7 +179,10 @@ def UpdateOldVars(l, stored_state):
         oldval = getattr(l, 'dont_respond_to_post_requests')
         if not hasattr(l, 'respond_to_post_requests'):
             l.respond_to_post_requests = not oldval
-        del l.dont_respond_to_post_requests
+        try:
+            del l.dont_respond_to_post_requests
+        except AttributeError:
+            pass
 
     # Migrate to 2.1b3, baw 13-Oct-2001
     # Basic defaults for new variables
@@ -288,20 +296,35 @@ def UpdateOldVars(l, stored_state):
             l.generic_nonmember_action = 1
             l.default_member_moderation = 1
         # Now get rid of the old attributes
-        del l.moderated
-        del l.posters
-        del l.member_posting_only
+        try:
+            del l.moderated
+        except AttributeError:
+            pass
+        try:
+            del l.posters
+        except AttributeError:
+            pass
+        try:
+            del l.member_posting_only
+        except AttributeError:
+            pass
     if hasattr(l, 'forbidden_posters'):
         # For each of the posters on this list, if they are members, toggle on
         # their moderation flag.  If they are not members, then add them to
         # hold_these_nonmembers.
         forbiddens = l.forbidden_posters
-        for addr in forbiddens:
-            if l.isMember(addr):
-                l.setMemberOption(addr, mm_cfg.Moderate, 1)
-            else:
-                l.hold_these_nonmembers.append(addr)
-        del l.forbidden_posters
+        try:
+            for addr in forbiddens:
+                if l.isMember(addr):
+                    l.setMemberOption(addr, mm_cfg.Moderate, 1)
+                else:
+                    l.hold_these_nonmembers.append(addr)
+        except TypeError:
+            pass
+        try:
+            del l.forbidden_posters
+        except AttributeError:
+            pass
 
     # Migrate to 1.0b6, klm 10/22/1998:
     PreferStored('reminders_to_admins', 'umbrella_list',
@@ -339,7 +362,10 @@ def UpdateOldVars(l, stored_state):
         else:
             if l.posters:
                 l.member_posting_only = 0
-        delattr(l, "posters_includes_members")
+        try:
+            delattr(l, "posters_includes_members")
+        except AttributeError:
+            pass
     elif l.data_version <= 10 and l.posters:
         # make sure everyone gets the behavior the list used to have, but only
         # for really old versions of Mailman (1.0b5 or before).  Any newer
