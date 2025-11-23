@@ -44,7 +44,7 @@ CFLAGS=		$(OPT) $(DEFS)
 PACKAGEDIR= 	$(prefix)/messages
 SHELL=		/bin/sh
 DIRSETGID=	chmod g+s
-MSGFMT= 	python3 ../bin/msgfmt.py
+MSGFMT= 	@PYTHON@ ../bin/msgfmt.py
 MSGMERGE=	msgmerge
 
 # CVS available languages
@@ -65,7 +65,7 @@ DIRMODE=	775
 EXEMODE=	755
 FILEMODE=	644
 INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
-PROG=		@PYTHON@ build/bin/pygettext.py
+PROG=		@PYTHON@ ../bin/pygettext.py
 
 .SUFFIXES:	.po .mo
 .po.mo:
@@ -116,7 +116,7 @@ doinstall: .converted.stamp mofiles
 
 # Use a stamp file to track conversion, so it only happens once
 .converted.stamp: $(wildcard */LC_MESSAGES/*.po)
-	../scripts/convert_to_utf8 -d .
+	@PYTHON@ ../scripts/convert_to_utf8 -d .
 	touch .converted.stamp
 
 # Ensure .po files are merged with mailman.pot before conversion
