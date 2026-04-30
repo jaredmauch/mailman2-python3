@@ -80,11 +80,10 @@ import time
 import paths
 from Mailman import mm_cfg
 # Debug: Log when mm_cfg is imported in qrunner
-from Mailman.Logging.Syslog import syslog
+from Mailman.Logging.Syslog import mark_log_reopen_pending, reopen_logs_if_pending, syslog
 syslog('debug', 'qrunner: mm_cfg imported from %s', mm_cfg.__file__)
 syslog('debug', 'qrunner: mm_cfg.GLOBAL_PIPELINE type: %s', type(mm_cfg.GLOBAL_PIPELINE).__name__ if hasattr(mm_cfg, 'GLOBAL_PIPELINE') else 'NOT FOUND')
 from Mailman.i18n import C_
-from Mailman.Logging.Syslog import syslog
 from Mailman.Logging.Utils import LogStdErr
 
 PROGRAM = sys.argv[0]
@@ -138,7 +137,6 @@ def set_signals(loop):
         # Exit the qrunner cleanly
         loop.stop()
         loop.status = signal.SIGTERM
-        syslog('qrunner', '%s qrunner caught SIGTERM.  Stopping.', loop.name())
     signal.signal(signal.SIGTERM, sigterm_handler)
     # Set up the SIGINT handler for stopping the loop.  For us, SIGINT is
     # the same as SIGTERM, but our parent treats the exit statuses
@@ -147,14 +145,11 @@ def set_signals(loop):
         # Exit the qrunner cleanly
         loop.stop()
         loop.status = signal.SIGINT
-        syslog('qrunner', '%s qrunner caught SIGINT.  Stopping.', loop.name())
     signal.signal(signal.SIGINT, sigint_handler)
-    # SIGHUP just tells us to close our log files.  They'll be
-    # automatically reopened at the next log print :)
-    def sighup_handler(signum, frame, loop=loop):
-        syslog.close()
-        syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
-               loop.name())
+    # SIGHUP requests log reopen; do not close/logs from this handler —
+    # that can nest inside another handler's syslog I/O (see Runner loop).
+    def sighup_handler(signum, frame):
+        mark_log_reopen_pending()
     signal.signal(signal.SIGHUP, sighup_handler)
 
 
@@ -247,6 +242,11 @@ def main():
         # Now start up the main loop
         syslog('qrunner', '%s qrunner started.', loop.name())
         qrunner.run()
+        if loop.status == signal.SIGTERM:
+            syslog('qrunner', '%s qrunner caught SIGTERM.  Stopping.',
+                   loop.name())
+        elif loop.status == signal.SIGINT:
+            syslog('qrunner', '%s qrunner caught SIGINT.  Stopping.', loop.name())
         syslog('qrunner', '%s qrunner exiting.', loop.name())
     else:
         # Anything else we have to handle a bit more specially
@@ -269,6 +269,9 @@ def main():
         set_signals(loop)
         syslog('qrunner', 'Main qrunner loop started.')
         while not loop.isdone():
+            if reopen_logs_if_pending():
+                syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
+                       loop.name())
             for qrunner in qrunners:
                 # In case the SIGTERM came in the middle of this iteration
                 if loop.isdone():
@@ -281,6 +284,13 @@ def main():
                 break
             if mm_cfg.QRUNNER_SLEEP_TIME > 0:
                 time.sleep(mm_cfg.QRUNNER_SLEEP_TIME)
+            if reopen_logs_if_pending():
+                syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
+                       loop.name())
+        if loop.status == signal.SIGTERM:
+            syslog('qrunner', '%s qrunner caught SIGTERM.  Stopping.', loop.name())
+        elif loop.status == signal.SIGINT:
+            syslog('qrunner', '%s qrunner caught SIGINT.  Stopping.', loop.name())
         syslog('qrunner', 'Main qrunner loop exiting.')
     # All done
     sys.exit(loop.status)

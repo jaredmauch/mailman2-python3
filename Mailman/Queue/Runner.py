@@ -33,6 +33,7 @@ from Mailman import Errors
 from Mailman import MailList
 from Mailman import i18n
 
+from Mailman.Logging.Syslog import reopen_logs_if_pending
 from Mailman.Logging.Syslog import syslog
 from Mailman.Queue.Switchboard import Switchboard
 
@@ -64,6 +65,9 @@ class Runner:
         try:
             try:
                 while True:
+                    if reopen_logs_if_pending():
+                        syslog('qrunner', '%s qrunner caught SIGHUP.  Reopening logs.',
+                               self.__class__.__name__)
                     # Once through the loop that processes all the files in
                     # the queue directory.
                     filecnt = self._oneloop()

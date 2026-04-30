@@ -30,6 +30,30 @@ from Mailman.Logging.StampedLogger import StampedLogger
 # Global, shared logger instance.  All clients should use this object.
 syslog = None
 
+# Set by the SIGHUP handler; drained from the qrunner main thread only.
+# Closing log files inside a Python signal handler can reenter logging
+# (e.g. SIGTERM syslog flush interrupted by SIGHUP) and raise RuntimeError
+# on buffered I/O.
+_pending_log_reopen = False
+
+
+def mark_log_reopen_pending():
+    global _pending_log_reopen
+    _pending_log_reopen = True
+
+
+def reopen_logs_if_pending():
+    """If reopen was requested via SIGHUP, close descriptors in-process.
+
+    Must not be called from a signal handler.  Returns True if logs were
+    closed so the caller may emit a confirmation line."""
+    global _pending_log_reopen
+    if not _pending_log_reopen:
+        return False
+    _pending_log_reopen = False
+    syslog.close()
+    return True
+
 
 
 # Don't instantiate except below.
