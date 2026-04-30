@@ -42,6 +42,8 @@ from string import whitespace, digits
 from urllib.parse import urlparse, parse_qs
 import tempfile
 import io
+import binascii
+import hmac
 from email.parser import BytesParser
 from email.policy import HTTP
 
@@ -696,6 +698,84 @@ def get_global_password(siteadmin=True):
         # It's okay not to have a site admin password, just return false
         return None
     return challenge
+
+
+# PBKDF2-SHA256 for list admin / moderator / poster passwords (Mailman 2.2+).
+# Legacy: 40-char SHA1 hex digest (same as set_global_password / older Mailman).
+_PBKDF2_SHA256_PREFIX = '$pbkdf2$sha256$'
+_PBKDF2_ITERATIONS = 310000
+_PBKDF2_SALT_BYTES = 16
+_PBKDF2_DKLEN = 32
+
+
+def hash_password(plaintext):
+    """Hash a plaintext password for storage (PBKDF2-HMAC-SHA256).
+
+    Accepts str or bytes; returns an ASCII str starting with ``$pbkdf2$sha256$``.
+    """
+    if isinstance(plaintext, bytes):
+        pw = plaintext
+    else:
+        pw = str(plaintext).encode('utf-8', errors='replace')
+    salt = os.urandom(_PBKDF2_SALT_BYTES)
+    dk = hashlib.pbkdf2_hmac(
+        'sha256', pw, salt, _PBKDF2_ITERATIONS, dklen=_PBKDF2_DKLEN)
+    return '%s%d$%s$%s' % (
+        _PBKDF2_SHA256_PREFIX,
+        _PBKDF2_ITERATIONS,
+        binascii.hexlify(salt).decode('ascii'),
+        binascii.hexlify(dk).decode('ascii'))
+
+
+def verify_password(response, stored):
+    """Verify password against stored hash.
+
+    ``stored`` is either a legacy SHA1 hex digest (40 chars) or PBKDF2 string
+    from :func:`hash_password`.
+
+    ``response`` may be str or bytes (UTF-8).
+
+    Returns ``(is_valid, needs_upgrade)`` where *needs_upgrade* is True if
+    the password matched the legacy SHA1 format and should be replaced with
+    a PBKDF2 hash.
+    """
+    if stored is None:
+        return False, False
+    if isinstance(response, str):
+        response_bytes = response.encode('utf-8', errors='replace')
+    else:
+        response_bytes = bytes(response)
+    if not isinstance(stored, str):
+        try:
+            stored = stored.decode('ascii', errors='strict')
+        except Exception:
+            return False, False
+    stored = stored.strip()
+    if stored.startswith(_PBKDF2_SHA256_PREFIX):
+        parts = stored.split('$')
+        # ['', 'pbkdf2', 'sha256', iterations, salt_hex, dk_hex]
+        if len(parts) != 6:
+            return False, False
+        try:
+            iterations = int(parts[3])
+            salt = binascii.unhexlify(parts[4])
+            expected = binascii.unhexlify(parts[5])
+        except (ValueError, binascii.Error):
+            return False, False
+        try:
+            dk = hashlib.pbkdf2_hmac(
+                'sha256', response_bytes, salt, iterations, dklen=len(expected))
+        except Exception:
+            return False, False
+        if hmac.compare_digest(dk, expected):
+            return True, False
+        return False, False
+    if len(stored) == 40 and re.match(r'^[0-9a-fA-F]{40}$', stored):
+        digest = sha_new(response_bytes).hexdigest()
+        if hmac.compare_digest(digest.lower(), stored.lower()):
+            return True, True
+        return False, False
+    return False, False
 
 
 def check_global_password(response, siteadmin=True, auto_upgrade=False):
