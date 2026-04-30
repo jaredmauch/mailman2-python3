@@ -335,7 +335,7 @@ def main():
     # See if this is VARHELP on topics.
     varhelp = None
     if 'VARHELP' in cgidata:
-        varhelp = cgidata['VARHELP'].value
+        varhelp = cgidata.getfirst('VARHELP')
     elif os.environ.get('QUERY_STRING'):
         # POST methods, even if their actions have a query string, don't get
         # put into FieldStorage's keys :-(
