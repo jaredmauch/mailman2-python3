@@ -932,11 +932,12 @@ def process_form(mlist, doc, cgidata):
     banaddrs = []
     erroraddrs = []
     for k in list(cgidata.keys()):
-        formv = cgidata[k]
-        if type(formv) == list:
+        vals = cgidata.getlist(k)
+        if len(vals) != 1:
             continue
+        formv = vals[0]
         try:
-            v = int(formv.value)
+            v = int(formv)
             request_id = int(k)
         except ValueError:
             continue
@@ -965,13 +966,13 @@ def process_form(mlist, doc, cgidata):
         forward = 0
         forwardaddr = ''
         if commentkey in cgidata:
-            comment = cgidata[commentkey].value
+            comment = cgidata.getfirst(commentkey)
         if preservekey in cgidata:
-            preserve = cgidata[preservekey].value
+            preserve = cgidata.getfirst(preservekey)
         if forwardkey in cgidata:
-            forward = cgidata[forwardkey].value
+            forward = cgidata.getfirst(forwardkey)
         if forwardaddrkey in cgidata:
-            forwardaddr = cgidata[forwardaddrkey].value
+            forwardaddr = cgidata.getfirst(forwardaddrkey)
         # Should we ban this address?  Do this check before handling the
         # request id because that will evict the record.
         if cgidata.getfirst(bankey):

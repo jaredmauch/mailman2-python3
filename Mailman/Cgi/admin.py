@@ -56,6 +56,31 @@ OPTCOLUMNS = 11
 AUTH_CONTEXTS = (mm_cfg.AuthListAdmin, mm_cfg.AuthSiteAdmin)
 
 
+def _field_upload_text(cgidata, fieldname):
+    """Decode multipart file upload text, or fall back to getfirst (FieldStorage)."""
+    fn = getattr(cgidata, 'filename', None)
+    if callable(fn) and fn(fieldname):
+        fobj = cgidata.file(fieldname)
+        if fobj is None:
+            return cgidata.getfirst(fieldname, '') or ''
+        try:
+            raw = fobj.read()
+        finally:
+            try:
+                fobj.close()
+            except EnvironmentError:
+                pass
+            try:
+                os.unlink(fobj.name)
+            except OSError:
+                pass
+        enc = getattr(cgidata, 'encoding', None) or 'utf-8'
+        if isinstance(raw, bytes):
+            return raw.decode(enc, getattr(cgidata, 'errors', None) or 'replace')
+        return raw or ''
+    return cgidata.getfirst(fieldname, '') or ''
+
+
 
 def main():
     # Try to find out which list is being administered
@@ -1459,10 +1484,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # mass subscription, removal processing for members category
     subscribers = ''
     subscribers += str(cgidata.getfirst('subscribees', ''))
-    sub_uploads = cgidata.getfirst('subscribees_upload', '')
-    if isinstance(sub_uploads, bytes):
-        sub_uploads = sub_uploads.decode()
-    subscribers += sub_uploads
+    subscribers += _field_upload_text(cgidata, 'subscribees_upload')
     if subscribers:
         entries = [_f for _f in [n.strip() for n in subscribers.splitlines()] if _f]
         send_welcome_msg = safeint('send_welcome_msg_to_this_batch',
@@ -1540,13 +1562,8 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # Unsubscriptions
     removals = ''
     if 'unsubscribees' in cgidata:
-        removals += cgidata['unsubscribees'].value
-    if 'unsubscribees_upload' in cgidata and \
-           cgidata['unsubscribees_upload'].value:
-        unsub_upload = cgidata['unsubscribees_upload'].value
-        if isinstance(unsub_upload, bytes):
-            unsub_upload = unsub_upload.decode()
-        removals += unsub_upload
+        removals += cgidata.getfirst('unsubscribees', '') or ''
+    removals += _field_upload_text(cgidata, 'unsubscribees_upload')
     if removals:
         names = [_f for _f in [n.strip() for n in removals.splitlines()] if _f]
         send_unsub_notifications = safeint(
@@ -1651,10 +1668,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
     # sync operation
     memberlist = ''
     memberlist += cgidata.getvalue('memberlist', '')
-    upload = cgidata.getvalue('memberlist_upload', '')
-    if isinstance(upload, bytes):
-        upload = upload.decode()
-    memberlist += upload
+    memberlist += _field_upload_text(cgidata, 'memberlist_upload')
     if memberlist:
         # Browsers will convert special characters in the text box to HTML
         # entities. We need to fix those.
@@ -1745,13 +1759,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 mlist.setMemberOption(member, mm_cfg.Moderate, val)
     # do the user options for members category
     if 'setmemberopts_btn' in cgidata and 'user' in cgidata:
-        user = cgidata['user']
-        if type(user) is list:
-            users = []
-            for ui in range(len(user)):
-                users.append(urllib.parse.unquote(user[ui].value))
-        else:
-            users = [urllib.parse.unquote(user.value)]
+        users = [urllib.parse.unquote(u) for u in cgidata.getlist('user')]
         errors = []
         removes = []
         for user in users:
