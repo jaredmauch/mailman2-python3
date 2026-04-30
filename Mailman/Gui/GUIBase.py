@@ -19,6 +19,7 @@
 
 from builtins import str
 from builtins import object
+import os
 import re
 
 from Mailman import mm_cfg
@@ -158,14 +159,37 @@ class GUIBase:
             #
             # The property may be uploadable...
             uploadprop = property + '_upload'
-            if uploadprop in cgidata and cgidata[uploadprop].value:
-                val = cgidata[uploadprop].value
+            fname = getattr(cgidata, 'filename', None)
+            if callable(fname) and fname(uploadprop):
+                fobj = cgidata.file(uploadprop)
+                if fobj is not None:
+                    try:
+                        raw = fobj.read()
+                    finally:
+                        try:
+                            fobj.close()
+                        except EnvironmentError:
+                            pass
+                        try:
+                            os.unlink(fobj.name)
+                        except OSError:
+                            pass
+                    enc = getattr(cgidata, 'encoding', None) or 'utf-8'
+                    if isinstance(raw, bytes):
+                        val = raw.decode(enc, getattr(cgidata, 'errors', None)
+                                          or 'replace')
+                    else:
+                        val = raw
+                else:
+                    continue
+            elif uploadprop in cgidata and cgidata.getfirst(uploadprop):
+                val = cgidata.getfirst(uploadprop)
             elif property not in cgidata:
                 continue
-            elif isinstance(cgidata[property], list):
-                val = [x.value for x in cgidata[property]]
+            elif wtype == mm_cfg.Checkbox:
+                val = cgidata.getlist(property)
             else:
-                val = cgidata[property].value
+                val = cgidata.getfirst(property)
             # Coerce the value to the expected type, raising exceptions if the
             # value is invalid.
             try:
