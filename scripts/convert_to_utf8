@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import subprocess
 import sys
 import getopt
 import re
@@ -78,13 +77,13 @@ def convert_files(directory):
             temp_file = f"{file_path}.tmp"
             try:
                 _print(f"******* Converting {filename} from {old_encoding_map[locale_name]} to UTF-8.")
-                subprocess.check_output(
-                    ["iconv", "-f", old_encoding_map[locale_name], "-t", 'UTF-8', file_path, "-o", temp_file],
-                    stderr=subprocess.STDOUT,
-                )
+                with open(file_path, 'r', encoding=old_encoding_map[locale_name]) as src:
+                    content = src.read()
+                with open(temp_file, 'w', encoding='utf-8') as dst:
+                    dst.write(content)
                 os.replace(temp_file, file_path)
             except Exception as e:
-                print(f"!!! Failed to convert {filename}: {e.stdout.decode()}", file=sys.stderr)
+                print(f"!!! Failed to convert {filename}: {e}", file=sys.stderr)
                 exit(1)
 
             if is_lcmessage:
