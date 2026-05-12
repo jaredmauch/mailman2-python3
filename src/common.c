@@ -261,7 +261,7 @@ run_script(const char* script, int argc, char** argv, char** env)
                                 keep = 1;
                                 break;
                         }
-                        *k++;
+                        k++;
                 }
                 if (keep)
                         newenv[j++] = env[i];
