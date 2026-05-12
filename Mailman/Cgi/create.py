@@ -31,7 +31,7 @@ from Mailman import Errors
 from Mailman import i18n
 from Mailman.htmlformat import *
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new
+from Mailman.Utils import sha_new, hash_password
 
 # Set up i18n
 _ = i18n._
@@ -199,7 +199,7 @@ def process_request(doc, cgidata):
         # Install the emergency shutdown signal handler
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        pw = sha_new(password).hexdigest()
+        pw = hash_password(password)
         # Guarantee that all newly created files have the proper permission.
         # proper group ownership should be assured by the autoconf script
         # enforcing that all directories have the group sticky bit set
