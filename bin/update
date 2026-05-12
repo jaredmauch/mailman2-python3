@@ -814,27 +814,27 @@ def send_password_upgrade_notification(mlist):
         listaddr = mlist.GetListEmail()
         siteowner = Utils.get_site_email(mlist.host_name, 'owner')
         
-        text = _("""\
+        text = C_("""\
 This is an automated message from your Mailman installation.
 
-Your mailing list "%(listname)s" (%(listaddr)s) is using an older password 
-hashing format. For security reasons, we have upgraded Mailman to use a more 
+Your mailing list "%(listname)s" (%(listaddr)s) is using an older password
+hashing format. For security reasons, we have upgraded Mailman to use a more
 secure password hashing method (PBKDF2-SHA256 instead of SHA1).
 
 To complete the upgrade, please log in to your list administration page:
 
     %(admin_url)s
 
-Simply logging in with your current list administrator password will 
-automatically upgrade your password to the new secure format. You don't 
-need to change your password - just log in once and the upgrade will happen 
+Simply logging in with your current list administrator password will
+automatically upgrade your password to the new secure format. You don't
+need to change your password - just log in once and the upgrade will happen
 automatically.
 
-This is a one-time upgrade. After you log in, your password will be 
-automatically converted to the new format and you won't need to do anything 
+This is a one-time upgrade. After you log in, your password will be
+automatically converted to the new format and you won't need to do anything
 else.
 
-If you have any questions or concerns, please contact the site administrator 
+If you have any questions or concerns, please contact the site administrator
 at %(siteowner)s.
 
 Thank you for your attention to this important security upgrade.
@@ -844,8 +844,8 @@ Thank you for your attention to this important security upgrade.
             'admin_url': admin_url,
             'siteowner': siteowner,
         }
-        
-        subject = _('Action Required: Password Upgrade for %(listname)s') % {
+
+        subject = C_('Action Required: Password Upgrade for %(listname)s') % {
             'listname': listname
         }
         
