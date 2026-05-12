@@ -727,6 +727,11 @@ def hash_password(plaintext):
         binascii.hexlify(dk).decode('ascii'))
 
 
+def is_old_password_format(pw):
+    """Return True if pw is a legacy password that needs upgrading to PBKDF2."""
+    return bool(pw) and not pw.startswith(_PBKDF2_SHA256_PREFIX)
+
+
 def verify_password(response, stored):
     """Verify password against stored hash.
 
