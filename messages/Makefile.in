@@ -115,7 +115,7 @@ doinstall: .converted.stamp mofiles
 	done
 
 # Use a stamp file to track conversion, so it only happens once
-.converted.stamp: $(wildcard */LC_MESSAGES/*.po)
+.converted.stamp: $(POFILES)
 	../scripts/convert_to_utf8 -d .
 	touch .converted.stamp
 
