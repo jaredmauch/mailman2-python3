@@ -242,26 +242,23 @@ else
 fi
 AC_MSG_RESULT($needkocodecs)
 
-# Make sure distutils is available.  Some Linux Python packages split
-# distutils into the "-devel" package, so they need both.
-AC_MSG_CHECKING(that Python has a working distutils)
+# Make sure Python development headers are available.  Some Linux/BSD Python
+# packages split headers into a separate -dev/-devel package.
+AC_MSG_CHECKING(that Python has working sysconfig and development headers)
 changequote(,)
 cat > conftest.py <<EOF
 try:
-    import distutils.errors
-    import distutils.sysconfig
+    import sysconfig
 except ImportError:
     res = "no"
 else:
     try:
-        distutils.sysconfig.get_config_vars()
-    except distutils.errors.DistutilsPlatformError:
+        sysconfig.get_config_vars()
+    except Exception:
         res = "no"
     else:
-        # some RedHat packages put distutils in python, but the C headers
-        # are in python-devel so check for headers too.
         import os.path
-        pdothpath = distutils.sysconfig.get_python_inc()
+        pdothpath = sysconfig.get_path('include')
         if os.path.isfile(os.path.join(pdothpath, "Python.h")):
             res = "yes"
         else:
@@ -277,11 +274,10 @@ if test "$havedistutils" != "yes"
 then
     AC_MSG_ERROR([
 
-***** Distutils is not available or is incomplete for $with_python
-***** If you installed Python from RPM (or other package manager)
-***** be sure to install the -devel package, or install Python
-***** from source.  See sec. 15.1 of the Installation Manual for
-***** details])
+***** Python development headers are not available for $with_python
+***** If you installed Python from a package manager, be sure to
+***** install the -dev or -devel package, or install Python from
+***** source.  See sec. 15.1 of the Installation Manual for details])
 fi
 AC_MSG_RESULT($havedistutils)
 
