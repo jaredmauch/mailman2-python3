@@ -442,12 +442,12 @@ def checkperms(state):
         if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
-            print(C_('%(file)s permissions must be 0664 (got %(octmode)s)'),)
+            print(C_('%(file)s permissions must be 0664 (got %(octmode)s)') % locals())
             if state.FIX:
                 print(C_('(fixing)'))
                 os.chmod(file, stat[ST_MODE] | targetmode)
             else:
-                print
+                print()
         # Make sure the corresponding .db files are owned by the Mailman user.
         # We don't need to check the group ownership of the file, since
         # check_perms checks this itself.
@@ -481,7 +481,7 @@ def checkperms(state):
         if stat and (stat[ST_MODE] & targetmode) != targetmode:
             state.ERRORS += 1
             octmode = oct(stat[ST_MODE])
-            print(C_('%(dbfile)s permissions must be 0664 (got %(octmode)s)'),)
+            print(C_('%(dbfile)s permissions must be 0664 (got %(octmode)s)') % locals())
             if state.FIX:
                 print(C_('(fixing)'))
                 os.chmod(dbfile, stat[ST_MODE] | targetmode)
