@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import subprocess
 import sys
 import getopt
 import re
@@ -62,29 +61,26 @@ def convert_files(directory):
                 continue
 
             _print(f"*** Working on locale: {locale_name} file: {file_path} known encoding: {old_encoding_map[locale_name]}")
-            try:
-                current_encoding = subprocess.check_output(
-                    ["file", "-bi", file_path]
-                ).decode().strip().split('charset=')[-1]
-                _print(f"***** Currrent file encoding: {current_encoding}")
-            except Exception as e:
-                print(f"!!! Failed to get current file encoding for {file_path}: {e.stdout.decode()}", file=sys.stderr)
-                exit(1)
 
-            if( current_encoding.endswith('ascii') or current_encoding == 'utf-8' ):
+            # Check if already UTF-8/ASCII by attempting to decode as UTF-8
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    f.read()
                 _print(f"!!! Skipping {filename}, already utf-8 or ascii.")
                 continue
+            except UnicodeDecodeError:
+                pass
 
             temp_file = f"{file_path}.tmp"
             try:
                 _print(f"******* Converting {filename} from {old_encoding_map[locale_name]} to UTF-8.")
-                subprocess.check_output(
-                    ["iconv", "-f", old_encoding_map[locale_name], "-t", 'UTF-8', file_path, "-o", temp_file],
-                    stderr=subprocess.STDOUT,
-                )
+                with open(file_path, 'r', encoding=old_encoding_map[locale_name]) as src:
+                    content = src.read()
+                with open(temp_file, 'w', encoding='utf-8') as dst:
+                    dst.write(content)
                 os.replace(temp_file, file_path)
             except Exception as e:
-                print(f"!!! Failed to convert {filename}: {e.stdout.decode()}", file=sys.stderr)
+                print(f"!!! Failed to convert {filename}: {e}", file=sys.stderr)
                 exit(1)
 
             if is_lcmessage:
