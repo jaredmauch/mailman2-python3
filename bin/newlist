@@ -241,8 +241,7 @@ def main():
 
     # And send the notice to the list owner
     if not quiet and not automate:
-        print('Hit enter to notify %(listname)s owner...'),
-        sys.stdin.readline()
+        input('Hit enter to notify %s owner...' % listname)
     if not quiet:
         siteowner = Utils.get_site_email(mlist.host_name, 'owner')
         text = Utils.maketext(
