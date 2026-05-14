@@ -141,7 +141,7 @@ def checkwalk(arg, dirname, names):
         octperms = oct(targetperms)
         if S_ISDIR(mode) and (mode & targetperms) != targetperms:
             arg.ERRORS += 1
-            print(C_('directory permissions must be %(octperms)s: %(path)s'),)
+            print(C_('directory permissions must be %(octperms)s: %(path)s') % locals())
             if STATE.FIX:
                 print(C_('(fixing)'))
                 os.chmod(path, mode | targetperms)
@@ -150,7 +150,7 @@ def checkwalk(arg, dirname, names):
         elif os.path.splitext(path)[1] in ('.py', '.pyc', '.pyo'):
             octperms = oct(PYFILEPERMS)
             if mode & PYFILEPERMS != PYFILEPERMS:
-                print(C_('source perms must be %(octperms)s: %(path)s'),)
+                print(C_('source perms must be %(octperms)s: %(path)s') % locals())
                 arg.ERRORS += 1
                 if STATE.FIX:
                     print(C_('(fixing)'))
@@ -161,7 +161,7 @@ def checkwalk(arg, dirname, names):
             # Article files must be group writeable
             octperms = oct(ARTICLEFILEPERMS)
             if mode & ARTICLEFILEPERMS != ARTICLEFILEPERMS:
-                print(C_('article db files must be %(octperms)s: %(path)s'),)
+                print(C_('article db files must be %(octperms)s: %(path)s') % locals())
                 arg.ERRORS += 1
                 if STATE.FIX:
                     print(C_('(fixing)'))
@@ -187,7 +187,7 @@ def checkall():
             continue
         if (mode & DIRPERMS) != DIRPERMS:
             STATE.ERRORS += 1
-            print(C_('directory must be at least 02775: %(d)s'),)
+            print(C_('directory must be at least 02775: %(d)s') % locals())
             if STATE.FIX:
                 print(C_('(fixing)'))
                 os.chmod(d, mode | DIRPERMS)
@@ -204,7 +204,7 @@ def checkarchives():
     mode = statmode(private)
     if mode & S_IROTH:
         STATE.ERRORS += 1
-        print(C_('%(private)s must not be other-readable'),)
+        print(C_('%(private)s must not be other-readable') % locals())
         if STATE.FIX:
             print(C_('(fixing)'))
             os.chmod(private, mode & ~S_IROTH)
@@ -253,7 +253,7 @@ def checkarchivedbs():
             continue
         if mode & S_IRWXO:
             STATE.ERRORS += 1
-            print(C_('%(dbdir)s "other" perms must be 000'),)
+            print(C_('%(dbdir)s "other" perms must be 000') % locals())
             if STATE.FIX:
                 print(C_('(fixing)'))
                 os.chmod(dbdir, mode & ~S_IRWXO)
@@ -272,7 +272,7 @@ def checkcgi():
         mode = statmode(path)
         if mode & S_IXGRP and not mode & S_ISGID:
             STATE.ERRORS += 1
-            print(C_('%(path)s must be set-gid'),)
+            print(C_('%(path)s must be set-gid') % locals())
             if STATE.FIX:
                 print(C_('(fixing)'))
                 os.chmod(path, mode | S_ISGID)
@@ -286,7 +286,7 @@ def checkmail():
     mode = statmode(wrapper)
     if not mode & S_ISGID:
         STATE.ERRORS += 1
-        print(C_('%(wrapper)s must be set-gid'),)
+        print(C_('%(wrapper)s must be set-gid') % locals())
         if STATE.FIX:
             print(C_('(fixing)'))
             os.chmod(wrapper, mode | S_ISGID)
@@ -346,7 +346,7 @@ def checkdata():
                 continue
             if (mode & targetmode) != targetmode:
                 STATE.ERRORS += 1
-                print(C_('file permissions must be at least 660: %(path)s'),)
+                print(C_('file permissions must be at least 660: %(path)s') % locals())
                 if STATE.FIX:
                     print(C_('(fixing)'))
                     os.chmod(path, mode | targetmode)
