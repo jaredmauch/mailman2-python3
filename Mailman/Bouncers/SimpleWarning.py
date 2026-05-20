@@ -21,7 +21,7 @@ import email
 import email.iterators
 
 from Mailman.Bouncers.BouncerAPI import Stop
-from Mailman.Bouncers.SimpleMatch import _c
+from Mailman.Bouncers.SimpleMatch import _c, _body_line_iterator
 
 
 
@@ -75,7 +75,7 @@ def process(msg):
     addrs = {}
     for scre, ecre, acre in patterns:
         state = 0
-        for line in email.iterators.body_line_iterator(msg):
+        for line in _body_line_iterator(msg):
             if state == 0:
                 if scre.search(line):
                     state = 1
