@@ -194,9 +194,9 @@ class BounceTest(unittest.TestCase):
         for modname, file, addrs in self.DATA:
             module = 'Mailman.Bouncers.' + modname
             __import__(module)
-            fp = open(os.path.join(_TESTDIR, 'bounces', file))
+            fp = open(os.path.join(_TESTDIR, 'bounces', file), 'rb')
             try:
-                msg = email.message_from_file(fp)
+                msg = email.message_from_binary_file(fp)
             finally:
                 fp.close()
             foundaddrs = sys.modules[module].process(msg)
@@ -214,9 +214,9 @@ class BounceTest(unittest.TestCase):
     def test_SMTP32_failure(self):
         from Mailman.Bouncers import SMTP32
         # This file has no X-Mailer: header
-        fp = open(os.path.join(_TESTDIR, 'bounces', 'postfix_01.txt'))
+        fp = open(os.path.join(_TESTDIR, 'bounces', 'postfix_01.txt'), 'rb')
         try:
-            msg = email.message_from_file(fp)
+            msg = email.message_from_binary_file(fp)
         finally:
             fp.close()
         self.failIf(msg['x-mailer'] is not None)
