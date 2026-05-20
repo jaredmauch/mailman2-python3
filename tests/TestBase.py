@@ -32,20 +32,15 @@ NL = '\n'
 
 
 class TestBase(unittest.TestCase):
-    if hasattr(difflib, 'ndiff'):
-        # Python 2.2 and beyond
-        def ndiffAssertEqual(self, first, second):
-            """Like failUnlessEqual except use ndiff for readable output."""
-            if first != second:
-                sfirst = str(first)
-                ssecond = str(second)
-                diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())
-                fp = StringIO()
-                print(NL, NL.join(diff), file=fp)
-                raise (self.failureException, fp.getvalue())
-    else:
-        # Python 2.1
-        ndiffAssertEqual = unittest.TestCase.assertEqual
+    def ndiffAssertEqual(self, first, second):
+        """Like failUnlessEqual except use ndiff for readable output."""
+        if first != second:
+            sfirst = str(first)
+            ssecond = str(second)
+            diff = difflib.ndiff(sfirst.splitlines(), ssecond.splitlines())
+            fp = StringIO()
+            print(NL, NL.join(diff), file=fp)
+            raise self.failureException(fp.getvalue())
 
     def setUp(self):
         mlist = MailList.MailList()

@@ -192,7 +192,7 @@ class BounceTest(unittest.TestCase):
         for modname, file, addrs in self.DATA:
             module = 'Mailman.Bouncers.' + modname
             __import__(module)
-            fp = open(os.path.join('tests', 'bounces', file))
+            fp = open(os.path.join('bounces', file))
             try:
                 msg = email.message_from_file(fp)
             finally:
@@ -212,7 +212,7 @@ class BounceTest(unittest.TestCase):
     def test_SMTP32_failure(self):
         from Mailman.Bouncers import SMTP32
         # This file has no X-Mailer: header
-        fp = open(os.path.join('tests', 'bounces', 'postfix_01.txt'))
+        fp = open(os.path.join('bounces', 'postfix_01.txt'))
         try:
             msg = email.message_from_file(fp)
         finally:

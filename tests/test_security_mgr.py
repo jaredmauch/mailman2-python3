@@ -44,7 +44,7 @@ from TestBase import TestBase
 
 
 def password(plaintext):
-    return sha_new(plaintext).hexdigest()
+    return sha_new(plaintext.encode()).hexdigest()
 
 
 
@@ -137,7 +137,7 @@ class TestAuthenticate(TestBase):
     def test_list_admin_upgrade(self):
         eq = self.assertEqual
         mlist = self._mlist
-        mlist.password = md5_new('ssSSss').digest()
+        mlist.password = md5_new(b'ssSSss').digest()
         eq(mlist.Authenticate(
             [mm_cfg.AuthListAdmin], 'ssSSss'), mm_cfg.AuthListAdmin)
         eq(mlist.password, password('ssSSss'))
@@ -151,10 +151,10 @@ class TestAuthenticate(TestBase):
     def test_list_admin_oldstyle_unauth(self):
         eq = self.assertEqual
         mlist = self._mlist
-        mlist.password = md5_new('ssSSss').digest()
+        mlist.password = md5_new(b'ssSSss').digest()
         eq(mlist.Authenticate(
             [mm_cfg.AuthListAdmin], 'xxxxxx'), mm_cfg.UnAuthorized)
-        eq(mlist.password, md5_new('ssSSss').digest())
+        eq(mlist.password, md5_new(b'ssSSss').digest())
         # Test crypt upgrades if crypt is supported
         if crypt:
             mlist.password = crypted = crypt.crypt('rrRRrr', 'zc')
