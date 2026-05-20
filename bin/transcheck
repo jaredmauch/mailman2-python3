@@ -282,9 +282,9 @@ def check_file(translatedFile, originalFile, html=0, quiet=0):
        search also <MM-*> tags if html is not zero"""
 
     if html:
-        c = TransChecker("(%%|%\([^)]+\)[0-9]*[sd]|</?MM-[^>]+>)", "^%%$")
+        c = TransChecker(r"(%%|%\([^)]+\)[0-9]*[sd]|</?MM-[^>]+>)", r"^%%$")
     else:
-        c = TransChecker("(%%|%\([^)]+\)[0-9]*[sd])", "^%%$")
+        c = TransChecker(r"(%%|%\([^)]+\)[0-9]*[sd])", r"^%%$")
 
     try:
         f = open(originalFile)
@@ -328,7 +328,7 @@ def check_po(file, quiet=0):
     "scan the po file comparing msgids with msgstrs"
     n = 0
     p = POParser(file)
-    c = TransChecker("(%%|%\([^)]+\)[0-9]*[sdu]|%[0-9]*[sdu])", "^%%$")
+    c = TransChecker(r"(%%|%\([^)]+\)[0-9]*[sdu]|%[0-9]*[sdu])", r"^%%$")
     while p.parse():
         if p.msgstr:
             c.reset()
@@ -364,8 +364,8 @@ def main():
 
     lang = args[0]
 
-    isHtml = re.compile("\.html$");
-    isTxt = re.compile("\.txt$");
+    isHtml = re.compile(r"\.html$")
+    isTxt = re.compile(r"\.txt$")
 
     numerrors = 0
     numfiles = 0
