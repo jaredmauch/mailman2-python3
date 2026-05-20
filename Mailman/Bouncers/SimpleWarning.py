@@ -75,7 +75,7 @@ def process(msg):
     addrs = {}
     for scre, ecre, acre in patterns:
         state = 0
-        for line in email.iterators.body_line_iterator(msg, decode=True):
+        for line in email.iterators.body_line_iterator(msg):
             if state == 0:
                 if scre.search(line):
                     state = 1
