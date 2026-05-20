@@ -31,6 +31,7 @@ CC=		@CC@
 CHMOD=  	@CHMOD@
 INSTALL=	@INSTALL@
 TRUE=		@TRUE@
+PYTHON=		@PYTHON@
 
 DEFS=   	@DEFS@
 
@@ -61,7 +62,7 @@ all: converttemplates
 
 # Use a stamp file to track conversion, so it only happens once
 .converted.stamp:
-	../scripts/convert_to_utf8 -d .
+	$(PYTHON) ../scripts/convert_to_utf8 -d .
 	touch .converted.stamp
 
 converttemplates: .converted.stamp
