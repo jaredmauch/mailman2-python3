@@ -37,7 +37,7 @@ from EmailBase import EmailBase
 class TestSentMessage1(EmailBase):
     def test_user_notification(self):
         eq = self.assertEqual
-        unless = self.failUnless
+        unless = self.assertTrue
         msg = Message.UserNotification(
             'aperson@dom.ain',
             '_xtest@dom.ain',
@@ -70,7 +70,7 @@ class TestSentMessage1(EmailBase):
 class TestSentMessage2(EmailBase):
     def test_bounce_message(self):
         eq = self.assertEqual
-        unless = self.failUnless
+        unless = self.assertTrue
         msg = email.message_from_string("""\
 To: _xtest@dom.ain
 From: nobody@dom.ain

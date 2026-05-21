@@ -217,8 +217,8 @@ class BounceTest(unittest.TestCase):
             msg = email.message_from_file(fp)
         finally:
             fp.close()
-        self.failIf(msg['x-mailer'] is not None)
-        self.failIf(SMTP32.process(msg))
+        self.assertFalse(msg['x-mailer'] is not None)
+        self.assertFalse(SMTP32.process(msg))
 
     def test_caiwireless(self):
         from Mailman.Bouncers import Caiwireless

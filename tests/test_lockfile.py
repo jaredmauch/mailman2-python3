@@ -34,7 +34,7 @@ class TestLockFile(unittest.TestCase):
         lf1 = LockFile(LOCKFILE_NAME)
         lf2 = LockFile(LOCKFILE_NAME)
         lf1.lock()
-        self.failIf(lf2.locked())
+        self.assertFalse(lf2.locked())
 
 
 
