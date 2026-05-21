@@ -140,13 +140,17 @@ class TestAuthenticate(TestBase):
         mlist.password = md5_new('ssSSss').digest()
         eq(mlist.Authenticate(
             [mm_cfg.AuthListAdmin], 'ssSSss'), mm_cfg.AuthListAdmin)
-        eq(mlist.password, password('ssSSss'))
+        # Password should be upgraded to PBKDF2 on successful authentication
+        self.assertTrue(mlist.password.startswith('$pbkdf2$sha256$'))
+        # Upgraded password must still authenticate
+        eq(mlist.Authenticate(
+            [mm_cfg.AuthListAdmin], 'ssSSss'), mm_cfg.AuthListAdmin)
         # Test crypt upgrades if crypt is supported
         if crypt:
             mlist.password = crypt.crypt('rrRRrr', 'zc')
             eq(self._mlist.Authenticate(
                 [mm_cfg.AuthListAdmin], 'rrRRrr'), mm_cfg.AuthListAdmin)
-            eq(mlist.password, password('rrRRrr'))
+            self.assertTrue(mlist.password.startswith('$pbkdf2$sha256$'))
 
     def test_list_admin_oldstyle_unauth(self):
         eq = self.assertEqual

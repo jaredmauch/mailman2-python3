@@ -479,11 +479,15 @@ def prefix_subject(mlist, msg, msgdata):
     if recolon:
         recolon += ' '
     if old_style:
-        h = uheader(mlist, recolon, 'Subject', continuation_ws=ws)
-        h.append(prefix)
+        if recolon:
+            h = uheader(mlist, recolon, 'Subject', continuation_ws=ws)
+            h.append(prefix)
+        else:
+            h = uheader(mlist, prefix, 'Subject', continuation_ws=ws)
     else:
         h = uheader(mlist, prefix, 'Subject', continuation_ws=ws)
-        h.append(recolon)
+        if recolon:
+            h.append(recolon)
     # TK: Subject is concatenated and unicode string.
     subject = subject.encode(cset, 'replace')
     h.append(subject, cset)
