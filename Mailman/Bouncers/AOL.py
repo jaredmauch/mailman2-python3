@@ -29,7 +29,10 @@ def process(msg):
         return
     addrs = []
     found = False
-    for line in msg.get_payload(decode=True).splitlines():
+    payload = msg.get_payload(decode=True)
+    if isinstance(payload, bytes):
+        payload = payload.decode('us-ascii', errors='replace')
+    for line in payload.splitlines():
         if scre.search(line):
             found = True
             continue
