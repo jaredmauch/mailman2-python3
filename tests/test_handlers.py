@@ -985,6 +985,7 @@ Here is the second message.
         eq(msg.as_string(unixfrom=0), """\
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="BOUNDARY"
+Content-Transfer-Encoding: 7bit
 
 --BOUNDARY
 Content-Type: text/plain; charset="us-ascii"
@@ -996,11 +997,13 @@ header
 
 --BOUNDARY
 From: aperson@dom.ain
+Content-Transfer-Encoding: 7bit
 
 Here is the first message.
 
 --BOUNDARY
 From: bperson@dom.ain
+Content-Transfer-Encoding: 7bit
 
 Here is the second message.
 

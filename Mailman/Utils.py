@@ -785,6 +785,14 @@ def verify_password(response, stored):
         if hmac.compare_digest(digest.lower(), stored.lower()):
             return True, True
         return False, False
+    # Legacy crypt(3) format — last resort fallback.
+    try:
+        import crypt as _crypt
+        resp_str = response_bytes.decode('utf-8', errors='replace')
+        if _crypt.crypt(resp_str, stored) == stored:
+            return True, True
+    except (ImportError, AttributeError, OSError):
+        pass
     return False, False
 
 
