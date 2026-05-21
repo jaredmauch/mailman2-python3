@@ -456,7 +456,7 @@ def prefix_subject(mlist, msg, msgdata):
     if cset == 'us-ascii':
         try:
             if old_style:
-                h = u' '.join([recolon, prefix, subject])
+                h = u' '.join(x for x in [recolon, prefix, subject] if x)
             else:
                 if recolon:
                     h = u' '.join([prefix, recolon, subject])
@@ -465,7 +465,7 @@ def prefix_subject(mlist, msg, msgdata):
             h = h.encode('us-ascii')
             h = uheader(mlist, h, 'Subject', continuation_ws=ws)
             change_header('Subject', h, mlist, msg, msgdata)
-            ss = u' '.join([recolon, subject])
+            ss = u' '.join(x for x in [recolon, subject] if x)
             ss = ss.encode('us-ascii')
             ss = uheader(mlist, ss, 'Subject', continuation_ws=ws)
             msgdata['stripped_subject'] = ss

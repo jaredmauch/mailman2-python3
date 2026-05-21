@@ -751,6 +751,11 @@ def verify_password(response, stored):
     else:
         response_bytes = bytes(response)
     if not isinstance(stored, str):
+        # Legacy md5 binary digest: 16 raw bytes (pre-SHA1 era).
+        if isinstance(stored, (bytes, bytearray)) and len(stored) == 16:
+            if hmac.compare_digest(md5_new(response_bytes).digest(), bytes(stored)):
+                return True, True
+            return False, False
         try:
             stored = stored.decode('ascii', errors='strict')
         except Exception:

@@ -141,11 +141,12 @@ From: aperson@dom.ain
         eq(qmsg['to'], 'aperson@dom.ain')
         eq(qmsg['from'], '_xtest-bounces@dom.ain')
         eq(qmsg.get_content_type(), 'text/plain')
-        eq(qmsg.get_param('charset'), 'us-ascii')
+        eq(qmsg.get_param('charset'), 'utf-8')
         msgid = qmsg['message-id']
         self.failUnless(msgid.startswith('<mailman.'))
         self.failUnless(msgid.endswith('._xtest@dom.ain>'))
-        eq(qmsg.get_payload(), """\
+        payload = qmsg.get_payload(decode=True).decode('utf-8')
+        eq(payload, """\
 Your message entitled
 
     (no subject)
@@ -181,11 +182,12 @@ Subject: Wish you were here
         eq(qmsg['to'], 'aperson@dom.ain')
         eq(qmsg['from'], '_xtest-bounces@dom.ain')
         eq(qmsg.get_content_type(), 'text/plain')
-        eq(qmsg.get_param('charset'), 'us-ascii')
+        eq(qmsg.get_param('charset'), 'utf-8')
         msgid = qmsg['message-id']
         self.failUnless(msgid.startswith('<mailman.'))
         self.failUnless(msgid.endswith('._xtest@dom.ain>'))
-        eq(qmsg.get_payload(), """\
+        payload = qmsg.get_payload(decode=True).decode('utf-8')
+        eq(payload, """\
 Your message entitled
 
     Wish you were here
@@ -1266,7 +1268,10 @@ From: aperson@dom.ain
         eq(keys, ['_xtest-owner@dom.ain', 'aperson@dom.ain'])
         # Get the pending cookie from the message to the sender
         pmsg, pdata = qfiles['aperson@dom.ain']
-        confirmlines = pmsg.get_payload().split('\n')
+        raw = pmsg.get_payload(decode=True)
+        if isinstance(raw, bytes):
+            raw = raw.decode(pmsg.get_content_charset('utf-8'), errors='replace')
+        confirmlines = raw.split('\n')
         cookie = confirmlines[-3].split('/')[-1]
         # We also need to make sure there's an entry in the Pending database
         # for the heold message.

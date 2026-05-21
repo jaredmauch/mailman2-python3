@@ -115,15 +115,17 @@ def process(mlist, msg, msgdata):
                 endsep = u'\n'
             payload = uheader + frontsep + oldpayload + endsep + ufooter
             try:
-                # first, try encode with list charset
-                payload = payload.encode(lcset)
-                newcset = lcset
+                # Prefer the message's own charset to preserve encoding and
+                # avoid unnecessary base64 (e.g. utf-8 charset always
+                # base64-encodes in Python 3's email library).
+                payload.encode(mcset)
+                newcset = mcset
             except UnicodeError:
-                if lcset != mcset:
-                    # if fail, encode with message charset (if different)
-                    payload = payload.encode(mcset)
-                    newcset = mcset
-                    # if this fails, fallback to outer try and wrap=true
+                # Fall back to list charset if message charset can't represent
+                # the decorated content (e.g. non-ASCII header/footer).
+                payload.encode(lcset)
+                newcset = lcset
+                # if this fails, fallback to outer try and wrap=true
             format = msg.get_param('format')
             delsp = msg.get_param('delsp')
             del msg['content-transfer-encoding']
