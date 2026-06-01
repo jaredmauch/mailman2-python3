@@ -1,0 +1,16 @@
+# Note:
+# $local_part_data only gets set after $local_part has undergone some sort of lookup.
+# The local_parts line uses $local_part to do a directory lookup in MM_HOME/lists, and returns the matching item.
+# It then checks the local part against that value, which obviously it matches if the directory exists, and doesn't if it doesn't.
+# If it does match, $local_part_data gets set.
+
+mailman_router:
+   driver = accept
+   local_parts = ${lookup {$local_part} dsearch,filter=dir {MM_HOME/lists}}
+   require_files = MM_HOME/lists/${local_part_data}/config.pck
+   local_part_suffix_optional
+   local_part_suffix = -bounces : -bounces+* : \
+                       -confirm+* : -join : -leave : \
+                       -owner : -request : -admin
+   domains = +mm_domains
+   transport = mailman_transport

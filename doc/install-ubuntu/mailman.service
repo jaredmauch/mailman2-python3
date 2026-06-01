@@ -1,0 +1,17 @@
+[Unit]
+Description=Mailman Master Queue Runner
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/var/lib/mailman/data/master-qrunner.pid
+ExecStart=/var/lib/mailman/bin/mailmanctl -s start
+ExecStop=/var/lib/mailman/bin/mailmanctl stop
+ExecReload=/var/lib/mailman/bin/mailmanctl restart
+Restart=always
+RestartSec=3s
+RestartPreventExitStatus=1
+
+[Install]
+WantedBy=multi-user.target
+Alias=mailman-qrunner.service
