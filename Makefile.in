@@ -68,7 +68,7 @@ FILEMODE=	644
 INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 DIRSETGID=	chmod g+s
 
-DATE = $(shell python -c 'import time; print time.strftime("%d-%b-%Y"),')
+DATE = $(shell $(PYTHON) -c 'import time; print(time.strftime("%d-%b-%Y"),)')
 LANGPACK = README-I18N.en templates messages
 EXCLUDES = --exclude=CVS --exclude=.cvsignore --exclude=Makefile* --exclude=*.files --exclude=*.old
 

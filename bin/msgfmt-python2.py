@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! @PYTHON@
 # -*- coding: iso-8859-1 -*-
 # Written by Martin v. Lùwis <loewis@informatik.hu-berlin.de>
 

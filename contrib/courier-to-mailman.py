@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! @PYTHON@
 
 # Configuration variables - Change these for your site if necessary.
 #
