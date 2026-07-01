@@ -40,6 +40,7 @@ DEFS=   	@DEFS@
 OPT=		@OPT@
 CFLAGS=		$(OPT) $(DEFS)
 TEMPLATEDIR= 	$(prefix)/templates
+BUILDDIR=	../build/templates
 
 SHELL=		/bin/sh
 
@@ -60,9 +61,26 @@ INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 
 all: converttemplates
 
-# Use a stamp file to track conversion, so it only happens once
+# Use a stamp file to track conversion, so it only happens once.
+# Convert a copy under build/ so tracked source templates are not modified.
 .converted.stamp:
-	$(PYTHON) ../scripts/convert_to_utf8 -d .
+	rm -rf $(BUILDDIR)
+	mkdir -p $(BUILDDIR)
+	for d in $(LANGUAGES); \
+	do \
+	    if test -d $(srcdir)/$$d; \
+	    then \
+		mkdir -p $(BUILDDIR)/$$d; \
+		for f in $(srcdir)/$$d/*.html $(srcdir)/$$d/*.txt; \
+		do \
+		    if test -f $$f; \
+		    then \
+			cp $$f $(BUILDDIR)/$$d/; \
+		    fi; \
+		done; \
+	    fi; \
+	done
+	$(PYTHON) ../scripts/convert_to_utf8 -d $(BUILDDIR)
 	touch .converted.stamp
 
 converttemplates: .converted.stamp
@@ -71,9 +89,12 @@ install: .converted.stamp
 	for d in $(LANGUAGES); \
 	do \
 	    $(srcdir)/../mkinstalldirs $(DESTDIR)$(TEMPLATEDIR)/$$d; \
-	    for f in $(srcdir)/$$d/*.html $(srcdir)/$$d/*.txt; \
+	    for f in $(BUILDDIR)/$$d/*.html $(BUILDDIR)/$$d/*.txt; \
 	    do \
-	    	$(INSTALL) -m $(FILEMODE) $$f $(DESTDIR)$(TEMPLATEDIR)/$$d; \
+		if test -f $$f; \
+		then \
+	    	    $(INSTALL) -m $(FILEMODE) $$f $(DESTDIR)$(TEMPLATEDIR)/$$d; \
+		fi; \
 	    done; \
 	done
 
@@ -81,6 +102,7 @@ finish:
 
 clean:
 	-rm -f .converted.stamp
+	-rm -rf $(BUILDDIR)
 
 distclean: clean
 	-rm -f Makefile

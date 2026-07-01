@@ -43,6 +43,7 @@ DEFS=   	@DEFS@
 OPT=		@OPT@
 CFLAGS=		$(OPT) $(DEFS)
 PACKAGEDIR= 	$(prefix)/messages
+BUILDDIR=	../build/messages
 SHELL=		/bin/sh
 DIRSETGID=	chmod g+s
 MSGFMT= 	$(PYTHON) ../build/bin/msgfmt.py
@@ -55,8 +56,8 @@ LANGUAGES=	ar ast ca cs da de el eo es et eu fa fi fr gl he hr hu ia it \
 LANGDIRS=	$(LANGUAGES:%=messages/%/LC_MESSAGES)
 # Human readable po file
 POFILES=	$(LANGUAGES:%=%/LC_MESSAGES/mailman.po)
-# Binary generated mo file
-MOFILES=	$(LANGUAGES:%=%/LC_MESSAGES/mailman.mo)
+# Binary generated mo file (built under BUILDDIR, not in the source tree)
+MOFILES=	$(LANGUAGES:%=$(BUILDDIR)/%/LC_MESSAGES/mailman.mo)
 TARGETS=	$(MOFILES)
 
 # Modes for directories and executables created by the install
@@ -68,9 +69,8 @@ FILEMODE=	644
 INSTALL_PROGRAM=$(INSTALL) -m $(EXEMODE)
 PROG=		$(PYTHON) build/bin/pygettext.py
 
-.SUFFIXES:	.po .mo
-.po.mo:
-	-$(MSGFMT) -o $@ $<
+$(BUILDDIR)/%/LC_MESSAGES/mailman.mo: $(BUILDDIR)/%/LC_MESSAGES/mailman.po
+	$(MSGFMT) -o $@ $<
 
 .NOTPARALLEL:
 
@@ -108,28 +108,37 @@ doinstall: .converted.stamp mofiles
 	done
 	@for d in $(LANGUAGES); \
 	do \
-	    po=$(srcdir)/$$d/LC_MESSAGES/mailman.po; \
-	    mo=$(srcdir)/$$d/LC_MESSAGES/mailman.mo; \
+	    po=$(BUILDDIR)/$$d/LC_MESSAGES/mailman.po; \
+	    mo=$(BUILDDIR)/$$d/LC_MESSAGES/mailman.mo; \
 	    dir=$(DESTDIR)$(prefix)/messages/$$d/LC_MESSAGES; \
 	    $(INSTALL) -m $(FILEMODE) $$po $$dir; \
  	    $(INSTALL) -m $(FILEMODE) $$mo $$dir; \
 	done
 
-# Use a stamp file to track conversion, so it only happens once
+# Use a stamp file to track conversion, so it only happens once.
+# Convert a copy under build/ so tracked source .po files are not modified.
 .converted.stamp: $(POFILES)
-	$(PYTHON) ../scripts/convert_to_utf8 -d .
+	rm -rf $(BUILDDIR)
+	for d in $(LANGUAGES); \
+	do \
+	    dir=$(BUILDDIR)/$$d/LC_MESSAGES; \
+	    $(srcdir)/../mkinstalldirs $$dir; \
+	    cp $(srcdir)/$$d/LC_MESSAGES/mailman.po $$dir/; \
+	done
+	$(PYTHON) ../scripts/convert_to_utf8 -d $(BUILDDIR)
 	touch .converted.stamp
 
 # Ensure .po files are merged with mailman.pot before conversion
 # This depends on the .po files being up to date with mailman.pot
 convertpofiles: $(POFILES) .converted.stamp
 
-mofiles: $(MOFILES)
+mofiles: .converted.stamp $(MOFILES)
 
 finish:
 
 clean:
 	-rm -f */LC_MESSAGES/mailman.mo .converted.stamp
+	-rm -rf $(BUILDDIR)
 
 fileclean:
 	-rm -f marked.files docstring.files
