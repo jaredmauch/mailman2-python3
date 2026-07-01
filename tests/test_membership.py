@@ -44,7 +44,7 @@ class TestNoMembers(TestBase):
         eq(mlist.getMembers(), [])
         eq(mlist.getRegularMemberKeys(), [])
         eq(mlist.getDigestMemberKeys(), [])
-        self.failIf(mlist.isMember('nobody@dom.ain'))
+        self.assertFalse(mlist.isMember('nobody@dom.ain'))
         raises(NotAMemberError, mlist.getMemberKey, 'nobody@dom.ain')
         raises(NotAMemberError, mlist.getMemberCPAddress, 'nobody@dom.ain')
         eq(mlist.getMemberCPAddresses(('nobody@dom.ain', 'noperson@dom.ain')),
@@ -65,9 +65,9 @@ class TestNoMembers(TestBase):
         mlist.addNewMember('APerson@dom.AIN')
         eq(mlist.getMembers(), ['aperson@dom.ain'])
         eq(mlist.getRegularMemberKeys(), ['aperson@dom.ain'])
-        self.failUnless(mlist.isMember('APerson@dom.AIN'))
-        self.failUnless(mlist.isMember('aperson@dom.ain'))
-        self.failUnless(mlist.isMember('APERSON@DOM.AIN'))
+        self.assertTrue(mlist.isMember('APerson@dom.AIN'))
+        self.assertTrue(mlist.isMember('aperson@dom.ain'))
+        self.assertTrue(mlist.isMember('APERSON@DOM.AIN'))
         eq(mlist.getMemberCPAddress('aperson@dom.ain'), 'APerson@dom.AIN')
         eq(mlist.getMemberCPAddress('APerson@dom.ain'), 'APerson@dom.AIN')
         eq(mlist.getMemberCPAddress('APERSON@DOM.AIN'), 'APerson@dom.AIN')
@@ -95,7 +95,7 @@ class TestMembers(TestBase):
         eq(mlist.getMembers(), ['person@dom.ain'])
         eq(mlist.getRegularMemberKeys(), ['person@dom.ain'])
         eq(mlist.getDigestMemberKeys(), [])
-        self.failUnless(mlist.isMember('person@dom.ain'))
+        self.assertTrue(mlist.isMember('person@dom.ain'))
         eq(mlist.getMemberKey('person@dom.ain'), 'person@dom.ain')
         eq(mlist.getMemberCPAddress('person@dom.ain'), 'person@dom.ain')
         eq(mlist.getMemberCPAddresses(('person@dom.ain', 'noperson@dom.ain')),
@@ -109,7 +109,7 @@ class TestMembers(TestBase):
 
     def test_authentication(self):
         mlist = self._mlist
-        self.failIf(mlist.authenticateMember('person@dom.ain', 'xxx'))
+        self.assertFalse(mlist.authenticateMember('person@dom.ain', 'xxx'))
         self.assertEqual(mlist.authenticateMember('person@dom.ain', 'xxXXxx'),
                          'xxXXxx')
 
@@ -121,7 +121,7 @@ class TestMembers(TestBase):
         eq(mlist.getMembers(), [])
         eq(mlist.getRegularMemberKeys(), [])
         eq(mlist.getDigestMemberKeys(), [])
-        self.failIf(mlist.isMember('person@dom.ain'))
+        self.assertFalse(mlist.isMember('person@dom.ain'))
         raises(NotAMemberError, mlist.getMemberKey, 'person@dom.ain')
         raises(NotAMemberError, mlist.getMemberCPAddress, 'person@dom.ain')
         eq(mlist.getMemberCPAddresses(('person@dom.ain', 'noperson@dom.ain')),
@@ -161,7 +161,7 @@ class TestMembers(TestBase):
         eq(mlist.getMembers(), ['nice@dom.ain'])
         eq(mlist.getRegularMemberKeys(), ['nice@dom.ain'])
         eq(mlist.getDigestMemberKeys(), [])
-        self.failUnless(mlist.isMember('nice@dom.ain'))
+        self.assertTrue(mlist.isMember('nice@dom.ain'))
         eq(mlist.getMemberKey('nice@dom.ain'), 'nice@dom.ain')
         eq(mlist.getMemberCPAddress('nice@dom.ain'), 'nice@dom.ain')
         eq(mlist.getMemberCPAddresses(('nice@dom.ain', 'nonice@dom.ain')),
@@ -176,7 +176,7 @@ class TestMembers(TestBase):
         eq(mlist.getMembers(), ['nice@dom.ain'])
         eq(mlist.getRegularMemberKeys(), ['nice@dom.ain'])
         eq(mlist.getDigestMemberKeys(), [])
-        self.failIf(mlist.isMember('person@dom.ain'))
+        self.assertFalse(mlist.isMember('person@dom.ain'))
         raises(NotAMemberError, mlist.getMemberKey, 'person@dom.ain')
         raises(NotAMemberError, mlist.getMemberCPAddress, 'person@dom.ain')
         eq(mlist.getMemberCPAddresses(('person@dom.ain', 'noperson@dom.ain')),
@@ -196,7 +196,7 @@ class TestMembers(TestBase):
         mlist.setMemberPassword('person@dom.ain', 'yyYYyy')
         eq(mlist.getMemberPassword('person@dom.ain'), 'yyYYyy')
         eq(mlist.authenticateMember('person@dom.ain', 'yyYYyy'), 'yyYYyy')
-        self.failIf(mlist.authenticateMember('person@dom.ain', 'xxXXxx'))
+        self.assertFalse(mlist.authenticateMember('person@dom.ain', 'xxXXxx'))
 
     def test_set_language(self):
         self._mlist.available_languages.append('xx')
@@ -245,7 +245,7 @@ class TestMembers(TestBase):
         now = time.time()
         time.sleep(1)
         self._mlist.setDeliveryStatus('person@dom.ain', MemberAdaptor.BYUSER)
-        self.failUnless(
+        self.assertTrue(
             self._mlist.getDeliveryStatusChangeTime('person@dom.ain')
             > now)
         self._mlist.setDeliveryStatus('person@dom.ain', MemberAdaptor.ENABLED)

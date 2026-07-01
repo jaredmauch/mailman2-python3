@@ -143,8 +143,8 @@ From: aperson@dom.ain
         eq(qmsg.get_content_type(), 'text/plain')
         eq(qmsg.get_param('charset'), 'utf-8')
         msgid = qmsg['message-id']
-        self.failUnless(msgid.startswith('<mailman.'))
-        self.failUnless(msgid.endswith('._xtest@dom.ain>'))
+        self.assertTrue(msgid.startswith('<mailman.'))
+        self.assertTrue(msgid.endswith('._xtest@dom.ain>'))
         payload = qmsg.get_payload(decode=True).decode('utf-8')
         eq(payload, """\
 Your message entitled
@@ -184,8 +184,8 @@ Subject: Wish you were here
         eq(qmsg.get_content_type(), 'text/plain')
         eq(qmsg.get_param('charset'), 'utf-8')
         msgid = qmsg['message-id']
-        self.failUnless(msgid.startswith('<mailman.'))
-        self.failUnless(msgid.endswith('._xtest@dom.ain>'))
+        self.assertTrue(msgid.startswith('<mailman.'))
+        self.assertTrue(msgid.endswith('._xtest@dom.ain>'))
         payload = qmsg.get_payload(decode=True).decode('utf-8')
         eq(payload, """\
 Your message entitled
@@ -209,7 +209,7 @@ class TestAfterDelivery(TestBase):
         last_post_time = mlist.last_post_time
         post_id = mlist.post_id
         AfterDelivery.process(mlist, None, None)
-        self.failUnless(mlist.last_post_time > last_post_time)
+        self.assertTrue(mlist.last_post_time > last_post_time)
         self.assertEqual(mlist.post_id, post_id + 1)
 
 
@@ -230,7 +230,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless('approved' in msgdata)
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_moderator(self):
@@ -242,7 +242,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless('approved' in msgdata)
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approved_admin(self):
@@ -254,7 +254,7 @@ Approved: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless('approved' in msgdata)
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_approve_admin(self):
@@ -266,7 +266,7 @@ Approve: wazoo
 """)
         msgdata = {}
         Approve.process(mlist, msg, msgdata)
-        self.failUnless('approved' in msgdata)
+        self.assertTrue('approved' in msgdata)
         self.assertEqual(msgdata['approved'], 1)
 
     def test_unapproved(self):
@@ -316,7 +316,7 @@ From: dperson@dom.ain
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless('recips' in msgdata)
+        self.assertTrue('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -331,7 +331,7 @@ From: cperson@dom.ain
         self._mlist.setMemberOption('cperson@dom.ain',
                                     mm_cfg.DontReceiveOwnPosts, 1)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless('recips' in msgdata)
+        self.assertTrue('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain'])
@@ -345,7 +345,7 @@ Urgent: xxXXxx
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless('recips' in msgdata)
+        self.assertTrue('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -362,7 +362,7 @@ Urgent: xxXXxx
 
 """, Message.Message)
         CalcRecips.process(self._mlist, msg, msgdata)
-        self.failUnless('recips' in msgdata)
+        self.assertTrue('recips' in msgdata)
         recips = msgdata['recips']
         recips.sort()
         self.assertEqual(recips, ['aperson@dom.ain', 'bperson@dom.ain',
@@ -589,7 +589,7 @@ Subject: Re: [XTEST] About Mailman...
 """, Message.Message)
         CookHeaders.process(self._mlist, msg, {})
         # prefixing depends on mm_cfg.py
-        self.failUnless(str(msg['subject']) == 'Re: [XTEST] About Mailman...' or
+        self.assertTrue(str(msg['subject']) == 'Re: [XTEST] About Mailman...' or
                         str(msg['subject']) == '[XTEST] Re: About Mailman...')
 
     def test_reply_to_list(self):
@@ -1281,7 +1281,7 @@ From: aperson@dom.ain
         data = self._mlist.pend_confirm(cookie)
         eq(data, ('H', 1))
         heldmsg = os.path.join(mm_cfg.DATA_DIR, 'heldmsg-_xtest-1.pck')
-        self.failUnless(os.path.exists(heldmsg))
+        self.assertTrue(os.path.exists(heldmsg))
         os.unlink(heldmsg)
         holdfiles = [f for f in os.listdir(mm_cfg.DATA_DIR)
                      if f.startswith('heldmsg-')]
@@ -1982,7 +1982,7 @@ It rocks!
         eq(data['_parsemsg'], False)
         eq(data['version'], 3)
         # Clock skew makes this unreliable
-        #self.failUnless(data['received_time'] <= time.time())
+        #self.assertTrue(data['received_time'] <= time.time())
         eq(msg.as_string(unixfrom=0), msg2.as_string(unixfrom=0))
 
 
@@ -2093,7 +2093,7 @@ It rocks!
         eq(len(files), 1)
         msg2, data = self._sb.dequeue(files[0])
         eq(msg.as_string(unixfrom=0), msg2.as_string(unixfrom=0))
-        self.failUnless(len(data) >= 6 and len(data) <= 7)
+        self.assertTrue(len(data) >= 6 and len(data) <= 7)
         eq(data['foo'], 1)
         eq(data['bar'], 2)
         eq(data['version'], 3)
@@ -2102,7 +2102,7 @@ It rocks!
         # Can't test verp. presence/value depend on mm_cfg.py
         #eq(data['verp'], 1)
         # Clock skew makes this unreliable
-        #self.failUnless(data['received_time'] <= time.time())
+        #self.assertTrue(data['received_time'] <= time.time())
 
 
 
@@ -2150,7 +2150,7 @@ Mailman rocks!
         eq(data['version'], 3)
         eq(data['listname'], '_xtest')
         # Clock skew makes this unreliable
-        #self.failUnless(data['received_time'] <= time.time())
+        #self.assertTrue(data['received_time'] <= time.time())
 
 
 
