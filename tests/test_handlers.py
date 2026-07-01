@@ -66,7 +66,7 @@ from TestBase import TestBase
 
 
 def password(plaintext):
-    return sha_new(plaintext).hexdigest()
+    return sha_new(plaintext.encode()).hexdigest()
 
 
 
