@@ -119,6 +119,9 @@ class DumbBTree(object):
         # bulk clearing much faster than deleting each item, esp. with the
         # implementation of __delitem__() above :(
         self.dict = {}
+        self.sorted = []
+        self.__dirty = 0
+        self.current_index = 0
 
     def first(self):
         self.__sort() # guarantee that the list is sorted
@@ -130,12 +133,39 @@ class DumbBTree(object):
             return key, self.dict[key]
 
     def last(self):
+        self.__sort()
         if not self.sorted:
             raise KeyError
         else:
             key = self.sorted[-1]
             self.current_index = len(self.sorted) - 1
             return key, self.dict[key]
+
+    def keys(self):
+        self.__sort()
+        return list(self.sorted)
+
+    def _resolve_key(self, key):
+        if key in self.dict:
+            return key
+        if isinstance(key, str):
+            alt = key.encode('utf-8', 'replace')
+            if alt in self.dict:
+                return alt
+        elif isinstance(key, bytes):
+            alt = key.decode('utf-8', 'replace')
+            if alt in self.dict:
+                return alt
+        return key
+
+    def __getitem__(self, item):
+        return self.dict[self._resolve_key(item)]
+
+    def has_key(self, key):
+        return self._resolve_key(key) in self.dict
+
+    def __contains__(self, key):
+        return self._resolve_key(key) in self.dict
 
     def __next__(self):
         try:
@@ -144,12 +174,6 @@ class DumbBTree(object):
             raise KeyError
         self.current_index = self.current_index + 1
         return key, self.dict[key]
-
-    def has_key(self, key):
-        return key in self.dict
-
-    def __contains__(self, key):
-        return key in self.dict
 
     def set_location(self, loc):
         index = 0
@@ -160,9 +184,6 @@ class DumbBTree(object):
                 return key,self.dict[key]
             index = index + 1
         raise KeyError(loc)
-
-    def __getitem__(self, item):
-        return self.dict[item]
 
     def __setitem__(self, item, val):
         # if first hasn't been called, then we don't need to worry
@@ -180,7 +201,8 @@ class DumbBTree(object):
         self.current_index = self.sorted.index(current_item)
 
     def __len__(self):
-        return len(self.sorted)
+        self.__sort()
+        return len(self.dict)
 
     def load(self):
         try:
@@ -208,6 +230,42 @@ class DumbBTree(object):
         self.unlock()
 
 
+def _timestamp_from_datekey(datekey):
+    """Extract a Unix timestamp from a date index key."""
+    if isinstance(datekey, (tuple, list)):
+        if not datekey:
+            raise ValueError('empty date key')
+        raw = datekey[0]
+    else:
+        raw = datekey
+    if isinstance(raw, bytes):
+        raw = raw.decode('ascii', 'replace')
+    return float(raw)
+
+
+def _asctime_from_timestamp(ts):
+    return time.asctime(time.localtime(ts))
+
+
+def _archive_date_extremum(date_index, extreme):
+    timestamps = []
+    for datekey in date_index.keys():
+        try:
+            timestamps.append(_timestamp_from_datekey(datekey))
+        except (ValueError, TypeError, IndexError, OSError):
+            continue
+    if not timestamps:
+        return 'None'
+    return _asctime_from_timestamp(extreme(timestamps))
+
+
+def _normalize_msgid(msgid):
+    if isinstance(msgid, bytes):
+        return msgid.decode('utf-8', 'replace')
+    return msgid
+
+
+
 # this is lifted straight out of pipermail with
 # the bsddb.btree replaced with above class.
 # didn't use inheritance because of all the
@@ -226,23 +284,19 @@ class HyperDatabase(pipermail.Database):
 
     def firstdate(self, archive):
         self.__openIndices(archive)
-        date = 'None'
         try:
             datekey, msgid = self.dateIndex.first()
-            date = time.asctime(time.localtime(float(datekey[0])))
-        except KeyError:
-            pass
-        return date
+            return _asctime_from_timestamp(_timestamp_from_datekey(datekey))
+        except (KeyError, ValueError, TypeError, IndexError, OSError):
+            return _archive_date_extremum(self.dateIndex, min)
 
     def lastdate(self, archive):
         self.__openIndices(archive)
-        date = 'None'
         try:
             datekey, msgid = self.dateIndex.last()
-            date = time.asctime(time.localtime(float(datekey[0])))
-        except KeyError:
-            pass
-        return date
+            return _asctime_from_timestamp(_timestamp_from_datekey(datekey))
+        except (KeyError, ValueError, TypeError, IndexError, OSError):
+            return _archive_date_extremum(self.dateIndex, max)
 
     def numArticles(self, archive):
         self.__openIndices(archive)
@@ -298,22 +352,22 @@ class HyperDatabase(pipermail.Database):
 
     def getArticle(self, archive, msgid):
         self.__openIndices(archive)
-        if msgid not in self.__cache:
-            # get the pickled object out of the DumbBTree
-            buf = self.articleIndex[msgid]
-            article = self.__cache[msgid] = Utils.load_pickle(buf)
-            # For upgrading older archives
+        resolved = self.articleIndex._resolve_key(msgid)
+        if resolved not in self.__cache:
+            buf = self.articleIndex[resolved]
+            article = Utils.load_pickle(buf)
+            if article is None:
+                raise KeyError(msgid)
             article.setListIfUnset(self._mlist)
-        else:
-            article = self.__cache[msgid]
-        return article
+            self.__cache[resolved] = article
+        return self.__cache[resolved]
 
     def first(self, archive, index):
         self.__openIndices(archive)
         index = getattr(self, index + 'Index')
         try:
             key, msgid = index.first()
-            return msgid
+            return _normalize_msgid(msgid)
         except KeyError:
             return None
 
@@ -322,7 +376,7 @@ class HyperDatabase(pipermail.Database):
         index = getattr(self, index + 'Index')
         try:
             key, msgid = next(index)
-            return msgid
+            return _normalize_msgid(msgid)
         except KeyError:
             return None
 
