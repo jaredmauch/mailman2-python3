@@ -33,6 +33,7 @@ DESTDIR=
 CC=		@CC@
 INSTALL=	@INSTALL@
 PYTHON= 	@PYTHON@
+MAILMAN_GROUP=	@MAILMAN_GROUP@
 
 DEFS=		@DEFS@
 
@@ -90,6 +91,10 @@ subdirs: build/bin build/cron $(SUBDIRS)
 install: doinstall update
 
 doinstall: $(SUBDIRS)
+	@echo "Creating and configuring prefix directory $(DESTDIR)$(prefix)..."
+	@$(srcdir)/mkinstalldirs $(DESTDIR)$(prefix)
+	@chgrp $(MAILMAN_GROUP) $(DESTDIR)$(prefix)
+	@chmod 02775 $(DESTDIR)$(prefix)
 	@echo "Creating architecture independent directories..."
 	@for d in $(VAR_DIRS); \
 	do \
