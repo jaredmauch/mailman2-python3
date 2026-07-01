@@ -64,20 +64,28 @@ def _update_maps():
             os.chown(dbfile, uid, gid)
     msg = 'command failed: %s (status: %s, %s)'
     acmd = mm_cfg.POSTFIX_ALIAS_CMD + ' ' + ALIASFILE
-    status = (os.system(acmd) >> 8) & 0xff
-    if status:
-        errstr = os.strerror(status)
-        syslog('error', msg, acmd, status, errstr)
-        raise RuntimeError(msg % (acmd, status, errstr))
+    try:
+        aresult = Utils.run_command(acmd)
+    except (ValueError, OSError) as e:
+        syslog('error', msg, acmd, -1, e)
+        raise RuntimeError(msg % (acmd, -1, e))
+    if aresult.returncode:
+        errstr = os.strerror(aresult.returncode)
+        syslog('error', msg, acmd, aresult.returncode, errstr)
+        raise RuntimeError(msg % (acmd, aresult.returncode, errstr))
     # Fix owner and mode of .db if needed.
     fixom(ALIASFILE)
     if os.path.exists(VIRTFILE):
         vcmd = mm_cfg.POSTFIX_MAP_CMD + ' ' + VIRTFILE
-        status = (os.system(vcmd) >> 8) & 0xff
-        if status:
-            errstr = os.strerror(status)
-            syslog('error', msg, vcmd, status, errstr)
-            raise RuntimeError(msg % (vcmd, status, errstr))
+        try:
+            vresult = Utils.run_command(vcmd)
+        except (ValueError, OSError) as e:
+            syslog('error', msg, vcmd, -1, e)
+            raise RuntimeError(msg % (vcmd, -1, e))
+        if vresult.returncode:
+            errstr = os.strerror(vresult.returncode)
+            syslog('error', msg, vcmd, vresult.returncode, errstr)
+            raise RuntimeError(msg % (vcmd, vresult.returncode, errstr))
         # Fix owner and mode of .db if needed.
         fixom(VIRTFILE)
 

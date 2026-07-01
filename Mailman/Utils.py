@@ -44,6 +44,8 @@ import tempfile
 import io
 import binascii
 import hmac
+import shlex
+import subprocess
 from email.parser import BytesParser
 from email.policy import HTTP
 
@@ -311,6 +313,73 @@ IDENTCHARS = ascii_letters + digits + '_'
 cre = re.compile(r'%\(([_a-z]\w*?)\)s?', re.IGNORECASE)
 # Search for $$, $identifier, or ${identifier}
 dre = re.compile(r'(\${2})|\$([_a-z]\w*)|\${([_a-z]\w*)}', re.IGNORECASE)
+
+
+
+def safe_path_under(base_dir, user_path):
+    """Return the real path for *user_path* if it stays under *base_dir*.
+
+    Raises ValueError if the path is empty or escapes *base_dir* (including
+    absolute paths and symlink targets outside the base).
+    """
+    if not user_path:
+        raise ValueError('empty path')
+    parts = [p for p in user_path.split('/') if p and p not in ('.', '..')]
+    rel = '/'.join(parts)
+    base = os.path.realpath(base_dir)
+    candidate = os.path.realpath(os.path.join(base, rel))
+    if os.path.commonpath([base, candidate]) != base:
+        raise ValueError('path escapes base directory')
+    return candidate
+
+
+def trusted_local_path(path, allowed_roots=None):
+    """Return real path if *path* is under an allowed Mailman data root.
+
+    By default only paths under mm_cfg.VAR_PREFIX are accepted.
+    """
+    if allowed_roots is None:
+        allowed_roots = [mm_cfg.VAR_PREFIX]
+    real = os.path.realpath(path)
+    for root in allowed_roots:
+        base = os.path.realpath(root)
+        try:
+            if os.path.commonpath([base, real]) == base:
+                return real
+        except ValueError:
+            continue
+    raise ValueError('path outside trusted directories')
+
+
+def run_command(command, input_data=None, capture_output=False):
+    """Run *command* without invoking a shell.
+
+    *command* is split with :func:`shlex.split`.  When *input_data* is given
+    it is written to the process stdin (str is encoded as UTF-8).  When
+    *capture_output* is true, stdout and stderr are captured.
+    """
+    argv = shlex.split(command)
+    if not argv:
+        raise ValueError('empty command')
+    kwargs = {}
+    if input_data is not None:
+        if isinstance(input_data, str):
+            input_data = input_data.encode('utf-8')
+        kwargs['input'] = input_data
+        kwargs['capture_output'] = True
+    elif capture_output:
+        kwargs['capture_output'] = True
+    return subprocess.run(argv, **kwargs)
+
+
+def safe_urlopen(url, **kwargs):
+    """Open *url* only when the scheme is http or https."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https'):
+        raise ValueError('disallowed URL scheme: %s' % parsed.scheme)
+    if not parsed.netloc:
+        raise ValueError('missing host in URL')
+    return urllib.request.urlopen(url, **kwargs)
 
 
 
@@ -698,10 +767,7 @@ def set_global_password(pw, siteadmin=True):
     omask = os.umask(0o026)
     try:
         fp = open(filename, 'w')
-        if isinstance(pw, bytes):
-            fp.write(sha_new(pw).hexdigest() + '\n')
-        else:
-            fp.write(sha_new(pw.encode()).hexdigest() + '\n')
+        fp.write(hash_password(pw) + '\n')
         fp.close()
     finally:
         os.umask(omask)
@@ -799,11 +865,48 @@ def verify_password(response, stored):
             return True, False
         return False, False
     if len(stored) == 40 and re.match(r'^[0-9a-fA-F]{40}$', stored):
+        # Legacy SHA1 site/list passwords; kept for in-place upgrades only.
+        # codeql[py/weak-cryptographic-algorithm]
         digest = sha_new(response_bytes).hexdigest()
         if hmac.compare_digest(digest.lower(), stored.lower()):
             return True, True
         return False, False
     return False, False
+
+
+def _legacy_auth_context_mac(secret, issued):
+    """Legacy SHA1 MAC used by Mailman <= 2.1.x cookies and CSRF tokens."""
+    if not isinstance(secret, str):
+        secret = str(secret)
+    # codeql[py/weak-cryptographic-algorithm]
+    return sha_new((secret + repr(issued)).encode('utf-8')).hexdigest()
+
+
+def auth_context_mac(secret, issued):
+    """HMAC-SHA256 MAC for auth cookies and CSRF tokens."""
+    if isinstance(secret, str):
+        key = secret.encode('utf-8')
+    else:
+        key = secret
+    return hmac.new(
+        key, repr(issued).encode('utf-8'), hashlib.sha256).hexdigest()
+
+
+def verify_auth_context_mac(secret, issued, received_mac):
+    """Verify an auth/CSRF MAC, accepting legacy SHA1 during migration."""
+    if not received_mac:
+        return False
+    if hmac.compare_digest(auth_context_mac(secret, issued), received_mac):
+        return True
+    return hmac.compare_digest(
+        _legacy_auth_context_mac(secret, issued), received_mac)
+
+
+def subscribe_form_token_digest(message):
+    """SHA-256 digest for subscribe-form anti-bot hidden tokens."""
+    if isinstance(message, str):
+        message = message.encode('utf-8')
+    return hashlib.sha256(message).hexdigest()
 
 
 def check_global_password(response, siteadmin=True, auto_upgrade=False):
@@ -1560,7 +1663,7 @@ _badwords = [
 _badhtml = re.compile('|'.join(_badwords), re.IGNORECASE)
 # This is used to filter non-printable us-ascii characters, some of which
 # can be used to break words to avoid recognition.
-_filterchars = re.compile('[\000-\011\013\014\016-\037\177-\237]')
+_filterchars = re.compile(r'[\x00-\x09\x0b\x0c\x0e-\x1f\x7f-\x9f]')
 # This is used to recognize '&#' and '%xx' strings for _translate which
 # translates them to characters
 _encodedchars = re.compile('(&#[0-9]+;?)|(&#x[0-9a-f]+;?)|(%[0-9a-f]{2})',
@@ -1615,8 +1718,8 @@ def get_suffixes(url):
     if not url:
         return
     try:
-        d = urllib.request.urlopen(url)
-    except urllib.error.URLError as e:
+        d = safe_urlopen(url)
+    except (urllib.error.URLError, ValueError) as e:
         syslog('error',
                'Unable to retrieve data from %s: %s',
                url, e)

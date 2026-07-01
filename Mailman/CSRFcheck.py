@@ -24,7 +24,7 @@ import binascii
 
 from Mailman import mm_cfg
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import UnobscureEmail, sha_new
+from Mailman.Utils import UnobscureEmail, auth_context_mac, verify_auth_context_mac
 
 keydict = {
     'user':      mm_cfg.AuthUser,
@@ -50,8 +50,7 @@ def csrf_token(mlist, contexts, user=None):
     else:
         return None     # not authenticated
     issued = int(time.time())
-    needs_hash = (secret + repr(issued)).encode('utf-8')
-    mac = sha_new(needs_hash).hexdigest()
+    mac = auth_context_mac(secret, issued)
     keymac = '%s:%s' % (key, mac)
     token = marshal.dumps((issued, keymac)).hex()
 
@@ -96,9 +95,7 @@ def csrf_check(mlist, token, cgi_user=None):
         context = keydict.get(key)
         key, secret = mlist.AuthContextInfo(context, user)
         assert key
-        secret = secret + repr(issued)
-        mac = sha_new(secret.encode()).hexdigest()
-        if (mac == received_mac 
+        if (verify_auth_context_mac(secret, issued, received_mac)
             and 0 < time.time() - issued < mm_cfg.FORM_LIFETIME):
             return True
         return False

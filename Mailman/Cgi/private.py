@@ -40,15 +40,6 @@ SLASH = '/'
 
 
 
-def true_path(path):
-    "Ensure that the path is safe by removing .."
-    # Workaround for path traverse vulnerability.  Unsuccessful attempts will
-    # be logged in logs/error.
-    parts = [x for x in path.split(SLASH) if x not in ('.', '..')]
-    return SLASH.join(parts)[1:]
-
-
-
 def guess_type(url, strict):
     if hasattr(mimetypes, 'common_types'):
         return mimetypes.guess_type(url, strict)
@@ -68,17 +59,28 @@ def main():
         return
 
     path = os.environ.get('PATH_INFO')
-    tpath = true_path(path)
-    if tpath != path[1:]:
+    if not path:
+        doc.SetTitle(_("Private Archive Error"))
+        doc.AddItem(Header(3, _("No archive path specified.")))
+        print(doc.Format())
+        return
+    if any(part in ('.', '..') for part in path.split(SLASH)):
         msg = _('Private archive - "./" and "../" not allowed in URL.')
         doc.SetTitle(msg)
         doc.AddItem(Header(2, msg))
         print(doc.Format())
         syslog('mischief', 'Private archive hostile path: %s', path)
         return
-    # BAW: This needs to be converted to the Site module abstraction
-    true_filename = os.path.join(
-        mm_cfg.PRIVATE_ARCHIVE_FILE_DIR, tpath)
+    try:
+        true_filename = Utils.safe_path_under(
+            mm_cfg.PRIVATE_ARCHIVE_FILE_DIR, path)
+    except ValueError:
+        msg = _('Private archive - invalid path.')
+        doc.SetTitle(msg)
+        doc.AddItem(Header(2, msg))
+        print(doc.Format())
+        syslog('mischief', 'Private archive hostile path: %s', path)
+        return
 
     listname = parts[0].lower()
     mboxfile = ''

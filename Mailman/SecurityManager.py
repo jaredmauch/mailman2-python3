@@ -63,7 +63,8 @@ from Mailman import mm_cfg
 from Mailman import Utils
 from Mailman import Errors
 from Mailman.Logging.Syslog import syslog
-from Mailman.Utils import sha_new, hash_password, verify_password
+from Mailman.Utils import hash_password, verify_password
+from Mailman.Utils import auth_context_mac, verify_auth_context_mac
 
 
 class SecurityManager(object):
@@ -317,9 +318,7 @@ class SecurityManager(object):
             raise ValueError
         # Timestamp
         issued = int(time.time())
-        # Get a digest of the secret, plus other information.
-        needs_hashing = (secret + repr(issued)).encode('utf-8')
-        mac = sha_new(needs_hashing).hexdigest()
+        mac = auth_context_mac(secret, issued)
         # Create the cookie object.
         c = http.cookies.SimpleCookie()
         c[key] = binascii.hexlify(marshal.dumps((issued, mac))).decode()
@@ -427,9 +426,7 @@ class SecurityManager(object):
             return False
         # Calculate what the mac ought to be based on the cookie's timestamp
         # and the shared secret.
-        needs_hashing = (secret + repr(issued)).encode('utf-8')
-        mac = sha_new(needs_hashing).hexdigest()
-        if mac != received_mac:
+        if not verify_auth_context_mac(secret, issued, received_mac):
             return False
         # Authenticated!
         # Refresh the cookie

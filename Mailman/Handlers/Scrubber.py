@@ -522,13 +522,16 @@ def save_attachment(mlist, msg, dir, filter_html=True):
             fp.write(decodedpayload)
             fp.close()
             cmd = mm_cfg.ARCHIVE_HTML_SANITIZER % {'filename' : tmppath}
-            progfp = os.popen(cmd, 'r')
-            decodedpayload = progfp.read()
-            status = progfp.close()
-            if status:
-                syslog('error',
-                       'HTML sanitizer exited with non-zero status: %s',
-                       status)
+            try:
+                result = Utils.run_command(cmd, capture_output=True)
+            except (ValueError, OSError) as e:
+                syslog('error', 'HTML sanitizer failed to run: %s', e)
+            else:
+                decodedpayload = result.stdout.decode('utf-8', 'replace')
+                if result.returncode:
+                    syslog('error',
+                           'HTML sanitizer exited with non-zero status: %s',
+                           result.returncode)
         finally:
             os.unlink(tmppath)
         # BAW: Since we've now sanitized the document, it should be plain

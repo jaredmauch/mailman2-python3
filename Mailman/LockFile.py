@@ -89,8 +89,7 @@ def _get_logfile():
         except ImportError:
             # not running inside Mailman
             import tempfile
-            dir = os.path.split(tempfile.mktemp())[0]
-            path = os.path.join(dir, 'LockFile.log')
+            path = os.path.join(tempfile.gettempdir(), 'LockFile.log')
             # open in line-buffered mode
             class SimpleUserFile(object):
                 def __init__(self, path):

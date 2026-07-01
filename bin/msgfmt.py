@@ -28,6 +28,7 @@ Options:
 
 import sys
 import os
+import ast
 import getopt
 import struct
 import array
@@ -149,7 +150,7 @@ def make(filename, outfile):
         if not l:
             continue
         # XXX: Does this always follow Python escape semantics?
-        l = eval(l)
+        l = ast.literal_eval(l)
         if section == ID:
             msgid += l
         elif section == STR:

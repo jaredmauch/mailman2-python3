@@ -144,18 +144,17 @@ def process_form(mlist, doc, cgidata, lang):
                 'response': cgidata.getvalue('g-recaptcha-response', ''),
                 'remoteip': remote})
         request_data = request_data.encode('utf-8')
-        request = urllib.request.Request(
-            url = 'https://www.google.com/recaptcha/api/siteverify',
-            data = request_data)
         try:
-            httpresp = urllib.request.urlopen(request)
+            httpresp = Utils.safe_urlopen(
+                'https://www.google.com/recaptcha/api/siteverify',
+                data=request_data)
             captcha_response = json.load(httpresp)
             httpresp.close()
             if not captcha_response['success']:
                 e_codes = COMMASPACE.join(captcha_response['error-codes'])
                 results.append(_(f'reCAPTCHA validation failed: {e_codes}'))
-        except urllib.error.URLError as e:
-            e_reason = e.reason
+        except (urllib.error.URLError, ValueError) as e:
+            e_reason = getattr(e, 'reason', e)
             results.append(_(f'reCAPTCHA could not be validated: {e_reason}'))
 
     # Are we checking the hidden data?
@@ -177,8 +176,8 @@ def process_form(mlist, doc, cgidata, lang):
         except ValueError:
             ftime = fcaptcha_idx = fhash = ''
             then = 0
-        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx + ":" + mlist.internal_name() + ":" + remote1).encode('utf-8')
-        token = Utils.sha_new(needs_hashing).hexdigest()
+        needs_hashing = (mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + ftime + ":" + fcaptcha_idx + ":" + mlist.internal_name() + ":" + remote1)
+        token = Utils.subscribe_form_token_digest(needs_hashing)
         if ftime and now - then > mm_cfg.FORM_LIFETIME:
             results.append(_('The form is too old.  Please GET it again.'))
         if ftime and now - then < mm_cfg.SUBSCRIBE_FORM_MIN_TIME:

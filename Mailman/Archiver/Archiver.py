@@ -176,12 +176,15 @@ class Archiver:
                       'hostname': self.host_name,
                       })
         cmd = ar % d
-        extarch = os.popen(cmd, 'w')
-        extarch.write(txt)
-        status = extarch.close()
-        if status:
-            syslog('error', 'external archiver non-zero exit status: %d\n',
-                   (status & 0xff00) >> 8)
+        try:
+            result = Utils.run_command(cmd, input_data=txt)
+        except (ValueError, OSError) as e:
+            syslog('error', 'external archiver failed to run: %s', e)
+            return
+        if result.returncode:
+            stderr = result.stderr.decode('utf-8', 'replace') if result.stderr else ''
+            syslog('error', 'external archiver non-zero exit status: %d\n%s',
+                   result.returncode, stderr)
 
     #
     # archiving in real time  this is called from list.post(msg)

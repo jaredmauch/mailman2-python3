@@ -233,7 +233,7 @@ def list_listinfo(mlist, lang):
             # just to have something to include in the hash below
             captcha_idx = ''
         secret = mm_cfg.SUBSCRIBE_FORM_SECRET + ":" + now + ":" + captcha_idx + ":" + mlist.internal_name() + ":" + remote
-        hash_secret = Utils.sha_new(secret.encode('utf-8')).hexdigest()
+        hash_secret = Utils.subscribe_form_token_digest(secret)
         # fill form
         replacements['<mm-subscribe-form-start>'] += (
                 '<input type="hidden" name="sub_form_token"'

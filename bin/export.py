@@ -288,17 +288,25 @@ def plaintext_password(password):
     return '{PLAIN}' + password
 
 
+def pbkdf2_password(password):
+    return Utils.hash_password(password)
+
+
 def sha_password(password):
+    # Legacy {SHA} export for Dovecot/LDAP; use pbkdf2 scheme for new exports.
     if isinstance(password, str):
         password = password.encode()
+    # codeql[py/weak-cryptographic-algorithm]
     h = Utils.sha_new(password)
     return '{SHA}' + base64.b64encode(h.digest()).decode('utf-8')
 
 
 def ssha_password(password):
+    # Legacy {SSHA} export for Dovecot/LDAP; use pbkdf2 scheme for new exports.
     if isinstance(password, str):
         password = password.encode()
     salt = os.urandom(SALT_LENGTH)
+    # codeql[py/weak-cryptographic-algorithm]
     h = Utils.sha_new(password)
     h.update(salt)
     return '{SSHA}' + base64.b64encode(h.digest() + salt).decode('utf-8')
@@ -308,6 +316,7 @@ SCHEMES = {
     'none'  : no_password,
     'plain' : plaintext_password,
     'sha'   : sha_password,
+    'pbkdf2': pbkdf2_password,
     }
 
 try:

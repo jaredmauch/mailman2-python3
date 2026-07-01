@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Written by Martin v. Lˆwis <loewis@informatik.hu-berlin.de>
+# Written by Martin v. Lùwis <loewis@informatik.hu-berlin.de>
 
 """Generate binary message catalog from textual translation description.
 
@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import sys
 import os
+import ast
 import getopt
 import struct
 import array
@@ -149,7 +150,7 @@ def make(filename, outfile):
         if not l:
             continue
         # XXX: Does this always follow Python escape semantics?
-        l = eval(l)
+        l = ast.literal_eval(l)
         if section == ID:
             msgid += l
         elif section == STR:
