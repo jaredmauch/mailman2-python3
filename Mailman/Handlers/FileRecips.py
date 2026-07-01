@@ -37,7 +37,8 @@ def process(mlist, msg, msgdata):
         msgdata['recips'] = []
         return
     # Read all the lines out of the file, and strip them of the trailing nl
-    addrs = [line.strip() for line in fp.readlines()]
+    with fp:
+        addrs = [line.strip() for line in fp.readlines()]
     # If the sender is in that list, remove him
     sender = msg.get_sender()
     if mlist.isMember(sender):
