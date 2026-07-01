@@ -874,14 +874,6 @@ def verify_password(response, stored):
     return False, False
 
 
-def _legacy_auth_context_mac(secret, issued):
-    """Legacy SHA1 MAC used by Mailman <= 2.1.x cookies and CSRF tokens."""
-    if not isinstance(secret, str):
-        secret = str(secret)
-    # codeql[py/weak-cryptographic-algorithm]
-    return sha_new((secret + repr(issued)).encode('utf-8')).hexdigest()
-
-
 def auth_context_mac(secret, issued):
     """HMAC-SHA256 MAC for auth cookies and CSRF tokens."""
     if isinstance(secret, str):
@@ -893,13 +885,11 @@ def auth_context_mac(secret, issued):
 
 
 def verify_auth_context_mac(secret, issued, received_mac):
-    """Verify an auth/CSRF MAC, accepting legacy SHA1 during migration."""
+    """Verify an auth/CSRF HMAC-SHA256 MAC."""
     if not received_mac:
         return False
-    if hmac.compare_digest(auth_context_mac(secret, issued), received_mac):
-        return True
     return hmac.compare_digest(
-        _legacy_auth_context_mac(secret, issued), received_mac)
+        auth_context_mac(secret, issued), received_mac)
 
 
 def subscribe_form_token_digest(message):
