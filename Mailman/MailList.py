@@ -1185,8 +1185,9 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
         if isinstance(name, bytes):
             name = name.decode(Utils.GetCharSet(lang))
 
+        log_whence = Utils.append_remote_for_log(whence or '')
         syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
-               kind, formataddr((name, email)), whence)
+               kind, formataddr((name, email)), log_whence)
         if ack:
             lang = self.preferred_language
             otrans = i18n.get_translation()
@@ -1255,6 +1256,7 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             whence = "; %s" % whence
         else:
             whence = ""
+        whence = Utils.append_remote_for_log(whence)
         syslog('subscribe', '%s: deleted %s%s',
                self.internal_name(), name, whence)
 
@@ -1396,8 +1398,11 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
 
     def log_and_notify_admin(self, oldaddr, newaddr):
         """Log member address change and notify admin if requested."""
-        syslog('subscribe', '%s: changed member address from %s to %s',
-               self.internal_name(), oldaddr, newaddr)
+        log_suffix = Utils.append_remote_for_log('')
+        if log_suffix:
+            log_suffix = ' %s' % log_suffix
+        syslog('subscribe', '%s: changed member address from %s to %s%s',
+               self.internal_name(), oldaddr, newaddr, log_suffix)
         if self.admin_notify_mchanges:
             lang = self.preferred_language
             otrans = i18n.get_translation()

@@ -497,6 +497,26 @@ def ValidateEmail(s):
 # line in the mailman error log. (TK: advisory by Moritz Naumann)
 CRNLpat = re.compile(r'[^\x21-\x7e]')
 
+def get_remote_addr():
+    """Return the client IP from CGI environment, or None if unavailable."""
+    return (os.environ.get('HTTP_FORWARDED_FOR') or
+            os.environ.get('HTTP_X_FORWARDED_FOR') or
+            os.environ.get('REMOTE_ADDR'))
+
+
+def append_remote_for_log(whence=''):
+    """Append client IP to a subscribe-log whence string when available."""
+    remote = get_remote_addr()
+    if not remote:
+        return whence or ''
+    whence = whence or ''
+    if remote in whence:
+        return whence
+    if whence:
+        return '%s %s' % (whence, remote)
+    return remote
+
+
 def GetPathPieces(envar='PATH_INFO'):
     path = os.environ.get(envar)
     if path:
