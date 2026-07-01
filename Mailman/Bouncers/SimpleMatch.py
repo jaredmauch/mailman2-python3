@@ -17,8 +17,28 @@
 
 """Recognizes simple heuristically delimited bounces."""
 
+import io
 import re
 import email.iterators
+
+
+def _body_line_iterator(msg):
+    """Iterate body lines with Content-Transfer-Encoding properly decoded.
+
+    Python 3's body_line_iterator only yields str payloads; get_payload(
+    decode=True) returns bytes (CTE-decoded). This helper bridges the gap so
+    quoted-printable and base64 bodies are decoded before pattern matching.
+    """
+    for subpart in email.iterators.typed_subpart_iterator(msg):
+        payload = subpart.get_payload(decode=True)
+        if not isinstance(payload, bytes):
+            continue
+        charset = subpart.get_content_charset('us-ascii') or 'us-ascii'
+        try:
+            text = payload.decode(charset, errors='replace')
+        except LookupError:
+            text = payload.decode('us-ascii', errors='replace')
+        yield from io.StringIO(text)
 
 
 
@@ -224,7 +244,7 @@ def process(msg, patterns=None):
     # we process the message multiple times anyway.
     for scre, ecre, acre in patterns:
         state = 0
-        for line in email.iterators.body_line_iterator(msg, decode=True):
+        for line in _body_line_iterator(msg):
             if state == 0:
                 if scre.search(line):
                     state = 1

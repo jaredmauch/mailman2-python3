@@ -26,6 +26,7 @@ import email.parser
 from email.header import decode_header
 
 from Mailman import Utils
+from Mailman.Bouncers.SimpleMatch import _body_line_iterator
 from Mailman.Logging.Syslog import syslog
 from Mailman.Handlers.CookHeaders import change_header
 
@@ -97,7 +98,7 @@ def scanbody(msg, numlines=None):
     # the first numlines of body text.
     lines = []
     lineno = 0
-    reader = list(email.iterators.body_line_iterator(msg, decode=True))
+    reader = list(_body_line_iterator(msg))
     while numlines is None or lineno < numlines:
         try:
             line = reader.pop(0)
