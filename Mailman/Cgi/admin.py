@@ -81,6 +81,29 @@ def _field_upload_text(cgidata, fieldname):
     return cgidata.getfirst(fieldname, '') or ''
 
 
+def _member_field_keys(user, suffix):
+    """Return possible form keys for a per-member field.
+
+    Member list forms use multipart encoding with URL-quoted addresses in
+    field names.  Depending on the browser and encoder, submitted keys may
+    still contain percent escapes or may already be decoded.  Urlencoded
+    posts are always decoded by parse_qs.
+    """
+    return ('%s_%s' % (user, suffix),
+            '%s_%s' % (urllib.parse.quote(user), suffix))
+
+
+def _member_field_in_cgidata(cgidata, user, suffix):
+    return any(k in cgidata for k in _member_field_keys(user, suffix))
+
+
+def _member_field_getfirst(cgidata, user, suffix, default=None):
+    for key in _member_field_keys(user, suffix):
+        if key in cgidata:
+            return cgidata.getfirst(key, default)
+    return default
+
+
 
 def main():
     # Try to find out which list is being administered
@@ -1763,8 +1786,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
         errors = []
         removes = []
         for user in users:
-            quser = urllib.parse.quote(user)
-            if '%s_unsub' % quser in cgidata:
+            if _member_field_in_cgidata(cgidata, user, 'unsub'):
                 try:
                     _ = D_
                     whence=_('member mgt page')
@@ -1778,7 +1800,7 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 doc.addError(_(f'Ignoring changes to deleted member: {user}'),
                              tag=_('Warning: '))
                 continue
-            value = '%s_digest' % quser in cgidata
+            value = _member_field_in_cgidata(cgidata, user, 'digest')
             try:
                 mlist.setMemberOption(user, mm_cfg.Digests, value)
             except (Errors.AlreadyReceivingDigests,
@@ -1788,28 +1810,28 @@ def change_options(mlist, category, subcat, cgidata, doc):
                 # BAW: Hmm...
                 pass
 
-            newname = cgidata.getfirst(quser+'_realname', '')
+            newname = _member_field_getfirst(cgidata, user, 'realname', '')
             newname = Utils.canonstr(newname, mlist.preferred_language)
             mlist.setMemberName(user, newname)
 
-            newlang = cgidata.getfirst(quser+'_language')
+            newlang = _member_field_getfirst(cgidata, user, 'language')
             oldlang = mlist.getMemberLanguage(user)
             if Utils.IsLanguage(newlang) and newlang != oldlang:
                 mlist.setMemberLanguage(user, newlang)
 
-            moderate = not not cgidata.getfirst(quser+'_mod')
+            moderate = not not _member_field_getfirst(cgidata, user, 'mod')
             mlist.setMemberOption(user, mm_cfg.Moderate, moderate)
 
             # Set the `nomail' flag, but only if the user isn't already
             # disabled (otherwise we might change BYUSER into BYADMIN).
-            if '%s_nomail' % quser in cgidata:
+            if _member_field_in_cgidata(cgidata, user, 'nomail'):
                 if mlist.getDeliveryStatus(user) == MemberAdaptor.ENABLED:
                     mlist.setDeliveryStatus(user, MemberAdaptor.BYADMIN)
             else:
                 mlist.setDeliveryStatus(user, MemberAdaptor.ENABLED)
             for opt in ('hide', 'ack', 'notmetoo', 'nodupes', 'plain'):
                 opt_code = mm_cfg.OPTINFO[opt]
-                if '%s_%s' % (quser, opt) in cgidata:
+                if _member_field_in_cgidata(cgidata, user, opt):
                     mlist.setMemberOption(user, opt_code, 1)
                 else:
                     mlist.setMemberOption(user, opt_code, 0)
