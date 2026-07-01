@@ -115,15 +115,17 @@ def process(mlist, msg, msgdata):
                 endsep = u'\n'
             payload = uheader + frontsep + oldpayload + endsep + ufooter
             try:
-                # first, try encode with list charset
-                payload = payload.encode(lcset)
-                newcset = lcset
+                # Prefer the message's own charset to preserve encoding and
+                # avoid unnecessary base64 (e.g. utf-8 charset always
+                # base64-encodes in Python 3's email library).
+                payload.encode(mcset)
+                newcset = mcset
             except UnicodeError:
-                if lcset != mcset:
-                    # if fail, encode with message charset (if different)
-                    payload = payload.encode(mcset)
-                    newcset = mcset
-                    # if this fails, fallback to outer try and wrap=true
+                # Fall back to list charset if message charset can't represent
+                # the decorated content (e.g. non-ASCII header/footer).
+                payload.encode(lcset)
+                newcset = lcset
+                # if this fails, fallback to outer try and wrap=true
             format = msg.get_param('format')
             delsp = msg.get_param('delsp')
             del msg['content-transfer-encoding']
@@ -138,16 +140,23 @@ def process(mlist, msg, msgdata):
             pass
     elif msg.get_content_type() == 'multipart/mixed':
         # The next easiest thing to do is just prepend the header and append
-        # the footer as additional subparts
+        # the footer as additional subparts.  Prefer the message's own charset
+        # to avoid base64-encoding ASCII content when the list charset is utf-8.
+        try:
+            (header or '').encode(mcset)
+            (footer or '').encode(mcset)
+            mime_cset = mcset
+        except (UnicodeError, LookupError):
+            mime_cset = lcset
         payload = msg.get_payload()
         if not isinstance(payload, list):
             payload = [payload]
         if footer:
-            mimeftr = MIMEText(footer, 'plain', lcset)
+            mimeftr = MIMEText(footer, 'plain', mime_cset)
             mimeftr['Content-Disposition'] = 'inline'
             payload.append(mimeftr)
         if header:
-            mimehdr = MIMEText(header, 'plain', lcset)
+            mimehdr = MIMEText(header, 'plain', mime_cset)
             mimehdr['Content-Disposition'] = 'inline'
             payload.insert(0, mimehdr)
         msg.set_payload(payload)
