@@ -142,12 +142,15 @@ class FieldStorage:
     def _parse_multipart_post(self):
         """Parse multipart/form-data POST data."""
         content_length = int(self.environ.get('CONTENT_LENGTH', 0))
-        if content_length > 0:
+        content_type = self.environ.get('CONTENT_TYPE', '')
+        if content_length > 0 and content_type:
             post_data = sys.stdin.buffer.read(content_length)
-            
-            # Parse the multipart message
+
+            # The email parser needs the Content-Type header (with boundary);
+            # the raw POST body from the web server contains only the parts.
             parser = BytesParser(policy=HTTP)
-            msg = parser.parsebytes(post_data)
+            header = ('Content-Type: %s\r\n\r\n' % content_type).encode('latin-1')
+            msg = parser.parsebytes(header + post_data)
             
             for part in msg.walk():
                 if part.get_content_maintype() == 'multipart':
