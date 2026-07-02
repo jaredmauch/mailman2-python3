@@ -23,12 +23,14 @@ import re
 import time
 import pickle
 
+from email.iterators import typed_subpart_iterator
 from email.mime.text import MIMEText
 from email.mime.message import MIMEMessage
 from email.utils import parseaddr
 
 from Mailman import mm_cfg
 from Mailman import Utils
+from Mailman.MailList import MailList
 from Mailman import LockFile
 from Mailman.Errors import NotAMemberError
 from Mailman.Message import UserNotification
@@ -74,8 +76,9 @@ class BounceMixin:
         # site list's bounce address.  The bounce runner would then dutifully
         # register a bounce for all 4 lists that aperson@example.com was a
         # member of, and eventually that person would get disabled on all
-        # their lists.  So now we ignore site list bounces.  Ce La Vie for
-        # password reminder bounces.
+        # their lists.  So now we ignore most site list bounces.  Membership
+        # reminder bounces can optionally be processed; see
+        # BOUNCE_PROCESS_REMINDER_BOUNCES.
         self._bounce_events_file = os.path.join(
             mm_cfg.DATA_DIR, 'bounce-events-%05d.pck' % os.getpid())
         self._bounce_events_fp = None
@@ -96,6 +99,22 @@ class BounceMixin:
         self._bounce_events_fp.flush()
         os.fsync(self._bounce_events_fp.fileno())
         self._bouncecnt += len(addrs)
+
+    def _queue_reminder_bounces(self, addr, msg):
+        """Queue a reminder bounce for each subscribed list that sends reminders."""
+        for listname in Utils.list_names():
+            if listname.lower() == mm_cfg.MAILMAN_SITE_LIST.lower():
+                continue
+            mlist = MailList(listname, lock=0)
+            if not mlist.bounce_processing:
+                continue
+            if not mlist.send_reminders:
+                continue
+            if not mlist.isMember(addr):
+                continue
+            if mlist.getMemberOption(addr, mm_cfg.SuppressPasswordReminder):
+                continue
+            self._queue_bounces(listname, [addr], msg)
 
     def _register_bounces(self):
         syslog('bounce', '%s processing %s queued bounces',
@@ -206,18 +225,24 @@ class BounceRunner(Runner, BounceMixin):
         # message sent directly to the -bounces address.  We have to do these
         # cases separately, because sending to site-owner will reset the
         # envelope sender.
+        is_site_list = (mlist.internal_name().lower() ==
+                        mm_cfg.MAILMAN_SITE_LIST.lower())
+        process_reminder_bounce = False
         # Is this a site list bounce?
-        if (mlist.internal_name().lower() ==
-                mm_cfg.MAILMAN_SITE_LIST.lower()):
-            # Send it on to the site owners, but craft the envelope sender to
-            # be the -loop detection address, so if /they/ bounce, we won't
-            # get stuck in a bounce loop.
-            outq.enqueue(msg, msgdata,
-                         recips=mlist.owner,
-                         envsender=Utils.get_site_email(extra='loop'),
-                         nodecorate=1,
-                         )
-            return
+        if is_site_list:
+            if (mm_cfg.BOUNCE_PROCESS_REMINDER_BOUNCES and
+                    is_membership_reminder_bounce(msg)):
+                process_reminder_bounce = True
+            else:
+                # Send it on to the site owners, but craft the envelope sender
+                # to be the -loop detection address, so if /they/ bounce, we
+                # won't get stuck in a bounce loop.
+                outq.enqueue(msg, msgdata,
+                             recips=mlist.owner,
+                             envsender=Utils.get_site_email(extra='loop'),
+                             nodecorate=1,
+                             )
+                return
         # Is this a possible looping message sent directly to a list-bounces
         # address other than the site list?
         # Check From: because unix_from might be VERP'd.
@@ -233,7 +258,7 @@ class BounceRunner(Runner, BounceMixin):
                          )
             return
         # List isn't doing bounce processing?
-        if not mlist.bounce_processing:
+        if not process_reminder_bounce and not mlist.bounce_processing:
             return
         # Try VERP detection first, since it's quick and easy
         addrs = verp_bounce(mlist, msg)
@@ -268,13 +293,51 @@ class BounceRunner(Runner, BounceMixin):
         # can let None's sneak through.  In any event, this will kill them.
         # addrs = filter(None, addrs)
         # MAS above filter moved up so we don't try to queue an empty list.
-        self._queue_bounces(mlist.internal_name(), addrs, msg)
+        if process_reminder_bounce:
+            for addr in addrs:
+                self._queue_reminder_bounces(addr, msg)
+        else:
+            self._queue_bounces(mlist.internal_name(), addrs, msg)
 
     _doperiodic = BounceMixin._doperiodic
 
     def _cleanup(self):
         BounceMixin._cleanup(self)
         Runner._cleanup(self)
+
+
+
+def is_membership_reminder_bounce(msg):
+    """Return true if this bounce is for a monthly membership reminder."""
+    for part in typed_subpart_iterator(msg, 'message', 'rfc822'):
+        orig = part.get_payload(0)
+        if orig is None:
+            continue
+        if orig.get('X-Mailman-Membership-Reminder', '').lower() == 'yes':
+            return True
+        if orig.get('x-list-administrivia', '').lower() != 'yes':
+            continue
+        sender = parseaddr(orig.get('from', ''))[1].lower()
+        if not sender:
+            continue
+        # Owner notifications are sent from the site -bounces address.
+        if _is_site_bounces_address(sender):
+            continue
+        subj = Utils.oneline(orig.get('subject', ''), 'us-ascii').lower()
+        if 'reminder' in subj:
+            return True
+    return False
+
+
+
+def _is_site_bounces_address(addr):
+    addr = addr.lower()
+    mailbox, domain = Utils.ParseEmail(addr)
+    if mailbox == '%s-bounces' % mm_cfg.MAILMAN_SITE_LIST:
+        return True
+    if mailbox.startswith('%s-bounces+' % mm_cfg.MAILMAN_SITE_LIST):
+        return True
+    return False
 
 
 
