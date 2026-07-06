@@ -22,20 +22,25 @@ from Mailman import Utils
 from Mailman.Queue.BounceRunner import is_membership_reminder_bounce
 
 
-SAMPLE = os.path.join(
-    _TESTDIR, 'bounces', 'samples_from_messages',
-    'sample_01_undelivered_mail_returned_to_sender.eml')
-
-
 
 class ReminderBounceTest(unittest.TestCase):
-    def test_membership_reminder_sample(self):
-        if not os.path.exists(SAMPLE):
-            self.skipTest('sample bounce file not available')
-        with open(SAMPLE, 'rb') as fp:
-            msg = email.message_from_binary_file(fp)
-        self.assertTrue(is_membership_reminder_bounce(msg))
+    def test_membership_reminder_heuristic(self):
+        msg = email.message_from_string("""\
+Content-Type: multipart/report; boundary=\"BOUND\"
 
+--BOUND
+Content-Type: message/rfc822
+
+From: mylist-bounces@dom.ain
+To: user@example.com
+Subject: Monthly membership reminder
+X-List-Administrivia: yes
+
+Reminder body.
+
+--BOUND--
+""")
+        self.assertTrue(is_membership_reminder_bounce(msg))
     def test_owner_notification_is_not_reminder(self):
         msg = email.message_from_string("""\
 Content-Type: multipart/report; boundary="BOUND"
