@@ -1,0 +1,14 @@
+# Python runtime dependencies for Mailman 2.x (Python 3).
+#
+# Install before running ./configure:
+#   pip install -r requirements.txt
+#
+# On Debian/Ubuntu you can instead use system packages:
+#   apt-get install python3-dnspython python3-html2text python3-bsddb3
+#
+# NNTP support (--enable-nntp) additionally requires the nntplib module,
+# which is in the Python standard library on most platforms.
+
+dnspython>=1.16.0,<2.0
+html2text
+bsddb3
