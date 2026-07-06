@@ -102,6 +102,14 @@ class BounceMixin:
 
     def _queue_reminder_bounces(self, addr, msg):
         """Queue a reminder bounce for each subscribed list that sends reminders."""
+        today = time.localtime()[:3]
+        if self._bounce_events_fp is None:
+            omask = os.umask(0o006)
+            try:
+                self._bounce_events_fp = open(self._bounce_events_file, 'a+b')
+            finally:
+                os.umask(omask)
+        queued = 0
         for listname in Utils.list_names():
             if listname.lower() == mm_cfg.MAILMAN_SITE_LIST.lower():
                 continue
@@ -114,7 +122,12 @@ class BounceMixin:
                 continue
             if mlist.getMemberOption(addr, mm_cfg.SuppressPasswordReminder):
                 continue
-            self._queue_bounces(listname, [addr], msg)
+            pickle.dump((listname, addr, today, msg), self._bounce_events_fp, 1)
+            queued += 1
+        if queued:
+            self._bounce_events_fp.flush()
+            os.fsync(self._bounce_events_fp.fileno())
+            self._bouncecnt += queued
 
     def _register_bounces(self):
         syslog('bounce', '%s processing %s queued bounces',
