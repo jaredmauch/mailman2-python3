@@ -77,8 +77,8 @@ class BounceMixin:
         # register a bounce for all 4 lists that aperson@example.com was a
         # member of, and eventually that person would get disabled on all
         # their lists.  So now we ignore most site list bounces.  Membership
-        # reminder bounces can optionally be processed; see
-        # BOUNCE_PROCESS_REMINDER_BOUNCES.
+        # reminder bounces can be processed when BOUNCE_PROCESS_REMINDER_BOUNCES
+        # is enabled.
         self._bounce_events_file = os.path.join(
             mm_cfg.DATA_DIR, 'bounce-events-%05d.pck' % os.getpid())
         self._bounce_events_fp = None
