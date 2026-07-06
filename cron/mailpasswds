@@ -225,6 +225,7 @@ def main():
             finally:
                 i18n.set_translation(otrans)
             msg['X-No-Archive'] = 'yes'
+            msg['X-Mailman-Membership-Reminder'] = 'yes'
             del msg['auto-submitted']
             msg['Auto-Submitted'] = 'auto-generated'
             # We want to make this look like it's coming from the siteowner's
