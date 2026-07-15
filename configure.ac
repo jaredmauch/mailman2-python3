@@ -504,7 +504,7 @@ except KeyError:
 problems = []
 try: statdata = os.stat(prefix)
 except OSError:
-    problems.append("Directory doesn't exist: " + prefix)
+    msg = "not found\n"
 else:
     mode = statdata[ST_MODE]
     gid = statdata[ST_GID]
@@ -516,10 +516,10 @@ else:
     perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
     if (mode & perms) != perms:
         problems.append("Permissions should be at least 02775: " + prefix)
-if not problems:
-    msg = "okay\n"
-else:
-    msg = '***** ' + '\n***** '.join(problems) + '\n'
+    if not problems:
+        msg = "okay\n"
+    else:
+        msg = '***** ' + '\n***** '.join(problems) + '\n'
 with open("conftest.out", "w") as fp:
     fp.write(msg)
 EOF
@@ -529,16 +529,28 @@ status=`cat conftest.out`
 rm -f conftest.out conftest.py
 if test "$with_permcheck" = "yes"
 then
-    if test "$status" != "okay"
+    if test "$status" = "okay"
     then
+        AC_MSG_RESULT(okay)
+    elif test "$status" = "not found"
+    then
+        AC_MSG_RESULT(directory not found)
+        AC_MSG_WARN([
+***** Installation directory $prefixcheck does not exist yet.
+***** It will need to be created before running 'make install'.
+***** After creating it, set the proper ownership and permissions:
+*****   groupadd $GROUPNAME
+*****   mkdir -p $prefixcheck
+*****   chgrp $GROUPNAME $prefixcheck
+*****   chmod 2775 $prefixcheck])
+    else
         AC_MSG_ERROR([
 ***** Installation directory $prefixcheck is not configured properly!
 $status])
     fi
 else
-    status="skipped"
+    AC_MSG_RESULT(skipped)
 fi
-AC_MSG_RESULT($status)
 
 
 # Now find the UIDs and GIDs

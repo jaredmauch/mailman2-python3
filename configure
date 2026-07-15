@@ -4515,7 +4515,7 @@ except KeyError:
 problems = []
 try: statdata = os.stat(prefix)
 except OSError:
-    problems.append("Directory doesn't exist: " + prefix)
+    msg = "not found\n"
 else:
     mode = statdata[ST_MODE]
     gid = statdata[ST_GID]
@@ -4527,10 +4527,10 @@ else:
     perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
     if (mode & perms) != perms:
         problems.append("Permissions should be at least 02775: " + prefix)
-if not problems:
-    msg = "okay\n"
-else:
-    msg = '***** ' + '\n***** '.join(problems) + '\n'
+    if not problems:
+        msg = "okay\n"
+    else:
+        msg = '***** ' + '\n***** '.join(problems) + '\n'
 with open("conftest.out", "w") as fp:
     fp.write(msg)
 EOF
@@ -4540,17 +4540,39 @@ status=`cat conftest.out`
 rm -f conftest.out conftest.py
 if test "$with_permcheck" = "yes"
 then
-    if test "$status" != "okay"
+    if test "$status" = "okay"
     then
+        { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: okay" >&5
+printf '%s\n' "okay" >&6; }
+    elif test "$status" = "not found"
+    then
+        { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: directory not found" >&5
+printf '%s\n' "directory not found" >&6; }
+        { printf '%s\n' "$as_me:${as_lineno-$LINENO}: WARNING:
+***** Installation directory $prefixcheck does not exist yet.
+***** It will need to be created before running 'make install'.
+***** After creating it, set the proper ownership and permissions:
+*****   groupadd $GROUPNAME
+*****   mkdir -p $prefixcheck
+*****   chgrp $GROUPNAME $prefixcheck
+*****   chmod 2775 $prefixcheck" >&5
+printf '%s\n' "$as_me: WARNING:
+***** Installation directory $prefixcheck does not exist yet.
+***** It will need to be created before running 'make install'.
+***** After creating it, set the proper ownership and permissions:
+*****   groupadd $GROUPNAME
+*****   mkdir -p $prefixcheck
+*****   chgrp $GROUPNAME $prefixcheck
+*****   chmod 2775 $prefixcheck" >&2;}
+    else
         as_fn_error $? "
 ***** Installation directory $prefixcheck is not configured properly!
 $status" "$LINENO" 5
     fi
 else
-    status="skipped"
+    { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: skipped" >&5
+printf '%s\n' "skipped" >&6; }
 fi
-{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $status" >&5
-printf '%s\n' "$status" >&6; }
 
 
 # Now find the UIDs and GIDs
