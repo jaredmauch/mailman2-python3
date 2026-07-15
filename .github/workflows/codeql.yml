@@ -46,7 +46,7 @@ jobs:
     - name: Build (C/C++)
       if: matrix.language == 'c-cpp'
       run: |
-        ./configure --without-permcheck
+        ./configure
         make
 
     - name: Perform CodeQL Analysis
