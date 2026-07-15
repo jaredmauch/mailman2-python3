@@ -84,3 +84,6 @@ tests/Makefile
 tests/bounces/Makefile
 tests/msgs/Makefile
 messages/.converted.stamp
+Mailman/__init__.py
+tests/__pycache__/
+
