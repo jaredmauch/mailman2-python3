@@ -27,10 +27,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install Python dependencies
+    - name: Install dependencies and create mailman user/group
       run: |
         sudo apt-get update
         sudo apt-get install -y python3-dnspython
+        sudo groupadd mailman
+        sudo useradd -g mailman mailman
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
