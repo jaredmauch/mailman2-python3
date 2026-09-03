@@ -26,7 +26,7 @@ import os
 import sys
 import paths
 # Import this /after/ paths so that the sys.path is properly hacked
-import email.Utils
+import email.utils
 from Mailman import MailList
 from Mailman import Errors
 from Mailman import Utils
@@ -59,9 +59,9 @@ def usage(code, msg=''):
         fd = sys.stderr
     else:
         fd = sys.stdout
-    print >> fd, _(__doc__)
+    print(_(__doc__), file=fd)
     if msg:
-        print >> fd, msg
+        print(msg, file=fd)
     sys.exit(code)
 
 
@@ -90,8 +90,8 @@ def main():
     # get the locked list object
     try:
         mlist = MailList.MailList(listname, lock=0)
-    except Errors.MMListError, e:
-        print _('No such list: %(listname)s')
+    except Errors.MMListError as e:
+        print(_('No such list: %(listname)s'))
         sys.exit(1)
 
     rootdir = mlist.archive_dir()
@@ -113,7 +113,7 @@ def main():
     
         os.umask(0o022)
         sitemap = os.path.join(rootdir,folder,"sitemap.xml.gz")
-        f = gzip.open(sitemap, 'wb')
+        f = gzip.open(sitemap, 'wt', encoding='utf-8')
     
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
@@ -145,7 +145,7 @@ def main():
     
     # write out the sitemapindex file
     sitemapindex = os.path.join(rootdir,"sitemap.xml.gz")
-    f = gzip.open(sitemapindex, 'wb')
+    f = gzip.open(sitemapindex, 'wt', encoding='utf-8')
     
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')

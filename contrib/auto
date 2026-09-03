@@ -73,12 +73,12 @@ def main():
             listname = extension
             subdest = 'tolist'
     if not listname:
-        print >> sys.stderr, 'Empty list name (someone being subversive?)'
+        print('Empty list name (someone being subversive?)', file=sys.stderr)
         return EX_NOUSER
     try:
         mlist = MailList.MailList(listname, lock=0)
     except Errors.MMListError:
-        print >> sys.stderr, 'List not found:', listname
+        print('List not found:', listname, file=sys.stderr)
         return EX_NOUSER
 
     # Make sure that the domain part of the incoming address matches the
@@ -93,12 +93,12 @@ def main():
     hostname.reverse()
     for ca, cb in zip(domainp, hostname):
         if ca <> cb:
-            print >> sys.stderr, 'Domain mismatch: %s@%s (expected @%s)' \
-                  % (listname, domain, mlist.host_name)
+            print('Domain mismatch: %s@%s (expected @%s)'
+                  % (listname, domain, mlist.host_name), file=sys.stderr)
             return EX_NOUSER
 
     if subdest is None:
-        print >> sys.stderr, 'Bad sub-destination:', extension
+        print('Bad sub-destination:', extension, file=sys.stderr)
         return EX_NOUSER
 
     inq = get_switchboard(mm_cfg.INQUEUE_DIR)

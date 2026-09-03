@@ -56,14 +56,14 @@ def create(mlist, cgi=False, nolock=False, quiet=False):
         # be installed.
         sfp = StringIO()
         if not quiet:
-            print >> sfp, _("""\
+            print(_("""\
 The mailing list `%(listname)s' has been created via the through-the-web
 interface.  In order to complete the activation of this mailing list, the
 proper /etc/aliases (or equivalent) file must be updated.  The program
 `newaliases' may also have to be run.
 
 Here are the entries for the /etc/aliases file:
-""")
+"""), file=sfp)
         outfp = sfp
     else:
         if not quiet:
@@ -103,14 +103,14 @@ def remove(mlist, cgi=False):
         # an email message to mailman-owner requesting that the appropriate
         # aliases be deleted.
         sfp = StringIO()
-        print >> sfp, _("""\
+        print(_("""\
 The mailing list `%(listname)s' has been removed via the through-the-web
 interface.  In order to complete the de-activation of this mailing list, the
 appropriate /etc/aliases (or equivalent) file must be updated.  The program
 `newaliases' may also have to be run.
 
 Here are the entries in the /etc/aliases file that should be removed:
-""")
+"""), file=sfp)
         outfp = sfp
     else:
         print(C_("""
