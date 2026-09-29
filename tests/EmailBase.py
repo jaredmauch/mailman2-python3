@@ -15,11 +15,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 """Base class for tests that email things.
+
+Uses a stdlib socket-based SMTP sink so the tests keep working after
+asyncore and smtpd were removed in Python 3.12 (PEP 594).
 """
 
 import socket
-import asyncore
-import smtpd
 
 from Mailman import mm_cfg
 
@@ -29,20 +30,93 @@ from TestBase import TestBase
 
 MSGTEXT = None
 
-class OneShotChannel(smtpd.SMTPChannel):
-    def smtp_QUIT(self, arg):
-        smtpd.SMTPChannel.smtp_QUIT(self, arg)
-        raise asyncore.ExitNow
 
+class SinkSMTPServer:
+    """Minimal one-connection SMTP sink for unit tests."""
 
-class SinkServer(smtpd.SMTPServer):
-    def handle_accept(self):
-        conn, addr = self.accept()
-        channel = OneShotChannel(self, conn, addr)
+    def __init__(self, localaddr, remoteaddr, timeout=30.0):
+        # remoteaddr is unused; kept for call-site compatibility with the
+        # old smtpd.SMTPServer constructor.
+        self._timeout = timeout
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock.bind(localaddr)
+        self._sock.listen(5)
+        self._sock.settimeout(timeout)
 
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def close(self):
+        try:
+            self._sock.close()
+        except OSError:
+            pass
+
+    def handle_one_session(self):
+        """Accept one SMTP client; return DATA payload as str, or None."""
         global MSGTEXT
-        MSGTEXT = data
+        MSGTEXT = None
+        try:
+            conn, _addr = self._sock.accept()
+        except socket.timeout:
+            return None
+        try:
+            conn.settimeout(self._timeout)
+            MSGTEXT = self._smtp_session(conn)
+            return MSGTEXT
+        finally:
+            try:
+                conn.close()
+            except OSError:
+                pass
+
+    def _smtp_session(self, conn):
+        def sendline(line):
+            conn.sendall((line + '\r\n').encode('ascii', 'replace'))
+
+        def recvline():
+            buf = b''
+            while not buf.endswith(b'\n'):
+                chunk = conn.recv(1)
+                if not chunk:
+                    break
+                buf += chunk
+            return buf.decode('utf-8', 'replace').rstrip('\r\n')
+
+        sendline('220 localhost SMTP sink ready')
+        data = None
+        while True:
+            line = recvline()
+            if not line:
+                break
+            cmd = line[:4].upper()
+            if cmd in ('HELO', 'EHLO'):
+                sendline('250 localhost')
+            elif cmd == 'MAIL':
+                sendline('250 OK')
+            elif cmd == 'RCPT':
+                sendline('250 OK')
+            elif cmd == 'DATA':
+                sendline('354 End data with <CR><LF>.<CR><LF>')
+                lines = []
+                while True:
+                    dline = recvline()
+                    if dline == '.':
+                        break
+                    # Remove SMTP dot-stuffing.
+                    if dline.startswith('.'):
+                        dline = dline[1:]
+                    lines.append(dline)
+                data = '\n'.join(lines)
+                sendline('250 OK')
+            elif cmd == 'RSET':
+                sendline('250 OK')
+            elif cmd == 'NOOP':
+                sendline('250 OK')
+            elif cmd == 'QUIT':
+                sendline('221 Bye')
+                break
+            else:
+                sendline('500 Error: command not recognized')
+        return data
 
 
 
@@ -52,8 +126,8 @@ class EmailBase(TestBase):
         if mm_cfg.SMTPPORT == 0:
             mm_cfg.SMTPPORT = 25
         # Second argument tuple is ignored.
-        self._server = SinkServer(('localhost', mm_cfg.SMTPPORT),
-                                  ('localhost', 25))
+        self._server = SinkSMTPServer(('localhost', mm_cfg.SMTPPORT),
+                                      ('localhost', 25))
 
     def tearDown(self):
         self._server.close()
@@ -66,12 +140,7 @@ class EmailBase(TestBase):
         # since that if an invariant of the test harness.
         self._mlist.Unlock()
         try:
-            try:
-                # timeout is in milliseconds, see asyncore.py poll3()
-                asyncore.loop(timeout=30.0)
-                MSGTEXT = None
-            except asyncore.ExitNow:
-                pass
+            MSGTEXT = self._server.handle_one_session()
             return MSGTEXT
         finally:
             self._mlist.Lock()
