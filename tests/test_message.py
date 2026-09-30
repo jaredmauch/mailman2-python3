@@ -99,9 +99,9 @@ yadda yadda yadda
 def suite(x):
     suite = unittest.TestSuite()
     if x == '1':
-        suite.addTest(unittest.makeSuite(TestSentMessage1))
+        suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestSentMessage1))
     elif x == '2':
-        suite.addTest(unittest.makeSuite(TestSentMessage2))
+        suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestSentMessage2))
     return suite
 
 

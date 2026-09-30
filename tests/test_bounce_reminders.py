@@ -134,8 +134,8 @@ class ReminderBounceQueueTest(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ReminderBounceTest))
-    suite.addTest(unittest.makeSuite(ReminderBounceQueueTest))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(ReminderBounceTest))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(ReminderBounceQueueTest))
     return suite
 
 

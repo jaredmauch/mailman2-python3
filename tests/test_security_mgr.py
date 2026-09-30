@@ -273,9 +273,9 @@ class TestWebAuthenticate(TestBase):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestSecurityManager))
-    suite.addTest(unittest.makeSuite(TestAuthenticate))
-    suite.addTest(unittest.makeSuite(TestWebAuthenticate))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestSecurityManager))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestAuthenticate))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestWebAuthenticate))
     return suite
 
 

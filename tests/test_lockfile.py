@@ -40,7 +40,7 @@ class TestLockFile(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLockFile))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestLockFile))
     return suite
 
 

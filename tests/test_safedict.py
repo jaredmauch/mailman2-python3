@@ -96,8 +96,8 @@ Cc: bperson@dom.ain
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestSafeDict))
-    suite.addTest(unittest.makeSuite(TestMsgSafeDict))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestSafeDict))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestMsgSafeDict))
     return suite
 
 

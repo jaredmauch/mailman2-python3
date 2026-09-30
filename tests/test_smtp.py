@@ -66,7 +66,7 @@ testing
 
 def suite():
     suite = unittest.TestSuite()
-    #suite.addTest(unittest.makeSuite(TestSMTPDirect))
+    #suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestSMTPDirect))
     return suite
 
 
