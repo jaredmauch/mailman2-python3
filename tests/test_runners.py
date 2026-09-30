@@ -115,7 +115,7 @@ A message
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestPrepMessage))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestPrepMessage))
     return suite
 
 

@@ -376,8 +376,8 @@ class TestMembers(TestBase):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestNoMembers))
-    suite.addTest(unittest.makeSuite(TestMembers))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestNoMembers))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestMembers))
     return suite
 
 
