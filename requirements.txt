@@ -9,6 +9,6 @@
 # NNTP support (--enable-nntp) additionally requires the nntplib module,
 # which is in the Python standard library on most platforms.
 
-dnspython>=1.16.0,<2.0
+dnspython>=2.9.0
 html2text
 bsddb3
